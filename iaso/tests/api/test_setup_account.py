@@ -17,6 +17,13 @@ class SetupAccountApiTestCase(APITestCase):
         account.save()
         cls.account = account
         cls.MODULES = [module["codename"] for module in MODULES]
+        cls.ACCOUNT_FEATURE_FLAGS = [
+            "SHOW_HOME_ONLINE",
+            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+            "SHOW_PAGES",
+            "SHOW_LINK_INSTANCE_REFERENCE",
+            "ALLOW_CATCHMENT_EDITION",
+        ]
         user = m.User.objects.create(username="link")
         user.set_password("tiredofplayingthesameagain")
         user.save()
@@ -163,3 +170,19 @@ class SetupAccountApiTestCase(APITestCase):
         data_source = created_data_source.first()
         project_data_sources = project.data_sources.filter(pk=data_source.id)
         self.assertEqual(project_data_sources.first(), data_source)
+
+    def test_setup_account_with_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "initial_project_account test-appid",
+            "user_username": "username",
+            "user_first_name": "firstname",
+            "user_last_name": "lastname",
+            "password": "password",
+            "modules": self.MODULES,
+            "feature_flags": self.ACCOUNT_FEATURE_FLAGS,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        account = response.json()
+        self.assertEqual(account["feature_flags"], self.ACCOUNT_FEATURE_FLAGS)

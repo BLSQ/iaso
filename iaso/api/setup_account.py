@@ -28,6 +28,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
+    feature_flags = serializers.JSONField(required=False)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -75,13 +76,17 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-        account_feature_flags = [
-            "SHOW_HOME_ONLINE",
-            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
-            "SHOW_PAGES",
-            "SHOW_LINK_INSTANCE_REFERENCE",
-        ]
-        account.feature_flags.set(account_feature_flags)
+
+        if validated_data.get("feature_flags") == None:
+            account_feature_flags = [
+                "SHOW_HOME_ONLINE",
+                "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+                "SHOW_PAGES",
+                "SHOW_LINK_INSTANCE_REFERENCE",
+            ]
+            account.feature_flags.set(account_feature_flags)
+        else:
+            account.feature_flags.set(validated_data.get("feature_flags"))
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")

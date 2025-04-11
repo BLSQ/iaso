@@ -993,7 +993,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.assertEqual(response.status_code, 201)
             self.assertIn("document_path_6", response.data["document"])
 
-
     def test_check_duplicate_destruction_report(self):
         self.client.force_authenticate(self.user_rw_perms)
 

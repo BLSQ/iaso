@@ -159,7 +159,7 @@ To add a new language to the system, follow these steps:
 
 ### 1. Add the Language to AVAILABLE_LANGUAGES Environment Variable
 
-First, you need to add the new language code to the `AVAILABLE_LANGUAGES` environment variable. This variable is used by the build process to determine which languages to include in the generated files.
+First, you need to add the new language code to the `AVAILABLE_LANGUAGES` environment variable. This variable is used at run time to determine which languages to display.
 
 ```bash
 # For development
@@ -169,22 +169,24 @@ export AVAILABLE_LANGUAGES="en,fr,es"
 AVAILABLE_LANGUAGES=en,fr,es
 ```
 
-If you don't add the language to this environment variable, it won't be included in the build, even if you create the translation files.
 
 ### 2. Copy and Translate Existing Language Files
 
 The simplest way to add a new language is to copy an existing language file (e.g., `en.json`) and translate all the keys:
 
 ```bash
-# Main application
+# Main application (required)
 cp hat/assets/js/apps/Iaso/translations/en.json hat/assets/js/apps/Iaso/translations/es.json
 
-# Plugins (if they have translations)
+# Optional: Plugin translations
+# If not provided, English will be used as fallback
 cp plugins/your_plugin/js/translations/en.json plugins/your_plugin/js/translations/es.json
 
-# Shared components (if they have translations)
+# Optional: Shared components translations
+# If not provided, English will be used as fallback
 cp bluesquare-components/src/translations/en.json bluesquare-components/src/translations/es.json
 ```
+
 
 Then edit each file to translate the values while keeping the keys the same:
 
@@ -251,15 +253,11 @@ The system will automatically detect the new language file and include it in the
 
 Several components can be enhanced to use language-specific date formats:
 
-1. **DateTimeCell Component** (`hat/assets/js/apps/Iaso/components/Cells/DateTimeCell.tsx`):
-   - Update to use language configs for consistent date formatting
-   - Replace hardcoded date formats with locale-specific formats
-
-2. **formatValue Function** (`hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx`):
+1. **formatValue Function** (`hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx`):
    - Use language-specific formats for date and datetime values
    - Ensure consistent date formatting across the application
 
-3. **convertDate Function** (`plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx`):
+2. **convertDate Function** (`plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx`):
    - Update to use language configs for date formatting
    - Ensure dates are displayed according to the user's locale
 

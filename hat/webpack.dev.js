@@ -32,16 +32,8 @@ const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
-// Parse available languages from environment variable or default to "en,fr"
-const availableLanguages = (process.env.AVAILABLE_LANGUAGES || 'en,fr').split(
-    ',',
-);
-
 // Generate the combined translations file
-const combinedTranslationsPath = generateCombinedTranslations(
-    __dirname,
-    availableLanguages,
-);
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
 
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
@@ -50,10 +42,7 @@ const combinedConfigPath = generateCombinedConfig(__dirname);
 const pluginKeysPath = generatePluginKeysFile(__dirname);
 
 // Generate the language configs file
-const languageConfigsPath = generateLanguageConfigs(
-    __dirname,
-    availableLanguages,
-);
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     context: __dirname,
@@ -136,7 +125,6 @@ module.exports = {
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
-            AVAILABLE_LANGUAGES: JSON.stringify(availableLanguages),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),

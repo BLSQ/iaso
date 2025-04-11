@@ -1,11 +1,13 @@
 const fs = require('fs');
 const path = require('path');
+const { getAvailableLanguages } = require('./languages.js');
 const { getPluginFolders } = require('./plugins.js');
 
 /** @param {string} rootDir */
 /** @param {string[]} availableLanguages */
 
-const generateCombinedTranslations = (rootDir, availableLanguages) => {
+const generateCombinedTranslations = rootDir => {
+    const availableLanguages = getAvailableLanguages(rootDir);
     const combinedTranslationsPath = path.resolve(
         rootDir,
         './assets/js/apps/Iaso/bundle/generated/combinedTranslations.js',
@@ -16,19 +18,10 @@ const generateCombinedTranslations = (rootDir, availableLanguages) => {
 
     availableLanguages.forEach(lang => {
         // Main translations
-        let translationPath = path.resolve(
+        const translationPath = path.resolve(
             rootDir,
             `./assets/js/apps/Iaso/domains/app/translations/${lang}.json`,
         );
-        if (!fs.existsSync(translationPath)) {
-            console.warn(
-                `Warning: No translation file found for language ${lang} in main app at ${translationPath}, will fall back to English`,
-            );
-            translationPath = path.resolve(
-                rootDir,
-                `./assets/js/apps/Iaso/domains/app/translations/en.json`,
-            );
-        }
 
         // Bluesquare-components translations
         let bluesquareTranslationsPath = path.resolve(
@@ -192,8 +185,8 @@ export default pluginKeys;
 };
 
 /** @param {string} rootDir */
-/** @param {string[]} availableLanguages */
-const generateLanguageConfigs = (rootDir, availableLanguages) => {
+const generateLanguageConfigs = rootDir => {
+    const availableLanguages = getAvailableLanguages(rootDir);
     const languageConfigsPath = path.resolve(
         rootDir,
         './assets/js/apps/Iaso/bundle/generated/languageConfigs.js',

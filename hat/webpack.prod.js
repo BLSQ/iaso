@@ -16,11 +16,6 @@ const {
 // django settings as well
 const LOCALE = 'fr';
 
-// Parse available languages from environment variable or default to "en,fr"
-const availableLanguages = (process.env.AVAILABLE_LANGUAGES || 'en,fr').split(
-    ',',
-);
-
 // Generate the combined config file
 const combinedConfigPath = generateCombinedConfig(__dirname);
 
@@ -28,16 +23,10 @@ const combinedConfigPath = generateCombinedConfig(__dirname);
 const pluginKeysPath = generatePluginKeysFile(__dirname);
 
 // Generate the combined translations file
-const combinedTranslationsPath = generateCombinedTranslations(
-    __dirname,
-    availableLanguages,
-);
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
 
 // Generate the language configs file
-const languageConfigsPath = generateLanguageConfigs(
-    __dirname,
-    availableLanguages,
-);
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     // fail the entire build on 'module not found'
@@ -78,7 +67,6 @@ module.exports = {
                 NODE_ENV: JSON.stringify('production'),
             },
             __LOCALE: JSON.stringify(LOCALE),
-            AVAILABLE_LANGUAGES: JSON.stringify(availableLanguages),
         }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),

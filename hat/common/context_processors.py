@@ -33,6 +33,12 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
     return {"sentry_config": json.dumps(config["sentry_config"])}
 
 
+def available_languages(request: HttpRequest) -> Dict[str, Any]:
+    languages = settings.AVAILABLE_LANGUAGES.split(",")
+    print(json.dumps(languages), "languages")
+    return {"AVAILABLE_LANGUAGES": json.dumps(languages)}
+
+
 def product_fruits_config(request: HttpRequest) -> Dict[str, Any]:
     config = {
         "PRODUCT_FRUITS_WORKSPACE_CODE": settings.PRODUCT_FRUITS_WORKSPACE_CODE or None,

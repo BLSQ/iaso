@@ -1,6 +1,5 @@
 import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
-import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import {
     apiDateFormats,
     getLocaleDateFormat,
@@ -13,14 +12,11 @@ import {
     convertValueIfDate,
 } from './DateTimeCell.tsx';
 
-const locales = Object.keys(LANGUAGE_CONFIGS);
+const locales = Object.keys(longDateFormats);
 const setLocale = code => {
     moment.locale(code);
     moment.updateLocale(code, {
-        longDateFormat:
-            LANGUAGE_CONFIGS[code]?.dateFormats ||
-            LANGUAGE_CONFIGS.en?.dateFormats ||
-            {},
+        longDateFormat: longDateFormats[code],
         week: {
             dow: 1,
         },

@@ -19,7 +19,7 @@ from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
     VaccineStockEarmarkPermission,
-    VaccineStockManagementPermission,
+    VaccineStockPermission,
     can_edit_helper,
 )
 from plugins.polio.models import (
@@ -261,6 +261,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
 
     def extract_campaign_data(self, validated_data):
@@ -291,9 +292,10 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -339,6 +341,7 @@ class IncidentReportSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
 
 
@@ -346,9 +349,10 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
     model_class = IncidentReport
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -367,6 +371,7 @@ class DestructionReportSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
 
 
@@ -374,9 +379,10 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
     model_class = DestructionReport
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -441,6 +447,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
 
     def get_campaign(self, obj):
@@ -506,6 +513,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
         lambda: VaccineStockEarmarkPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -551,9 +559,10 @@ class VaccineStockManagementViewSet(ModelViewSet):
     """
 
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
     serializer_class = VaccineStockSerializer

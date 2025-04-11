@@ -1108,6 +1108,7 @@
     "iaso.permissions.readEdit.polio_vaccine_stock_management_permissions": "Polio vaccine stock management",
     "iaso.permissions.readEdit.polio_vaccine_supply_chain_permissions": "Polio vaccine supply chain",
     "iaso.permissions.readEdit.read": "Read",
+    "iaso.permissions.readEdit.read_only": "Read only",
     "iaso.permissions.readEdit.registry_permissions": "Registry",
     "iaso.permissions.readEdit.source_permissions": "Geo data sources",
     "iaso.permissions.readEdit.submission_permissions": "Forms and submissions",

@@ -21,7 +21,7 @@ type Props = {
     onClick: () => void;
     children: ReactNode;
     titleMessage: IntlMessage;
-    buttonMessage: IntlMessage;
+    buttonMessage: IntlMessage | null;
 };
 
 export const MultiFormTab: FunctionComponent<Props> = ({
@@ -40,9 +40,14 @@ export const MultiFormTab: FunctionComponent<Props> = ({
                     <Typography variant="h5">
                         {formatMessage(titleMessage)}
                     </Typography>
-                    <Box mr={2}>
-                        <AddButton message={buttonMessage} onClick={onClick} />
-                    </Box>
+                    {buttonMessage && (
+                        <Box mr={2}>
+                            <AddButton
+                                message={buttonMessage}
+                                onClick={onClick}
+                            />
+                        </Box>
+                    )}
                 </Grid>
             </Box>
             <Box className={classes.scrollableForm}>{children}</Box>

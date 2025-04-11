@@ -66,7 +66,7 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
         if (changeRequest?.status === CHANGE_REQUEST_STATUS.REJECTED) {
             return formatMessage(MESSAGES.seeRejectedChanges);
         }
-        if (changeRequest?.status === CHANGE_REQUEST_STATUS.REJECTED) {
+        if (changeRequest?.status === CHANGE_REQUEST_STATUS.APPROVED) {
             return formatMessage(MESSAGES.seeApprovedChanges);
         }
         if (isNewOrgUnit) {

@@ -56,7 +56,7 @@ const useStyle = makeStyles(theme => ({
  * @returns {*}
  */
 
-const labelLocales = { fr: 'French', en: 'English' };
+const labelLocales = { fr: 'French', en: 'English', et: "Ethiopian"};
 
 function translateLabel(label, activeLocale) {
     if (isPlainObject(label)) {

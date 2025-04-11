@@ -235,7 +235,7 @@ ${imports.map(imp => `import ${imp} from '../../domains/app/translations/${imp.r
 
 // Default config for languages without a specific config
 const defaultConfig = {
-    label: 'English version',
+    label: 'English',
     dateFormats: {
         LT: 'h:mm A',
         LTS: 'DD/MM/YYYY HH:mm',

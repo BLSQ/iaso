@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-08 10:41+0000\n"
+"POT-Creation-Date: 2025-04-11 13:19+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -160,13 +160,13 @@ msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
 
 #: iaso/api/org_units.py
-msgid "Can't parse geom"
-msgstr "Impossible d'analyser la géométrie"
-
-#: iaso/api/org_units.py
 #, python-brace-format
 msgid "Invalid validation status : {validation_status}"
 msgstr "Statut de validation invalide : {validation_status}"
+
+#: iaso/api/org_units.py
+msgid "Can't parse geom"
+msgstr "Impossible d'analyser la géométrie"
 
 #: iaso/api/org_units.py
 msgid "You cannot create an Org Unit without a parent"

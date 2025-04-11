@@ -37,6 +37,7 @@ declare global {
         SENTRY_CONFIG?: SentryConfig;
         SENTRY_INITIALIZED?: boolean;
         PRODUCT_FRUITS_WORKSPACE_CODE?: string;
+        AVAILABLE_LANGUAGES?: string;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],

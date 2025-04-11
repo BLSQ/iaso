@@ -1,100 +1,32 @@
 const path = require('path');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
-const BundleTracker = require('webpack-bundle-tracker');
 const { ModuleFederationPlugin } = require('webpack').container;
-const fs = require('fs');
+const BundleTracker = require('webpack-bundle-tracker');
+
+const {
+    generateCombinedTranslations,
+    generateCombinedConfig,
+    generatePluginKeysFile,
+    generateLanguageConfigs,
+} = require('./assets/js/apps/Iaso/bundle/generators.js');
+
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
 
-// Function to get plugin folders
-const getPluginFolders = () => {
-    const pluginsPath = path.resolve(__dirname, '../plugins');
-    return fs.readdirSync(pluginsPath).filter(file => {
-        const fullPath = path.join(pluginsPath, file);
-        // Only return directories and skip special directories
-        return (
-            fs.statSync(fullPath).isDirectory() &&
-            !file.startsWith('.') &&
-            !file.startsWith('__') &&
-            // Check if the directory contains a js/config.tsx file
-            fs.existsSync(path.join(fullPath, 'js', 'config.tsx'))
-        );
-    });
-};
-
-// Function to generate a combined config file
-const generateCombinedConfig = () => {
-    const pluginFolders = getPluginFolders();
-    const combinedConfigPath = path.resolve(
-        __dirname,
-        './assets/js/combinedPluginConfigs.js',
-    );
-
-    // Create a combined config object
-    const combinedConfig = {};
-
-    pluginFolders.forEach(plugin => {
-        const configPath = path.resolve(
-            __dirname,
-            `../plugins/${plugin}/js/config.tsx`,
-        );
-        // Use require to get the config
-        try {
-            // We need to use a dynamic require to avoid webpack bundling issues
-            // This will be replaced at runtime
-            combinedConfig[plugin] = `require('${configPath}')`;
-        } catch (error) {
-            console.error(`Error loading config for plugin ${plugin}:`, error);
-        }
-    });
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It combines all plugin configs into a single file.
-
-const combinedConfigs = {
-    ${Object.entries(combinedConfig)
-        .map(([key, value]) => `    ${key}: ${value}`)
-        .join(',\n')}
-};
-
-export default combinedConfigs;
-`;
-
-    // Write the file
-    fs.writeFileSync(combinedConfigPath, fileContent);
-    return combinedConfigPath;
-};
-
-// Function to generate a plugin keys file
-const generatePluginKeysFile = () => {
-    const pluginFolders = getPluginFolders();
-    const pluginKeysPath = path.resolve(__dirname, './assets/js/pluginKeys.js');
-
-    // Create the file content
-    const fileContent = `
-// This file is auto-generated. Do not edit directly.
-// It contains the list of available plugin keys.
-
-const pluginKeys = ${JSON.stringify(pluginFolders, null, 2)};
-
-export default pluginKeys;
-`;
-
-    // Write the file
-    fs.writeFileSync(pluginKeysPath, fileContent);
-    return pluginKeysPath;
-};
-
 // Generate the combined config file
-const combinedConfigPath = generateCombinedConfig();
+const combinedConfigPath = generateCombinedConfig(__dirname);
 
 // Generate the plugin keys file
-const pluginKeysPath = generatePluginKeysFile();
+const pluginKeysPath = generatePluginKeysFile(__dirname);
+
+// Generate the combined translations file
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
+
+// Generate the language configs file
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     // fail the entire build on 'module not found'
@@ -120,14 +52,6 @@ module.exports = {
     devtool: 'source-map',
 
     plugins: [
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/en$/,
-            '../translations/en.json',
-        ),
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/fr$/,
-            '../translations/fr.json',
-        ),
         new BundleTracker({
             filename: path.resolve(
                 __dirname,
@@ -151,12 +75,14 @@ module.exports = {
         }),
         // Module Federation for plugins
         new ModuleFederationPlugin({
-            name: 'iaso_plugins',
+            name: 'IasoModules',
             filename: 'remoteEntry.js',
-            library: { type: 'self', name: 'iaso_plugins' },
+            library: { type: 'self', name: 'IasoModules' },
             exposes: {
-                './configs': combinedConfigPath,
-                './keys': pluginKeysPath,
+                './plugins/configs': combinedConfigPath,
+                './plugins/keys': pluginKeysPath,
+                './translations/configs': combinedTranslationsPath,
+                './language/configs': languageConfigsPath,
             },
             shared: {
                 react: {
@@ -360,8 +286,16 @@ module.exports = {
         alias: {
             'react/jsx-runtime': 'react/jsx-runtime.js',
             // Add alias for the combined config
-            'iaso_plugins/configs': combinedConfigPath,
-            'iaso_plugins/keys': pluginKeysPath,
+            'IasoModules/plugins/configs': combinedConfigPath,
+            'IasoModules/plugins/keys': pluginKeysPath,
+            'IasoModules/translations/configs': combinedTranslationsPath,
+            'IasoModules/language/configs': languageConfigsPath,
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
         },
         fallback: {
             fs: false,

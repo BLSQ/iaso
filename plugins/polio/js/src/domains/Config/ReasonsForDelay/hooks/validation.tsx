@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
-import { object, ObjectSchema, string } from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
-import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
+import { object, ObjectSchema, string } from 'yup';
+import { useAppLocales } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import { useAPIErrorValidator } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { ValidationError } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
 
-const translatedFields = apiValidator => {
+const translatedFields = (apiValidator, appLocales) => {
     const result = {};
-    APP_LOCALES.forEach(locale => {
+    appLocales.forEach(locale => {
         const key = `name_${locale.code}`;
         if (locale.code === 'en') {
             result[key] = string()
@@ -27,6 +27,7 @@ export const useReasonsForDelayValidation = (
     payload: Partial<any>,
 ): ObjectSchema<any> => {
     const { formatMessage } = useSafeIntl();
+    const appLocales = useAppLocales();
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
     // Tried the typescript integration, but Type casting was crap
     const schema = useMemo(
@@ -39,9 +40,9 @@ export const useReasonsForDelayValidation = (
                     .matches(/^[A-Z_]+$/, {
                         message: formatMessage(MESSAGES.incorrectFormat),
                     }),
-                ...translatedFields(apiValidator),
+                ...translatedFields(apiValidator, appLocales),
             }),
-        [apiValidator],
+        [apiValidator, appLocales],
     );
     return schema;
 };

@@ -1,12 +1,13 @@
-import { Column, useSafeIntl } from 'bluesquare-components';
 import React, { ReactElement, useMemo } from 'react';
-import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
-import MESSAGES from '../messages';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { useAppLocales } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import { EditReasonForDelay } from '../CreateEdit/CreateEditReasonForDelay';
+import MESSAGES from '../messages';
 
 export const useReasonsForDelayColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const appLocales = useAppLocales();
     return useMemo(() => {
         return [
             {
@@ -19,7 +20,7 @@ export const useReasonsForDelayColumns = (): Column[] => {
                 accessor: 'key_name',
                 sortable: true,
             },
-            ...APP_LOCALES.map(locale => {
+            ...appLocales.map(locale => {
                 const key = `name_${locale.code}`;
                 return {
                     Header: formatMessage(MESSAGES[key]),

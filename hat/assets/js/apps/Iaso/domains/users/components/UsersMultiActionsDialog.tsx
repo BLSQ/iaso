@@ -23,26 +23,24 @@ import {
     selectionInitialState,
     useSafeIntl,
 } from 'bluesquare-components';
-import { UseMutateAsyncFunction } from 'react-query';
 
 import { isEqual } from 'lodash';
+import { UseMutateAsyncFunction } from 'react-query';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
-
-import { APP_LOCALES } from '../../app/constants';
-
-import { Selection } from '../../orgUnits/types/selection';
-import { Profile } from '../../teams/types/profile';
 
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useAppLocales } from '../../app/constants';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { Selection } from '../../orgUnits/types/selection';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { TeamType } from '../../teams/constants';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { Profile } from '../../teams/types/profile';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import MESSAGES from '../messages';
 import { userHasPermission } from '../utils';
 
 type Props = {
@@ -118,6 +116,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     saveMulti,
 }) => {
     const currentUser = useCurrentUser();
+    const appLocales = useAppLocales();
     const [bulkState, setBulkState] = useState<BulkState>(initialState);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -257,7 +256,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                     type="select"
                     multi={false}
                     label={MESSAGES.locale}
-                    options={APP_LOCALES.map(locale => {
+                    options={appLocales.map(locale => {
                         return {
                             value: locale.code,
                             label: locale.label,

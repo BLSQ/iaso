@@ -1,22 +1,22 @@
 import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import EventIcon from '@mui/icons-material/Event';
+import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
-import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
 import {
     injectIntl,
     IconButton,
     FormControl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import EventIcon from '@mui/icons-material/Event';
-import MESSAGES from './messages';
+import PropTypes from 'prop-types';
 import {
     getUrlParamDateObject,
     dateFormat,
     getLocaleDateFormat,
 } from '../../utils/dates.ts';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     clearDateButton: {

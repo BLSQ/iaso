@@ -312,9 +312,9 @@ Translations are organized in three main categories:
 
 - Translation files should be JSON files named with their language code (e.g., `en.json`, `fr.json`)
 - Expected locations:
-  - Main app: `assets/js/apps/Iaso/translations/{lang}.json`
-  - Plugins: `plugins/{pluginName}/translations/{lang}.json`
-  - Components: `bluesquare-components/src/translations/{lang}.json`
+  - Main app: `assets/js/apps/Iaso/domains/app/translations/{lang}.json`
+  - Plugins: `plugins/{pluginName}/js/src/constants/translations/{lang}.json`
+  - Components: `bluesquare-components/dist/locale/{lang}.json`
 
 ### Build Process
 
@@ -328,7 +328,7 @@ During the build process:
 ### Adding Translations to a Plugin
 
 To add translations to your plugin:
-1. Create a `translations` directory in your plugin
+1. Create a `js/src/constants/translations` directory in your plugin
 2. Add language files (e.g., `en.json`, `fr.json`)
 3. Structure your translations as a flat object with dot-notation keys:
 ```json
@@ -337,3 +337,33 @@ To add translations to your plugin:
     "myPlugin.description": "Plugin description"
 }
 ```
+
+4. Make sure to include at least an English translation file (`en.json`) as it will be used as a fallback for other languages
+
+### Plugin Translation Structure
+
+A valid plugin with translations should follow this structure:
+
+```
+plugins/
+└── your_plugin/
+    ├── js/
+    │   ├── config.tsx       # Required: Plugin configuration
+    │   ├── index.tsx       # Plugin entry point
+    │   ├── components/     # Plugin components
+    │   ├── routes/         # Plugin route components
+    │   └── src/
+    │       └── constants/
+    │           └── translations/
+    │               ├── en.json  # English translations (required)
+    │               ├── fr.json  # French translations (optional)
+    │               └── ...      # Other language translations
+    └── README.md          # Plugin documentation
+```
+
+### Translation Fallbacks
+
+The system uses a fallback mechanism to ensure all strings are translated:
+1. If a translation is missing for a specific language, the system will use the English translation
+2. If the English translation is also missing, the system will use the key itself
+3. Warnings will be displayed in the console during build when fallbacks are used

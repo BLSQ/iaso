@@ -6,10 +6,17 @@ from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from hat.menupermissions.constants import MODULES
+from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
-from iaso.models import Account, DataSource, Profile, Project, SourceVersion
+from iaso.models import (
+    Account,
+    AccountFeatureFlag,
+    DataSource,
+    Profile,
+    Project,
+    SourceVersion,
+)
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -51,6 +58,15 @@ class SetupAccountSerializer(serializers.Serializer):
                 raise serializers.ValidationError("module_not_exist")
         return modules
 
+    def validate_feature_flags(self, feature_flags):
+        default_account_feature_flags = AccountFeatureFlag.objects.all()
+        account_feature_flags = [feature_flag.code for feature_flag in default_account_feature_flags]
+        if len(feature_flags) > 0:
+            for feature_flag in feature_flags:
+                if feature_flag not in account_feature_flags:
+                    raise serializers.ValidationError("invalid_account_feature_flag")
+        return feature_flags
+
     def create(self, validated_data):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
         source_version = SourceVersion.objects.create(data_source=data_source, number=1)
@@ -76,17 +92,10 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-
-        if validated_data.get("feature_flags") == None:
-            account_feature_flags = [
-                "SHOW_HOME_ONLINE",
-                "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
-                "SHOW_PAGES",
-                "SHOW_LINK_INSTANCE_REFERENCE",
-            ]
-            account.feature_flags.set(account_feature_flags)
-        else:
+        if validated_data.get("feature_flags") is not None and len(validated_data.get("feature_flags")) > 0:
             account.feature_flags.set(validated_data.get("feature_flags"))
+        else:
+            account.feature_flags.set(DEFAULT_ACCOUNT_FEATURE_FLAGS)
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -109,7 +118,6 @@ class SetupAccountSerializer(serializers.Serializer):
         )
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
-
         return validated_data
 
 

@@ -1,6 +1,10 @@
 from django.contrib.auth.models import Permission, User
 
-from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
+from hat.menupermissions.constants import (
+    MODULE_PERMISSIONS,
+    MODULES,
+    DEFAULT_ACCOUNT_FEATURE_FLAGS,
+)
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 from iaso.test import APITestCase
@@ -17,13 +21,6 @@ class SetupAccountApiTestCase(APITestCase):
         account.save()
         cls.account = account
         cls.MODULES = [module["codename"] for module in MODULES]
-        cls.ACCOUNT_FEATURE_FLAGS = [
-            "SHOW_HOME_ONLINE",
-            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
-            "SHOW_PAGES",
-            "SHOW_LINK_INSTANCE_REFERENCE",
-            "ALLOW_CATCHMENT_EDITION",
-        ]
         user = m.User.objects.create(username="link")
         user.set_password("tiredofplayingthesameagain")
         user.save()
@@ -87,7 +84,6 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
-
         self.assertEqual(response.status_code, 201)
         self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
@@ -155,7 +151,6 @@ class SetupAccountApiTestCase(APITestCase):
 
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
-
         created_account = m.Account.objects.filter(name="initial_project_account test-appid")
         created_project = m.Project.objects.filter(name="Main Project")
         created_data_source = m.DataSource.objects.filter(name="initial_project_account test-appid")
@@ -174,15 +169,51 @@ class SetupAccountApiTestCase(APITestCase):
     def test_setup_account_with_feature_flags(self):
         self.client.force_authenticate(self.admin)
         data = {
-            "account_name": "initial_project_account test-appid",
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+            "feature_flags": [
+                "ALLOW_CATCHMENT_EDITION",
+                "SHOW_PAGES",
+                "SHOW_LINK_INSTANCE_REFERENCE",
+                "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+                "SHOW_HOME_ONLINE",
+            ],
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        account = response.json()
+        self.assertEqual(account["feature_flags"], data["feature_flags"])
+
+    def test_setup_account_without_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "account with no feature test-featureappid",
             "user_username": "username",
             "user_first_name": "firstname",
             "user_last_name": "lastname",
             "password": "password",
             "modules": self.MODULES,
-            "feature_flags": self.ACCOUNT_FEATURE_FLAGS,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
-        account = response.json()
-        self.assertEqual(account["feature_flags"], self.ACCOUNT_FEATURE_FLAGS)
+        created_account = m.Account.objects.filter(name="account with no feature test-featureappid")
+        account_feature_flags = created_account.first().feature_flags.all()
+        feature_flags = [feature_flag.code for feature_flag in account_feature_flags]
+        self.assertEqual(sorted(feature_flags), sorted(DEFAULT_ACCOUNT_FEATURE_FLAGS))
+
+    def test_setup_account_with_at_leat_an_invalid_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "account with no feature test-featureappid",
+            "user_username": "username",
+            "user_first_name": "firstname",
+            "user_last_name": "lastname",
+            "password": "password",
+            "modules": self.MODULES,
+            "feature_flags": ["Unknown", "Test", "SHOW_HOME_ONLINE"],
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["feature_flags"], ["invalid_account_feature_flag"])

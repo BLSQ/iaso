@@ -654,6 +654,14 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
             Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
         )
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
+
 
 class OrgUnitChangeRequest(models.Model):
     """

@@ -1,5 +1,5 @@
-import { Pagination, UrlParams } from 'bluesquare-components';
 import { ReactNode } from 'react';
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { File, Instance } from '../../instances/types/instance';
@@ -77,6 +77,7 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
+    version_id: number;
     groups: Group[];
     org_unit_type: OrgunitType;
     org_unit_type_short_name?: string;

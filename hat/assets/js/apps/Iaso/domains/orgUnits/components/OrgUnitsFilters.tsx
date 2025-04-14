@@ -111,7 +111,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypesDropdownOptions({ projectId });
+        useGetOrgUnitTypesDropdownOptions({ projectId, sourceVersionId });
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,

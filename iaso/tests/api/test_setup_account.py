@@ -199,8 +199,7 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         created_account = m.Account.objects.filter(name="account with no feature test-featureappid")
-        account_feature_flags = created_account.first().feature_flags.all()
-        feature_flags = [feature_flag.code for feature_flag in account_feature_flags]
+        feature_flags = created_account.first().feature_flags.values_list("code", flat=True)
         self.assertEqual(sorted(feature_flags), sorted(DEFAULT_ACCOUNT_FEATURE_FLAGS))
 
     def test_setup_account_with_at_leat_an_invalid_feature_flags(self):

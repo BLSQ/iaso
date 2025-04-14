@@ -61,10 +61,9 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_feature_flags(self, feature_flags):
         default_account_feature_flags = AccountFeatureFlag.objects.all()
         account_feature_flags = [feature_flag.code for feature_flag in default_account_feature_flags]
-        if len(feature_flags) > 0:
-            for feature_flag in feature_flags:
-                if feature_flag not in account_feature_flags:
-                    raise serializers.ValidationError("invalid_account_feature_flag")
+        for feature_flag in feature_flags:
+            if feature_flag not in account_feature_flags:
+                raise serializers.ValidationError("invalid_account_feature_flag")
         return feature_flags
 
     def create(self, validated_data):

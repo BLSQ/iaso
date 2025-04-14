@@ -58,6 +58,8 @@ class Differ:
     ):
         if field_names is None:
             field_names = ["name", "geometry", "parent", "opening_date", "closed_date"]
+        elif not isinstance(field_names, list):
+            field_names = list(field_names)
         if not ignore_groups:
             groups_with_with_groupset = []
             for group_set in GroupSet.objects.filter(source_version=version):

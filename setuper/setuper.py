@@ -64,6 +64,14 @@ def setup_account(account_name, server_url, username, password):
             "DATA_COLLECTION_FORMS",
             "DHIS2_MAPPING",
             "DATA_VALIDATION",
+            "PAYMENTS",
+        ],
+        "feature_flags": [
+            "SHOW_HOME_ONLINE",
+            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+            "SHOW_PAGES",
+            "SHOW_LINK_INSTANCE_REFERENCE",
+            "ALLOW_CATCHMENT_EDITION",
         ],
     }
     iaso_admin_client = admin_login(server_url, username, password)

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Validation
+from .models import Validation, ActivePatientsList
 
 
 class ValidationForm(forms.ModelForm):
@@ -7,3 +7,41 @@ class ValidationForm(forms.ModelForm):
         model = Validation
         fields = ["comment", "validation_status", "level", "source_import"]
         widgets = {"comment": forms.Textarea(attrs={"rows": 4}), "source_import": forms.HiddenInput()}
+
+
+class ActivePatientsListForm(forms.ModelForm):
+    """
+    Form for creating and updating ActivePatientsList instances.
+    """
+
+    class Meta:
+        model = ActivePatientsList
+        exclude = [
+            "import_source",
+            "org_unit",
+            "active",
+            "region",
+            "district",
+            "code_ets",
+            "number",
+            "facility_name",
+            "period",
+            "next_dispensation_date",
+        ]  # Exclude foreign key fields
+        widgets = {
+            "import_source": forms.HiddenInput(),
+            "active": forms.HiddenInput(),
+            "validation_status": forms.HiddenInput(),
+            "org_unit": forms.HiddenInput(),
+            "received_arv": forms.HiddenInput(),
+            "disappeared": forms.HiddenInput(),
+            "region": forms.HiddenInput(),
+            "district": forms.HiddenInput(),
+            "code_ets": forms.HiddenInput(),
+            "number": forms.HiddenInput(),
+            "facility_name": forms.HiddenInput(),
+            "period": forms.HiddenInput(),
+            "last_dispensation_date": forms.DateInput(attrs={"type": "date"}),
+            "next_dispensation_date": forms.DateInput(attrs={"type": "date"}),
+            "discontinuation_date": forms.DateInput(attrs={"type": "date"}),
+        }

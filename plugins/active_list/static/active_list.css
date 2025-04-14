@@ -45,8 +45,8 @@ form {
     display: flex;
     flex-direction: column;
 
-    margin: 10px auto;
-    padding: 20px;
+   /* margin: 10px auto; */
+    padding: 20px 0 20px 0;
     border-radius: 5px;
 
 }
@@ -234,4 +234,82 @@ h4 {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 99; /* Behind the popup */
+}
+
+#link {
+    display:block;
+    max-width: 480px;
+}
+
+
+/* form formatting */
+
+
+.patientForm {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+
+}
+
+.patientForm p {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+.patientForm input[type="text"],
+.patientForm input[type="number"],
+.patientForm input[type="date"],
+.patientForm select,
+.patientForm textarea {
+    width: calc(100% - 22px); /* Adjust for padding and border */
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box; /* Important for width calculation */
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+input[type="checkbox"] {
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    form {
+        padding: 15px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea {
+        width: calc(100% - 12px); /* Adjust for smaller padding */
+    }
 }

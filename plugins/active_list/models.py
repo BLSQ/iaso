@@ -84,46 +84,46 @@ class Import(models.Model):
 
 
 class ActivePatientsList(models.Model):
-    number = models.IntegerField(null=False)
-    region = models.TextField(null=False)
-    district = models.TextField(null=False)
-    code_ets = models.CharField(max_length=255, null=False)
-    facility_name = models.TextField(null=False)
-    period = models.TextField(db_index=True)
-    identifier_code = models.CharField(max_length=255, null=False, db_index=True)
-    sex = models.TextField(choices=SEX_CHOICES)
-    age = models.IntegerField()
-    weight = models.IntegerField(null=True)
-    new_inclusion = models.BooleanField()
-    transfer_in = models.BooleanField()
-    return_to_care = models.BooleanField()
-    tb_hiv = models.BooleanField()  # patient has HIV and Tuberculosis
-    hiv_type = models.TextField(choices=HIV_CHOICES)
-    treatment_line = models.TextField(choices=TREATMENT_CHOICES)
+    number = models.IntegerField(null=False, verbose_name="Numéro")
+    region = models.TextField(null=False, verbose_name="Région")
+    district = models.TextField(null=False, verbose_name="District")
+    code_ets = models.CharField(max_length=255, null=False, verbose_name="Code ETS")
+    facility_name = models.TextField(null=False, verbose_name="Nom de l'établissement")
+    period = models.TextField(db_index=True, verbose_name="Période")
+    identifier_code = models.CharField(max_length=255, null=False, db_index=True, verbose_name="Code identifiant")
+    sex = models.TextField(choices=SEX_CHOICES, verbose_name="Sexe")
+    age = models.IntegerField(verbose_name="Âge")
+    weight = models.IntegerField(null=True, verbose_name="Poids")
+    new_inclusion = models.BooleanField(verbose_name="Nouvelle inclusion")
+    transfer_in = models.BooleanField(verbose_name="Transfert entrant")
+    return_to_care = models.BooleanField(verbose_name="Retour aux soins")
+    tb_hiv = models.BooleanField(verbose_name="TB/VIH")  # patient has HIV and Tuberculosis
+    hiv_type = models.TextField(choices=HIV_CHOICES, verbose_name="Type de VIH")
+    treatment_line = models.TextField(choices=TREATMENT_CHOICES, verbose_name="Ligne de traitement")
 
-    last_dispensation_date = models.DateField(null=True)
-    days_dispensed = models.IntegerField(null=True)
-    next_dispensation_date = models.DateField(null=True)
-    regimen = models.TextField(null=True)
-    stable = models.IntegerField(null=True)  # Needs further clarification for better naming
+    last_dispensation_date = models.DateField(null=True, verbose_name="Date de dernière dispensation")
+    days_dispensed = models.IntegerField(null=True, verbose_name="Jours dispensés")
+    next_dispensation_date = models.DateField(null=True, verbose_name="Date de prochaine dispensation")
+    regimen = models.TextField(null=True, verbose_name="Régime")
+    stable = models.IntegerField(null=True, verbose_name="Stable")  # Needs further clarification for better naming
 
-    discontinuation_date = models.DateField(null=True)
-    arv_stock_days = models.IntegerField(null=True)  # arv is anti retro viral
+    discontinuation_date = models.DateField(null=True, blank=True, verbose_name="Date d'arrêt du traitement")
+    arv_stock_days = models.IntegerField(null=True, blank=True, verbose_name="Jours de stock ARV")  # arv is anti retro viral
 
     # leaving
-    transfer_out = models.BooleanField()
-    death = models.BooleanField()
-    art_stoppage = models.BooleanField()  # stoppage for anti retro viral therapy
-    served_elsewhere = models.BooleanField()
+    transfer_out = models.BooleanField(verbose_name="Transfert sortant")
+    death = models.BooleanField(verbose_name="Décès")
+    art_stoppage = models.BooleanField(verbose_name="Arrêt du traitement ARV")  # stoppage for anti retro viral therapy
+    served_elsewhere = models.BooleanField(verbose_name="Soigné ailleurs")
 
-    active = models.BooleanField(default=True)  # denormalized information
-    import_source = models.ForeignKey(Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES)
+    active = models.BooleanField(default=True, verbose_name="Actif")  # denormalized information
+    import_source = models.ForeignKey(Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES, verbose_name="Source d'importation")
     validation_status = models.CharField(
-        max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION"
+        max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION", verbose_name="Statut de validation"
     )
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
-    received_arv = models.BooleanField(default=False)
-    disappeared = models.BooleanField(default=False)
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle")
+    received_arv = models.BooleanField(default=False, verbose_name="ARV reçu")
+    disappeared = models.BooleanField(default=False, verbose_name="Disparu")
 
     # cas aes ou patient mobile: what does it mean?
     class Meta:

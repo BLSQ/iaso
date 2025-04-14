@@ -13,10 +13,10 @@ from django.http import HttpResponse
 from django.db import models
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.shortcuts import render
 
+from django.shortcuts import render, get_object_or_404, redirect
 from iaso.models import OrgUnit
-from .forms import ValidationForm
+from .forms import ValidationForm, ActivePatientsListForm
 from .settings import OPENHEXA_USER, OPENHEXA_PASSWORD
 from django.utils.encoding import smart_str
 from .openhexa import *
@@ -123,6 +123,25 @@ def validation(request):
         },
     )
 
+def patient_form(request, patient_id=None):
+    """
+    View for creating or updating an ActivePatientsList instance.
+    """
+    print("patient_id", patient_id)
+    if patient_id:
+        patient = get_object_or_404(ActivePatientsList, pk=patient_id)
+        form = ActivePatientsListForm(request.POST or None, instance=patient)
+    else:
+        form = ActivePatientsListForm(request.POST or None)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        return redirect('patient_list')  # Replace 'patient_list' with your list view name
+
+    res =  render(request, 'patient_form.html', {'form': form, 'patient_id': patient_id})
+
+    return res
+
 
 def validation_api(request, org_unit_id, period):
     org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
@@ -209,9 +228,12 @@ def get_first_and_last_day(date_str):
 
     return first_day_str, last_day_str
 
+def filter_active_patients_for_the_month(patients, month):
+    first_day_str, last_day_str = get_first_and_last_day(month)
+    return patients.filter(next_dispensation_date__gte=first_day_str).filter(next_dispensation_date__lte=last_day_str)
 
 def patient_list_api(request, org_unit_id, period):
-    xls = request.GET.get("xls", None)
+    format = request.GET.get("format", "json")
     mode = request.GET.get("mode", "default")
     latest_ids = (
         ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
@@ -225,14 +247,7 @@ def patient_list_api(request, org_unit_id, period):
         last_import = last_import.filter(month=period).order_by("-creation_date").first()
         patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number")
     elif mode == "expected":
-        first_day_str, last_day_str = get_first_and_last_day(period)
-        patients = (
-            patients.filter(active=True)
-            .filter(next_dispensation_date__gte=first_day_str)
-            .filter(next_dispensation_date__lte=last_day_str)
-            .filter(org_unit_id=org_unit_id)
-            .order_by("next_dispensation_date")
-        )
+        patients = filter_active_patients_for_the_month(patients, period).order_by("next_dispensation_date")
     elif mode == "active":
         patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
     elif mode == "lost":
@@ -240,8 +255,10 @@ def patient_list_api(request, org_unit_id, period):
         patients = (
             patients.filter(active=True).filter(next_dispensation_date__lte=today).filter(org_unit_id=org_unit_id)
         )
-
-    if xls is None:
+    if format == "xls":
+        org_unit = OrgUnit.objects.get(pk=org_unit_id)
+        return export_active_patients_excel(patients, org_unit.name, period)
+    else :
         table_content = []
         for patient in patients:
             patient_object = {}
@@ -250,14 +267,16 @@ def patient_list_api(request, org_unit_id, period):
                 if mode in ("expected", "lost", "active"):
                     if field == "days_dispensed":
                         patient_object["Date de rupture"] = get_human_readable_value(patient, "next_dispensation_date")
+            patient_object["Voir"] = '<a href="/active_list/patient/%s">Voir</a>' % patient.id
             table_content.append(patient_object)
         res = {
             "table_content": table_content,
         }
-        return JsonResponse(res, status=200, safe=False)
-    else:
-        org_unit = OrgUnit.objects.get(pk=org_unit_id)
-        return export_active_patients_excel(patients, org_unit.name, period)
+        if format == "json":
+            return JsonResponse(res, status=200, safe=False)
+        else:
+            return render(request, "partials/patient_table.html", {"data": table_content})
+
 
 
 def export_active_patients_excel(active_patients, name, period):
@@ -281,7 +300,10 @@ def export_active_patients_excel(active_patients, name, period):
 
 def check_presence(file_hash, org_unit_id, month):
     hash_exists = Import.objects.filter(hash_key=file_hash).exists()
+    print("hash_exists", hash_exists)
+    print("month", month, "org_unit_id", org_unit_id,  Import.objects.all())
     period_exists = Import.objects.filter(org_unit_id=org_unit_id, month=month).exists()
+    print("period_exists", period_exists)
 
     if hash_exists:
         return "ERROR_FILE_ALREADY_UPLOADED"
@@ -340,6 +362,19 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
         import_data(content, i)
     return result
 
+def validate_import(the_import):
+    month = the_import.month
+    import_lines = ActivePatientsList.objects.filter(import_source=the_import)
+    viewed_patients_count = filter_active_patients_for_the_month(import_lines, month).count()
+    latest_ids = (
+        ActivePatientsList.objects.filter(org_unit_id=the_import.org_unit_id)
+        .values("identifier_code")
+        .annotate(latest_id=Max("id"))
+    )
+
+    active_list = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
+
+    patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
 
 def check_file(file):
     # To implement

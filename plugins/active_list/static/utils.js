@@ -47,7 +47,7 @@ function generateMonthList () {
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth() + 1
 
-  for (let i = -6; i <= 1; i++) {
+  for (let i = -12; i < 1; i++) {
     let newDate = new Date(currentYear, currentMonth - 1 + i, 1)
     let year = newDate.getFullYear()
     let month = (newDate.getMonth() + 1).toString().padStart(2, '0') // Add leading zero if needed
@@ -74,8 +74,8 @@ function fillSelectWithMonths () {
     option.text = `${monthName} ${year}`
     selectBox.add(option)
   }
-  selectBox.value = months[5]
-  $('#period').val(months[5])
+  selectBox.value = months[11]
+  $('#period').val(months[11])
 }
 
 function formatTimestamp(timestamp) {
@@ -117,18 +117,29 @@ function generateTable (data) {
   return table
 }
 
- async function fetchData (url) {
+async function fetchData(url) {
     try {
-      const response = await fetch(url)
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      return await response.json()
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const contentType = response.headers.get('content-type');
+
+        if (contentType && contentType.includes('application/json')) {
+            return await response.json();
+        } else if (contentType && contentType.includes('text/html')) {
+            return await response.text(); // Return HTML as text.
+        } else {
+            // Handle other content types, or return text as a fallback.
+            return await response.text();
+        }
+
     } catch (error) {
-      console.log(error)
-      throw error // Re-throw to stop subsequent actions
+        console.error(error); // Use console.error for errors.
+        throw error; // Re-throw to stop subsequent actions
     }
-  }
+}
 
   /**
    * Populates a select element with options.

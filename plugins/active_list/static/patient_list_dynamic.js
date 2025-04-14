@@ -28,22 +28,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const dataUrl = `/active_list/patient_list_api/${selectedOrgUnit}/${selectedMonth}/?mode=${selectedMode}`
-    const excelUrl = dataUrl + '&xls=true' // Assuming separate excel endpoint
+    const excelUrl = dataUrl + '&format=xls' // Assuming separate excel endpoint
+    const htmlUrl = dataUrl + '&format=html'
     console.log(`fetching patient data from: ${dataUrl}`)
 
-      const result = await fetchData(dataUrl) // Expects { data: [], count: N } or similar
-      console.log("result", result)
-      if (result && result.table_content && result.table_content.length > 0) {
-        // TODO: Render the data into a table in tableContainer
-        renderTable(result.table_content, dataUrl) // Implement this function based on your data structure
-        excelLink.href = excelUrl
-        excelLink.style.display = 'inline-block'
-        tableContainer.style.display = 'block'
-        noDataMessage.style.display = 'none'
-      } else {
-        noDataMessage.textContent = 'Pas de données pour cette sélection.'
-        noDataMessage.style.display = 'block'
-      }
+      const result = await fetchData(htmlUrl)
+      console.log(result)
+
+      renderTable(result, dataUrl) // Implement this function based on your data structure
+      excelLink.href = excelUrl
+      excelLink.style.display = 'inline-block'
+      tableContainer.style.display = 'block'
+      noDataMessage.style.display = 'none'
+
 
   }
 
@@ -60,21 +57,17 @@ document.addEventListener('DOMContentLoaded', function () {
    * Renders the patient data into a table (Example Implementation).
    * @param {Array<object>} data - Array of patient objects.
    */
-  function renderTable (data, url) {
+  function renderTable (html, url) {
     // Basic example: create a simple table
-    var table = generateTable(data)
-    console.log(table);
-    $('#table-container').html(table)
+    console.log("html", html)
+    $('#table-container').html(html)
 
     var excel_link = $('#excel_link')
-    if (data.length === 0) {
-      excel_link.hide()
-      $('#nodata').show()
-    } else {
-      excel_link.attr('href', url + '&xls=true')
-      excel_link.show()
-      $('#nodata').hide()
-    }
+
+    excel_link.attr('href', url + '&format=xls')
+    excel_link.show()
+    $('#nodata').hide()
+
     $('#generatedTable').tablesorter()
   }
 
@@ -91,6 +84,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   addOrgUnitSelect(config, 0) // Start by adding the first level (e.g., country)
+  fillSelectWithMonths()
   monthSelect.addEventListener('change', fetchPatientData)
   modeSelect.addEventListener('change', fetchPatientData)
 })

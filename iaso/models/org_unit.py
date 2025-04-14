@@ -324,6 +324,7 @@ class OrgUnit(TreeModel):
             models.Index(fields=["created_at"]),
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
+            models.Index(fields=["org_unit_type", "version"]),
         ]
 
     def __str__(self) -> str:

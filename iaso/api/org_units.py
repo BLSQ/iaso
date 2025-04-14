@@ -585,8 +585,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
-        if "default_image" in request.data:
-            default_image_id = request.data["default_image"]
+        if "default_image_id" in request.data:
+            default_image_id = request.data["default_image_id"]
             if default_image_id is not None:
                 try:
                     default_image = InstanceFile.objects.get(id=default_image_id)

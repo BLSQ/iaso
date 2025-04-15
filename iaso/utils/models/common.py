@@ -124,13 +124,13 @@ def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, L
         errors["error_multiple_instances_same_org_unit"] = duplicate_org_unit_form_id_pairs
         return success, infos, errors, warnings
     
-    linked_instances = linked_and_unlinked.filter(is_linked=True)
-    unlinked_instances = linked_and_unlinked.filter(is_linked=False)   
+    linked_instances = linked_and_unlinked.filter(is_linked=True).values_list("id", flat=True)
+    unlinked_instances = linked_and_unlinked.filter(is_linked=False).values_list("id", flat=True)   
 
     if not_reference_instances:
-        warnings["no_reference_instances"] = [instance.id for instance in not_reference_instances]
-    infos["linked"] = [instance.id for instance in linked_instances]
-    infos["not_linked"] = [instance.id for instance in unlinked_instances]
+        warnings["no_reference_instances"] = not_reference_instances
+    infos["linked"] = linked_instances
+    infos["not_linked"] = unlinked_instances
 
     return success, infos, errors, warnings
 

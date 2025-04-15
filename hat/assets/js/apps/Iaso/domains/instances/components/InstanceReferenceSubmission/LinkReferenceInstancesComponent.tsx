@@ -4,6 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import LinkIcon from '@mui/icons-material/Link';
 import { Grid, Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
@@ -22,7 +23,6 @@ import { useReferenceInstanceBulkLink } from '../../hooks/useReferenceInstanceBu
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
 import WarningMessage from '../../utils/WarningMessage';
-import { LinkReferenceInstancesButton } from './LinkReferenceInstancesButton';
 import { LinkReferenceInstancesCheckBox } from './LinkReferenceInstancesCheckBox';
 
 type Props = {
@@ -201,7 +201,16 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
 
 const LinkReferenceInstanceModal = makeFullModal(
     LinkReferenceInstancesComponent,
-    LinkReferenceInstancesButton,
+    // @ts-ignore
+    ({ onClick, iconDisabled }) => (
+        <LinkIcon
+            color={iconDisabled ? 'disabled' : 'inherit'}
+            {...{
+                onClick: !iconDisabled ? onClick : () => null,
+                disabled: iconDisabled,
+            }}
+        />
+    ),
 );
 
 export { LinkReferenceInstanceModal as LinkReferenceInstancesModalComponent };

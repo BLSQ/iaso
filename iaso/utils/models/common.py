@@ -102,7 +102,7 @@ def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, L
         )
     )
     
-    not_reference_instances = queryset.filter(has_matching_reference_form=False)
+    not_reference_instances = queryset.filter(has_matching_reference_form=False).values_list("id", flat=True)
     reference_instances = queryset.filter(has_matching_reference_form=True)
 
     linked_and_unlinked = reference_instances.annotate(

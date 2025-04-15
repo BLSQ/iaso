@@ -17,5 +17,8 @@ export const useGetCheckBulkReferenceInstanceLink = (
                 ),
             ),
         ignoreErrorCodes: [400],
+        options: {
+            retry: 0,
+        },
     });
 };

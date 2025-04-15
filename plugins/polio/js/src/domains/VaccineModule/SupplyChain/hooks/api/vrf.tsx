@@ -37,13 +37,10 @@ import { useGetCountries } from '../../../../../hooks/useGetCountries';
 import {
     CAMPAIGNS_ENDPOINT,
     CampaignCategory,
+    Options,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import {
-    apiUrl,
-    defaultVaccineOptions,
-    singleVaccinesList,
-} from '../../constants';
+import { apiUrl, singleVaccinesList } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -121,9 +118,9 @@ export const useCampaignDropDowns = (
     campaign?: string,
     vaccine?: string,
 ): CampaignDropdowns => {
-    const options = {
+    const options: Options = {
         enabled: Boolean(countryId),
-        countries: countryId ? [`${countryId}`] : undefined,
+        countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
         campaignCategory: 'regular' as CampaignCategory,
         campaignType: 'polio',
         on_hold: true,
@@ -145,11 +142,18 @@ export const useCampaignDropDowns = (
                   value: vaccineName.trim(),
               }))
             : singleVaccinesList;
+
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
                   .filter(round =>
                       round.vaccine_names_extended.includes(vaccine),
                   )
+                  .filter(round => {
+                      if (selectedCampaign?.separate_scopes_per_round) {
+                          return (round.scopes ?? []).length > 0;
+                      }
+                      return (selectedCampaign?.scopes ?? []).length > 0;
+                  })
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

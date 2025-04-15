@@ -1,10 +1,10 @@
-from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.api.instances import HasInstanceBulkPermission
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.tasks.serializers import TaskSerializer
+from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from iaso.tasks.instance_reference_bulk_link import instance_reference_bulk_link
 
 

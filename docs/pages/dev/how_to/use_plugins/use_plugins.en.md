@@ -299,48 +299,11 @@ Quick start guide:
 
 ## Translations
 
-The plugin system includes comprehensive support for translations across the main application, plugins, and shared components. Here's how translations work:
+The plugin system includes support for translations. For a comprehensive guide on the translation system, see [Using Translations in Iaso Frontend](../use_tranlations/use_translations.en.md).
 
-### Translation Structure
+### Plugin-Specific Translation Details
 
-Translations are organized in three main categories:
-1. **Main Application**: Core translations from the Iaso application
-2. **Plugin Translations**: Each plugin can provide its own translations
-3. **Component Translations**: Shared translations from bluesquare-components
-
-### Translation Files
-
-- Translation files should be JSON files named with their language code (e.g., `en.json`, `fr.json`)
-- Expected locations:
-  - Main app: `assets/js/apps/Iaso/domains/app/translations/{lang}.json`
-  - Plugins: `plugins/{pluginName}/js/src/constants/translations/{lang}.json`
-  - Components: `bluesquare-components/dist/locale/{lang}.json`
-
-### Build Process
-
-During the build process:
-1. Available languages are determined from the `AVAILABLE_LANGUAGES` environment variable (defaults to "en,fr")
-2. The system scans all translation directories for available languages
-3. Translations are combined into a single file for efficient loading
-4. Missing translations trigger warnings in the console
-5. The combined translations are exposed through Module Federation as `IasoModules/translations/configs`
-
-### Adding Translations to a Plugin
-
-To add translations to your plugin:
-1. Create a `js/src/constants/translations` directory in your plugin
-2. Add language files (e.g., `en.json`, `fr.json`)
-3. Structure your translations as a flat object with dot-notation keys:
-```json
-{
-    "myPlugin.title": "My Plugin Title",
-    "myPlugin.description": "Plugin description"
-}
-```
-
-4. Make sure to include at least an English translation file (`en.json`) as it will be used as a fallback for other languages
-
-### Plugin Translation Structure
+#### Translation Structure in Plugins
 
 A valid plugin with translations should follow this structure:
 
@@ -361,7 +324,22 @@ plugins/
     └── README.md          # Plugin documentation
 ```
 
-### Translation Fallbacks
+#### Adding Translations to a Plugin
+
+To add translations to your plugin:
+1. Create a `js/src/constants/translations` directory in your plugin
+2. Add language files (e.g., `en.json`, `fr.json`)
+3. Structure your translations as a flat object with dot-notation keys:
+```json
+{
+    "myPlugin.title": "My Plugin Title",
+    "myPlugin.description": "Plugin description"
+}
+```
+
+4. Make sure to include at least an English translation file (`en.json`) as it will be used as a fallback for other languages
+
+#### Translation Fallbacks
 
 The system uses a fallback mechanism to ensure all strings are translated:
 1. If a translation is missing for a specific language, the system will use the English translation

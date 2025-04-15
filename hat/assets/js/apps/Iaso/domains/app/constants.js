@@ -1,4 +1,5 @@
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import { mapObject } from '../../utils/objectUtils';
 
 // Get available locales from the generated config
 export const useAppLocales = () => {
@@ -19,10 +20,7 @@ export const LAKH = 'lakh';
 export const WAN = 'wan';
 
 // Get thousand group styles from the generated config
-export const THOUSAND_GROUP_STYLES = Object.entries(LANGUAGE_CONFIGS).reduce(
-    (acc, [code, config]) => {
-        acc[code] = config.thousandGroupStyle;
-        return acc;
-    },
-    {},
+export const THOUSAND_GROUP_STYLES = mapObject(
+    LANGUAGE_CONFIGS,
+    'thousandGroupStyle',
 );

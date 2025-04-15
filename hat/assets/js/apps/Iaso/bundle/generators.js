@@ -202,25 +202,34 @@ const generateLanguageConfigs = rootDir => {
     };
 
     // Check each language config file
-    availableLanguages.forEach(lang => {
-        if (lang === 'en') return;
+    const result = availableLanguages.reduce(
+        (acc, lang) => {
+            if (lang === 'en') return acc;
 
-        const configPath = path.resolve(
-            rootDir,
-            `./assets/js/apps/Iaso/domains/app/translations/${lang}.config.js`,
-        );
-
-        if (fs.existsSync(configPath)) {
-            const importName = `${lang}Config`;
-            imports.push(importName);
-            configs[lang] = importName;
-        } else {
-            console.warn(
-                `Warning: No config file found for language '${lang}', using English config as fallback`,
+            const configPath = path.resolve(
+                rootDir,
+                `./assets/js/apps/Iaso/domains/app/translations/${lang}.config.js`,
             );
-            configs[lang] = 'enConfig';
-        }
-    });
+
+            if (fs.existsSync(configPath)) {
+                const importName = `${lang}Config`;
+                acc.imports.push(importName);
+                acc.configs[lang] = importName;
+            } else {
+                console.warn(
+                    `Warning: No config file found for language '${lang}', using English config as fallback`,
+                );
+                acc.configs[lang] = 'enConfig';
+            }
+
+            return acc;
+        },
+        { configs: {}, imports: [] },
+    );
+
+    // Update the original variables
+    Object.assign(configs, result.configs);
+    imports.push(...result.imports);
 
     // Create the file content
     const fileContent = `

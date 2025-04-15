@@ -35,7 +35,6 @@ def sentry_config(request: HttpRequest) -> Dict[str, Any]:
 
 def available_languages(request: HttpRequest) -> Dict[str, Any]:
     languages = settings.AVAILABLE_LANGUAGES.split(",")
-    print(json.dumps(languages), "languages")
     return {"AVAILABLE_LANGUAGES": json.dumps(languages)}
 
 

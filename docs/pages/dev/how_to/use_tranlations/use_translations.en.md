@@ -28,8 +28,9 @@ During the build process (both development and production), Iaso:
 The system generates several files in the `hat/assets/js/apps/Iaso/bundle/generated/` directory:
 
 - `combinedTranslations.js` - Combined translations from all sources
-- `languageKeys.js` - List of available language codes (automatically generated from translation files)
 - `languageConfigs.js` - Language-specific configuration including date formats and number formatting
+- `combinedConfig.js` - Combined configuration for plugins
+- `pluginKeys.js` - Keys for plugin integration
 
 ### Module Federation
 
@@ -39,16 +40,58 @@ Iaso exposes these generated files through Webpack's ModuleFederationPlugin:
 new ModuleFederationPlugin({
     name: 'IasoModules',
     filename: 'remoteEntry.js',
+    library: { type: 'self', name: 'IasoModules' },
     exposes: {
+        './plugins/configs': combinedConfigPath,
+        './plugins/keys': pluginKeysPath,
         './translations/configs': combinedTranslationsPath,
-        './translations/keys': languageKeysPath,
         './language/configs': languageConfigsPath,
     },
     shared: {
-        // Shared dependencies between plugins and main app
-        'react-intl': { singleton: true, eager: true },
+        react: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'react-dom': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'react-intl': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        '@mui/material': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'bluesquare-components': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
     },
 })
+```
+
+Additionally, the webpack configuration includes aliases for these exposed modules:
+
+```javascript
+resolve: {
+    alias: {
+        'react/jsx-runtime': 'react/jsx-runtime.js',
+        // Add alias for the combined config
+        'IasoModules/plugins/configs': combinedConfigPath,
+        'IasoModules/plugins/keys': pluginKeysPath,
+        'IasoModules/translations/configs': combinedTranslationsPath,
+        'IasoModules/language/configs': languageConfigsPath,
+        // ...
+    },
+    // ...
+}
 ```
 
 ## Translation Structure
@@ -148,10 +191,12 @@ In production (`webpack.prod.js`):
 ## Loading Translations at Runtime
 
 The main application:
-1. Loads translations from `IasoModules/translations/configs`
-2. Loads language configurations from `IasoModules/language/configs`
-3. Initializes the React-Intl provider with the loaded translations
-4. Makes translations available to all components through the React-Intl context
+1. Loads translations from `./assets/js/apps/Iaso/bundle/generated/combinedTranslations.js`
+2. Loads language configurations from `./assets/js/apps/Iaso/bundle/generated/languageConfigs.js`
+3. Loads plugin configurations from `./assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js`
+4. Loads plugin keys from `./assets/js/apps/Iaso/bundle/generated/pluginKeys.js`
+5. Initializes the React-Intl provider with the loaded translations
+6. Makes translations available to all components through the React-Intl context
 
 ## Adding a New Language
 
@@ -288,3 +333,76 @@ Form inputs can be enhanced to support language-specific formatting:
 2. **Other Input Types**:
    - Extend language-specific formatting to other input types
    - Ensure consistent input formatting across the application
+
+## Plugin Translations
+
+Plugins can provide their own translations that are automatically integrated into the main translation system. This allows plugins to be fully localized without modifying the core application.
+
+### Plugin Translation Structure
+
+Plugins should organize their translations in the following structure:
+
+```
+plugins/
+└── your_plugin/
+    └── js/
+        └── src/
+            └── constants/
+                └── translations/
+                    ├── en.json  # English translations (required)
+                    ├── fr.json  # French translations (optional)
+                    └── ...      # Other language translations
+```
+
+### Plugin Translation Keys
+
+To avoid conflicts with the main application and other plugins, plugin translation keys should be prefixed with the plugin's name:
+
+```json
+{
+  "myPlugin.title": "My Plugin Title",
+  "myPlugin.description": "Plugin description",
+  "myPlugin.button.save": "Save",
+  "myPlugin.button.cancel": "Cancel"
+}
+```
+
+### Plugin Translation Integration
+
+During the build process:
+1. The system scans all plugins for translation files
+2. Plugin translations are combined with the main application translations
+3. The combined translations are exposed through Module Federation
+4. Plugins can access their translations using the same React-Intl hooks as the main application
+
+### Plugin Translation Example
+
+Here's an example of how to use translations in a plugin component:
+
+```typescript
+import React from 'react';
+import { useIntl } from 'react-intl';
+
+const MyPluginComponent: React.FC = () => {
+    const intl = useIntl();
+    
+    return (
+        <div>
+            <h1>{intl.formatMessage({ id: 'myPlugin.title' })}</h1>
+            <p>{intl.formatMessage({ id: 'myPlugin.description' })}</p>
+            <button>{intl.formatMessage({ id: 'myPlugin.button.save' })}</button>
+        </div>
+    );
+};
+
+export default MyPluginComponent;
+```
+
+### Plugin Translation Fallbacks
+
+The system uses a fallback mechanism to ensure all strings are translated:
+1. If a translation is missing for a specific language, the system will use the English translation
+2. If the English translation is also missing, the system will use the key itself
+3. Warnings will be displayed in the console during build when fallbacks are used
+
+For more information on creating plugins with translations, see [Using Plugins in Iaso Frontend](../use_plugins/use_plugins.en.md).

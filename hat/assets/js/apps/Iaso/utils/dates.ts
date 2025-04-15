@@ -1,5 +1,6 @@
 import moment from 'moment';
 import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import { mapObject } from './objectUtils';
 
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';
@@ -81,13 +82,7 @@ export const getToDateString = (
 };
 
 // Create a dynamic mapping of language codes to their date formats
-export const longDateFormats = Object.keys(LANGUAGE_CONFIGS).reduce(
-    (acc, lang) => {
-        acc[lang] = LANGUAGE_CONFIGS[lang]?.dateFormats || {};
-        return acc;
-    },
-    {},
-);
+export const longDateFormats = mapObject(LANGUAGE_CONFIGS, 'dateFormats');
 
 /**
  * Configure the local for time displayed to the user.

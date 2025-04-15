@@ -21,8 +21,7 @@ const updateMomentLocale = (newLocale: LangOptions) => {
     // Use LANGUAGE_CONFIGS for date formats with fallback to English
     const dateFormats =
         LANGUAGE_CONFIGS[newLocale]?.dateFormats ||
-        LANGUAGE_CONFIGS.en?.dateFormats ||
-        {};
+        LANGUAGE_CONFIGS.en?.dateFormats;
     moment.updateLocale(newLocale, {
         longDateFormat: dateFormats,
         week: {

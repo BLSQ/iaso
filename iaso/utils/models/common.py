@@ -91,31 +91,29 @@ def check_instance_bulk_gps_push(queryset: QuerySet) -> (bool, Dict[str, List[in
 
     return success, errors, warnings
 
-def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]): # type: ignore
+
+def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, List[int]], Dict[str, List[int]]):  # type: ignore
     from iaso.models.org_unit import OrgUnitReferenceInstance, OrgUnitType
+
     queryset = queryset.annotate(
         has_matching_reference_form=Exists(
             OrgUnitType.reference_forms.through.objects.filter(
-                orgunittype_id=OuterRef("org_unit__org_unit_type"),  
-                form_id=OuterRef("form_id") 
+                orgunittype_id=OuterRef("org_unit__org_unit_type"), form_id=OuterRef("form_id")
             )
         )
     )
-    
-    not_reference_instances = queryset.filter(has_matching_reference_form=False)
+
+    not_reference_instances = list(queryset.filter(has_matching_reference_form=False).values_list("id", flat=True))
     reference_instances = queryset.filter(has_matching_reference_form=True)
 
     linked_and_unlinked = reference_instances.annotate(
-        is_linked=Exists(
-            OrgUnitReferenceInstance.objects.filter(instance_id=OuterRef("id"))
-        )
+        is_linked=Exists(OrgUnitReferenceInstance.objects.filter(instance_id=OuterRef("id")))
     )
 
     orgunit_form_pairs = list(linked_and_unlinked.values_list("org_unit_id", "form_id"))
     duplicates_count = Counter(orgunit_form_pairs)
     duplicate_org_unit_form_id_pairs = [pair for pair, count in duplicates_count.items() if count > 1]
 
-  
     warnings = {}
     errors = {}
     infos = {}
@@ -123,14 +121,13 @@ def check_instance_reference_bulk_link(queryset: QuerySet) -> (bool, Dict[str, L
     if duplicate_org_unit_form_id_pairs:
         errors["error_multiple_instances_same_org_unit"] = duplicate_org_unit_form_id_pairs
         return success, infos, errors, warnings
-    
-    linked_instances = linked_and_unlinked.filter(is_linked=True)
-    unlinked_instances = linked_and_unlinked.filter(is_linked=False)   
+
+    linked_instances = list(linked_and_unlinked.filter(is_linked=True).values_list("id", flat=True))
+    unlinked_instances = list(linked_and_unlinked.filter(is_linked=False).values_list("id", flat=True))
 
     if not_reference_instances:
-        warnings["no_reference_instances"] = [instance.id for instance in not_reference_instances]
-    infos["linked"] = [instance.id for instance in linked_instances]
-    infos["not_linked"] = [instance.id for instance in unlinked_instances]
+        warnings["no_reference_instances"] = not_reference_instances
+    infos["linked"] = linked_instances
+    infos["not_linked"] = unlinked_instances
 
     return success, infos, errors, warnings
-

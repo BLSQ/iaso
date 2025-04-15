@@ -28,18 +28,18 @@ const generateCombinedTranslations = rootDir => {
             rootDir,
             `../node_modules/bluesquare-components/dist/locale/${lang}.json`,
         );
-        const pathExists = fs.existsSync(blsqPathForLang)
+        const pathExists = fs.existsSync(blsqPathForLang);
         if (!pathExists) {
             console.warn(
-                `Warning: No translation file found for language ${lang} in bluesquare-components at ${bluesquareTranslationsPath}, will fall back to English`,
+                `Warning: No translation file found for language ${lang} in bluesquare-components at ${blsqPathForLang}, will fall back to English`,
             );
         }
         const bluesquareTranslationsPath = pathExists
-        ? blsqPathForLang
-        : path.resolve(
-                rootDir,
-                `../node_modules/bluesquare-components/dist/locale/en.json`,
-            );
+            ? blsqPathForLang
+            : path.resolve(
+                  rootDir,
+                  `../node_modules/bluesquare-components/dist/locale/en.json`,
+              );
 
         // Plugin translations
         const plugins = getPluginFolders(rootDir);

@@ -629,13 +629,23 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         """
         Exclude change requests when `new_reference_instances` is the only
         requested change but instances have all been soft-deleted.
+
+        We consider instances with `form_version_id`, `json`, `uuid` or
+        `form_id` set to NULL as unusable for the mobile. See IA-4124.
         """
         return self.annotate(
             annotated_non_deleted_new_reference_instances_count=Count(
                 "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
             )
         ).exclude(
-            Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
+            Q(requested_fields=["new_reference_instances"])
+            & (
+                Q(annotated_non_deleted_new_reference_instances_count=0)
+                | Q(new_reference_instances__json__isnull=True)
+                | Q(new_reference_instances__form_version_id__isnull=True)
+                | Q(new_reference_instances__uuid__isnull=True)
+                | Q(new_reference_instances__form_id__isnull=True)
+            )
         )
 
 

@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from decimal import Decimal
 
@@ -33,6 +34,10 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         )
 
         form = m.Form.objects.create(name="Vaccine form")
+        form_version = m.FormVersion.objects.create(form=form, version_id=1)
+
+        other_form = m.Form.objects.create(name="Other form")
+        other_form_version = m.FormVersion.objects.create(form=other_form, version_id=1)
 
         account = m.Account.objects.create(name="Account")
         user = cls.create_user_with_profile(username="user", account=account)
@@ -44,12 +49,26 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         new_group2 = m.Group.objects.create(name="Group 2")
         org_unit.groups.set([new_group1])
 
-        other_form = m.Form.objects.create(name="Other form")
-        new_instance1 = m.Instance.objects.create(form=form, org_unit=org_unit)
-        new_instance2 = m.Instance.objects.create(form=other_form, org_unit=org_unit)
+        new_instance1 = m.Instance.objects.create(
+            form=form,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=form_version,
+        )
+        new_instance2 = m.Instance.objects.create(
+            form=other_form,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=other_form_version,
+        )
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form, instance=new_instance1)
 
         cls.form = form
+        cls.form_version = form_version
+        cls.other_form = other_form
+        cls.other_form_version = other_form_version
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.user = user
@@ -315,9 +334,54 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 1)
 
+        # `deleted=True` should be excluded.
         self.new_instance1.deleted = True
         self.new_instance1.save()
         self.new_instance2.deleted = True
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `json=null` should be excluded.
+        self.new_instance1.deleted = False
+        self.new_instance1.json = None
+        self.new_instance1.save()
+        self.new_instance2.deleted = False
+        self.new_instance2.json = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_version_id=null` should be excluded.
+        self.new_instance1.json = {"key": "value"}
+        self.new_instance1.form_version = None
+        self.new_instance1.save()
+        self.new_instance2.json = {"key": "value"}
+        self.new_instance2.form_version = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `uuid=null` should be excluded.
+        self.new_instance1.form_version = self.form_version
+        self.new_instance1.uuid = None
+        self.new_instance1.save()
+        self.new_instance2.form_version = self.other_form_version
+        self.new_instance2.uuid = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_id=null` should be excluded.
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance1.form = None
+        self.new_instance1.save()
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance2.form = None
         self.new_instance2.save()
 
         change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()

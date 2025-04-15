@@ -67,7 +67,6 @@ const save = (body: CampaignFormValues) => {
                 dispatchError(MESSAGES.campaignSaveError, error);
             });
     }
-    console.log('subactivity', subactivity);
     return saveCampaign()
         .then(campaign => {
             return saveSubActivity(subactivity)

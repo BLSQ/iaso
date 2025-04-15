@@ -1587,6 +1587,9 @@ class Profile(models.Model):
 
     @cached_property
     def projects_ids(self) -> set[int]:
+        """
+        Returns the list of project IDs authorized for this profile.
+        """
         return list(self.projects.values_list("pk", flat=True))
 
     def get_editable_org_unit_type_ids(self) -> set[int]:

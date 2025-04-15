@@ -709,16 +709,33 @@ class ProfilesViewSet(viewsets.ViewSet):
     def validate_projects(self, request, profile) -> QuerySet[Project]:
         result = []
         project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        if project_ids:
-            profile_project_ids = set(profile.projects.values_list("id", flat=True))
-            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids:
+
+        if not project_ids:
+            return result
+
+        # Check permission.
+        if not request.user.has_perm(permission.USERS_ADMIN):
+            raise PermissionDenied(
+                f"User without permission {permission.USERS_ADMIN} cannot change project attributions."
+            )
+
+        # Check projects restrictions for the user currently editing.
+        if request.user.iaso_profile and request.user.iaso_profile.projects_ids:
+            unauthorized_projects_ids = [p for p in project_ids if p not in request.user.iaso_profile.projects_ids]
+            unauthorized_projects_names = Project.objects.filter(id__in=unauthorized_projects_ids).values_list(
+                "name", flat=True
+            )
+            if unauthorized_projects_names:
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
+                    f"You don't have access to the following projects: {','.join(unauthorized_projects_names)}."
                 )
-            for project in Project.objects.filter(id__in=project_ids):
-                if profile.account_id != project.account_id:
-                    raise BadRequest
-                result.append(project)
+
+        # Validate projects.
+        for project in Project.objects.filter(id__in=project_ids):
+            if profile.account_id != project.account_id:
+                raise BadRequest
+            result.append(project)
+
         return result
 
     def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:

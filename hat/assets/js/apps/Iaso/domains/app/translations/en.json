@@ -375,7 +375,7 @@
     "iaso.instance.last_modified_by": "Modified by",
     "iaso.instance.last_sync_at": "Last sync",
     "iaso.instance.linkOrgUnitToInstanceReferenceWarning": "This operation can still be undone",
-    "iaso.instance.linkReferenceSubmissionsConfirmMessage": "There are {unLinkedCount} not linked reference submission. To link them you have to check the checkbox.",
+    "iaso.instance.linkReferenceSubmissionsConfirmMessage": "You selected {unLinkedCount} standard submissions. Please check this checkbox in order to link them to their respective org unit as a reference submission.",
     "iaso.instance.lockAction": "Lock the submission?",
     "iaso.instance.lockActionTooltip": "Lock the submission",
     "iaso.instance.lockAuthorLabel": "Author",

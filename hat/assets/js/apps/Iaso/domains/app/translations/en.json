@@ -412,7 +412,7 @@
     "iaso.instance.titleSingle": "Submission",
     "iaso.instance.undelete": "Mark instance(s) as not deleted",
     "iaso.instance.unDeleteCount": "Mark {count} isntance(s) as not deleted",
-    "iaso.instance.unLinkReferenceSubmissionsConfirmMessage": "There are {linkedCount} linked reference submission. To unlink them you have to check the checkbox.",
+    "iaso.instance.unLinkReferenceSubmissionsConfirmMessage": "You selected {unLinkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.",
     "iaso.instance.unlocked": "Unlock the submission",
     "iaso.instance.unlockedTitle": "Unlocked",
     "iaso.instance.updated_at": "Updated",

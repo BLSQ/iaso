@@ -22,7 +22,7 @@ import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
 import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import BulkLinkPushWarningMessage from './BulkLinkPushWarningMessage';
+import WarningMessage from '../../utils/WarningMessage';
 import PushBulkGpsWarning from './PushBulkGpsWarning';
 import { PushGpsModalButton } from './PushGpsModalButton';
 
@@ -183,7 +183,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
                             {isError ? (
-                                <BulkLinkPushWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
                                     )}
@@ -219,7 +219,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     {!approved && (
                         <Grid item xs={12}>
                             <Typography variant="subtitle1">
-                                <BulkLinkPushWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.approveAllWarningsMessage,
                                     )}

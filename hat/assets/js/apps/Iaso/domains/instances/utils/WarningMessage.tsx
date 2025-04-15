@@ -8,7 +8,7 @@ type Props = {
     paddingTop?: string | null;
     marginRight?: string | null;
 };
-const BulkLinkPushWarningMessage: FunctionComponent<Props> = ({
+const WarningMessage: FunctionComponent<Props> = ({
     message,
     paddingLeft = null,
     paddingTop = null,
@@ -30,4 +30,4 @@ const BulkLinkPushWarningMessage: FunctionComponent<Props> = ({
     </Stack>
 );
 
-export default BulkLinkPushWarningMessage;
+export default WarningMessage;

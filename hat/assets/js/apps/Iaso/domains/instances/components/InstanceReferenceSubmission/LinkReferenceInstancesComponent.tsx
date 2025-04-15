@@ -21,7 +21,7 @@ import { useGetCheckBulkReferenceInstanceLink } from '../../hooks/useGetCheckBul
 import { useReferenceInstanceBulkLink } from '../../hooks/useReferenceInstanceBulkLink';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import BulkLinkPushWarningMessage from '../PushInstanceGps/BulkLinkPushWarningMessage';
+import WarningMessage from '../../utils/WarningMessage';
 import { LinkReferenceInstancesButton } from './LinkReferenceInstancesButton';
 import { LinkReferenceInstancesCheckBox } from './LinkReferenceInstancesCheckBox';
 
@@ -143,7 +143,7 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
                             {(warningMessage || isError) && (
-                                <BulkLinkPushWarningMessage
+                                <WarningMessage
                                     message={formatMessage(warningMessage, {
                                         selectedSubmissionsCount:
                                             checkReferenceInstanceLink?.warning

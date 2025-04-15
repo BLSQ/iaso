@@ -42,7 +42,7 @@ def instance_reference_bulk_link(
     Background task to bulk link or unlink instance reference to/from org units.
     """
     start = time()
-    task.report_progress_and_stop_if_killed(progress_message="Searching for Instances for pushing gps data")
+    task.report_progress_and_stop_if_killed(progress_message="Searching for Instances for link or unlink to/from Org unit")
     
     user = task.launcher
 
@@ -57,7 +57,7 @@ def instance_reference_bulk_link(
     if not queryset:
         raise Exception("No matching instances found")
     
-    # Checking if any gps push can be performed with what was requested
+    # Checking if any reference submission link or unlink can be performed with what was requested
     success, infos, errors, _ = check_instance_reference_bulk_link(queryset)
     if not success:
         raise Exception("Cannot proceed with the bulk reference submission link or unlink due to errors: %s" % errors)

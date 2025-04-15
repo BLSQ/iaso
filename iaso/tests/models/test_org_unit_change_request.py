@@ -1,4 +1,5 @@
 import datetime
+import uuid
 
 from decimal import Decimal
 
@@ -45,6 +46,10 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         )
 
         cls.form = m.Form.objects.create(name="Vaccine form")
+        cls.form_version = m.FormVersion.objects.create(form=cls.form, version_id=1)
+
+        cls.other_form = m.Form.objects.create(name="Other form")
+        cls.other_form_version = m.FormVersion.objects.create(form=cls.other_form, version_id=1)
 
         cls.new_parent = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
         cls.new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
@@ -52,9 +57,20 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         cls.new_group2 = m.Group.objects.create(name="Group 2")
         cls.org_unit.groups.set([cls.new_group1])
 
-        cls.other_form = m.Form.objects.create(name="Other form")
-        cls.new_instance1 = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
-        cls.new_instance2 = m.Instance.objects.create(form=cls.other_form, org_unit=cls.org_unit)
+        cls.new_instance1 = m.Instance.objects.create(
+            form=cls.form,
+            org_unit=cls.org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=cls.form_version,
+        )
+        cls.new_instance2 = m.Instance.objects.create(
+            form=cls.other_form,
+            org_unit=cls.org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=cls.other_form_version,
+        )
         m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit, form=cls.form, instance=cls.new_instance1)
 
     @time_machine.travel(DT, tick=False)
@@ -310,9 +326,54 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 1)
 
+        # `deleted=True` should be excluded.
         self.new_instance1.deleted = True
         self.new_instance1.save()
         self.new_instance2.deleted = True
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `json=null` should be excluded.
+        self.new_instance1.deleted = False
+        self.new_instance1.json = None
+        self.new_instance1.save()
+        self.new_instance2.deleted = False
+        self.new_instance2.json = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_version_id=null` should be excluded.
+        self.new_instance1.json = {"key": "value"}
+        self.new_instance1.form_version = None
+        self.new_instance1.save()
+        self.new_instance2.json = {"key": "value"}
+        self.new_instance2.form_version = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `uuid=null` should be excluded.
+        self.new_instance1.form_version = self.form_version
+        self.new_instance1.uuid = None
+        self.new_instance1.save()
+        self.new_instance2.form_version = self.other_form_version
+        self.new_instance2.uuid = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_id=null` should be excluded.
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance1.form = None
+        self.new_instance1.save()
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance2.form = None
         self.new_instance2.save()
 
         change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()

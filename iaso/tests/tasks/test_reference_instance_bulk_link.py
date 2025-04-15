@@ -9,7 +9,7 @@ from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
-    BASE_URL = "/api/tasks/create/instanceReferencebulkLink/"
+    BASE_URL = "/api/tasks/create/instancereferencebulklink/"
 
     @classmethod
     def setUpTestData(cls):
@@ -65,7 +65,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         m.OrgUnitReferenceInstance.objects.create(org_unit=cls.linked_org_unit, instance=cls.reference_instance_linked, form=cls.second_reference_form)
 
     def test_ok(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ without any error nor warning"""
+        """POST /api/tasks/create/instancereferencebulklink/ without any error nor warning"""
 
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -87,7 +87,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
     def test_no_permission_instances(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ without instances permissions"""
+        """POST /api/tasks/create/instancereferencebulklink/ without instances permissions"""
         # Adding org unit permission to user
         content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
         self.user_no_perms.user_permissions.add(
@@ -103,7 +103,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
     def test_no_permission_org_units(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ without orgunit permissions"""
+        """POST /api/tasks/create/instancereferencebulklink/ without orgunit permissions"""
         # Adding instances permission to user
         content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
         self.user_no_perms.user_permissions.add(
@@ -119,7 +119,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
     def test_instance_ids_wrong_account(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ with instance IDs from another account"""
+        """POST /api/tasks/create/instancereferencebulklink/ with instance IDs from another account"""
         # Preparing new setup
         new_account, _, _, _ = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
@@ -168,7 +168,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(self.not_linked_org_unit.reference_instances.filter(id=self.reference_instance_not_linked.id).count(), 0)
     
     def test_multiple_updates_same_org_unit(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ with instances that target the same orgunit"""
+        """POST /api/tasks/create/instancereferencebulklink/ with instances that target the same orgunit"""
         self.client.force_authenticate(self.user)
 
         duplicate_reference_instance = self.create_form_instance(
@@ -202,7 +202,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             self.assertIn(str(instance.org_unit_id), result)
 
     def test_warning_when_instance_is_not_reference(self):
-        """POST /api/tasks/create/instanceReferencebulkLink/ with instances which are not reference"""
+        """POST /api/tasks/create/instancereferencebulklink/ with instances which are not reference"""
         self.client.force_authenticate(self.user)
         not_reference_form = m.Form.objects.create(name="not reference form")
         not_reference_instance = self.create_form_instance(

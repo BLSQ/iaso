@@ -176,7 +176,7 @@ router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
 router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
-router.register(r"tasks/create/instanceReferencebulkLink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush")
+router.register(r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

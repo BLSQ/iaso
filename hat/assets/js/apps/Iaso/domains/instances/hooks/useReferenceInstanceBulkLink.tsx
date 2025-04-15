@@ -17,7 +17,7 @@ export const useReferenceInstanceBulkLink = (): UseMutationResult => {
             selected_ids,
             unselected_ids,
         }: BulkInstanceReferenceLinkParams) => {
-            return postRequest('/api/tasks/create/instanceReferencebulkLink/', {
+            return postRequest('/api/tasks/create/instancereferencebulklink/', {
                 actions,
                 select_all,
                 selected_ids,

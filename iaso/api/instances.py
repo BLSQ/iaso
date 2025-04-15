@@ -652,7 +652,7 @@ class InstancesViewSet(viewsets.ViewSet):
             },
             status=status.HTTP_200_OK,
         )
-    
+
     @action(
         detail=False,
         methods=["GET"],
@@ -662,7 +662,7 @@ class InstancesViewSet(viewsets.ViewSet):
         instances_query = self._filter_selected_instances(request)
 
         success, infos, errors, warnings = check_instance_reference_bulk_link(instances_query)
-        
+
         if not success:
             errors["result"] = "errors"
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
@@ -674,10 +674,9 @@ class InstancesViewSet(viewsets.ViewSet):
 
         if warnings:
             informations["warning"] = warnings["no_reference_instances"]
- 
+
         return Response(informations, status=status.HTTP_200_OK)
-    
-        
+
     def _filter_selected_instances(self, request):
         # first, let's parse all parameters received from the URL
         select_all, selected_ids, unselected_ids = self._parse_check_bulk_action_parameters(request.GET)

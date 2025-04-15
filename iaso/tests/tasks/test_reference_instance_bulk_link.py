@@ -34,7 +34,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             version=cls.source_version,
             org_unit_type=cls.org_unit_type,
         )
- 
+
         cls.linked_org_unit = m.OrgUnit.objects.create(
             name="Linked org unit",
             source_ref="org unit",
@@ -61,8 +61,10 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             created_by=cls.user,
             export_id="linked",
         )
-        
-        m.OrgUnitReferenceInstance.objects.create(org_unit=cls.linked_org_unit, instance=cls.reference_instance_linked, form=cls.second_reference_form)
+
+        m.OrgUnitReferenceInstance.objects.create(
+            org_unit=cls.linked_org_unit, instance=cls.reference_instance_linked, form=cls.second_reference_form
+        )
 
     def test_ok(self):
         """POST /api/tasks/create/instancereferencebulklink/ without any error nor warning"""
@@ -132,15 +134,23 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         new_org_unit_type = m.OrgUnitType.objects.create(name="Org unit type", short_name="OUT")
         new_org_unit_type.reference_forms.add(new_first_form, new_second_form)
         new_not_linked_org_unit = m.OrgUnit.objects.create(
-            name="New not linked Org Unit", org_unit_type=new_org_unit_type, source_ref="new org unit", validation_status="VALID"
+            name="New not linked Org Unit",
+            org_unit_type=new_org_unit_type,
+            source_ref="new org unit",
+            validation_status="VALID",
         )
         new_linked_org_unit = m.OrgUnit.objects.create(
-            name="New linked Org Unit", org_unit_type=new_org_unit_type, source_ref="new org unit", validation_status="VALID"
+            name="New linked Org Unit",
+            org_unit_type=new_org_unit_type,
+            source_ref="new org unit",
+            validation_status="VALID",
         )
 
         linked_instance = m.Instance.objects.create(org_unit=new_linked_org_unit, form=new_first_form)
         m.Instance.objects.create(org_unit=new_not_linked_org_unit, form=new_second_form)
-        m.OrgUnitReferenceInstance.objects.create(org_unit=new_linked_org_unit, form=new_first_form, instance=linked_instance)
+        m.OrgUnitReferenceInstance.objects.create(
+            org_unit=new_linked_org_unit, form=new_first_form, instance=linked_instance
+        )
 
         self.client.force_authenticate(new_user)
         response = self.client.post(
@@ -160,13 +170,16 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         # Let's run the task to see the error
         self.runAndValidateTask(task, "ERRORED")
         task.refresh_from_db()
+        self.assertEqual(task.result["message"], "No matching instances found")
+
         self.assertEqual(
-            task.result["message"], "No matching instances found"
+            self.linked_org_unit.reference_instances.filter(id=self.reference_instance_linked.id)[0].id,
+            self.reference_instance_linked.id,
+        )
+        self.assertEqual(
+            self.not_linked_org_unit.reference_instances.filter(id=self.reference_instance_not_linked.id).count(), 0
         )
 
-        self.assertEqual(self.linked_org_unit.reference_instances.filter(id=self.reference_instance_linked.id)[0].id, self.reference_instance_linked.id)
-        self.assertEqual(self.not_linked_org_unit.reference_instances.filter(id=self.reference_instance_not_linked.id).count(), 0)
-    
     def test_multiple_updates_same_org_unit(self):
         """POST /api/tasks/create/instancereferencebulklink/ with instances that target the same orgunit"""
         self.client.force_authenticate(self.user)
@@ -225,10 +238,9 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.runAndValidateTask(task, "SUCCESS")
         task.refresh_from_db()
         result = task.result["message"]
-    
+
         self.assertIn("3 modified", result)
         self.assertNotIn(str(not_reference_instance.id), result)
-
 
     def test_task_kill(self):
         """Launch the task and then kill it

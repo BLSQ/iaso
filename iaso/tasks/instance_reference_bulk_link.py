@@ -24,12 +24,14 @@ def link_single_reference_instance_to_org_unit(user: Optional[User], instance: I
     logger.info(f"updating {org_unit.name} {org_unit.id} by linking it to the instance  {instance.id}")
     audit_models.log_modification(org_unit, org_unit, source=audit_models.INSTANCE_API_BULK, user=user)
 
+
 def unlink_single_reference_instance_from_org_unit(user: Optional[User], instance: Instance):
     org_unit = instance.org_unit
     org_unit.reference_instances.remove(instance)
     org_unit.save()
     logger.info(f"updating {org_unit.name} {org_unit.id} by unlink it from the instance {instance.id}")
     audit_models.log_modification(org_unit, org_unit, source=audit_models.INSTANCE_API_BULK, user=user)
+
 
 @task_decorator(task_name="instance_reference_bulk_link")
 def instance_reference_bulk_link(
@@ -43,8 +45,10 @@ def instance_reference_bulk_link(
     Background task to bulk link or unlink instance reference to/from org units.
     """
     start = time()
-    task.report_progress_and_stop_if_killed(progress_message="Searching for Instances for link or unlink to/from Org unit")
-    
+    task.report_progress_and_stop_if_killed(
+        progress_message="Searching for Instances for link or unlink to/from Org unit"
+    )
+
     user = task.launcher
 
     queryset = Instance.non_deleted_objects.get_queryset().filter_for_user(user)
@@ -57,7 +61,7 @@ def instance_reference_bulk_link(
 
     if not queryset:
         raise Exception("No matching instances found")
-    
+
     # Checking if any reference submission link or unlink can be performed with what was requested
     success, infos, errors, _ = check_instance_reference_bulk_link(queryset)
     if not success:
@@ -69,16 +73,20 @@ def instance_reference_bulk_link(
             instances_to_link = queryset.filter(id__in=infos["not_linked"])
             for index, instance in enumerate(instances_to_link):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)
-                task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
+                task.report_progress_and_stop_if_killed(
+                    progress_message=res_string, end_value=total, progress_value=index
+                )
                 link_single_reference_instance_to_org_unit(
-                        user,
-                        instance,
-                    )
+                    user,
+                    instance,
+                )
         if is_allowed_action("unlink"):
             instances_to_unlink = queryset.filter(id__in=infos["linked"])
             for index, instance in enumerate(instances_to_unlink):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)
-                task.report_progress_and_stop_if_killed(progress_message=res_string, end_value=total, progress_value=index)
+                task.report_progress_and_stop_if_killed(
+                    progress_message=res_string, end_value=total, progress_value=index
+                )
                 unlink_single_reference_instance_from_org_unit(user, instance)
 
         task.report_success(message="%d modified" % total)

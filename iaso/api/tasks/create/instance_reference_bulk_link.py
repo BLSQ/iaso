@@ -1,3 +1,4 @@
+from iaso.api.tasks.utils.link_unlink_allowed_actions import AllowedActions
 from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
@@ -18,11 +19,11 @@ class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
         selected_ids = request.data.get("selected_ids", [])
         unselected_ids = request.data.get("unselected_ids", [])
         actions = request.data.get("actions", [])
-        actions_to_perform = ["link","unlink"]
+        actions_to_perform = {action.value for action in AllowedActions}
         
-        is_action = all(item in actions_to_perform for item in actions)
-        if not is_action:
-            raise Exception("Invalid actions provided. Some actions are not in the list of allowed actions.")
+        invalid = [action for action in actions if action not in actions_to_perform]
+        if invalid:
+            raise Exception( f"Invalid actions: {invalid}. Allowed actions are: {list(actions_to_perform)}")
         
         user = self.request.user
 

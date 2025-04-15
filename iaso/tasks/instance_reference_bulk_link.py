@@ -7,6 +7,7 @@ from django.db import transaction
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
+from iaso.api.tasks.utils.link_unlink_allowed_actions import is_allowed_action
 from iaso.models import Instance, Task
 from iaso.models.org_unit import OrgUnitReferenceInstance
 from iaso.utils.models.common import check_instance_reference_bulk_link
@@ -64,7 +65,7 @@ def instance_reference_bulk_link(
 
     total = queryset.count()
     with transaction.atomic():
-        if "link" in actions:
+        if is_allowed_action("link"):
             instances_to_link = queryset.filter(id__in=infos["not_linked"])
             for index, instance in enumerate(instances_to_link):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)
@@ -73,7 +74,7 @@ def instance_reference_bulk_link(
                         user,
                         instance,
                     )
-        if "unlink" in actions:
+        if is_allowed_action("unlink"):
             instances_to_unlink = queryset.filter(id__in=infos["linked"])
             for index, instance in enumerate(instances_to_unlink):
                 res_string = "%.2f sec, processed %i instances" % (time() - start, index)

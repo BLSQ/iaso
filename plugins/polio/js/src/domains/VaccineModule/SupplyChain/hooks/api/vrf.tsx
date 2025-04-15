@@ -132,10 +132,14 @@ export const useCampaignDropDowns = (
     return useMemo(() => {
         const list = (data as Campaign[]) ?? [];
         const selectedCampaign = list.find(c => c.obr_name === campaign);
-        const campaigns = list.map(c => ({
-            label: c.obr_name,
-            value: c.obr_name,
-        }));
+        const campaigns = list
+            .filter(
+                c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
+            )
+            .map(c => ({
+                label: c.obr_name,
+                value: c.obr_name,
+            }));
         const vaccines = selectedCampaign?.single_vaccines
             ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
                   label: vaccineName.trim(),
@@ -148,12 +152,7 @@ export const useCampaignDropDowns = (
                   .filter(round =>
                       round.vaccine_names_extended.includes(vaccine),
                   )
-                  .filter(round => {
-                      if (selectedCampaign?.separate_scopes_per_round) {
-                          return (round.scopes ?? []).length > 0;
-                      }
-                      return (selectedCampaign?.scopes ?? []).length > 0;
-                  })
+                  .filter(round => (round?.scopes ?? []).length > 0)
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

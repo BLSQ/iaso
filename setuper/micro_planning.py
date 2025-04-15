@@ -78,6 +78,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )
     forms = iaso_client.get("/api/forms")["forms"]
+    planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
     source_id = manager["account"]["default_version"]["data_source"]["id"]
     country = iaso_client.get(
@@ -86,7 +87,14 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "limit": 3000,
             "order": "id",
             "searches": json.dumps(
-                [{"validation_status": "VALID", "color": "f4511e", "source": str(source_id), "depth": 1}]
+                [
+                    {
+                        "validation_status": "VALID",
+                        "color": "f4511e",
+                        "source": str(source_id),
+                        "depth": 1,
+                    }
+                ]
             ),
         },
     )["orgunits"][0]
@@ -97,7 +105,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         "/api/microplanning/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
-            "forms": [f["id"] for f in forms if f["form_id"] == "SAMPLE_FORM_new5"],
+            "forms": [planning_form["id"]],
             "project": project_id,
             "team": team["id"],
             "org_unit": country["id"],
@@ -121,11 +129,15 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     )["orgUnits"]
 
     for health_facitity in health_facitities:
-        print("assigning", health_facitity["name"], "to", team["name"])
+        print("assigning", health_facitity["name"], "to", campaign["name"])
 
         iaso_client.post(
             "/api/microplanning/assignments/",
-            json={"planning": campaign["id"], "org_unit": health_facitity["id"], "team": team["id"]},
+            json={
+                "planning": campaign["id"],
+                "org_unit": health_facitity["id"],
+                "user": manager["user_id"],
+            },
         )
 
     print(campaign)

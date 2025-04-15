@@ -27,8 +27,7 @@ def unlink_single_reference_instance_from_org_unit(user: Optional[User], instanc
     org_unit = instance.org_unit
     org_unit.reference_instances.remove(instance)
     org_unit.save()
-    if not org_unit.reference_instances.filter(id=instance.id).exists():
-        logger.info(f"updating {org_unit.name} {org_unit.id} by unlink it from the instance {instance.id}")
+    logger.info(f"updating {org_unit.name} {org_unit.id} by unlink it from the instance {instance.id}")
     audit_models.log_modification(org_unit, org_unit, source=audit_models.INSTANCE_API_BULK, user=user)
 
 @task_decorator(task_name="instance_reference_bulk_link")

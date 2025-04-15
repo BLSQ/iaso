@@ -24,19 +24,22 @@ const generateCombinedTranslations = rootDir => {
         );
 
         // Bluesquare-components translations
-        let bluesquareTranslationsPath = path.resolve(
+        const blsqPathForLang = path.resolve(
             rootDir,
             `../node_modules/bluesquare-components/dist/locale/${lang}.json`,
         );
-        if (!fs.existsSync(bluesquareTranslationsPath)) {
+        const pathExists = fs.existsSync(blsqPathForLang)
+        if (!pathExists) {
             console.warn(
                 `Warning: No translation file found for language ${lang} in bluesquare-components at ${bluesquareTranslationsPath}, will fall back to English`,
             );
-            bluesquareTranslationsPath = path.resolve(
+        }
+        const bluesquareTranslationsPath = pathExists
+        ? blsqPathForLang
+        : path.resolve(
                 rootDir,
                 `../node_modules/bluesquare-components/dist/locale/en.json`,
             );
-        }
 
         // Plugin translations
         const plugins = getPluginFolders(rootDir);

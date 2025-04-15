@@ -20,8 +20,7 @@ def link_single_reference_instance_to_org_unit(user: Optional[User], instance: I
     form = instance.form
     if not org_unit.reference_instances.filter(form=form).exists():
         OrgUnitReferenceInstance.objects.create(instance=instance, org_unit=org_unit, form=form)
-    if org_unit.reference_instances.filter(id=instance.id).exists():
-        logger.info(f"updating {org_unit.name} {org_unit.id} by linking it to the instance  {instance.id}")
+    logger.info(f"updating {org_unit.name} {org_unit.id} by linking it to the instance  {instance.id}")
     audit_models.log_modification(org_unit, org_unit, source=audit_models.INSTANCE_API_BULK, user=user)
 
 def unlink_single_reference_instance_from_org_unit(user: Optional[User], instance: Instance):

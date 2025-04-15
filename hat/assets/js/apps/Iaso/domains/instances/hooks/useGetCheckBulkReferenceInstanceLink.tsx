@@ -16,11 +16,6 @@ export const useGetCheckBulkReferenceInstanceLink = (
                     params,
                 ),
             ),
-        options: {
-            select: data => {
-                return data;
-            },
-        },
         ignoreErrorCodes: [400],
     });
 };

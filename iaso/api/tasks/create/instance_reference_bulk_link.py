@@ -18,7 +18,12 @@ class InstanceReferenceBulkLinkViewSet(viewsets.ViewSet):
         selected_ids = request.data.get("selected_ids", [])
         unselected_ids = request.data.get("unselected_ids", [])
         actions = request.data.get("actions", [])
-
+        actions_to_perform = ["link","unlink"]
+        
+        is_action = all(item in actions_to_perform for item in actions)
+        if not is_action:
+            raise Exception("Invalid actions provided. Some actions are not in the list of allowed actions.")
+        
         user = self.request.user
 
         task = instance_reference_bulk_link(

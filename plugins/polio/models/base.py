@@ -1901,9 +1901,11 @@ class NotificationImport(models.Model):
         DONE = "done", _("Done")
 
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
-    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
-    file_last_scan = models.DateTimeField(blank=True, null=True)
-    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
+    document = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    document_last_scan = models.DateTimeField(blank=True, null=True)
+    document_scan_status = models.CharField(
+        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
+    )
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
@@ -1920,14 +1922,14 @@ class NotificationImport(models.Model):
         verbose_name = _("Notification import")
 
     def __str__(self) -> str:
-        return f"{self.file.name} - {self.status}"
+        return f"{self.document.name} - {self.status}"
 
     @classmethod
-    def read_excel(cls, file: File) -> pd.DataFrame:
+    def read_excel(cls, document: File) -> pd.DataFrame:
         try:
-            df = pd.read_excel(file, keep_default_na=False)
+            df = pd.read_excel(document, keep_default_na=False)
         except Exception as err:
-            raise ValueError(f"Invalid Excel file {file}.")
+            raise ValueError(f"Invalid Excel file {document}.")
 
         # Normalize xlsx header's names.
         df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
@@ -1941,7 +1943,7 @@ class NotificationImport(models.Model):
         """
         Can be launched async, see `create_polio_notifications_async`.
         """
-        df = self.read_excel(self.file)
+        df = self.read_excel(self.document)
         self.status = self.Status.PENDING
         self.save()
 

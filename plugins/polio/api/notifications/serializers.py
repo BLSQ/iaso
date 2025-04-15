@@ -6,7 +6,7 @@ from plugins.polio.models import Notification, NotificationImport
 class NotificationImportSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationImport
-        fields = ["id", "account", "file", "status", "errors", "created_by", "created_at", "updated_at"]
+        fields = ["id", "account", "document", "status", "errors", "created_by", "created_at", "updated_at"]
         extra_kwargs = {
             "id": {"read_only": True},
             "account": {"read_only": True},
@@ -17,12 +17,12 @@ class NotificationImportSerializer(serializers.ModelSerializer):
             "updated_at": {"read_only": True},
         }
 
-    def validate_file(self, file):
+    def validate_document(self, document):
         try:
-            NotificationImport.read_excel(file)
+            NotificationImport.read_excel(document)
         except ValueError as e:
             raise serializers.ValidationError(e)
-        return file
+        return document
 
 
 class NotificationSerializer(serializers.ModelSerializer):

@@ -78,9 +78,9 @@ class NotificationViewSet(viewsets.ModelViewSet):
         account = user.iaso_profile.account
         serializer = NotificationImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        result, timestamp = scan_uploaded_file_for_virus(serializer.validated_data["file"])
+        result, timestamp = scan_uploaded_file_for_virus(serializer.validated_data["document"])
         notification_import = serializer.save(
-            account=account, created_by=user, file_last_scan=timestamp, file_scan_status=result
+            account=account, created_by=user, document_last_scan=timestamp, document_scan_status=result
         )
         # TODO: don't do the async if the file is positive?
         create_polio_notifications_async(pk=notification_import.pk, user=user)

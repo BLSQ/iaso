@@ -1,4 +1,5 @@
 import json
+import random
 
 from datetime import datetime, timedelta
 
@@ -118,15 +119,23 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     health_facitities = iaso_client.get(
         "/api/orgunits/",
         params={
-            "validation_status": "VALID",
-            "geography": "any",
-            "onlyDirectChildren": "false",
-            "page": 1,
-            "withParents": "true",
+            "limit": 70,
             "order": "name",
-            "depth": 5,
+            "page": 1,
+            "searches": json.dumps(
+                [
+                    {
+                        "validation_status": "VALID",
+                        "geography": "any",
+                        "depth": 5,
+                    }
+                ]
+            ),
+            "locationLimit": 100,
         },
-    )["orgUnits"]
+    )["orgunits"]
+
+    team_users = team["users"][:3]
 
     for health_facitity in health_facitities:
         print("assigning", health_facitity["name"], "to", campaign["name"])
@@ -136,7 +145,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             json={
                 "planning": campaign["id"],
                 "org_unit": health_facitity["id"],
-                "user": manager["user_id"],
+                "user": random.choice(team_users),
             },
         )
 

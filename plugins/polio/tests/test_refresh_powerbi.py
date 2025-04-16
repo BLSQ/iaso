@@ -99,6 +99,9 @@ class RefreshPowerBITestCase(APITestCase):
     def mock_launch_external_task(self, dataset_config=None):
         pass
 
+    def mock_monitor_task_and_raise_if_fail(self, dataset_config=None, task=None):
+        pass
+
     def test_get_extra_config_for_data_set_id(self):
         dataset_config = get_extra_config_for_data_set_id(self.dataset_id)
         self.assertDictEqual(dataset_config, self.dataset_json[self.dataset_id])
@@ -136,6 +139,7 @@ class RefreshPowerBITestCase(APITestCase):
     @patch("requests.post")
     @patch("iaso.utils.powerbi.get_powerbi_service_principal_token", mock_get_powerbi_service_principal_token)
     @patch("iaso.utils.powerbi.launch_external_task", mock_launch_external_task)
+    @patch("iaso.utils.powerbi.monitor_task_and_raise_if_fail", mock_launch_external_task)
     @patch.object(ExternalTaskModelViewSet, "launch_task", mock_openhexa_call_success)
     def test_powerbi_updates(self, mock_post):
         group_id = "some_group_id"

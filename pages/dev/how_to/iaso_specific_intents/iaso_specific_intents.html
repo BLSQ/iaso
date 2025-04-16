@@ -887,21 +887,23 @@ specific prefix for its actions. Here is the list of prefixes per application.</
 <p>It is fairly common for ODK forms within IASO to want to select an OrgUnit. 
 You need to use the following action in <code>body::intent</code>:
 <code>&lt;prefix&gt;.action.pick_ou(&lt;options&gt;)</code></p>
-<p>The following options are available:
-- <code>map=''</code>: How to map the returned value to a question. Possible returned values are:
-  - id
-  - name 
-  - parentId 
-  - accuracy 
-  - latitude 
-  - longitude 
-  - orgUnitTypeId 
-  - path
-- <code>limit_root='true'</code>: Whether you want to limit to the user's given root (optional, default: <code>false</code>))
-- <code>ou_type='Entity Type name'</code>: The Entity Type name you want to select (optional)
-- <code>filter_out_ou_types='Entity Type1,EntityType2'</code>: The Entity Types you want to hide from the list (optional) 
-- <code>allow_ou_creation='true'</code>: Whether you want to allow creating a new OrgUnit while picking one (optional, default: <code>false</code>)
-- <code>disable_ou_creation_location='true'</code>: Whether you want to disable taking the location when creating an OrgUnit. Applies only if not in registry mode (optional, default: <code>false</code>)</p>
+<p>The following options are available:</p>
+<ul>
+<li><code>map=''</code>: How to map the returned value to a question. Possible returned values are:</li>
+<li>id</li>
+<li>name </li>
+<li>parentId </li>
+<li>accuracy </li>
+<li>latitude </li>
+<li>longitude </li>
+<li>orgUnitTypeId </li>
+<li>path</li>
+<li><code>limit_root='true'</code>: Whether you want to limit to the user's given root (optional, default: <code>false</code>))</li>
+<li><code>ou_type='Entity Type name'</code>: The Entity Type name you want to select (optional)</li>
+<li><code>filter_out_ou_types='Entity Type1,EntityType2'</code>: The Entity Types you want to hide from the list (optional) </li>
+<li><code>allow_ou_creation='true'</code>: Whether you want to allow creating a new OrgUnit while picking one (optional, default: <code>false</code>)</li>
+<li><code>disable_ou_creation_location='true'</code>: Whether you want to disable taking the location when creating an OrgUnit. Applies only if not in registry mode (optional, default: <code>false</code>)</li>
+</ul>
 <h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h3>
 <table>
 <thead>

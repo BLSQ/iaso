@@ -1,21 +1,18 @@
+import React, { useCallback, useMemo } from 'react';
 import { Box, Radio } from '@mui/material';
 import { Theme, useTheme } from '@mui/material/styles';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import React, { useCallback, useMemo } from 'react';
 
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
+import { Profile } from '../../../utils/usersUtils';
+import { colors } from '../constants/colors';
+import MESSAGES from '../messages';
 import { AssignmentsApi } from '../types/assigment';
+import { AssignmentUnit } from '../types/locations';
 import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
-import { Profile } from '../../../utils/usersUtils';
-import { AssignmentUnit } from '../types/locations';
-
 import { getTeamUserName } from '../utils';
-
-import { colors } from '../constants/colors';
-
-import MESSAGES from '../messages';
 
 type Props = {
     assignments: AssignmentsApi;
@@ -154,8 +151,7 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <div>
-                            {!isLoadingAssignments &&
-                                getAssignationsCount(settings.row.original.id)}
+                            {getAssignationsCount(settings.row.original.id)}
                         </div>
                     );
                 },

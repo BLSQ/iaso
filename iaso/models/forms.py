@@ -78,6 +78,14 @@ class FormQuerySet(models.QuerySet):
         )
         return queryset
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(projects__in=user_projects_ids)
+
 
 class Form(SoftDeletableModel):
     """Metadata about a form

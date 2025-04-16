@@ -496,7 +496,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
-            "default_image": self.default_image.as_dict() if self.default_image else None,
+            "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -645,14 +645,32 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         """
         Exclude change requests when `new_reference_instances` is the only
         requested change but instances have all been soft-deleted.
+
+        We consider instances with `form_version_id`, `json`, `uuid` or
+        `form_id` set to NULL as unusable for the mobile. See IA-4124.
         """
         return self.annotate(
             annotated_non_deleted_new_reference_instances_count=Count(
                 "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
             )
         ).exclude(
-            Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
+            Q(requested_fields=["new_reference_instances"])
+            & (
+                Q(annotated_non_deleted_new_reference_instances_count=0)
+                | Q(new_reference_instances__json__isnull=True)
+                | Q(new_reference_instances__form_version_id__isnull=True)
+                | Q(new_reference_instances__uuid__isnull=True)
+                | Q(new_reference_instances__form_id__isnull=True)
+            )
         )
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
 class OrgUnitChangeRequest(models.Model):

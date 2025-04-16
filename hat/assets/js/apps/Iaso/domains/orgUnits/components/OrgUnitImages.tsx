@@ -51,15 +51,15 @@ export const OrgUnitImages: FunctionComponent<Props> = ({
     };
     const isDefaultImage = useCallback(
         (imageId: number) => {
-            return imageId === orgUnit?.default_image?.id;
+            return imageId === orgUnit?.default_image_id;
         },
-        [orgUnit?.default_image?.id],
+        [orgUnit?.default_image_id],
     );
     const handleImageFavoriteClick = useCallback(
-        (imageid: number) => {
+        (imageId: number) => {
             saveOu({
                 id: params.orgUnitId,
-                default_image: isDefaultImage(imageid) ? null : imageid,
+                default_image_id: isDefaultImage(imageId) ? null : imageId,
             });
         },
         [saveOu, params.orgUnitId, isDefaultImage],

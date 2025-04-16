@@ -96,7 +96,7 @@
     "iaso.polio.campaign.seeLogDetail": "Voir plus de détails",
     "iaso.polio.campaign.typeNotSupported": "Ce type de valeur n'est pas encore supporté: {type}",
     "iaso.polio.campaign.value": "Valeur",
-    "iaso.polio.campaignSaved": "Campaign sauvegardée",
+    "iaso.polio.campaignSaved": "Campagne sauvegardée",
     "iaso.polio.campaignSaveError": "Erreur de sauvegarde de la campagne",
     "iaso.polio.chronogram.details.modal.add_title": "Ajouter une tâche",
     "iaso.polio.chronogram.details.modal.delete.confirm": "Voulez-vous vraiment supprimer cette tâche ?",

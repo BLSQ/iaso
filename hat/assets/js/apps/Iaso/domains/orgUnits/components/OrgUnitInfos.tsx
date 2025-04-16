@@ -8,23 +8,22 @@ import {
     FormControl as FormControlComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import MESSAGES from '../messages';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-
-import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
+import InputComponent from '../../../components/forms/InputComponent';
 import { DropdownOptions } from '../../../types/utils';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
+import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
+import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
@@ -105,9 +104,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             ? `${orgUnitState.parent.value.id}`
             : undefined,
     );
+
     const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
     );
+
     const disabled = !hasManagementPermission && !isNewOrgunit;
     return (
         <Grid container spacing={2}>
@@ -208,6 +209,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                             }
                         }}
                         source={orgUnit.source_id}
+                        version={orgUnit.version_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
                         disabled={disabled}

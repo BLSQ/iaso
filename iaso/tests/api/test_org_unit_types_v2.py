@@ -463,13 +463,15 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertValidOrgUnitTypeDropdownData(out)
         self.assertEqual(out["id"], self.org_unit_type_3.id)
 
-    def test_org_unit_type_dropdown_with_source_version_error_unknown_version(self):
+    def test_org_unit_type_dropdown_with_source_version_unknown_version(self):
         probably_not_a_valid_source_version_id = 1234567890
         self.client.force_authenticate(self.jane)
         response = self.client.get(
             f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={probably_not_a_valid_source_version_id}"
         )
-        self.assertContains(response, probably_not_a_valid_source_version_id, status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 0)  # Because no OU was created with that version
 
     def test_org_unit_type_dropdown_with_source_version_error_version_wrong_account(self):
         # First, let's create a parallel account/project/....

@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
-from django.utils.translation import gettext as _
 from rest_framework import status
 
 from hat.menupermissions import models as permission
@@ -1284,23 +1283,56 @@ class ProfileAPITestCase(APITestCase):
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
-        # TOFIX: bad indent!!!
-        def test_update_user_with_malformed_phone_number(self):
-            self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
-            self.client.force_authenticate(self.jam)
-            jum = Profile.objects.get(user=self.jum)
-            data = {
-                "user_name": "unittest_user_name",
-                "password": "unittest_password",
-                "first_name": "unittest_first_name",
-                "last_name": "unittest_last_name",
-                "phone_number": "not_a_phone_number",
-                "country_code": "US",
-            }
-            response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-            self.assertNotEqual(response.status_code, 200)
-            self.assertEqual(response.data["errorKey"], "phone_number")
-            self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
+    def test_update_user_with_malformed_phone_number(self):
+        user = self.jam
+        profile_to_edit = Profile.objects.get(user=self.jum)
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Both phone number and country code must be provided")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "US",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number format")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "03666666",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "0387762121",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], "+33387762121")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], None)
 
     def test_update_user_projects(self):
         user = self.jam

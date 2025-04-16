@@ -18,6 +18,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
+from phonenumbers import NumberParseException
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -439,9 +440,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             dhis2_id = None
         profile.dhis2_id = dhis2_id
 
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.save()
 
@@ -553,9 +552,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         user.user_permissions.set(user_permissions)
 
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.language = request.data.get("language", "")
         profile.organization = request.data.get("organization", None)
@@ -779,24 +776,23 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def extract_phone_number(request):
-        phone_number = request.data.get("phone_number", None)
-        country_code = request.data.get("country_code", None)
-        number = None
+        phone_number = request.data.get("phone_number")
+        country_code = request.data.get("country_code")
+        number = ""
 
-        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Both phone number and country code must be provided"),
-            )
+        if any([phone_number, country_code]) and not all([phone_number, country_code]):
+            raise ValidationError({"phone_number": _("Both phone number and country code must be provided")})
 
         if phone_number and country_code:
-            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-            if number and number.is_valid():
-                return number
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Invalid phone number"),
-            )
+            try:
+                number = PhoneNumber.from_string(phone_number, region=country_code.upper())
+            except NumberParseException:
+                raise ValidationError({"phone_number": _("Invalid phone number format")})
+
+            if not number.is_valid():
+                raise ValidationError({"phone_number": _("Invalid phone number")})
+
+        return number
 
     @staticmethod
     def update_password(user, request):

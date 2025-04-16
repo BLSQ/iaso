@@ -135,7 +135,7 @@ class RefreshPowerBITestCase(APITestCase):
 
     @patch("requests.post")
     @patch("iaso.utils.powerbi.get_powerbi_service_principal_token", mock_get_powerbi_service_principal_token)
-    @patch("iaso.utils.powerbu.launch_external_task", mock_launch_external_task)
+    @patch("iaso.utils.powerbi.launch_external_task", mock_launch_external_task)
     @patch.object(ExternalTaskModelViewSet, "launch_task", mock_openhexa_call_success)
     def test_powerbi_updates(self, mock_post):
         group_id = "some_group_id"

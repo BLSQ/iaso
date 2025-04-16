@@ -22,64 +22,56 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        parent = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
-        org_unit = m.OrgUnit.objects.create(
-            org_unit_type=org_unit_type,
+        cls.account = m.Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=cls.account)
+        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=cls.account)
+
+        cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.data_source.projects.set([cls.project_1])
+
+        cls.version = m.SourceVersion.objects.create(number=1, data_source=cls.data_source)
+
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        cls.parent = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        cls.org_unit = m.OrgUnit.objects.create(
+            version=cls.version,
+            org_unit_type=cls.org_unit_type,
             name="Hôpital Général",
-            parent=parent,
+            parent=cls.parent,
             location=Point(-1.1111111, 1.1111111, 1.1111111),
             opening_date=datetime.date(2020, 1, 1),
             closed_date=datetime.date(2055, 1, 1),
         )
 
-        form = m.Form.objects.create(name="Vaccine form")
-        form_version = m.FormVersion.objects.create(form=form, version_id=1)
+        cls.form = m.Form.objects.create(name="Vaccine form")
+        cls.form_version = m.FormVersion.objects.create(form=cls.form, version_id=1)
 
-        other_form = m.Form.objects.create(name="Other form")
-        other_form_version = m.FormVersion.objects.create(form=other_form, version_id=1)
+        cls.other_form = m.Form.objects.create(name="Other form")
+        cls.other_form_version = m.FormVersion.objects.create(form=cls.other_form, version_id=1)
 
-        account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        cls.new_parent = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        cls.new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
+        cls.new_group1 = m.Group.objects.create(name="Group 1")
+        cls.new_group2 = m.Group.objects.create(name="Group 2")
+        cls.org_unit.groups.set([cls.new_group1])
 
-        new_parent = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
-        new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
-
-        new_group1 = m.Group.objects.create(name="Group 1")
-        new_group2 = m.Group.objects.create(name="Group 2")
-        org_unit.groups.set([new_group1])
-
-        new_instance1 = m.Instance.objects.create(
-            form=form,
-            org_unit=org_unit,
+        cls.new_instance1 = m.Instance.objects.create(
+            form=cls.form,
+            org_unit=cls.org_unit,
             uuid=uuid.uuid4(),
             json={"key": "value"},
-            form_version=form_version,
+            form_version=cls.form_version,
         )
-        new_instance2 = m.Instance.objects.create(
-            form=other_form,
-            org_unit=org_unit,
+        cls.new_instance2 = m.Instance.objects.create(
+            form=cls.other_form,
+            org_unit=cls.org_unit,
             uuid=uuid.uuid4(),
             json={"key": "value"},
-            form_version=other_form_version,
+            form_version=cls.other_form_version,
         )
-        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form, instance=new_instance1)
-
-        cls.form = form
-        cls.form_version = form_version
-        cls.other_form = other_form
-        cls.other_form_version = other_form_version
-        cls.org_unit = org_unit
-        cls.org_unit_type = org_unit_type
-        cls.user = user
-
-        cls.new_group1 = new_group1
-        cls.new_group2 = new_group2
-        cls.new_instance1 = new_instance1
-        cls.new_instance2 = new_instance2
-        cls.new_org_unit_type = new_org_unit_type
-        cls.parent = parent
-        cls.new_parent = new_parent
+        m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit, form=cls.form, instance=cls.new_instance1)
 
     @time_machine.travel(DT, tick=False)
     def test_create(self):
@@ -386,3 +378,31 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
         self.assertEqual(change_requests.count(), 0)
+
+    def test_filter_on_user_projects(self):
+        # The data source should be linked to `project_1`.
+        self.assertEqual(self.data_source.projects.count(), 1)
+        self.assertEqual(self.data_source.projects.first(), self.project_1)
+
+        # The org unit should be linked to `project_1` (via the data source).
+        self.assertEqual(self.org_unit.version.data_source, self.data_source)
+
+        # Create a change request for this org unit.
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+
+        # No project restriction: the user should be able to see all change requests.
+        self.assertEqual(self.user.iaso_profile.projects_ids, [])
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 1)
+
+        # Restriction on `project_2`: the user shouldn't be able to see change requests for `project_1`.
+        self.user.iaso_profile.projects.set([self.project_2])
+        del self.user.iaso_profile.projects_ids
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 0)
+
+        # Restriction on `project_1` and `project_2`: the user should be able to see change requests for `project_1`.
+        self.user.iaso_profile.projects.set([self.project_1, self.project_2])
+        del self.user.iaso_profile.projects_ids
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 1)

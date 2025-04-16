@@ -298,7 +298,17 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    extra_fields = models.JSONField(default=dict)
+
+    # By default, the `extra_fields` JSONField won't save in admin with an empty dict as default value.
+    # https://stackoverflow.com/q/55147169
+    # The easiest fix would be to add a `blank=True` attribute to the field, but this triggers an error
+    # if you don't specify any value:
+    # https://code.djangoproject.com/ticket/27697
+    # The solution is to add `blank=True`, `null=False` and to implement `clean()` to programmatically
+    # supply any missing value:
+    # https://code.djangoproject.com/ticket/27697
+    # https://github.com/django/django/commit/515d3c
+    extra_fields = models.JSONField(default=dict, blank=True, null=False)
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
@@ -331,6 +341,10 @@ class OrgUnit(TreeModel):
         if self.path is not None:
             return self.ancestors().filter(org_unit_type__category="COUNTRY")
 
+    def clean(self, *args, **kwargs) -> None:
+        if self.extra_fields is None:
+            self.extra_fields = {}
+
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
         for this org unit and its children.
@@ -339,6 +353,8 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        self.clean()
+
         # work around https://code.djangoproject.com/ticket/33787
         # where we had empty Z point in the database but couldn't save the OrgUnit back.
         # because it was missing a dimension
@@ -480,7 +496,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
-            "default_image": self.default_image.as_dict() if self.default_image else None,
+            "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -647,6 +663,14 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
                 | Q(new_reference_instances__form_id__isnull=True)
             )
         )
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
 class OrgUnitChangeRequest(models.Model):

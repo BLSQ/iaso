@@ -1,8 +1,8 @@
-import { Button, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Button, Grid } from '@mui/material';
 import { CsvSvg, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
 import { useDownloadButtonStyles } from '../DownloadButtonsComponent';
+import MESSAGES from './messages';
 
 type Props = {
     closeDialog: () => void;

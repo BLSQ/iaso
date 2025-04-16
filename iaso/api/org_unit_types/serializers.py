@@ -3,12 +3,11 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from iaso.models import Form, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import Form, OrgUnit, OrgUnitType, Project
 
 from ..common import DynamicFieldsModelSerializer, TimestampField
 from ..forms import FormSerializer
 from ..projects.serializers import ProjectSerializer
-from ..query_params import SOURCE_VERSION_ID
 
 
 def get_parents(type_id):
@@ -274,28 +273,3 @@ class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
         model = OrgUnitType
         fields = ["id", "name", "depth"]
         read_only_fields = ["id", "name", "depth"]
-
-
-class SourceVersionIdSerializer(serializers.Serializer):
-    """
-    Serializer for `source_version_id` when passed in query_params.
-
-    Used to handle parsing and errors:
-
-        serializer = SourceVersionIdSerializer(data=self.request.query_params)
-        serializer.is_valid(raise_exception=True)
-        source_version_id = serializer.data["source_version_id"]
-
-        OR
-
-        source_version_id = SourceVersionIdSerializer(data=self.request.query_params).get_source_version_id(raise_exception=True)
-    """
-
-    source_version_id = serializers.PrimaryKeyRelatedField(
-        queryset=SourceVersion.objects.all(), allow_null=False, required=False
-    )
-
-    def get_source_version_id(self, raise_exception: bool):
-        if not self.is_valid(raise_exception=raise_exception):
-            return None
-        return self.validated_data.get(SOURCE_VERSION_ID)

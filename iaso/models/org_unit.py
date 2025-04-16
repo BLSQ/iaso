@@ -282,7 +282,9 @@ class OrgUnit(TreeModel):
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
     )
 
-    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True, related_name="org_units"
+    )
 
     sub_source = models.TextField(null=True, blank=True)  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)

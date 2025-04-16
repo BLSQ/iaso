@@ -4,15 +4,15 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
-from iaso.models import OrgUnit, OrgUnitType
+from iaso.models import OrgUnitType
 
 from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
+from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (
     OrgUnitTypesDropdownSerializer,
     OrgUnitTypeSerializerV1,
     OrgUnitTypeSerializerV2,
-    SourceVersionIdSerializer,
 )
 
 
@@ -109,16 +109,10 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     def dropdown(self, request, *args):
         queryset = self.get_queryset()
 
-        version_id = SourceVersionIdSerializer(data=self.request.query_params).get_source_version_id(
-            raise_exception=True
-        )
-        if version_id:
-            type_ids_in_version = (
-                OrgUnit.objects.filter(version_id=version_id)
-                .distinct("org_unit_type_id")
-                .values_list("org_unit_type_id", flat=True)
-            )
-            queryset = queryset.filter(id__in=type_ids_in_version)
+        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset)
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+        queryset = filterset.qs
 
         page = self.paginate_queryset(queryset)
         if page is not None:

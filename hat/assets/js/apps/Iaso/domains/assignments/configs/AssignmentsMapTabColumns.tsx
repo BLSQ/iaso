@@ -162,7 +162,6 @@ export const useColumns = ({
         formatMessage,
         getAssignationsCount,
         getFullItem,
-        isLoadingAssignments,
         profiles,
         selectedItem?.id,
         setItemColor,

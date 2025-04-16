@@ -259,7 +259,7 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: `${WEBPACK_URL}/`,
+        publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
         scriptType: 'text/javascript',
     },

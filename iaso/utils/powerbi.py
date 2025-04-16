@@ -53,11 +53,11 @@ def get_powerbi_report_token(group_id, report_id):
     return get_powerbi_report_token_with_sp(sp_access_token, group_id, report_id)
 
 
-def get_openhexa_config_for_data_set_id(data_set_id):
+def get_extra_config_for_data_set_id(data_set_id):
     from iaso.models.json_config import Config
 
     dataset_config = None
-    oh_conf = Config.objects.filter(slug="openhexa_powerbi")
+    oh_conf = Config.objects.filter(slug="powerbi_dataset_configs")
     if oh_conf.exists():
         oh_conf = oh_conf.first()
         oh_config = oh_conf.content
@@ -114,9 +114,15 @@ def launch_dataset_refresh(group_id, data_set_id):
 
     conf = get_object_or_404(Config, slug="powerbi_sp")
     config = conf.content
-    dataset_config = get_openhexa_config_for_data_set_id(data_set_id)
+    dataset_config = get_extra_config_for_data_set_id(data_set_id)
+    openhexa_config = None
+    extra_sync_config = None
 
     if dataset_config:
+        openhexa_config = dataset_config.get("openhexa", None)
+        extra_sync_config = dataset_config.get("sync_refresh", None)
+
+    if openhexa_config:
         task = launch_external_task(dataset_config)
         monitor_task_and_raise_if_fail(dataset_config, task)
 
@@ -129,3 +135,9 @@ def launch_dataset_refresh(group_id, data_set_id):
 
     r = requests.post(url=url, json=body, headers=headers)
     r.raise_for_status()
+
+    if extra_sync_config:
+        for extra_dataset_id in extra_sync_config:
+            url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, extra_dataset_id)
+            r = requests.post(url=url, json=body, headers=headers)
+            r.raise_for_status()

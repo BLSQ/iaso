@@ -513,11 +513,48 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         first_data_row = data[1]
 
-        # Helper function to determine if a field has changed
-        def get_conclusion(old_value, new_value):
-            if old_value == new_value:
-                return "same"
-            return "updated"
+        # Helper function to determine if a field has changed and its conclusion
+        def get_conclusion(field_name, old_value, new_value):
+            # If the change request is new, no conclusion is made
+            if change_request.status == m.OrgUnitChangeRequest.Statuses.NEW:
+                return "pending"
+
+            # If the change request is rejected, all fields are rejected
+            if change_request.status == m.OrgUnitChangeRequest.Statuses.REJECTED:
+                return "rejected"
+
+            # If the change request is approved, check if the field is in approved_fields
+            if change_request.status == m.OrgUnitChangeRequest.Statuses.APPROVED:
+                # Map field names to their corresponding field in requested_fields
+                field_mapping = {
+                    "name": "new_name",
+                    "parent": "new_parent",
+                    "ref_ext_parent_1": "new_parent",
+                    "ref_ext_parent_2": "new_parent",
+                    "ref_ext_parent_3": "new_parent",
+                    "opening_date": "new_opening_date",
+                    "closing_date": "new_closed_date",
+                    "groups": "new_groups",
+                    "localisation": "new_location",
+                    "reference_submission": "new_reference_instances",
+                }
+
+                # Get the corresponding field name in requested_fields
+                requested_field = field_mapping.get(field_name)
+
+                # If the field is not in requested_fields, it means no change was requested
+                if requested_field not in change_request.requested_fields:
+                    return "same"
+
+                # If the field is in approved_fields, it was approved
+                if requested_field in change_request.approved_fields:
+                    return "approved"
+
+                # If the field is in requested_fields but not in approved_fields, it was rejected
+                return "rejected"
+
+            # Default case (should not happen)
+            return "unknown"
 
         # Get parent reference extensions
         def get_parent_ref_ext(parent, level):
@@ -551,18 +588,16 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             change_request.org_unit.parent.name if change_request.org_unit.parent else None,
             change_request.org_unit.org_unit_type.name if change_request.org_unit.org_unit_type else None,
             ",".join(group.name for group in change_request.org_unit.groups.all()),
-            str(change_request.get_status_display()),
             datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
             get_creator_name(change_request.created_by) if change_request.created_by else None,
             datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
             get_creator_name(change_request.updated_by) if change_request.updated_by else None,
-            str(change_request.get_status_display()),
         ]
 
         # Name changes
         name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
         name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-        name_conclusion = get_conclusion(name_before, name_after)
+        name_conclusion = get_conclusion("name", name_before, name_after)
 
         expected_row_data.extend([name_before, name_after, name_conclusion])
 
@@ -585,7 +620,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
             ref_ext_before = get_parent_ref_ext(parent_before, level)
             ref_ext_after = get_parent_ref_ext(parent_after, level)
-            ref_ext_conclusion = get_conclusion(ref_ext_before, ref_ext_after)
+            ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
 
             expected_row_data.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
 
@@ -602,7 +637,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
                 else None
             )
         )
-        opening_date_conclusion = get_conclusion(opening_date_before, opening_date_after)
+        opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
 
         expected_row_data.extend([opening_date_before, opening_date_after, opening_date_conclusion])
 
@@ -619,7 +654,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
                 else None
             )
         )
-        closing_date_conclusion = get_conclusion(closing_date_before, closing_date_after)
+        closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
 
         expected_row_data.extend([closing_date_before, closing_date_after, closing_date_conclusion])
 
@@ -630,7 +665,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             if change_request.new_groups.exists()
             else ",".join(group.name for group in change_request.org_unit.groups.all())
         )
-        groups_conclusion = get_conclusion(groups_before, groups_after)
+        groups_conclusion = get_conclusion("groups", groups_before, groups_after)
 
         expected_row_data.extend([groups_before, groups_after, groups_conclusion])
 
@@ -641,7 +676,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             if change_request.new_location
             else get_location_str(change_request.org_unit.location)
         )
-        location_conclusion = get_conclusion(location_before, location_after)
+        location_conclusion = get_conclusion("localisation", location_before, location_after)
 
         expected_row_data.extend([location_before, location_after, location_conclusion])
 
@@ -663,3 +698,91 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
             first_data_row,
             expected_row_data,
         )
+
+    def test_export_to_csv_with_new_change_request(self):
+        """
+        Test that NEW change requests have "pending" conclusions.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Foo", requested_fields=["new_name"]
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "pending" for a NEW change request
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "pending")
+
+    def test_export_to_csv_with_approved_change_request(self):
+        """
+        Test that APPROVED change requests have correct conclusions based on approved_fields.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            requested_fields=["new_name", "new_groups"],
+            approved_fields=["new_name"],
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "approved" for an APPROVED change request
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "approved")
+
+        # Check that the groups conclusion is "rejected" for an APPROVED change request
+        # where the field was requested but not approved
+        groups_conclusion_index = 34  # Index of "Groups conclusion" column
+        self.assertEqual(first_data_row[groups_conclusion_index], "rejected")
+
+    def test_export_to_csv_with_rejected_change_request(self):
+        """
+        Test that REJECTED change requests have "rejected" conclusions for all fields.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            requested_fields=["new_name", "new_groups"],
+            status=m.OrgUnitChangeRequest.Statuses.REJECTED,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "rejected" for a REJECTED change request
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "rejected")
+
+        # Check that the groups conclusion is "rejected" for a REJECTED change request
+        groups_conclusion_index = 34  # Index of "Groups conclusion" column
+        self.assertEqual(first_data_row[groups_conclusion_index], "rejected")

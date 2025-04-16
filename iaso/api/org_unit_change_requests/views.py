@@ -44,12 +44,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         "Parent",
         "Org unit type",
         "Groups",
-        "Status",
         "Created",
         "Created by",
         "Updated",
         "Updated by",
-        "Status of Change Request",
         "Name before change",
         "Name after change",
         "Name conclusion",
@@ -77,7 +75,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         "Localisation after change",
         "Localisation conclusion",
         "Reference submission before",
-        "Reference form after",
+        "Reference submission after",
     ]
 
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
@@ -248,11 +246,48 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         writer.writerow(self.CSV_HEADER_COLUMNS)
 
         for change_request in filtered_org_unit_changes_requests:
-            # Helper function to determine if a field has changed
-            def get_conclusion(old_value, new_value):
-                if old_value == new_value:
-                    return "same"
-                return "updated"
+            # Helper function to determine if a field has changed and its conclusion
+            def get_conclusion(field_name, old_value, new_value):
+                # If the change request is new, no conclusion is made
+                if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
+                    return "pending"
+
+                # If the change request is rejected, all fields are rejected
+                if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
+                    return "rejected"
+
+                # If the change request is approved, check if the field is in approved_fields
+                if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
+                    # Map field names to their corresponding field in requested_fields
+                    field_mapping = {
+                        "name": "new_name",
+                        "parent": "new_parent",
+                        "ref_ext_parent_1": "new_parent",
+                        "ref_ext_parent_2": "new_parent",
+                        "ref_ext_parent_3": "new_parent",
+                        "opening_date": "new_opening_date",
+                        "closing_date": "new_closed_date",
+                        "groups": "new_groups",
+                        "localisation": "new_location",
+                        "reference_submission": "new_reference_instances",
+                    }
+
+                    # Get the corresponding field name in requested_fields
+                    requested_field = field_mapping.get(field_name)
+
+                    # If the field is not in requested_fields, it means no change was requested
+                    if requested_field not in change_request.requested_fields:
+                        return "same"
+
+                    # If the field is in approved_fields, it was approved
+                    if requested_field in change_request.approved_fields:
+                        return "approved"
+
+                    # If the field is in requested_fields but not in approved_fields, it was rejected
+                    return "rejected"
+
+                # Default case (should not happen)
+                return "unknown"
 
             # Get parent reference extensions
             def get_parent_ref_ext(parent, level):
@@ -286,18 +321,16 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 change_request.org_unit.parent.name if change_request.org_unit.parent else None,
                 change_request.org_unit.org_unit_type.name if change_request.org_unit.org_unit_type else None,
                 ",".join(group.name for group in change_request.org_unit.groups.all()),
-                change_request.get_status_display(),
                 datetime.strftime(change_request.created_at, "%Y-%m-%d"),
                 get_creator_name(change_request.created_by) if change_request.created_by else None,
                 datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
                 get_creator_name(change_request.updated_by) if change_request.updated_by else None,
-                change_request.get_status_display(),
             ]
 
             # Name changes
             name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
             name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-            name_conclusion = get_conclusion(name_before, name_after)
+            name_conclusion = get_conclusion("name", name_before, name_after)
 
             row.extend([name_before, name_after, name_conclusion])
 
@@ -322,7 +355,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
                 ref_ext_before = get_parent_ref_ext(parent_before, level)
                 ref_ext_after = get_parent_ref_ext(parent_after, level)
-                ref_ext_conclusion = get_conclusion(ref_ext_before, ref_ext_after)
+                ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
 
                 row.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
 
@@ -339,7 +372,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                     else None
                 )
             )
-            opening_date_conclusion = get_conclusion(opening_date_before, opening_date_after)
+            opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
 
             row.extend([opening_date_before, opening_date_after, opening_date_conclusion])
 
@@ -356,7 +389,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                     else None
                 )
             )
-            closing_date_conclusion = get_conclusion(closing_date_before, closing_date_after)
+            closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
 
             row.extend([closing_date_before, closing_date_after, closing_date_conclusion])
 
@@ -367,7 +400,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.new_groups.exists()
                 else ",".join(group.name for group in change_request.org_unit.groups.all())
             )
-            groups_conclusion = get_conclusion(groups_before, groups_after)
+            groups_conclusion = get_conclusion("groups", groups_before, groups_after)
 
             row.extend([groups_before, groups_after, groups_conclusion])
 
@@ -378,7 +411,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.new_location
                 else get_location_str(change_request.org_unit.location)
             )
-            location_conclusion = get_conclusion(location_before, location_after)
+            location_conclusion = get_conclusion("localisation", location_before, location_after)
 
             row.extend([location_before, location_after, location_conclusion])
 

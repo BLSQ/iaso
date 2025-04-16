@@ -123,8 +123,8 @@ def launch_dataset_refresh(group_id, data_set_id):
         extra_sync_config = dataset_config.get("sync_refresh", None)
 
     if openhexa_config:
-        task = launch_external_task(dataset_config)
-        monitor_task_and_raise_if_fail(dataset_config, task)
+        task = launch_external_task(openhexa_config)
+        monitor_task_and_raise_if_fail(openhexa_config, task)
 
     sp_access_token = get_powerbi_service_principal_token(
         config["tenant_id"], config["client_id"], config["secret_value"]

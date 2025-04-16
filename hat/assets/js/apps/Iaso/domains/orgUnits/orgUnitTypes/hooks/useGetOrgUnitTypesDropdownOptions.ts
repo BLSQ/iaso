@@ -34,19 +34,17 @@ const getOrgunitTypes = (
 export const useGetOrgUnitTypesDropdownOptions = ({
     projectId,
     projectIds,
-    dataSourceId,
     sourceVersionId,
     onlyWriteAccess = false,
     enabled = true,
 }: {
     projectId?: number | undefined;
     projectIds?: number[] | undefined;
-    dataSourceId?: number | undefined;
     sourceVersionId?: number | undefined;
     onlyWriteAccess?: boolean | undefined;
     enabled?: boolean | undefined;
 } = {}): UseQueryResult<DropdownOptions<string>[], Error> => {
-    const queryKey: any[] = ['orgunittypes-dropdown', projectId, projectIds, sourceVersionId, dataSourceId];
+    const queryKey: any[] = ['orgunittypes-dropdown', projectId, projectIds, sourceVersionId];
     const checkUserHasWriteTypePermission =
         useCheckUserHasWriteTypePermission();
     return useSnackQuery({

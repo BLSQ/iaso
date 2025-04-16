@@ -1383,6 +1383,20 @@ class ProfileAPITestCase(APITestCase):
             "You don't have access to the following projects: New project.",
         )
 
+        # Current project restrictions of the user should be applied to the edited profile
+        # when `projects` is not explicitly specified.
+        user.iaso_profile.projects.set([self.project])
+        del user.iaso_profile.projects_ids
+        self.assertEqual(user.iaso_profile.projects.count(), 1)
+        profile_to_edit.projects.clear()
+        self.assertEqual(profile_to_edit.projects.count(), 0)
+        data = {"user_name": "jum_new_user_name"}
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
+
     def get_new_user_data(self):
         user_name = "audit_user"
         pwd = "admin1234lol"

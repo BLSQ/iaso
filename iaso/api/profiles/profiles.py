@@ -703,21 +703,25 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile) -> QuerySet[Project]:
-        result = []
+    def validate_projects(self, request, profile) -> list:
         project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+        user_has_project_restrictions = request.user.iaso_profile and request.user.iaso_profile.projects_ids
+        result = []
 
         if not project_ids:
+            if user_has_project_restrictions:
+                # Apply same project restrictions to the profile being edited
+                # otherwise it could have access to more projects.
+                return list(Project.objects.filter(id__in=request.user.iaso_profile.projects_ids))
+            # No project restrictions.
             return result
 
-        # Check permission.
         if not request.user.has_perm(permission.USERS_ADMIN):
             raise PermissionDenied(
                 f"User without permission {permission.USERS_ADMIN} cannot change project attributions."
             )
 
-        # Check projects restrictions for the user currently editing.
-        if request.user.iaso_profile and request.user.iaso_profile.projects_ids:
+        if user_has_project_restrictions:
             unauthorized_projects_ids = [p for p in project_ids if p not in request.user.iaso_profile.projects_ids]
             unauthorized_projects_names = Project.objects.filter(id__in=unauthorized_projects_ids).values_list(
                 "name", flat=True
@@ -727,7 +731,6 @@ class ProfilesViewSet(viewsets.ViewSet):
                     f"You don't have access to the following projects: {','.join(unauthorized_projects_names)}."
                 )
 
-        # Validate projects.
         for project in Project.objects.filter(id__in=project_ids):
             if profile.account_id != project.account_id:
                 raise BadRequest

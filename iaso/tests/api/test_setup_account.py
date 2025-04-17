@@ -228,8 +228,6 @@ class SetupAccountApiTestCase(APITestCase):
             "modules": self.MODULES,
             "feature_flags": None,
         }
-        if not data["feature_flags"]:
-            data["feature_flags"] = []
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         created_account = m.Account.objects.filter(name="account with None feature flag test-featureappid")

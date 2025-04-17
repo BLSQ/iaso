@@ -257,17 +257,17 @@ const MESSAGES = defineMessages({
     },
     noReferenceSubmissionsWarningMessage: {
         defaultMessage:
-            'About {selectedSubmissionsCount} selected submissions are not reference ones',
+            '{selectedSubmissionsCount} selected submissions cannot become reference submissions (their form is not configured as a reference form for their respective org unit type)',
         id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
     },
     linkReferenceSubmissionsConfirmMessage: {
         defaultMessage:
-            'There are {unLinkedCount} not linked reference submission. To link them you have to check the checkbox.',
+            'You selected {unLinkedCount} standard submissions. Please check this checkbox in order to link them to their respective org unit as a reference submission.',
         id: 'iaso.instance.linkReferenceSubmissionsConfirmMessage',
     },
     unLinkReferenceSubmissionsConfirmMessage: {
         defaultMessage:
-            'There are {linkedCount} linked reference submission. To unlink them you have to check the checkbox.',
+            'You selected {unLinkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
         id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
     },
     approveAllWarningsMessage: {

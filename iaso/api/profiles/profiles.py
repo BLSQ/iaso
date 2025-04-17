@@ -713,7 +713,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if not project_ids:
             if user_has_project_restrictions:
                 # Apply the same project restrictions.
-                return list(Project.objects.filter(id__in=request.user.iaso_profile.projects_ids))
+                return list(Project.objects.filter_on_user_projects(request.user))
             # No project restrictions.
             return result
 

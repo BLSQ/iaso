@@ -376,10 +376,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         project_names = [name.strip() for name in projects.split(value_splitter) if name]
                         if user_has_project_restrictions:
                             projects_instance_list = Project.objects.filter(
-                                id__in=request.user.iaso_profile.projects_ids,
                                 name__in=project_names,
                                 account=importer_account,
-                            )
+                            ).filter_on_user_projects(request.user)
                         else:
                             projects_instance_list = Project.objects.filter(
                                 name__in=project_names, account=importer_account

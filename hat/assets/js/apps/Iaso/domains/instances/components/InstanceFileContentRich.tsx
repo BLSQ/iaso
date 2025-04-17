@@ -1,22 +1,86 @@
 /* eslint-disable react/jsx-indent */
-import React, { useMemo } from 'react';
+import React, { useMemo, FunctionComponent } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'bluesquare-components';
 import isPlainObject from 'lodash/isPlainObject';
-import PropTypes from 'prop-types';
-import { useLocale } from '../../app/contexts/LocaleContext.tsx';
-import { InstanceImagePreview } from './InstanceImagePreview.tsx';
+import { useLocale } from '../../app/contexts/LocaleContext';
+import { InstanceImagePreview } from './InstanceImagePreview';
 
-const useStyle = makeStyles(theme => ({
+// Define types for the component
+export type Descriptor = {
+    name: string;
+    type: string;
+    label?: Record<string, string> | string;
+    children?: Descriptor[];
+    bind?: {
+        calculate?: string;
+    };
+};
+
+type Data = Record<string, any>;
+
+type LabelProps = {
+    descriptor: Descriptor;
+    value?: string | number | null;
+    tooltip?: string | null;
+    showQuestionKey?: boolean;
+};
+
+type FormFieldProps = {
+    descriptor: Descriptor;
+    data: Data;
+    showQuestionKey?: boolean;
+};
+
+type FormCalculatedFieldProps = FormFieldProps;
+type FormMetaFieldProps = FormFieldProps;
+type FormNoteFieldProps = {
+    descriptor: Descriptor;
+    showQuestionKey?: boolean;
+};
+
+type PhotoFieldProps = {
+    descriptor: Descriptor;
+    data: Data;
+    showQuestionKey?: boolean;
+    files?: string[];
+};
+
+type FormChildProps = {
+    descriptor: Descriptor;
+    data: Data;
+    showQuestionKey?: boolean;
+    showNote?: boolean;
+    files?: string[];
+};
+
+type FormGroupProps = {
+    descriptor: Descriptor;
+    data: Data;
+    showQuestionKey?: boolean;
+    files?: string[];
+};
+
+type InstanceFileContentRichProps = {
+    instanceData: Data;
+    formDescriptor: Descriptor;
+    showQuestionKey?: boolean;
+    showNote?: boolean;
+    files?: string[];
+};
+
+const useStyles = makeStyles(theme => ({
     tableCellHead: {
         fontWeight: 'bold',
+        // @ts-ignore
         backgroundColor: theme.palette.gray,
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
+        // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
     tableCell: {
@@ -24,9 +88,11 @@ const useStyle = makeStyles(theme => ({
         borderTop: 'none !important',
         borderLeft: 'none !important',
         borderRight: 'none !important',
+        // @ts-ignore
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
     tableCellCalculated: {
+        // @ts-ignore
         color: theme.palette.gray.main,
     },
     tableCellLabelWrapper: {
@@ -43,6 +109,7 @@ const useStyle = makeStyles(theme => ({
         marginLeft: 5,
     },
     tableCellLabelName: {
+        // @ts-ignore
         color: theme.palette.mediumGray.main,
     },
 }));
@@ -58,31 +125,43 @@ const useStyle = makeStyles(theme => ({
 
 const labelLocales = { fr: 'French', en: 'English' };
 
-function translateLabel(label, activeLocale) {
+const translateLabel = (
+    label: Record<string, string> | string,
+    activeLocale: string,
+): string => {
     if (isPlainObject(label)) {
-        const correctKey = Object.keys(label).find(key => {
-            if (labelLocales[activeLocale].includes(key)) {
-                return true;
-            }
-            return labelLocales.en.includes(key);
-        });
+        const correctKey = Object.keys(label as Record<string, string>).find(
+            key => {
+                if (
+                    labelLocales[
+                        activeLocale as keyof typeof labelLocales
+                    ]?.includes(key)
+                ) {
+                    return true;
+                }
+                return labelLocales.en.includes(key);
+            },
+        );
 
         if (correctKey) {
-            return label[correctKey];
+            return (label as Record<string, string>)[correctKey];
         }
-        return label[Object.keys(label)[0]];
+        return (label as Record<string, string>)[
+            Object.keys(label as Record<string, string>)[0]
+        ];
     }
 
-    return label;
-}
+    return label as string;
+};
 
-function getRawValue(descriptor, data) {
+const getRawValue = (descriptor: Descriptor, data: Data): string => {
     const value = data[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
     }
     return value;
-}
+};
+
 /**
  * Extract the value from data using the descriptor
  * (handles the different scenarios, such as select fields)
@@ -91,7 +170,11 @@ function getRawValue(descriptor, data) {
  * @param data
  * @returns {string|*}
  */
-function getDisplayedValue(descriptor, data, activeLocale) {
+const getDisplayedValue = (
+    descriptor: Descriptor,
+    data: Data,
+    activeLocale: string,
+): string => {
     const value = data[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
@@ -99,39 +182,44 @@ function getDisplayedValue(descriptor, data, activeLocale) {
     switch (descriptor.type) {
         case 'select_one':
         case 'select one': {
-            const choice = descriptor.children.find(c => c.name === value);
+            const choice = descriptor.children?.find(c => c.name === value);
             return choice !== undefined
-                ? translateLabel(choice.label, activeLocale)
+                ? translateLabel(choice.label || '', activeLocale)
                 : `${value} (choice not found)`;
         }
         case 'select_multiple':
         case 'select multiple': {
-            const choices = descriptor.children.filter(c =>
-                value.split(' ').includes(c.name),
-            );
+            const choices =
+                descriptor.children?.filter(c =>
+                    (value as string).split(' ').includes(c.name),
+                ) || [];
             return choices.length > 0
                 ? choices
-                      .map(choice => translateLabel(choice.label, activeLocale))
+                      .map(choice =>
+                          translateLabel(choice.label || '', activeLocale),
+                      )
                       .join(', ')
                 : `${value} (multi choice not found)`;
         }
         default:
             return value !== '' ? value : textPlaceholder;
     }
-}
+};
 
-export default function InstanceFileContentRich({
+const InstanceFileContentRich: FunctionComponent<
+    InstanceFileContentRichProps
+> = ({
     instanceData,
     formDescriptor,
-    showQuestionKey,
-    showNote,
-    files,
-}) {
+    showQuestionKey = true,
+    showNote = true,
+    files = [],
+}) => {
     return (
         <Table>
             <TableBody>
                 {formDescriptor.children
-                    .filter(c => c.name !== 'meta')
+                    ?.filter(c => c.name !== 'meta')
                     .map(childDescriptor => (
                         <FormChild
                             key={childDescriptor.name}
@@ -145,24 +233,15 @@ export default function InstanceFileContentRich({
             </TableBody>
         </Table>
     );
-}
-
-InstanceFileContentRich.defaultProps = {
-    showQuestionKey: true,
-    showNote: true,
-    files: [],
 };
 
-InstanceFileContentRich.propTypes = {
-    instanceData: PropTypes.object.isRequired,
-    formDescriptor: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-    showNote: PropTypes.bool,
-    files: PropTypes.arrayOf(PropTypes.string),
-};
-
-const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
-    const classes = useStyle();
+const PhotoField: FunctionComponent<PhotoFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+    files = [],
+}) => {
+    const classes = useStyles();
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
@@ -196,31 +275,27 @@ const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
     );
 };
 
-PhotoField.defaultProps = {
-    showQuestionKey: true,
-    files: [],
-};
-
-PhotoField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-    files: PropTypes.arrayOf(PropTypes.string),
-};
-
-function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
+const FormChild = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+    showNote = true,
+    files = [],
+}: FormChildProps): JSX.Element | null => {
     switch (descriptor.type) {
         case 'repeat':
-            return data[descriptor.name]
-                ? data[descriptor.name].map(subdata => (
-                      <FormGroup
-                          key={descriptor.name}
-                          descriptor={descriptor}
-                          data={subdata}
-                          showQuestionKey={showQuestionKey}
-                      />
-                  ))
-                : null;
+            return data[descriptor.name] ? (
+                <>
+                    {(data[descriptor.name] as Data[]).map(subdata => (
+                        <FormGroup
+                            key={descriptor.name}
+                            descriptor={descriptor}
+                            data={subdata}
+                            showQuestionKey={showQuestionKey}
+                        />
+                    ))}
+                </>
+            ) : null;
         case 'group':
             return (
                 <FormGroup
@@ -275,24 +350,15 @@ function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
                 />
             );
     }
-}
-
-FormChild.defaultProps = {
-    showQuestionKey: true,
-    showNote: true,
-    files: [],
 };
 
-FormChild.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-    showNote: PropTypes.bool,
-    files: PropTypes.arrayOf(PropTypes.string),
-};
-
-function FormGroup({ descriptor, data, showQuestionKey, files }) {
-    const classes = useStyle();
+const FormGroup: FunctionComponent<FormGroupProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+    files = [],
+}) => {
+    const classes = useStyles();
 
     return (
         <>
@@ -308,7 +374,7 @@ function FormGroup({ descriptor, data, showQuestionKey, files }) {
                     />
                 </TableCell>
             </TableRow>
-            {descriptor.children.map(childDescriptor => (
+            {descriptor.children?.map(childDescriptor => (
                 <FormChild
                     key={childDescriptor.name}
                     descriptor={childDescriptor}
@@ -319,22 +385,14 @@ function FormGroup({ descriptor, data, showQuestionKey, files }) {
             ))}
         </>
     );
-}
-
-FormGroup.defaultProps = {
-    showQuestionKey: true,
-    files: [],
 };
 
-FormGroup.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-    files: PropTypes.arrayOf(PropTypes.string),
-};
-
-function FormField({ descriptor, data, showQuestionKey }) {
-    const classes = useStyle();
+const FormField: FunctionComponent<FormFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+}) => {
+    const classes = useStyles();
     const { locale: activeLocale } = useLocale();
 
     return (
@@ -354,20 +412,14 @@ function FormField({ descriptor, data, showQuestionKey }) {
             </TableCell>
         </TableRow>
     );
-}
-
-FormField.defaultProps = {
-    showQuestionKey: true,
 };
 
-FormField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-};
-
-function FormCalculatedField({ descriptor, data, showQuestionKey }) {
-    const classes = useStyle();
+const FormCalculatedField: FunctionComponent<FormCalculatedFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+}) => {
+    const classes = useStyles();
     const { locale: activeLocale } = useLocale();
 
     return (
@@ -380,7 +432,7 @@ function FormCalculatedField({ descriptor, data, showQuestionKey }) {
                     />
                     <Label
                         descriptor={descriptor}
-                        tooltip={descriptor.bind.calculate}
+                        tooltip={descriptor.bind?.calculate || null}
                         showQuestionKey={showQuestionKey}
                     />
                 </div>
@@ -390,20 +442,14 @@ function FormCalculatedField({ descriptor, data, showQuestionKey }) {
             </TableCell>
         </TableRow>
     );
-}
-
-FormCalculatedField.defaultProps = {
-    showQuestionKey: true,
 };
 
-FormCalculatedField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-};
-
-function FormMetaField({ descriptor, data, showQuestionKey }) {
-    const classes = useStyle();
+const FormMetaField: FunctionComponent<FormMetaFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+}) => {
+    const classes = useStyles();
     const { locale: activeLocale } = useLocale();
 
     return (
@@ -417,20 +463,13 @@ function FormMetaField({ descriptor, data, showQuestionKey }) {
             </TableCell>
         </TableRow>
     );
-}
-
-FormMetaField.defaultProps = {
-    showQuestionKey: true,
 };
 
-FormMetaField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    data: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-};
-
-function FormNoteField({ descriptor, showQuestionKey }) {
-    const classes = useStyle();
+const FormNoteField: FunctionComponent<FormNoteFieldProps> = ({
+    descriptor,
+    showQuestionKey = true,
+}) => {
+    const classes = useStyles();
 
     return (
         <TableRow>
@@ -448,29 +487,25 @@ function FormNoteField({ descriptor, showQuestionKey }) {
             </TableCell>
         </TableRow>
     );
-}
-
-FormNoteField.defaultProps = {
-    showQuestionKey: true,
 };
 
-FormNoteField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    showQuestionKey: PropTypes.bool,
-};
-
-function Label({ descriptor, value, tooltip, showQuestionKey }) {
-    const classes = useStyle();
+const Label: FunctionComponent<LabelProps> = ({
+    descriptor,
+    value = null,
+    tooltip = null,
+    showQuestionKey = true,
+}) => {
+    const classes = useStyles();
     const { locale: activeLocale } = useLocale();
 
     let label = descriptor.name;
     let showNameHint = false;
     if ('label' in descriptor) {
-        label = translateLabel(descriptor.label, activeLocale);
+        label = translateLabel(descriptor.label || '', activeLocale);
 
         if (value !== null) {
             // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"
-            label = label.replace(`\${${descriptor.name}}`, value);
+            label = label.replace(`\${${descriptor.name}}`, value.toString());
         } else {
             showNameHint = true;
         }
@@ -492,21 +527,10 @@ function Label({ descriptor, value, tooltip, showQuestionKey }) {
     return tooltip === null ? (
         labelElement
     ) : (
-        <Tooltip size="small" placement="right-start" title={tooltip}>
+        <Tooltip placement="right-start" title={tooltip}>
             {labelElement}
         </Tooltip>
     );
-}
-
-Label.defaultProps = {
-    value: null,
-    tooltip: null,
-    showQuestionKey: true,
 };
 
-Label.propTypes = {
-    descriptor: PropTypes.object.isRequired,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    tooltip: PropTypes.string,
-    showQuestionKey: PropTypes.bool,
-};
+export default InstanceFileContentRich;

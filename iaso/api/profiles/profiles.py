@@ -705,7 +705,9 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_projects(self, request, profile) -> list:
         project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        user_has_project_restrictions = request.user.iaso_profile and request.user.iaso_profile.projects_ids
+        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
+            request.user.iaso_profile.projects_ids
+        )
         result = []
 
         if not project_ids:

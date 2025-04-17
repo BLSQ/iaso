@@ -35,7 +35,9 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
-    feature_flags = serializers.JSONField(required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS)
+    feature_flags = serializers.JSONField(
+        required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
+    )
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():

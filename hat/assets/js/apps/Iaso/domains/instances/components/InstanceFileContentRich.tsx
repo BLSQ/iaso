@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-indent */
-import React, { useMemo, FunctionComponent } from 'react';
+import React, { useMemo, FunctionComponent, JSX } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
@@ -165,11 +165,8 @@ const getRawValue = (descriptor: Descriptor, data: Data): string => {
 /**
  * Extract the value from data using the descriptor
  * (handles the different scenarios, such as select fields)
- *
- * @param descriptor
- * @param data
- * @returns {string|*}
  */
+
 const getDisplayedValue = (
     descriptor: Descriptor,
     data: Data,
@@ -187,6 +184,8 @@ const getDisplayedValue = (
                 ? translateLabel(choice.label || '', activeLocale)
                 : `${value} (choice not found)`;
         }
+        case 'select_all_that_apply':
+        case 'select all that apply':
         case 'select_multiple':
         case 'select multiple': {
             const choices =

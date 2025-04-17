@@ -160,6 +160,15 @@ def validate_xls_form(xls_file):
     formula_columns = ["relevant", "calculation", "constraint", "required", "default", "trigger"]
 
     for q in questions:
+        if q.get("type") == "hidden":
+            validation_errors.append(
+                {
+                    "message": "question type hidden is not supported '" + q.get("name") + "'",
+                    "question": q,
+                    "sheet": "survey",
+                    "severity": "error",
+                }
+            )
         for col in formula_columns:
             formula = q.get(col)
             if formula:

@@ -78,7 +78,9 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             },
             format="json",
         )
-        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        response_json = self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        task = self.assertValidTaskAndInDB(response_json["task"], status="QUEUED", name="instance_reference_bulk_link")
+        self.assertEqual(task.launcher, self.user)
 
     def test_not_logged_in(self):
         response = self.client.post(

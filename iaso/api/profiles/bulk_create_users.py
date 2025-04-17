@@ -128,6 +128,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
             has_geo_limit = True
 
+        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
+            request.user.iaso_profile.projects_ids
+        )
+
         if request.FILES:
             # Retrieve and check the validity and format of the CSV File
             try:
@@ -369,20 +373,18 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except (IndexError, ValueError):
                         projects = None
                     if projects:
-                        projects = projects.split(value_splitter)
-                        for project in projects:
-                            if project != "":
-                                project = project[1::] if project[:1] == " " else project
-                                try:
-                                    project_instance = Project.objects.get(account=importer_account, name=project)
-                                    projects_instance_list.append(project_instance)
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Error. User Project: {project}, at row {i + 1} does not exists: Fix "
-                                            "the error and try again."
-                                        }
-                                    )
+                        project_names = [name.strip() for name in projects.split(value_splitter) if name]
+                        if user_has_project_restrictions:
+                            projects_instance_list = Project.objects.filter(
+                                id__in=request.user.iaso_profile.projects_ids,
+                                name__in=project_names,
+                                account=importer_account,
+                            )
+                        else:
+                            projects_instance_list = Project.objects.filter(
+                                name__in=project_names, account=importer_account
+                            )
+
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
                         current_account = request.user.iaso_profile.account

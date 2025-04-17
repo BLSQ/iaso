@@ -216,3 +216,22 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["feature_flags"], ["invalid_account_feature_flag"])
+
+    def test_setup_account_with_None_value_as_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "account with None feature flag test-featureappid",
+            "user_username": "username",
+            "user_first_name": "firstname",
+            "user_last_name": "lastname",
+            "password": "password",
+            "modules": self.MODULES,
+            "feature_flags": None,
+        }
+        if not data["feature_flags"]:
+            data["feature_flags"] = []
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        created_account = m.Account.objects.filter(name="account with None feature flag test-featureappid")
+        feature_flags = created_account.first().feature_flags.values_list("code", flat=True)
+        self.assertEqual(sorted(feature_flags), sorted(DEFAULT_ACCOUNT_FEATURE_FLAGS))

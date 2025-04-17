@@ -96,9 +96,14 @@ class EntitySerializer(serializers.ModelSerializer):
         return obj.entity_type.name if obj.entity_type else None
 
     def get_migration_source(self, obj: Entity):
-        patient = obj.attributes and obj.attributes.patient_set.first()
-        if patient:
-            return patient.id
+        if not obj.attributes:
+            return None
+
+        if obj.attributes.patient_set.exists():
+            patient = obj.attributes.patient_set.first()
+            if patient:
+                return patient.id
+
         return None
 
 

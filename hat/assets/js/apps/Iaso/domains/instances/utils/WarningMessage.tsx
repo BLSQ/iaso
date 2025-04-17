@@ -1,6 +1,6 @@
-import { Stack, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Stack, Typography } from '@mui/material';
 
 type Props = {
     message: string;
@@ -8,7 +8,7 @@ type Props = {
     paddingTop?: string | null;
     marginRight?: string | null;
 };
-const PushGpsWarningMessage: FunctionComponent<Props> = ({
+const WarningMessage: FunctionComponent<Props> = ({
     message,
     paddingLeft = null,
     paddingTop = null,
@@ -30,4 +30,4 @@ const PushGpsWarningMessage: FunctionComponent<Props> = ({
     </Stack>
 );
 
-export default PushGpsWarningMessage;
+export default WarningMessage;

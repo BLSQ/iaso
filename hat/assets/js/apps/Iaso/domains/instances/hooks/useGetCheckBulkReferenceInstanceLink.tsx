@@ -2,25 +2,23 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
-import { CheckBulkGpsPushResult } from '../types/instance';
+import { CheckReferenceSubmissionLinkResult } from '../types/instance';
 
-export const useGetCheckBulkGpsPush = (
+export const useGetCheckBulkReferenceInstanceLink = (
     params: Record<string, any>,
-): UseQueryResult<CheckBulkGpsPushResult> => {
+): UseQueryResult<CheckReferenceSubmissionLinkResult> => {
     return useSnackQuery({
-        queryKey: ['bulkGpsCheck', params],
+        queryKey: ['bulkReferenceInstanceLinkCheck', params],
         queryFn: () =>
             getRequest(
                 makeUrlWithParams(
-                    '/api/instances/check_bulk_gps_push/',
+                    '/api/instances/check_bulk_reference_instance_link/',
                     params,
                 ),
             ),
-        options: {
-            select: data => {
-                return data;
-            },
-        },
         ignoreErrorCodes: [400],
+        options: {
+            retry: 0,
+        },
     });
 };

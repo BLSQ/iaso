@@ -230,6 +230,7 @@ class SetupAccountApiTestCase(APITestCase):
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["feature_flags"], ["This field may not be null."])
 
     def test_setup_account_with_empty_feature_flags(self):
         self.client.force_authenticate(self.admin)

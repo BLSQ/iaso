@@ -125,7 +125,7 @@ def _make_prep(c: Campaign, round: Round):
     }
     try:
         spread_id = extract_id_from_url(url)
-        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
+        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id).order_by("created_at")
         last_ssi = ssi_qs.last()
         if not ssi_qs or not last_ssi:
             # No import yet

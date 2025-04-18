@@ -301,6 +301,7 @@ export type Round = {
     campaign: Nullable<string>; // uuid
     percentage_covered_target_population: Nullable<number>;
     datelogs: RoundDateHistoryEntry[];
+    is_test: boolean;
 };
 
 type CalendarRound = {

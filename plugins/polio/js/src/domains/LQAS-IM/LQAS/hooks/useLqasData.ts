@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 
+import { LqasImData } from '../../../../constants/types';
 import { useConvertedLqasImData } from '../../shared/hooks/useConvertedLqasImData';
-import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
+import { useDebugData } from '../../shared/hooks/useDebugData';
 import { useNfmTitle } from '../../shared/hooks/useNfmTitle';
 import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
+import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
-import { LqasImData } from '../../../../constants/types';
-import { useDebugData } from '../../shared/hooks/useDebugData';
 
 type UseLQASDataParams = {
     campaign: string;

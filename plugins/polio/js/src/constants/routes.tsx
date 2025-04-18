@@ -36,8 +36,10 @@ import {
     POLIO,
     POLIO_ADMIN,
     STOCK_MANAGEMENT_READ,
+    STOCK_MANAGEMENT_READ_ONLY,
     STOCK_MANAGEMENT_WRITE,
     SUPPLYCHAIN_READ,
+    SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
 } from './permissions';
 import {
@@ -171,35 +173,47 @@ export const supplychainPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChain,
     routerUrl: `${baseUrls.vaccineSupplyChain}/*`,
     element: <VaccineSupplyChain />,
-    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const supplychainDetailsPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChainDetails,
     routerUrl: `${baseUrls.vaccineSupplyChainDetails}/*`,
     element: <VaccineSupplyChainDetails />,
-    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const stockManagementPath: RoutePath = {
     baseUrl: baseUrls.stockManagement,
     routerUrl: `${baseUrls.stockManagement}/*`,
     element: <VaccineStockManagement />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockManagementDetailsPath: RoutePath = {
     baseUrl: baseUrls.stockManagementDetails,
     routerUrl: `${baseUrls.stockManagementDetails}/*`,
     element: <VaccineStockManagementDetails />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockVariationPath: RoutePath = {
     baseUrl: baseUrls.stockVariation,
     routerUrl: `${baseUrls.stockVariation}/*`,
     element: <VaccineStockVariation />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const notificationPath: RoutePath = {

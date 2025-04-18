@@ -20,17 +20,8 @@ from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from iaso.utils.clamav import scan_uploaded_file_for_virus
-from plugins.polio.api.vaccines.permissions import (
-    VaccineStockManagementPermission,
-    can_edit_helper,
-)
-from plugins.polio.models import (
-    Campaign,
-    Round,
-    VaccineArrivalReport,
-    VaccinePreAlert,
-    VaccineRequestForm,
-)
+from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
+from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 
 logger = getLogger(__name__)
@@ -207,6 +198,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
     def get_scan_result(self, obj):
@@ -306,6 +298,7 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
 
@@ -370,6 +363,7 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         ar.created_at,
                         admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
                         non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
                             ar.save()
@@ -446,6 +440,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         ar.created_at,
                         admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
                         non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
                             ar.save()
@@ -604,6 +599,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
 
@@ -648,6 +644,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
     def get_prefetched_data(self, obj):
@@ -862,9 +859,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
     # - add GET arrival reports and pre alerts
 
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     http_method_names = ["get", "post", "delete", "patch"]

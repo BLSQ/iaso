@@ -16,6 +16,7 @@ from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from iaso.api.profiles.profile_logs import ProfileLogsViewset
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
@@ -175,6 +176,9 @@ router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
 router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
+router.register(
+    r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush"
+)
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

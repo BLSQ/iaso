@@ -79,6 +79,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )
     forms = iaso_client.get("/api/forms")["forms"]
+    planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
     source_id = manager["account"]["default_version"]["data_source"]["id"]
     country = iaso_client.get(
@@ -87,7 +88,14 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "limit": 3000,
             "order": "id",
             "searches": json.dumps(
-                [{"validation_status": "VALID", "color": "f4511e", "source": str(source_id), "depth": 1}]
+                [
+                    {
+                        "validation_status": "VALID",
+                        "color": "f4511e",
+                        "source": str(source_id),
+                        "depth": 1,
+                    }
+                ]
             ),
         },
     )["orgunits"][0]
@@ -98,7 +106,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         "/api/microplanning/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
-            "forms": [f["id"] for f in forms if f["form_id"] == "SAMPLE_FORM_new5"],
+            "forms": [planning_form["id"]],
             "project": project_id,
             "team": team["id"],
             "org_unit": country["id"],
@@ -111,15 +119,21 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     health_facitities = iaso_client.get(
         "/api/orgunits/",
         params={
-            "validation_status": "VALID",
-            "geography": "any",
-            "onlyDirectChildren": "false",
-            "page": 1,
-            "withParents": "true",
+            "limit": 70,
             "order": "name",
-            "depth": 5,
+            "page": 1,
+            "searches": json.dumps(
+                [
+                    {
+                        "validation_status": "VALID",
+                        "geography": "any",
+                        "depth": 5,
+                    }
+                ]
+            ),
+            "locationLimit": 100,
         },
-    )["orgUnits"]
+    )["orgunits"]
 
     # Get the users from the team
     team_users = iaso_client.get(f"/api/microplanning/teams/{team['id']}/")["users"]

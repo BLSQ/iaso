@@ -36,6 +36,7 @@ def refresh_data(
         round_qs.update(preparedness_sync_status="QUEUED")
     logger.info(round_qs)
     count = round_qs.count()
+    has_failures = False
 
     round: Round
     for i, round in enumerate(round_qs):
@@ -60,6 +61,12 @@ def refresh_data(
             logger.exception(e)
             round.preparedness_sync_status = "FAILURE"
             round.save()
+            has_failures = True
+            task.report_progress_and_stop_if_killed(
+                progress_value=i,
+                end_value=count,
+                progress_message=f"Round {round.pk} refresh failed: {str(e)}",
+            )
 
     # Email warning sending logic
     # only take round that are going to start, not old one
@@ -68,4 +75,11 @@ def refresh_data(
 
     finished_at = datetime.now()
     the_duration = (finished_at - started_at).total_seconds()
-    task.report_success(f"Finished in {the_duration} seconds")
+
+    if has_failures:
+        task.status = "ERRORED"
+        task.result = {"result": "ERRORED", "message": "Some rounds failed to refresh"}
+        task.ended_at = finished_at
+        task.save()
+    else:
+        task.report_success(f"Finished in {the_duration} seconds")

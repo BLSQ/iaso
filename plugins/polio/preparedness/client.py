@@ -74,15 +74,31 @@ class IasoClient(Client):
         attempt = 0
         while True:
             try:
-                return super().request(*args, **kwargs)
+                return self.http_client.request(*args, **kwargs)
             except APIError as e:
-                if e.response.status_code != 429 or attempt >= 4:
+                if e.response.status_code == 429 and attempt < 4:
+                    # Will still log in sentry so we can track
+                    logger.info("Hitting rate limit error from google, sleeping")
+                    attempt += 1
+                    time.sleep(10)
+                elif e.response.status_code == 503 and attempt < 4:
+                    # Handle service unavailable errors with retry
+                    logger.info("Google service unavailable (503), retrying after delay")
+                    attempt += 1
+                    time.sleep(10)
+                else:
                     logger.exception(e)
                     raise
-                # Will still log in sentry so we can track
-                logger.info("Hitting rate limit error from google, sleeping")
-                attempt += 1
-                time.sleep(10)
+
+    def fetch_sheet_metadata(self, spreadsheet_id, params=None):
+        """Compatibility method for older code that expects fetch_sheet_metadata.
+        In gspread 6.2.0 this was renamed to get_spreadsheet_metadata and has different parameters."""
+        # The new method doesn't take params directly, but we can use the underlying request method
+        url = f"https://sheets.googleapis.com/v4/spreadsheets/{spreadsheet_id}"
+        params = params or {}
+        if "includeGridData" not in params:
+            params["includeGridData"] = False
+        return self.request("get", url, params=params).json()
 
 
 def get_google_config(slug):

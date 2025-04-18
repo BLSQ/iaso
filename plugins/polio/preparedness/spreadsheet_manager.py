@@ -129,7 +129,7 @@ def import_alt_worksheet(region, spreadsheet, alt_regions, alt_sheets, alt_names
     alt_lang = alt_regions[region.id]
     alt_spreadsheet = alt_sheets[alt_lang]
     alt_regional_template_worksheet = alt_spreadsheet.worksheet("Regional")
-    alt_meta = alt_spreadsheet.fetch_sheet_metadata()
+    alt_meta = alt_spreadsheet.fetch_sheet_metadata(spreadsheet_id=alt_spreadsheet.id)
     alt_template_range = alt_meta["sheets"][alt_regional_template_worksheet.index]["protectedRanges"]
     copied_sheet_dict = copy_worksheet_to_spreadsheet(alt_regional_template_worksheet, spreadsheet.id)
     copied_sheet = spreadsheet.get_worksheet_by_id(copied_sheet_dict["sheetId"])
@@ -230,7 +230,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
 
     # Regional worksheet
     regional_template_worksheet = spreadsheet.worksheet("Regional")
-    meta = spreadsheet.fetch_sheet_metadata()
+    meta = spreadsheet.fetch_sheet_metadata(spreadsheet_id=spreadsheet.id)
     template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
     batched_requests = []
     districts = campaign.get_districts_for_round_number(round_number)

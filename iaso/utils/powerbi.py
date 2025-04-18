@@ -65,8 +65,6 @@ def get_openhexa_config_for_data_set_id(data_set_id):
         data_set_id_str = str(data_set_id)
         if data_set_id_str in oh_config:
             dataset_config = oh_config[data_set_id_str]
-        else:
-            raise KeyError(f"Data set ID {data_set_id_str} not found in configuration.")
     return dataset_config
 
 

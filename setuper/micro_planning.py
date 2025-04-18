@@ -135,17 +135,23 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )["orgunits"]
 
-    team_users = team["users"][:3]
+    # Get the users from the team
+    team_users = iaso_client.get(f"/api/microplanning/teams/{team['id']}/")["users"]
+
+    print(f"Found {len(team_users)} users in team {team['name']} for assignments")
 
     for health_facitity in health_facitities:
-        print("assigning", health_facitity["name"], "to", campaign["name"])
+        # Select an arbitrary user from the team for this assignment
+        selected_user_id = random.choice(team_users)
+
+        print("assigning", health_facitity["name"], "to", team["name"], "user ID:", selected_user_id)
 
         iaso_client.post(
             "/api/microplanning/assignments/",
             json={
                 "planning": campaign["id"],
                 "org_unit": health_facitity["id"],
-                "user": random.choice(team_users),
+                "user": selected_user_id,
             },
         )
 

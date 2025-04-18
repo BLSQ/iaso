@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { ErrorBoundary } from 'bluesquare-components';
-import InstanceFileContentBasic from './InstanceFileContentBasic';
-import InstanceFileContentRich from './InstanceFileContentRich';
 import { Instance } from '../types/instance';
+import InstanceFileContentBasic from './InstanceFileContentBasic';
+import InstanceFileContentRich, { Descriptor } from './InstanceFileContentRich';
 
 type Props = {
     instance: Instance;
@@ -21,7 +21,7 @@ const InstanceFileContent: FunctionComponent<Props> = ({
             {hasDescriptor ? (
                 <InstanceFileContentRich
                     instanceData={instance?.file_content}
-                    formDescriptor={instance?.form_descriptor}
+                    formDescriptor={instance?.form_descriptor as Descriptor}
                     showQuestionKey={showQuestionKey}
                     showNote={showNote}
                     files={instance?.files ?? []} // Instance type gives files:ShortFile, but here we get string[]

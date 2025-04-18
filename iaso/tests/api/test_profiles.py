@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
-from django.utils.translation import gettext as _
 from rest_framework import status
 
 from hat.menupermissions import models as permission
@@ -1284,81 +1283,119 @@ class ProfileAPITestCase(APITestCase):
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
-        def test_update_user_with_malformed_phone_number(self):
-            self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
-            self.client.force_authenticate(self.jam)
-            jum = Profile.objects.get(user=self.jum)
-            data = {
-                "user_name": "unittest_user_name",
-                "password": "unittest_password",
-                "first_name": "unittest_first_name",
-                "last_name": "unittest_last_name",
-                "phone_number": "not_a_phone_number",
-                "country_code": "US",
-            }
-            response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-            self.assertNotEqual(response.status_code, 200)
-            self.assertEqual(response.data["errorKey"], "phone_number")
-            self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
+    def test_update_user_with_malformed_phone_number(self):
+        user = self.jam
+        profile_to_edit = Profile.objects.get(user=self.jum)
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Both phone number and country code must be provided")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "US",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number format")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "03666666",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "0387762121",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], "+33387762121")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], None)
 
     def test_update_user_projects(self):
         user = self.jam
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertEqual(user.iaso_profile.projects.count(), 0)
 
-        jum_profile = Profile.objects.get(user=self.jum)
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
+        profile_to_edit = Profile.objects.get(user=self.jum)
 
         self.client.force_authenticate(user)
 
-        # Case 1.
-        # Because `projects` is always sent by the front-end, modifying another value (here `user_name`)
-        # should be allowed without touching `projects`.
         data = {
             "user_name": "jum_new_user_name",
             "projects": [self.project.id],
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
-        self.assertEqual(jum_profile.user.username, "jum_new_user_name")
 
-        # Case 2.
-        # Changing `projects` should not be allowed for users without `permission._USERS_ADMIN`.
+        # Changing `projects` is not allowed for users without `permission._USERS_ADMIN`.
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "User without permission menupermissions.iaso_users cannot change project attributions.",
+        )
+
+        # Changing `projects` is allowed for users with `permission._USERS_ADMIN`.
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        del user._perm_cache
+        del user._user_perm_cache
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
+        self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
+
+        # Changing `projects` is not allowed for users with restrictions.
+        user.iaso_profile.projects.set([self.project])
+        del user.iaso_profile.projects_ids
         new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
         data = {
             "user_name": "jum_new_user_name",
             "projects": [new_project.id],
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.data["detail"],
-            "User with permission menupermissions.iaso_users_managed cannot change project attributions",
+            "You don't have access to the following projects: New project.",
         )
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
 
-        # Case 3.
-        # Changing `projects` should be allowed for users with `permission._USERS_ADMIN`.
-        perm = Permission.objects.get(codename=permission._USERS_ADMIN)
-        user.user_permissions.add(perm)
-        del user._perm_cache
-        del user._user_perm_cache
-        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
-        data = {
-            "user_name": "jum_new_user_name",
-            "projects": [new_project.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        # Current project restrictions of the user should be applied to the edited profile
+        # when `projects` is not explicitly specified.
+        user.iaso_profile.projects.set([self.project])
+        del user.iaso_profile.projects_ids
+        self.assertEqual(user.iaso_profile.projects.count(), 1)
+        profile_to_edit.projects.clear()
+        self.assertEqual(profile_to_edit.projects.count(), 0)
+        data = {"user_name": "jum_new_user_name"}
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), new_project)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
 
     def get_new_user_data(self):
         user_name = "audit_user"

@@ -3,7 +3,6 @@ import jsonschema
 from django.contrib import auth
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.test import tag
 
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
@@ -27,6 +26,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.account2 = m.Account.objects.create(name="Comic books")
         cls.account3 = m.Account.objects.create(name="Video game")
         cls.project = m.Project.objects.create(name="Project 1", app_id="account1.app_id", account=cls.account1)
+        cls.project_1 = m.Project.objects.create(name="Project 2", app_id="account1.app_id", account=cls.account1)
         cls.project_2 = m.Project.objects.create(name="Project 2", app_id="account1.app_id", account=cls.account1)
         cls.project_3 = m.Project.objects.create(name="Project 3", app_id="account2.app_id", account=cls.account2)
 
@@ -176,7 +176,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.add_users_team_launcher_1.refresh_from_db()
         self.user_with_user_role1.refresh_from_db()
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_not_authenticated(self):
         """POST /api/tasks/create/profilesbulkupdate/, no auth -> 401"""
 
@@ -189,7 +188,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_with_profil_without_users_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/, no users permissin -> 403"""
         self.client.force_authenticate(self.user_with_no_users_permission)
@@ -204,7 +202,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(data["detail"], "You do not have permission to perform this action.")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_select_some_wrong_account(self):
         """POST /orgunits/bulkupdate (authenticated user, but no access to specified profiles)"""
 
@@ -234,7 +231,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.user_admin_account2.iaso_profile.language, "en")
         self.assertEqual(self.user_admin_no_task_account2.iaso_profile.language, "en")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_select_all_wrong_account(self):
         """POST /api/tasks/create/profilesbulkupdate/ (authenticated user, but no access any profile)"""
 
@@ -261,7 +257,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.user_admin.refresh_from_db()
         self.assertEqual(self.user_admin.iaso_profile.language, "en")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_select_some(self):
         """POST /api/tasks/create/profilesbulkupdate/ happy path"""
         self.client.force_authenticate(self.user_admin)
@@ -363,7 +358,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
         user = self.user_managed
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
@@ -419,7 +413,58 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             ),
         )
 
-    @tag("iaso_only")
+    def test_profile_bulkupdate_for_user_with_restricted_projects(self):
+        user = self.user_admin
+        user.iaso_profile.projects.set([self.project_1.pk, self.project_2.pk])
+        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+
+        user_to_update = self.user_admin_no_task
+        user_to_update.iaso_profile.projects.set([self.project_2.pk])
+
+        self.client.force_authenticate(user)
+
+        operation_payload = {
+            "select_all": False,
+            "selected_ids": [user_to_update.iaso_profile.pk],
+            "unselected_ids": None,
+            "projects_ids_added": [
+                self.project.pk,  # `user` has no rights on this project.
+                self.project_1.pk,  # `user` should be able to add this project.
+            ],
+            "projects_ids_removed": [
+                self.project.pk,  # `user` has no rights on this project.
+                self.project_2.pk,  # `user` should be able to remove this project.
+            ],
+            "roles_id_added": [],
+            "roles_id_removed": [],
+            "location_ids_added": [],
+            "location_ids_removed": [],
+            "language": "fr",
+            "teams_id_added": None,
+            "teams_id_removed": None,
+            "organization": "Bluesquare",
+            "search": None,
+            "perms": None,
+            "location": None,
+            "org_unit_type": None,
+            "parent_ou": None,
+            "children_ou": None,
+            "projects": None,
+            "user_roles": None,
+        }
+        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, user)
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        user_to_update.refresh_from_db()
+        self.assertEqual(1, user_to_update.iaso_profile.projects.count())
+        self.assertEqual(user_to_update.iaso_profile.projects.first(), self.project_1)
+
     def test_profile_bulkupdate_user_managed_cannot_add_projects(self):
         """POST /api/tasks/create/profilesbulkupdate/ cannot add projects as user manager"""
         self.client.force_authenticate(self.user_managed)
@@ -440,7 +485,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_user_managed_cannot_remove_projects(self):
         """POST /api/tasks/create/profilesbulkupdate/ cannot remove projects as user manager"""
         self.client.force_authenticate(self.user_managed)
@@ -461,7 +505,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         # Run the task
         self.runAndValidateTask(task, "ERRORED")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_user_managed_can_add_role(self):
         """POST /api/tasks/create/profilesbulkupdate/ add role as a user manager"""
         self.client.force_authenticate(self.user_managed)
@@ -508,7 +551,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_user_managed_cannot_add_role_with_admin_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ cannot add role with admin permission as a user manager"""
         self.client.force_authenticate(self.user_managed)
@@ -555,7 +597,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_user_managed_can_remove_role(self):
         """POST /api/tasks/create/profilesbulkupdate/ remove role as a user manager"""
         self.client.force_authenticate(self.user_managed)
@@ -602,7 +643,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_add_user_role_with_not_connected_account(self):
         """POST /api/tasks/create/profilesbulkupdate/ try to add a user role using a not connected account"""
 
@@ -644,7 +684,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertNotEqual(self.user_admin_no_task.iaso_profile.language, "fr")
         self.assertNotEqual(self.user_admin_no_task2.iaso_profile.language, "fr")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_remove_user_role_with_not_connected_account(self):
         """POST /api/tasks/create/profilesbulkupdate/ try to remove a user role using a not connected account"""
 
@@ -688,7 +727,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertNotEqual(self.user_admin_no_task.iaso_profile.language, "fr")
         self.assertNotEqual(self.user_admin_no_task2.iaso_profile.language, "fr")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_select_all(self):
         """POST //api/tasks/create/profilesbulkupdate/ happy path (select all)"""
 
@@ -745,7 +783,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.user_managed.iaso_profile.language, "fr")
         self.assertEqual(8, am.Modification.objects.count())
 
-    @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):
         """POST /api/tasks/create/profilesbulkupdate/ happy path (select all, but with search)"""
 
@@ -783,7 +820,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(1, am.Modification.objects.count())
         # TODO assert log content
 
-    @tag("iaso_only")
     def test_bulk_update_with_user_roles_filters(self):
         """POST /api/tasks/create/profilesbulkupdate/ happy path (select all, but with filters)"""
         self.client.force_authenticate(self.user_admin)
@@ -819,7 +855,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         for user in users_not_in_user_group:
             self.assertNotEqual(user["language"], "fr")
 
-    @tag("iaso_only")
     def test_bulk_update_with_teams_filters(self):
         """POST /api/tasks/create/profilesbulkupdate/ happy path (select all, but with filters)"""
         self.client.force_authenticate(self.user_admin)
@@ -857,7 +892,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         for user in users_not_in_teams:
             self.assertNotEqual(user["iaso_profile__language"], "fr")
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_task_select_all_but_some(self):
         """POST /api/tasks/create/profilesbulkupdate/ happy path (select all except some)"""
 
@@ -899,7 +933,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
 
         self.assertEqual(5, am.Modification.objects.count())
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_user_without_iaso_team_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ a user without permission menupermissions.iaso_teams cannot add users to team"""
         user = self.user_managed
@@ -934,7 +967,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         )
         # TODO assert no log for teams
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_add_users_to_team(self):
         """POST /api/tasks/create/profilesbulkupdate/ can add users to a team and the users must have same account as the launcher"""
         self.client.force_authenticate(self.add_users_team_launcher_1)
@@ -974,7 +1006,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         )
         # TODO assert team logs
 
-    @tag("iaso_only")
     def test_profile_bulkupdate_add_users_to_no_team_of_users(self):
         """POST /api/tasks/create/profilesbulkupdate/ can not add users to a team with no team_of_users type"""
         self.client.force_authenticate(self.add_users_team_launcher_1)

@@ -121,3 +121,22 @@ PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
 ```
 
 When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.
+
+## Frontend Configuration
+
+### Development Settings
+
+| name | optional | default value | description |
+|------|----------|---------------|-------------|
+| WEBPACK_HOST | true | `localhost` | Host for the development server |
+| WEBPACK_PORT | true | `3000` | Port for the development server |
+| WEBPACK_PROTOCOL | true | `http` | Protocol for the development server |
+| WEBPACK_PATH | true | `./assets/webpack/` | Path for webpack output files |
+| OLD_BROWSER | true | `false` | Enable compatibility mode for older browsers |
+| LIVE_COMPONENTS | true | `false` | Use local bluesquare-components for development |
+
+### Language Settings
+
+| name | optional | default value | description |
+|------|----------|---------------|-------------|
+| AVAILABLE_LANGUAGES | true | `en,fr` | Comma-separated list of supported languages |

@@ -1,6 +1,6 @@
 import moment from 'moment';
-import { formatValue } from '.';
 import { longDateFormats } from '../../../utils/dates';
+import { formatValue } from '.';
 
 const setLocale = code => {
     moment.locale(code);

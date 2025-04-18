@@ -3,7 +3,7 @@ import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import { useHasNoAccount } from '../../../utils/usersUtils';
-import { APP_LOCALES } from '../../app/constants';
+import { useAppLocales } from '../../app/constants';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';
 
@@ -50,9 +50,10 @@ export const LangSwitch: FunctionComponent<Props> = () => {
         },
         [hasNoAccount, setLocale, saveCurrentUser],
     );
+    const appLocales = useAppLocales();
     return (
         <>
-            {APP_LOCALES.map((locale, index) => {
+            {appLocales.map((locale, index) => {
                 return (
                     <Box key={locale.code}>
                         <Box
@@ -65,7 +66,7 @@ export const LangSwitch: FunctionComponent<Props> = () => {
                             {locale.code}
                         </Box>
 
-                        {index + 1 !== APP_LOCALES.length && '-'}
+                        {index + 1 !== appLocales.length && '-'}
                     </Box>
                 );
             })}
@@ -88,9 +89,10 @@ export const OffLineLangSwitch: FunctionComponent = () => {
         },
         [setLocale],
     );
+    const appLocales = useAppLocales();
     return (
         <>
-            {APP_LOCALES.map((locale, index) => {
+            {appLocales.map((locale, index) => {
                 return (
                     <Box key={locale.code} ml={index === 1 ? 2 : undefined}>
                         <Button

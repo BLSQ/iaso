@@ -1,5 +1,3 @@
-import { LangOptions } from 'bluesquare-components';
-import moment from 'moment';
 import React, {
     createContext,
     useContext,
@@ -7,7 +5,9 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { longDateFormats } from '../../../utils/dates';
+import { LangOptions } from 'bluesquare-components';
+import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 const LocaleContext = createContext({
     locale: moment.locale(),
@@ -18,8 +18,12 @@ const LocaleContext = createContext({
 
 const updateMomentLocale = (newLocale: LangOptions) => {
     moment.locale(newLocale);
+    // Use LANGUAGE_CONFIGS for date formats with fallback to English
+    const dateFormats =
+        LANGUAGE_CONFIGS[newLocale]?.dateFormats ||
+        LANGUAGE_CONFIGS.en?.dateFormats;
     moment.updateLocale(newLocale, {
-        longDateFormat: longDateFormats[newLocale],
+        longDateFormat: dateFormats,
         week: {
             dow: 1,
         },

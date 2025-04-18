@@ -1,19 +1,19 @@
 /* eslint-disable no-param-reassign */
-import { Alert, Grid, SxProps, Theme } from '@mui/material';
+import React, { useCallback, useMemo } from 'react';
+import { Alert, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo } from 'react';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { APP_LOCALES } from '../../app/constants';
+import { USERS_ADMIN } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages.ts';
 import { userHasPermission } from '../utils.js';
-import { USERS_ADMIN } from '../../../utils/permissions';
 
 const useStyles = makeStyles(theme => ({
     alert: {
@@ -83,7 +83,7 @@ const UsersInfos = ({
     );
 
     const isMultiAccountUser = currentUser.has_multiple_accounts.value;
-
+    const appLocales = useAppLocales();
     return (
         <form>
             {isMultiAccountUser && (
@@ -213,7 +213,7 @@ const UsersInfos = ({
                         type="select"
                         multi={false}
                         label={MESSAGES.locale}
-                        options={APP_LOCALES.map(locale => {
+                        options={appLocales.map(locale => {
                             return {
                                 value: locale.code,
                                 label: locale.label,

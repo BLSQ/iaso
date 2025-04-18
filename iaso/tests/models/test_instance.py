@@ -13,28 +13,23 @@ class InstanceBase(IasoTestCaseMixin):
     def prepare_setup_data(cls):
         cls.maxDiff = None
 
-        cls.star_wars = m.Account.objects.create(name="Star Wars")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_forms"])
+        cls.account = m.Account.objects.create(name="Account")
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_forms"])
 
-        cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
-        cls.system = m.OrgUnitType.objects.create(name="System", short_name="Sys")
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-        cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
+        cls.org_unit_type_1 = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
+        cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="System", short_name="Sys")
+        cls.org_unit_type_3 = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        cls.org_unit_type_4 = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
 
-        cls.jedi_council_coruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", org_unit_type=cls.jedi_council
-        )
-        cls.jedi_academy_coruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Academy", org_unit_type=cls.jedi_academy
-        )
+        cls.org_unit_1 = m.OrgUnit.objects.create(name="Org Unit 1", org_unit_type=cls.org_unit_type_3)
+        cls.org_unit_2 = m.OrgUnit.objects.create(name="Org Unit 2", org_unit_type=cls.org_unit_type_4)
 
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=cls.star_wars
-        )
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="p1", account=cls.account)
+        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="p2", account=cls.account)
 
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type="MONTH", single_per_period=True)
-        cls.form_1.org_unit_types.add(cls.jedi_council)
-        cls.form_1.org_unit_types.add(cls.jedi_academy)
+        cls.form_1 = m.Form.objects.create(name="Form 1", period_type="MONTH", single_per_period=True)
+        cls.form_1.org_unit_types.add(cls.org_unit_type_3)
+        cls.form_1.org_unit_types.add(cls.org_unit_type_4)
         cls.form_1.save()
 
         cls.form_2 = m.Form.objects.create(
@@ -45,39 +40,39 @@ class InstanceBase(IasoTestCaseMixin):
             period_type="QUARTER",
             single_per_period=False,
         )
-        cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.form_2.org_unit_types.add(cls.jedi_academy)
+        cls.form_2.org_unit_types.add(cls.org_unit_type_3)
+        cls.form_2.org_unit_types.add(cls.org_unit_type_4)
         cls.form_2.save()
 
-        cls.project.unit_types.add(cls.jedi_council)
-        cls.project.unit_types.add(cls.jedi_academy)
-        cls.project.forms.add(cls.form_1)
-        cls.project.forms.add(cls.form_2)
-        cls.project.save()
+        cls.project_1.unit_types.add(cls.org_unit_type_3)
+        cls.project_1.unit_types.add(cls.org_unit_type_4)
+        cls.project_1.forms.add(cls.form_1)
+        cls.project_1.forms.add(cls.form_2)
+        cls.project_1.save()
 
     @classmethod
     def set_up_instances_for_status_testing(cls):
         cls.instance_1 = cls.create_form_instance(
-            form=cls.form_1, period="202001", org_unit=cls.jedi_council_coruscant, project=cls.project
+            form=cls.form_1, period="202001", org_unit=cls.org_unit_1, project=cls.project_1
         )
         cls.instance_2 = cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_coruscant, project=cls.project
+            form=cls.form_1, period="202002", org_unit=cls.org_unit_1, project=cls.project_1
         )
         cls.instance_3 = cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_coruscant, project=cls.project
+            form=cls.form_1, period="202002", org_unit=cls.org_unit_1, project=cls.project_1
         )
         cls.instance_4 = cls.create_form_instance(
             form=cls.form_1,
             period="202003",
-            org_unit=cls.jedi_council_coruscant,
+            org_unit=cls.org_unit_1,
             last_export_success_at=now(),
-            project=cls.project,
+            project=cls.project_1,
         )
         cls.instance_5 = cls.create_form_instance(
-            form=cls.form_2, period="2020Q1", org_unit=cls.jedi_council_coruscant, project=cls.project
+            form=cls.form_2, period="2020Q1", org_unit=cls.org_unit_1, project=cls.project_1
         )
         cls.instance_6 = cls.create_form_instance(
-            form=cls.form_2, period="2020Q1", org_unit=cls.jedi_academy_coruscant, project=cls.project
+            form=cls.form_2, period="2020Q1", org_unit=cls.org_unit_2, project=cls.project_1
         )
 
 
@@ -101,14 +96,14 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance_1 = self.create_form_instance(
             form=self.form_1,
             period="202002",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             last_export_success_at=now(),
             project=None,
         )
         instance_2 = self.create_form_instance(
             form=self.form_1,
             period="202002",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             last_export_success_at=now(),
             project=None,
         )
@@ -117,17 +112,17 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         self.assertStatusIs(instance_2, m.Instance.STATUS_DUPLICATED)
 
     def test_instance_status_counts(self):
-        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.jedi_council_coruscant, project=None)
-        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.jedi_council_coruscant, project=None)
-        self.create_form_instance(form=self.form_1, period="201902", org_unit=self.jedi_council_coruscant, project=None)
-        self.create_form_instance(form=self.form_1, period="201903", org_unit=self.jedi_council_coruscant, project=None)
+        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.org_unit_1, project=None)
+        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.org_unit_1, project=None)
+        self.create_form_instance(form=self.form_1, period="201902", org_unit=self.org_unit_1, project=None)
+        self.create_form_instance(form=self.form_1, period="201903", org_unit=self.org_unit_1, project=None)
 
-        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.jedi_academy_coruscant, project=None)
-        self.create_form_instance(form=self.form_1, period="201902", org_unit=self.jedi_academy_coruscant, project=None)
+        self.create_form_instance(form=self.form_1, period="201901", org_unit=self.org_unit_2, project=None)
+        self.create_form_instance(form=self.form_1, period="201902", org_unit=self.org_unit_2, project=None)
         self.create_form_instance(
             form=self.form_1,
             period="201903",
-            org_unit=self.jedi_academy_coruscant,
+            org_unit=self.org_unit_2,
             last_export_success_at=now(),
             project=None,
         )
@@ -139,7 +134,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
                 {
                     "period": "201901",
                     "form_id": self.form_1.id,
-                    "form__name": "Hydroponics study",
+                    "form__name": "Form 1",
                     "form__form_id": None,
                     "total_count": 3,
                     "ready_count": 1,
@@ -149,7 +144,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
                 {
                     "period": "201902",
                     "form_id": self.form_1.id,
-                    "form__name": "Hydroponics study",
+                    "form__name": "Form 1",
                     "form__form_id": None,
                     "total_count": 2,
                     "ready_count": 2,
@@ -159,7 +154,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
                 {
                     "period": "201903",
                     "form_id": self.form_1.id,
-                    "form__name": "Hydroponics study",
+                    "form__name": "Form 1",
                     "form__form_id": None,
                     "total_count": 2,
                     "ready_count": 1,
@@ -178,7 +173,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
                 {
                     "period": "201903",
                     "form_id": self.form_1.id,
-                    "form__name": "Hydroponics study",
+                    "form__name": "Form 1",
                     "form__form_id": None,
                     "total_count": 2,
                     "ready_count": 1,
@@ -197,7 +192,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/submission_with_emoji.xml")),
         )
         json_instance = instance.get_and_save_json_of_xml()
@@ -210,7 +205,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload_with_encoding.xml")),
         )
 
@@ -273,7 +268,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
         )
 
@@ -341,7 +336,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/odk_instance_repeat_group.xml")),
         )
 
@@ -399,7 +394,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload_without_version.xml")),
         )
 
@@ -418,7 +413,7 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
-            org_unit=self.jedi_council_coruscant,
+            org_unit=self.org_unit_1,
             file=UploadedFile(open("iaso/tests/fixtures/edit_existing_submission.xml")),
         )
 
@@ -493,20 +488,20 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(second_academy))
 
     def create_simple_hierarchy(self):
-        alderaan = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Alderaan Sector")
-        sluis = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Sluis Sector")
-        dagobah = m.OrgUnit.objects.create(org_unit_type=self.system, parent=sluis, name="Dagobah System")
+        alderaan = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type_1, name="Alderaan Sector")
+        sluis = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type_1, name="Sluis Sector")
+        dagobah = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type_2, parent=sluis, name="Dagobah System")
         first_council = m.OrgUnit.objects.create(
-            org_unit_type=self.jedi_council, parent=dagobah, name="First Dagobah Jedi Council"
+            org_unit_type=self.org_unit_type_3, parent=dagobah, name="First Dagobah Jedi Council"
         )
         second_council = m.OrgUnit.objects.create(
-            org_unit_type=self.jedi_council, parent=dagobah, name="Second Dagobah Jedi Council"
+            org_unit_type=self.org_unit_type_3, parent=dagobah, name="Second Dagobah Jedi Council"
         )
         first_academy = m.OrgUnit.objects.create(
-            org_unit_type=self.jedi_academy, parent=first_council, name="Jedi Academy Dagobah I"
+            org_unit_type=self.org_unit_type_4, parent=first_council, name="Jedi Academy Dagobah I"
         )
         second_academy = m.OrgUnit.objects.create(
-            org_unit_type=self.jedi_academy, parent=first_council, name="Jedi Academy Dagobah II"
+            org_unit_type=self.org_unit_type_4, parent=first_council, name="Jedi Academy Dagobah II"
         )
         alderaan.save()
         sluis.save()
@@ -519,12 +514,45 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         return (alderaan, sluis, dagobah, first_council, second_council, first_academy, second_academy)
 
     def test_org_unit_soft_delete(self):
-        instance = self.create_form_instance(
-            form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant, project=None
-        )
+        instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.org_unit_1, project=None)
         self.assertFalse(instance.deleted)
         instance.soft_delete()
         self.assertTrue(instance.deleted)
+
+    def test_filter_on_user_projects(self):
+        # Users.
+        jane = self.create_user_with_profile(username="jane", account=self.account)
+        jane.iaso_profile.projects.set([self.project_1, self.project_2])
+        john = self.create_user_with_profile(username="john", account=self.account)
+        john.iaso_profile.projects.set([self.project_1])
+        jim = self.create_user_with_profile(username="jim", account=self.account)
+        user_without_profile = m.User.objects.create(username="foo")
+
+        # Instances.
+        form_instance_1 = self.create_form_instance(form=self.form_1, project=self.project_1)
+        form_instance_2 = self.create_form_instance(form=self.form_1, project=self.project_1)
+        form_instance_3 = self.create_form_instance(form=self.form_2, project=self.project_2)
+        form_instance_4 = self.create_form_instance(form=self.form_2, project=self.project_2)
+
+        total_form_instances = m.Instance.objects.count()
+
+        jane_form_instances = m.Instance.objects.filter_on_user_projects(user=jane)
+        self.assertEqual(jane_form_instances.count(), 4)
+        self.assertIn(form_instance_1, jane_form_instances)
+        self.assertIn(form_instance_2, jane_form_instances)
+        self.assertIn(form_instance_3, jane_form_instances)
+        self.assertIn(form_instance_4, jane_form_instances)
+
+        john_form_instances = m.Instance.objects.filter_on_user_projects(user=john)
+        self.assertEqual(john_form_instances.count(), 2)
+        self.assertIn(form_instance_1, john_form_instances)
+        self.assertIn(form_instance_2, john_form_instances)
+
+        jim_form_instances = m.Instance.objects.filter_on_user_projects(user=jim)
+        self.assertEqual(jim_form_instances.count(), total_form_instances)
+
+        user_without_profile_form_instances = m.Instance.objects.filter_on_user_projects(user=user_without_profile)
+        self.assertEqual(user_without_profile_form_instances.count(), total_form_instances)
 
 
 class InstanceAPITestCase(APITestCase, InstanceBase):

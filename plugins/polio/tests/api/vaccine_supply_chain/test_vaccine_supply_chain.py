@@ -1,228 +1,28 @@
 import datetime
 
-from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
-from django.utils.timezone import now
 
-import hat.menupermissions.models as permissions
-
-from iaso import models as m
-from iaso.test import APITestCase
+from iaso.utils.models.virus_scan import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
+from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
 
 
-BASE_URL = "/api/polio/vaccine/request_forms/"
-
-
-class VaccineSupplyChainAPITestCase(APITestCase):
-    @classmethod
-    def setUp(cls):
-        cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.another_data_source = m.DataSource.objects.create(name="Another source")
-
-        cls.now = now()
-
-        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.another_source_version = m.SourceVersion.objects.create(data_source=cls.another_data_source, number=1)
-
-        cls.account = m.Account.objects.create(name="polio", default_version=cls.source_version_1)
-
-        cls.another_account = m.Account.objects.create(
-            name="another_account", default_version=cls.another_source_version
-        )
-
-        cls.default_project = m.Project.objects.create(name="Default project", app_id="default", account=cls.account)
-        cls.data_source.projects.set([cls.default_project])
-
-        cls.another_project = m.Project.objects.create(
-            name="Another project", app_id="another", account=cls.another_account
-        )
-        cls.another_data_source.projects.set([cls.another_project])
-
-        cls.account_2 = m.Account.objects.create(name="second_account", default_version=cls.source_version_1)
-
-        cls.anon = AnonymousUser()
-
-        cls.user_rw_perm = cls.create_user_with_profile(
-            username="user_1",
-            account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ, permissions._POLIO_VACCINE_SUPPLY_CHAIN_WRITE],
-        )
-        cls.user_ro_perm = cls.create_user_with_profile(
-            username="user_2", account=cls.account, permissions=[permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ]
-        )
-        cls.user_no_perms = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=[])
-
-        cls.project = m.Project.objects.create(
-            name="Polio",
-            app_id="polio.projects",
-            account=cls.account,
-        )
-
-        cls.project_2 = m.Project.objects.create(
-            name="Project_2",
-            app_id="pro.jects",
-            account=cls.account_2,
-        )
-
-        cls.org_unit_type_country = m.OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
-
-        cls.org_unit_type_country.projects.set([cls.project, cls.project_2])
-        cls.org_unit_type_country.save()
-
-        cls.org_unit_DRC = m.OrgUnit.objects.create(
-            org_unit_type=cls.org_unit_type_country,
-            version=cls.source_version_1,
-            name="Democratic Republic of Congo",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.org_unit_CHAD = m.OrgUnit.objects.create(
-            org_unit_type=cls.org_unit_type_country,
-            version=cls.source_version_1,
-            name="CHAD",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.org_unit_BE = m.OrgUnit.objects.create(
-            org_unit_type=cls.org_unit_type_country,
-            version=cls.source_version_1,
-            name="Belgium",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
-        )
-
-        cls.campaign_rdc_1 = pm.Campaign.objects.create(
-            obr_name="RDC_CAMPAIGN_1",
-            country=cls.org_unit_DRC,
-            account=cls.account,
-        )
-
-        cls.campaign_rdc_1_round_1 = pm.Round.objects.create(
-            campaign=cls.campaign_rdc_1,
-            started_at=datetime.date(2021, 1, 1),
-            ended_at=datetime.date(2021, 1, 31),
-            number=1,
-        )
-
-        cls.campaign_rdc_1_round_2 = pm.Round.objects.create(
-            campaign=cls.campaign_rdc_1,
-            started_at=datetime.date(2021, 2, 1),
-            ended_at=datetime.date(2021, 2, 28),
-            number=2,
-        )
-
-        cls.campaign_rdc_1_round_3 = pm.Round.objects.create(
-            campaign=cls.campaign_rdc_1,
-            started_at=datetime.date(2021, 3, 1),
-            ended_at=datetime.date(2021, 3, 31),
-            number=3,
-        )
-
-        cls.vaccine_request_form_rdc_1 = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign_rdc_1,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=cls.now - datetime.timedelta(days=30),
-            date_vrf_signature=cls.now - datetime.timedelta(days=20),
-            date_dg_approval=cls.now - datetime.timedelta(days=10),
-            quantities_ordered_in_doses=500,
-        )
-        cls.vaccine_request_form_rdc_1.rounds.set([cls.campaign_rdc_1_round_1, cls.campaign_rdc_1_round_2])
-
-        cls.vaccine_request_form_rdc_2 = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign_rdc_1,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=cls.now - datetime.timedelta(days=1),
-            date_vrf_signature=cls.now,
-            date_dg_approval=cls.now,
-            quantities_ordered_in_doses=100,
-        )
-        cls.vaccine_request_form_rdc_2.rounds.set([cls.campaign_rdc_1_round_3])
-
-        cls.campaign_chad_1 = pm.Campaign.objects.create(
-            obr_name="CHAD_CAMPAIGN_1",
-            country=cls.org_unit_CHAD,
-            account=cls.account,
-        )
-
-        cls.campaign_chad_1_round_1 = pm.Round.objects.create(
-            campaign=cls.campaign_chad_1,
-            started_at=datetime.date(2021, 1, 1),
-            ended_at=datetime.date(2021, 1, 31),
-        )
-
-        cls.campaign_chad_1_round_2 = pm.Round.objects.create(
-            campaign=cls.campaign_chad_1,
-            started_at=datetime.date(2021, 2, 1),
-            ended_at=datetime.date(2021, 2, 28),
-        )
-
-        cls.campaign_chad_1_round_3 = pm.Round.objects.create(
-            campaign=cls.campaign_chad_1,
-            started_at=datetime.date(2021, 3, 1),
-            ended_at=datetime.date(2021, 3, 31),
-        )
-
-        cls.vaccine_request_form_chad_1 = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign_chad_1,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=cls.now - datetime.timedelta(days=30),
-            date_vrf_signature=cls.now - datetime.timedelta(days=20),
-            date_dg_approval=cls.now - datetime.timedelta(days=10),
-            quantities_ordered_in_doses=500,
-        )
-        cls.vaccine_request_form_chad_1.rounds.set(
-            [
-                cls.campaign_chad_1_round_1,
-                cls.campaign_chad_1_round_2,
-                cls.campaign_chad_1_round_3,
-            ]
-        )
-
-        cls.campaign_be_1 = pm.Campaign.objects.create(
-            obr_name="BE_CAMPAIGN_1",
-            country=cls.org_unit_BE,
-            account=cls.another_account,  # different account
-        )
-
-        cls.campaign_be_1_round_1 = pm.Round.objects.create(
-            campaign=cls.campaign_be_1,
-            started_at=datetime.date(2021, 1, 1),
-            ended_at=datetime.date(2021, 1, 31),
-        )
-
-        cls.campaign_be_1_round_2 = pm.Round.objects.create(
-            campaign=cls.campaign_be_1,
-            started_at=datetime.date(2021, 2, 1),
-            ended_at=datetime.date(2021, 2, 28),
-        )
-
-        cls.vaccine_request_form_be_1 = pm.VaccineRequestForm.objects.create(
-            campaign=cls.campaign_be_1,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=cls.now - datetime.timedelta(days=1),
-            date_vrf_signature=cls.now,
-            date_dg_approval=cls.now,
-            quantities_ordered_in_doses=1000000,
-        )
-
+class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def test_anonymous_user_cannot_see_list(self):
         self.client.force_authenticate(user=self.anon)
-        response = self.client.get(BASE_URL)
+        response = self.client.get(self.BASE_URL)
         self.assertEqual(response.status_code, 403)
 
     def test_user_without_read_rights_cannot_see_list(self):
         self.client.force_authenticate(user=self.user_no_perms)
-        response = self.client.get(BASE_URL)
+        response = self.client.get(self.BASE_URL)
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_read_only_can_see_list(self):
         self.client.force_authenticate(user=self.user_ro_perm)
-        response = self.client.get(BASE_URL)
+        response = self.client.get(self.BASE_URL)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
         self.assertEqual(len(res), 3)
@@ -235,14 +35,14 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
     def test_user_with_read_write_can_see_list(self):
         self.client.force_authenticate(user=self.user_rw_perm)
-        response = self.client.get(BASE_URL)
+        response = self.client.get(self.BASE_URL)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
         self.assertEqual(len(res), 3)
 
     def test_search_parameter_works_on_get_list_api(self):
         self.client.force_authenticate(user=self.user_rw_perm)
-        response = self.client.get(BASE_URL + "?search=" + self.vaccine_request_form_rdc_1.campaign.obr_name)
+        response = self.client.get(self.BASE_URL + "?search=" + self.vaccine_request_form_rdc_1.campaign.obr_name)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
         self.assertEqual(len(res), 2)
@@ -250,12 +50,12 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
     def test_user_without_read_rights_cannot_see_detail(self):
         self.client.force_authenticate(user=self.user_no_perms)
-        response = self.client.get(BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
+        response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_read_rights_can_see_detail(self):
         self.client.force_authenticate(user=self.user_ro_perm)
-        response = self.client.get(BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
+        response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
         self.assertEqual(response.status_code, 200)
         res = response.data
         self.assertEqual(res["campaign"], self.vaccine_request_form_rdc_1.campaign.id)
@@ -264,7 +64,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
     def test_user_with_read_write_rights_can_see_detail(self):
         self.client.force_authenticate(user=self.user_rw_perm)
-        response = self.client.get(BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
+        response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
         self.assertEqual(response.status_code, 200)
         res = response.data
         self.assertEqual(res["campaign"], self.vaccine_request_form_rdc_1.campaign.id)
@@ -273,13 +73,13 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
     def test_user_cannot_see_from_another_account(self):
         self.client.force_authenticate(user=self.user_rw_perm)
-        response = self.client.get(BASE_URL + str(self.vaccine_request_form_be_1.id) + "/")
+        response = self.client.get(self.BASE_URL + str(self.vaccine_request_form_be_1.id) + "/")
         self.assertEqual(response.status_code, 404)
 
     def test_anonymous_user_cannot_post_new_request_form(self):
         self.client.force_authenticate(user=self.anon)
         response = self.client.post(
-            BASE_URL,
+            self.BASE_URL,
             data={
                 "campaign": self.campaign_rdc_1.id,
                 "vaccine_type": pm.VACCINES[0][0],
@@ -309,7 +109,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
 
         response = self.client.post(
-            BASE_URL,
+            self.BASE_URL,
             data={
                 "campaign": campaign_test.obr_name,
                 "vaccine_type": pm.VACCINES[0][0],
@@ -355,7 +155,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             "rounds": [{"number": campaign_test_round_1.number}],
         }
 
-        response = self.client.post(BASE_URL, request_form_data, format="json")
+        response = self.client.post(self.BASE_URL, request_form_data, format="json")
         self.assertEqual(response.status_code, 201)
         request_form_id = response.data["id"]
 
@@ -370,7 +170,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             "rounds": [{"number": campaign_test_round_1.number}],
         }
 
-        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        response = self.client.patch(f"{self.BASE_URL}{request_form_id}/", update_data, format="json")
         self.assertEqual(response.status_code, 200)
 
         # Simulate passage of 8 days
@@ -379,18 +179,18 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         request_form.save()
 
         # Non-admin cannot edit after 7 days
-        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        response = self.client.patch(f"{self.BASE_URL}{request_form_id}/", update_data, format="json")
         self.assertEqual(response.status_code, 403)
 
         # Switch to admin user
         self.client.force_authenticate(self.user_rw_perm)
 
         # Admin can edit regardless of time passed
-        response = self.client.patch(f"{BASE_URL}{request_form_id}/", update_data, format="json")
+        response = self.client.patch(f"{self.BASE_URL}{request_form_id}/", update_data, format="json")
         self.assertEqual(response.status_code, 200)
 
         # Admin can delete regardless of time passed
-        response = self.client.delete(f"{BASE_URL}{request_form_id}/")
+        response = self.client.delete(f"{self.BASE_URL}{request_form_id}/")
         self.assertEqual(response.status_code, 204)
 
     def test_pre_alerts_permissions(self):
@@ -413,11 +213,13 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         }
 
         # Non-admin can create pre-alert
-        response = self.client.post(BASE_URL + f"{request_form.id}/add_pre_alerts/", data=pre_alert_data, format="json")
+        response = self.client.post(
+            self.BASE_URL + f"{request_form.id}/add_pre_alerts/", data=pre_alert_data, format="json"
+        )
         self.assertEqual(response.status_code, 201)
 
         # Get pre-alerts to find the ID
-        response = self.client.get(BASE_URL + f"{request_form.id}/get_pre_alerts/")
+        response = self.client.get(self.BASE_URL + f"{request_form.id}/get_pre_alerts/")
         self.assertEqual(response.status_code, 200)
 
         # Find the pre-alert with matching PO number
@@ -427,7 +229,9 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Non-admin can edit within 7 days
         update_data = {"pre_alerts": [{"id": pre_alert_id, "doses_shipped": 600000, "po_number": "5678"}]}
-        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        response = self.client.patch(
+            self.BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json"
+        )
         self.assertEqual(response.status_code, 200)
 
         # Simulate passage of 8 days
@@ -439,18 +243,22 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         update_data = {"pre_alerts": [{"id": pre_alert_id, "doses_shipped": 650000, "po_number": "5678"}]}
 
         # Non-admin cannot edit after 7 days
-        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        response = self.client.patch(
+            self.BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json"
+        )
         self.assertEqual(response.status_code, 400)
 
         # Switch to admin user
         self.client.force_authenticate(self.user_rw_perm)
 
         # Admin can edit regardless of time passed
-        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        response = self.client.patch(
+            self.BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json"
+        )
         self.assertEqual(response.status_code, 200)
 
         # Admin can delete regardless of time passed
-        response = self.client.delete(BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert_id}")
+        response = self.client.delete(self.BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert_id}")
         self.assertEqual(response.status_code, 204)
 
     def test_bad_po_number_raises_error(self):
@@ -460,7 +268,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         request_form = pm.VaccineRequestForm.objects.first()
 
         response = self.client.post(
-            BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            self.BASE_URL + f"{request_form.id}/add_pre_alerts/",
             data={
                 "pre_alerts": [
                     {
@@ -496,12 +304,12 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Non-admin can create arrival report
         response = self.client.post(
-            BASE_URL + f"{request_form.id}/add_arrival_reports/", data=arrival_report_data, format="json"
+            self.BASE_URL + f"{request_form.id}/add_arrival_reports/", data=arrival_report_data, format="json"
         )
         self.assertEqual(response.status_code, 201)
 
         # Get arrival reports to find the ID
-        response = self.client.get(BASE_URL + f"{request_form.id}/get_arrival_reports/")
+        response = self.client.get(self.BASE_URL + f"{request_form.id}/get_arrival_reports/")
         self.assertEqual(response.status_code, 200)
 
         # Find the arrival report with matching PO number
@@ -520,7 +328,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+            self.BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -535,7 +343,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Non-admin cannot edit after 7 days
         response = self.client.patch(
-            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+            self.BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
         )
         self.assertEqual(response.status_code, 400)
 
@@ -544,12 +352,14 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Admin can edit regardless of time passed
         response = self.client.patch(
-            BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
+            self.BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
         # Admin can delete regardless of time passed
-        response = self.client.delete(BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report_id}")
+        response = self.client.delete(
+            self.BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report_id}"
+        )
         self.assertEqual(response.status_code, 204)
 
     def test_can_get_request_form_vaccine_prealerts(self):
@@ -569,7 +379,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
 
         response = self.client.get(
-            BASE_URL + f"{request_form.id}/get_pre_alerts/",
+            self.BASE_URL + f"{request_form.id}/get_pre_alerts/",
         )
 
         self.assertEqual(response.status_code, 200)
@@ -581,6 +391,8 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02")
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 1000)
         self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
+        self.assertEqual(res["pre_alerts"][0]["scan_result"], VirusScanStatus.PENDING)  # No document -> default value
+        self.assertIsNone(res["pre_alerts"][0]["scan_timestamp"])
 
     def test_can_get_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -596,7 +408,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
 
         response = self.client.get(
-            BASE_URL + f"{request_form.id}/get_arrival_reports/",
+            self.BASE_URL + f"{request_form.id}/get_arrival_reports/",
         )
 
         self.assertEqual(response.status_code, 200)
@@ -633,7 +445,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         pa_set = getattr(request_form, PA_SET).all()
 
         response = self.client.delete(
-            BASE_URL + f"{request_form.id}/",
+            self.BASE_URL + f"{request_form.id}/",
             format="json",
         )
 
@@ -671,7 +483,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         pre_alert = getattr(request_form, PA_SET).first()
 
         response = self.client.delete(
-            BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert.id}",
+            self.BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert.id}",
             format="json",
         )
 
@@ -697,7 +509,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         arrival_report = getattr(request_form, AR_SET).first()
 
         response = self.client.delete(
-            BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report.id}",
+            self.BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report.id}",
             format="json",
         )
 
@@ -716,7 +528,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Update the target_population through the API
         updated_population = 20000
         response = self.client.patch(
-            BASE_URL + f"{request_form.id}/",
+            self.BASE_URL + f"{request_form.id}/",
             data={"target_population": updated_population},
             format="json",
         )
@@ -755,7 +567,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Make a GET request to the list endpoint with ordering by start_date
         response = self.client.get(
-            BASE_URL + "?order=-start_date&page=1&limit=20",
+            self.BASE_URL + "?order=-start_date&page=1&limit=20",
             format="json",
         )
 
@@ -805,7 +617,9 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         }
 
         # Make the update request
-        response = self.client.patch(BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json")
+        response = self.client.patch(
+            self.BASE_URL + f"{request_form.id}/update_pre_alerts/", update_data, format="json"
+        )
 
         self.assertEqual(response.status_code, 200)
 

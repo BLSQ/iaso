@@ -134,7 +134,6 @@ class VaccineRepositoryFormsAPITestCase(APITestCase, PolioTestCaseMixin):
             report_date=self.now,
             form_a_reception_date=self.now,
             usable_vials_used=500,
-            missing_vials=0,
         )
         forma.save()
 

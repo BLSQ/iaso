@@ -84,9 +84,12 @@ export interface OrgUnitChangeRequestsPaginated extends Pagination {
     select_all_count: number;
 }
 
+export type OrgUnitChangeRequestKind = 'org_unit_creation' | 'org_unit_change';
+
 export type OrgUnitChangeRequestDetails = {
     id: number;
     uuid: string;
+    kind: OrgUnitChangeRequestKind;
     status: ChangeRequestValidationStatus;
     created_by: NestedUser;
     created_at: number;

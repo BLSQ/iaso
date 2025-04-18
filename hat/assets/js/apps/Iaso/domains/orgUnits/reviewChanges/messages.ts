@@ -162,9 +162,18 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You are about to replace the original version (left) with the modified version (right).',
     },
+    confirmOrgUnitCreationChangeRequest: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationChangeRequest',
+        defaultMessage:
+            'You are about to create new Org Unit through change request.',
+    },
     confirmMessage: {
         id: 'iaso.changeRequest.confirmMessage',
         defaultMessage: 'Do you confirm those changes?',
+    },
+    confirmOrgUnitCreationMessage: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationMessage',
+        defaultMessage: 'Do you confirm the creation?',
     },
     comment: {
         id: 'iaso.changeRequest.comment',

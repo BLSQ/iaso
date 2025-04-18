@@ -204,7 +204,8 @@ class DataSourceVersionsSynchronization(models.Model):
 
     """
 
-    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date", "groups"]
+    SYNCHRONIZABLE_FIELDS = ["name", "parent", "opening_date", "closed_date"]
+    # `groups` are synchronizable, but are handled via the `ignore_groups` param of the `Differ`.
 
     name = models.CharField(
         max_length=255,

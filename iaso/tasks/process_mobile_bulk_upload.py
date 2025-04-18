@@ -72,23 +72,18 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
             with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
                 if ORG_UNITS_JSON in zip_ref.namelist():
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
-                    new_org_units = import_org_units(
-                        org_units_data, user, project.app_id
-                    )
+                    new_org_units = import_org_units(org_units_data, user, project.app_id)
                     # Trypelim-specific
                     for ou in new_org_units:
-                        ou.validation_status = OrgUnit.VALIDATION_VALID
-                        ou.save()
+                        if ou.location:
+                            ou.validation_status = OrgUnit.VALIDATION_VALID
+                            ou.save()
                     stats["new_org_units"] = len(new_org_units)
                 else:
-                    logger.info(
-                        f"The file {ORG_UNITS_JSON} does not exist in the zip file."
-                    )
+                    logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
                 if INSTANCES_JSON not in zip_ref.namelist():
-                    raise ValueError(
-                        f"{zip_file_path}: The file {INSTANCES_JSON} does not exist in the zip file."
-                    )
+                    raise ValueError(f"{zip_file_path}: The file {INSTANCES_JSON} does not exist in the zip file.")
 
                 logger.info("Processing forms and files")
                 instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
@@ -100,9 +95,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     uuid = instance_data["id"]
                     instance = process_instance_xml(uuid, instance_data, zip_ref, user)
                     stats["new_instances"] += 1
-                    new_instance_files += process_instance_attachments(
-                        dirs[uuid], instance
-                    )
+                    new_instance_files += process_instance_attachments(dirs[uuid], instance)
 
                 # Trypelim-specifics
                 duplicated_count = duplicate_instance_files(new_instance_files)
@@ -111,9 +104,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
 
                 if STORAGE_LOGS_JSON in zip_ref.namelist():
                     logger.info("Processing storage logs")
-                    storage_logs_data = read_json_file_from_zip(
-                        zip_ref, STORAGE_LOGS_JSON
-                    )
+                    storage_logs_data = read_json_file_from_zip(zip_ref, STORAGE_LOGS_JSON)
                     import_storage_logs(storage_logs_data, user)
 
     except Exception as e:
@@ -160,9 +151,7 @@ def process_instance_xml(uuid, instance_data, zip_ref, user):
 
 
 def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
-    incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(
-        int(incoming_updated_at)
-    )
+    incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
     if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
         logger.info(
             "\tUpdating instance %s (from timestamp %s to %s)",
@@ -177,9 +166,7 @@ def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
         instance.save()
         instance.get_and_save_json_of_xml(force=True, tries=8)
         log_modification(original, instance, BULK_UPLOAD, user=user)
-        update_merged_entity_ref_form_if_needed(
-            instance, incoming_updated_at, file, user
-        )
+        update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file, user)
     else:
         logger.info(
             "\tSkipping instance %s (current timestamp %s, incoming %s)",
@@ -205,10 +192,7 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
     while active_entity.deleted_at and active_entity.merged_to:
         active_entity = active_entity.merged_to
 
-    if (
-        entity.attributes == instance
-        and incoming_updated_at > active_entity.attributes.source_updated_at
-    ):
+    if entity.attributes == instance and incoming_updated_at > active_entity.attributes.source_updated_at:
         instance_to_update = active_entity.attributes
         logger.info(
             "\tUpdating instance %s (from timestamp %s to %s) (merged entity)",
@@ -222,9 +206,7 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
         instance_to_update.source_updated_at = incoming_updated_at
         instance_to_update.save()
         instance_to_update.get_and_save_json_of_xml(force=True, tries=8)
-        log_modification(
-            original, instance_to_update, BULK_UPLOAD_MERGED_ENTITY, user=user
-        )
+        log_modification(original, instance_to_update, BULK_UPLOAD_MERGED_ENTITY, user=user)
 
 
 # Create form attachments for all non-XML files in the form's directory
@@ -245,9 +227,7 @@ def duplicate_instance_files(new_instance_files):
     count = 0
     for instance_file in new_instance_files:
         if "serie_id" in instance_file.instance.json:
-            for i in Instance.objects.filter(
-                json__serie_id=instance_file.instance.json["serie_id"]
-            ).exclude(
+            for i in Instance.objects.filter(json__serie_id=instance_file.instance.json["serie_id"]).exclude(
                 id=instance_file.instance_id,
             ):
                 instance_file.pk = None  # trick to duplicate model
@@ -273,16 +253,11 @@ def process_population_instances(instances_data):
                 org_unit = OrgUnit.objects.get(pk=org_unit_id)
 
             newest_population_instance = (
-                get_population_instances()
-                .filter(org_unit=org_unit)
-                .order_by("-source_created_at")
-                .first()
+                get_population_instances().filter(org_unit=org_unit).order_by("-source_created_at").first()
             )
             new_pop = int(newest_population_instance.json["population"])
             org_unit.set_extra_fields({"population": new_pop})
-            logger.info(
-                f"\tSet population on {org_unit.name} ({org_unit.id}) to {new_pop}"
-            )
+            logger.info(f"\tSet population on {org_unit.name} ({org_unit.id}) to {new_pop}")
 
 
 def is_uuid(string):

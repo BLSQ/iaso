@@ -158,6 +158,36 @@ PATIENT_LIST_DISPLAY_FIELDS = {
     "active": "Actif",
 }
 
+PATIENT_HISTORY_DISPLAY_FIELDS = {
+    #  "region": "Région",
+    # "district": "District",
+    #  "code_ets": "Code établissement",
+    #  "facility_name": "Nom établissement",
+    "sex": "Sexe",
+    "age": "Âge",
+    "weight": "Poids",
+    "new_inclusion": "Nouvelle inclusion",
+    "transfer_in": "Transfert entrant",
+    "return_to_care": "Retour aux soins",
+    "tb_hiv": "TB/VIH",
+    "hiv_type": "Type de VIH",
+    "treatment_line": "Ligne de traitement",
+    "last_dispensation_date": "Date de dernière dispensation",
+    "days_dispensed": "Jours dispensés",
+    "regimen": "Régime",
+    "stable": "Stable",
+    "transfer_out": "Transfert sortant",
+    "death": "Décès",
+    "art_stoppage": "Arrêt du TAR",
+    "served_elsewhere": "Servi ailleurs",
+    "active": "Actif",
+}
+SEARCH_LIST_DISPLAY_FIELDS = {
+    "identifier_code": "Code identificateur",
+    "sex": "Sexe",
+    "age": "Âge",
+    "weight": "Poids",
+}
 
 class Validation(models.Model):
     source_import = models.ForeignKey(Import, on_delete=models.CASCADE)

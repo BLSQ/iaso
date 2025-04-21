@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load getattribute %}
+
+{% block content %}
+     <h1>Import Details</h1>
+    <p>Import ID: {{ import_obj.id }}</p>
+    <p>Org Unit: {{ import_obj.org_unit }}</p>
+    <p>Month: {{ import_obj.month }}</p>
+    <p>Creation Date: {{ import_obj.creation_date }}</p>
+    <p>Source: {{ import_obj.source }}</p>
+    <p>File Name: {{ import_obj.file_name }}</p>
+    <p>On Time: {{ import_obj.on_time }}</p>
+
+    <h2>Active Patients List</h2>
+    <table>
+        <thead>
+            <tr>
+                {% for field_name, field_label in PATIENT_LIST_DISPLAY_FIELDS.items %}
+                    <th>{{ field_label }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for patient in active_patients %}
+            <tr>
+                {% for field_name in PATIENT_LIST_DISPLAY_FIELDS %}
+                    <td>{{ patient|getattribute:field_name }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}

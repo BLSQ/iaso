@@ -8,13 +8,17 @@ import pandas as pd
 import math
 import openpyxl
 from django.core.exceptions import FieldDoesNotExist
+
 from django.db.models import Max
 from django.http import HttpResponse
 from django.db import models
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.db.models import Count
 
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
+
 from iaso.models import OrgUnit
 from .forms import ValidationForm, ActivePatientsListForm
 from .settings import OPENHEXA_USER, OPENHEXA_PASSWORD
@@ -31,7 +35,7 @@ from .models import (
     HIV_UNKNOWN,
     HIV_HIV1,
     HIV_HIV2,
-    HIV_HIV1_AND_2,
+    HIV_HIV1_AND_2, SEARCH_LIST_DISPLAY_FIELDS, PATIENT_HISTORY_DISPLAY_FIELDS,
 )
 from ..polio.settings import DISTRICT
 
@@ -71,6 +75,60 @@ def homepage(request):
 @login_required
 def patient_list(request):
     return render(request, "patient_list.html", {})
+
+@login_required
+def patient_history(request):
+    identifier = request.GET.get("identifier", "")
+    if identifier:
+        # Fetch the patient based on the identifier
+
+        latest_ids = (
+            ActivePatientsList.objects.filter(identifier_code=identifier)
+            .values("identifier_code", "period")
+            .annotate(latest_id=Max("id"))
+        )
+
+        records = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
+        data = []
+        for record in records:
+            patient_object = {"Période": record.period[:7]}
+            for field in PATIENT_HISTORY_DISPLAY_FIELDS:
+                patient_object[PATIENT_HISTORY_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
+            data.append(patient_object)
+        return render(request, "patient_history.html", {"data": data,  "identifier_code": identifier})
+
+    return render(request, "patient_history.html", {"data": []})
+
+
+@login_required
+def patient_search(request):
+    return render(request, "patient_search.html", {})
+
+@login_required
+
+def import_detail_view(request, import_id):
+    """
+    View to display a single Import object and its associated ActivePatientsList entries in a table.
+    Args:
+        request: The HTTP request object.
+        import_id: The ID of the Import object to retrieve.
+    Returns:
+        A rendered HTML template with the Import object and its ActivePatientsList entries.
+    """
+    # Get the Import object, or raise a 404 error if it doesn't exist
+    import_obj = get_object_or_404(Import, id=import_id)
+
+    # Get the ActivePatientsList entries associated with the Import, ordered by some field (e.g., 'id')
+    active_patients_list = ActivePatientsList.objects.filter(import_source=import_obj).order_by('id')
+
+    context = {
+        'import_obj': import_obj,
+        'active_patients': active_patients_list,
+        'PATIENT_LIST_DISPLAY_FIELDS': PATIENT_LIST_DISPLAY_FIELDS,
+    }
+
+    # Render the template with the context data
+    return render(request, 'import.html', context)
 
 
 @login_required
@@ -142,7 +200,7 @@ def patient_form(request, patient_id=None):
 
     return res
 
-
+@login_required
 def validation_api(request, org_unit_id, period):
     org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
 
@@ -152,10 +210,17 @@ def validation_api(request, org_unit_id, period):
         obj = {}
         obj["Site"] = org_unit.name
         latest_import = Import.objects.filter(org_unit=org_unit).filter(month=period).order_by("-creation_date").first()
+        previous_import = Import.objects.filter(org_unit=org_unit).filter(month__lt=period).order_by("-creation_date").first()
+
         if latest_import:
             report_count = report_count + 1
             obj["A rapporté"] = "Oui"
             latest_validation = Validation.objects.filter(source_import=latest_import).order_by("-created_at").first()
+            line_count = ActivePatientsList.objects.filter(import_source=latest_import).count()
+            previous_line_count = ActivePatientsList.objects.filter(import_source=latest_import).count()
+            import_link = reverse('import_detail', kwargs={'import_id': latest_import.pk})
+            obj["Lignes"] = '<a href="%s">%d</a> (%d précédemment)' % (import_link, line_count, previous_line_count)
+
             if latest_validation:
                 obj["Statut"] = latest_validation.validation_status
                 obj["Observation"] = latest_validation.comment
@@ -232,9 +297,11 @@ def filter_active_patients_for_the_month(patients, month):
     first_day_str, last_day_str = get_first_and_last_day(month)
     return patients.filter(next_dispensation_date__gte=first_day_str).filter(next_dispensation_date__lte=last_day_str)
 
+@login_required
 def patient_list_api(request, org_unit_id, period):
     format = request.GET.get("format", "json")
     mode = request.GET.get("mode", "default")
+
     latest_ids = (
         ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
         .values("identifier_code")
@@ -277,6 +344,25 @@ def patient_list_api(request, org_unit_id, period):
         else:
             return render(request, "partials/patient_table.html", {"data": table_content})
 
+
+@login_required
+def patient_search_api(request):
+    """
+    View to handle search functionality for patients.
+    """
+    # Perform search logic here (e.g., filter ActivePatientsList based on query)
+    query = request.GET.get("query", "")
+    patients = ActivePatientsList.objects.filter(identifier_code__icontains=query).distinct('identifier_code').order_by("identifier_code")[:10]  # Limit to 10 results
+    table_content = []
+    for patient in patients:
+        patient_object = {}
+        for field in SEARCH_LIST_DISPLAY_FIELDS:
+            patient_object[SEARCH_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(patient, field)
+
+        patient_object["Voir"] = '<a href="/active_list/patient_history/?identifier=%s">Voir</a>' % patient.identifier_code
+        table_content.append(patient_object)
+    # Render the results in a template
+    return render(request, "partials/patient_table.html", {"data": table_content})
 
 
 def export_active_patients_excel(active_patients, name, period):
@@ -570,3 +656,5 @@ def import_data(file, the_import):
 
     # Save the objects into the database
     ActivePatientsList.objects.bulk_create(active_patients_list)
+
+

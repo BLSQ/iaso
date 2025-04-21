@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<h2>Historique d'un patient</h2>
+<h1>{{ identifier_code }}</h1>
+<br/>
+
+<div id="dataContainer">
+    <div id="table-container">
+        {% include "partials/patient_table.html"  %}
+    </div>
+</div>
+
+{% endblock %}

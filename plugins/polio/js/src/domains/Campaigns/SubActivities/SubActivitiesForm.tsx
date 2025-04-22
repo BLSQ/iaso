@@ -15,7 +15,7 @@ export const SubActivitiesForm: FunctionComponent = () => {
     } = useFormikContext<CampaignFormValues>();
 
     const excludedTestAndOnHoldRounds = useMemo(
-        () => rounds.filter(r => !r.is_test),
+        () => rounds.filter(r => !r.on_hold),
         [rounds],
     );
 

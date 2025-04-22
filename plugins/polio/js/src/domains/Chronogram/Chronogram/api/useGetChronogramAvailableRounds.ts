@@ -23,7 +23,7 @@ const filterAvailableRoundsForCreate = (
                 return {
                     value: round.value,
                     label: `${round.label}`,
-                    is_test: round.is_test,
+                    on_hold: round.on_hold,
                     campaign_id: round.campaign_id,
                 };
             },

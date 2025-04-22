@@ -300,7 +300,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
     def get_queryset(self):
         return OutgoingStockMovement.objects.filter(
-            Q(round__isnull=True) | Q(round__isnull=False, round__is_test=False)
+            Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
         )
 
     def create(self, request, *args, **kwargs):
@@ -519,7 +519,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
         return (
             EarmarkedStock.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
             .select_related("vaccine_stock", "campaign", "round")
-            .filter(Q(temporary_campaign_name="") & Q(round__is_test=False) | ~Q(temporary_campaign_name=""))
+            .filter(Q(temporary_campaign_name="") & Q(round__on_hold=False) | ~Q(temporary_campaign_name=""))
         )
 
 

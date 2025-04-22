@@ -11,7 +11,7 @@ export const useSubActivityTabTooltip = (
         (formik.values.id &&
             formik.values.separate_scopes_per_round !==
                 formik.initialValues.separate_scopes_per_round) ||
-        formik.values.rounds.filter(r => !r.is_test).length === 0
+        formik.values.rounds.filter(r => !r.on_hold).length === 0
     ) {
         return formatMessage(MESSAGES.subActivitiesLockedScopeChange);
     }

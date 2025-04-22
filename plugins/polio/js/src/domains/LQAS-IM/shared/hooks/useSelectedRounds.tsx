@@ -12,7 +12,7 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
         ? rounds
               ?.split(',')
               ?.filter(
-                  r => r in (campaign?.rounds?.filter(rc => !rc.is_test) || []),
+                  r => r in (campaign?.rounds?.filter(rc => !rc.on_hold) || []),
               )
               .join(',')
         : rounds;
@@ -28,7 +28,7 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
     const dropDownOptions = useMemo(() => {
         return campaigns
             ?.filter(c => c.obr_name === campaign)[0]
-            ?.rounds.filter(r => !r.is_test)
+            ?.rounds.filter(r => !r.on_hold)
             .sort((a, b) => a.number - b.number)
             .map(r => {
                 return {

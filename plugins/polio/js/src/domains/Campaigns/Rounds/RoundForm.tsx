@@ -64,7 +64,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Box mt={2}>
                     <Field
                         label={formatMessage(MESSAGES.testRound)}
-                        name={`rounds[${roundIndex}].is_test`}
+                        name={`rounds[${roundIndex}].on_hold`}
                         component={BooleanInput}
                     />
                 </Box>

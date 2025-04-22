@@ -50,7 +50,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         rounds_ids = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
         return (
             Chronogram.objects.valid()
-            .filter(round_id__in=rounds_ids, round__is_test=False)
+            .filter(round_id__in=rounds_ids, round__on_hold=False)
             .select_related("round__campaign", "created_by", "updated_by")
             .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
             .prefetch_related("tasks__created_by", "tasks__updated_by")

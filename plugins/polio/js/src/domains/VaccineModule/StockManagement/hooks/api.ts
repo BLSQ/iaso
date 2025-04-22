@@ -351,7 +351,7 @@ export const useCampaignOptions = (
         );
         return selectedCampaign
             ? selectedCampaign.rounds
-                  .filter(r => !r.is_test)
+                  .filter(r => !r.on_hold)
                   .map(round => {
                       return {
                           label: `${formatMessage(MESSAGES.round)} ${round.number}`,
@@ -368,7 +368,7 @@ export const useCampaignOptions = (
 
         return selectedCampaign
             ? selectedCampaign.rounds
-                  .filter(r => !r.is_test)
+                  .filter(r => !r.on_hold)
                   .map(round => {
                       return {
                           label: `${formatMessage(MESSAGES.round)} ${round.number}`,

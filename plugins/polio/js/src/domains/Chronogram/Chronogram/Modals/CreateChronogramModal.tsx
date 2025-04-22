@@ -68,7 +68,7 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
             .filter(
                 i =>
                     String(i.campaign_id) === String(formik.values.campaign) &&
-                    !i.is_test,
+                    !i.on_hold,
             )
             .map(r => {
                 return {

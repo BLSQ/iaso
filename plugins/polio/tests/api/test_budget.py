@@ -824,21 +824,21 @@ class BudgetProcessViewSetTestCase(APITestCase):
             {
                 "value": self.round_1.pk,
                 "label": 1,
-                "is_test": False,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
             {
                 "value": self.round_2.pk,
                 "label": 2,
-                "is_test": False,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
             {
                 "value": self.round_4.pk,
                 "label": 4,
-                "is_test": False,
+                "on_hold": False,
                 "campaign_id": str(self.campaign.id),
                 "target_population": None,
             },
@@ -868,7 +868,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 {
                     "value": self.round_4.id,
                     "label": 4,
-                    "is_test": False,
+                    "on_hold": False,
                     "campaign_id": str(self.campaign.id),
                     "target_population": None,
                 },

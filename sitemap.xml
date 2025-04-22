@@ -155,6 +155,20 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/how_to/use_plugins/use_plugins.html</loc>
+        <lastmod>2025-04-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_plugins/use_plugins.html"/>
+    </url>
+    <url>
+        <loc>Nonepages/dev/how_to/use_tranlations/use_translations.html</loc>
+        <lastmod>2025-04-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_tranlations/use_translations.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>
         <lastmod>2025-04-22</lastmod>
         <changefreq>daily</changefreq>
@@ -545,6 +559,20 @@
         <changefreq>daily</changefreq>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_iaso_apis/use_iaso_apis.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/use_plugins/use_plugins.html</loc>
+        <lastmod>2025-04-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_plugins/use_plugins.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_plugins/use_plugins.html"/>
+    </url>
+    <url>
+        <loc>Nonefr/pages/dev/how_to/use_tranlations/use_translations.html</loc>
+        <lastmod>2025-04-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/how_to/use_tranlations/use_translations.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/how_to/use_tranlations/use_translations.html"/>
     </url>
     <url>
         <loc>Nonefr/pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.html</loc>

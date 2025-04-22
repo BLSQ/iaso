@@ -1,0 +1,1354 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Using Translations in Iaso Frontend - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#using-translations-in-iaso-frontend" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Using Translations in Iaso Frontend
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Select language">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="use_translations.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../fr/pages/dev/how_to/use_tranlations/use_translations.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Users
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Users
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Web Platform
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Mobile Application
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Developers
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Developers
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          References
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          References
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          How to
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          How to
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          More about IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          More about IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        IASO website
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Release notes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Bluesquare website
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    How It Works
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#translation-discovery" class="md-nav__link">
+    Translation Discovery
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-files" class="md-nav__link">
+    Generated Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-federation" class="md-nav__link">
+    Module Federation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#translation-structure" class="md-nav__link">
+    Translation Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Translation Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#translation-file-format" class="md-nav__link">
+    Translation File Format
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#language-configuration-files" class="md-nav__link">
+    Language Configuration Files
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-vs-production" class="md-nav__link">
+    Development vs Production
+  </a>
+  
+    <nav class="md-nav" aria-label="Development vs Production">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#development-mode" class="md-nav__link">
+    Development Mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-mode" class="md-nav__link">
+    Production Mode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-translations-at-runtime" class="md-nav__link">
+    Loading Translations at Runtime
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#adding-a-new-language" class="md-nav__link">
+    Adding a New Language
+  </a>
+  
+    <nav class="md-nav" aria-label="Adding a New Language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-add-the-language-to-available_languages-environment-variable" class="md-nav__link">
+    1. Add the Language to AVAILABLE_LANGUAGES Environment Variable
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-copy-and-translate-existing-language-files" class="md-nav__link">
+    2. Copy and Translate Existing Language Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-create-a-language-configuration-file-optional" class="md-nav__link">
+    3. Create a Language Configuration File (Optional)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-rebuild-the-application" class="md-nav__link">
+    4. Rebuild the Application
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#date-formatting-in-components" class="md-nav__link">
+    Date Formatting in Components
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#number-formatting" class="md-nav__link">
+    Number Formatting
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#form-inputs" class="md-nav__link">
+    Form Inputs
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-translations" class="md-nav__link">
+    Plugin Translations
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-translation-structure" class="md-nav__link">
+    Plugin Translation Structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-translation-keys" class="md-nav__link">
+    Plugin Translation Keys
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-translation-integration" class="md-nav__link">
+    Plugin Translation Integration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-translation-example" class="md-nav__link">
+    Plugin Translation Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plugin-translation-fallbacks" class="md-nav__link">
+    Plugin Translation Fallbacks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/use_tranlations/use_translations.en.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="using-translations-in-iaso-frontend">Using Translations in Iaso Frontend<a class="headerlink" href="#using-translations-in-iaso-frontend" title="Permanent link">#</a></h1>
+<p>Iaso uses a centralized translation system that works across the main application, plugins, and shared components. This guide explains how the translation system works and how to add new languages.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>The translation system allows you to:
+- Maintain translations in a centralized location
+- Share translations between the main app, plugins, and shared components
+- Add new languages without modifying the core codebase
+- Use translations in both development and production environments
+- Configure language-specific settings like date formats and number formatting</p>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">#</a></h2>
+<h3 id="translation-discovery">Translation Discovery<a class="headerlink" href="#translation-discovery" title="Permanent link">#</a></h3>
+<p>During the build process (both development and production), Iaso:</p>
+<ol>
+<li>Scans the main application for translation files</li>
+<li>Scans all plugins for translation files</li>
+<li>Scans shared components (bluesquare-components) for translation files</li>
+<li>Generates combined translation files</li>
+<li>Makes these files available through Module Federation</li>
+</ol>
+<h3 id="generated-files">Generated Files<a class="headerlink" href="#generated-files" title="Permanent link">#</a></h3>
+<p>The system generates several files in the <code>hat/assets/js/apps/Iaso/bundle/generated/</code> directory:</p>
+<ul>
+<li><code>combinedTranslations.js</code> - Combined translations from all sources</li>
+<li><code>languageConfigs.js</code> - Language-specific configuration including date formats and number formatting</li>
+<li><code>combinedConfig.js</code> - Combined configuration for plugins</li>
+<li><code>pluginKeys.js</code> - Keys for plugin integration</li>
+</ul>
+<h3 id="module-federation">Module Federation<a class="headerlink" href="#module-federation" title="Permanent link">#</a></h3>
+<p>Iaso exposes these generated files through Webpack's ModuleFederationPlugin:</p>
+<pre><code class="language-javascript">new ModuleFederationPlugin({
+    name: 'IasoModules',
+    filename: 'remoteEntry.js',
+    library: { type: 'self', name: 'IasoModules' },
+    exposes: {
+        './plugins/configs': combinedConfigPath,
+        './plugins/keys': pluginKeysPath,
+        './translations/configs': combinedTranslationsPath,
+        './language/configs': languageConfigsPath,
+    },
+    shared: {
+        react: {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'react-dom': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'react-intl': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        '@mui/material': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+        'bluesquare-components': {
+            singleton: true,
+            eager: true,
+            requiredVersion: false,
+        },
+    },
+})
+</code></pre>
+<p>Additionally, the webpack configuration includes aliases for these exposed modules:</p>
+<pre><code class="language-javascript">resolve: {
+    alias: {
+        'react/jsx-runtime': 'react/jsx-runtime.js',
+        // Add alias for the combined config
+        'IasoModules/plugins/configs': combinedConfigPath,
+        'IasoModules/plugins/keys': pluginKeysPath,
+        'IasoModules/translations/configs': combinedTranslationsPath,
+        'IasoModules/language/configs': languageConfigsPath,
+        // ...
+    },
+    // ...
+}
+</code></pre>
+<h2 id="translation-structure">Translation Structure<a class="headerlink" href="#translation-structure" title="Permanent link">#</a></h2>
+<p>Translations are organized in the following structure:</p>
+<pre><code>hat/
+├── assets/
+│   └── js/
+│       └── apps/
+│           └── Iaso/
+│               └── translations/
+│                   ├── en.json
+│                   ├── fr.json
+│                   ├── en.config.js
+│                   ├── fr.config.js
+│                   └── ...
+plugins/
+└── your_plugin/
+    └── js/
+        └── translations/
+            ├── en.json
+            ├── fr.json
+            └── ...
+bluesquare-components/
+└── src/
+    └── translations/
+        ├── en.json
+        ├── fr.json
+        └── ...
+</code></pre>
+<h3 id="translation-file-format">Translation File Format<a class="headerlink" href="#translation-file-format" title="Permanent link">#</a></h3>
+<p>Translation files are JSON files with a flat structure of key-value pairs:</p>
+<pre><code class="language-json">{
+  &quot;common.button.save&quot;: &quot;Save&quot;,
+  &quot;common.button.cancel&quot;: &quot;Cancel&quot;,
+  &quot;common.button.edit&quot;: &quot;Edit&quot;,
+  &quot;common.button.delete&quot;: &quot;Delete&quot;,
+  &quot;common.message.confirm&quot;: &quot;Are you sure?&quot;,
+  &quot;common.message.success&quot;: &quot;Operation completed successfully&quot;,
+  &quot;common.message.error&quot;: &quot;An error occurred&quot;,
+  &quot;common.label.name&quot;: &quot;Name&quot;,
+  &quot;common.label.description&quot;: &quot;Description&quot;,
+  &quot;common.label.status&quot;: &quot;Status&quot;,
+  &quot;common.label.date&quot;: &quot;Date&quot;,
+  &quot;common.label.type&quot;: &quot;Type&quot;,
+  &quot;common.label.actions&quot;: &quot;Actions&quot;
+}
+</code></pre>
+<h3 id="language-configuration-files">Language Configuration Files<a class="headerlink" href="#language-configuration-files" title="Permanent link">#</a></h3>
+<p>Each language can have a configuration file (e.g., <code>en.config.js</code>, <code>fr.config.js</code>) that contains language-specific settings:</p>
+<pre><code class="language-javascript">// en.config.js
+export default {
+    label: 'English',
+    dateFormats: {
+        LT: 'h:mm A',
+        LTS: 'DD/MM/YYYY HH:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'Do MMMM YYYY',
+        LLL: 'Do MMMM YYYY LT',
+        LLLL: 'dddd, MMMM Do YYYY LT',
+    },
+    thousandGroupStyle: 'thousand',
+};
+</code></pre>
+<p>These configuration files are used to:
+- Set the display name of the language in the UI
+- Configure date and time formats
+- Set number formatting preferences (thousand, lakh, wan)</p>
+<h2 id="development-vs-production">Development vs Production<a class="headerlink" href="#development-vs-production" title="Permanent link">#</a></h2>
+<h3 id="development-mode">Development Mode<a class="headerlink" href="#development-mode" title="Permanent link">#</a></h3>
+<p>In development (<code>webpack.dev.js</code>):
+- Translation files are generated on-the-fly when changes are detected
+- Hot Module Replacement (HMR) is enabled for quick development
+- Changes to translation files are automatically detected and reloaded</p>
+<h3 id="production-mode">Production Mode<a class="headerlink" href="#production-mode" title="Permanent link">#</a></h3>
+<p>In production (<code>webpack.prod.js</code>):
+- Translation files are generated once during the build process
+- Translations are optimized and minified
+- Source maps are optional (configurable)</p>
+<h2 id="loading-translations-at-runtime">Loading Translations at Runtime<a class="headerlink" href="#loading-translations-at-runtime" title="Permanent link">#</a></h2>
+<p>The main application:
+1. Loads translations from <code>./assets/js/apps/Iaso/bundle/generated/combinedTranslations.js</code>
+2. Loads language configurations from <code>./assets/js/apps/Iaso/bundle/generated/languageConfigs.js</code>
+3. Loads plugin configurations from <code>./assets/js/apps/Iaso/bundle/generated/combinedPluginConfigs.js</code>
+4. Loads plugin keys from <code>./assets/js/apps/Iaso/bundle/generated/pluginKeys.js</code>
+5. Initializes the React-Intl provider with the loaded translations
+6. Makes translations available to all components through the React-Intl context</p>
+<h2 id="adding-a-new-language">Adding a New Language<a class="headerlink" href="#adding-a-new-language" title="Permanent link">#</a></h2>
+<p>To add a new language to the system, follow these steps:</p>
+<h3 id="1-add-the-language-to-available_languages-environment-variable">1. Add the Language to AVAILABLE_LANGUAGES Environment Variable<a class="headerlink" href="#1-add-the-language-to-available_languages-environment-variable" title="Permanent link">#</a></h3>
+<p>First, you need to add the new language code to the <code>AVAILABLE_LANGUAGES</code> environment variable. This variable is used at run time to determine which languages to display.</p>
+<pre><code class="language-bash"># For development
+export AVAILABLE_LANGUAGES=&quot;en,fr,es&quot;
+
+# For production, add to your .env file or deployment configuration
+AVAILABLE_LANGUAGES=en,fr,es
+</code></pre>
+<h3 id="2-copy-and-translate-existing-language-files">2. Copy and Translate Existing Language Files<a class="headerlink" href="#2-copy-and-translate-existing-language-files" title="Permanent link">#</a></h3>
+<p>The simplest way to add a new language is to copy an existing language file (e.g., <code>en.json</code>) and translate all the keys:</p>
+<pre><code class="language-bash"># Main application (required)
+cp hat/assets/js/apps/Iaso/translations/en.json hat/assets/js/apps/Iaso/translations/es.json
+
+# Optional: Plugin translations
+# If not provided, English will be used as fallback
+cp plugins/your_plugin/js/translations/en.json plugins/your_plugin/js/translations/es.json
+
+# Optional: Shared components translations
+# If not provided, English will be used as fallback
+cp bluesquare-components/src/translations/en.json bluesquare-components/src/translations/es.json
+</code></pre>
+<p>Then edit each file to translate the values while keeping the keys the same:</p>
+<pre><code class="language-json">{
+  &quot;common.button.save&quot;: &quot;Guardar&quot;,
+  &quot;common.button.cancel&quot;: &quot;Cancelar&quot;,
+  &quot;common.button.edit&quot;: &quot;Editar&quot;,
+  &quot;common.button.delete&quot;: &quot;Eliminar&quot;,
+  &quot;common.message.confirm&quot;: &quot;¿Estás seguro?&quot;,
+  &quot;common.message.success&quot;: &quot;Operación completada con éxito&quot;,
+  &quot;common.message.error&quot;: &quot;Se produjo un error&quot;,
+  &quot;common.label.name&quot;: &quot;Nombre&quot;,
+  &quot;common.label.description&quot;: &quot;Descripción&quot;,
+  &quot;common.label.status&quot;: &quot;Estado&quot;,
+  &quot;common.label.date&quot;: &quot;Fecha&quot;,
+  &quot;common.label.type&quot;: &quot;Tipo&quot;,
+  &quot;common.label.actions&quot;: &quot;Acciones&quot;
+}
+</code></pre>
+<h3 id="3-create-a-language-configuration-file-optional">3. Create a Language Configuration File (Optional)<a class="headerlink" href="#3-create-a-language-configuration-file-optional" title="Permanent link">#</a></h3>
+<p>If you need custom date formats or number formatting for your language, create a configuration file:</p>
+<pre><code class="language-bash"># Main application
+cp hat/assets/js/apps/Iaso/translations/en.config.js hat/assets/js/apps/Iaso/translations/es.config.js
+</code></pre>
+<p>Then edit the file to customize the settings:</p>
+<pre><code class="language-javascript">// es.config.js
+export default {
+    label: 'Español',
+    dateFormats: {
+        LT: 'H:mm',
+        LTS: 'DD/MM/YYYY H:mm',
+        L: 'DD/MM/YYYY',
+        LL: 'D [de] MMMM [de] YYYY',
+        LLL: 'D [de] MMMM [de] YYYY H:mm',
+        LLLL: 'dddd, D [de] MMMM [de] YYYY H:mm',
+    },
+    thousandGroupStyle: 'thousand',
+};
+</code></pre>
+<h3 id="4-rebuild-the-application">4. Rebuild the Application<a class="headerlink" href="#4-rebuild-the-application" title="Permanent link">#</a></h3>
+<p>Rebuild the application to generate the new translation files:</p>
+<pre><code class="language-bash"># Development
+npm run dev
+
+# Production
+npm run build
+</code></pre>
+<p>The system will automatically detect the new language file and include it in the generated files.</p>
+<h2 id="date-formatting-in-components">Date Formatting in Components<a class="headerlink" href="#date-formatting-in-components" title="Permanent link">#</a></h2>
+<p>Several components can be enhanced to use language-specific date formats:</p>
+<ol>
+<li><strong>formatValue Function</strong> (<code>hat/assets/js/apps/Iaso/domains/instances/utils/index.tsx</code>):</li>
+<li>Use language-specific formats for date and datetime values</li>
+<li>
+<p>Ensure consistent date formatting across the application</p>
+</li>
+<li>
+<p><strong>convertDate Function</strong> (<code>plugins/polio/js/src/domains/Campaigns/campaignHistory/config.tsx</code>):</p>
+</li>
+<li>Update to use language configs for date formatting</li>
+<li>Ensure dates are displayed according to the user's locale</li>
+</ol>
+<h2 id="number-formatting">Number Formatting<a class="headerlink" href="#number-formatting" title="Permanent link">#</a></h2>
+<p>The application already has some components using language configs for number formatting, but this can be extended:</p>
+<ol>
+<li><strong>NumberCell Component</strong>:</li>
+<li>Already uses language configs for thousand separators and decimal points</li>
+<li>
+<p>Can be used as a reference for other number formatting components</p>
+</li>
+<li>
+<p><strong>formatThousand Function</strong>:</p>
+</li>
+<li>Extend to use language-specific formatting</li>
+<li>
+<p>Ensure consistent number formatting across the application</p>
+</li>
+<li>
+<p><strong>formatRoundNumber Function</strong> (<code>plugins/polio/js/src/domains/Budget/utils.tsx</code>):</p>
+</li>
+<li>Update to use language-specific formatting</li>
+<li>Ensure numbers are displayed according to the user's locale</li>
+</ol>
+<h2 id="form-inputs">Form Inputs<a class="headerlink" href="#form-inputs" title="Permanent link">#</a></h2>
+<p>Form inputs can be enhanced to support language-specific formatting:</p>
+<ol>
+<li><strong>InputComponent</strong>:</li>
+<li>Already has good support for language-specific number formatting</li>
+<li>
+<p>Can be used as a reference for other input types</p>
+</li>
+<li>
+<p><strong>Other Input Types</strong>:</p>
+</li>
+<li>Extend language-specific formatting to other input types</li>
+<li>Ensure consistent input formatting across the application</li>
+</ol>
+<h2 id="plugin-translations">Plugin Translations<a class="headerlink" href="#plugin-translations" title="Permanent link">#</a></h2>
+<p>Plugins can provide their own translations that are automatically integrated into the main translation system. This allows plugins to be fully localized without modifying the core application.</p>
+<h3 id="plugin-translation-structure">Plugin Translation Structure<a class="headerlink" href="#plugin-translation-structure" title="Permanent link">#</a></h3>
+<p>Plugins should organize their translations in the following structure:</p>
+<pre><code>plugins/
+└── your_plugin/
+    └── js/
+        └── src/
+            └── constants/
+                └── translations/
+                    ├── en.json  # English translations (required)
+                    ├── fr.json  # French translations (optional)
+                    └── ...      # Other language translations
+</code></pre>
+<h3 id="plugin-translation-keys">Plugin Translation Keys<a class="headerlink" href="#plugin-translation-keys" title="Permanent link">#</a></h3>
+<p>To avoid conflicts with the main application and other plugins, plugin translation keys should be prefixed with the plugin's name:</p>
+<pre><code class="language-json">{
+  &quot;myPlugin.title&quot;: &quot;My Plugin Title&quot;,
+  &quot;myPlugin.description&quot;: &quot;Plugin description&quot;,
+  &quot;myPlugin.button.save&quot;: &quot;Save&quot;,
+  &quot;myPlugin.button.cancel&quot;: &quot;Cancel&quot;
+}
+</code></pre>
+<h3 id="plugin-translation-integration">Plugin Translation Integration<a class="headerlink" href="#plugin-translation-integration" title="Permanent link">#</a></h3>
+<p>During the build process:
+1. The system scans all plugins for translation files
+2. Plugin translations are combined with the main application translations
+3. The combined translations are exposed through Module Federation
+4. Plugins can access their translations using the same React-Intl hooks as the main application</p>
+<h3 id="plugin-translation-example">Plugin Translation Example<a class="headerlink" href="#plugin-translation-example" title="Permanent link">#</a></h3>
+<p>Here's an example of how to use translations in a plugin component:</p>
+<pre><code class="language-typescript">import React from 'react';
+import { useIntl } from 'react-intl';
+
+const MyPluginComponent: React.FC = () =&gt; {
+    const intl = useIntl();
+
+    return (
+        &lt;div&gt;
+            &lt;h1&gt;{intl.formatMessage({ id: 'myPlugin.title' })}&lt;/h1&gt;
+            &lt;p&gt;{intl.formatMessage({ id: 'myPlugin.description' })}&lt;/p&gt;
+            &lt;button&gt;{intl.formatMessage({ id: 'myPlugin.button.save' })}&lt;/button&gt;
+        &lt;/div&gt;
+    );
+};
+
+export default MyPluginComponent;
+</code></pre>
+<h3 id="plugin-translation-fallbacks">Plugin Translation Fallbacks<a class="headerlink" href="#plugin-translation-fallbacks" title="Permanent link">#</a></h3>
+<p>The system uses a fallback mechanism to ensure all strings are translated:
+1. If a translation is missing for a specific language, the system will use the English translation
+2. If the English translation is also missing, the system will use the key itself
+3. Warnings will be displayed in the console during build when fallbacks are used</p>
+<p>For more information on creating plugins with translations, see <a href="../use_plugins/use_plugins.html">Using Plugins in Iaso Frontend</a>.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

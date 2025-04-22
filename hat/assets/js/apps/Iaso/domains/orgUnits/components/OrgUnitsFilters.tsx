@@ -111,7 +111,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypesDropdownOptions({ projectId });
+        useGetOrgUnitTypesDropdownOptions({ projectId, sourceVersionId });
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
@@ -230,24 +230,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId, dataSources, filters?.version]);
 
-    useEffect(() => {
-        if (!dataSourceId) {
-            setDataSourceId(
-                filters?.source ??
-                    currentUser?.account?.default_version?.data_source?.id,
-            );
-            setSourceVersionId(
-                filters?.version ?? currentUser?.account?.default_version?.id,
-            );
-        }
-        if (dataSourceId && !sourceVersionId) {
-            const newSourceVersionId = getNewSourceVersionId(dataSourceId);
-            setSourceVersionId(newSourceVersionId);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // USE EFFECTS
 
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];

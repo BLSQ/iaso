@@ -1,12 +1,12 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { CREATED, RETURNED } from '../../constants';
 import MESSAGES from '../../messages';
 
 export const VM_REACHED_DISCARD_POINT = 'vvm_reached_discard_point';
 export const VACCINE_EXPIRED = 'vaccine_expired';
-export const LOSSES = 'losses';
+export const MISSING = 'missing';
 export const RETURN_TO_SUPPLIER = 'return';
 export const STEALING = 'stealing';
 export const PHYSICAL_INVENTORY_ADD = 'physical_inventory_add';
@@ -17,7 +17,7 @@ export const UNREADABLE_LABEL = 'unreadable_label';
 // class StockCorrectionChoices(models.TextChoices):
 // VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
 // VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
-// LOSSES = "losses", _("Losses")
+// MISSING = "missing", _("Missing")
 // RETURN = "return", _("Return")
 // STEALING = "stealing", _("Stealing")
 // PHYSICAL_INVENTORY_ADD = "physical_inventory_add", _("Add to Physical Inventory")
@@ -26,7 +26,7 @@ export const UNREADABLE_LABEL = 'unreadable_label';
 type IncidentType =
     | 'vaccine_expired'
     | 'vvm_reached_discard_point'
-    | 'losses'
+    | 'missing'
     | 'stealing'
     | 'physical_inventory'
     | 'broken'
@@ -46,8 +46,8 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 value: VACCINE_EXPIRED,
             },
             {
-                label: formatMessage(MESSAGES[LOSSES]),
-                value: LOSSES,
+                label: formatMessage(MESSAGES[MISSING]),
+                value: MISSING,
             },
             {
                 label: formatMessage(MESSAGES[RETURN_TO_SUPPLIER]),

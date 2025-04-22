@@ -246,7 +246,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "form_a_reception_date",
             "usable_vials_used",
             "lot_numbers",
-            "missing_vials",
             "document",
             "comment",
             "round",

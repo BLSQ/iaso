@@ -1,3 +1,5 @@
+import uuid
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -19,8 +21,25 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         form_1 = m.Form.objects.create(name="Form 1")
         form_2 = m.Form.objects.create(name="Form 2")
-        instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit)
-        instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit)
+
+        form_version_1 = m.FormVersion.objects.create(form=form_1, version_id=1)
+        form_version_2 = m.FormVersion.objects.create(form=form_2, version_id=1)
+
+        instance_1 = m.Instance.objects.create(
+            form=form_1,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=form_version_1,
+        )
+        instance_2 = m.Instance.objects.create(
+            form=form_2,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=form_version_2,
+        )
+
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
 

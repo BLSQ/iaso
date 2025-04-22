@@ -53,6 +53,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                 isPartiallyApproved={isPartiallyApproved}
                 isApproved={isApproved}
                 approvedFields={approvedFields}
+                isNewOrgUnit={isNewOrgUnit}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
                 {isNew && (

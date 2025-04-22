@@ -37,6 +37,7 @@ You need to use the following action in `body::intent`:
 `<prefix>.action.pick_ou(<options>)`
 
 The following options are available:
+
 - `map=''`: How to map the returned value to a question. Possible returned values are:
   - id
   - name 

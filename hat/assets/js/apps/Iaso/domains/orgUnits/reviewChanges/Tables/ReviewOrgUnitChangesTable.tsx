@@ -215,7 +215,6 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
-
     const { selection, handleTableSelection, handleUnselectAll } =
         useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
 
@@ -249,6 +248,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
                 resetSelection={handleUnselectAll}
+                params={params}
             />
             <TableWithDeepLink
                 marginTop={false}

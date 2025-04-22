@@ -33,13 +33,18 @@ import { userHasPermission } from '../../../users/utils';
 import { Selection } from '../../types/selection';
 import { useBulkSaveChangeRequestStatus } from '../hooks/api/useBulkSaveChangeRequestStatus';
 import MESSAGES from '../messages';
-import { ChangeRequestValidationStatus, OrgUnitChangeRequest } from '../types';
+import {
+    ChangeRequestValidationStatus,
+    OrgUnitChangeRequest,
+    ApproveOrgUnitParams,
+} from '../types';
 
 type Props = {
     open: boolean;
     closeDialog: () => void;
     selection: Selection<OrgUnitChangeRequest>;
     resetSelection: () => void;
+    params: ApproveOrgUnitParams;
 };
 
 const styles: SxStyles = {
@@ -74,6 +79,7 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
     closeDialog,
     selection,
     resetSelection,
+    params,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { selectCount } = selection;
@@ -84,7 +90,8 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
         ChangeRequestValidationStatus | undefined
     >(undefined);
     const [comment, setComment] = useState<string | undefined>(undefined);
-    const { mutateAsync: bulkSaveStatus } = useBulkSaveChangeRequestStatus();
+    const { mutateAsync: bulkSaveStatus } =
+        useBulkSaveChangeRequestStatus(params);
     const handleSave = useCallback(() => {
         if (!status) {
             return;

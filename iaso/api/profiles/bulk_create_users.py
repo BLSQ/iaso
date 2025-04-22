@@ -379,6 +379,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 name__in=project_names,
                                 account=importer_account,
                             ).filter_on_user_projects(request.user)
+                            # If none of the submitted projects is a subset of the user's project restrictions,
+                            # fallback to the same restrictions as the user.
+                            if not projects_instance_list.exists():
+                                projects_instance_list = Project.objects.filter(
+                                    account=importer_account
+                                ).filter_on_user_projects(request.user)
                         else:
                             projects_instance_list = Project.objects.filter(
                                 name__in=project_names, account=importer_account

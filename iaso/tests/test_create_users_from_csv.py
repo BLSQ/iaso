@@ -540,11 +540,14 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        # Because `user` is restricted to `project2`, `project` should've been skipped.
+        # Because `user` is restricted to `project2`, `project` should've been skipped
+        # and new profiles should end up having the same restrictions.
         profile_1 = Profile.objects.get(user__username=username_1)
-        self.assertEqual(0, profile_1.projects.count())
+        self.assertEqual(1, profile_1.projects.count())
+        self.assertEqual(profile_1.projects.first(), self.project2)
         profile_2 = Profile.objects.get(user__username=username_2)
-        self.assertEqual(0, profile_2.projects.count())
+        self.assertEqual(1, profile_2.projects.count())
+        self.assertEqual(profile_2.projects.first(), self.project2)
 
     def test_should_create_user_with_the_correct_org_unit_from_source_ref(self):
         """

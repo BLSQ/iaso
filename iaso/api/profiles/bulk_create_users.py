@@ -345,29 +345,27 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except (IndexError, ValueError):
                         user_roles = None
                     if user_roles:
-                        user_roles = user_roles.split(value_splitter)
+                        user_roles = [role.strip() for role in user_roles.split(value_splitter) if role]
                         # check if the roles exists in the account of the request user
                         # and add it to user_roles_list
                         for role in user_roles:
-                            if role != "":
-                                role = role[1::] if role[:1] == " " else role
-                                try:
-                                    role_instance = UserRole.objects.get(
-                                        account=importer_account,
-                                        group__name=f"{importer_account.id}_{role}",
-                                    )
-                                    user_roles_list.append(role_instance)
-                                    # get the user group linked to the userrole
-                                    user_group_item = Group.objects.get(pk=role_instance.group.id)
-                                    user_groups_list.append(user_group_item)
+                            try:
+                                role_instance = UserRole.objects.get(
+                                    account=importer_account,
+                                    group__name=f"{importer_account.id}_{role}",
+                                )
+                                user_roles_list.append(role_instance)
+                                # get the user group linked to the userrole
+                                user_group_item = Group.objects.get(pk=role_instance.group.id)
+                                user_groups_list.append(user_group_item)
 
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Error. User Role: {role}, at row {i + 1} does not exists: Fix "
-                                            "the error and try again."
-                                        }
-                                    )
+                            except ObjectDoesNotExist:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": f"Error. User Role: {role}, at row {i + 1} does not exists: Fix "
+                                        "the error and try again."
+                                    }
+                                )
                     try:
                         projects = row[csv_indexes.index("projects")]
                     except (IndexError, ValueError):
@@ -391,12 +389,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             )
 
                     try:
-                        user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
+                        user_permissions = [
+                            perm.strip() for perm in row[csv_indexes.index("permissions")].split(value_splitter) if perm
+                        ]
                         current_account = request.user.iaso_profile.account
                         module_permissions = self.module_permissions(current_account)
                         for perm in user_permissions:
-                            perm = perm[1::] if perm[:1] == " " else perm
-                            if perm and perm in module_permissions:
+                            if perm in module_permissions:
                                 try:
                                     perm = Permission.objects.get(codename=perm)
                                     user.user_permissions.add(perm)

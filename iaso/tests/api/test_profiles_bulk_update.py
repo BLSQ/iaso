@@ -25,10 +25,10 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.account1 = m.Account.objects.create(name="Star Stuff")
         cls.account2 = m.Account.objects.create(name="Comic books")
         cls.account3 = m.Account.objects.create(name="Video game")
-        cls.project = m.Project.objects.create(name="Project 1", app_id="account1.app_id", account=cls.account1)
-        cls.project_1 = m.Project.objects.create(name="Project 2", app_id="account1.app_id", account=cls.account1)
-        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="account1.app_id", account=cls.account1)
-        cls.project_3 = m.Project.objects.create(name="Project 3", app_id="account2.app_id", account=cls.account2)
+        cls.project_0 = m.Project.objects.create(name="Project 0", app_id="account1.foo", account=cls.account1)
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="account1.bar", account=cls.account1)
+        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="account1.baz", account=cls.account1)
+        cls.project_3 = m.Project.objects.create(name="Project 3", app_id="account2.qux", account=cls.account2)
 
         cls.group_1 = auth.models.Group.objects.create(name="group_1")
         cls.group_2 = auth.models.Group.objects.create(name="group_2")
@@ -43,7 +43,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_role_different_account = m.UserRole.objects.create(group=cls.group_4, account=cls.account2)
 
         source1 = m.DataSource.objects.create(name="Evil Empire")
-        source1.projects.add(cls.project)
+        source1.projects.add(cls.project_0)
         cls.source1 = source1
         source1_version1 = m.SourceVersion.objects.create(data_source=source1, number=1)
         cls.account1.default_version = source1_version1
@@ -151,16 +151,16 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         saveUserProfile(cls.add_users_team_launcher_1)
 
         cls.team_1 = m.Team.objects.create(
-            name="Team 1", manager=cls.user_admin, project=cls.project, type=TeamType.TEAM_OF_USERS
+            name="Team 1", manager=cls.user_admin, project=cls.project_0, type=TeamType.TEAM_OF_USERS
         )
         cls.team_2 = m.Team.objects.create(
-            name="Team 2", manager=cls.user_admin, project=cls.project, type=TeamType.TEAM_OF_USERS
+            name="Team 2", manager=cls.user_admin, project=cls.project_0, type=TeamType.TEAM_OF_USERS
         )
         cls.team_3 = m.Team.objects.create(
-            name="Team 3", manager=cls.user_admin, project=cls.project, type=TeamType.TEAM_OF_USERS
+            name="Team 3", manager=cls.user_admin, project=cls.project_0, type=TeamType.TEAM_OF_USERS
         )
         cls.team_of_teams = m.Team.objects.create(
-            name="Team of Teams", manager=cls.user_admin, project=cls.project, type=TeamType.TEAM_OF_TEAMS
+            name="Team of Teams", manager=cls.user_admin, project=cls.project_0, type=TeamType.TEAM_OF_TEAMS
         )
 
     def refresh_all_users_from_db(self):
@@ -265,7 +265,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "selected_ids": [self.user_admin_no_task.iaso_profile.pk, self.user_admin_no_task2.iaso_profile.pk],
             "unselected_ids": None,
             "projects_ids_added": [
-                self.project.pk,
+                self.project_0.pk,
                 self.project_3.pk,
             ],  # self.project_3 should not be saved, not from the same account
             "projects_ids_removed": [self.project_2.pk],
@@ -318,11 +318,11 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.org_units.all(),
         )
         self.assertIn(
-            self.project,
+            self.project_0,
             self.user_admin_no_task.iaso_profile.projects.all(),
         )
         self.assertIn(
-            self.project,
+            self.project_0,
             self.user_admin_no_task2.iaso_profile.projects.all(),
         )
         self.assertNotIn(
@@ -428,11 +428,11 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             "selected_ids": [user_to_update.iaso_profile.pk],
             "unselected_ids": None,
             "projects_ids_added": [
-                self.project.pk,  # `user` has no rights on this project.
+                self.project_0.pk,  # `user` has no rights on this project.
                 self.project_1.pk,  # `user` should be able to add this project.
             ],
             "projects_ids_removed": [
-                self.project.pk,  # `user` has no rights on this project.
+                self.project_0.pk,  # `user` has no rights on this project.
                 self.project_2.pk,  # `user` should be able to remove this project.
             ],
             "roles_id_added": [],
@@ -471,7 +471,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         operation_payload = {
             "select_all": True,
             "projects_ids_added": [
-                self.project.pk,
+                self.project_0.pk,
                 self.project_3.pk,
             ],
         }
@@ -491,7 +491,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         operation_payload = {
             "select_all": True,
             "projects_ids_removed": [
-                self.project.pk,
+                self.project_0.pk,
                 self.project_3.pk,
             ],
         }
@@ -1074,7 +1074,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
                 "location_ids_added": [self.org_unit1.pk],
                 "location_ids_removed": [self.org_unit2.pk],
                 "projects_ids_added": [
-                    self.project.pk,
+                    self.project_0.pk,
                 ],
                 "teams_id_added": [self.team_1.pk],
                 "projects_ids_removed": [self.project_2.pk],
@@ -1145,7 +1145,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
         self.assertEqual(len(new_value["projects"]), 1)
-        self.assertIn(self.project.id, new_value["projects"])
+        self.assertIn(self.project_0.id, new_value["projects"])
 
         # Check that user_admin_no_task2 profile is updated
         response = self.client.get(
@@ -1201,7 +1201,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(len(new_value["user_roles"]), 1)
         self.assertIn(self.user_role.id, new_value["user_roles"])
         self.assertEqual(len(new_value["projects"]), 1)
-        self.assertIn(self.project.id, new_value["projects"])
+        self.assertIn(self.project_0.id, new_value["projects"])
         # Check that team 1 is updated
         response = self.client.get(
             f"/api/logs/?contentType=iaso.team&fields=past_value,new_value&objectId={self.team_1.pk}"

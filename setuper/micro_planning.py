@@ -136,15 +136,22 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     )["orgunits"]
 
     # Get the users from the team
-    team_users = iaso_client.get(f"/api/microplanning/teams/{team['id']}/")["users"]
+    team_users = team["users"]
 
-    print(f"Found {len(team_users)} users in team {team['name']} for assignments")
+    print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
 
     for health_facitity in health_facitities:
         # Select an arbitrary user from the team for this assignment
-        selected_user_id = random.choice(team_users)
+        selected_user_id = random.choice(team_users[:3])
 
-        print("assigning", health_facitity["name"], "to", team["name"], "user ID:", selected_user_id)
+        print(
+            "assigning",
+            health_facitity["name"],
+            "to",
+            team["name"],
+            "user ID:",
+            selected_user_id,
+        )
 
         iaso_client.post(
             "/api/microplanning/assignments/",

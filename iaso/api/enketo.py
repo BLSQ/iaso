@@ -44,6 +44,9 @@ def public_url_for_enketo(request: HttpRequest, path):
     return resolved_path
 
 
+# it's now actually an edition, we extract a fresh "data" xml from the form definition
+# and inject special variables like current_ou_name as described in iaso_special_question_names doc in the xml
+# that will get edited by enketo and the enduser
 def _enketo_url_for_creation(form, instance, request, return_url):
     user_id = None
     profile = request.user.iaso_profile if request.user and not request.user.is_anonymous else None

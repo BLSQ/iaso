@@ -13,42 +13,48 @@ ORG_UNIT_INJECTABLE_QUESTION_NAMES = [
     "current_ou_name",
     "current_ou_type_id",
     "current_ou_type_name",
-    "parent1_ou_id",
-    "parent1_ou_name",
-    "parent1_ou_type_id",
-    "parent1_ou_type_name",
-    "parent1_ou_is_root",
-    "parent2_ou_id",
-    "parent2_ou_name",
-    "parent2_ou_type_id",
-    "parent2_ou_type_name",
-    "parent2_ou_is_root",
-    "parent3_ou_id",
-    "parent3_ou_name",
-    "parent3_ou_type_id",
-    "parent3_ou_type_name",
-    "parent3_ou_is_root",
-    "parent4_ou_id",
-    "parent4_ou_name",
-    "parent4_ou_type_id",
-    "parent4_ou_type_name",
-    "parent4_ou_is_root",
-    "parent5_ou_id",
-    "parent5_ou_name",
-    "parent5_ou_type_id",
-    "parent5_ou_type_name",
-    "parent5_ou_is_root",
-    "parent6_ou_id",
-    "parent6_ou_name",
-    "parent6_ou_type_id",
-    "parent6_ou_type_name",
-    "parent6_ou_is_root",
-    "parent7_ou_id",
-    "parent7_ou_name",
-    "parent7_ou_type_id",
-    "parent7_ou_type_name",
-    "parent7_ou_is_root",
 ]
+
+for parent_index in range(1, 10):
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_id")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_name")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_type_id")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_type_name")
+    ORG_UNIT_INJECTABLE_QUESTION_NAMES.append(f"parent{parent_index}_ou_is_root")
+
+
+def deep_getattr(obj, attr, default=None):
+    for part in attr.split("."):
+        obj = getattr(obj, part, default)
+        if obj is default:
+            return default
+    return obj
+
+
+def buid_substitutions(instance):
+    substitutions = {}
+    if instance and instance.org_unit:
+        substitutions = {
+            ".//current_ou_id": deep_getattr(instance, "org_unit.id", ""),
+            ".//current_ou_name": deep_getattr(instance, "org_unit.name", ""),
+            ".//current_ou_type_id": deep_getattr(instance, "org_unit.org_unit_type.id", ""),
+            ".//current_ou_type_name": deep_getattr(instance, "org_unit.org_unit_type.name", ""),
+        }
+
+        parent = instance.org_unit.parent
+        parent_index = 1
+        while parent:
+            prefix = f"parent{parent_index}_ou_"
+            substitutions[f".//{prefix}id"] = deep_getattr(parent, "id", "")
+            substitutions[f".//{prefix}name"] = deep_getattr(parent, "name", "")
+            substitutions[f".//{prefix}type_id"] = deep_getattr(parent, "org_unit_type.id", "")
+            substitutions[f".//{prefix}type_name"] = deep_getattr(parent, "org_unit_type.name", "")
+            substitutions[f".//{prefix}is_root"] = "1" if parent.parent else "0"
+
+            parent = parent.parent
+            parent_index += 1
+
+    return substitutions
 
 
 def inject_instance_id_in_form(xml_str, instance_id):
@@ -76,12 +82,13 @@ def inject_instance_id_in_form(xml_str, instance_id):
 
     for bind in bind_nodes:
         question_name = bind.get("nodeset").split("/")[-1]
+        # modify only "injectables" to have the same behavior as an hidden, avoid "calculation" to overwrite the injected values
         if question_name in ORG_UNIT_INJECTABLE_QUESTION_NAMES:
             calculate_expression = bind.get("calculate")
             if calculate_expression:
                 # if trivial expression like a constant no reference to another variable or function call
                 if "$" not in calculate_expression and "(" not in calculate_expression:
-                    print("deleting ", question_name, bind.get("calculate"))
+                    # print("deleting ", question_name, bind.get("calculate"))
                     del bind.attrib["calculate"]
 
     instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
@@ -178,14 +185,6 @@ def extract_xml_instance_from_form_xml(form_version_xml, instance_uuid):
     return instance_xml
 
 
-def deep_getattr(obj, attr, default=None):
-    for part in attr.split("."):
-        obj = getattr(obj, part, default)
-        if obj is default:
-            return default
-    return obj
-
-
 # we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
 def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instance=None) -> Tuple[str, bytes]:
     """ "Inject the attribute in different place in the xml
@@ -209,31 +208,7 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
         edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
     edit_user_id_tag.text = str(user_id)
 
-    substitutions = {}
-    if instance and instance.org_unit:
-        substitutions = {
-            ".//current_ou_id": deep_getattr(instance, "org_unit.id", ""),
-            ".//current_ou_name": deep_getattr(instance, "org_unit.name", ""),
-            ".//current_ou_type_id": deep_getattr(instance, "org_unit.org_unit_type.id", ""),
-            ".//current_ou_type_name": deep_getattr(instance, "org_unit.org_unit_type.name", ""),
-        }
-
-    if instance and instance.org_unit:
-        ancestors = []
-        parent = instance.org_unit.parent
-        while parent:
-            ancestors.append(parent)
-            parent = parent.parent
-        ancestors.reverse()
-        ancestor_index = 1
-        for ancestor in ancestors:
-            prefix = f"parent{ancestor_index}_ou_"
-            substitutions[f".//{prefix}id"] = deep_getattr(ancestor, "id", "")
-            substitutions[f".//{prefix}name"] = deep_getattr(ancestor, "name", "")
-            substitutions[f".//{prefix}type_id"] = deep_getattr(ancestor, "org_unit_type.id", "")
-            substitutions[f".//{prefix}type_name"] = deep_getattr(ancestor, "org_unit_type.name", "")
-            substitutions[f".//{prefix}is_root"] = "1" if ancestor_index == 1 else "0"
-            ancestor_index += 1
+    substitutions = buid_substitutions(instance)
 
     for xpath, value in substitutions.items():
         node = root.xpath(xpath)

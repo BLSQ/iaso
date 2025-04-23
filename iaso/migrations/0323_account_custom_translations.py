@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0322_alter_orgunit_org_unit_type_and_more'),
+        ("iaso", "0322_alter_orgunit_org_unit_type_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='custom_translations',
+            model_name="account",
+            name="custom_translations",
             field=models.JSONField(blank=True, null=True),
         ),
     ]

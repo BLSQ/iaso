@@ -8,14 +8,14 @@ import {
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
 import { useSafeIntl } from 'bluesquare-components';
 
+import EntitySvg from '../../../components/svg/Entity';
 import OrgUnitSvg from '../../../components/svg/OrgUnitSvgComponent';
-import { MESSAGES } from '../messages';
 import * as paths from '../../../constants/routes';
 import { baseUrls } from '../../../constants/urls';
-import { useGetOrgunitsExtraPath } from './useGetOrgunitsExtraPath';
-import { userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import BeneficiarySvg from '../../../components/svg/Beneficiary';
+import { userHasOneOfPermissions } from '../../users/utils';
+import { MESSAGES } from '../messages';
+import { useGetOrgunitsExtraPath } from './useGetOrgunitsExtraPath';
 
 type Button = {
     label: string;
@@ -44,9 +44,9 @@ export const useHomeButtons = (): Button[] => {
                     url: `/${baseUrls.orgUnits}${orgUnitExtraPath}`,
                 },
                 {
-                    label: formatMessage(MESSAGES.beneficiaries),
+                    label: formatMessage(MESSAGES.entities),
                     permissions: paths.entityTypesPath.permissions,
-                    Icon: <BeneficiarySvg />,
+                    Icon: <EntitySvg />,
                     url: `/${baseUrls.entities}`,
                 },
                 {

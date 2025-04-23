@@ -2,7 +2,7 @@
 import React from 'react';
 import SvgIcon from '@mui/material/SvgIcon';
 
-const BeneficiarySvg = props => {
+const EntitySvg = props => {
     const finalProps = {
         ...props,
         viewBox: '0 0 1024 1024',
@@ -14,4 +14,4 @@ const BeneficiarySvg = props => {
     );
 };
 
-export default BeneficiarySvg;
+export default EntitySvg;

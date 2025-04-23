@@ -10,6 +10,7 @@ from django.test import override_settings
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.enketo.enketo_xml import buid_substitutions
 from iaso.models import Instance
 from iaso.test import APITestCase
 
@@ -698,4 +699,58 @@ class EnketoAPITestCase(APITestCase):
     </input>
   </h:body>
 </h:html>""",
+        )
+
+    def test_enketo_xml_substitutions_root_ou(self):
+        submission_uuid = "uuid-dup"
+        instance1 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=submission_uuid,
+        )
+        substitutions = buid_substitutions(instance=instance1)
+        self.assertEqual(
+            substitutions,
+            {
+                ".//current_ou_id": self.jedi_council_corruscant.id,
+                ".//current_ou_is_root": "1",
+                ".//current_ou_name": "Corruscant Jedi Council",
+                ".//current_ou_type_id": "",
+                ".//current_ou_type_name": "",
+            },
+        )
+
+    def test_enketo_xml_substitutions_parent_ou(self):
+        jedi = m.OrgUnit.objects.create(
+            name="Meta Jedi", source_ref="sms", version=self.jedi_council_corruscant.version
+        )
+
+        self.jedi_council_corruscant.parent = jedi
+        self.jedi_council_corruscant.org_unit_type = self.jedi_council
+
+        submission_uuid = "uuid-dup"
+        instance1 = self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            project=self.project,
+            uuid=submission_uuid,
+        )
+        substitutions = buid_substitutions(instance=instance1)
+        self.assertEqual(
+            substitutions,
+            {
+                ".//current_ou_id": self.jedi_council_corruscant.id,
+                ".//current_ou_is_root": "0",
+                ".//current_ou_name": "Corruscant Jedi Council",
+                ".//current_ou_type_id": self.jedi_council.id,
+                ".//current_ou_type_name": "Jedi Council",
+                ".//parent1_ou_id": jedi.id,
+                ".//parent1_ou_is_root": "1",
+                ".//parent1_ou_name": "Meta Jedi",
+                ".//parent1_ou_type_id": "",
+                ".//parent1_ou_type_name": "",
+            },
         )

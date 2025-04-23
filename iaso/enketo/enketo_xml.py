@@ -13,6 +13,7 @@ ORG_UNIT_INJECTABLE_QUESTION_NAMES = [
     "current_ou_name",
     "current_ou_type_id",
     "current_ou_type_name",
+    "current_ou_is_root",
 ]
 
 for parent_index in range(1, 10):
@@ -39,6 +40,7 @@ def buid_substitutions(instance):
             ".//current_ou_name": deep_getattr(instance, "org_unit.name", ""),
             ".//current_ou_type_id": deep_getattr(instance, "org_unit.org_unit_type.id", ""),
             ".//current_ou_type_name": deep_getattr(instance, "org_unit.org_unit_type.name", ""),
+            ".//current_ou_is_root": "0" if deep_getattr(instance, "org_unit.parent", None) else "1",
         }
 
         parent = instance.org_unit.parent
@@ -49,7 +51,7 @@ def buid_substitutions(instance):
             substitutions[f".//{prefix}name"] = deep_getattr(parent, "name", "")
             substitutions[f".//{prefix}type_id"] = deep_getattr(parent, "org_unit_type.id", "")
             substitutions[f".//{prefix}type_name"] = deep_getattr(parent, "org_unit_type.name", "")
-            substitutions[f".//{prefix}is_root"] = "1" if parent.parent else "0"
+            substitutions[f".//{prefix}is_root"] = "0" if parent.parent else "1"
 
             parent = parent.parent
             parent_index += 1

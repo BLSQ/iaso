@@ -80,6 +80,7 @@ def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
 
     if ssi is None:
         previous_ssi = ssi_for_campaign.filter(created_at__date__lt=day).order_by("created_at").last()
+        # Only use next snapshot if it's max 2 days away to avoid using data of the next preparedness milestone
         next_ssi = (
             ssi_for_campaign.filter(created_at__date__gt=day, created_at__date__lte=day + timedelta(days=2))
             .order_by("created_at")

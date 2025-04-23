@@ -146,6 +146,7 @@ class Account(models.Model):
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
     analytics_script = models.TextField(blank=True, null=True)
+    custom_translations = models.JSONField(null=True, blank=True)
 
     def as_dict(self):
         return {
@@ -157,6 +158,7 @@ class Account(models.Model):
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
+            "custom_translations": self.custom_translations,
         }
 
     def as_small_dict(self):
@@ -170,6 +172,7 @@ class Account(models.Model):
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
             "modules": self.modules,
+            "custom_translations": self.custom_translations,
         }
 
     def __str__(self):

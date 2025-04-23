@@ -74,7 +74,7 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
+def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
     day = ref_date - timedelta(days=n_day)
     ssi = ssi_for_campaign.filter(created_at__date=day).last()
 
@@ -95,7 +95,14 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
             ssi = previous_ssi
         else:
             logger.error(f"No spreadsheet snapshot found for {obr_name} round {round_number} {ref_date}")
-            return None, day, None
+        return ssi
+
+
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
+    day = ref_date - timedelta(days=n_day)
+    ssi = find_snapshot_for_date(ssi_for_campaign, ref_date, n_day, obr_name, round_number)
+    if ssi is None:
+        return None, day, None
     try:
         preparedness = get_preparedness(ssi.cached_spreadsheet)
         summary = preparedness_summary(preparedness)

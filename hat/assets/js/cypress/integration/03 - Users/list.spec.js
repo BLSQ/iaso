@@ -198,7 +198,7 @@ describe('Users', () => {
                         listFixture.profiles[userIndex][f],
                     );
                 });
-                cy.testInputValue('#language', 'English version');
+                cy.testInputValue('#language', 'English');
 
                 cy.testMultiSelect(
                     `#projects`,

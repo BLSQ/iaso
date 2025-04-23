@@ -1,10 +1,7 @@
 import { textPlaceholder } from 'bluesquare-components';
 import moment from 'moment';
-import {
-    apiDateFormats,
-    getLocaleDateFormat,
-    longDateFormats,
-} from '../../utils/dates.ts';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import { apiDateFormats, getLocaleDateFormat } from '../../utils/dates.ts';
 import {
     DateCell,
     DateTimeCell,
@@ -12,11 +9,14 @@ import {
     convertValueIfDate,
 } from './DateTimeCell.tsx';
 
-const locales = Object.keys(longDateFormats);
+const locales = Object.keys(LANGUAGE_CONFIGS);
 const setLocale = code => {
     moment.locale(code);
     moment.updateLocale(code, {
-        longDateFormat: longDateFormats[code],
+        longDateFormat:
+            LANGUAGE_CONFIGS[code]?.dateFormats ||
+            LANGUAGE_CONFIGS.en?.dateFormats ||
+            {},
         week: {
             dow: 1,
         },
@@ -33,11 +33,12 @@ describe('DateTimeCell', () => {
     });
 
     it('should return the formatted date if value is a timestamp', () => {
-        const timestampInSeconds = Math.floor(Date.now() / 1000);
-        const cellInfo = { value: timestampInSeconds };
-        const date = moment
-            .unix(timestampInSeconds)
-            .format(getLocaleDateFormat('LTS'));
+        // Use a fixed timestamp in milliseconds for consistent test results
+        const timestampInMilliseconds = 1743840000000; // 2025-04-11 09:24:00
+        const cellInfo = { value: timestampInMilliseconds };
+        const date = moment(timestampInMilliseconds).format(
+            getLocaleDateFormat('LTS'),
+        );
         expect(DateTimeCell(cellInfo)).to.equal(date);
     });
 });

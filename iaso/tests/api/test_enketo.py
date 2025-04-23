@@ -754,3 +754,25 @@ class EnketoAPITestCase(APITestCase):
                 ".//parent1_ou_type_name": "",
             },
         )
+
+    @override_settings(ENKETO=enketo_test_settings)
+    @responses.activate
+    def test_public_fill(self):
+        self.setUpMockEnketo()
+
+        form_with_injectables = m.Form.objects.create(
+            name="Hydroponics study injectables",
+            form_id="hydro_1_injectables",
+            period_type=m.MONTH,
+            single_per_period=True,
+        )
+
+        form_version_1 = m.FormVersion.objects.create(
+            form=form_with_injectables,
+            version_id="1",
+            file=UploadedFile(open("iaso/tests/fixtures/form_rapide_1666691000_with_injectables.xml")),
+        )
+
+        response = self.client.get(f"/api/fill/{form_with_injectables.uuid}/{self.jedi_council_corruscant.id}/202301")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "https://enketo_url.host.test/something")

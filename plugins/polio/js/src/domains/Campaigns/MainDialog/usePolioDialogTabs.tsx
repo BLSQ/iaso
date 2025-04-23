@@ -74,7 +74,8 @@ export const usePolioDialogTabs = (
                         formik.values.id &&
                             formik.values.separate_scopes_per_round !==
                                 formik.initialValues.separate_scopes_per_round,
-                    ),
+                    ) ||
+                    formik.values.rounds.filter(r => !r.on_hold).length === 0,
                 disabledMessage: subActivityTooltipMsg,
                 hasTabError: false,
             },

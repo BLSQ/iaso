@@ -1001,6 +1001,7 @@ class Instance(models.Model):
     STATUS_READY = "READY"
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
+    STATUSES = [STATUS_READY, STATUS_DUPLICATED, STATUS_EXPORTED]
 
     ALWAYS_ALLOWED_PATHS_XML = set(
         ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]

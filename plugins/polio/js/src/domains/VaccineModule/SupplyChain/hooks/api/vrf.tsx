@@ -152,7 +152,13 @@ export const useCampaignDropDowns = (
                   .filter(round =>
                       round.vaccine_names_extended.includes(vaccine),
                   )
-                  .filter(round => (round?.scopes ?? []).length > 0)
+                  .filter(
+                      round =>
+                          (selectedCampaign?.separate_scopes_per_round &&
+                              (round?.scopes ?? []).length > 0) ||
+                          (!selectedCampaign?.separate_scopes_per_round &&
+                              (selectedCampaign?.scopes ?? []).length > 0),
+                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

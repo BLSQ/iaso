@@ -438,6 +438,47 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request_2.org_unit.parent, self.org_unit)  # Should be unmodified.
 
     @time_machine.travel(DT, tick=False)
+    def test_bulk_review_approve_should_be_filtered(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        user_1 = self.user_with_review_perm
+        user_2 = self.user
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_1, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_2, new_name="bar"
+        )
+        self.assertEqual(2, m.OrgUnitChangeRequest.objects.count())
+
+        data = {
+            "select_all": 1,
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+        }
+
+        querystring = f"?users={user_2.id}"
+        response = self.client.patch(f"/api/orgunits/changes/bulk_review/{querystring}", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_2.pk])
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        change_request_1.refresh_from_db()
+        change_request_2.refresh_from_db()
+
+        # This change request should have been excluded from the querystring filter.
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.NEW)
+
+        # This change request should have been approved.
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+
+    @time_machine.travel(DT, tick=False)
     def test_bulk_review_reject(self):
         self.client.force_authenticate(self.user_with_review_perm)
 

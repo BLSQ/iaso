@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,7 +8,6 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
@@ -20,9 +20,6 @@ import {
 } from '../../../../constants/permissions';
 import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
-import MESSAGES from '../messages';
-import { StockVariationParams, StockVariationTab } from '../types';
-
 import {
     useGetDestructionList,
     useGetEarmarkedList,
@@ -30,6 +27,9 @@ import {
     useGetIncidentList,
     useGetStockManagementSummary,
 } from '../hooks/api';
+import MESSAGES from '../messages';
+import { StockVariationParams, StockVariationTab } from '../types';
+
 import { CreateDestruction } from './Modals/CreateEditDestruction';
 import { CreateEarmarked } from './Modals/CreateEditEarmarked';
 import { CreateFormA } from './Modals/CreateEditFormA';

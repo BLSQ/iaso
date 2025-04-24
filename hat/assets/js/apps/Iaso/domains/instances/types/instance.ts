@@ -113,6 +113,13 @@ export type CheckBulkGpsPushResult = {
     warning_overwrite?: number[];
     error_ids?: number[];
 };
+
+export type CheckReferenceSubmissionLinkResult = {
+    result: string;
+    linked?: number[];
+    not_linked?: number[];
+    warning?: number[];
+};
 export type MimeType =
     // Text
     | 'text/plain'

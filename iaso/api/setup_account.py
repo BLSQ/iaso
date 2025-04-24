@@ -35,7 +35,9 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
-    feature_flags = serializers.JSONField(required=False)
+    feature_flags = serializers.JSONField(
+        required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
+    )
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -59,6 +61,8 @@ class SetupAccountSerializer(serializers.Serializer):
         return modules
 
     def validate_feature_flags(self, feature_flags):
+        if not feature_flags or len(feature_flags) == 0:
+            raise serializers.ValidationError("feature_flags_empty")
         default_account_feature_flags = AccountFeatureFlag.objects.all()
         account_feature_flags = [feature_flag.code for feature_flag in default_account_feature_flags]
         for feature_flag in feature_flags:
@@ -91,10 +95,7 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-        if validated_data.get("feature_flags") is not None and len(validated_data.get("feature_flags")) > 0:
-            account.feature_flags.set(validated_data.get("feature_flags"))
-        else:
-            account.feature_flags.set(DEFAULT_ACCOUNT_FEATURE_FLAGS)
+        account.feature_flags.set(validated_data.get("feature_flags"))
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")

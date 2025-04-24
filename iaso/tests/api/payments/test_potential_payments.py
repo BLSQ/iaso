@@ -1,5 +1,3 @@
-import datetime
-
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -8,8 +6,6 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
     """
     Test actions on the ViewSet.
     """
-
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -74,8 +70,10 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 200)
+        with self.assertNumQueries(38):
+            response = self.client.get("/api/potential_payments/")
+            self.assertJSONResponse(response, 200)
+
         # Check that the correct number of PotentialPayment objects were created
         self.assertEqual(2, len(response.data["results"]))
         # Check that the PotentialPayment objects were created for the correct users

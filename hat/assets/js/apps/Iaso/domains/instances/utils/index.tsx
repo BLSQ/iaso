@@ -495,13 +495,14 @@ export const useSelectionActions = (
 
     return useMemo(() => {
         const assignReferenceSubmissions: SelectionAction = {
-            icon: newSelection => {
+            icon: (newSelection,resetSelection) => {
                 return (
                     <LinkReferenceInstancesModalComponent
                         selection={newSelection}
                         iconProps={{
                             iconDisabled: newSelection.selectCount === 0,
                         }}
+                        resetSelection={resetSelection}
                     />
                 );
             },

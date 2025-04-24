@@ -7,6 +7,7 @@ import typing
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test import SimpleTestCase
+from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso import models as m
@@ -1636,7 +1637,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
-            data={"default_image": image.id},
+            data={"default_image_id": image.id},
         )
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
@@ -1652,12 +1653,39 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
-            data={"default_image": None},
+            data={"default_image_id": None},
         )
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertIsNone(ou.default_image)
+
+    def test_update_org_unit_with_default_image(self):
+        """
+        Test that OrgUnits with a default image can be updated without 500 error - IA-4111
+        """
+        default_image = m.InstanceFile.objects.create(file="path/to/image.jpg", name="default_image")
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.opening_date = None
+        ou.closed_date = None
+        ou.default_image = default_image
+        ou.save()
+
+        data = {
+            "opening_date": "01-01-2024",
+            "closed_date": "01-01-2025",
+            "default_image_id": default_image.id,
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        ou.refresh_from_db()
+
+        # Just checking that the update was successful, we don't care which fields were updated
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
 
     def test_search_org_unit_based_on_group_and_type(self):
         self.client.force_authenticate(self.yoda)

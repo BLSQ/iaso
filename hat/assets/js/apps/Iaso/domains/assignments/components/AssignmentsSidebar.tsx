@@ -1,17 +1,14 @@
-import { Box, Paper } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Box, Paper } from '@mui/material';
 
 import { Table } from 'bluesquare-components';
 
-import { AssignmentsApi } from '../types/assigment';
-import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
-
-import { Profile } from '../../../utils/usersUtils';
-
-import { useColumns } from '../configs/AssignmentsMapTabColumns';
-
 import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { Profile } from '../../../utils/usersUtils';
+import { useColumns } from '../configs/AssignmentsMapTabColumns';
+import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 type Props = {
     data: SubTeam[] | User[];
@@ -71,6 +68,7 @@ export const Sidebar: FunctionComponent<Props> = ({
                         assignments,
                         loading: !currentTeam,
                         orgUnits,
+                        isLoadingAssignments,
                     }}
                 />
             </Box>

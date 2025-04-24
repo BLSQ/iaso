@@ -28,6 +28,7 @@ from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
@@ -972,6 +973,14 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         new_qs = new_qs.filter(project__account=profile.account_id)
         return new_qs
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(project__in=user_projects_ids)
+
 
 class NonDeletedInstanceManager(models.Manager):
     def get_queryset(self):
@@ -1575,6 +1584,19 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    @cached_property
+    def projects_ids(self) -> set[int]:
+        """
+        Returns the list of project IDs authorized for this profile.
+
+        Note that this is implemented via a `@cached_property` for performance
+        reasons. You may have to manually delete it in unit tests, e.g.:
+
+            user.iaso_profile.projects.add(new_project)
+            del user.iaso_profile.projects_ids
+        """
+        return list(self.projects.values_list("pk", flat=True))
 
     def get_editable_org_unit_type_ids(self) -> set[int]:
         ids_in_user_roles = set(

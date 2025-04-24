@@ -1,6 +1,6 @@
+import React, { FunctionComponent } from 'react';
 import { Button, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import MESSAGES from '../../messages';
 
 type Props = {

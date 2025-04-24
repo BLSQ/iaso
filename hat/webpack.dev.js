@@ -1,7 +1,9 @@
 require('dotenv').config();
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-
+const fs = require('fs');
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
@@ -132,6 +134,93 @@ const newBrowsersConfig = [
     },
 ];
 
+// Function to get plugin folders
+const getPluginFolders = () => {
+    const pluginsPath = path.resolve(__dirname, '../plugins');
+    return fs.readdirSync(pluginsPath).filter(file => {
+        const fullPath = path.join(pluginsPath, file);
+        // Only return directories and skip special directories
+        return (
+            fs.statSync(fullPath).isDirectory() &&
+            !file.startsWith('.') &&
+            !file.startsWith('__') &&
+            // Check if the directory contains a js/config.tsx file
+            fs.existsSync(path.join(fullPath, 'js', 'config.tsx'))
+        );
+    });
+};
+
+// Function to generate a combined config file
+const generateCombinedConfig = () => {
+    const pluginFolders = getPluginFolders();
+    const combinedConfigPath = path.resolve(
+        __dirname,
+        './assets/js/combinedPluginConfigs.js',
+    );
+
+    // Create a combined config object
+    const combinedConfig = {};
+
+    pluginFolders.forEach(plugin => {
+        const configPath = path.resolve(
+            __dirname,
+            `../plugins/${plugin}/js/config.tsx`,
+        );
+        // Use require to get the config
+        try {
+            // We need to use a dynamic require to avoid webpack bundling issues
+            // This will be replaced at runtime
+            combinedConfig[plugin] = `require('${configPath}')`;
+        } catch (error) {
+            console.error(`Error loading config for plugin ${plugin}:`, error);
+        }
+    });
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It combines all plugin configs into a single file.
+
+const combinedConfigs = {
+    ${Object.entries(combinedConfig)
+        .map(([key, value]) => `    ${key}: ${value}`)
+        .join(',\n')}
+};
+
+export default combinedConfigs;
+`;
+
+    // Write the file
+    fs.writeFileSync(combinedConfigPath, fileContent);
+    return combinedConfigPath;
+};
+
+// Function to generate a plugin keys file
+const generatePluginKeysFile = () => {
+    const pluginFolders = getPluginFolders();
+    const pluginKeysPath = path.resolve(__dirname, './assets/js/pluginKeys.js');
+
+    // Create the file content
+    const fileContent = `
+// This file is auto-generated. Do not edit directly.
+// It contains the list of available plugin keys.
+
+const pluginKeys = ${JSON.stringify(pluginFolders, null, 2)};
+
+export default pluginKeys;
+`;
+
+    // Write the file
+    fs.writeFileSync(pluginKeysPath, fileContent);
+    return pluginKeysPath;
+};
+
+// Generate the combined config file
+const combinedConfigPath = generateCombinedConfig();
+
+// Generate the plugin keys file
+const pluginKeysPath = generatePluginKeysFile();
+
 module.exports = {
     context: __dirname,
     mode: 'development',
@@ -170,8 +259,9 @@ module.exports = {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: ``, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
+        scriptType: 'text/javascript',
     },
     devtool: 'source-map',
 
@@ -196,7 +286,7 @@ module.exports = {
             progress: true,
         },
         watchFiles: {
-            paths: ['src/**/*', 'assets/**/*'],
+            paths: ['src/**/*', 'assets/**/*', '../plugins/**/*'],
             options: {
                 usePolling: true,
             },
@@ -225,6 +315,42 @@ module.exports = {
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.IgnorePlugin({
             resourceRegExp: /^perf_hooks$/,
+        }),
+        new ModuleFederationPlugin({
+            name: 'iaso_plugins',
+            filename: 'remoteEntry.js',
+            library: { type: 'self', name: 'iaso_plugins' },
+            exposes: {
+                './configs': combinedConfigPath,
+                './keys': pluginKeysPath,
+            },
+            shared: {
+                react: {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-dom': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-intl': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                '@mui/material': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'bluesquare-components': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+            },
         }),
     ],
 
@@ -295,7 +421,9 @@ module.exports = {
     resolve: {
         alias: {
             'react/jsx-runtime': 'react/jsx-runtime.js',
-            // see LIVE_COMPONENTS feature in doc
+            // Add alias for the combined config
+            'iaso_plugins/configs': combinedConfigPath,
+            'iaso_plugins/keys': pluginKeysPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,
@@ -306,16 +434,14 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? [
-                      'node_modules',
-                      '../../bluesquare-components/node_modules/',
-                      path.resolve(__dirname, 'assets/js/apps/'),
-                  ]
-                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
-                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-
+        modules: [
+            'node_modules',
+            path.resolve(__dirname, '../plugins'),
+            path.resolve(__dirname, 'assets/js/apps/'),
+            ...(process.env.LIVE_COMPONENTS === 'true'
+                ? ['../../bluesquare-components/node_modules/']
+                : []),
+        ],
         extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: {

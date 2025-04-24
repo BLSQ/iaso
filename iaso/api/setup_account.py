@@ -6,10 +6,17 @@ from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from hat.menupermissions.constants import MODULES
+from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
-from iaso.models import Account, DataSource, Profile, Project, SourceVersion
+from iaso.models import (
+    Account,
+    AccountFeatureFlag,
+    DataSource,
+    Profile,
+    Project,
+    SourceVersion,
+)
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -28,6 +35,9 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
+    feature_flags = serializers.JSONField(
+        required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
+    )
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -49,6 +59,16 @@ class SetupAccountSerializer(serializers.Serializer):
             if module_codename not in module_codenames:
                 raise serializers.ValidationError("module_not_exist")
         return modules
+
+    def validate_feature_flags(self, feature_flags):
+        if not feature_flags or len(feature_flags) == 0:
+            raise serializers.ValidationError("feature_flags_empty")
+        default_account_feature_flags = AccountFeatureFlag.objects.all()
+        account_feature_flags = [feature_flag.code for feature_flag in default_account_feature_flags]
+        for feature_flag in feature_flags:
+            if feature_flag not in account_feature_flags:
+                raise serializers.ValidationError("invalid_account_feature_flag")
+        return feature_flags
 
     def create(self, validated_data):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
@@ -75,13 +95,7 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-        account_feature_flags = [
-            "SHOW_HOME_ONLINE",
-            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
-            "SHOW_PAGES",
-            "SHOW_LINK_INSTANCE_REFERENCE",
-        ]
-        account.feature_flags.set(account_feature_flags)
+        account.feature_flags.set(validated_data.get("feature_flags"))
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -104,7 +118,6 @@ class SetupAccountSerializer(serializers.Serializer):
         )
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
-
         return validated_data
 
 

@@ -8,7 +8,12 @@ from iaso.models import OrgUnitType
 
 from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
-from .serializers import OrgUnitTypesDropdownSerializer, OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+from .filters import OrgUnitTypeDropdownFilter
+from .serializers import (
+    OrgUnitTypesDropdownSerializer,
+    OrgUnitTypeSerializerV1,
+    OrgUnitTypeSerializerV2,
+)
 
 
 DEFAULT_ORDER = "name"
@@ -33,7 +38,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
-        if t.orgunit_set.count() > 0:
+        if t.org_units.count() > 0:
             return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
         return super(OrgUnitTypeViewSet, self).destroy(request, pk)
 
@@ -70,7 +75,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
-        if t.orgunit_set.count() > 0:
+        if t.org_units.count() > 0:
             return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
         return super(OrgUnitTypeViewSetV2, self).destroy(request, pk)
 
@@ -103,6 +108,12 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     )
     def dropdown(self, request, *args):
         queryset = self.get_queryset()
+
+        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset)
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+        queryset = filterset.qs
+
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

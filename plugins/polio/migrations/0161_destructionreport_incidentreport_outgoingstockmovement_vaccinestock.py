@@ -57,7 +57,7 @@ class Migration(migrations.Migration):
                         base_field=models.CharField(blank=True, max_length=200), default=list, size=None
                     ),
                 ),
-                ("missing_vials", models.PositiveIntegerField()),
+                ("missing_vials", models.PositiveIntegerField(default=0)),
                 ("campaign", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="polio.campaign")),
                 (
                     "vaccine_stock",

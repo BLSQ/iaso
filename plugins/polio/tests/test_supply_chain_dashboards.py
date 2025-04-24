@@ -93,7 +93,6 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2022, 2, 2),
             usable_vials_used=100,
-            missing_vials=10,
         )
 
         cls.destruction_report = DestructionReport.objects.create(
@@ -233,7 +232,6 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2024, 2, 1),
             usable_vials_used=60,
-            missing_vials=6,
         )
 
         DestructionReport.objects.create(

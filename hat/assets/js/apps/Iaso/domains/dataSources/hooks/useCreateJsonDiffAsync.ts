@@ -57,12 +57,14 @@ const createJsonDiffAsync = async ({
     }
 
     // Options
-    const nonEmptyFields = fieldsToExport.filter(field => field !== 'geometry');
+    const nonEmptyFields = fieldsToExport.filter(
+        field => field !== 'geometry' && field !== 'groups',
+    );
     if (nonEmptyFields.length > 0) {
         params.field_names = nonEmptyFields;
     }
 
-    params.ignore_groups = true;
+    params.ignore_groups = !fieldsToExport.includes('groups');
     params.show_deleted_org_units = false;
 
     return patchRequest(

@@ -3,6 +3,7 @@ import hashlib
 import os
 import uuid
 from datetime import timedelta
+from datetime import datetime
 from datetime import date
 import pandas as pd
 import math
@@ -77,6 +78,23 @@ def patient_list(request):
     return render(request, "patient_list.html", {})
 
 @login_required
+def completeness(request, region_id, month):
+    # Get the OrgUnit object, or raise a 404 error if it doesn't exist
+    region = get_object_or_404(OrgUnit, id=region_id)
+    districts = OrgUnit.objects.filter(parent=region).order_by("name")
+
+    active_patients_list = ActivePatientsList.objects.filter(org_unit=org_unit, period=month).order_by('id')
+
+    context = {
+        'org_unit': region,
+        'active_patients': active_patients_list,
+        'PATIENT_LIST_DISPLAY_FIELDS': PATIENT_LIST_DISPLAY_FIELDS,
+    }
+
+    # Render the template with the context data
+    return render(request, 'completeness.html', context)
+
+@login_required
 def patient_history(request):
     identifier = request.GET.get("identifier", "")
     if identifier:
@@ -91,7 +109,7 @@ def patient_history(request):
         records = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
         data = []
         for record in records:
-            patient_object = {"Période": record.period[:7]}
+            patient_object = {"Période": record.period[:7], "FOSA": record.org_unit.name}
             for field in PATIENT_HISTORY_DISPLAY_FIELDS:
                 patient_object[PATIENT_HISTORY_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
             data.append(patient_object)
@@ -185,7 +203,6 @@ def patient_form(request, patient_id=None):
     """
     View for creating or updating an ActivePatientsList instance.
     """
-    print("patient_id", patient_id)
     if patient_id:
         patient = get_object_or_404(ActivePatientsList, pk=patient_id)
         form = ActivePatientsListForm(request.POST or None, instance=patient)
@@ -200,27 +217,127 @@ def patient_form(request, patient_id=None):
 
     return res
 
+
+def active_count(org_unit_id):
+    """
+    Returns the count of ActivePatientsList entries for a given org_unit and month.
+    """
+    latest_ids = (
+        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        .values("identifier_code")
+        .annotate(latest_id=Max("id"))
+    )
+
+    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+
+    return patients.count()
+
+
+def received_count(org_unit_id, month):
+    """
+    Returns the count of ActivePatientsList entries for a given org_unit and month.
+    """
+    latest_ids = (
+        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        .values("identifier_code")
+        .annotate(latest_id=Max("id"))
+    )
+
+    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+    patients = filter_received_patients_for_the_month(patients, month)
+    return patients.count()
+
+
+def stats(org_unit_id, month):
+    """
+    Returns the count of ActivePatientsList entries for a given org_unit and month.
+    """
+    previous_month = get_previous_period(month)
+    latest_ids = (
+        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        .values("identifier_code")
+        .annotate(latest_id=Max("id"))
+    )
+
+    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+
+    """
+    Perdus de Vue, Décédés et Arrêts de Traitement
+    Nouvelles inclusions
+    Patient de retour après interruption
+    This is not correct, we need to check better this code
+    """
+
+    lost = patients.filter(active=True).filter(next_dispensation_date__lte=date.today()).count()
+    patients = filter_received_patients_for_the_month(patients, month)
+    previous_patients = filter_received_patients_for_the_month(patients, previous_month)
+    deceased = patients.filter(death=True).count()
+    previous_deceased = previous_patients.filter(death=True).count()
+    stopped = patients.filter(art_stoppage=True).count()
+    previous_stopped = previous_patients.filter(art_stoppage=True).count()
+    new = patients.filter(new_inclusion=True).count()
+    previous_new = previous_patients.filter(new_inclusion=True).count()
+    return_to_care = patients.filter(return_to_care=True).count()
+    previous_return_to_care = previous_patients.filter(return_to_care=True).count()
+
+    return {"Perdu de vue": "%d (%d)" % (lost, 0) ,
+            "Décédé":  "%d (%d)" % (deceased, previous_deceased) ,
+            "Arrêt TAR":  "%d (%d)" % (stopped, previous_stopped) ,
+            "Nouveau":   "%d (%d)" % (new, previous_new),
+            "Retour en soin":  "%d (%d)" % (return_to_care, previous_return_to_care),}
+
+
+def get_previous_period(period):
+    """
+    Computes the 'yy-mm' format for the month preceding the given period.
+
+    Args:
+        period (str): The current period in "yy-mm" format.
+
+    Returns:
+        str: The previous month in "yy-mm" format.
+    """
+
+    # Convert the period string to a datetime object
+    current_date = datetime.strptime(period, "%Y-%m")
+
+    # Subtract one month using timedelta
+    first_of_current_month = current_date.replace(day=1)
+    last_of_previous_month = first_of_current_month - timedelta(days=1)
+
+    # Format the result back to "yy-mm"
+    previous_period = last_of_previous_month.strftime("%Y-%m")
+    return previous_period
+
+
 @login_required
 def validation_api(request, org_unit_id, period):
-    org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
 
+    org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
+    previous_period = get_previous_period(period)
     table_content = []
     report_count = 0
     for org_unit in org_units:
         obj = {}
         obj["Site"] = org_unit.name
         latest_import = Import.objects.filter(org_unit=org_unit).filter(month=period).order_by("-creation_date").first()
-        previous_import = Import.objects.filter(org_unit=org_unit).filter(month__lt=period).order_by("-creation_date").first()
+
+        obj["A rapporté"] = "Non"
+        obj["Actifs"] = ""
+        obj["Reçus"] = ""
+        obj.update(stats(org_unit.id, period))
+        obj["Statut"] = ""
+        obj["Observation"] = ""
+        obj["Niveau Validation"] = ""
+        obj["Dernière modification"] = ""
+        obj["import_id"] = None
 
         if latest_import:
             report_count = report_count + 1
             obj["A rapporté"] = "Oui"
             latest_validation = Validation.objects.filter(source_import=latest_import).order_by("-created_at").first()
-            line_count = ActivePatientsList.objects.filter(import_source=latest_import).count()
-            previous_line_count = ActivePatientsList.objects.filter(import_source=latest_import).count()
-            import_link = reverse('import_detail', kwargs={'import_id': latest_import.pk})
-            obj["Lignes"] = '<a href="%s">%d</a> (%d précédemment)' % (import_link, line_count, previous_line_count)
-
+            obj["Actifs"] = active_count(org_unit_id)
+            obj["Reçus"] = "%d (%d)" % (received_count(org_unit_id, period), received_count(org_unit_id, previous_period))
             if latest_validation:
                 obj["Statut"] = latest_validation.validation_status
                 obj["Observation"] = latest_validation.comment
@@ -231,13 +348,9 @@ def validation_api(request, org_unit_id, period):
                 obj["Niveau Validation"] = ""
             obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
             obj["import_id"] = latest_import.id
-        else:
-            obj["A rapporté"] = "Non"
-            obj["Statut"] = ""
-            obj["Observation"] = ""
-            obj["Niveau Validation"] = ""
-            obj["Dernière modification"] = ""
-            obj["import_id"] = None
+
+
+
 
         table_content.append(obj)
 
@@ -293,9 +406,14 @@ def get_first_and_last_day(date_str):
 
     return first_day_str, last_day_str
 
-def filter_active_patients_for_the_month(patients, month):
+def filter_expected_patients_for_the_month(patients, month):
     first_day_str, last_day_str = get_first_and_last_day(month)
     return patients.filter(next_dispensation_date__gte=first_day_str).filter(next_dispensation_date__lte=last_day_str)
+
+def filter_received_patients_for_the_month(patients, month):
+    first_day_str, last_day_str = get_first_and_last_day(month)
+    return patients.filter(last_dispensation_date__gte=first_day_str).filter(last_dispensation_date__lte=last_day_str)
+
 
 @login_required
 def patient_list_api(request, org_unit_id, period):
@@ -314,7 +432,7 @@ def patient_list_api(request, org_unit_id, period):
         last_import = last_import.filter(month=period).order_by("-creation_date").first()
         patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number")
     elif mode == "expected":
-        patients = filter_active_patients_for_the_month(patients, period).order_by("next_dispensation_date")
+        patients = filter_expected_patients_for_the_month(patients, period).order_by("next_dispensation_date")
     elif mode == "active":
         patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
     elif mode == "lost":
@@ -334,7 +452,7 @@ def patient_list_api(request, org_unit_id, period):
                 if mode in ("expected", "lost", "active"):
                     if field == "days_dispensed":
                         patient_object["Date de rupture"] = get_human_readable_value(patient, "next_dispensation_date")
-            patient_object["Voir"] = '<a href="/active_list/patient/%s">Voir</a>' % patient.id
+            patient_object["Voir"] = '<a href="/active_list/patient_history/?identifier=%s">Voir</a>' % patient.identifier_code
             table_content.append(patient_object)
         res = {
             "table_content": table_content,
@@ -352,7 +470,7 @@ def patient_search_api(request):
     """
     # Perform search logic here (e.g., filter ActivePatientsList based on query)
     query = request.GET.get("query", "")
-    patients = ActivePatientsList.objects.filter(identifier_code__icontains=query).distinct('identifier_code').order_by("identifier_code")[:10]  # Limit to 10 results
+    patients = ActivePatientsList.objects.filter(identifier_code__icontains=query).distinct('identifier_code').order_by("identifier_code")[:20]  # Limit to 10 results
     table_content = []
     for patient in patients:
         patient_object = {}
@@ -451,7 +569,7 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
 def validate_import(the_import):
     month = the_import.month
     import_lines = ActivePatientsList.objects.filter(import_source=the_import)
-    viewed_patients_count = filter_active_patients_for_the_month(import_lines, month).count()
+    viewed_patients_count = filter_expected_patients_for_the_month(import_lines, month).count()
     latest_ids = (
         ActivePatientsList.objects.filter(org_unit_id=the_import.org_unit_id)
         .values("identifier_code")

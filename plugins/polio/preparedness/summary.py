@@ -96,7 +96,7 @@ def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
             ssi = previous_ssi
         else:
             logger.error(f"No spreadsheet snapshot found for {obr_name} round {round_number} {ref_date}")
-        return ssi
+    return ssi
 
 
 def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
@@ -180,7 +180,7 @@ def set_preparedness_cache_for_round(round):
     cache.set(
         f"preparedness-{round.id}",
         value=prep,
-        timeout=TIMEOUT_PREPAREDNESS,
+        timeout=1,
     )
     return prep
 
@@ -189,6 +189,6 @@ def get_or_set_preparedness_cache_for_round(campaign, round):
     p = cache.get_or_set(
         f"preparedness-{round.id}",
         default=lambda: _make_prep(campaign, round),
-        timeout=TIMEOUT_PREPAREDNESS,
+        timeout=1,
     )
     return p

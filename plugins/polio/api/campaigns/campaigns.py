@@ -637,7 +637,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         def to_representation(self, instance):
             # Skip test rounds
-            if instance.is_test:
+            if instance.on_hold:
                 return None
             return super().to_representation(instance)
 
@@ -1213,7 +1213,7 @@ class CampaignViewSet(ModelViewSet):
 
         # Filter out test rounds if requested
         if exclude_test_rounds:
-            rounds = rounds.filter(is_test=False)
+            rounds = rounds.filter(on_hold=False)
 
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)

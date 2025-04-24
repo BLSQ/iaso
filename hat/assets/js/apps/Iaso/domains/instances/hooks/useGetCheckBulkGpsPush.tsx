@@ -1,6 +1,6 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { CheckBulkGpsPushResult } from '../types/instance';
 

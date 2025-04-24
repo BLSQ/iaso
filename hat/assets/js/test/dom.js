@@ -4,6 +4,7 @@ const { window } = new JSDOM('<!doctype html><html><body></body></html>', {
     url: 'http://localhost:8081',
 });
 
+window.AVAILABLE_LANGUAGES = ['en', 'fr'];
 function copyProps(src, target) {
     const props = Object.getOwnPropertyNames(src)
         .filter(prop => typeof target[prop] === 'undefined')

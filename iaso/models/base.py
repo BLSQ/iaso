@@ -1587,6 +1587,15 @@ class Profile(models.Model):
 
     @cached_property
     def projects_ids(self) -> set[int]:
+        """
+        Returns the list of project IDs authorized for this profile.
+
+        Note that this is implemented via a `@cached_property` for performance
+        reasons. You may have to manually delete it in unit tests, e.g.:
+
+            user.iaso_profile.projects.add(new_project)
+            del user.iaso_profile.projects_ids
+        """
         return list(self.projects.values_list("pk", flat=True))
 
     def get_editable_org_unit_type_ids(self) -> set[int]:

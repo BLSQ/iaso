@@ -13,17 +13,17 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../../messages';
-import { Instance } from '../../types/instance';
-import { Selection } from '../../../orgUnits/types/selection';
-import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
-import PushBulkGpsWarning from './PushBulkGpsWarning';
-import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import { baseUrls } from '../../../../constants/urls';
-import { userHasPermission } from '../../../users/utils';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
-import PushGpsWarningMessage from './PushGpsWarningMessage';
+import { Selection } from '../../../orgUnits/types/selection';
+import { userHasPermission } from '../../../users/utils';
+import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
+import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
+import MESSAGES from '../../messages';
+import { Instance } from '../../types/instance';
+import WarningMessage from '../../utils/WarningMessage';
+import PushBulkGpsWarning from './PushBulkGpsWarning';
 import { PushGpsModalButton } from './PushGpsModalButton';
 
 type Props = {
@@ -183,7 +183,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
                             {isError ? (
-                                <PushGpsWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
                                     )}
@@ -219,7 +219,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     {!approved && (
                         <Grid item xs={12}>
                             <Typography variant="subtitle1">
-                                <PushGpsWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.approveAllWarningsMessage,
                                     )}

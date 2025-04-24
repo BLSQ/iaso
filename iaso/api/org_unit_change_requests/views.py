@@ -235,84 +235,114 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):
         filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d"))
-        org_unit_changes_requests = self.get_queryset().order_by("org_unit__name")
+
+        # Optimize queryset with prefetch_related and select_related
+        org_unit_changes_requests = (
+            self.get_queryset()
+            .select_related(
+                "org_unit",
+                "org_unit__parent",
+                "org_unit__org_unit_type",
+                "old_parent",
+                "new_parent",
+                "created_by",
+                "updated_by",
+            )
+            .prefetch_related(
+                "org_unit__groups",
+                "old_groups",
+                "new_groups",
+                "org_unit__reference_instances",
+                "old_reference_instances",
+                "new_reference_instances",
+                Prefetch(
+                    "old_parent",
+                    queryset=OrgUnit.objects.prefetch_related(
+                        Prefetch(
+                            "ancestors",
+                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
+                            to_attr="cached_ancestors",
+                        )
+                    ),
+                ),
+                Prefetch(
+                    "new_parent",
+                    queryset=OrgUnit.objects.prefetch_related(
+                        Prefetch(
+                            "ancestors",
+                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
+                            to_attr="cached_ancestors",
+                        )
+                    ),
+                ),
+                Prefetch(
+                    "org_unit__parent",
+                    queryset=OrgUnit.objects.prefetch_related(
+                        Prefetch(
+                            "ancestors",
+                            queryset=OrgUnit.objects.only("id", "source_ref").order_by("path"),
+                            to_attr="cached_ancestors",
+                        )
+                    ),
+                ),
+            )
+            .order_by("org_unit__name")
+        )
+
         filtered_org_unit_changes_requests = OrgUnitChangeRequestListFilter(
             request.GET, queryset=org_unit_changes_requests
         ).qs
 
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
-
         writer = csv.writer(response)
         writer.writerow(self.CSV_HEADER_COLUMNS)
 
-        for change_request in filtered_org_unit_changes_requests:
-            # Helper function to determine if a field has changed and its conclusion
-            def get_conclusion(field_name, old_value, new_value):
-                # If the change request is new, no conclusion is made
-                if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
-                    return "pending"
+        # Helper functions moved outside the loop
+        def get_conclusion(change_request, field_name, old_value, new_value):
+            if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
+                return "pending"
+            if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
+                return "rejected"
+            if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
+                field_mapping = {
+                    "name": "new_name",
+                    "parent": "new_parent",
+                    "ref_ext_parent_1": "new_parent",
+                    "ref_ext_parent_2": "new_parent",
+                    "ref_ext_parent_3": "new_parent",
+                    "opening_date": "new_opening_date",
+                    "closing_date": "new_closed_date",
+                    "groups": "new_groups",
+                    "localisation": "new_location",
+                    "reference_submission": "new_reference_instances",
+                }
+                requested_field = field_mapping.get(field_name)
+                if requested_field not in change_request.requested_fields:
+                    return "same"
+                if requested_field in change_request.approved_fields:
+                    return "approved"
+                return "rejected"
+            return "unknown"
 
-                # If the change request is rejected, all fields are rejected
-                if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
-                    return "rejected"
-
-                # If the change request is approved, check if the field is in approved_fields
-                if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
-                    # Map field names to their corresponding field in requested_fields
-                    field_mapping = {
-                        "name": "new_name",
-                        "parent": "new_parent",
-                        "ref_ext_parent_1": "new_parent",
-                        "ref_ext_parent_2": "new_parent",
-                        "ref_ext_parent_3": "new_parent",
-                        "opening_date": "new_opening_date",
-                        "closing_date": "new_closed_date",
-                        "groups": "new_groups",
-                        "localisation": "new_location",
-                        "reference_submission": "new_reference_instances",
-                    }
-
-                    # Get the corresponding field name in requested_fields
-                    requested_field = field_mapping.get(field_name)
-
-                    # If the field is not in requested_fields, it means no change was requested
-                    if requested_field not in change_request.requested_fields:
-                        return "same"
-
-                    # If the field is in approved_fields, it was approved
-                    if requested_field in change_request.approved_fields:
-                        return "approved"
-
-                    # If the field is in requested_fields but not in approved_fields, it was rejected
-                    return "rejected"
-
-                # Default case (should not happen)
-                return "unknown"
-
-            # Get parent reference extensions
-            def get_parent_ref_ext(parent, level):
-                if not parent:
-                    return None
-
-                # Get ancestors up to the specified level
-                ancestors = list(parent.ancestors().order_by("path"))
-                if level <= len(ancestors):
-                    return ancestors[level - 1].source_ref
+        def get_parent_ref_ext(parent, level):
+            if not parent or not hasattr(parent, "cached_ancestors"):
                 return None
+            if level <= len(parent.cached_ancestors):
+                return parent.cached_ancestors[level - 1].source_ref
+            return None
 
-            # Get location string
-            def get_location_str(location):
-                if not location:
-                    return None
-                return f"{location.y}, {location.x}"
+        def get_location_str(location):
+            if not location:
+                return None
+            return f"{location.y}, {location.x}"
 
-            # Get reference instance IDs
-            def get_reference_instance_ids(instances):
-                if not instances.exists():
-                    return ""
-                return ",".join(str(instance.id) for instance in instances.all())
+        def get_reference_instance_ids(instances):
+            if not instances.exists():
+                return ""
+            return ",".join(str(instance.id) for instance in instances.all())
 
-            # Basic row data
+        for change_request in filtered_org_unit_changes_requests:
+            # Basic row data - all data is already prefetched
             row = [
                 change_request.id,
                 change_request.org_unit_id,
@@ -330,8 +360,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             # Name changes
             name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
             name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
-            name_conclusion = get_conclusion("name", name_before, name_after)
-
+            name_conclusion = get_conclusion(change_request, "name", name_before, name_after)
             row.extend([name_before, name_after, name_conclusion])
 
             # Parent changes
@@ -343,20 +372,20 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.org_unit.parent
                 else None
             )
-
             row.extend([parent_before, parent_after])
 
             # Reference extensions for parents
             for level in range(1, 4):
-                parent_before = change_request.old_parent if change_request.old_parent else None
+                parent_before = change_request.old_parent
                 parent_after = (
                     change_request.new_parent if change_request.new_parent else change_request.org_unit.parent
                 )
 
                 ref_ext_before = get_parent_ref_ext(parent_before, level)
                 ref_ext_after = get_parent_ref_ext(parent_after, level)
-                ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
-
+                ref_ext_conclusion = get_conclusion(
+                    change_request, f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after
+                )
                 row.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
 
             # Opening date changes
@@ -372,8 +401,9 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                     else None
                 )
             )
-            opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
-
+            opening_date_conclusion = get_conclusion(
+                change_request, "opening_date", opening_date_before, opening_date_after
+            )
             row.extend([opening_date_before, opening_date_after, opening_date_conclusion])
 
             # Closing date changes
@@ -389,8 +419,9 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                     else None
                 )
             )
-            closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
-
+            closing_date_conclusion = get_conclusion(
+                change_request, "closing_date", closing_date_before, closing_date_after
+            )
             row.extend([closing_date_before, closing_date_after, closing_date_conclusion])
 
             # Groups changes
@@ -400,8 +431,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.new_groups.exists()
                 else ",".join(group.name for group in change_request.org_unit.groups.all())
             )
-            groups_conclusion = get_conclusion("groups", groups_before, groups_after)
-
+            groups_conclusion = get_conclusion(change_request, "groups", groups_before, groups_after)
             row.extend([groups_before, groups_after, groups_conclusion])
 
             # Location changes
@@ -411,8 +441,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.new_location
                 else get_location_str(change_request.org_unit.location)
             )
-            location_conclusion = get_conclusion("localisation", location_before, location_after)
-
+            location_conclusion = get_conclusion(change_request, "localisation", location_before, location_after)
             row.extend([location_before, location_after, location_conclusion])
 
             # Reference instances changes
@@ -422,10 +451,10 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 if change_request.new_reference_instances.exists()
                 else get_reference_instance_ids(change_request.org_unit.reference_instances)
             )
-
             row.extend([reference_before, reference_after])
 
             writer.writerow(row)
+
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=" + filename
         return response

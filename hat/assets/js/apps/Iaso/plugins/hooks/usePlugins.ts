@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Theme } from '@mui/material';
 import { last } from 'lodash';
-import configs from 'iaso_plugins/configs';
+import configs from 'IasoModules/plugins/configs';
 
 import { Plugin } from '../types';
 

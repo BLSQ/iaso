@@ -216,3 +216,33 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["feature_flags"], ["invalid_account_feature_flag"])
+
+    def test_setup_account_with_None_value_as_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "account with None feature flag test-featureappid",
+            "user_username": "username",
+            "user_first_name": "firstname",
+            "user_last_name": "lastname",
+            "password": "password",
+            "modules": self.MODULES,
+            "feature_flags": None,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["feature_flags"], ["This field may not be null."])
+
+    def test_setup_account_with_empty_feature_flags(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "account empty feature flag test-featureappid",
+            "user_username": "username",
+            "user_first_name": "firstname",
+            "user_last_name": "lastname",
+            "password": "password",
+            "modules": self.MODULES,
+            "feature_flags": [],
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()["feature_flags"], ["feature_flags_empty"])

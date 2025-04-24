@@ -449,16 +449,14 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     def get_queryset(self):
         queryset = (
-            PotentialPayment.objects.prefetch_related("change_requests")
-            .prefetch_related("change_requests__org_unit")
+            PotentialPayment.objects.prefetch_related("change_requests__org_unit")
+            .select_related("user__iaso_profile", "payment_lot")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
+            .annotate(change_requests_count=Count("change_requests"))
             .distinct()
         )
-
-        queryset = queryset.annotate(change_requests_count=Count("change_requests"))
-
         return queryset
 
     def calculate_new_potential_payments(self):

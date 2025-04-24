@@ -134,7 +134,7 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
     user = UserNestedSerializer()
 
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(potential_payment=obj)
+        change_requests = obj.change_requests.all()
         request = self.context.get("request", None)
         change_requests = filter_by_forms(request, change_requests)
         change_requests = filter_by_parent(request, change_requests)

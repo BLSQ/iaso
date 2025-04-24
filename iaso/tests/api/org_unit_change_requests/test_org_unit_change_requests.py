@@ -794,7 +794,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         # Check that the groups conclusion is "rejected" for an APPROVED change request
         # where the field was requested but not approved
-        groups_conclusion_index = 34  # Index of "Groups conclusion" column
+        groups_conclusion_index = 33  # Index of "Groups conclusion" column
         self.assertEqual(first_data_row[groups_conclusion_index], "rejected")
 
     def test_export_to_csv_with_rejected_change_request(self):
@@ -825,5 +825,5 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(first_data_row[name_conclusion_index], "rejected")
 
         # Check that the groups conclusion is "rejected" for a REJECTED change request
-        groups_conclusion_index = 34  # Index of "Groups conclusion" column
+        groups_conclusion_index = 33  # Index of "Groups conclusion" column
         self.assertEqual(first_data_row[groups_conclusion_index], "rejected")

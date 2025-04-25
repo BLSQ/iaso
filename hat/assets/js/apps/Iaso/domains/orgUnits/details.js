@@ -409,7 +409,6 @@ const OrgUnitDetail = () => {
                                     orgUnit={originalOrgUnit}
                                     showOnlyParents={false}
                                     params={params}
-                                    replace={false}
                                 />
                             )}
                             <OrgUnitForm

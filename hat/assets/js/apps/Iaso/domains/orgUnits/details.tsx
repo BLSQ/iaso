@@ -46,6 +46,7 @@ import {
     useOrgUnitTabParams,
     useRefreshOrgUnit,
     useSaveOrgUnit,
+    SaveOrgUnitPayload,
 } from './hooks';
 import MESSAGES from './messages';
 import { ExtendedDataSource, fetchAssociatedOrgUnits } from './requests';
@@ -128,7 +129,8 @@ const OrgUnitDetail: FunctionComponent = () => {
         currentUser,
     );
 
-    const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnit | null>(null);
+    const [currentOrgUnit, setCurrentOrgUnit] =
+        useState<Partial<OrgUnit> | null>(null);
     const [sourcesSelected, setSourcesSelected] = useState<
         ExtendedDataSource[] | undefined
     >(undefined);
@@ -189,10 +191,14 @@ const OrgUnitDetail: FunctionComponent = () => {
     const handleChangeShape = useCallback(
         (geoJson: Shape, key: 'geo_json' | 'location') => {
             setOrgUnitLocationModified(true);
-            setCurrentOrgUnit({
-                ...currentOrgUnit,
-                [key]: geoJson,
-            });
+            setCurrentOrgUnit(
+                currentOrgUnit
+                    ? {
+                          ...currentOrgUnit,
+                          [key]: geoJson,
+                      }
+                    : null,
+            );
         },
         [currentOrgUnit],
     );
@@ -200,12 +206,16 @@ const OrgUnitDetail: FunctionComponent = () => {
         location => {
             setOrgUnitLocationModified(true);
             const { latitude, longitude, altitude } = location;
-            setCurrentOrgUnit({
-                ...currentOrgUnit,
-                altitude,
-                longitude,
-                latitude,
-            });
+            setCurrentOrgUnit(
+                currentOrgUnit
+                    ? {
+                          ...currentOrgUnit,
+                          altitude,
+                          longitude,
+                          latitude,
+                      }
+                    : null,
+            );
         },
         [currentOrgUnit],
     );
@@ -270,17 +280,17 @@ const OrgUnitDetail: FunctionComponent = () => {
         },
         [currentOrgUnit, refreshOrgUnitQueryCache, saveOu],
     );
-
     const handleSaveOrgUnit = useCallback(
         (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
-            let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
-            orgUnitPayload = {
-                ...orgUnitPayload,
-                groups:
-                    orgUnitPayload.groups.length > 0 &&
-                    !orgUnitPayload.groups[0].id
-                        ? orgUnitPayload.groups
-                        : orgUnitPayload.groups.map(g => g.id),
+            const orgUnitPayload: SaveOrgUnitPayload = {
+                ...omit(
+                    {
+                        ...currentOrgUnit,
+                        ...newOrgUnit,
+                    },
+                    ['groups'],
+                ),
+                groups: newOrgUnit?.groups || [],
             };
             saveOu(orgUnitPayload)
                 .then(ou => {
@@ -289,7 +299,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                     if (isNewOrgunit) {
                         redirectToReplace(baseUrl, {
                             ...params,
-                            orgUnitId: ou.id,
+                            orgUnitId: ou.id.toString(),
                         });
                     }
                     refreshOrgUnitQueryCache(ou);
@@ -331,10 +341,10 @@ const OrgUnitDetail: FunctionComponent = () => {
         if (originalOrgUnit && !isNewOrgunit && !params.levels) {
             const orgUnitTree = getOrgUnitsTree(originalOrgUnit);
             if (orgUnitTree.length > 0) {
-                const levels = orgUnitTree.map(o => o.id);
-                const newParams = {
+                const levels: string[] = orgUnitTree.map(o => o.id);
+                const newParams: Record<string, string> = {
                     ...params,
-                    levels,
+                    levels: levels.join(','),
                 };
                 if (params.levels !== levels.join(',') && levels.length > 0) {
                     redirectToReplace(baseUrl, newParams);
@@ -420,7 +430,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 />
                             )}
                             <OrgUnitForm
-                                orgUnit={currentOrgUnit}
+                                orgUnit={currentOrgUnit as OrgUnit}
                                 orgUnitTypes={orgUnitTypes}
                                 groups={groups}
                                 onResetOrgUnit={() => handleResetOrgUnit()}
@@ -478,7 +488,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 </Box>
                             </div>
 
-                            {params.tab === 'history' && (
+                            {params.tab === 'history' && currentOrgUnit.id && (
                                 <div data-test="logs-tab">
                                     <Logs
                                         baseUrl={baseUrl}
@@ -562,7 +572,9 @@ const OrgUnitDetail: FunctionComponent = () => {
                                         <Grid item xs={6}>
                                             <OrgUnitsMapComments
                                                 className={classes.comments}
-                                                orgUnit={currentOrgUnit}
+                                                orgUnit={
+                                                    currentOrgUnit as OrgUnit
+                                                }
                                                 maxPages={4}
                                             />
                                         </Grid>

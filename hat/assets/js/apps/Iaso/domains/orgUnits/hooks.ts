@@ -111,7 +111,11 @@ export const useOrgUnitDetailData = (
             queryFn: () => getRequest(`${groupsApiUrl}${groupsQueryParams}`),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
-                select: (data: GroupDropdownOption[]) => data,
+                select: (data: GroupDropdownOption[]) =>
+                    data.map(group => ({
+                        value: group.id,
+                        label: group.label,
+                    })),
                 enabled:
                     (tab === 'children' || tab === 'infos') &&
                     (Boolean(originalOrgUnit) || isNewOrgunit),
@@ -204,11 +208,15 @@ export const useOrgUnitDetailData = (
     };
 };
 
+export type SaveOrgUnitPayload = Omit<Partial<OrgUnit>, 'groups'> & {
+    groups: number[];
+};
+
 export const useSaveOrgUnit = (
-    onSuccess = () => {},
-    invalidateQueryKey: string[] = [],
-) =>
-    useSnackMutation(
+    onSuccess?: () => void,
+    invalidateQueryKey?: string[],
+) => {
+    return useSnackMutation<OrgUnit, unknown, SaveOrgUnitPayload, unknown>(
         body =>
             body.id
                 ? patchRequest(`/api/orgunits/${body.id}/`, body)
@@ -218,6 +226,7 @@ export const useSaveOrgUnit = (
         invalidateQueryKey,
         { onSuccess },
     );
+};
 
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();

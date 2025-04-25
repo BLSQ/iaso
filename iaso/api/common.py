@@ -510,13 +510,3 @@ class DropdownOptionsListViewSet(ViewSet):
         status_choices = self.get_status_choices()
         serializer = self.serializer(status_choices, many=True)
         return Response(serializer.data)
-
-
-class RoundingDecimalField(serializers.DecimalField):
-    """
-    As per the overridden method's documentation, this can be overridden to disable the validation.
-    The quantize method is called afterward and does the rounding.
-    """
-
-    def validate_precision(self, value):
-        return value

@@ -7,12 +7,13 @@ from rest_framework import serializers
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API
-from iaso.api.common import RoundingDecimalField, TimestampField
+from iaso.api.common import TimestampField
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
 from iaso.utils import geojson_queryset
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
+from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
@@ -289,7 +290,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
-    new_location_accuracy = RoundingDecimalField(
+    new_location_accuracy = RoundedDecimalField(
         max_digits=7,
         decimal_places=2,
         rounding=decimal.ROUND_HALF_UP,

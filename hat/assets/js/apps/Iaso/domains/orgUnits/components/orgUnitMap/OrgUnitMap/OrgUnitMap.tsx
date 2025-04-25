@@ -12,7 +12,17 @@ import React, {
     useState,
 } from 'react';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
+import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
+
+import 'leaflet-draw/dist/leaflet.draw.css';
+import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
+import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
+import tiles from '../../../../../constants/mapTiles';
+import { useFormState } from '../../../../../hooks/form';
 import setDrawMessages from '../../../../../utils/map/drawMapMessages';
 import {
     getleafletGeoJson,
@@ -20,32 +30,22 @@ import {
     mapOrgUnitByLocation,
     orderOrgUnitTypeByDepth,
 } from '../../../../../utils/map/mapUtils';
-import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
-import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
-import MESSAGES from '../../../messages';
-import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
-import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
-import SourcesFilterComponent from '../../SourcesFilterComponent';
-import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
-import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
-
-import 'leaflet-draw/dist/leaflet.draw.css';
-import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
-import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
-import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
-import { InnerDrawer } from '../../../../../components/nav/InnerDrawer/Index';
-import tiles from '../../../../../constants/mapTiles';
-import { useFormState } from '../../../../../hooks/form';
 import * as Permission from '../../../../../utils/permissions';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
+import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
 import { userHasPermission } from '../../../../users/utils';
+import MESSAGES from '../../../messages';
+import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
+import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
+import SourcesFilterComponent from '../../SourcesFilterComponent';
+import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
+import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
+import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { FormsMarkers } from './FormsMarkers';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
 import { SelectedMarkers } from './SelectedMarkers';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
-import { buttonsInitialState } from './constants';
 import { MappedOrgUnit } from './types';
 import { useGetBounds } from './useGetBounds';
 import { getAncestorWithGeojson, initialState } from './utils';

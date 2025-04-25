@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -17,32 +23,34 @@ import {
     LINKS_PREFIX,
     OU_CHILDREN_PREFIX,
     baseUrls,
-} from '../../constants/urls.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+} from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import * as Permission from '../../utils/permissions';
 import {
     useCheckUserHasWritePermissionOnOrgunit,
     useCurrentUser,
-} from '../../utils/usersUtils.ts';
-import { FormsTable } from '../forms/components/FormsTable.tsx';
+} from '../../utils/usersUtils';
+import { FormsTable } from '../forms/components/FormsTable';
 import { userHasPermission } from '../users/utils';
 import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
-import { OrgUnitForm } from './components/OrgUnitForm.tsx';
-import { OrgUnitImages } from './components/OrgUnitImages.tsx';
+import { OrgUnitForm } from './components/OrgUnitForm';
+import { OrgUnitImages } from './components/OrgUnitImages';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
-import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
-import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
-import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
-import { Logs } from './history/LogsComponent.tsx';
-import { wktToGeoJSON } from './history/LogValue.tsx';
+import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap';
+import { OrgUnitChildren } from './details/Children/OrgUnitChildren';
+import { OrgUnitLinks } from './details/Links/OrgUnitLinks';
+import { Logs } from './history/LogsComponent';
+import { wktToGeoJSON } from './history/LogValue';
 import {
     useOrgUnitDetailData,
     useOrgUnitTabParams,
     useRefreshOrgUnit,
     useSaveOrgUnit,
 } from './hooks';
-import MESSAGES from './messages.ts';
+import MESSAGES from './messages';
 import { fetchAssociatedOrgUnits } from './requests';
+import { OrgUnit } from './types/orgUnit';
+import { Shape } from './types/shapes';
 import {
     getAliasesArrayFromString,
     getLinksSources,
@@ -105,8 +113,8 @@ const tabs = [
     'comments',
 ];
 
-const OrgUnitDetail = () => {
-    const classes = useStyles();
+const OrgUnitDetail: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrl);
     const goBack = useGoBack(baseUrls.orgUnits);
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
@@ -120,12 +128,12 @@ const OrgUnitDetail = () => {
         currentUser,
     );
 
-    const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
+    const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnit | null>(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
     const [loadingSelectedSources, setLoadingSelectedSources] =
-        useState(undefined);
+        useState<boolean>(false);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
-        useState(false);
+        useState<boolean>(false);
 
     const showLogButtons =
         useCheckUserHasWritePermissionOnOrgunit(
@@ -142,13 +150,11 @@ const OrgUnitDetail = () => {
             return formatMessage(MESSAGES.newOrgUnit);
         }
         if (currentOrgUnit?.org_unit_type_name) {
-            return (
-                `${currentOrgUnit?.name}${
-                    currentOrgUnit.org_unit_type_name
-                        ? ` - ${currentOrgUnit.org_unit_type_name}`
-                        : ''
-                }` ?? ''
-            );
+            return `${currentOrgUnit?.name}${
+                currentOrgUnit.org_unit_type_name
+                    ? ` - ${currentOrgUnit.org_unit_type_name}`
+                    : ''
+            }`;
         }
         return currentOrgUnit?.name ?? '';
     }, [
@@ -159,9 +165,9 @@ const OrgUnitDetail = () => {
     ]);
 
     const handleResetOrgUnit = async () => {
-        const newParams = {
+        const newParams: Record<string, string | undefined> = {
             ...params,
-            levels: null,
+            levels: undefined,
         };
         redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
@@ -169,7 +175,7 @@ const OrgUnitDetail = () => {
 
     const handleChangeTab = useCallback(
         newTab => {
-            const newParams = {
+            const newParams: Record<string, string | undefined> = {
                 ...params,
                 tab: newTab,
             };
@@ -179,7 +185,7 @@ const OrgUnitDetail = () => {
     );
 
     const handleChangeShape = useCallback(
-        (geoJson, key) => {
+        (geoJson: Shape, key: 'geo_json' | 'location') => {
             setOrgUnitLocationModified(true);
             setCurrentOrgUnit({
                 ...currentOrgUnit,
@@ -235,14 +241,14 @@ const OrgUnitDetail = () => {
             const [longitude, latitude] = coordinates;
             const aliases = revisionAliases
                 ? getAliasesArrayFromString(orgUnitRevision.fields.aliases)
-                : currentOrgUnit.aliases;
+                : (currentOrgUnit?.aliases ?? []);
             const mappedRevision = {
                 ...currentOrgUnit,
                 ...revision,
                 location,
                 geo_json: null, // this line to prevent overwriting the geo_json with a simplified shape/ Disables restoring a previous version of a single shape
                 aliases,
-                id: currentOrgUnit.id,
+                id: currentOrgUnit?.id,
             };
             // This block to avoid sending undefined to the API
             if (latitude) {
@@ -409,7 +415,6 @@ const OrgUnitDetail = () => {
                                     orgUnit={originalOrgUnit}
                                     showOnlyParents={false}
                                     params={params}
-                                    replace={false}
                                 />
                             )}
                             <OrgUnitForm
@@ -509,7 +514,6 @@ const OrgUnitDetail = () => {
                                     <FormsTable
                                         baseUrl={baseUrl}
                                         params={formParams}
-                                        defaultPageSize={10}
                                         paramsPrefix={FORMS_PREFIX}
                                         tableDefaults={{
                                             order: 'name',

@@ -166,18 +166,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
-        distinct_fields = [item.replace("-", "") for item in order]
-
         if not is_export:
             if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
 
                 if page_offset > paginator.num_pages:
@@ -212,12 +204,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response({"orgUnits": org_units})
             if as_location:
                 limit = int(limit)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []

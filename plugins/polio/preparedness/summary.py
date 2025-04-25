@@ -180,7 +180,7 @@ def set_preparedness_cache_for_round(round):
     cache.set(
         f"preparedness-{round.id}",
         value=prep,
-        timeout=1,
+        timeout=TIMEOUT_PREPAREDNESS,
     )
     return prep
 
@@ -189,6 +189,6 @@ def get_or_set_preparedness_cache_for_round(campaign, round):
     p = cache.get_or_set(
         f"preparedness-{round.id}",
         default=lambda: _make_prep(campaign, round),
-        timeout=1,
+        timeout=TIMEOUT_PREPAREDNESS,
     )
     return p

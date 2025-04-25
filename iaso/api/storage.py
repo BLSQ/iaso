@@ -28,7 +28,7 @@ from .common import (
     UserSerializer,
     safe_api_import,
 )
-from .instances import FileFormatEnum
+from .instances.instances import FileFormatEnum
 
 
 class EntityNestedSerializer(EntitySerializer):

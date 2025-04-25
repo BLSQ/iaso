@@ -502,6 +502,7 @@ export const useSelectionActions = (
                         iconProps={{
                             iconDisabled: newSelection.selectCount === 0,
                         }}
+                        filters={filters}
                     />
                 );
             },
@@ -516,6 +517,7 @@ export const useSelectionActions = (
                 <PushGpsModalComponent
                     selection={newSelection}
                     iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
+                    filters={filters}
                 />
             ),
             label: formatMessage(MESSAGES.pushGpsToOrgUnits),

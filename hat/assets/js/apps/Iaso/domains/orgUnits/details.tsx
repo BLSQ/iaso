@@ -48,7 +48,7 @@ import {
     useSaveOrgUnit,
 } from './hooks';
 import MESSAGES from './messages';
-import { fetchAssociatedOrgUnits } from './requests';
+import { ExtendedDataSource, fetchAssociatedOrgUnits } from './requests';
 import { OrgUnit } from './types/orgUnit';
 import { Shape } from './types/shapes';
 import {
@@ -92,13 +92,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const initialOrgUnit = {
-    id: null,
+const initialOrgUnit: Partial<OrgUnit> = {
+    id: undefined,
     name: '',
-    org_unit_type_id: null,
+    org_unit_type_id: undefined,
     groups: [],
-    sub_source: null,
-    status: false,
+    sub_source: undefined,
+    validation_status: undefined,
     aliases: [],
 };
 
@@ -129,7 +129,9 @@ const OrgUnitDetail: FunctionComponent = () => {
     );
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState<OrgUnit | null>(null);
-    const [sourcesSelected, setSourcesSelected] = useState(undefined);
+    const [sourcesSelected, setSourcesSelected] = useState<
+        ExtendedDataSource[] | undefined
+    >(undefined);
     const [loadingSelectedSources, setLoadingSelectedSources] =
         useState<boolean>(false);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
@@ -349,7 +351,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                 sources,
                 originalOrgUnit,
             );
-            const fullSelectedSources = [];
+            const fullSelectedSources: ExtendedDataSource[] = [];
             if (selectedSources.length === 0) {
                 setLoadingSelectedSources(false);
             }
@@ -424,7 +426,6 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 onResetOrgUnit={() => handleResetOrgUnit()}
                                 saveOrgUnit={handleSaveOrgUnit}
                                 params={params}
-                                baseUrl={baseUrl}
                                 isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                                 isFetchingGroups={isFetchingGroups}
                             />
@@ -449,11 +450,9 @@ const OrgUnitDetail: FunctionComponent = () => {
                                             sources={sources}
                                             orgUnitTypes={orgUnitTypes}
                                             sourcesSelected={sourcesSelected}
-                                            setSourcesSelected={newSourcesSelected => {
-                                                setSourcesSelected(
-                                                    newSourcesSelected,
-                                                );
-                                            }}
+                                            setSourcesSelected={
+                                                setSourcesSelected
+                                            }
                                             setOrgUnitLocationModified={isModified =>
                                                 setOrgUnitLocationModified(
                                                     isModified,

@@ -113,7 +113,6 @@ type FormStateRequired<T> = {
     value: T;
     errors?: string[];
 };
-
 export type OrgUnitState = {
     id: FormStateRequired<number>;
     name: FormStateRequired<string>;

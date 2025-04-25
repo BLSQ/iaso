@@ -1,8 +1,4 @@
 /* eslint-disable react/function-component-definition */
-import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import classnames from 'classnames';
-import mapValues from 'lodash/mapValues';
 import React, {
     FunctionComponent,
     useCallback,
@@ -10,13 +6,19 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
+import classnames from 'classnames';
 import { isEqual } from 'lodash';
+import mapValues from 'lodash/mapValues';
+
 import { getValues, useFormState } from '../../../hooks/form';
-import { DropdownOptions } from '../../../types/utils';
+import {
+    GroupDropdownOption,
+    OrgUnitTypeDropdownOption,
+} from '../configuration/types';
 import { OrgUnit, OrgunitInititialState } from '../types/orgUnit';
-import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitInfos } from './OrgUnitInfos';
 
 const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
@@ -43,8 +45,8 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     orgUnit: OrgUnit;
-    orgUnitTypes: OrgunitType[];
-    groups: DropdownOptions<string>[];
+    orgUnitTypes: OrgUnitTypeDropdownOption[];
+    groups: GroupDropdownOption[];
     saveOrgUnit: (
         newOu: OrgUnit,
         onSuccess: (unit: OrgUnit) => void,

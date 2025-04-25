@@ -12,15 +12,17 @@ import {
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
-import { DropdownOptions } from '../../../types/utils';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
+import {
+    GroupDropdownOption,
+    OrgUnitTypeDropdownOption,
+} from '../configuration/types';
 import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitState } from '../types/orgUnit';
-import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
@@ -58,8 +60,8 @@ type Props = {
         key: string,
         value: string | number | string[] | number[],
     ) => void;
-    orgUnitTypes: OrgunitType[];
-    groups: DropdownOptions<string>[];
+    orgUnitTypes: OrgUnitTypeDropdownOption[];
+    groups: GroupDropdownOption[];
     resetTrigger: boolean;
     params: Record<string, string>;
     handleSave: () => void;

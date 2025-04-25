@@ -1,22 +1,45 @@
 import { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import {
     useSnackMutation,
     useSnackQueries,
     useSnackQuery,
-} from 'Iaso/libs/apiHooks.ts';
+} from 'Iaso/libs/apiHooks';
 import { getChipColors, getOtChipColors } from '../../constants/chipColors';
-import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils.ts';
-import MESSAGES from './messages.ts';
+import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils';
+import { DataSource } from '../dataSources/types/dataSources';
+import { Link, PaginatedLinks } from '../links/types';
+import {
+    GroupDropdownOption,
+    OrgUnitTypeDropdownOption,
+} from './configuration/types';
+import MESSAGES from './messages';
+import { PaginatedDataSources } from './types/dataSources';
+import { OrgUnit } from './types/orgUnit';
+import { PaginatedOrgUnitTypes } from './types/orgunitTypes';
+
+type UseOrgUnitDetailDataReturn = {
+    groups: GroupDropdownOption[];
+    orgUnitTypes: OrgUnitTypeDropdownOption[];
+    links: Link[];
+    isFetchingDatas: boolean;
+    sources: DataSource[];
+    originalOrgUnit: OrgUnit | undefined;
+    isFetchingDetail: boolean;
+    isFetchingOrgUnitTypes: boolean;
+    isFetchingGroups: boolean;
+    isFetchingSources: boolean;
+    parentOrgUnit: OrgUnit | undefined;
+};
 
 export const useOrgUnitDetailData = (
-    isNewOrgunit,
-    orgUnitId,
-    setCurrentOrgUnit,
-    levels,
-    tab,
-) => {
+    isNewOrgunit: boolean,
+    orgUnitId: string,
+    setCurrentOrgUnit: (orgUnit: OrgUnit) => void,
+    levels: string,
+    tab: string,
+): UseOrgUnitDetailDataReturn => {
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
             ['currentOrgUnit', orgUnitId],
@@ -49,7 +72,7 @@ export const useOrgUnitDetailData = (
     // Filter org unit types based on user permissions and editable types
     // Include types the user can edit, plus the current org unit's type
     const onSelectOrgUnitTypes = useCallback(
-        data => {
+        (data: PaginatedOrgUnitTypes): OrgUnitTypeDropdownOption[] => {
             const orgUnitTypes =
                 data?.orgUnitTypes.map((ot, i) => ({
                     ...ot,
@@ -73,17 +96,22 @@ export const useOrgUnitDetailData = (
         },
         { data: sources = [], isFetching: isFetchingPlainSources },
         { data: parentOrgUnit },
-    ] = useSnackQueries([
+    ] = useSnackQueries<
+        [
+            GroupDropdownOption[],
+            OrgUnitTypeDropdownOption[],
+            Link[],
+            DataSource[],
+            DataSource[],
+            OrgUnit | undefined,
+        ]
+    >([
         {
             queryKey: ['groups', groupsQueryParams],
             queryFn: () => getRequest(`${groupsApiUrl}${groupsQueryParams}`),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
-                select: data =>
-                    data.map(group => ({
-                        value: group.id,
-                        label: group.label,
-                    })),
+                select: (data: GroupDropdownOption[]) => data,
                 enabled:
                     (tab === 'children' || tab === 'infos') &&
                     (Boolean(originalOrgUnit) || isNewOrgunit),
@@ -105,7 +133,7 @@ export const useOrgUnitDetailData = (
             queryFn: () => getRequest(`/api/links/?orgUnitId=${orgUnitId}`),
             snackErrorMsg: MESSAGES.fetchLinksError,
             options: {
-                select: data => data.links,
+                select: (data: PaginatedLinks) => data.links,
                 enabled: !isNewOrgunit,
             },
         },
@@ -115,7 +143,7 @@ export const useOrgUnitDetailData = (
                 getRequest(`/api/datasources/?linkedTo=${orgUnitId}`),
             snackErrorMsg: MESSAGES.fetchSourcesError,
             options: {
-                select: data =>
+                select: (data: PaginatedDataSources) =>
                     data.sources.map((s, i) => ({
                         ...s,
                         color: getChipColors(i),
@@ -124,18 +152,16 @@ export const useOrgUnitDetailData = (
                 ...cacheOptions,
             },
         },
-        // FIXME this can probably be refactored into a single query
         {
             queryKey: ['associatedDataSources'],
             queryFn: () => getRequest('/api/datasources/'),
             snackErrorMsg: MESSAGES.fetchSourcesError,
             options: {
-                select: data =>
+                select: (data: PaginatedDataSources) =>
                     data.sources.map((s, i) => ({
                         ...s,
                         color: getChipColors(i),
                     })),
-                // here seems to be an error here as the condition for enabling is the same as the query above
                 enabled: isNewOrgunit && (tab === 'map' || tab === 'links'),
                 ...cacheOptions,
             },
@@ -145,11 +171,11 @@ export const useOrgUnitDetailData = (
             queryFn: () => getRequest(`/api/orgunits/${levels}/`),
             snackErrorMsg: MESSAGES.fetchOrgUnitError,
             options: {
+                select: (data: OrgUnit) => data,
                 enabled:
                     Boolean(levels) &&
                     isNewOrgunit &&
                     levels.split(',').length === 1,
-
                 ...cacheOptions,
             },
         },
@@ -178,7 +204,10 @@ export const useOrgUnitDetailData = (
     };
 };
 
-export const useSaveOrgUnit = (onSuccess, invalidateQueryKey) =>
+export const useSaveOrgUnit = (
+    onSuccess = () => {},
+    invalidateQueryKey: string[] = [],
+) =>
     useSnackMutation(
         body =>
             body.id

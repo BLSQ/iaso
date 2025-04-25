@@ -1,20 +1,23 @@
+import React, {
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    Dispatch,
+    useState,
+} from 'react';
 import { Grid, useTheme } from '@mui/material';
 import { pink } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import 'leaflet-draw';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
+import { ExtendedDataSource } from 'Iaso/domains/orgUnits/requests';
 import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 import { MapLegend } from '../../../../../components/maps/MapLegend';
-import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
@@ -39,6 +42,7 @@ import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 import SourcesFilterComponent from '../../SourcesFilterComponent';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
+import { OrgUnitsMapComments } from '../OrgUnitComments/OrgUnitsMapComments';
 import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
 import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
@@ -64,8 +68,8 @@ const useStyles = makeStyles({
 
 type Props = {
     loadingSelectedSources?: boolean;
-    sourcesSelected?: any[];
-    setSourcesSelected: () => void;
+    sourcesSelected?: ExtendedDataSource[];
+    setSourcesSelected: Dispatch<SetStateAction<ExtendedDataSource[]>>;
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;

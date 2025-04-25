@@ -100,6 +100,14 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         previous_sheet.created_at = reference_date - timedelta(days=2)
         previous_sheet.save()
         previous_sheet.refresh_from_db()
+        previous_sheet2 = SpreadSheetImport.objects.create(
+            url="https://www.example.com",
+            content={"sheet": "previous"},
+            spread_id=self.campaign.obr_name,
+        )
+        previous_sheet2.created_at = reference_date - timedelta(days=3)
+        previous_sheet2.save()
+        previous_sheet2.refresh_from_db()
 
         ssi_for_campaign = SpreadSheetImport.objects.filter(spread_id=self.campaign.obr_name)
         snapshot = find_snapshot_for_date(ssi_for_campaign, self.round_1.started_at, 14, self.campaign.obr_name, 1)
@@ -116,6 +124,14 @@ class PreparednessAPITestCase(APITestCase, PolioTestCaseMixin):
         next_sheet.created_at = reference_date + timedelta(days=2)
         next_sheet.save()
         next_sheet.refresh_from_db()
+        next_sheet2 = SpreadSheetImport.objects.create(
+            url="https://www.example.com",
+            content={"sheet": "next"},
+            spread_id=self.campaign.obr_name,
+        )
+        next_sheet2.created_at = reference_date + timedelta(days=3)
+        next_sheet2.save()
+        next_sheet2.refresh_from_db()
 
         ssi_for_campaign = SpreadSheetImport.objects.filter(spread_id=self.campaign.obr_name)
         snapshot = find_snapshot_for_date(ssi_for_campaign, self.round_1.started_at, 14, self.campaign.obr_name, 1)

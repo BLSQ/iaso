@@ -60,14 +60,14 @@ describe('Log in page', () => {
             cy.get('#id_password').should('be.visible');
             cy.get('#id_password').should('not.be.disabled');
             cy.get('#id_password').clear();
-            cy.get('#id_password').type('Link', { force: true });
+            cy.get('#id_password').type('Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('missing password should not submit login', () => {
             cy.get('#id_username').should('exist');
             cy.get('#id_username').should('be.visible');
-            cy.get('#id_username').type('Link', { force: true });
+            cy.get('#id_username').type('Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
@@ -75,14 +75,14 @@ describe('Log in page', () => {
             // Handle username input
             cy.get('#id_username').should('exist');
             cy.get('#id_username').should('be.visible');
-            cy.get('#id_username').clear({ force: true });
-            cy.get('#id_username').type('Link', { force: true });
+            cy.get('#id_username').clear();
+            cy.get('#id_username').type('Link');
 
             // Handle password input
             cy.get('#id_password').should('exist');
             cy.get('#id_password').should('be.visible');
-            cy.get('#id_password').clear({ force: true });
-            cy.get('#id_password').type('ZELDA', { force: true });
+            cy.get('#id_password').clear();
+            cy.get('#id_password').type('ZELDA');
 
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();

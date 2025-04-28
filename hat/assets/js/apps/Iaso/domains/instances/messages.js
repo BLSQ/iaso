@@ -267,7 +267,7 @@ const MESSAGES = defineMessages({
     },
     unLinkReferenceSubmissionsConfirmMessage: {
         defaultMessage:
-            'You selected {unLinkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
+            'You selected {linkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
         id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
     },
     approveAllWarningsMessage: {

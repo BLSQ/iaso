@@ -29,6 +29,7 @@ type Props = {
     selection: Selection<Instance>;
     isOpen: boolean;
     closeDialog: () => void;
+    resetSelection: () => void;
     filters: Record<string, string>;
 };
 
@@ -36,6 +37,7 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     selection,
     isOpen,
     closeDialog,
+    resetSelection,
     filters,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -70,9 +72,11 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             unselected_ids: unselected_ids.map(item => item.id),
             filters,
         });
+        resetSelection();
     }, [
         actions,
         bulkLinkReferenceInstances,
+        resetSelection,
         select_all,
         selected_ids,
         unselected_ids,

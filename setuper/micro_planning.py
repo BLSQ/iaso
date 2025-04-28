@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 
 from fake import fake_person
 
+from iaso.models import OrgUnitChangeRequest
+
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
     print("-- users, teams and micro planning")
@@ -163,3 +165,47 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         )
 
     print(campaign)
+
+
+# Define the function outside the loop to avoid the loop variable binding issue
+def get_conclusion(field_name, old_value, new_value, change_request):
+    # If the change request is new, no conclusion is made
+    if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
+        return "pending"
+
+    # If the change request is rejected, all fields are rejected
+    if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
+        return "rejected"
+
+    # If the change request is approved, check if the field is in approved_fields
+    if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
+        # Map field names to their corresponding field in requested_fields
+        field_mapping = {
+            "name": "new_name",
+            "parent": "new_parent",
+            "ref_ext_parent_1": "new_parent",
+            "ref_ext_parent_2": "new_parent",
+            "ref_ext_parent_3": "new_parent",
+            "opening_date": "new_opening_date",
+            "closing_date": "new_closed_date",
+            "groups": "new_groups",
+            "localisation": "new_location",
+            "reference_submission": "new_reference_instances",
+        }
+
+        # Get the corresponding field name in requested_fields
+        requested_field = field_mapping.get(field_name)
+
+        # If the field is not in requested_fields, it means no change was requested
+        if requested_field not in change_request.requested_fields:
+            return "same"
+
+        # If the field is in approved_fields, it was approved
+        if requested_field in change_request.approved_fields:
+            return "approved"
+
+        # If the field is in requested_fields but not in approved_fields, it was rejected
+        return "rejected"
+
+    # Default case (should not happen)
+    return "unknown"

@@ -130,12 +130,6 @@ jobs:
                     PLUGINS: polio
                 ports:
                     - 8081:8081
-                options: >-
-                    --health-cmd "wget --no-verbose --tries=1 --spider http://localhost:8081/ || exit 1"
-                    --health-interval 10s
-                    --health-timeout 5s
-                    --health-retries 10
-                    --health-start-period 30s
         steps:
             - name: Checkout repository (dispatch)
               uses: actions/checkout@v4

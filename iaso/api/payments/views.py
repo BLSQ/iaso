@@ -140,6 +140,9 @@ class PaymentLotsViewSet(ModelViewSet):
         )
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
 
+        user_org_units_subquery = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        queryset = queryset.annotate(annotated_user_org_units=ArraySubquery(user_org_units_subquery))
+
         return queryset
 
     @swagger_auto_schema(

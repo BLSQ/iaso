@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -9,7 +10,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -19,11 +19,14 @@ import {
     baseUrls,
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import * as Permission from '../../utils/permissions';
 import {
     useCheckUserHasWritePermissionOnOrgunit,
     useCurrentUser,
 } from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
+import { userHasPermission } from '../users/utils';
+import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
@@ -45,8 +48,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { userHasPermission } from '../users/utils';
-import * as Permission from '../../utils/permissions';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -389,7 +390,6 @@ const OrgUnitDetail = () => {
                     </Tabs>
                 )}
             </TopBar>
-
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
                 (params.tab === 'infos' ||
                     params.tab === 'map' ||
@@ -404,6 +404,13 @@ const OrgUnitDetail = () => {
                                     : classes.containerFullHeightPadded
                             }
                         >
+                            {originalOrgUnit && !isNewOrgunit && (
+                                <OrgUnitBreadcrumbs
+                                    orgUnit={originalOrgUnit}
+                                    showOnlyParents={false}
+                                    params={params}
+                                />
+                            )}
                             <OrgUnitForm
                                 orgUnit={currentOrgUnit}
                                 orgUnitTypes={orgUnitTypes}

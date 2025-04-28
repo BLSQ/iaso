@@ -435,9 +435,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         "user__last_name",
         "user__first_name",
         "user__iaso_profile__phone_number",
-        "created_at",
-        "updated_at",
-        "status",
         "created_by__username",
         "updated_by__username",
         "change_requests_count",
@@ -452,42 +449,36 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     def get_queryset(self):
         queryset = (
-            PotentialPayment.objects.prefetch_related("change_requests")
-            .prefetch_related("change_requests__org_unit")
+            PotentialPayment.objects.prefetch_related("change_requests__org_unit")
+            .select_related("user__iaso_profile", "payment_lot")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
+            .annotate(change_requests_count=Count("change_requests"))
             .distinct()
         )
-
-        queryset = queryset.annotate(change_requests_count=Count("change_requests"))
-
         return queryset
 
     def calculate_new_potential_payments(self):
-        users_with_change_requests = (
-            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
-            .values("created_by")
-            .annotate(num_requests=Count("created_by"))
-            .filter(num_requests__gt=0)
+        change_requests = OrgUnitChangeRequest.objects.filter(
+            created_by__iaso_profile__account=self.request.user.iaso_profile.account,
+            status=OrgUnitChangeRequest.Statuses.APPROVED,
+            payment__isnull=True,
+            # Filter out potential payments with task as they are being converted to payments
+            potential_payment__task__isnull=True,
         )
 
-        for user in users_with_change_requests:
-            change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
-                payment__isnull=True,
-                # Filter out potential payments with task as they are being converted to payments
-                potential_payment__task__isnull=True,
-            )
-            if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    change_request.potential_payment = potential_payment
-                    change_request.save()
-                potential_payment.save()
+        cache = {}
+        for change_request in change_requests:
+            user_id = change_request.created_by_id
+            try:
+                change_request.potential_payment_id = cache[user_id]
+            except KeyError:
+                potential_payment, _ = PotentialPayment.objects.get_or_create(user_id=user_id)
+                change_request.potential_payment_id = potential_payment.pk
+                cache[user_id] = potential_payment.pk
+
+        OrgUnitChangeRequest.objects.bulk_update(change_requests, ["potential_payment"])
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):

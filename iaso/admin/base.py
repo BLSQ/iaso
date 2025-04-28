@@ -998,6 +998,7 @@ class DataSourceAdmin(admin.ModelAdmin):
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
     autocomplete_fields = ["default_version"]

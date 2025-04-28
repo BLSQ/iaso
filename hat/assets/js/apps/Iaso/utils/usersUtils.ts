@@ -60,6 +60,7 @@ export type Account = {
     default_version?: DefaultVersion;
     feature_flags: string[];
     modules: string[];
+    custom_translations: Record<string, Record<string, string>>;
 };
 
 export type User = {

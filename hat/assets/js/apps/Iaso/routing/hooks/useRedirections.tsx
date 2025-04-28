@@ -134,7 +134,6 @@ const baseRedirections = [
 
 type UseRedirectionsArgs = {
     hasNoAccount: boolean;
-    isFetchingCurrentUser: boolean;
     homeUrl?: string;
     pluginRedirections: any[];
     userHomePage?: string;
@@ -153,7 +152,6 @@ const defaultHomeUrl = `/${baseUrls.forms}`;
 
 export const useRedirections: RedirectionsMethod = ({
     hasNoAccount,
-    isFetchingCurrentUser,
     pluginRedirections,
     userHomePage,
     allowAnonymous,
@@ -164,31 +162,29 @@ export const useRedirections: RedirectionsMethod = ({
 
     const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
 
-    if (!isFetchingCurrentUser) {
-        if (hasNoAccount) {
-            redirections = setupRedirections;
-        } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
+    if (hasNoAccount) {
+        redirections = setupRedirections;
+    } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
+        redirections = [
+            {
+                path: '/home',
+                to: '/login',
+            },
+        ];
+    } else {
+        redirections = [...baseRedirections, ...pluginRedirections];
+        if (!canShowHome || userHomePage) {
             redirections = [
                 {
-                    path: '/home',
-                    to: '/login',
+                    path: '/',
+                    to: userHomePage || defaultHomeUrl,
                 },
+                {
+                    path: '/home',
+                    to: userHomePage || defaultHomeUrl,
+                },
+                ...redirections,
             ];
-        } else {
-            redirections = [...baseRedirections, ...pluginRedirections];
-            if (!canShowHome || userHomePage) {
-                redirections = [
-                    {
-                        path: '/',
-                        to: userHomePage || defaultHomeUrl,
-                    },
-                    {
-                        path: '/home',
-                        to: userHomePage || defaultHomeUrl,
-                    },
-                    ...redirections,
-                ];
-            }
         }
     }
     return redirections.map(redirection => {

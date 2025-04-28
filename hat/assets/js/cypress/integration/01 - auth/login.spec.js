@@ -57,32 +57,40 @@ describe('Log in page', () => {
             cy.get('#id_username').should('be.visible');
         });
         it('missing unsername should not submit login', () => {
-            cy.get('#id_password').should('be.visible');
-            cy.get('#id_password').should('not.be.disabled');
-            cy.get('#id_password').clear();
-            cy.get('#id_password').type('Link');
+            cy.get('#id_password')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .and('not.have.attr', 'readonly');
+            cy.get('#id_password').invoke('val', 'Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('missing password should not submit login', () => {
-            cy.get('#id_username').should('exist');
-            cy.get('#id_username').should('be.visible');
-            cy.get('#id_username').type('Link');
+            cy.get('#id_username')
+                .should('exist')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .and('not.have.attr', 'readonly');
+            cy.get('#id_username').focus().type('Link', { delay: 0 });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
         it('wrong credentials should display error message', () => {
             // Handle username input
-            cy.get('#id_username').should('exist');
-            cy.get('#id_username').should('be.visible');
-            cy.get('#id_username').clear();
-            cy.get('#id_username').type('Link');
+            cy.get('#id_username')
+                .should('exist')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .and('not.have.attr', 'readonly');
+            cy.get('#id_username').focus().clear().type('Link', { delay: 0 });
 
             // Handle password input
-            cy.get('#id_password').should('exist');
-            cy.get('#id_password').should('be.visible');
-            cy.get('#id_password').clear();
-            cy.get('#id_password').type('ZELDA');
+            cy.get('#id_password')
+                .should('exist')
+                .should('be.visible')
+                .and('not.be.disabled')
+                .and('not.have.attr', 'readonly');
+            cy.get('#id_password').focus().clear().type('ZELDA', { delay: 0 });
 
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();

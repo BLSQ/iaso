@@ -2,6 +2,7 @@ from typing import Dict, Tuple
 
 import django_filters
 
+from django.contrib.postgres.expressions import ArraySubquery
 from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
@@ -406,7 +407,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
 
-    This API allows to list potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
+    This API allows listing potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
     The Django model that stores "Potential payment" is `PotentialPayment`.
 
@@ -448,6 +449,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
+        user_org_units_subquery = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
         queryset = (
             PotentialPayment.objects.prefetch_related("change_requests__org_unit")
             .select_related("user__iaso_profile", "payment_lot")
@@ -455,6 +457,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
             .annotate(change_requests_count=Count("change_requests"))
+            .annotate(annotated_user_org_units=ArraySubquery(user_org_units_subquery))
             .distinct()
         )
         return queryset

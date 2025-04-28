@@ -37,8 +37,7 @@ class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
         user = self.context.get("request").user
         if user.is_superuser:
             return True
-        user_org_units = list(user.iaso_profile.get_hierarchy_for_user().values_list("id", flat=True))
-        return obj.org_unit.id in user_org_units
+        return obj.org_unit.id in self.context["user_org_units"]
 
 
 class AuditOrgChangeRequestNestedSerializer(serializers.ModelSerializer):
@@ -142,6 +141,8 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
             start_date = request.GET.get("change_requests__created_at_after", None)
             end_date = request.GET.get("change_requests__created_at_before", None)
             change_requests = filter_by_dates(request, change_requests, start_date, end_date)
+
+        self.context["user_org_units"] = obj.annotated_user_org_units
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):

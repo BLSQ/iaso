@@ -23,7 +23,7 @@ const setLocale = code => {
     });
 };
 
-describe.only('DateTimeCell', () => {
+describe('DateTimeCell', () => {
     beforeEach(() => {
         setLocale('en');
     });

@@ -22,6 +22,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             request = self.context.get("request")
             if request:
                 app_id = request.query_params.get("app_id", None)
+                # For setuper, account name is same as app id for Main Project, so get the first user account with super user status linked to current super user multi account
+                if app_id is None:
+                    account_tenant_user = self.user.tenant_users.filter(is_superuser=True).first().account_user
+                    app_id = account_tenant_user
 
                 try:
                     project = Project.objects.get(app_id=app_id)

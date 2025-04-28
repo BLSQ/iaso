@@ -871,6 +871,47 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#account-specific-custom-translations" class="md-nav__link">
+    Account-Specific Custom Translations
+  </a>
+  
+    <nav class="md-nav" aria-label="Account-Specific Custom Translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    How It Works
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-of-custom-translations-structure" class="md-nav__link">
+    Example of Custom Translations Structure
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#managing-custom-translations" class="md-nav__link">
+    Managing Custom Translations
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#important-notes" class="md-nav__link">
+    Important Notes
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#date-formatting-in-components" class="md-nav__link">
     Date Formatting in Components
   </a>
@@ -1198,6 +1239,54 @@ npm run dev
 npm run build
 </code></pre>
 <p>The system will automatically detect the new language file and include it in the generated files.</p>
+<h2 id="account-specific-custom-translations">Account-Specific Custom Translations<a class="headerlink" href="#account-specific-custom-translations" title="Permanent link">#</a></h2>
+<p>Iaso supports account-specific custom translations that can be managed through the Django admin interface. This feature allows administrators to override default translations for specific accounts.</p>
+<h3 id="how-it-works_1">How It Works<a class="headerlink" href="#how-it-works_1" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Account Custom Translations Storage</strong>:</li>
+<li>Custom translations are stored in the <code>custom_translations</code> field of the Account model</li>
+<li>The field is a JSON field that follows the same structure as regular translation files</li>
+<li>
+<p>Each account can have its own set of custom translations</p>
+</li>
+<li>
+<p><strong>Translation Override Process</strong>:</p>
+</li>
+<li>When a user logs in, their account's custom translations are loaded</li>
+<li>These custom translations are merged with the default translations</li>
+<li>Custom translations take precedence over default translations</li>
+<li>The merging happens at the key level for each language</li>
+</ol>
+<h3 id="example-of-custom-translations-structure">Example of Custom Translations Structure<a class="headerlink" href="#example-of-custom-translations-structure" title="Permanent link">#</a></h3>
+<pre><code class="language-json">{
+    &quot;fr&quot;: {
+        &quot;iaso.label.entities&quot;: &quot;Bénéficiaires personnalisés&quot;,
+        &quot;iaso.label.entity&quot;: &quot;Bénéficiaire personnalisé&quot;
+    },
+    &quot;en&quot;: {
+        &quot;iaso.label.entities&quot;: &quot;Custom Beneficiaries&quot;,
+        &quot;iaso.label.entity&quot;: &quot;Custom Beneficiary&quot;
+    }
+}
+</code></pre>
+<h3 id="managing-custom-translations">Managing Custom Translations<a class="headerlink" href="#managing-custom-translations" title="Permanent link">#</a></h3>
+<p>To manage custom translations for an account:</p>
+<ol>
+<li>Log in to the Django admin interface</li>
+<li>Navigate to the Account model</li>
+<li>Select the account you want to modify</li>
+<li>Edit the <code>custom_translations</code> field</li>
+<li>Save the changes</li>
+</ol>
+<h3 id="important-notes">Important Notes<a class="headerlink" href="#important-notes" title="Permanent link">#</a></h3>
+<ul>
+<li>Custom translations are merged with default translations at runtime</li>
+<li>Only authenticated users with an account will see their custom translations</li>
+<li>Anonymous users will see only the default translations</li>
+<li>Custom translations are scoped to the account level</li>
+<li>Changes to custom translations take effect immediately after saving</li>
+<li>The system maintains a clean separation between default and custom translations</li>
+</ul>
 <h2 id="date-formatting-in-components">Date Formatting in Components<a class="headerlink" href="#date-formatting-in-components" title="Permanent link">#</a></h2>
 <p>Several components can be enhanced to use language-specific date formats:</p>
 <ol>

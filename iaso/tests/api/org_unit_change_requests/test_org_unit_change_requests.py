@@ -554,48 +554,26 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
         first_data_row = data[1]
 
-        # Helper function to determine if a field has changed and its conclusion
+        # Helper function to determine if a field has changed
         def get_conclusion(field_name, old_value, new_value):
-            # If the change request is new, no conclusion is made
-            if change_request.status == m.OrgUnitChangeRequest.Statuses.NEW:
-                return "pending"
-
-            # If the change request is rejected, all fields are rejected
-            if change_request.status == m.OrgUnitChangeRequest.Statuses.REJECTED:
-                return "rejected"
-
-            # If the change request is approved, check if the field is in approved_fields
-            if change_request.status == m.OrgUnitChangeRequest.Statuses.APPROVED:
-                # Map field names to their corresponding field in requested_fields
-                field_mapping = {
-                    "name": "new_name",
-                    "parent": "new_parent",
-                    "ref_ext_parent_1": "new_parent",
-                    "ref_ext_parent_2": "new_parent",
-                    "ref_ext_parent_3": "new_parent",
-                    "opening_date": "new_opening_date",
-                    "closing_date": "new_closed_date",
-                    "groups": "new_groups",
-                    "localisation": "new_location",
-                    "reference_submission": "new_reference_instances",
-                }
-
-                # Get the corresponding field name in requested_fields
-                requested_field = field_mapping.get(field_name)
-
-                # If the field is not in requested_fields, it means no change was requested
-                if requested_field not in change_request.requested_fields:
-                    return "same"
-
-                # If the field is in approved_fields, it was approved
-                if requested_field in change_request.approved_fields:
-                    return "approved"
-
-                # If the field is in requested_fields but not in approved_fields, it was rejected
-                return "rejected"
-
-            # Default case (should not happen)
-            return "unknown"
+            field_mapping = {
+                "name": "new_name",
+                "parent": "new_parent",
+                "ref_ext_parent_1": "new_parent",
+                "ref_ext_parent_2": "new_parent",
+                "ref_ext_parent_3": "new_parent",
+                "opening_date": "new_opening_date",
+                "closing_date": "new_closed_date",
+                "groups": "new_groups",
+                "localisation": "new_location",
+                "reference_submission": "new_reference_instances",
+            }
+            requested_field = field_mapping.get(field_name)
+            if requested_field not in change_request.requested_fields:
+                return "same"
+            if old_value == new_value:
+                return "same"
+            return "updated"
 
         # Get parent reference extensions
         def get_parent_ref_ext(parent, level):
@@ -742,7 +720,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
 
     def test_export_to_csv_with_new_change_request(self):
         """
-        Test that NEW change requests have "pending" conclusions.
+        Test that NEW change requests have correct conclusions based on field changes.
         """
         change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit, new_name="Foo", requested_fields=["new_name"]
@@ -760,13 +738,13 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         # Skip header row
         first_data_row = data[1]
 
-        # Check that the name conclusion is "pending" for a NEW change request
+        # Check that the name conclusion is "updated" for a NEW change request with a name change
         name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "pending")
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
 
     def test_export_to_csv_with_approved_change_request(self):
         """
-        Test that APPROVED change requests have correct conclusions based on approved_fields.
+        Test that APPROVED change requests have correct conclusions based on field changes.
         """
         change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit,
@@ -788,18 +766,18 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         # Skip header row
         first_data_row = data[1]
 
-        # Check that the name conclusion is "approved" for an APPROVED change request
+        # Check that the name conclusion is "updated" for an APPROVED change request with a name change
         name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "approved")
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
 
-        # Check that the groups conclusion is "rejected" for an APPROVED change request
-        # where the field was requested but not approved
+        # Check that the groups conclusion is "same" for an APPROVED change request
+        # where the field was requested but not changed
         groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "rejected")
+        self.assertEqual(first_data_row[groups_conclusion_index], "same")
 
     def test_export_to_csv_with_rejected_change_request(self):
         """
-        Test that REJECTED change requests have "rejected" conclusions for all fields.
+        Test that REJECTED change requests have correct conclusions based on field changes.
         """
         change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit,
@@ -820,10 +798,11 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         # Skip header row
         first_data_row = data[1]
 
-        # Check that the name conclusion is "rejected" for a REJECTED change request
+        # Check that the name conclusion is "updated" for a REJECTED change request with a name change
         name_conclusion_index = 13  # Index of "Name conclusion" column
-        self.assertEqual(first_data_row[name_conclusion_index], "rejected")
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
 
-        # Check that the groups conclusion is "rejected" for a REJECTED change request
+        # Check that the groups conclusion is "same" for a REJECTED change request
+        # where the field was requested but not changed
         groups_conclusion_index = 33  # Index of "Groups conclusion" column
-        self.assertEqual(first_data_row[groups_conclusion_index], "rejected")
+        self.assertEqual(first_data_row[groups_conclusion_index], "same")

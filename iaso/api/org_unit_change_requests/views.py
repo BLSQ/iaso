@@ -299,30 +299,24 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
         # Helper functions moved outside the loop
         def get_conclusion(change_request, field_name, old_value, new_value):
-            if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
-                return "pending"
-            if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
-                return "rejected"
-            if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
-                field_mapping = {
-                    "name": "new_name",
-                    "parent": "new_parent",
-                    "ref_ext_parent_1": "new_parent",
-                    "ref_ext_parent_2": "new_parent",
-                    "ref_ext_parent_3": "new_parent",
-                    "opening_date": "new_opening_date",
-                    "closing_date": "new_closed_date",
-                    "groups": "new_groups",
-                    "localisation": "new_location",
-                    "reference_submission": "new_reference_instances",
-                }
-                requested_field = field_mapping.get(field_name)
-                if requested_field not in change_request.requested_fields:
-                    return "same"
-                if requested_field in change_request.approved_fields:
-                    return "approved"
-                return "rejected"
-            return "unknown"
+            field_mapping = {
+                "name": "new_name",
+                "parent": "new_parent",
+                "ref_ext_parent_1": "new_parent",
+                "ref_ext_parent_2": "new_parent",
+                "ref_ext_parent_3": "new_parent",
+                "opening_date": "new_opening_date",
+                "closing_date": "new_closed_date",
+                "groups": "new_groups",
+                "localisation": "new_location",
+                "reference_submission": "new_reference_instances",
+            }
+            requested_field = field_mapping.get(field_name)
+            if requested_field not in change_request.requested_fields:
+                return "same"
+            if old_value == new_value:
+                return "same"
+            return "updated"
 
         def get_parent_ref_ext(parent, level):
             if not parent or not hasattr(parent, "cached_ancestors"):

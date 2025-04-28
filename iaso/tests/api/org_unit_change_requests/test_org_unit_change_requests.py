@@ -2,6 +2,8 @@ import csv
 import datetime
 import io
 
+from decimal import Decimal
+
 import time_machine
 
 from iaso import models as m
@@ -254,6 +256,28 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.requested_fields, ["new_name"])
+
+    @time_machine.travel(DT, tick=False)
+    def test_create_ok_with_new_accuracy_more_digits(self):
+        """
+        accuracy is only 2 digits.
+        """
+        self.client.force_authenticate(self.user)
+        data = {
+            "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
+            "org_unit_id": self.org_unit.id,
+            "new_location_accuracy": 1.2345,
+        }
+
+        with self.assertNumQueries(12):
+            response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(change_request.new_location_accuracy, Decimal("1.23"))
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_location_accuracy"])
 
     def test_create_without_auth(self):
         data = {

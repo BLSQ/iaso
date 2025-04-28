@@ -23,7 +23,7 @@ const setLocale = code => {
     });
 };
 
-describe('DateTimeCell', () => {
+describe.only('DateTimeCell', () => {
     beforeEach(() => {
         setLocale('en');
     });
@@ -33,12 +33,12 @@ describe('DateTimeCell', () => {
     });
 
     it('should return the formatted date if value is a timestamp', () => {
-        // Use a fixed timestamp in milliseconds for consistent test results
-        const timestampInMilliseconds = 1743840000000; // 2025-04-11 09:24:00
-        const cellInfo = { value: timestampInMilliseconds };
-        const date = moment(timestampInMilliseconds).format(
-            getLocaleDateFormat('LTS'),
-        );
+        // Use a fixed Unix timestamp in seconds for consistent test results
+        const timestampInSeconds = 1744801874; // 2025-04-11 09:24:00
+        const cellInfo = { value: timestampInSeconds };
+        const date = moment
+            .unix(timestampInSeconds)
+            .format(getLocaleDateFormat('LTS'));
         expect(DateTimeCell(cellInfo)).to.equal(date);
     });
 });

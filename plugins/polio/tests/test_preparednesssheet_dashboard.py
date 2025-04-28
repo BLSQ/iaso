@@ -4,7 +4,7 @@ from iaso.test import APITestCase
 from plugins.polio.models import SpreadSheetImport
 
 
-class SupplyChainDashboardsAPITestCase(APITestCase):
+class PreparednessDashboardsAPITestCase(APITestCase):
     @classmethod
     def setUp(cls):
         cls.url = "/api/polio/dashboards/preparedness_sheets/"

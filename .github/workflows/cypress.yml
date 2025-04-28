@@ -172,24 +172,6 @@ jobs:
             - run: npm ci
               if: steps.cache.outputs.cache-hit != 'true'
 
-            - name: Wait for Iaso server to be ready
-              run: |
-                echo "Checking Iaso container logs..."
-                docker logs $(docker ps -q --filter name=iaso) || true
-                echo "Waiting for Iaso server to be ready..."
-                for i in {1..30}; do
-                  if curl -s http://localhost:8081/ > /dev/null; then
-                    echo "Server is up!"
-                    exit 0
-                  fi
-                  echo "Waiting for server to start... attempt $i"
-                  docker logs $(docker ps -q --filter name=iaso) || true
-                  sleep 5
-                done
-                echo "Server failed to start"
-                docker logs $(docker ps -q --filter name=iaso) || true
-                exit 1
-
             - name: Run Cypress tests
               run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'
               env:

@@ -21,8 +21,7 @@ export const DateTimeCell = (cellInfo: {
         LANGUAGE_CONFIGS[currentLocale]?.dateFormats?.LTS ||
         LANGUAGE_CONFIGS.en?.dateFormats?.LTS ||
         'DD/MM/YYYY HH:mm';
-
-    return moment(cellInfo.value).format(format);
+    return moment(cellInfo.value * 1000).format(format);
 };
 
 export const convertToDateTimeRfc = (

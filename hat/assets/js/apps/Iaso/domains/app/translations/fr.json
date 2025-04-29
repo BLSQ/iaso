@@ -162,6 +162,7 @@
     "iaso.datasources.options.label.name": "Nom",
     "iaso.datasources.options.label.parent": "Parent",
     "iaso.datasources.options.label.version": "Version",
+    "iaso.datasources.pleaseSelectVersionFirst": "Veuillez sélectionner une version de source de données d'abord",
     "iaso.datasources.syncMessageDisabled": "Veuillez sélectionner une version de la même source pour activer la synchronisation",
     "iaso.datasources.syncName": "Nom de la synchronisation",
     "iaso.datasources.syncNameInfos": "Utilisé pour trouver les demandes de changement liées",

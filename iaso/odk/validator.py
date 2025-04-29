@@ -99,7 +99,7 @@ def group_by_lambda(collection, field_name_lambda):
 
 
 def validate_xls_form(xls_file):
-    file_extension = os.path.splitext(xls_file.name)[1].lower()
+    file_extension = os.path.splitext(getattr(xls_file, "name", "form.xlsx"))[1].lower()
     engine = "xlrd" if file_extension == ".xls" else "openpyxl"
 
     excel_file = pd.ExcelFile(xls_file, engine=engine)
@@ -126,7 +126,7 @@ def validate_xls_form(xls_file):
             # if too hard only do this validation for the moment it has no repeat_groups ?
             validation_errors.append(
                 {
-                    "message": "duplicated question name '" + name + "'",
+                    "message": f"duplicated question name '{name}'",
                     "question": questions_list[0],
                     "questions_list": questions_list,
                     "sheet": "survey",
@@ -136,7 +136,7 @@ def validate_xls_form(xls_file):
         if " " in name:
             validation_errors.append(
                 {
-                    "message": "avoid blanks in question name '" + name + "'",
+                    "message": f"avoid blanks in question name '{name}'",
                     "question": questions_list[0],
                     "sheet": "survey",
                     "severity": "error",
@@ -150,7 +150,7 @@ def validate_xls_form(xls_file):
         if list_name not in choices_by_list_name:
             validation_errors.append(
                 {
-                    "message": "choices not found for '" + select_one_q["name"] + "' and list_name '" + list_name + "'",
+                    "message": f"choices not found for '{select_one_q['name']}' and list_name '{list_name}'",
                     "question": select_one_q,
                     "sheet": "survey",
                     "severity": "error",
@@ -163,7 +163,7 @@ def validate_xls_form(xls_file):
         if q.get("type") == "hidden":
             validation_errors.append(
                 {
-                    "message": "question type hidden is not supported '" + q.get("name") + "'",
+                    "message": f"question type hidden is not supported '{q.get('name')}'",
                     "question": q,
                     "sheet": "survey",
                     "severity": "error",

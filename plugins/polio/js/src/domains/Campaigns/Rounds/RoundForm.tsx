@@ -63,8 +63,8 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 </Box>
                 <Box mt={2}>
                     <Field
-                        label={formatMessage(MESSAGES.testRound)}
-                        name={`rounds[${roundIndex}].is_test`}
+                        label={formatMessage(MESSAGES.onHoldRound)}
+                        name={`rounds[${roundIndex}].on_hold`}
                         component={BooleanInput}
                     />
                 </Box>

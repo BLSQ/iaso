@@ -9,7 +9,7 @@ import { Grid } from '@mui/material';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
+import { useGetEntityTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
 import { ALGORITHM_DROPDOWN } from '../../constants';
 import { formatLabel } from '../../../instances/utils';
@@ -32,7 +32,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [parameters, setParameters] = useState<Parameters>([]);
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
 
     const { mutateAsync: startAnalyse } = useStartAnalyse();
     const handleConfirm = useCallback(() => {

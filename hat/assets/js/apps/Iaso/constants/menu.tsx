@@ -32,12 +32,12 @@ import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
+import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 
 import { MenuItem, MenuItems } from '../domains/app/types';
-import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
+import { useGetEntityTypesDropdown } from '../domains/entities/hooks/requests';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import {
@@ -66,14 +66,14 @@ const menuItems = (
     currentUser,
     orgUnitExtraPath?: string,
 ): MenuItems => {
-    const beneficiariesListEntry: MenuItem = {
-        label: formatMessage(MESSAGES.beneficiariesList),
+    const entitiesListEntry: MenuItem = {
+        label: formatMessage(MESSAGES.entitiesList),
         permissions: paths.entitiesPath.permissions,
         key: 'list',
         icon: props => <FormatListBulleted {...props} />,
     };
     if (hasFeatureFlag(currentUser, SHOW_BENEFICIARY_TYPES_IN_LIST_MENU)) {
-        beneficiariesListEntry.subMenu = entityTypes.map(entityType => ({
+        entitiesListEntry.subMenu = entityTypes.map(entityType => ({
             label: `${entityType.label}`,
             permissions: paths.entitiesPath.permissions,
             mapKey: `${entityType.value}`,
@@ -334,9 +334,9 @@ const menuItems = (
             ],
         },
         {
-            label: formatMessage(MESSAGES.beneficiaries),
+            label: formatMessage(MESSAGES.entities),
             key: 'entities',
-            icon: props => <BeneficiarySvg {...props} />,
+            icon: props => <EntitySvg {...props} />,
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.entityTypesTitle),
@@ -344,7 +344,7 @@ const menuItems = (
                     key: 'types',
                     icon: props => <CategoryIcon {...props} />,
                 },
-                { ...beneficiariesListEntry },
+                { ...entitiesListEntry },
                 {
                     label: formatMessage(MESSAGES.entityDuplicatesTitle),
                     permissions: paths.entityDuplicatesPath.permissions,
@@ -381,7 +381,7 @@ export const useMenuItems = (): MenuItems => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const orgUnitExtraPath = useGetOrgunitsExtraPath();
-    const { data: entityTypes } = useGetBeneficiaryTypesDropdown();
+    const { data: entityTypes } = useGetEntityTypesDropdown();
     const { plugins }: Plugins = useContext(PluginsContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
     const allBasicItems = useMemo(

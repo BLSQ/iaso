@@ -1,29 +1,40 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { useFormikContext } from 'formik';
-import { useSafeIntl } from 'bluesquare-components';
-import { Box, Tab } from '@mui/material';
 import { TabContext, TabList } from '@mui/lab';
+import { Box, Tab } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { useFormikContext } from 'formik';
 import { useTabs } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { CampaignFormValues } from '../../../constants/types';
-import { SubActivityForm } from './SubActivityForm';
 import MESSAGES from './messages';
+import { SubActivityForm } from './SubActivityForm';
 
 export const SubActivitiesForm: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
     } = useFormikContext<CampaignFormValues>();
+
+    const excludedTestAndOnHoldRounds = useMemo(
+        () => rounds.filter(r => !r.on_hold),
+        [rounds],
+    );
+
     const { tab, handleChangeTab } = useTabs<string>({
-        defaultTab: rounds[0] ? `${rounds[0].number}` : '1',
+        defaultTab: excludedTestAndOnHoldRounds[0]
+            ? `${excludedTestAndOnHoldRounds[0].number}`
+            : '1',
     });
+
     const round = useMemo(() => {
-        return rounds.find(r => r.number === parseInt(tab, 10));
-    }, [rounds, tab]);
+        return excludedTestAndOnHoldRounds.find(
+            r => r.number === parseInt(tab, 10),
+        );
+    }, [excludedTestAndOnHoldRounds, tab]);
     return (
         <Box minWidth="70vw" mt={-4}>
             <TabContext value={tab}>
                 <TabList onChange={handleChangeTab}>
-                    {rounds.map(rnd => (
+                    {excludedTestAndOnHoldRounds.map(rnd => (
                         <Tab
                             sx={theme => ({
                                 fontSize: 12,

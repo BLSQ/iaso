@@ -128,13 +128,13 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PotentialPayment
         fields = ["id", "user", "change_requests", "payment_lot", "can_see_change_requests"]
-        read_only_fields = ["id", "created_at", "updated_at", "payment_lot", "can_see_change_requests"]
+        read_only_fields = ["id", "payment_lot", "can_see_change_requests"]
 
     pagination_class = PaymentPagination
     user = UserNestedSerializer()
 
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(potential_payment=obj)
+        change_requests = obj.change_requests.all()
         request = self.context.get("request", None)
         change_requests = filter_by_forms(request, change_requests)
         change_requests = filter_by_parent(request, change_requests)

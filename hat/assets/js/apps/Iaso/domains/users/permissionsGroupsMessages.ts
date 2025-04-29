@@ -14,7 +14,7 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     },
     entities: {
         id: 'iaso.permissions.group.entities',
-        defaultMessage: 'Beneficiaries:',
+        defaultMessage: 'Entities:',
     },
     payments: {
         id: 'iaso.permissions.group.payments',

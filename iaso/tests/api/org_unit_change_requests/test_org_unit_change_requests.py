@@ -2,6 +2,8 @@ import csv
 import datetime
 import io
 
+from decimal import Decimal
+
 import time_machine
 
 from iaso import models as m
@@ -255,6 +257,28 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.requested_fields, ["new_name"])
 
+    @time_machine.travel(DT, tick=False)
+    def test_create_ok_with_new_accuracy_more_digits(self):
+        """
+        accuracy is only 2 digits.
+        """
+        self.client.force_authenticate(self.user)
+        data = {
+            "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
+            "org_unit_id": self.org_unit.id,
+            "new_location_accuracy": 1.2345,
+        }
+
+        with self.assertNumQueries(12):
+            response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(change_request.new_location_accuracy, Decimal("1.23"))
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_location_accuracy"])
+
     def test_create_without_auth(self):
         data = {
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
@@ -438,6 +462,47 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(change_request_2.org_unit.parent, self.org_unit)  # Should be unmodified.
 
     @time_machine.travel(DT, tick=False)
+    def test_bulk_review_approve_should_be_filtered(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        user_1 = self.user_with_review_perm
+        user_2 = self.user
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_1, new_name="foo"
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW, org_unit=self.org_unit, created_by=user_2, new_name="bar"
+        )
+        self.assertEqual(2, m.OrgUnitChangeRequest.objects.count())
+
+        data = {
+            "select_all": 1,
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+        }
+
+        querystring = f"?users={user_2.id}"
+        response = self.client.patch(f"/api/orgunits/changes/bulk_review/{querystring}", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="org_unit_change_requests_bulk_approve")
+
+        self.assertEqual(task.launcher, self.user_with_review_perm)
+        self.assertCountEqual(task.params["kwargs"]["change_requests_ids"], [change_request_2.pk])
+
+        self.runAndValidateTask(task, "SUCCESS")
+
+        change_request_1.refresh_from_db()
+        change_request_2.refresh_from_db()
+
+        # This change request should have been excluded from the querystring filter.
+        self.assertEqual(change_request_1.status, m.OrgUnitChangeRequest.Statuses.NEW)
+
+        # This change request should have been approved.
+        self.assertEqual(change_request_2.status, m.OrgUnitChangeRequest.Statuses.APPROVED)
+
+    @time_machine.travel(DT, tick=False)
     def test_bulk_review_reject(self):
         self.client.force_authenticate(self.user_with_review_perm)
 
@@ -506,23 +571,266 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
 
         data = list(reader)
-        self.assertEqual(len(data), 3)
+        self.assertEqual(len(data), 3)  # Header + 2 change requests
 
         data_headers = data[0]
         self.assertEqual(data_headers, OrgUnitChangeRequestViewSet.CSV_HEADER_COLUMNS)
 
-        expected_csv_row = [
+        first_data_row = data[1]
+
+        # Helper function to determine if a field has changed
+        def get_conclusion(field_name, old_value, new_value):
+            field_mapping = {
+                "name": "new_name",
+                "parent": "new_parent",
+                "ref_ext_parent_1": "new_parent",
+                "ref_ext_parent_2": "new_parent",
+                "ref_ext_parent_3": "new_parent",
+                "opening_date": "new_opening_date",
+                "closing_date": "new_closed_date",
+                "groups": "new_groups",
+                "localisation": "new_location",
+                "reference_submission": "new_reference_instances",
+            }
+            requested_field = field_mapping.get(field_name)
+            if requested_field not in change_request.requested_fields:
+                return "same"
+            if old_value == new_value:
+                return "same"
+            return "updated"
+
+        # Get parent reference extensions
+        def get_parent_ref_ext(parent, level):
+            if not parent:
+                return None
+
+            # Get ancestors up to the specified level
+            ancestors = list(parent.ancestors().order_by("path"))
+            if level <= len(ancestors):
+                return ancestors[level - 1].source_ref
+            return None
+
+        # Get location string
+        def get_location_str(location):
+            if not location:
+                return None
+            return f"{location.y}, {location.x}"
+
+        # Get reference instance IDs
+        def get_reference_instance_ids(instances):
+            if not instances.exists():
+                return ""
+            return ",".join(sorted(str(instance.id) for instance in instances.all()))
+
+        # Basic expected data
+        expected_row_data = [
             str(change_request.id),
             str(change_request.org_unit_id),
-            "112244",
+            change_request.org_unit.source_ref,
             change_request.org_unit.name,
-            change_request.org_unit.parent.name if change_request.org_unit.parent else "",
-            change_request.org_unit.org_unit_type.name,
+            change_request.org_unit.parent.name if change_request.org_unit.parent else None,
+            change_request.org_unit.org_unit_type.name if change_request.org_unit.org_unit_type else None,
             ",".join(group.name for group in change_request.org_unit.groups.all()),
-            str(change_request.get_status_display()),
             datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-            get_creator_name(change_request.created_by) if change_request.created_by else "",
+            get_creator_name(change_request.created_by) if change_request.created_by else None,
             datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
-            get_creator_name(change_request.updated_by) if change_request.updated_by else "",
+            get_creator_name(change_request.updated_by) if change_request.updated_by else None,
         ]
-        self.assertIn(expected_csv_row, data)
+
+        # Name changes
+        name_before = change_request.old_name if change_request.kind == change_request.Kind.ORG_UNIT_CHANGE else ""
+        name_after = change_request.new_name if change_request.new_name else change_request.org_unit.name
+        name_conclusion = get_conclusion("name", name_before, name_after)
+
+        expected_row_data.extend([name_before, name_after, name_conclusion])
+
+        # Parent changes
+        parent_before = change_request.old_parent.name if change_request.old_parent else ""
+        parent_after = (
+            change_request.new_parent.name
+            if change_request.new_parent
+            else change_request.org_unit.parent.name
+            if change_request.org_unit.parent
+            else None
+        )
+
+        expected_row_data.extend([parent_before, parent_after])
+
+        # Reference extensions for parents
+        for level in range(1, 4):
+            parent_before = change_request.old_parent if change_request.old_parent else None
+            parent_after = change_request.new_parent if change_request.new_parent else change_request.org_unit.parent
+
+            ref_ext_before = get_parent_ref_ext(parent_before, level)
+            ref_ext_after = get_parent_ref_ext(parent_after, level)
+            ref_ext_conclusion = get_conclusion(f"ref_ext_parent_{level}", ref_ext_before, ref_ext_after)
+
+            expected_row_data.extend([ref_ext_before, ref_ext_after, ref_ext_conclusion])
+
+        # Opening date changes
+        opening_date_before = (
+            change_request.old_opening_date.strftime("%Y-%m-%d") if change_request.old_opening_date else ""
+        )
+        opening_date_after = (
+            change_request.new_opening_date.strftime("%Y-%m-%d")
+            if change_request.new_opening_date
+            else (
+                change_request.org_unit.opening_date.strftime("%Y-%m-%d")
+                if change_request.org_unit.opening_date
+                else None
+            )
+        )
+        opening_date_conclusion = get_conclusion("opening_date", opening_date_before, opening_date_after)
+
+        expected_row_data.extend([opening_date_before, opening_date_after, opening_date_conclusion])
+
+        # Closing date changes
+        closing_date_before = (
+            change_request.old_closed_date.strftime("%Y-%m-%d") if change_request.old_closed_date else ""
+        )
+        closing_date_after = (
+            change_request.new_closed_date.strftime("%Y-%m-%d")
+            if change_request.new_closed_date
+            else (
+                change_request.org_unit.closed_date.strftime("%Y-%m-%d")
+                if change_request.org_unit.closed_date
+                else None
+            )
+        )
+        closing_date_conclusion = get_conclusion("closing_date", closing_date_before, closing_date_after)
+
+        expected_row_data.extend([closing_date_before, closing_date_after, closing_date_conclusion])
+
+        # Groups changes
+        groups_before = ",".join(group.name for group in change_request.old_groups.all())
+        groups_after = (
+            ",".join(group.name for group in change_request.new_groups.all())
+            if change_request.new_groups.exists()
+            else ",".join(group.name for group in change_request.org_unit.groups.all())
+        )
+        groups_conclusion = get_conclusion("groups", groups_before, groups_after)
+
+        expected_row_data.extend([groups_before, groups_after, groups_conclusion])
+
+        # Location changes
+        location_before = get_location_str(change_request.old_location)
+        location_after = (
+            get_location_str(change_request.new_location)
+            if change_request.new_location
+            else get_location_str(change_request.org_unit.location)
+        )
+        location_conclusion = get_conclusion("localisation", location_before, location_after)
+
+        expected_row_data.extend([location_before, location_after, location_conclusion])
+
+        # Reference instances changes
+        reference_before = get_reference_instance_ids(change_request.old_reference_instances)
+        reference_after = (
+            get_reference_instance_ids(change_request.new_reference_instances)
+            if change_request.new_reference_instances.exists()
+            else get_reference_instance_ids(change_request.org_unit.reference_instances)
+        )
+
+        expected_row_data.extend([reference_before, reference_after])
+
+        # Convert None values to empty strings for comparison
+        expected_row_data = ["" if v is None else str(v) for v in expected_row_data]
+        first_data_row = ["" if v is None else str(v) for v in first_data_row]
+
+        # Sort instance IDs in both lists before comparison
+        for i, (expected, actual) in enumerate(zip(expected_row_data, first_data_row)):
+            if "," in expected and "," in actual:  # Check if this is a comma-separated list of IDs
+                expected_sorted = ",".join(sorted(expected.split(",")))
+                actual_sorted = ",".join(sorted(actual.split(",")))
+                self.assertEqual(expected_sorted, actual_sorted, f"Difference at index {i}")
+            else:
+                self.assertEqual(expected, actual, f"Difference at index {i}")
+
+    def test_export_to_csv_with_new_change_request(self):
+        """
+        Test that NEW change requests have correct conclusions based on field changes.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Foo", requested_fields=["new_name"]
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "updated" for a NEW change request with a name change
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+
+    def test_export_to_csv_with_approved_change_request(self):
+        """
+        Test that APPROVED change requests have correct conclusions based on field changes.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            requested_fields=["new_name", "new_groups"],
+            approved_fields=["new_name"],
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "updated" for an APPROVED change request with a name change
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+
+        # Check that the groups conclusion is "same" for an APPROVED change request
+        # where the field was requested but not changed
+        groups_conclusion_index = 33  # Index of "Groups conclusion" column
+        self.assertEqual(first_data_row[groups_conclusion_index], "same")
+
+    def test_export_to_csv_with_rejected_change_request(self):
+        """
+        Test that REJECTED change requests have correct conclusions based on field changes.
+        """
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            requested_fields=["new_name", "new_groups"],
+            status=m.OrgUnitChangeRequest.Statuses.REJECTED,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+
+        response_csv = response.getvalue().decode("utf-8")
+        reader = csv.reader(io.StringIO(response_csv), delimiter=",")
+        data = list(reader)
+
+        # Skip header row
+        first_data_row = data[1]
+
+        # Check that the name conclusion is "updated" for a REJECTED change request with a name change
+        name_conclusion_index = 13  # Index of "Name conclusion" column
+        self.assertEqual(first_data_row[name_conclusion_index], "updated")
+
+        # Check that the groups conclusion is "same" for a REJECTED change request
+        # where the field was requested but not changed
+        groups_conclusion_index = 33  # Index of "Groups conclusion" column
+        self.assertEqual(first_data_row[groups_conclusion_index], "same")

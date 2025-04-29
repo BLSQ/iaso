@@ -28,7 +28,7 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
-from iaso.api.instances import import_data as import_instances
+from iaso.api.instances.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, Project

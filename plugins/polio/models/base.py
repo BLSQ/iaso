@@ -274,6 +274,7 @@ class RoundQuerySet(models.QuerySet):
                 {
                     "value": rnd.id,
                     "label": rnd.number,
+                    "on_hold": rnd.on_hold,
                     "campaign_id": campaign_uuid,
                     "target_population": rnd.target_population,
                 }
@@ -404,7 +405,7 @@ class Round(models.Model):
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
-    is_test = models.BooleanField(default=False)
+    on_hold = models.BooleanField(default=False)
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)

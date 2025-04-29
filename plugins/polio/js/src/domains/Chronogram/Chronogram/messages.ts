@@ -121,6 +121,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.requiredUuid',
         defaultMessage: 'Please use an UUID',
     },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
+    },
 });
 
 export default MESSAGES;

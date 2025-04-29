@@ -35,8 +35,8 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import {
-    useGetBeneficiariesApiParams,
-    useGetBeneficiaryTypesDropdown,
+    useGetEntitiesApiParams,
+    useGetEntityTypesDropdown,
     useGetUsersDropDown,
 } from '../hooks/requests';
 import { useFiltersParams } from '../hooks/useFiltersParams';
@@ -105,7 +105,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const { data: types, isFetching: isFetchingTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
     const selectedTeam = useMemo(() => {
         return teamOptions?.find(
@@ -179,7 +179,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
+    const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
         <Box mb={1}>
             <UserOrgUnitRestriction />

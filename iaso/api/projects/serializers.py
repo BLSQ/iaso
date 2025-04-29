@@ -65,6 +65,6 @@ class ProjectSerializer(serializers.ModelSerializer):
                 data='{"url": "' + request.build_absolute_uri("/") + '", "app_id": "' + instance.app_id + '"}',
                 qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),
             )
-            data["qr_code"] = base64.b64encode(qr_image).decode("utf-8")
+            data["qr_code"] = f"data:image/png;base64,{base64.b64encode(qr_image).decode('utf-8')}"
 
         return data

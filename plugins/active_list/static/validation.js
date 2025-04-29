@@ -5,15 +5,14 @@ const orgUnitContainer = document.getElementById('orgUnitContainer')
 var dataContainer = $('#dataContainer');
 
 dataContainer.hide();
-monthSelect.on('change', function () {
-  $('#period').val(this.value);
-});
 
+var orgUnitIdSave = null;
 
 var callback = function (orgUnitId) {
+  orgUnitIdSave = orgUnitId;
     var period = $('#monthSelect').val();
     $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + period, function (data) {
-      console.log(data);
+
       data.table_content.forEach(item => {
         console.log(item);
         const importId = item.import_id;
@@ -29,6 +28,11 @@ var callback = function (orgUnitId) {
     });
 
   }
+
+monthSelect.on('change', function () {
+  $('#period').val(this.value);
+  callback(orgUnitIdSave);
+});
 
 
   const config = {

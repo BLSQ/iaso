@@ -1,12 +1,16 @@
 from django import forms
-from .models import Validation, ActivePatientsList
+from .models import Validation, Record
 
 
 class ValidationForm(forms.ModelForm):
     class Meta:
         model = Validation
-        fields = ["comment", "validation_status", "level", "source_import"]
-        widgets = {"comment": forms.Textarea(attrs={"rows": 4}), "source_import": forms.HiddenInput()}
+        fields = ["comment", "validation_status", "level", "period", "org_unit"]
+        widgets = {
+            "comment": forms.Textarea(attrs={"rows": 4}),
+            "period": forms.HiddenInput(),
+            "org_unit": forms.HiddenInput()
+        }
 
 
 class ActivePatientsListForm(forms.ModelForm):
@@ -15,7 +19,7 @@ class ActivePatientsListForm(forms.ModelForm):
     """
 
     class Meta:
-        model = ActivePatientsList
+        model = Record
         exclude = [
             "import_source",
             "org_unit",

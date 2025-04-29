@@ -7,7 +7,7 @@ from django.utils.timezone import now
 
 from iaso.management.commands.command_logger import CommandLogger
 
-from plugins.active_list.models import Import, ActivePatientsList
+from plugins.active_list.models import Import, Record
 from iaso.models import OrgUnit
 
 from logging import getLogger
@@ -125,7 +125,7 @@ class Command(BaseCommand):
         index = 0
         for row in data:
             active_patients_list.append(
-                ActivePatientsList(
+                Record(
                     number=index,
                     region=row["region"],
                     district=row["district"],
@@ -159,4 +159,4 @@ class Command(BaseCommand):
             index = index + 1
 
         # Save the objects into the database
-        ActivePatientsList.objects.bulk_create(active_patients_list)
+        Record.objects.bulk_create(active_patients_list)

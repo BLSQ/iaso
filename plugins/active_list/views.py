@@ -5,6 +5,10 @@ import uuid
 from datetime import timedelta
 from datetime import datetime
 from datetime import date
+import datetime
+import calendar
+import pytz
+
 import pandas as pd
 import math
 import openpyxl
@@ -29,14 +33,14 @@ from .openhexa import *
 from .models import (
     Import,
     SOURCE_EXCEL,
-    ActivePatientsList,
+    Record,
     VALIDATION_STATUS_CHOICES,
     Validation,
     PATIENT_LIST_DISPLAY_FIELDS,
     HIV_UNKNOWN,
     HIV_HIV1,
     HIV_HIV2,
-    HIV_HIV1_AND_2, SEARCH_LIST_DISPLAY_FIELDS, PATIENT_HISTORY_DISPLAY_FIELDS,
+    HIV_HIV1_AND_2, SEARCH_LIST_DISPLAY_FIELDS, PATIENT_HISTORY_DISPLAY_FIELDS, Patient,
 )
 from ..polio.settings import DISTRICT
 
@@ -83,7 +87,7 @@ def completeness(request, region_id, month):
     region = get_object_or_404(OrgUnit, id=region_id)
     districts = OrgUnit.objects.filter(parent=region).order_by("name")
 
-    active_patients_list = ActivePatientsList.objects.filter(org_unit=org_unit, period=month).order_by('id')
+    active_patients_list = Record.objects.filter(org_unit=org_unit, period=month).order_by('id')
 
     context = {
         'org_unit': region,
@@ -101,12 +105,12 @@ def patient_history(request):
         # Fetch the patient based on the identifier
 
         latest_ids = (
-            ActivePatientsList.objects.filter(identifier_code=identifier)
+            Record.objects.filter(identifier_code=identifier)
             .values("identifier_code", "period")
             .annotate(latest_id=Max("id"))
         )
 
-        records = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
+        records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
         data = []
         for record in records:
             patient_object = {"Période": record.period[:7], "FOSA": record.org_unit.name}
@@ -137,7 +141,7 @@ def import_detail_view(request, import_id):
     import_obj = get_object_or_404(Import, id=import_id)
 
     # Get the ActivePatientsList entries associated with the Import, ordered by some field (e.g., 'id')
-    active_patients_list = ActivePatientsList.objects.filter(import_source=import_obj).order_by('id')
+    active_patients_list = Record.objects.filter(import_source=import_obj).order_by('id')
 
     context = {
         'import_obj': import_obj,
@@ -204,7 +208,7 @@ def patient_form(request, patient_id=None):
     View for creating or updating an ActivePatientsList instance.
     """
     if patient_id:
-        patient = get_object_or_404(ActivePatientsList, pk=patient_id)
+        patient = get_object_or_404(Record, pk=patient_id)
         form = ActivePatientsListForm(request.POST or None, instance=patient)
     else:
         form = ActivePatientsListForm(request.POST or None)
@@ -223,12 +227,12 @@ def active_count(org_unit_id):
     Returns the count of ActivePatientsList entries for a given org_unit and month.
     """
     latest_ids = (
-        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        Record.objects.filter(org_unit_id=org_unit_id)
         .values("identifier_code")
         .annotate(latest_id=Max("id"))
     )
 
-    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+    patients = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
 
     return patients.count()
 
@@ -238,12 +242,12 @@ def received_count(org_unit_id, month):
     Returns the count of ActivePatientsList entries for a given org_unit and month.
     """
     latest_ids = (
-        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        Record.objects.filter(org_unit_id=org_unit_id)
         .values("identifier_code")
         .annotate(latest_id=Max("id"))
     )
 
-    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+    patients = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
     patients = filter_received_patients_for_the_month(patients, month)
     return patients.count()
 
@@ -254,12 +258,12 @@ def stats(org_unit_id, month):
     """
     previous_month = get_previous_period(month)
     latest_ids = (
-        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        Record.objects.filter(org_unit_id=org_unit_id)
         .values("identifier_code")
         .annotate(latest_id=Max("id"))
     )
 
-    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
+    patients = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).filter(active=True)
 
     """
     Perdus de Vue, Décédés et Arrêts de Traitement
@@ -421,16 +425,16 @@ def patient_list_api(request, org_unit_id, period):
     mode = request.GET.get("mode", "default")
 
     latest_ids = (
-        ActivePatientsList.objects.filter(org_unit_id=org_unit_id)
+        Record.objects.filter(org_unit_id=org_unit_id)
         .values("identifier_code")
         .annotate(latest_id=Max("id"))
     )
 
-    patients = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
+    patients = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
     if mode == "default":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=period).order_by("-creation_date").first()
-        patients = ActivePatientsList.objects.filter(import_source=last_import).order_by("number")
+        patients = Record.objects.filter(import_source=last_import).order_by("number")
     elif mode == "expected":
         patients = filter_expected_patients_for_the_month(patients, period).order_by("next_dispensation_date")
     elif mode == "active":
@@ -470,7 +474,7 @@ def patient_search_api(request):
     """
     # Perform search logic here (e.g., filter ActivePatientsList based on query)
     query = request.GET.get("query", "")
-    patients = ActivePatientsList.objects.filter(identifier_code__icontains=query).distinct('identifier_code').order_by("identifier_code")[:20]  # Limit to 10 results
+    patients = Record.objects.filter(identifier_code__icontains=query).distinct('identifier_code').order_by("identifier_code")[:20]  # Limit to 10 results
     table_content = []
     for patient in patients:
         patient_object = {}
@@ -568,15 +572,15 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
 
 def validate_import(the_import):
     month = the_import.month
-    import_lines = ActivePatientsList.objects.filter(import_source=the_import)
+    import_lines = Record.objects.filter(import_source=the_import)
     viewed_patients_count = filter_expected_patients_for_the_month(import_lines, month).count()
     latest_ids = (
-        ActivePatientsList.objects.filter(org_unit_id=the_import.org_unit_id)
+        Record.objects.filter(org_unit_id=the_import.org_unit_id)
         .values("identifier_code")
         .annotate(latest_id=Max("id"))
     )
 
-    active_list = ActivePatientsList.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
+    active_list = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
 
     patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
 
@@ -592,6 +596,16 @@ def check_file(file):
 
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def month_string_to_utc_timestamp(month_string):
+    """
+    Converts a month string in "YYYY-MM" format to a UTC timestamp representing the first day of the month.
+    """
+    year, month = map(int, month_string.split('-'))
+    dt = datetime.datetime(year, month, 1, tzinfo=pytz.utc)
+    timestamp = calendar.timegm(dt.utctimetuple())
+    return dt
+
 
 
 def import_data(file, the_import):
@@ -731,48 +745,54 @@ def import_data(file, the_import):
                 "served_elsewhere": row["served_elsewhere"],
             }
         )
-
-    # Create ActivePatientsList objects
-    active_patients_list = []
-
+    # this will need to be updated to use batched queries
     for row in data:
-        active = not (row["transfer_out"] or row["art_stoppage"] or row["death"] or row["served_elsewhere"])
+        active = not ( row["art_stoppage"] or row["death"] ) # will need ot decide what to do with row["served_elsewhere"] row["transfer_out"]
         next_dispensation_date = row["last_dispensation_date"] + timedelta(days=row["days_dispensed"])
-        active_patients_list.append(
-            ActivePatientsList(
-                number=row["number"],
-                region=row["region"],
-                district=row["district"],
-                code_ets=row["code_ets"],
-                facility_name=row["facility_name"],
-                period=row["period"],
-                identifier_code=row["identifier_code"],
-                sex=row["sex"],
-                age=row["age"],
-                weight=row["weight"],
-                new_inclusion=row["new_inclusion"],
-                transfer_in=row["transfer_in"],
-                return_to_care=row["return_to_care"],
-                tb_hiv=row["tb_hiv"],
-                hiv_type=row["hiv_type"],
-                treatment_line=row["treatment_line"],
-                last_dispensation_date=row["last_dispensation_date"],
-                days_dispensed=row["days_dispensed"],
-                next_dispensation_date=next_dispensation_date,
-                regimen=row["regimen"],
-                stable=row["stable"],
-                transfer_out=row["transfer_out"],
-                death=row["death"],
-                art_stoppage=row["art_stoppage"],
-                served_elsewhere=row["served_elsewhere"],
-                active=active,
-                import_source=the_import,
-                validation_status="waiting_for_validation",
-                org_unit=the_import.org_unit,
-            )
+
+        patient, created = Patient.objects.get_or_create(
+            identifier_code=row["identifier_code"]
         )
-
-    # Save the objects into the database
-    ActivePatientsList.objects.bulk_create(active_patients_list)
+        new_period = row["period"]
 
 
+
+        record = Record(
+            number=row["number"],
+            region=row["region"],
+            district=row["district"],
+            code_ets=row["code_ets"],
+            facility_name=row["facility_name"],
+
+            sex=row["sex"],
+            age=row["age"],
+            weight=row["weight"],
+            new_inclusion=row["new_inclusion"],
+            transfer_in=row["transfer_in"],
+            return_to_care=row["return_to_care"],
+            tb_hiv=row["tb_hiv"],
+            hiv_type=row["hiv_type"],
+            treatment_line=row["treatment_line"],
+            last_dispensation_date=row["last_dispensation_date"],
+            days_dispensed=row["days_dispensed"],
+            next_dispensation_date=next_dispensation_date,
+            regimen=row["regimen"],
+            stable=row["stable"],
+            transfer_out=row["transfer_out"],
+            death=row["death"],
+            art_stoppage=row["art_stoppage"],
+            served_elsewhere=row["served_elsewhere"],
+            import_source=the_import,
+            org_unit=the_import.org_unit,
+            patient=patient,
+            period=row["period"],
+        )
+        record.save()
+
+        if created:
+            patient.active = active
+        else:
+            if not(patient.last_record) or  (new_period.strftime("%y-%m") > patient.last_record.period[:7]):
+                patient.active = active
+                patient.last_record = record
+        patient.save()

@@ -1,72 +1,42 @@
 from django.contrib import admin
-from .models import Import, ActivePatientsList, Validation, Month
+
+from .models import Validation, Record, Import, Patient, PatientInactiveEvent
+
+@admin.register(Validation)
+class ValidationAdmin(admin.ModelAdmin):
+    list_display = ("period", "org_unit", "created_at", "user_name", "level", "validation_status")
+    raw_id_fields = ("org_unit",)
+    search_fields = ("period", "user_name")
+
+
+@admin.register(Record)
+class RecordAdmin(admin.ModelAdmin):
+    list_display = ("number", "region", "district", "facility_name", "period", "patient")
+    raw_id_fields = ("patient", "org_unit")
+    search_fields = ("region", "district", "facility_name", "period")
+    list_filter = ("region", "district")
 
 
 @admin.register(Import)
 class ImportAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "org_unit",
-        "month",
-        "creation_date",
-        "source",
-        "hash_key",
-        "file_name",
-        "file_check",
-    )
-    list_filter = ("source", "month", "creation_date")
-    search_fields = ("file_name", "hash_key")
+    list_display = ("org_unit", "month", "creation_date", "source", "file_name")
     raw_id_fields = ("org_unit",)
+    search_fields = ("month", "file_name")
 
 
-@admin.register(ActivePatientsList)
-class ActivePatientsListAdmin(admin.ModelAdmin):
-    list_display = (
-        "number",
-        "region",
-        "district",
-        "code_ets",
-        "facility_name",
-        "period",
-        "identifier_code",
-        "sex",
-        "age",
-        "new_inclusion",
-        "transfer_in",
-        "active",
-        "validation_status",
-    )
-    list_filter = (
-        "sex",
-        "region",
-        "district",
-        "period",
-        "new_inclusion",
-        "transfer_in",
-        "active",
-        "validation_status",
-        "hiv_type",
-        "treatment_line",
-    )
-    search_fields = ("code_ets", "facility_name", "region", "district")
-    raw_id_fields = ("import_source", "org_unit")  # For faster searching in large datasets
+@admin.register(Patient)
+class PatientAdmin(admin.ModelAdmin):
+    list_display = ("identifier_code", "created_at", "active", "loss_date")
+    raw_id_fields = ("last_record",)
+    search_fields = ("identifier_code",)
+    list_filter = ("active",)
 
 
-@admin.register(Validation)
-class ValidationAdmin(admin.ModelAdmin):
-    list_display = (
-        "source_import",
-        "created_at",
-        "user_name",
-        "level",
-        "comment",
-        "validation_status",
-    )
-    list_filter = ("level", "validation_status", "created_at")
-    search_fields = ("user_name", "comment")
-    raw_id_fields = ("source_import",)
+@admin.register(PatientInactiveEvent)
+class PatientInactiveEventAdmin(admin.ModelAdmin):
+    list_display = ("patient", "date", "reason", "created_at")
+    raw_id_fields = ("patient",)
+    search_fields = ("patient__identifier_code",)
+    list_filter = ("reason",)
 
 
-@admin.register(Month)
-class MonthAdmin(admin.ModelAdmin):
-    list_display = ("value",)

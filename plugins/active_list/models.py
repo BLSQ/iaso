@@ -1,5 +1,6 @@
 from django.db import models
 from iaso.models import OrgUnit
+import datetime
 
 VALIDATION_STATUS_WAITING_FOR_VALIDATION = "WAITING_FOR_VALIDATION"
 VALIDATION_STATUS_DISTRICT_VALIDATED = "DISTRICT_VALIDATED"
@@ -65,6 +66,17 @@ TREATMENT_CHOICES = [
     (TREATMENT_3RDLINE, "3e Ligne"),
 ]
 
+INACTIVE_DEATH = "DEATH"
+INACTIVE_LOST = "LOST"
+INACTIVE_ART_STOPPAGE = "ART_STOPPAGE"
+
+
+INACTIVE_REASONS = [
+    (INACTIVE_DEATH, "Décès"),
+    (INACTIVE_LOST, "Perte de suivi"),
+    (INACTIVE_ART_STOPPAGE, "Arrêt du traitement ARV"),
+]
+
 
 class Import(models.Model):
     id = models.AutoField(primary_key=True)  # Django handles auto-incrementing IDs
@@ -79,18 +91,49 @@ class Import(models.Model):
     file_check = models.TextField(null=False)
     on_time = models.BooleanField(default=False)
 
-    class Meta:
-        db_table = "import"
+
+class Patient(models.Model):
+    identifier_code = models.CharField(max_length=255, null=False, db_index=True, verbose_name="Code identifiant", unique=True)
+    last_record = models.ForeignKey(
+        "Record", on_delete=models.CASCADE, null=True, blank=True, related_name="last_record"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    active = models.BooleanField(default=True, verbose_name="Actif")
+    loss_date = models.DateField(null=True, blank=True, verbose_name="Date de perte de suivi")
+
+    def __str__(self):
+        return self.identifier_code
+
+    def evaluate_loss(self, save=True):
+        """
+        Evaluate if the patient is lost based on the last record's discontinuation date.
+        """
+        lost = False
+        if self.last_record and self.last_record.discontinuation_date:
+            if self.last_record.discontinuation_date < datetime.date.today() - datetime.timedelta(days=28):
+                self.loss_date = datetime.date.today()
+                lost = True
+                if save:
+                    self.save()
+
+        return lost
+
+class PatientInactiveEvent(models.Model):
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="lost_event")
+    date = models.DateField(verbose_name="Date de perte de suivi")
+    reason = models.TextField(verbose_name="Raison de la perte de suivi", choices=INACTIVE_REASONS)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
-class ActivePatientsList(models.Model):
+class Record(models.Model):
     number = models.IntegerField(null=False, verbose_name="Numéro")
     region = models.TextField(null=False, verbose_name="Région")
     district = models.TextField(null=False, verbose_name="District")
     code_ets = models.CharField(max_length=255, null=False, verbose_name="Code ETS")
     facility_name = models.TextField(null=False, verbose_name="Nom de l'établissement")
     period = models.TextField(db_index=True, verbose_name="Période")
-    identifier_code = models.CharField(max_length=255, null=False, db_index=True, verbose_name="Code identifiant")
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patient")
     sex = models.TextField(choices=SEX_CHOICES, verbose_name="Sexe")
     age = models.IntegerField(verbose_name="Âge")
     weight = models.IntegerField(null=True, verbose_name="Poids")
@@ -108,7 +151,10 @@ class ActivePatientsList(models.Model):
     stable = models.IntegerField(null=True, verbose_name="Stable")  # Needs further clarification for better naming
 
     discontinuation_date = models.DateField(null=True, blank=True, verbose_name="Date d'arrêt du traitement")
-    arv_stock_days = models.IntegerField(null=True, blank=True, verbose_name="Jours de stock ARV")  # arv is anti retro viral
+    arv_stock_days = models.IntegerField(
+        null=True, blank=True, verbose_name="Jours de stock ARV"
+    )  # arv is anti retro viral
+    received_arv = models.BooleanField(default=False, verbose_name="ARV reçu")
 
     # leaving
     transfer_out = models.BooleanField(verbose_name="Transfert sortant")
@@ -116,18 +162,12 @@ class ActivePatientsList(models.Model):
     art_stoppage = models.BooleanField(verbose_name="Arrêt du traitement ARV")  # stoppage for anti retro viral therapy
     served_elsewhere = models.BooleanField(verbose_name="Soigné ailleurs")
 
-    active = models.BooleanField(default=True, verbose_name="Actif")  # denormalized information
-    import_source = models.ForeignKey(Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES, verbose_name="Source d'importation")
-    validation_status = models.CharField(
-        max_length=255, null=True, choices=VALIDATION_STATUS_CHOICES, default="WAITING_FOR_VALIDATION", verbose_name="Statut de validation"
+    import_source = models.ForeignKey(
+        Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES, verbose_name="Source d'importation"
     )
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle")
-    received_arv = models.BooleanField(default=False, verbose_name="ARV reçu")
-    disappeared = models.BooleanField(default=False, verbose_name="Disparu")
 
-    # cas aes ou patient mobile: what does it mean?
-    class Meta:
-        db_table = "active_list"  # Optional: to match the exact table name
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle", related_name="records")
+
 
 
 PATIENT_LIST_DISPLAY_FIELDS = {
@@ -155,7 +195,6 @@ PATIENT_LIST_DISPLAY_FIELDS = {
     "death": "Décès",
     "art_stoppage": "Arrêt du TAR",
     "served_elsewhere": "Servi ailleurs",
-    "active": "Actif",
 }
 
 PATIENT_HISTORY_DISPLAY_FIELDS = {
@@ -180,7 +219,6 @@ PATIENT_HISTORY_DISPLAY_FIELDS = {
     "death": "Décès",
     "art_stoppage": "Arrêt du TAR",
     "served_elsewhere": "Servi ailleurs",
-    "active": "Actif",
 }
 SEARCH_LIST_DISPLAY_FIELDS = {
     "identifier_code": "Code identificateur",
@@ -189,18 +227,13 @@ SEARCH_LIST_DISPLAY_FIELDS = {
     "weight": "Poids",
 }
 
+
 class Validation(models.Model):
-    source_import = models.ForeignKey(Import, on_delete=models.CASCADE)
+    period = models.TextField(db_index=True, verbose_name="Période")
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité d'organisation")
     created_at = models.DateTimeField(auto_now_add=True)
     user_id = models.IntegerField(null=False)
     user_name = models.CharField(max_length=255, null=False)
     level = models.CharField(max_length=255, null=False, choices=LEVEL_CHOICES, verbose_name="Niveau de Validation")
     comment = models.TextField(verbose_name="Commentaire")
     validation_status = models.CharField(max_length=255, null=True, choices=VALIDATION_CHOICES, verbose_name="Statut")
-
-    class Meta:
-        db_table = "validation"  # Optional: to match the exact table name
-
-
-class Month(models.Model):
-    value = models.CharField(max_length=10, null=False, blank=False, unique=True)

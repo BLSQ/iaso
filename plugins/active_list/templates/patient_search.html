@@ -17,12 +17,11 @@
     <div id="loading" class="loading" style="display: none;">Loading...</div>
 
     <!-- Table for displaying search results -->
-    <table id="generatedTable" style="display: none;">
+    <div id="tableContainer">
 
-        <tbody>
             <!-- Results will be dynamically added here -->
-        </tbody>
-    </table>
+
+    </div>
 
     <script>
         $(document).ready(function () {
@@ -40,7 +39,7 @@
             // Function to fetch results from the API
             function fetchResults(query) {
                 if (!query.trim()) {
-                    $("#generatedTable").hide();
+                    $("#tablecontainer").hide();
                     $("#loading").hide();
                     return;
                 }
@@ -52,16 +51,19 @@
                     success: function (data) {
                         $("#loading").hide(); // Hide the loading indicator
 
-                        const tableBody = $("#generatedTable tbody");
-                        tableBody.empty(); // Clear any previous results
+                        const tableContainer = $("#tableContainer");
+                        console.log(tableContainer)
+                        tableContainer.empty(); // Clear any previous results
 
                         // Check if data exists or not
                         if (data.trim().length === 0) {
-                            $("#generatedTable").hide(); // Hide the table if no results
+                            $("#tableContainer").hide(); // Hide the table if no results
                         } else {
                             // Append rows dynamically from the server-generated HTML
-                            tableBody.append(data);
-                            $("#generatedTable").show(); // Show the table with results
+                            tableContainer.append(data);
+                            $("#tableContainer").show(); // Show the table with results
+                            $('#generatedTable').tablesorter();
+                            console.log("coucou")
                         }
                     },
                     error: function (error) {

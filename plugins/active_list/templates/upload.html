@@ -2,17 +2,21 @@
 {% load static %}
 
 {% block content %}
-<h2>Envoi des rapports de la file active</h2>
+    <script>
+      var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+      var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+    </script>
+    <h2>Envoi des rapports de la file active</h2>
 
-<br/>
-<div>
-    <div>Période de rapportage</div>
-    <select id="monthSelect"></select><br/><br/>
-    <div><label>Choisissez votre établissement:</label>
-        <div id="orgUnitContainer">
+    <br/>
+    <div>
+        <div>Période de rapportage</div>
+        <select id="monthSelect"></select><br/><br/>
+        <div><label>Choisissez votre établissement:</label>
+            <div id="orgUnitContainer">
             </div>
-    </div>
-    <span id="link">
+        </div>
+        <span id="link">
         Sélectionnez un fichier excel à envoyer:
           <form action="/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -23,9 +27,11 @@
                 <input type="submit" value="Envoyer"/>
           </form>
     </span>
-    <div id="loader-container"><div class="loader" id="loader"></div></div>
-</div>
+        <div id="loader-container">
+            <div class="loader" id="loader"></div>
+        </div>
+    </div>
 
-<script src="{% static 'upload.js' %}">
-</script>
+    <script src="{% static 'upload.js' %}">
+    </script>
 {% endblock %}

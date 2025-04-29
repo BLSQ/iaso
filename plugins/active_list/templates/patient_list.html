@@ -2,42 +2,46 @@
 {% load static %}
 
 {% block content %}
-<h2>Listing des patients</h2>
-
-<br/>
-<div class="controls-container">
-    <select id="modeSelect">
-      <option value="default" selected=>Dernier import pour le mois</option>
-      <option value="expected">Patients attendus durant le mois</option>
-      <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
-      <option value="active">File active</option>
-    </select>
-    <br/><br/>
-    <div>
-        <label for="monthSelect">Période de rapportage:</label>
-        <select id="monthSelect">
-        </select>
-    </div>
-
-    <div>
-        <label>Choisissez votre établissement:</label>
-        <div id="orgUnitContainer">
-            </div>
-    </div>
-
-    <div>
-    </div>
-</div>
-<div id="dataContainer">
-    <a href="" id="excel_link">Télécharger en Excel</a>
-    <div id="nodata"><strong>Pas de données pour cette sélection</strong></div>
-    <div id="table-container"></div>
-</div>
     <script>
-  // It's often better to get URLs via a dedicated API endpoint
-  // But for simplicity, we can define them here or pass from Django context
+      var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+      var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+    </script>
+    <h2>Listing des patients</h2>
 
-</script>
+    <br/>
+    <div class="controls-container">
+        <select id="modeSelect">
+            <option value="default" selected=>Dernier import pour le mois</option>
+            <option value="expected">Patients attendus durant le mois</option>
+            <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
+            <option value="active">File active</option>
+        </select>
+        <br/><br/>
+        <div>
+            <label for="monthSelect">Période de rapportage:</label>
+            <select id="monthSelect">
+            </select>
+        </div>
+
+        <div>
+            <label>Choisissez votre établissement:</label>
+            <div id="orgUnitContainer">
+            </div>
+        </div>
+
+        <div>
+        </div>
+    </div>
+    <div id="dataContainer">
+        <a href="" id="excel_link">Télécharger en Excel</a>
+        <div id="nodata"><strong>Pas de données pour cette sélection</strong></div>
+        <div id="table-container"></div>
+    </div>
+    <script>
+      // It's often better to get URLs via a dedicated API endpoint
+      // But for simplicity, we can define them here or pass from Django context
+
+    </script>
     <script src="{% static 'utils.js' %}"></script>
     <script src="{% static 'patient_list_dynamic.js' %}"></script>
 {% endblock %}

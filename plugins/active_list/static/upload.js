@@ -14,7 +14,7 @@ function callback (selectedOrgUnitId) {
 }
 
 const config = {
-  targetOrgUnitTypeId: 350,
+  targetOrgUnitTypeId: FA_HF_ORG_UNIT_TYPE_ID,
   callback: callback,
   orgUnitContainer: orgUnitContainer
 }

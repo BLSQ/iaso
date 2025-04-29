@@ -19,10 +19,10 @@ from django.http import HttpResponse
 from django.db import models
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
-from django.db.models import Count
+
 
 from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse
+
 
 from iaso.models import OrgUnit
 from .forms import ValidationForm, ActivePatientsListForm
@@ -41,7 +41,6 @@ from .models import (
     HIV_HIV1,
     HIV_HIV2,
     HIV_HIV1_AND_2,
-    SEARCH_LIST_DISPLAY_FIELDS,
     PATIENT_HISTORY_DISPLAY_FIELDS,
     Patient,
     PatientInactiveEvent,
@@ -49,6 +48,8 @@ from .models import (
 from ..polio.settings import DISTRICT
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
+FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 349)
+FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 350)
 
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "ods", "csv", "xlsb", "xltm", "xltx", "xlsm"}
 OK = "OK"
@@ -83,7 +84,14 @@ def homepage(request):
 
 @login_required
 def patient_list(request):
-    return render(request, "patient_list.html", {})
+    return render(
+        request,
+        "patient_list.html",
+        {
+            "FA_HF_ORG_UNIT_TYPE_ID": FA_HF_ORG_UNIT_TYPE_ID,
+            "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
+        },
+    )
 
 
 @login_required
@@ -179,7 +187,14 @@ def upload(request):
 
         return JsonResponse(RESPONSES[result], status=RESPONSES[result]["status"])
 
-    return render(request, "upload.html", {})
+    return render(
+        request,
+        "upload.html",
+        {
+            "FA_HF_ORG_UNIT_TYPE_ID": FA_HF_ORG_UNIT_TYPE_ID,
+            "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
+        },
+    )
 
 
 @login_required
@@ -203,6 +218,8 @@ def validation(request):
             "statuses": VALIDATION_STATUS_CHOICES,
             "request": request,
             "form": form,
+            "FA_HF_ORG_UNIT_TYPE_ID": FA_HF_ORG_UNIT_TYPE_ID,
+            "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
         },
     )
 
@@ -338,7 +355,9 @@ def validation_api(request, org_unit_id, month):
         if latest_import:
             report_count = report_count + 1
             obj["A rapporté"] = "Oui"
-            latest_validation = Validation.objects.filter(period=month).filter(org_unit_id=org_unit_id).order_by("-created_at").first()
+            latest_validation = (
+                Validation.objects.filter(period=month).filter(org_unit_id=org_unit_id).order_by("-created_at").first()
+            )
             obj["Actifs"] = active_count(org_unit_id)
             obj["Reçus"] = "%d (%d)" % (
                 received_count(org_unit_id, month),

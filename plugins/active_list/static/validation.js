@@ -37,7 +37,7 @@ monthSelect.on('change', function () {
 
 
   const config = {
-    targetOrgUnitTypeId: 349,
+    targetOrgUnitTypeId: FA_DISTRICT_ORG_UNIT_TYPE_ID,
     callback: callback,
     orgUnitContainer: orgUnitContainer
   }

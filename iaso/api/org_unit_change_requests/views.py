@@ -333,7 +333,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         def get_reference_instance_ids(instances):
             if not instances.exists():
                 return ""
-            return ",".join(str(instance.id) for instance in instances.all())
+            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
 
         for change_request in filtered_org_unit_changes_requests:
             # Basic row data - all data is already prefetched

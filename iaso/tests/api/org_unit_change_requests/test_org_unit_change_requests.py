@@ -620,7 +620,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         def get_reference_instance_ids(instances):
             if not instances.exists():
                 return ""
-            return ",".join(sorted(str(instance.id) for instance in instances.all()))
+            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
 
         # Basic expected data
         expected_row_data = [

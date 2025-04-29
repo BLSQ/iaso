@@ -19,7 +19,7 @@ const selectLanguage = lang => {
         .and('not.be.disabled');
 
     // Perform selection
-    cy.get('.language-picker').select(lang);
+    cy.get('.language-picker').select(lang, { force: true });
 
     // Verify selection and wait for reload
     cy.get('.language-picker').should('have.value', lang);

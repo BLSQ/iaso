@@ -12,14 +12,17 @@ const selectLanguage = lang => {
         w.beforeReload = true;
     });
 
-    // Wait for the selector to be ready
-    cy.get('.language-picker').should('exist').should('be.visible');
+    // Check selector is ready
+    cy.get('.language-picker')
+        .should('exist')
+        .should('be.visible')
+        .and('not.be.disabled');
 
-    cy.get('.language-picker').select(lang, { force: true });
+    // Perform selection
+    cy.get('.language-picker').select(lang);
 
+    // Verify selection and wait for reload
     cy.get('.language-picker').should('have.value', lang);
-
-    // Wait for page reload
     cy.window().should('not.have.prop', 'beforeReload');
     cy.get('html').invoke('attr', 'lang').should('equal', lang);
     cy.getCookie(langageCookie).should('have.property', 'value', lang);
@@ -71,7 +74,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').focus().type('Link', { delay: 0 });
+            cy.get('#id_username').invoke('val', 'Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
@@ -82,7 +85,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').focus().clear().type('Link', { delay: 0 });
+            cy.get('#id_username').invoke('val', 'Link');
 
             // Handle password input
             cy.get('#id_password')
@@ -90,7 +93,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_password').focus().clear().type('ZELDA', { delay: 0 });
+            cy.get('#id_password').invoke('val', 'ZELDA');
 
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();

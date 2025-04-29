@@ -7,11 +7,11 @@ var dataContainer = $('#dataContainer');
 dataContainer.hide();
 
 var orgUnitIdSave = null;
-
+var periodSave = null;
 var callback = function (orgUnitId) {
   orgUnitIdSave = orgUnitId;
-    var period = $('#monthSelect').val();
-    $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + period, function (data) {
+  periodSave = $('#monthSelect').val();
+    $.getJSON('/active_list/validation_api/' + orgUnitId + '/' + periodSave, function (data) {
 
       data.table_content.forEach(item => {
         console.log(item);
@@ -31,6 +31,7 @@ var callback = function (orgUnitId) {
 
 monthSelect.on('change', function () {
   $('#period').val(this.value);
+  periodSave = this.value;
   callback(orgUnitIdSave);
 });
 
@@ -51,6 +52,8 @@ $(document).ready(function() {
   $("#container").on("click", ".validate_link", function(event) {
     event.preventDefault();
     var importId = $(this).attr("href");
+    $("#id_org_unit").val(orgUnitIdSave);
+    $("#id_period").val(periodSave);
     $("#id_source_import").val(importId);
     $("#validation_form").show();
     $(".overlay").show();

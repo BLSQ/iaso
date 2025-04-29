@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
-
+{%  load i18n %}
 {% block content %}
-<h2>Historique d'un patient</h2>
-<h1>{{ identifier_code }}</h1>
-<br/>
+<h2>Historique d'un patient: {{ patient.identifier_code }}</h2>
+<h3>Actif: {% if patient.active %}oui ✅{% else %}non ❌{% endif %}</h3>
+
 
 <div id="dataContainer">
     <div id="table-container">

@@ -6,6 +6,13 @@
 
 <br/>
 <div class="controls-container">
+    <select id="modeSelect">
+      <option value="default" selected=>Dernier import pour le mois</option>
+      <option value="expected">Patients attendus durant le mois</option>
+      <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
+      <option value="active">File active</option>
+    </select>
+    <br/><br/>
     <div>
         <label for="monthSelect">Période de rapportage:</label>
         <select id="monthSelect">
@@ -19,12 +26,6 @@
     </div>
 
     <div>
-    <select id="modeSelect">
-      <option value="default" selected=>Dernier import pour le mois</option>
-      <option value="expected">Patients attendus durant le mois</option>
-      <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
-      <option value="active">File active</option>
-    </select><br/><br/>
     </div>
 </div>
 <div id="dataContainer">

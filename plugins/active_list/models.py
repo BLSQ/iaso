@@ -69,12 +69,13 @@ TREATMENT_CHOICES = [
 INACTIVE_DEATH = "DEATH"
 INACTIVE_LOST = "LOST"
 INACTIVE_ART_STOPPAGE = "ART_STOPPAGE"
-
+INACTIVE_TRANSFER = "TRANSFER"
 
 INACTIVE_REASONS = [
     (INACTIVE_DEATH, "Décès"),
     (INACTIVE_LOST, "Perte de suivi"),
     (INACTIVE_ART_STOPPAGE, "Arrêt du traitement ARV"),
+    (INACTIVE_TRANSFER, "Transfert"),
 ]
 
 
@@ -93,7 +94,9 @@ class Import(models.Model):
 
 
 class Patient(models.Model):
-    identifier_code = models.CharField(max_length=255, null=False, db_index=True, verbose_name="Code identifiant", unique=True)
+    identifier_code = models.CharField(
+        max_length=255, null=False, db_index=True, verbose_name="Code identifiant", unique=True
+    )
     last_record = models.ForeignKey(
         "Record", on_delete=models.CASCADE, null=True, blank=True, related_name="last_record"
     )
@@ -109,22 +112,40 @@ class Patient(models.Model):
         """
         Evaluate if the patient is lost based on the last record's discontinuation date.
         """
-        lost = False
-        if self.last_record and self.last_record.discontinuation_date:
-            if self.last_record.discontinuation_date < datetime.date.today() - datetime.timedelta(days=28):
-                self.loss_date = datetime.date.today()
-                lost = True
+        print("Evaluating loss for patient:", self.identifier_code, "Active status:", self.active, "last_record:", self.last_record)
+        if self.active and self.last_record and self.last_record.next_dispensation_date:
+            print("Last record next_dispensation_date:", self.last_record.next_dispensation_date, datetime.date.today() - datetime.timedelta(days=28))
+            if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(days=28):
+                self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(days=28)
+                self.active = False
+
                 if save:
+                    event = PatientInactiveEvent(
+                        patient=self,
+                        org_unit=self.last_record.org_unit,
+                        date=self.last_record.next_dispensation_date + datetime.timedelta(days=28),
+                        last_patient_record_at_time_of_loss=self.last_record,
+                        reason=INACTIVE_LOST,
+                    )
+                    event.save()
+                    print("Patient inactive event saved:", event)
                     self.save()
 
-        return lost
+        return self.active
+
 
 class PatientInactiveEvent(models.Model):
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="lost_event")
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle")
     date = models.DateField(verbose_name="Date de perte de suivi")
+    last_patient_record_at_time_of_loss = models.ForeignKey(
+        "Record", on_delete=models.CASCADE, null=True, blank=True, related_name="last_patient_record_at_time_of_loss"
+    )
     reason = models.TextField(verbose_name="Raison de la perte de suivi", choices=INACTIVE_REASONS)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return f"Patient {self.patient.identifier_code} inactive on {self.date} for reason {self.reason}"
 
 class Record(models.Model):
     number = models.IntegerField(null=False, verbose_name="Numéro")
@@ -166,8 +187,9 @@ class Record(models.Model):
         Import, on_delete=models.CASCADE, choices=SOURCE_CHOICES, verbose_name="Source d'importation"
     )
 
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle", related_name="records")
-
+    org_unit = models.ForeignKey(
+        OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle", related_name="records"
+    )
 
 
 PATIENT_LIST_DISPLAY_FIELDS = {
@@ -177,7 +199,7 @@ PATIENT_LIST_DISPLAY_FIELDS = {
     #  "code_ets": "Code établissement",
     #  "facility_name": "Nom établissement",
     #   "period": "Période",
-    "identifier_code": "Code identificateur",
+
     "sex": "Sexe",
     "age": "Âge",
     "weight": "Poids",

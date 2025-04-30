@@ -5,7 +5,13 @@ from datetime import datetime, timedelta
 
 from fake import fake_person
 
-from iaso.models import OrgUnitChangeRequest
+
+NEW = "new"
+REJECTED = "rejected"
+APPROVED = "approved"
+PENDING = "pending"
+SAME = "same"
+UNKNOWN = "unknown"
 
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
@@ -170,15 +176,15 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 # Define the function outside the loop to avoid the loop variable binding issue
 def get_conclusion(field_name, old_value, new_value, change_request):
     # If the change request is new, no conclusion is made
-    if change_request.status == OrgUnitChangeRequest.Statuses.NEW:
-        return "pending"
+    if change_request.status == NEW:
+        return PENDING
 
     # If the change request is rejected, all fields are rejected
-    if change_request.status == OrgUnitChangeRequest.Statuses.REJECTED:
-        return "rejected"
+    if change_request.status == REJECTED:
+        return REJECTED
 
     # If the change request is approved, check if the field is in approved_fields
-    if change_request.status == OrgUnitChangeRequest.Statuses.APPROVED:
+    if change_request.status == APPROVED:
         # Map field names to their corresponding field in requested_fields
         field_mapping = {
             "name": "new_name",
@@ -198,14 +204,14 @@ def get_conclusion(field_name, old_value, new_value, change_request):
 
         # If the field is not in requested_fields, it means no change was requested
         if requested_field not in change_request.requested_fields:
-            return "same"
+            return SAME
 
         # If the field is in approved_fields, it was approved
         if requested_field in change_request.approved_fields:
-            return "approved"
+            return APPROVED
 
         # If the field is in requested_fields but not in approved_fields, it was rejected
-        return "rejected"
+        return REJECTED
 
     # Default case (should not happen)
-    return "unknown"
+    return UNKNOWN

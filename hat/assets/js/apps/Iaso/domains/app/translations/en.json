@@ -162,6 +162,7 @@
     "iaso.datasources.options.label.name": "Name",
     "iaso.datasources.options.label.parent": "Parent",
     "iaso.datasources.options.label.version": "Version",
+    "iaso.datasources.pleaseSelectVersionFirst": "Please select a data source version first",
     "iaso.datasources.syncMessageDisabled": "Please select a version of same data source to enable sync",
     "iaso.datasources.syncName": "Synchronization name",
     "iaso.datasources.syncNameInfos": "Used to find linked changed requests",

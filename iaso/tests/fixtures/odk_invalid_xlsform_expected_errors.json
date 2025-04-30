@@ -1104,5 +1104,25 @@
         },
         "sheet": "survey",
         "severity": "error"
+    },
+    {
+        "message": "question type hidden is not supported 'hidden_field'",
+        "question": {
+            "line_number": 102,
+            "type": "hidden",
+            "name": "hidden_field",
+            "label": "Hidden field test",
+            "hint": "",
+            "appearance": "",
+            "image": "",
+            "audio": "",
+            "video": "",
+            "relevant": "",
+            "calculation": "",
+            "constraint": "",
+            "constraint_message": ""
+        },
+        "sheet": "survey",
+        "severity": "error"
     }
 ]

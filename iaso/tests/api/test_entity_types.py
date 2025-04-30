@@ -411,6 +411,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.form_1.instances.add(instance_app_id)
         self.form_1.save()
+        self.form_1.projects.add(project)
 
         entity_with_data = Entity.objects.create(
             name="New Client",

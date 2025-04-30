@@ -174,7 +174,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         )
         extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(

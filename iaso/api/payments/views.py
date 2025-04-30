@@ -2,7 +2,6 @@ from typing import Dict, Tuple
 
 import django_filters
 
-from django.contrib.postgres.expressions import ArraySubquery
 from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
@@ -101,6 +100,12 @@ class PaymentLotsViewSet(ModelViewSet):
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
         payments = (
             Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
@@ -139,9 +144,6 @@ class PaymentLotsViewSet(ModelViewSet):
             payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
-
-        user_org_units_subquery = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
-        queryset = queryset.annotate(annotated_user_org_units=ArraySubquery(user_org_units_subquery))
 
         return queryset
 
@@ -451,8 +453,13 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
-        user_org_units_subquery = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
         queryset = (
             PotentialPayment.objects.prefetch_related("change_requests__org_unit")
             .select_related("user__iaso_profile", "payment_lot")
@@ -460,7 +467,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
             # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
             .filter(task__isnull=True)
             .annotate(change_requests_count=Count("change_requests"))
-            .annotate(annotated_user_org_units=ArraySubquery(user_org_units_subquery))
             .distinct()
         )
         return queryset
@@ -555,7 +561,7 @@ class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
 
-    This API allows to list and update Payments.
+    This API allows listing and updating Payments.
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
@@ -573,6 +579,12 @@ class PaymentsViewSet(ModelViewSet):
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self) -> models.QuerySet:
         user = self.request.user

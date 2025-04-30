@@ -109,11 +109,10 @@ class PaymentLotSerializer(serializers.ModelSerializer):
         change_requests_org_units_for_lot = obj.payments.values_list(
             "change_requests__org_unit__id", flat=True
         ).distinct()
-        return set(change_requests_org_units_for_lot).issubset(set(obj.annotated_user_org_units))
+        return set(change_requests_org_units_for_lot).issubset(set(self.context["user_org_units"]))
 
     def get_payments(self, obj):
         payments = obj.payments.all()
-        self.context["user_org_units"] = obj.annotated_user_org_units
         return NestedPaymentSerializer(payments, many=True, context=self.context).data
 
 
@@ -139,7 +138,6 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
             end_date = request.GET.get("change_requests__created_at_before", None)
             change_requests = filter_by_dates(request, change_requests, start_date, end_date)
 
-        self.context["user_org_units"] = obj.annotated_user_org_units
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def get_can_see_change_requests(self, obj):
@@ -187,7 +185,7 @@ class PaymentSerializer(serializers.ModelSerializer):
         return status
 
     def get_change_requests(self, obj):
-        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+        change_requests = obj.change_requests.all()
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
     def update(self, obj, validated_data):

@@ -1,14 +1,13 @@
+import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
-import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { dosesPerVial } from '../../hooks/utils';
@@ -32,16 +31,17 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
         pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
-    const current_vials_shipped = doses_per_vial
-        ? Math.ceil(
-              ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
-                  doses_per_vial,
-          )
-        : 0;
+    // const [isDosesFocused, setIsDosesFocused] = useState<boolean>(false);
+    // const [isVialsFocused, setIsVialsFocused] = useState<boolean>(false);
+
+    // Use refs to track focused state to reduce renders and avoid sluggish UI
+    const dosesRef = useRef<boolean>(false);
+    const vialsRef = useRef<boolean>(false);
 
     const documentErrors = useMemo(() => {
         return processErrorDocsBase(errors[index]?.document);
     }, [errors, index]);
+
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
             setFieldValue(`pre_alerts[${index}].to_delete`, true);
@@ -55,6 +55,48 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
             }
         }
     }, [index, setFieldTouched, setFieldValue, values?.pre_alerts]);
+
+    const handleVialsShippedUpdate = useCallback(
+        (value: number) => {
+            if (vialsRef.current) {
+                const dosesShipped = value * (doses_per_vial ?? 0);
+                setFieldValue(`pre_alerts[${index}].vials_shipped`, value);
+                setFieldValue(
+                    `pre_alerts[${index}].doses_shipped`,
+                    dosesShipped,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+    const handleDosesShippedUpdate = useCallback(
+        (value: number) => {
+            if (dosesRef.current) {
+                const vialsShipped = doses_per_vial
+                    ? Math.ceil((value ?? 0) / doses_per_vial)
+                    : 0;
+                setFieldValue(`pre_alerts[${index}].doses_shipped`, value);
+                setFieldValue(
+                    `pre_alerts[${index}].vials_shipped`,
+                    vialsShipped,
+                );
+            }
+        },
+        [doses_per_vial, index, setFieldValue],
+    );
+    const onDosesFocus = () => {
+        dosesRef.current = true;
+    };
+    const onDosesBlur = () => {
+        dosesRef.current = false;
+    };
+    const onVialsFocus = () => {
+        vialsRef.current = true;
+    };
+    const onVialsBlur = () => {
+        vialsRef.current = false;
+    };
+
     return (
         <div className={classes.container}>
             <Paper
@@ -72,83 +114,26 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 )}
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
                                 required
                             />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`pre_alerts[${index}].po_number`}
-                                component={TextInput}
-                                disabled={markedForDeletion}
-                                shrinkLabel={false}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(
-                                    MESSAGES.estimated_arrival_time,
-                                )}
-                                name={`pre_alerts[${index}].estimated_arrival_time`}
-                                component={DateInput}
-                                disabled={markedForDeletion}
-                                required
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`pre_alerts[${index}].doses_shipped`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
+                                onChange={handleDosesShippedUpdate}
+                                onFocus={onDosesFocus}
+                                onBlur={onDosesBlur}
                                 required
                             />
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            md={4}
-                            alignContent="center"
-                        >
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
-                            </Box>
-                        </Grid>
-                        <Grid
-                            container
-                            item
-                            xs={6}
-                            md={4}
-                            alignContent="center"
-                        >
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.vials_shipped,
-                                    )}:`}{' '}
-                                    <NumberCell value={current_vials_shipped} />
-                                </Typography>
-                            </Box>
-                        </Grid>
-
-                        <Grid item xs={12} md={4}>
-                            <Box>
+                            <Box mt={2}>
                                 <DocumentUploadWithPreview
                                     errors={documentErrors}
                                     onFilesSelect={files => {
@@ -163,36 +148,104 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                             );
                                         }
                                     }}
+                                    // @ts-ignore
                                     document={
                                         values?.pre_alerts?.[index]?.document
                                     }
+                                    scanResult={
+                                        values?.pre_alerts?.[index]?.scan_result
+                                    }
+                                    scanTimestamp={
+                                        values?.pre_alerts?.[index]
+                                            ?.scan_timestamp
+                                    }
+                                    coloredScanResultIcon
+                                    disabled={
+                                        markedForDeletion ||
+                                        !pre_alerts?.[index].can_edit
+                                    }
                                 />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.po_number)}
+                                    name={`pre_alerts[${index}].po_number`}
+                                    component={TextInput}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !pre_alerts?.[index].can_edit
+                                    }
+                                    shrinkLabel={false}
+                                    required
+                                />
+                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`pre_alerts[${index}].vials_shipped`}
+                                component={NumberInput}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
+                                onChange={handleVialsShippedUpdate}
+                                onFocus={onVialsFocus}
+                                onBlur={onVialsBlur}
+                                required
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Field
+                                label={formatMessage(
+                                    MESSAGES.estimated_arrival_time,
+                                )}
+                                name={`pre_alerts[${index}].estimated_arrival_time`}
+                                component={DateInput}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
+                                required
+                            />
+                            <Box>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
                             </Box>
                         </Grid>
                     </Grid>
                 </Grid>
             </Paper>
             {/* Box is necessay to avoid bad tooltip placement */}
-            <Box ml={2}>
-                {!pre_alerts?.[index].to_delete && (
-                    <DeleteIconButton
-                        onClick={onDelete}
-                        message={MESSAGES.markForDeletion}
-                    />
-                )}
-                {pre_alerts?.[index].to_delete && (
-                    <IconButton
-                        onClick={() => {
-                            setFieldValue(
-                                `pre_alerts[${index}].to_delete`,
-                                false,
-                            );
-                        }}
-                        overrideIcon={RestoreFromTrashIcon}
-                        tooltipMessage={MESSAGES.cancelDeletion}
-                    />
-                )}
-            </Box>
+            {pre_alerts?.[index].can_edit && (
+                <Box ml={2}>
+                    {!pre_alerts?.[index].to_delete && (
+                        <DeleteIconButton
+                            onClick={onDelete}
+                            message={MESSAGES.markForDeletion}
+                        />
+                    )}
+                    {pre_alerts?.[index].to_delete && (
+                        <IconButton
+                            onClick={() => {
+                                setFieldValue(
+                                    `pre_alerts[${index}].to_delete`,
+                                    false,
+                                );
+                            }}
+                            overrideIcon={RestoreFromTrashIcon}
+                            tooltipMessage={MESSAGES.cancelDeletion}
+                        />
+                    )}
+                </Box>
+            )}
         </div>
     );
 };

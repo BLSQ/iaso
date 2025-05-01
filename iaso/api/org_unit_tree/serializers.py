@@ -2,7 +2,6 @@ from typing import Union
 
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models import OrgUnit
 
 

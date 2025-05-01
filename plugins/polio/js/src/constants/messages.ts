@@ -1116,6 +1116,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.showDeletedCampaigns',
         defaultMessage: 'Show deleted campaigns',
     },
+    hideTestCampaigns: {
+        id: 'iaso.polio.hideTestCampaigns',
+        defaultMessage: 'Hide test campaigns',
+    },
     deleted_at: {
         id: 'iaso.forms.deleted_at',
         defaultMessage: 'Deleted',
@@ -1212,7 +1216,23 @@ const MESSAGES = defineMessages({
     },
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign/On hold',
+        defaultMessage: 'Test campaign',
+    },
+    campaignOnHold: {
+        id: 'iaso.polio.label.campaignOnHold',
+        defaultMessage: 'Campaign on hold',
+    },
+    hasSubActivities: {
+        id: 'iaso.polio.label.hasSubActivities',
+        defaultMessage: 'Round with sub-activities',
+    },
+    subactivities: {
+        id: 'iaso.polio.label.subactivities',
+        defaultMessage: 'Sub-activities',
+    },
+    subactivityName: {
+        id: 'iaso.polio.label.subactivityName',
+        defaultMessage: 'Sub-activity name',
     },
     round: {
         id: 'iaso.polio.label.round',
@@ -1849,6 +1869,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.showHidden',
         defaultMessage: 'Show hidden',
     },
+    showTestCampaigns: {
+        id: 'iaso.polio.label.showTestCampaigns',
+        defaultMessage: 'Show test campaigns',
+    },
     url: {
         id: 'iaso.polio.label.url',
         defaultMessage: 'Url',
@@ -2342,6 +2366,11 @@ const MESSAGES = defineMessages({
             'Select initial region and encode dates for at least one round to unlock sub-activities tab',
         id: 'iaso.polio.subActivitiesUnlockConditions',
     },
+    subActivitiesLockedScopeChange: {
+        defaultMessage:
+            'Sub-activities are locked because you switched the scope level. Please save this campaign first and edit it again to access sub-activities',
+        id: 'iaso.polio.subActivitiesLockedScopeChange',
+    },
     campaignSaveError: {
         defaultMessage: 'Campaign not saved',
         id: 'iaso.polio.campaignSaveError',
@@ -2398,10 +2427,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.chronogram',
         defaultMessage: 'Chronogram',
     },
-    notShowTestCampaigns: {
-        id: 'iaso.polio.notShowTestCampaigns',
-        defaultMessage: 'Do not show test campaigns',
-    },
     fileType: {
         id: 'iaso.polio.label.fileType',
         defaultMessage: 'File type',
@@ -2416,7 +2441,8 @@ const MESSAGES = defineMessages({
     },
     scopesWillBeDeleted: {
         id: 'iaso.polio.campaign.label.scopesWillBeDeleted',
-        defaultMessage: 'The previous scopes will be deleted',
+        defaultMessage:
+            'The previous scopes will be deleted (at the sub-activity level too)',
     },
     scopeWarningTitle: {
         id: 'iaso.polio.campaign.label.scopeWarningTitle',
@@ -2433,6 +2459,23 @@ const MESSAGES = defineMessages({
     unsavedDataWillBeLost: {
         id: 'blsq.dialog.unsavedDataWillBeLost',
         defaultMessage: 'Unsaved data will be lost',
+    },
+    onHoldRound: {
+        id: 'iaso.polio.label.onHoldRound',
+        defaultMessage: 'Round on hold',
+    },
+    disclaimer: {
+        id: 'iaso.polio.disclaimer',
+        defaultMessage:
+            'This data is confidential. Please do not share externally without RRT team approval.',
+    },
+    showSubactivities: {
+        id: 'iaso.polio.label.showSubactivities',
+        defaultMessage: 'Show sub-activities',
+    },
+    hideSubactivities: {
+        id: 'iaso.polio.label.hideSubactivities',
+        defaultMessage: 'Hide sub-activities',
     },
 });
 

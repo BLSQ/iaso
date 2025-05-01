@@ -4,7 +4,6 @@ import {
     Nullable,
 } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
 
 export type FormatForNFMArgs<T> = {
@@ -167,7 +166,8 @@ export type CampaignFieldType =
     | 'hidden'
     | 'xml-external';
 
-export type Vaccine = 'nOPV2' | 'bOPV' | 'mOPV2';
+export type Vaccine = 'nOPV2' | 'bOPV' | 'mOPV2' | 'nOPV2 & bOPV';
+export type VaccineForStock = 'nOPV2' | 'bOPV' | 'mOPV2';
 
 export type Virus = 'PV1' | 'PV2' | 'PV3' | 'cVDPV2' | 'WPV1';
 
@@ -252,7 +252,6 @@ export type RoundDateHistoryEntry = {
     previous_ended_at: string; // DATE
     started_at: string; // DATE
     ended_at: string; // DATE
-    reason?: ReasonForDelay;
     reason_for_delay: number; // an id
     user: { first_name: string; last_name: string; username: string };
     created_at: string; // DATE
@@ -260,6 +259,7 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
+    vaccine_names_extended: string;
     started_at: Nullable<string>;
     ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
@@ -301,6 +301,50 @@ export type Round = {
     campaign: Nullable<string>; // uuid
     percentage_covered_target_population: Nullable<number>;
     datelogs: RoundDateHistoryEntry[];
+    on_hold: boolean;
+};
+
+type CalendarRound = {
+    id: number;
+    number: number;
+    started_at: string;
+    ended_at: string;
+    vaccine_names: string;
+    target_population: Nullable<number>;
+    scopes: Scope[];
+};
+
+export type CalendarSubActivity = {
+    id: number;
+    name: string;
+    scopes: Scope[];
+    start_date: string;
+    end_date: string;
+    vaccine_names: string;
+    round_number: number;
+};
+
+export type CalendarCampaign = {
+    id: string;
+    epid: Nullable<string>;
+    scopes: Scope[];
+    obr_name: string;
+    vaccines: string;
+    account: number;
+    top_level_org_unit_name: string;
+    top_level_org_unit_id: number;
+    rounds: Array<CalendarRound>;
+    sub_activities: Array<CalendarSubActivity>;
+    is_preventive: boolean;
+    general_status: string;
+    grouped_campaigns: number[];
+    separate_scopes_per_round: boolean;
+
+    single_vaccines: string;
+    campaign_types: CampaignType[];
+    description: string;
+    is_test: boolean;
+    on_hold: boolean;
 };
 
 export type Campaign = {
@@ -308,6 +352,7 @@ export type Campaign = {
     created_at: string;
     updated_at: string;
     deleted_at: Nullable<string>;
+    single_vaccines?: string;
     rounds: Round[];
     org_unit: {
         id: number;
@@ -358,6 +403,7 @@ export type Campaign = {
     preparedness_sync_status: PreparednessSyncStatus;
     budget_status: Nullable<BudgetStatusDeprecated>;
     is_test: boolean;
+    on_hold: boolean;
     budget_current_state_key: string;
     budget_current_state_label: Nullable<string>;
     who_disbursed_to_co_at: Nullable<string>; // date
@@ -477,6 +523,7 @@ export type CampaignListItem = {
     grouped_campaigns: number[];
     campaign_types: CampaignType[];
     is_test: boolean;
+    on_hold?: boolean;
     is_preventive: boolean;
 };
 
@@ -490,6 +537,7 @@ export type DefaultCampaignValues = {
     gpei_coordinator?: string;
     is_preventive: boolean;
     is_test: boolean;
+    on_hold: boolean;
     rounds: Round[];
     scopes: Scope[];
     org_unit?: Shape;

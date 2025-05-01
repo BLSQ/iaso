@@ -1,5 +1,7 @@
-from iaso.test import APITestCase
+import uuid
+
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
@@ -19,8 +21,25 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         form_1 = m.Form.objects.create(name="Form 1")
         form_2 = m.Form.objects.create(name="Form 2")
-        instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit)
-        instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit)
+
+        form_version_1 = m.FormVersion.objects.create(form=form_1, version_id=1)
+        form_version_2 = m.FormVersion.objects.create(form=form_2, version_id=1)
+
+        instance_1 = m.Instance.objects.create(
+            form=form_1,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=form_version_1,
+        )
+        instance_2 = m.Instance.objects.create(
+            form=form_2,
+            org_unit=org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=form_version_2,
+        )
+
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
 
@@ -35,12 +54,15 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
+        cls.account = account
+        cls.data_source = data_source
         cls.instance_1 = instance_1
         cls.instance_2 = instance_2
         cls.org_unit = org_unit
         cls.project = project
         cls.user = user
         cls.user2 = user2
+        cls.version = version
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo", created_by=self.user)
@@ -63,6 +85,28 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
+
+    def test_list_should_not_include_change_requests_linked_to_data_source_synchronization(self):
+        self.client.force_authenticate(self.user)
+
+        version2 = m.SourceVersion.objects.create(number=2, data_source=self.data_source)
+        data_source_synchronization = m.DataSourceVersionsSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.version,
+            source_version_to_compare_with=version2,
+            account=self.account,
+            created_by=self.user,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            data_source_synchronization=data_source_synchronization,
+        )
+
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_soft_deleted_intances(self):
         change_request = m.OrgUnitChangeRequest.objects.create(

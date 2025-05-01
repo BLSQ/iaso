@@ -131,8 +131,10 @@ type PeriodType =
     | 'NO_PERIOD'
     | 'MONTH'
     | 'QUARTER'
+    | 'QUARTER_NOV'
     | 'SIX_MONTH'
     | 'YEAR'
+    | 'FINANCIAL_NOV'
     | null;
 
 type ChangeRequestModeType = 'CR_MODE_NONE' | 'CR_MODE_IF_REFERENCE_FORM';

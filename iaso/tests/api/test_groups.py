@@ -1,6 +1,7 @@
 import typing
 
 from django.utils.timezone import now
+from rest_framework import status
 
 from hat.menupermissions import models as permission
 from iaso import models as m
@@ -98,7 +99,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/<group_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/groups/292003030/")
+        response = self.client.get("/api/groups/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_groups_retrieve_ok_1(self):
@@ -113,21 +114,21 @@ class GroupsAPITestCase(APITestCase):
     def test_groups_create_without_auth(self):
         """POST /groups/ without auth: 401"""
 
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
 
         self.client.force_authenticate(self.raccoon)
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 400)
 
     def test_groups_create_ok(self):
         """POST /groups/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
+        response = self.client.post("/api/groups/", data={"name": "test group"}, format="json")
         self.assertJSONResponse(response, 201)
 
         response_data = response.json()
@@ -138,11 +139,29 @@ class GroupsAPITestCase(APITestCase):
         """POST /groups/ with missing data"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/groups/", data={}, format="json")
+        response = self.client.post("/api/groups/", data={}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
         self.assertHasError(response_data, "name")
+
+    def test_groups_create_error_same_source_ref(self):
+        """POST /groups/ with an already existing source ref"""
+        shared_source_ref = "sOuRcErEf"
+        self.group_2.source_ref = shared_source_ref
+        self.group_2.save()
+
+        self.client.force_authenticate(self.yoda)
+        data = {
+            "name": "Is this going to trigger an error?",
+            "source_ref": shared_source_ref,
+        }
+        response = self.client.post("/api/groups/", data=data, format="json")
+        self.assertContains(
+            response,
+            "This source ref is already used by another group in your default version",
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
 
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""

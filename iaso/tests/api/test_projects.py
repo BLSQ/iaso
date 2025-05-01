@@ -1,5 +1,6 @@
-from itertools import chain
 import typing
+
+from itertools import chain
 
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
@@ -119,7 +120,7 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/<project_id>: id does not exist"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/projects/292003030/")
+        response = self.client.get("/api/projects/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_projects_retrieve_ok(self):
@@ -170,7 +171,7 @@ class ProjectsAPITestCase(APITestCase):
     def test_qr_code_not_found(self):
         """GET /projects/<project_id>/qr_code/: return 404"""
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/projects/WRONG/qr_code/")
+        response = self.client.get("/api/projects/WRONG/qr_code/")
         self.assertEqual(404, response.status_code)
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):

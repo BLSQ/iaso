@@ -7,6 +7,7 @@ from iaso.models import Account, DataSource, Group, OrgUnit, OrgUnitType, Source
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign, Round, SubActivity, SubActivityScope
 
+
 BASE_URL = "/api/polio/campaigns_subactivities/"
 
 
@@ -90,12 +91,20 @@ class SubactivitiesAPITestCase(APITestCase):
             "name": "Updated SubActivity",
             "start_date": "2022-03-01",
             "end_date": "2022-03-31",
+            "im_started_at": "2022-04-30",
+            "im_ended_at": "2022-05-01",
+            "lqas_started_at": "2022-04-29",
+            "lqas_ended_at": "2022-05-02",
             "scopes": [{"group": {"name": "Updated Group", "org_units": [self.org_unit.id]}, "vaccine": "mOPV2"}],
         }
         self.client.force_authenticate(self.user)
         response = self.client.put(BASE_URL + str(self.sub_activity.id) + "/", data, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(SubActivity.objects.get(id=self.sub_activity.id).name, "Updated SubActivity")
+        self.assertEqual(SubActivity.objects.get(id=self.sub_activity.id).im_started_at, datetime.date(2022, 4, 30))
+        self.assertEqual(SubActivity.objects.get(id=self.sub_activity.id).im_ended_at, datetime.date(2022, 5, 1))
+        self.assertEqual(SubActivity.objects.get(id=self.sub_activity.id).lqas_started_at, datetime.date(2022, 4, 29))
+        self.assertEqual(SubActivity.objects.get(id=self.sub_activity.id).lqas_ended_at, datetime.date(2022, 5, 2))
 
     def test_anonymous_user_cannot_delete_sub_activity(self):
         self.client.force_authenticate(self.anon)

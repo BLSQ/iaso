@@ -1,25 +1,21 @@
 import django_filters
 
-from django.db.models import QuerySet, Prefetch
+from django.db.models import Prefetch, QuerySet
 from django.utils import timezone
-
-from hat.menupermissions import models as iaso_permission
-
-from rest_framework import filters, status, exceptions
-from rest_framework import viewsets
+from rest_framework import exceptions, filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
+from hat.menupermissions import models as iaso_permission
 from iaso.api.common import Paginator
-
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
 from plugins.polio.api.chronogram.serializers import (
+    ChronogramCreateSerializer,
     ChronogramSerializer,
     ChronogramTaskSerializer,
     ChronogramTemplateTaskSerializer,
-    ChronogramCreateSerializer,
 )
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
 
@@ -54,7 +50,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         rounds_ids = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
         return (
             Chronogram.objects.valid()
-            .filter(round_id__in=rounds_ids)
+            .filter(round_id__in=rounds_ids, round__on_hold=False)
             .select_related("round__campaign", "created_by", "updated_by")
             .prefetch_related(Prefetch("tasks", queryset=ChronogramTask.objects.valid()))
             .prefetch_related("tasks__created_by", "tasks__updated_by")
@@ -105,8 +101,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         Returns all available rounds that can be used to create a new `Chronogram`.
         """
         user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(
-            country__isnull=False,
-            is_test=False,
+            country__isnull=False, is_test=False, on_hold=False
         )
         already_linked_rounds = (
             Chronogram.objects.valid().filter(round__campaign__in=user_campaigns).values_list("round_id", flat=True)

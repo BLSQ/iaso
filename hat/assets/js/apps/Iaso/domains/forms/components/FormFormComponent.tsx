@@ -1,12 +1,13 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExternalLink,
+    InputWithInfos,
     LinkWithLocation,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
@@ -68,8 +69,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
-        useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
@@ -99,11 +98,18 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.org_unit_type_ids.value.length > 0) {
         orgUnitTypes = currentForm.org_unit_type_ids.value.join(',');
     }
-    let projects;
+    let projects: number[] = [];
     if (currentForm.project_ids.value.length > 0) {
-        projects = currentForm.project_ids.value.join(',');
+        projects = currentForm.project_ids.value;
     }
-
+    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
+        useGetOrgUnitTypesDropdownOptions({
+            projectIds: currentForm.project_ids.value,
+            // we only want to fetch the org unit types if the project ids are set, project ids is a required field
+            enabled:
+                currentForm.project_ids.value &&
+                currentForm.project_ids.value.length > 0,
+        });
     useEffect(() => {
         if (
             currentForm.period_type.value === NO_PERIOD ||
@@ -120,7 +126,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             <Grid container spacing={2} justifyContent="flex-start">
                 <Grid xs={6} item>
                     {/* Splitting the Typography to be able to align it with the checkbox */}
-
                     <InputComponent
                         keyValue="name"
                         onChange={(key, value) => setFieldValue(key, value)}
@@ -258,7 +263,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         onChange={(key, value) =>
                             setFieldValue(key, commaSeparatedIdsToArray(value))
                         }
-                        value={projects}
+                        value={projects.join(',')}
                         errors={currentForm.project_ids.errors}
                         type="select"
                         options={allProjects || []}
@@ -266,20 +271,31 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         required
                         loading={isFetchingProjects}
                     />
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="org_unit_type_ids"
-                        onChange={(key, value) =>
-                            setFieldValue(key, commaSeparatedIdsToArray(value))
-                        }
-                        value={orgUnitTypes}
-                        errors={currentForm.org_unit_type_ids.errors}
-                        type="select"
-                        options={allOrgUnitTypes || []}
-                        label={MESSAGES.orgUnitsTypes}
-                        loading={isOuTypeLoading}
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.projectsInfo)}
+                    >
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="org_unit_type_ids"
+                            onChange={(key, value) =>
+                                setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToArray(value),
+                                )
+                            }
+                            value={orgUnitTypes}
+                            errors={currentForm.org_unit_type_ids.errors}
+                            type="select"
+                            options={allOrgUnitTypes || []}
+                            label={MESSAGES.orgUnitsTypes}
+                            loading={isOuTypeLoading}
+                            disabled={
+                                !currentForm.project_ids.value ||
+                                currentForm.project_ids.value.length === 0
+                            }
+                        />
+                    </InputWithInfos>
                     {showAdvancedSettings && (
                         <>
                             <InputComponent

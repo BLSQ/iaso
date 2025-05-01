@@ -1,21 +1,22 @@
 from time import time
-from typing import Optional, List
+from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import QuerySet
-from hat.audit.audit_logger import AuditLogger
-from iaso.api.microplanning import AuditTeamSerializer
-from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.models.microplanning import Team, TeamType
-from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import PermissionDenied
+
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
-from iaso.models import Task, Profile, Project, UserRole, OrgUnit
-from iaso.api.profiles.profiles import get_filtered_profiles
+from hat.audit.audit_logger import AuditLogger
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
+from iaso.api.microplanning import AuditTeamSerializer
+from iaso.api.profiles.audit import ProfileAuditLogger
+from iaso.api.profiles.profiles import get_filtered_profiles
+from iaso.models import OrgUnit, Profile, Project, Task, UserRole
+from iaso.models.microplanning import Team, TeamType
 
 
 class TeamAuditLogger(AuditLogger):
@@ -50,9 +51,10 @@ def update_single_profile_from_bulk(
     org_units_to_be_added = []
     org_units_to_be_removed = []
 
-    has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
+    user_has_project_restrictions = hasattr(user, "iaso_profile") and bool(user.iaso_profile.projects_ids)
+    user_has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
     editable_org_unit_type_ids = (
-        user.iaso_profile.get_editable_org_unit_type_ids() if not has_perm_users_admin else set()
+        user.iaso_profile.get_editable_org_unit_type_ids() if not user_has_perm_users_admin else set()
     )
 
     if teams_id_added and not user.has_perm(permission.TEAMS):
@@ -65,7 +67,7 @@ def update_single_profile_from_bulk(
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not has_perm_users_admin:
+                if not user_has_perm_users_admin:
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_added.append(role)
@@ -74,41 +76,43 @@ def update_single_profile_from_bulk(
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not has_perm_users_admin:
+                if not user_has_perm_users_admin:
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_removed.append(role)
 
     if projects_ids_added:
-        if not has_perm_users_admin:
+        if not user_has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
-        for project_id in projects_ids_added:
-            project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == account_id:
-                projects_to_be_added.append(project)
+        if user_has_project_restrictions:
+            authorized_projects_ids = [id_ for id_ in projects_ids_added if id_ in user.iaso_profile.projects_ids]
+            projects_to_be_added = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
+        else:
+            projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
 
     if projects_ids_removed:
-        if not has_perm_users_admin:
+        if not user_has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
-        for project_id in projects_ids_removed:
-            project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == account_id:
-                projects_to_be_removed.append(project)
+        if user_has_project_restrictions:
+            authorized_projects_ids = [id_ for id_ in projects_ids_removed if id_ in user.iaso_profile.projects_ids]
+            projects_to_be_removed = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
+        else:
+            projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
 
     if location_ids_added:
         for location_id in location_ids_added:
-            if managed_org_units and (not has_perm_users_admin) and (location_id not in managed_org_units):
+            if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
             if (
-                not has_perm_users_admin
+                not user_has_perm_users_admin
                 and org_unit.org_unit_type_id
                 and editable_org_unit_type_ids
                 and not user.iaso_profile.has_org_unit_write_permission(
@@ -123,14 +127,14 @@ def update_single_profile_from_bulk(
 
     if location_ids_removed:
         for location_id in location_ids_removed:
-            if managed_org_units and (not has_perm_users_admin) and (location_id not in managed_org_units):
+            if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
             if (
-                not has_perm_users_admin
+                not user_has_perm_users_admin
                 and org_unit.org_unit_type_id
                 and editable_org_unit_type_ids
                 and not user.iaso_profile.has_org_unit_write_permission(
@@ -219,6 +223,7 @@ def profiles_bulk_update(
     children_ou: Optional[bool],
     projects: Optional[List[int]],
     user_roles: Optional[List[int]],
+    teams: Optional[List[int]],
     task: Task,
 ):
     """Background Task to bulk update profiles."""
@@ -250,12 +255,12 @@ def profiles_bulk_update(
             children_ou=children_ou,
             projects=projects,
             user_roles=user_roles,
+            teams=teams,
             managed_users_only=True,
         )
 
     if not queryset:
         raise Exception("No matching profile found")
-
     total = queryset.count()
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error

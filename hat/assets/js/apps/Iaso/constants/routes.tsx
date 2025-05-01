@@ -7,14 +7,15 @@ import { CompletenessStats } from '../domains/completenessStats';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
-import { Beneficiaries } from '../domains/entities';
-import { Details as BeneficiaryDetail } from '../domains/entities/details';
+import { Entities } from '../domains/entities';
+import { Details as EntityDetail } from '../domains/entities/details';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import { FormsStats } from '../domains/forms/stats';
+import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
@@ -317,13 +318,13 @@ export const entitiesPath = {
     baseUrl: baseUrls.entities,
     routerUrl: `${baseUrls.entities}/*`,
     permissions: [Permission.ENTITIES],
-    element: <Beneficiaries />,
+    element: <Entities />,
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
     routerUrl: `${baseUrls.entityDetails}/*`,
     permissions: [Permission.ENTITIES],
-    element: <BeneficiaryDetail />,
+    element: <EntityDetail />,
 };
 
 export const entityTypesPath = {
@@ -414,6 +415,13 @@ export const page401 = {
     permissions: [],
 };
 
+export const bonusPath = {
+    baseUrl: baseUrls.hidden,
+    routerUrl: `${baseUrls.hidden}/*`,
+    permissions: [...Object.values(Permission)],
+    element: <Welcome />,
+};
+
 export const page403 = {
     baseUrl: baseUrls.error403,
     routerUrl: baseUrls.error403,
@@ -487,4 +495,5 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,
+    bonusPath,
 ];

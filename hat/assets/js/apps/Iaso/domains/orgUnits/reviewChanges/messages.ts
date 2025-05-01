@@ -157,6 +157,24 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.addPartiallyApprovedComment',
         defaultMessage: 'Add comment for the partial approval',
     },
+    confirmAcceptChangeRequest: {
+        id: 'iaso.changeRequest.confirmAcceptChangeRequest',
+        defaultMessage:
+            'You are about to replace the original version (left) with the modified version (right).',
+    },
+    confirmOrgUnitCreationChangeRequest: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationChangeRequest',
+        defaultMessage:
+            'You are about to create new Org Unit through change request.',
+    },
+    confirmMessage: {
+        id: 'iaso.changeRequest.confirmMessage',
+        defaultMessage: 'Do you confirm those changes?',
+    },
+    confirmOrgUnitCreationMessage: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationMessage',
+        defaultMessage: 'Do you confirm the creation?',
+    },
     comment: {
         id: 'iaso.changeRequest.comment',
         defaultMessage: 'Comment',
@@ -180,6 +198,10 @@ const MESSAGES = defineMessages({
     user: {
         id: 'iaso.label.user',
         defaultMessage: 'User',
+    },
+    dataSourceVersionsSynchronization: {
+        id: 'iaso.label.dataSourceVersionsSynchronization',
+        defaultMessage: 'Data Source Versions Synchronization',
     },
     userRoles: {
         defaultMessage: 'User roles',
@@ -236,6 +258,50 @@ const MESSAGES = defineMessages({
     sourceVersion: {
         id: 'iaso.form.label.sourceVersion',
         defaultMessage: 'Source version',
+    },
+
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected change requests',
+        id: 'iaso.changeRequest.multiSelectionAction',
+    },
+
+    changeSelectedChangeRequests: {
+        id: 'iaso.changeRequest.changeSelectedChangeRequests',
+        defaultMessage: 'Edit {count} selected change requests.',
+    },
+    changeSelectedChangeRequestsLaunched: {
+        id: 'iaso.snackBar.changeSelectedChangeRequestsLaunched',
+        defaultMessage:
+            'The modifications to the change requests will take a few moments to take effect.',
+    },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
+    },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    yes: {
+        defaultMessage: 'Yes',
+        id: 'iaso.label.yes',
+    },
+    no: {
+        defaultMessage: 'No',
+        id: 'iaso.label.no',
+    },
+    bulkChangeCount: {
+        id: 'iaso.orgUnits.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} Org units',
+    },
+    searchByIds: {
+        id: 'iaso.orgUnits.searchByIds',
+        defaultMessage: 'Search by multiple IDs',
+    },
+    searchByIdsInfo: {
+        id: 'iaso.orgUnits.searchByIdsInfo',
+        defaultMessage:
+            'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
 });
 

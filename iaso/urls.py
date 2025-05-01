@@ -1,4 +1,5 @@
 import pkgutil
+
 from typing import List, Union
 
 from django.conf import settings
@@ -15,6 +16,7 @@ from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from iaso.api.profiles.profile_logs import ProfileLogsViewset
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
@@ -26,11 +28,11 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
-from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
+from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
 from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
@@ -55,18 +57,19 @@ from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
+from .api.group_sets.views import GroupSetsViewSet
 from .api.groups import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances import InstancesViewSet
+from .api.instances.instances import InstancesViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityViewSet, MobileEntityDeletedViewSet
+from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
-from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
+from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
@@ -84,6 +87,7 @@ from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
+from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.profiles.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
@@ -91,18 +95,19 @@ from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
-from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
+from .api.tasks.views import TaskSourceViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.import_export import export_workflow, import_workflow
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
-from .api.group_sets.views import GroupSetsViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
+
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -138,6 +143,7 @@ router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
 router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
+router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")
@@ -169,6 +175,10 @@ router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
+router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
+router.register(
+    r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush"
+)
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

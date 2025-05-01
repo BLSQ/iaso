@@ -1,17 +1,19 @@
 import logging
+
 from io import BytesIO
 from timeit import default_timer as timer
 from uuid import uuid4
 
-from django.db.models.fields.json import KeyTextTransform
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef, Q
+from django.db.models import Avg, Count, Exists, FloatField, OuterRef, Q, Sum
+from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
 from lxml import etree  # type: ignore
 
 from iaso.models import Instance
+
 
 logger = logging.getLogger(__name__)
 

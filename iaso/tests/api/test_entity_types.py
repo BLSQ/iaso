@@ -1,4 +1,5 @@
 import json
+
 from unittest import mock
 
 from django.core.files import File
@@ -6,7 +7,6 @@ from django.core.files import File
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
-from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityTypeAPITestCase(APITestCase):
@@ -174,7 +174,7 @@ class EntityTypeAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            "/api/entitytypes/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+            f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -197,7 +197,7 @@ class EntityTypeAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            "/api/entitytypes/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+            f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -411,6 +411,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.form_1.instances.add(instance_app_id)
         self.form_1.save()
+        self.form_1.projects.add(project)
 
         entity_with_data = Entity.objects.create(
             name="New Client",

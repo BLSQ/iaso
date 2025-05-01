@@ -1,15 +1,15 @@
-from django.utils.translation import gettext as _
-from plugins.polio.api.rounds.reasons_for_delay import (
-    ReasonForDelayFieldSerializer,
-    ReasonForDelayForCampaignSerializer,
-)
 from rest_framework import serializers
 from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
 from iaso.models import Group
+from plugins.polio.api.rounds.reasons_for_delay import (
+    ReasonForDelayFieldSerializer,
+    ReasonForDelayForCampaignSerializer,
+)
 from plugins.polio.models import RoundDateHistoryEntry
 from plugins.polio.preparedness.spreadsheet_manager import *
+
 
 logger = getLogger(__name__)
 
@@ -55,7 +55,6 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
         model = RoundDateHistoryEntry
         fields = [
             "created_at",
-            "reason",
             "reason_for_delay",
             "ended_at",
             "started_at",
@@ -88,7 +87,6 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
         model = RoundDateHistoryEntry
         fields = [
             "created_at",
-            "reason",
             "reason_for_delay",
             "ended_at",
             "started_at",
@@ -101,11 +99,6 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
     modified_by = UserSerializer(required=False, read_only=True)
     round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     reason_for_delay = ReasonForDelayFieldSerializer()
-    reason = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_reason(obj: RoundDateHistoryEntry):
-        return obj.reason_for_delay.key_name if obj.reason_for_delay else None
 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:

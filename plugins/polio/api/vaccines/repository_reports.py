@@ -1,4 +1,6 @@
 """API endpoints and serializers for vaccine repository reports."""
+
+from django.db.models import Q
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers
@@ -8,7 +10,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import Paginator
-from plugins.polio.models import VaccineStock, DestructionReport, IncidentReport
+from plugins.polio.models import VaccineStock
 
 
 class VaccineReportingFilterBackend(filters.BaseFilterBackend):
@@ -118,7 +120,7 @@ class VaccineRepositoryReportsViewSet(GenericViewSet, ListModelMixin):
         if self.request.user and self.request.user.is_authenticated:
             base_qs = base_qs.filter(account=self.request.user.iaso_profile.account)
 
-        return base_qs
+        return base_qs.filter(Q(destructionreport__isnull=False) | Q(incidentreport__isnull=False))
 
     @swagger_auto_schema(
         manual_parameters=[

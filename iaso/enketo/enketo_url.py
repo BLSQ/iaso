@@ -1,10 +1,13 @@
 import json
 import logging
 import sys
+
 from json.decoder import JSONDecodeError
 
 import requests
+
 from django.conf import settings as django_settings
+
 
 logger = logging.getLogger(__name__)
 
@@ -93,9 +96,9 @@ def handle_enketo_error(response):
     try:
         data = json.loads(response.content)
     except (ValueError, JSONDecodeError):
-        print("HTTP Error {}".format(response.status_code), response.text, sys.exc_info())
+        print(f"HTTP Error {response.status_code}", response.text, sys.exc_info())
         if response.status_code == 502:
-            raise EnketoError("Sorry, we cannot load your form right now.  Please try " "again later.")
+            raise EnketoError("Sorry, we cannot load your form right now.  Please try again later.")
         raise EnketoError()
     else:
         if "message" in data:

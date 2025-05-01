@@ -134,6 +134,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
 });
 
 export default MESSAGES;

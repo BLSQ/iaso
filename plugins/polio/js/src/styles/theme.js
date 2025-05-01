@@ -106,7 +106,6 @@ export const useStyles = makeStyles(() => ({
     addRoundButton: {
         fontSize: 10,
         height: 20,
-        marginTop: 14,
     },
     tabsContainer: {
         position: 'relative',
@@ -154,8 +153,8 @@ export const useStyles = makeStyles(() => ({
     vaccinesSelect: {
         fontSize: 12,
         position: 'relative',
-        width: '175px',
-        height: theme.spacing(5),
+        width: '160px',
+        height: theme.spacing(3),
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
         display: 'inline-flex',
@@ -164,6 +163,10 @@ export const useStyles = makeStyles(() => ({
     },
     vaccineName: {
         fontWeight: 'bold',
+        fontSize: 11,
+    },
+    vaccineCount: {
+        fontSize: 10,
     },
     roundColor: {
         marginRight: `${theme.spacing(1)} !important`,

@@ -96,6 +96,10 @@ export const useInitialUser = (
                 ),
                 errors: [],
             },
+            has_multiple_accounts: {
+                value: get(initialData, 'other_accounts', []).length > 0,
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

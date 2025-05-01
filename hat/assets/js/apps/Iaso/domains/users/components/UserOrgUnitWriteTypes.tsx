@@ -1,9 +1,8 @@
-import { Box, Stack, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Box, Stack, Typography } from '@mui/material';
+import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import MESSAGES from '../messages';
@@ -20,7 +19,9 @@ export const UserOrgUnitWriteTypes: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { data: orgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions(undefined, true);
+        useGetOrgUnitTypesDropdownOptions({
+            onlyWriteAccess: true,
+        });
 
     const userRolesOrgUnitTypeRestrictions =
         currentUser.user_roles_editable_org_unit_type_ids.value.length > 0;

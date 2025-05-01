@@ -23,12 +23,12 @@ plugins:
           # Because we have a nested nav menu, we need to duplicate it for each additional language
           nav: 
               - Accueil: index.md
-              - Utilisateurs:
+              - Guide d'utilisateur:
                 - ./pages/users/reference/iaso_concepts/iaso_concepts.md
                 - ./pages/users/reference/iaso_modules/iaso_modules.md
                 - ./pages/users/reference/iaso_web/user_guide.md
                 - ./pages/users/reference/iaso_mobile/iaso_mobile.md
-              - Dévelopeurs:
+              - Développeurs:
                 - Références:
                   # - Data model glossary:
                   - ./pages/dev/reference/data_model_glossary/data_model_glossary.md
@@ -47,7 +47,7 @@ plugins:
                   #   - ./pages/dev/reference/vector_control/vector_control.md
                   - Modèles: 
                     - ./pages/dev/reference/API/entity.md
-                - How to:
+                - Guides:
                   # - Contribute:
                   - ./pages/dev/how_to/contribute/contribute.md 
                   # - Set up a dev environment:
@@ -65,6 +65,8 @@ plugins:
 
               - En savoir plus sur IASO:
                 - Demander une démo: https://www.openiaso.com/ 
+                - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+                - Release notes: https://github.com/BLSQ/iaso/releases
                 - Bluesquare: https://www.bluesquarehub.com/
 
   - search #built-in search input in the theme
@@ -134,9 +136,11 @@ nav: # nav configures the side bar menu
       # - Write a visit on an NFC card: 
       #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
-  - More about Iaso:
-    - Get a demo: https://www.openiaso.com/ 
-    - Bluesquare: https://www.bluesquarehub.com/
+  - More about IASO:
+    - IASO website: https://www.openiaso.com/ 
+    - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+    - Release notes: https://github.com/BLSQ/iaso/releases
+    - Bluesquare website: https://www.bluesquarehub.com/
 
 
 

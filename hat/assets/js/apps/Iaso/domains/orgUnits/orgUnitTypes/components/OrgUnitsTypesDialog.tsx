@@ -1,12 +1,3 @@
-import {
-    ConfirmCancelModal,
-    IntlMessage,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
-import { isUndefined, mapValues } from 'lodash';
-import intersection from 'lodash/intersection';
-import isEmpty from 'lodash/isEmpty';
 import React, {
     FunctionComponent,
     ReactNode,
@@ -16,12 +7,21 @@ import React, {
     useRef,
     useState,
 } from 'react';
-
-import { Stack, Typography } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Stack, Typography } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    IntlMessage,
+    useSafeIntl,
+    useSkipEffectOnMount,
+    InputWithInfos,
+} from 'bluesquare-components';
+import { isUndefined, mapValues } from 'lodash';
+import intersection from 'lodash/intersection';
+import isEmpty from 'lodash/isEmpty';
+
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { InputWithInfos } from '../../../../components/InputWithInfos';
 import { useFormState } from '../../../../hooks/form';
 import { DropdownOptions } from '../../../../types/utils';
 import {
@@ -116,7 +116,9 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions(undefined, true);
+        useGetOrgUnitTypesDropdownOptions({
+            onlyWriteAccess: true,
+        });
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {

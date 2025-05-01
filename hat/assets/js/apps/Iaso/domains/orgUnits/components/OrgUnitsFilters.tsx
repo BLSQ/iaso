@@ -1,11 +1,3 @@
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import {
-    IntlFormatMessage,
-    commonStyles,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
@@ -14,23 +6,28 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    InputWithInfos,
+    IntlFormatMessage,
+    commonStyles,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 
 import DatesRange from '../../../components/filters/DatesRange';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import InputComponent from '../../../components/forms/InputComponent';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { getChipColors } from '../../../constants/chipColors';
 
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetDataSources } from '../hooks/requests/useGetDataSources';
-import { useGetGroups } from '../hooks/requests/useGetGroups';
-import { useGetOrgUnit } from './TreeView/requests';
-
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
 import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
@@ -38,6 +35,8 @@ import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DataSource } from '../types/dataSources';
 import { Search } from '../types/search';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from './TreeView/requests';
 
 type Props = {
     searches: [Search];
@@ -107,12 +106,12 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         useGetDataSources(true);
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
-    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         dataSourceId,
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypesDropdownOptions(projectId);
+        useGetOrgUnitTypesDropdownOptions({ projectId, sourceVersionId });
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
@@ -231,24 +230,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId, dataSources, filters?.version]);
 
-    useEffect(() => {
-        if (!dataSourceId) {
-            setDataSourceId(
-                filters?.source ??
-                    currentUser?.account?.default_version?.data_source?.id,
-            );
-            setSourceVersionId(
-                filters?.version ?? currentUser?.account?.default_version?.id,
-            );
-        }
-        if (dataSourceId && !sourceVersionId) {
-            const newSourceVersionId = getNewSourceVersionId(dataSourceId);
-            setSourceVersionId(newSourceVersionId);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    // USE EFFECTS
 
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];

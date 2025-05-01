@@ -1,17 +1,16 @@
 import typing
-from typing import Optional
 
-from django.db.models import BooleanField
-from django.db.models import Value, Count, TextField
+from django.db.models import BooleanField, Count, TextField, Value
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
-from rest_framework import serializers, parsers, exceptions
+from rest_framework import exceptions, parsers, serializers
 from rest_framework.fields import Field
 
-from iaso.models import Form, FormVersion, FeatureFlag, Project
-from iaso.odk import parsing
 from iaso.api.query_params import APP_ID
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
+from iaso.models import FeatureFlag, Form, FormVersion, Project
+from iaso.odk import parsing, validate_xls_form
+
+from .common import DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .serializers import AppIdSerializer
 
@@ -95,9 +94,18 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         permission_checker = HasFormPermission()
         if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
-        if self.context["request"].method == "PUT":
+        if self.context["request"].method == "PUT" or self.context["request"].method == "PATCH":
             # if update skip the rest of check
             return data
+
+        validation_errors = validate_xls_form(data["xls_file"])
+
+        if len(validation_errors):
+            # TODO: translate the error message
+            # keep xls_file empty to highlight the input in the UI
+            raise serializers.ValidationError({"xls_file": "", "xls_file_validation_errors": validation_errors})
+
+        data["xls_file"].seek(0)
 
         # handle xls to xml conversion
         try:
@@ -159,6 +167,7 @@ class FormVersionsViewSet(ModelViewSet):
     GET /api/formversions/<id>
     POST /api/formversions/
     PUT /api/formversions/<id>  -- can only update start_period and end_period
+    PATCH /api/formversions/<id>  -- can only update start_period and end_period
     """
 
     serializer_class = FormVersionSerializer
@@ -166,7 +175,7 @@ class FormVersionsViewSet(ModelViewSet):
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
-    http_method_names = ["get", "put", "post", "head", "options", "trace"]
+    http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
 
     def get_queryset(self):
         orders = self.request.query_params.get("order", "full_name").split(",")

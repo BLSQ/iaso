@@ -7,9 +7,10 @@ import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/
 import { DocumentData } from '../types';
 import { defaultStyles } from './DocumentCell';
 import { OpenButtonComponent } from './OpenButton';
+import { FORM_A_IS_LATE_COLOR } from '../constants';
 
 const LateStyle = {
-    backgroundColor: 'rgba(255,216,53,0.8)',
+    backgroundColor: FORM_A_IS_LATE_COLOR,
     color: 'inherit',
 };
 const styles: SxStyles = {

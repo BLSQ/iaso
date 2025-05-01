@@ -1,6 +1,7 @@
-from hat.menupermissions import models as menu_permissions
-from rest_framework.permissions import SAFE_METHODS
 from rest_framework import permissions
+from rest_framework.permissions import SAFE_METHODS
+
+from hat.menupermissions import models as menu_permissions
 
 
 class PolioReadPermission(permissions.BasePermission):
@@ -15,5 +16,4 @@ class PolioReadPermission(permissions.BasePermission):
                 and ((request.user.has_perm(polio) or request.user.has_perm(polio_admin)) or request.user.is_superuser)
             )
             return can_read
-        else:
-            return False
+        return False

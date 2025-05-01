@@ -1,12 +1,11 @@
 import django_filters
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit
-
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask
 
 

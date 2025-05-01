@@ -3,6 +3,7 @@ import logging
 
 import dhis2
 import requests
+
 from django.db.models import Count
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
@@ -10,7 +11,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
+from iaso.models import DataSource, ExternalCredentials, OrgUnit
 
 from ..dhis2.url_helper import clean_url
 from ..tasks.dhis2_ou_importer import get_api
@@ -18,29 +19,28 @@ from .common import ModelViewSet
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
+    credentials = serializers.SerializerMethodField()
+    default_version = serializers.SerializerMethodField()
+    projects = serializers.SerializerMethodField()
+    url = serializers.SerializerMethodField()
+    versions = serializers.SerializerMethodField()
+
     class Meta:
         model = DataSource
-
         fields = [
             "id",
             "name",
             "read_only",
+            "credentials",
             "description",
             "created_at",
             "updated_at",
+            "default_version",
+            "tree_config_status_fields",
+            "projects",
             "versions",
             "url",
-            "projects",
-            "default_version",
-            "credentials",
-            "tree_config_status_fields",
         ]
-
-    url = serializers.SerializerMethodField()
-    versions = serializers.SerializerMethodField()
-    default_version = serializers.SerializerMethodField()
-    projects = serializers.SerializerMethodField()
-    credentials = serializers.SerializerMethodField()
 
     @staticmethod
     def get_credentials(obj: DataSource):
@@ -85,8 +85,10 @@ class DataSourceSerializer(serializers.ModelSerializer):
         return ds
 
     def update(self, data_source, validated_data):
-        credentials = self.context["request"].data.get("credentials", None)
-        account = self.context["request"].user.iaso_profile.account
+        request = self.context["request"]
+
+        credentials = request.data.get("credentials")
+        account = request.user.iaso_profile.account
 
         if credentials:
             if data_source.credentials:
@@ -107,32 +109,42 @@ class DataSourceSerializer(serializers.ModelSerializer):
             new_credentials.save()
             data_source.credentials = new_credentials
 
-        name = validated_data.pop("name", None)
-        read_only = validated_data.pop("read_only", None)
-        description = validated_data.pop("description", None)
-        default_version_id = self.context["request"].data["default_version_id"]
-        projects = account.project_set.filter(id__in=self.context["request"].data.get("project_ids", None))
-        if name is not None:
+        name = validated_data.get("name")
+        if name:
             data_source.name = name
+
+        read_only = validated_data.get("read_only")
         if read_only is not None:
             data_source.read_only = read_only
-        if description is not None:
+
+        description = validated_data.get("description")
+        if description:
             data_source.description = description
-        if default_version_id is not None:
-            sourceVersion = get_object_or_404(
-                SourceVersion,
-                id=default_version_id,
-            )
-            data_source.default_version = sourceVersion
+
+        # TODO: `default_version_id` should be part of the serializer.
+        default_version_id = request.data.get("default_version_id")
+        if default_version_id:
+            source_version = get_object_or_404(data_source.versions, id=default_version_id)
+
+            new_default_version: bool = data_source.default_version_id != source_version.id
+            if new_default_version and not request.user.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
+                raise serializers.ValidationError(
+                    "User doesn't have the permission to change the default version of a data source."
+                )
+
+            data_source.default_version = source_version
         else:
             data_source.default_version = None
 
         data_source.save()
 
-        if projects is not None:
-            data_source.projects.clear()
-            for project in projects:
-                data_source.projects.add(project)
+        # TODO: `project_ids` should be part of the serializer.
+        project_ids = request.data.get("project_ids")
+        if project_ids:
+            projects = account.project_set.filter(id__in=project_ids)
+            if projects:
+                data_source.projects.set(projects, clear=True)
+
         return data_source
 
 
@@ -224,6 +236,13 @@ class DataSourcePermission(permissions.BasePermission):
         return request.user and any(request.user.has_perm(perm) for perm in write_perms)
 
 
+class DataSourceDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DataSource
+        fields = ["id", "name", "projects"]
+        read_only_fields = ["id", "name", "projects"]
+
+
 class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 
@@ -249,6 +268,7 @@ class DataSourceViewSet(ModelViewSet):
         order = self.request.GET.get("order", "name").split(",")
         filter_empty_versions = self.request.GET.get("filter_empty_versions", "false").lower() == "true"
         project_ids = self.request.GET.get("project_ids")
+        name = self.request.GET.get("name", None)
 
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
@@ -259,6 +279,8 @@ class DataSourceViewSet(ModelViewSet):
 
         if filter_empty_versions:
             sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
+        if name:
+            sources = sources.filter(name__icontains=name)
         if project_ids:
             sources = sources.filter(projects__in=project_ids.split(","))
         if linked_to:
@@ -273,3 +295,14 @@ class DataSourceViewSet(ModelViewSet):
         serializer.test_api()
 
         return Response({"test": "ok"})
+
+    @action(methods=["GET"], detail=False, serializer_class=DataSourceDropdownSerializer)
+    def dropdown(self, request, *args):
+        """To be used in dropdowns (filters)
+
+        * Read only
+        """
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

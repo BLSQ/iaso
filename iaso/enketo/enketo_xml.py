@@ -1,10 +1,10 @@
 from typing import Tuple
-import re
 
 from lxml import etree  # type: ignore
 from lxml.etree import XMLParser
 
 from iaso.utils.emoji import fix_emoji
+
 
 ENKETO_FORM_ID_SEPARATOR = "-"
 

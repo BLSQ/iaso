@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 
+import { search, searchWithForbiddenChars } from '../../constants/search';
 import formDetail from '../../fixtures/forms/detail.json';
 import possibleFields from '../../fixtures/forms/possibleFields.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
@@ -7,7 +8,6 @@ import emptyFixture from '../../fixtures/submissions/empty.json';
 import listFixture from '../../fixtures/submissions/list.json';
 import page2 from '../../fixtures/submissions/list_page2.json';
 
-import { search, searchWithForbiddenChars } from '../../constants/search';
 import { testPageFilters } from '../../support/testPageFilters';
 import { testPagination } from '../../support/testPagination';
 import { testSearchField } from '../../support/testSearchField';
@@ -115,6 +115,9 @@ const goToPage = (
     );
     cy.intercept('GET', '/api/formversions/**', {
         fixture: 'devicesownerships/list.json',
+    });
+    cy.intercept('GET', '/api/projects/**', {
+        fixture: 'projects/list.json',
     });
     const options = {
         method: 'GET',
@@ -257,7 +260,7 @@ describe('Submissions', () => {
                     getActionCol(6);
                     cy.get('@actionCol')
                         .find('button')
-                        .should('have.length', 2);
+                        .should('have.length', 1);
                 });
             });
             // This test is flakey
@@ -272,20 +275,6 @@ describe('Submissions', () => {
                             'have.attr',
                             'href',
                             '/dashboard/forms/submission/instanceId/1',
-                        );
-                });
-            });
-            it('buttons should link to linked org unit', () => {
-                cy.wait('@getSubmissions').then(() => {
-                    getActionCol(6);
-                    cy.get('@actionCol')
-                        .find('button')
-                        .eq(1)
-                        .find('a')
-                        .should(
-                            'have.attr',
-                            'href',
-                            '/dashboard/orgunits/detail/orgUnitId/1/formId/1/instanceId/1',
                         );
                 });
             });
@@ -466,13 +455,13 @@ describe('Submissions', () => {
             });
         };
         cy.wait('@getSubmissions').then(() => {
-            // TODO: test new period type day
+            // TODO: test new period type day, quarter nov an yearly nov
             const currentYear = new Date().getFullYear();
             const startYear = currentYear - 9;
             const endYear = currentYear - 8;
             testPeriod(1, `${startYear}01`, `${endYear}01`);
             testPeriod(2, `${startYear}Q1`, `${endYear}Q1`);
-            testPeriod(3, `${startYear}`, `${endYear}`);
+            testPeriod(4, `${startYear}`, `${endYear}`);
         });
     });
 

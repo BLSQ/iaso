@@ -23,6 +23,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import PermissionDenied
 
+
 _ASSIGNMENTS = "iaso_assignments"
 _COMPLETENESS = "iaso_completeness"
 _COMPLETENESS_STATS = "iaso_completeness_stats"
@@ -40,6 +41,7 @@ _MAPPINGS = "iaso_mappings"
 _MOBILE_APP_OFFLINE_SETUP = "iaso_mobile_app_offline_setup"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
+_ORG_UNITS_HISTORY = "iaso_org_units_history"
 _ORG_UNITS_READ = "iaso_org_units_read"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
@@ -56,6 +58,7 @@ _REGISTRY_READ = "iaso_registry_read"
 _REPORTS = "iaso_reports"
 _SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
+_SOURCES_CAN_CHANGE_DEFAULT_VERSION = "iaso_sources_can_change_default_version"
 _STORAGE = "iaso_storages"
 _SUBMISSIONS = "iaso_submissions"
 _SUBMISSIONS_UPDATE = "iaso_update_submission"
@@ -79,6 +82,8 @@ _POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
 _POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"
 _POLIO_VACCINE_STOCK_MANAGEMENT_READ = "iaso_polio_vaccine_stock_management_read"
 _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"
+_POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = "iaso_polio_vaccine_stock_earmarks_nonadmin"
+_POLIO_VACCINE_STOCK_EARMARKS_ADMIN = "iaso_polio_vaccine_stock_earmarks_admin"
 
 # Trypelim
 _ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
@@ -136,6 +141,7 @@ MAPPINGS = _PREFIX + _MAPPINGS
 MOBILE_APP_OFFLINE_SETUP = _PREFIX + _MOBILE_APP_OFFLINE_SETUP
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
+ORG_UNITS_HISTORY = _PREFIX + _ORG_UNITS_HISTORY
 ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
@@ -159,12 +165,15 @@ POLIO_VACCINE_STOCK_MANAGEMENT_READ = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_
 POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
 POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
+POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN
+POLIO_VACCINE_STOCK_EARMARKS_ADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_ADMIN
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
 REGISTRY_READ = _PREFIX + _REGISTRY_READ
 REPORTS = _PREFIX + _REPORTS
 SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
+SOURCES_CAN_CHANGE_DEFAULT_VERSION = _PREFIX + _SOURCES_CAN_CHANGE_DEFAULT_VERSION
 STORAGE = _PREFIX + _STORAGE
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
 SUBMISSIONS_UPDATE = _PREFIX + _SUBMISSIONS_UPDATE
@@ -246,6 +255,7 @@ class CustomPermissionSupport(models.Model):
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
+            (_ORG_UNITS_HISTORY, _("Historique des unités d'organisation")),
             (_ORG_UNITS_READ, _("Lire les unités d'organisations")),
             (_REGISTRY_WRITE, _("Editer le Registre")),
             (_REGISTRY_READ, _("Lire le Registre")),
@@ -255,6 +265,7 @@ class CustomPermissionSupport(models.Model):
             (_PAGES, _("Pages")),
             (_PROJECTS, _("Projets")),
             (_SOURCES, _("Sources")),
+            (_SOURCES_CAN_CHANGE_DEFAULT_VERSION, _("Can change the default version of a data source")),
             (_DATA_TASKS, _("Tâches")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
@@ -295,6 +306,8 @@ class CustomPermissionSupport(models.Model):
             (_POLIO_VACCINE_SUPPLY_CHAIN_WRITE, _("Polio Vaccine Supply Chain Write")),
             (_POLIO_VACCINE_STOCK_MANAGEMENT_READ, _("Polio Vaccine Stock Management Read")),
             (_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE, _("Polio Vaccine Stock Management Write")),
+            (_POLIO_VACCINE_STOCK_EARMARKS_NONADMIN, _("Polio Vaccine Stock Earmarks Non Admin")),
+            (_POLIO_VACCINE_STOCK_EARMARKS_ADMIN, _("Polio Vaccine Stock Earmarks Admin")),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),
             (_AREAS, _("Areas")),

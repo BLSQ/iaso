@@ -93,7 +93,7 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
         initialValues,
         // required to enable data refresh after save
         enableReinitialize: true,
-        // bypassing formik's onSubmit so we can re-use a custom fucntion for save and save all
+        // bypassing formik's onSubmit so we can re-use a custom function for save and save all
         onSubmit: () => undefined,
         validationSchema,
     });

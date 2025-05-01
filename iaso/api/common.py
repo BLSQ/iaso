@@ -1,24 +1,27 @@
 import enum
 import logging
+
 from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-from rest_framework.exceptions import ValidationError
+
 import pytz
+
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet, ViewSet
 from rest_framework_csv.renderers import CSVRenderer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from hat.api_import.models import APIImport
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.models.payments import PaymentStatuses
@@ -48,9 +51,11 @@ EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="get_full_name")
+
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username"]
+        fields = ["id", "first_name", "last_name", "username", "full_name"]
 
 
 def safe_api_import(key: str, fallback_status=200):
@@ -291,8 +296,7 @@ class ModelViewSet(BaseModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
             return Response({self.get_results_key(): serializer.data})
-        else:
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         """Handle ProtectedError (prevent deletion of instances when linked to protected models)"""
@@ -452,27 +456,20 @@ class GenericReadWritePerm(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             can_get = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(self.read_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(self.read_perm)
+            ) or request.user.is_superuser
             return can_get
-        elif (
+        if (
             request.method == "POST"
             or request.method == "PUT"
             or request.method == "PATCH"
             or request.method == "DELETE"
         ):
             can_post = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(self.write_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(self.write_perm)
+            ) or request.user.is_superuser
             return can_post
-        else:
-            return False
+        return False
 
 
 class Custom403Exception(APIException):

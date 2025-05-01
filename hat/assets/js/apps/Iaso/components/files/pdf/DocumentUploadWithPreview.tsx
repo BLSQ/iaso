@@ -1,20 +1,28 @@
+import React from 'react';
 import { Grid } from '@mui/material';
 import { FilesUpload, useSafeIntl } from 'bluesquare-components';
-import React from 'react';
-import { PdfPreview } from './PdfPreview';
 import MESSAGES from './messages';
+import { PdfPreview } from './PdfPreview';
 import { acceptPDF } from './utils';
 
 type DocumentUploadWithPreviewProps = {
     errors: string[] | undefined;
     onFilesSelect: (files: File[]) => void;
     document?: File[] | string;
+    disabled?: boolean;
+    scanResult?: string | undefined;
+    scanTimestamp?: number | undefined;
+    coloredScanResultIcon?: boolean;
 };
 
 const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
     errors,
     onFilesSelect,
     document,
+    disabled = false,
+    scanResult,
+    scanTimestamp,
+    coloredScanResultIcon,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -40,12 +48,18 @@ const DocumentUploadWithPreview: React.FC<DocumentUploadWithPreviewProps> = ({
                     onFilesSelect={onFilesSelect}
                     multi={false}
                     errors={errors}
+                    disabled={disabled}
                     placeholder={formatMessage(MESSAGES.document)}
                 />
             </Grid>
             {pdfUrl && (
                 <Grid item xs={2} sx={{ textAlign: 'right' }}>
-                    <PdfPreview pdfUrl={pdfUrl} />
+                    <PdfPreview
+                        pdfUrl={pdfUrl}
+                        scanResult={scanResult}
+                        scanTimestamp={scanTimestamp}
+                        coloredScanResultIcon={coloredScanResultIcon}
+                    />
                 </Grid>
             )}
         </Grid>

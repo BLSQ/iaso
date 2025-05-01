@@ -1,10 +1,13 @@
+import logging
 import operator
 import typing
 import uuid
+
 from copy import deepcopy
 from functools import reduce
 
 import django_cte
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
@@ -24,10 +27,11 @@ from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
 from .project import Project
 
-try:  # for typing
-    from .base import Account
-except:
-    pass
+
+if typing.TYPE_CHECKING:
+    from iaso.models import Account
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
@@ -123,7 +127,7 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
-    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_forms = models.ManyToManyField("Form", related_name="reference_of_org_unit_types", blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
@@ -132,7 +136,7 @@ class OrgUnitType(models.Model):
     objects = OrgUnitTypeManager()
 
     def __str__(self):
-        return "%s" % self.name
+        return f"#{self.pk} {self.name}"
 
     def as_dict(self, sub_units=True, app_id=None):
         res = {
@@ -278,7 +282,9 @@ class OrgUnit(TreeModel):
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
     )
 
-    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True, related_name="org_units"
+    )
 
     sub_source = models.TextField(null=True, blank=True)  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
@@ -294,7 +300,17 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    extra_fields = models.JSONField(default=dict)
+
+    # By default, the `extra_fields` JSONField won't save in admin with an empty dict as default value.
+    # https://stackoverflow.com/q/55147169
+    # The easiest fix would be to add a `blank=True` attribute to the field, but this triggers an error
+    # if you don't specify any value:
+    # https://code.djangoproject.com/ticket/27697
+    # The solution is to add `blank=True`, `null=False` and to implement `clean()` to programmatically
+    # supply any missing value:
+    # https://code.djangoproject.com/ticket/27697
+    # https://github.com/django/django/commit/515d3c
+    extra_fields = models.JSONField(default=dict, blank=True, null=False)
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
@@ -310,7 +326,11 @@ class OrgUnit(TreeModel):
             models.Index(fields=["created_at"]),
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
+            models.Index(fields=["org_unit_type", "version"]),
         ]
+
+    def __str__(self) -> str:
+        return f"#{self.pk} {self.name}"
 
     @property
     def source_created_at_with_fallback(self):
@@ -324,6 +344,10 @@ class OrgUnit(TreeModel):
         if self.path is not None:
             return self.ancestors().filter(org_unit_type__category="COUNTRY")
 
+    def clean(self, *args, **kwargs) -> None:
+        if self.extra_fields is None:
+            self.extra_fields = {}
+
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
         for this org unit and its children.
@@ -332,6 +356,8 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        self.clean()
+
         # work around https://code.djangoproject.com/ticket/33787
         # where we had empty Z point in the database but couldn't save the OrgUnit back.
         # because it was missing a dimension
@@ -383,9 +409,6 @@ class OrgUnit(TreeModel):
                 updated_records += child.calculate_paths(force_recalculate)
 
         return updated_records
-
-    def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
     def as_dict_for_mobile_lite(self):
         return {
@@ -476,7 +499,7 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
-            "default_image": self.default_image.as_dict() if self.default_image else None,
+            "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -485,6 +508,7 @@ class OrgUnit(TreeModel):
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+            res["version_id"] = self.version.id if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 
@@ -624,14 +648,32 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         """
         Exclude change requests when `new_reference_instances` is the only
         requested change but instances have all been soft-deleted.
+
+        We consider instances with `form_version_id`, `json`, `uuid` or
+        `form_id` set to NULL as unusable for the mobile. See IA-4124.
         """
         return self.annotate(
             annotated_non_deleted_new_reference_instances_count=Count(
                 "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
             )
         ).exclude(
-            Q(requested_fields=["new_reference_instances"]) & Q(annotated_non_deleted_new_reference_instances_count=0)
+            Q(requested_fields=["new_reference_instances"])
+            & (
+                Q(annotated_non_deleted_new_reference_instances_count=0)
+                | Q(new_reference_instances__json__isnull=True)
+                | Q(new_reference_instances__form_version_id__isnull=True)
+                | Q(new_reference_instances__uuid__isnull=True)
+                | Q(new_reference_instances__form_id__isnull=True)
+            )
         )
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
 class OrgUnitChangeRequest(models.Model):
@@ -719,6 +761,15 @@ class OrgUnitChangeRequest(models.Model):
         "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
     )
 
+    data_source_synchronization = models.ForeignKey(
+        "DataSourceVersionsSynchronization",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="change_requests",
+        help_text="The data source synchronization that generated this change request.",
+    )
+
     objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
 
     class Meta:
@@ -795,7 +846,7 @@ class OrgUnitChangeRequest(models.Model):
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":
                 continue
-            elif field_name == "new_groups":
+            if field_name == "new_groups":
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
@@ -813,7 +864,13 @@ class OrgUnitChangeRequest(models.Model):
 
         self.org_unit.save()
 
-        log_modification(initial_org_unit, self.org_unit, source=ORG_UNIT_CHANGE_REQUEST, user=user)
+        log_modification(
+            initial_org_unit,
+            self.org_unit,
+            source=ORG_UNIT_CHANGE_REQUEST,
+            user=user,
+            org_unit_change_request_id=self.pk,
+        )
 
     @classmethod
     def get_new_fields(cls) -> typing.List[str]:

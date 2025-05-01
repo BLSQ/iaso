@@ -1,7 +1,8 @@
 import typing
+
 from uuid import uuid4
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
 
@@ -36,6 +37,14 @@ class ProjectQuerySet(models.QuerySet):
                 pass
 
         raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(id__in=user_projects_ids)
 
 
 ProjectManager = models.Manager.from_queryset(ProjectQuerySet)

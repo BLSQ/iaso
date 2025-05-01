@@ -1,17 +1,17 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Divider } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    InputWithInfos,
 } from 'bluesquare-components';
 import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
-import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
+import { useAppLocales } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
@@ -39,7 +39,7 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
     nameFr,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const appLocales = useAppLocales();
     const { mutateAsync: saveReason } = useCreateEditReasonForDelay();
     const {
         apiErrors,
@@ -144,26 +144,28 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
                         />
                     )}
                 </Box>
-                {APP_LOCALES.sort((a, b) =>
-                    a.code.localeCompare(b.code, undefined, {
-                        sensitivity: 'accent',
-                    }),
-                ).map(locale => {
-                    const key = `name_${locale.code}`;
-                    return (
-                        <Box mt={2} key={key}>
-                            <InputComponent
-                                keyValue={key}
-                                onChange={onChange}
-                                value={values[key]}
-                                errors={getErrors(key)}
-                                type="text"
-                                label={MESSAGES[key]}
-                                required={locale.code === 'en'}
-                            />
-                        </Box>
-                    );
-                })}
+                {appLocales
+                    .sort((a, b) =>
+                        a.code.localeCompare(b.code, undefined, {
+                            sensitivity: 'accent',
+                        }),
+                    )
+                    .map(locale => {
+                        const key = `name_${locale.code}`;
+                        return (
+                            <Box mt={2} key={key}>
+                                <InputComponent
+                                    keyValue={key}
+                                    onChange={onChange}
+                                    value={values[key]}
+                                    errors={getErrors(key)}
+                                    type="text"
+                                    label={MESSAGES[key]}
+                                    required={locale.code === 'en'}
+                                />
+                            </Box>
+                        );
+                    })}
             </ConfirmCancelModal>
         </FormikProvider>
     );
@@ -177,6 +179,5 @@ const editReasonForDelay = makeFullModal(
 
 export {
     createReasonForDelay as CreateReasonForDelay,
-    editReasonForDelay as EditReasonForDelay
+    editReasonForDelay as EditReasonForDelay,
 };
-

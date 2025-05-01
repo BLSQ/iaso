@@ -26,6 +26,8 @@ class GPKGExport(TestCase):
             version=cls.version,
             org_unit_type=out,
             location=p,
+            opening_date="2020-01-01",
+            closed_date="2021-12-31",
         )
         polygon = MultiPolygon([Polygon([(0, 0), (0, 1), (2, 1), (1, 0), (0, 0)])])
         cls.polygon = polygon
@@ -33,10 +35,10 @@ class GPKGExport(TestCase):
             name="ou2", version=cls.version, org_unit_type=out2, parent=ou, geom=polygon, simplified_geom=polygon
         )
         m.OrgUnit.objects.create(name="ou3", version=cls.version, parent=ou2)  # no orgunit type and no geom
-        group1 = m.Group.objects.create(name="group1", source_version=cls.version)
-        group2 = m.Group.objects.create(name="group2", source_ref="my_group_ref", source_version=cls.version)
-        ou.groups.add(group1)
-        ou2.groups.set([group1, group2])
+        cls.group1 = m.Group.objects.create(name="group1", source_version=cls.version)
+        cls.group2 = m.Group.objects.create(name="group2", source_ref="my_group_ref", source_version=cls.version)
+        ou.groups.add(cls.group1)
+        ou2.groups.set([cls.group1, cls.group2])
 
     def setUp(self):
         """Make sure we have a fresh client at the beginning of each test"""
@@ -72,15 +74,25 @@ class GPKGExport(TestCase):
         self.assertEqual(root.name, "ou1")
         self.assertEqual(root.org_unit_type.name, "type1")
         self.assertEqual(root.orgunit_set.count(), 1)
-        self.assertQuerySetEqual(root.groups.all(), ["<Group: group1 | test_import  2 >"], transform=repr)
+        self.assertEqual(root.opening_date.strftime("%Y-%m-%d"), "2020-01-01")
+        self.assertEqual(root.closed_date.strftime("%Y-%m-%d"), "2021-12-31")
+
+        self.assertEqual(root.groups.count(), 1)
+        first_group = root.groups.first()
+        self.assertEqual(first_group.name, self.group1.name)
+        self.assertEqual(first_group.source_version_id, v2.id)
+
         c1 = root.orgunit_set.first()
         self.assertEqual(c1.name, "ou2")
         self.assertEqual(c1.org_unit_type.name, "type2")
-        self.assertQuerySetEqual(
-            c1.groups.all().order_by("name"),
-            ["<Group: group1 | test_import  2 >", "<Group: group2 | test_import  2 >"],
-            transform=repr,
-        )
+
+        c1_groups = c1.groups.all().order_by("name")
+        self.assertEqual(c1_groups.count(), 2)
+        self.assertEqual(c1_groups[0].name, self.group1.name)
+        self.assertEqual(c1_groups[0].source_version_id, v2.id)
+        self.assertEqual(c1_groups[1].name, self.group2.name)
+        self.assertEqual(c1_groups[1].source_version_id, v2.id)
+
         self.assertEqual(c1.geom, c1.simplified_geom)
         self.assertEqual(c1.geom, self.polygon)
         c2 = c1.orgunit_set.first()

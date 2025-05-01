@@ -1,5 +1,8 @@
-from iaso.models import OrgUnit, GroupSet, Group
-from .comparisons import as_field_types, Diff, Comparison
+from django.db.models import Q
+
+from iaso.models import Group, GroupSet, OrgUnit
+
+from .comparisons import Comparison, Diff, as_field_types
 
 
 def index_pyramid(orgunits):
@@ -19,7 +22,7 @@ class Differ:
         self.iaso_logger = logger
 
     def load_pyramid(self, version, validation_status=None, top_org_unit=None, org_unit_types=None):
-        self.iaso_logger.info("loading pyramid ", version.data_source, version, top_org_unit, org_unit_types)
+        self.iaso_logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
@@ -55,6 +58,8 @@ class Differ:
     ):
         if field_names is None:
             field_names = ["name", "geometry", "parent", "opening_date", "closed_date"]
+        elif not isinstance(field_names, list):
+            field_names = list(field_names)
         if not ignore_groups:
             groups_with_with_groupset = []
             for group_set in GroupSet.objects.filter(source_version=version):
@@ -62,11 +67,13 @@ class Differ:
                     field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
                     for group in group_set.groups.all():
                         groups_with_with_groupset.append(group.id)
-            for group in Group.objects.filter(source_version=version):
+            for group in Group.objects.filter(Q(source_version=version) | Q(source_version=version_ref)).distinct(
+                "source_ref"
+            ):
                 if group.id not in groups_with_with_groupset and group.source_ref:
                     field_names.append("group:" + group.source_ref + ":" + group.name)
 
-        self.iaso_logger.info("will compare the following fields ", field_names)
+        self.iaso_logger.info(f"will compare the following fields {field_names}")
         field_types = as_field_types(field_names)
 
         orgunits_dhis2 = self.load_pyramid(
@@ -78,9 +85,7 @@ class Differ:
             top_org_unit=top_org_unit_ref,
             org_unit_types=org_unit_types_ref,
         )
-        self.iaso_logger.info(
-            "comparing ", version_ref, "(", len(orgunits_dhis2), ")", " and ", version, "(", len(orgunit_refs), ")"
-        )
+        self.iaso_logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
         # speed how to index_by(&:source_ref)
         diffs = []
         index = 0
@@ -146,7 +151,7 @@ class Differ:
             else:
                 status = "modified"
 
-            if dhis2_value is None and ref_value is not None:
+            if not dhis2_value and ref_value:
                 status = "new"
             if not same and dhis2_value is not None and (ref_value is None or ref_value == []):
                 status = "deleted"

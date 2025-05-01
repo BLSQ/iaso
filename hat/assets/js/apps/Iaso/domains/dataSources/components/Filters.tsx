@@ -1,15 +1,12 @@
-import { Button, Grid } from '@mui/material';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
+import { Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    commonStyles,
-    useRedirectTo,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
+import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,42 +26,16 @@ type Props = {
 };
 
 export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
-    const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const { filters, filtersUpdated, handleChange, handleSearch } =
+        useFilterState({ baseUrl, params, withPagination: true });
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const [filters, setFilters] = useState({
-        projectIds: params.projectIds,
-    });
-
-    const handleChange = useCallback(
-        (key, value) => {
-            setFiltersUpdated(true);
-            setFilters({
-                ...filters,
-                [key]: value,
-            });
-        },
-        [filters],
-    );
-
-    const redirectTo = useRedirectTo();
-    const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            setFiltersUpdated(false);
-            const tempParams = {
-                ...params,
-                ...filters,
-            };
-            tempParams.page = '1';
-            redirectTo(baseUrl, tempParams);
-        }
-    }, [filtersUpdated, params, filters, redirectTo, baseUrl]);
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} sm={6} md={3}>
+            <Grid item xs={12} sm={3} md={3}>
                 <InputComponent
                     keyValue="projectIds"
                     onChange={handleChange}
@@ -78,12 +49,24 @@ export const Filters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                     multi
                 />
             </Grid>
+            <Grid item xs={12} sm={3} md={3}>
+                <InputComponent
+                    keyValue="name"
+                    onChange={handleChange}
+                    value={filters.name}
+                    type="search"
+                    label={MESSAGES.name}
+                    onEnterPressed={handleSearch}
+                    clearable
+                    multi
+                />
+            </Grid>
 
             <Grid
                 item
                 xs={12}
                 sm={6}
-                md={9}
+                md={6}
                 container
                 justifyContent="flex-end"
                 alignItems="center"

@@ -3,12 +3,11 @@ import typing
 import jsonschema
 import numpy as np
 import pandas as pd
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
-from django.utils.translation import gettext as _
 from rest_framework import status
 
 from hat.menupermissions import models as permission
@@ -17,6 +16,7 @@ from iaso import models as m
 from iaso.models import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
+
 
 name_and_id_schema = {
     "type": "object",
@@ -251,7 +251,7 @@ class ProfileAPITestCase(APITestCase):
             "dhis2_id": "",
         }
 
-        response = self.client.patch("/api/profiles/{0}/".format(jim.id), data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{jim.id}/", data=data, format="json")
 
         self.assertEqual(response.status_code, 200, response)
 
@@ -784,8 +784,8 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(email.subject, "Set up a password for your new account on iaso-test.bluesquare.org")
         self.assertEqual(email.from_email, "sender@test.com")
         self.assertEqual(email.to, ["test@test.com"])
-        self.assertIn(f"http://iaso-test.bluesquare.org", email.body)
-        self.assertIn(f"The iaso-test.bluesquare.org Team.", email.body)
+        self.assertIn("http://iaso-test.bluesquare.org", email.body)
+        self.assertIn("The iaso-test.bluesquare.org Team.", email.body)
 
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)
@@ -981,7 +981,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_by_ids(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
+        response = self.client.get("/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
@@ -989,7 +989,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_search_by_teams(self):
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/profiles/", {"teams": f"{self.team1.pk},{self.team2.pk}"})
+        response = self.client.get("/api/profiles/", {"teams": f"{self.team1.pk},{self.team2.pk}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data["profiles"]), 2)
         user_names = [item["user_name"] for item in response.data["profiles"]]
@@ -1242,7 +1242,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.post(f"/api/profiles/", data=data, format="json")
+        response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_delete_users(self):
@@ -1283,81 +1283,119 @@ class ProfileAPITestCase(APITestCase):
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
-        def test_update_user_with_malformed_phone_number(self):
-            self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
-            self.client.force_authenticate(self.jam)
-            jum = Profile.objects.get(user=self.jum)
-            data = {
-                "user_name": "unittest_user_name",
-                "password": "unittest_password",
-                "first_name": "unittest_first_name",
-                "last_name": "unittest_last_name",
-                "phone_number": "not_a_phone_number",
-                "country_code": "US",
-            }
-            response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-            self.assertNotEqual(response.status_code, 200)
-            self.assertEqual(response.data["errorKey"], "phone_number")
-            self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
+    def test_update_user_with_malformed_phone_number(self):
+        user = self.jam
+        profile_to_edit = Profile.objects.get(user=self.jum)
+
+        self.client.force_authenticate(user)
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Both phone number and country code must be provided")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "US",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number format")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "03666666",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "0387762121",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], "+33387762121")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], None)
 
     def test_update_user_projects(self):
         user = self.jam
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertEqual(user.iaso_profile.projects.count(), 0)
 
-        jum_profile = Profile.objects.get(user=self.jum)
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
+        profile_to_edit = Profile.objects.get(user=self.jum)
 
         self.client.force_authenticate(user)
 
-        # Case 1.
-        # Because `projects` is always sent by the front-end, modifying another value (here `user_name`)
-        # should be allowed without touching `projects`.
         data = {
             "user_name": "jum_new_user_name",
             "projects": [self.project.id],
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
-        self.assertEqual(jum_profile.user.username, "jum_new_user_name")
 
-        # Case 2.
-        # Changing `projects` should not be allowed for users without `permission._USERS_ADMIN`.
+        # Changing `projects` is not allowed for users without `permission._USERS_ADMIN`.
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "User without permission menupermissions.iaso_users cannot change project attributions.",
+        )
+
+        # Changing `projects` is allowed for users with `permission._USERS_ADMIN`.
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        del user._perm_cache
+        del user._user_perm_cache
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
+        self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
+
+        # Changing `projects` is not allowed for users with restrictions.
+        user.iaso_profile.projects.set([self.project])
+        del user.iaso_profile.projects_ids
         new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
         data = {
             "user_name": "jum_new_user_name",
             "projects": [new_project.id],
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.data["detail"],
-            "User with permission menupermissions.iaso_users_managed cannot change project attributions",
+            "You don't have access to the following projects: New project.",
         )
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
 
-        # Case 3.
-        # Changing `projects` should be allowed for users with `permission._USERS_ADMIN`.
-        perm = Permission.objects.get(codename=permission._USERS_ADMIN)
-        user.user_permissions.add(perm)
-        del user._perm_cache
-        del user._user_perm_cache
-        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
-        data = {
-            "user_name": "jum_new_user_name",
-            "projects": [new_project.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        # Current project restrictions of the user should be applied to the edited profile
+        # when `projects` is not explicitly specified.
+        user.iaso_profile.projects.set([self.project])
+        del user.iaso_profile.projects_ids
+        self.assertEqual(user.iaso_profile.projects.count(), 1)
+        profile_to_edit.projects.clear()
+        self.assertEqual(profile_to_edit.projects.count(), 0)
+        data = {"user_name": "jum_new_user_name"}
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), new_project)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
 
     def get_new_user_data(self):
         user_name = "audit_user"
@@ -1454,7 +1492,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(new_profile["language"], data["language"])
         self.assertEqual(new_profile["home_page"], data["home_page"])
-        self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(new_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(new_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
@@ -1501,7 +1539,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(new_profile["language"], data["language"])
         self.assertEqual(new_profile["home_page"], data["home_page"])
-        self.assertEqual(new_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(new_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(new_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, new_profile["org_units"])
         self.assertEqual(len(new_profile["user_roles"]), 1)
@@ -1525,7 +1563,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_profile["dhis2_id"], data["dhis2_id"])
         self.assertEqual(past_profile["language"], data["language"])
         self.assertEqual(past_profile["home_page"], data["home_page"])
-        self.assertEqual(past_profile["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(past_profile["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(past_profile["org_units"]), 1)
         self.assertIn(self.org_unit_from_parent_type.id, past_profile["org_units"])
         self.assertEqual(len(past_profile["user_roles"]), 1)
@@ -1601,7 +1639,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(past_value["dhis2_id"], data["dhis2_id"])
         self.assertEqual(past_value["language"], data["language"])
         self.assertEqual(past_value["home_page"], data["home_page"])
-        self.assertEqual(past_value["phone_number"], f'+{data["phone_number"]}')
+        self.assertEqual(past_value["phone_number"], f"+{data['phone_number']}")
         self.assertEqual(len(past_value["org_units"]), 1)
         self.assertIn(
             self.org_unit_from_parent_type.id,
@@ -1629,7 +1667,7 @@ class ProfileAPITestCase(APITestCase):
     def test_log_on_user_updates_own_profile(self):
         self.client.force_authenticate(self.jim)
         new_data = {"language": "fr"}
-        response = self.client.patch(f"/api/profiles/me/", data=new_data, format="json")
+        response = self.client.patch("/api/profiles/me/", data=new_data, format="json")
         self.assertJSONResponse(response, 200)
         # Log as super user to access the logs API
         self.client.force_authenticate(self.john)
@@ -1660,3 +1698,104 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(new_value["first_name"], "")
         self.assertEqual(new_value["language"], "fr")
         self.assertNotIn("password", new_value.keys())
+
+    def test_profile_list_search_by_children_ou_deep_hierarchy(self):
+        """Test that searching by children org units returns profiles from all levels of the hierarchy"""
+        # Create a deeper hierarchy
+        child_of_child = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Child of child org unit",
+            parent=self.child_org_unit,
+        )
+
+        grand_child = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Grand child org unit",
+            parent=child_of_child,
+        )
+
+        # Clear existing org units first to avoid interference
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Assign users to different levels of the hierarchy
+        self.jane.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Root
+        self.jim.iaso_profile.org_units.set([self.child_org_unit])  # Child
+        self.jam.iaso_profile.org_units.set([child_of_child])  # Child of child
+        self.jom.iaso_profile.org_units.set([grand_child])  # Grand child
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouChildren=true")
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        usernames = [p["user_name"] for p in profiles]
+
+        # Should include users from all levels
+        self.assertEqual(len(profiles), 4)
+        self.assertIn("janedoe", usernames)  # Root level
+        self.assertIn("jim", usernames)  # Child level
+        self.assertIn("jam", usernames)  # Child of child level
+        self.assertIn("jom", usernames)  # Grand child level
+
+    def test_profile_list_search_by_parent_and_children_ou(self):
+        """Test that searching with both parent and children flags returns the complete hierarchy"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Setup hierarchy
+        parent_of_root = m.OrgUnit.objects.create(
+            org_unit_type=self.parent_org_unit_type,
+            version=self.account.default_version,
+            name="Parent of root",
+        )
+        self.org_unit_from_parent_type.parent = parent_of_root
+        self.org_unit_from_parent_type.save()
+
+        # Assign users to different levels
+        self.jane.iaso_profile.org_units.set([parent_of_root])  # Parent
+        self.jim.iaso_profile.org_units.set([self.org_unit_from_parent_type])  # Current
+        self.jam.iaso_profile.org_units.set([self.child_org_unit])  # Child
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouParent=true&ouChildren=true"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        usernames = [p["user_name"] for p in profiles]
+
+        # Should include users from parent, current and child levels
+        self.assertEqual(len(profiles), 3)
+        self.assertIn("janedoe", usernames)  # Parent level
+        self.assertIn("jim", usernames)  # Current level
+        self.assertIn("jam", usernames)  # Child level
+
+    def test_profile_list_search_by_children_ou_no_duplicates(self):
+        """Test that searching by children org units doesn't return duplicate profiles
+        when a user is assigned to multiple levels"""
+        # Clear existing org units first
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # Assign a user to multiple levels in the hierarchy
+        self.jane.iaso_profile.org_units.set(
+            [
+                self.org_unit_from_parent_type,  # Root
+                self.child_org_unit,  # Child
+            ]
+        )
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/profiles/?location={self.org_unit_from_parent_type.pk}&ouChildren=true")
+
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+
+        # Should only include the user once despite being in multiple levels
+        self.assertEqual(len(profiles), 1)
+        self.assertEqual(profiles[0]["user_name"], "janedoe")

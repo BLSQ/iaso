@@ -4,10 +4,10 @@ from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import filters, permissions, status
 from rest_framework.decorators import action
 
-
 from iaso.models import Project
-from .serializers import ProjectSerializer
+
 from ..common import ModelViewSet
+from .serializers import ProjectSerializer
 
 
 class ProjectsViewSet(ModelViewSet):
@@ -29,7 +29,9 @@ class ProjectsViewSet(ModelViewSet):
     def get_queryset(self):
         """Always filter the base queryset by account"""
 
-        return Project.objects.filter(account=self.request.user.iaso_profile.account)
+        return Project.objects.filter(account=self.request.user.iaso_profile.account).filter_on_user_projects(
+            self.request.user
+        )
 
     @action(detail=True, methods=["get"])
     def qr_code(self, request, *args, **kwargs):

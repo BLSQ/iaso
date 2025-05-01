@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
@@ -9,7 +10,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -19,13 +19,18 @@ import {
     baseUrls,
 } from '../../constants/urls.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { fetchAssociatedOrgUnits } from '../../utils/requests';
-import { useCheckUserHasWritePermissionOnOrgunit } from '../../utils/usersUtils.ts';
+import * as Permission from '../../utils/permissions';
+import {
+    useCheckUserHasWritePermissionOnOrgunit,
+    useCurrentUser,
+} from '../../utils/usersUtils.ts';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
+import { userHasPermission } from '../users/utils';
+import { OrgUnitBreadcrumbs } from './components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitImages } from './components/OrgUnitImages.tsx';
+import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
-import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
 import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 import { Logs } from './history/LogsComponent.tsx';
@@ -37,6 +42,7 @@ import {
     useSaveOrgUnit,
 } from './hooks';
 import MESSAGES from './messages.ts';
+import { fetchAssociatedOrgUnits } from './requests';
 import {
     getAliasesArrayFromString,
     getLinksSources,
@@ -108,6 +114,11 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const redirectToReplace = useRedirectToReplace();
+    const currentUser = useCurrentUser();
+    const hasOrgUnitsHistoryPermission = userHasPermission(
+        Permission.ORG_UNITS_HISTORY,
+        currentUser,
+    );
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
@@ -116,9 +127,10 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
-    const showLogButtons = useCheckUserHasWritePermissionOnOrgunit(
-        currentOrgUnit?.org_unit_type_id,
-    );
+    const showLogButtons =
+        useCheckUserHasWritePermissionOnOrgunit(
+            currentOrgUnit?.org_unit_type_id,
+        ) && hasOrgUnitsHistoryPermission;
     const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
     const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
     const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
@@ -354,7 +366,6 @@ const OrgUnitDetail = () => {
             }
         }
     }, [originalOrgUnit, links, sources, isNewOrgunit, sourcesSelected]);
-
     return (
         <section className={classes.root}>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -379,7 +390,6 @@ const OrgUnitDetail = () => {
                     </Tabs>
                 )}
             </TopBar>
-
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
                 (params.tab === 'infos' ||
                     params.tab === 'map' ||
@@ -394,6 +404,13 @@ const OrgUnitDetail = () => {
                                     : classes.containerFullHeightPadded
                             }
                         >
+                            {originalOrgUnit && !isNewOrgunit && (
+                                <OrgUnitBreadcrumbs
+                                    orgUnit={originalOrgUnit}
+                                    showOnlyParents={false}
+                                    params={params}
+                                />
+                            )}
                             <OrgUnitForm
                                 orgUnit={currentOrgUnit}
                                 orgUnitTypes={orgUnitTypes}

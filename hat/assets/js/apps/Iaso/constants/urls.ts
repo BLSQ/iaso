@@ -172,22 +172,24 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: VALIDATION_CHANGE_REQUEST,
         params: [
             'accountId',
-            'parent_id',
-            'groups',
-            'org_unit_type_id',
-            'status',
             'created_at_after',
             'created_at_before',
+            'data_source_synchronization_id',
             'forms',
+            'groups',
+            'ids',
+            'org_unit_type_id',
+            'parent_id',
+            'paymentIds',
+            'paymentStatus',
+            'potentialPaymentIds',
+            'projectIds',
+            'source_version_id',
+            'status',
             'userIds',
             'userRoles',
             'withLocation',
-            'projectIds',
-            'source_version_id',
-            'paymentStatus',
             ...paginationPathParams,
-            'paymentIds',
-            'potentialPaymentIds',
         ],
     },
     orgUnitsChangeRequestDetail: {
@@ -200,11 +202,12 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'org_unit_type_id',
             'project_id',
+            'type',
             ...paginationPathParams,
         ],
     },
     registry: {
-        url: 'orgunits/registry',
+        url: 'registry',
         params: [
             'accountId',
             'orgUnitId',
@@ -321,7 +324,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     sources: {
         url: 'settings/sources/list',
-        params: ['accountId', 'projectIds', ...paginationPathParams],
+        params: ['accountId', 'projectIds', 'name', ...paginationPathParams],
     },
     sourceDetails: {
         url: 'settings/source/details',
@@ -329,7 +332,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     tasks: {
         url: 'settings/tasks',
-        params: ['accountId', ...paginationPathParams],
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'startDate',
+            'endDate',
+            'status',
+            'users',
+            'taskType',
+        ],
     },
     devices: {
         url: 'settings/devices',
@@ -337,7 +348,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     },
     groups: {
         url: 'orgunits/configuration/groups',
-        params: ['accountId', 'search', ...paginationPathParams],
+        params: [
+            'accountId',
+            'search',
+            'project_ids',
+            'dataSource',
+            'version',
+            ...paginationPathParams,
+        ],
     },
     groupSets: {
         url: 'orgunits/configuration/groupSets',
@@ -408,7 +426,16 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/duplicates/details',
         params: ['accountId', 'entities', ...paginationPathParams],
     },
-    pages: { url: 'pages', params: ['accountId', ...paginationPathParams] },
+    pages: {
+        url: 'pages',
+        params: [
+            'accountId',
+            'search',
+            'needs_authentication',
+            'userId',
+            ...paginationPathParams,
+        ],
+    },
     planning: {
         url: 'planning/list',
         params: [
@@ -510,6 +537,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
@@ -603,6 +631,7 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    hidden: string;
     error401: string;
     error403: string;
     error404: string;

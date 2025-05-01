@@ -1,10 +1,10 @@
 from django.db.models import Count
-from iaso.api.group_sets.serializers import GroupSetSerializer
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
+from iaso.api.group_sets.serializers import GroupSetSerializer
 from iaso.models import DataSource, Group, Project, SourceVersion
 
 from .common import HasPermission, ModelViewSet, TimestampField
@@ -59,26 +59,44 @@ class GroupSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
+    def validate(self, attrs):
+        default_version = self._fetch_user_default_source_version()
+        if "source_ref" in attrs:
+            # Check if the source_ref is already used by another group
+            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
+            if potential_group.exists():
+                raise serializers.ValidationError(
+                    {"source_ref": "This source ref is already used by another group in your default version"}
+                )
+
+        return super().validate(attrs)
+
     def create(self, validated_data):
+        default_version = self._fetch_user_default_source_version()
+        validated_data["source_version"] = default_version
+        return super().create(validated_data)
+
+    def _fetch_user_default_source_version(self):
         profile = self.context["request"].user.iaso_profile
         version = profile.account.default_version
-
         if version is None:
             raise serializers.ValidationError("This account has no default version")
-
-        validated_data["source_version"] = version
-
-        return super().create(validated_data)
+        return version
 
 
 class GroupDropdownSerializer(serializers.ModelSerializer):
+    label = serializers.SerializerMethodField()
+
+    def get_label(self, obj):
+        datasource = obj.source_version.data_source.name
+        version_number = obj.source_version.number
+        name = obj.name
+        return f"{name} ({datasource} - {version_number})"
+
     class Meta:
         model = Group
-        fields = [
-            "id",
-            "name",
-        ]
-        read_only_fields = ["id", "name"]
+        fields = ["id", "name", "label"]
+        read_only_fields = ["id", "name", "label"]
 
 
 class GroupsViewSet(ModelViewSet):
@@ -109,13 +127,12 @@ class GroupsViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         queryset = Group.objects.filter(
             source_version__data_source__projects__in=profile.account.project_set.all()
-        ).prefetch_related("group_sets")
+        ).select_related("source_version", "source_version__data_source")
+        queryset = queryset.prefetch_related("group_sets")
         return queryset
 
-    def filter_queryset(self, queryset):
+    def filter_queryset(self, queryset, allow_anon=False):
         light = self.request.GET.get("light", False)
-        queryset = queryset.prefetch_related("source_version")
-        queryset = queryset.prefetch_related("source_version__data_source")
         if not light:
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
@@ -125,7 +142,8 @@ class GroupsViewSet(ModelViewSet):
             queryset = queryset.filter(source_version=version)
         elif data_source_id:
             queryset = queryset.filter(source_version__data_source__id=data_source_id)
-        else:
+        # if allow_anon is True, versions and projects are handled manually outside of this method
+        elif not allow_anon:
             default_version = self.request.GET.get("defaultVersion", None)
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
@@ -135,7 +153,7 @@ class GroupsViewSet(ModelViewSet):
                 versions = SourceVersion.objects.filter(data_source__projects__in=project_ids.split(","))
                 queryset = queryset.filter(source_version__in=versions)
 
-        block_of_countries = self.request.GET.get("blockOfCountries", None)
+        block_of_countries = self.request.GET.get("blockOfCountries", None) == "true"
         if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
 
@@ -164,18 +182,22 @@ class GroupsViewSet(ModelViewSet):
         if user and user.is_authenticated:
             account = user.iaso_profile.account
             # Filter on version ids (linked to the account)""
-            default_version = self.request.query_params.get("defaultVersion", account.default_version.id)
-            versions = SourceVersion.objects.filter(data_source__projects__account=account, pk=default_version)
+            default_version_id = account.default_version.id
+            versions = SourceVersion.objects.filter(data_source__projects__account=account)
 
         else:
             # this check if project need auth
             project = Project.objects.get_for_user_and_app_id(user, app_id)
-            default_version = self.request.query_params.get("defaultVersion", project.account.default_version.id)
-            versions = SourceVersion.objects.filter(data_source__projects=project, pk=default_version)
+            default_version_id = project.account.default_version.id
+            versions = SourceVersion.objects.filter(data_source__projects=project)
+
+        # Apply defaultVersion filter that we skip in filter_queryset when allowing anon users
+        if self.request.GET.get("defaultVersion", None) == "true":
+            versions = versions.filter(pk=default_version_id)
 
         groups = Group.objects.filter(source_version__in=versions).distinct()
 
-        queryset = self.filter_queryset(groups)
+        queryset = self.filter_queryset(groups, allow_anon=True)
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)

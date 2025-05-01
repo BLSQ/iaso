@@ -11,7 +11,9 @@ MODULE_PERMISSIONS = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
+        "iaso_org_units_history",
         "iaso_sources",
+        "iaso_sources_can_change_default_version",
         "iaso_write_sources",
         "iaso_links",
         "iaso_data_tasks",
@@ -49,12 +51,12 @@ MODULE_PERMISSIONS = {
         "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
     ],
     "REGISTRY": [
         "iaso_registry_write",
         "iaso_registry_read",
-        "iaso_org_unit_change_request_review",
-        "iaso_org_unit_change_request_configurations",
     ],
     "PAYMENTS": ["iaso_payments"],
     "COMPLETENESS_PER_PERIOD": ["iaso_completeness"],
@@ -96,6 +98,10 @@ MODULE_PERMISSIONS = {
         "iaso_trypelim_vectorcontrol",
         "iaso_trypelim_vectorcontrolupload",
     ],
+    "DATA_VALIDATION": [
+        "iaso_org_unit_change_request_review",
+        "iaso_org_unit_change_request_configurations",
+    ],
 }
 
 MODULES = [
@@ -106,15 +112,36 @@ MODULES = [
     },
     {"name": "Default", "codename": "DEFAULT", "fr_name": "Par défaut"},
     {"name": "DHIS2 mapping", "codename": "DHIS2_MAPPING", "fr_name": "Mappage DHIS2"},
-    {"name": "Embedded links", "codename": "EMBEDDED_LINKS", "fr_name": "Liens intégrés"},
+    {
+        "name": "Embedded links",
+        "codename": "EMBEDDED_LINKS",
+        "fr_name": "Liens intégrés",
+    },
     {"name": "Entities", "codename": "ENTITIES", "fr_name": "Entités"},
-    {"name": "External storage", "codename": "EXTERNAL_STORAGE", "fr_name": "Stockage externe"},
+    {
+        "name": "External storage",
+        "codename": "EXTERNAL_STORAGE",
+        "fr_name": "Stockage externe",
+    },
     {"name": "Planning", "codename": "PLANNING", "fr_name": "Planification"},
     {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
     {"name": "Registry", "codename": "REGISTRY", "fr_name": "Registre"},
     {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
-    {"name": "Completeness per Period", "codename": "COMPLETENESS_PER_PERIOD", "fr_name": "Complétude par période"},
-    {"name": "Trypelim project", "codename": "TRYPELIM_PROJECT", "fr_name": "Projet Trypelim"},
+    {
+        "name": "Completeness per Period",
+        "codename": "COMPLETENESS_PER_PERIOD",
+        "fr_name": "Complétude par période",
+    },
+    {
+        "name": "Trypelim project",
+        "codename": "TRYPELIM_PROJECT",
+        "fr_name": "Projet Trypelim",
+    },
+    {
+        "name": "Data validation",
+        "codename": "DATA_VALIDATION",
+        "fr_name": "Validation des données",
+    },
 ]
 
 FEATUREFLAGES_TO_EXCLUDE = {
@@ -128,6 +155,13 @@ FEATUREFLAGES_TO_EXCLUDE = {
         "WRITE_ON_NFC_CARDS",
     ],
 }
+
+DEFAULT_ACCOUNT_FEATURE_FLAGS = [
+    "SHOW_PAGES",
+    "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+    "SHOW_LINK_INSTANCE_REFERENCE",
+    "SHOW_HOME_ONLINE",
+]
 
 PERMISSIONS_PRESENTATION = {
     "forms": [
@@ -143,13 +177,15 @@ PERMISSIONS_PRESENTATION = {
         "iaso_org_units_read",
         "iaso_org_unit_types",
         "iaso_org_unit_groups",
-        "iaso_sources",
-        "iaso_write_sources",
-        "iaso_links",
-        "iaso_registry_read",
-        "iaso_registry_write",
+        "iaso_org_units_history",
+    ],
+    "data_validation": [
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
+    ],
+    "registry": [
+        "iaso_registry_read",
+        "iaso_registry_write",
     ],
     "entities": [
         "iaso_entities",
@@ -177,6 +213,8 @@ PERMISSIONS_PRESENTATION = {
         "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
     ],
     "trypelim": [
         "iaso_trypelim_anonymous",
@@ -226,36 +264,59 @@ PERMISSIONS_PRESENTATION = {
         "iaso_teams",
         "iaso_modules",
         "iaso_mobile_app_offline_setup",
+        "iaso_sources",
+        "iaso_sources_can_change_default_version",
+        "iaso_write_sources",
+        "iaso_links",
     ],
 }
 
 READ_EDIT_PERMISSIONS = {
-    "iaso_submission_permissions": {"read": "iaso_submissions", "write": "iaso_update_submission"},
-    "iaso_org_unit_permissions": {"read": "iaso_org_units_read", "write": "iaso_org_units"},
-    "iaso_registry_permissions": {"read": "iaso_registry_read", "write": "iaso_registry_write"},
+    "iaso_submission_permissions": {
+        "read": "iaso_submissions",
+        "write": "iaso_update_submission",
+    },
+    "iaso_org_unit_permissions": {
+        "read": "iaso_org_units_read",
+        "write": "iaso_org_units",
+    },
+    "iaso_registry_permissions": {
+        "read": "iaso_registry_read",
+        "write": "iaso_registry_write",
+    },
     "iaso_source_permissions": {"read": "iaso_sources", "write": "iaso_write_sources"},
     "iaso_entity_duplicate_permissions": {
         "read": "iaso_entity_duplicates_read",
         "write": "iaso_entity_duplicates_write",
     },
-    "iaso_planning_permissions": {"read": "iaso_planning_read", "write": "iaso_planning_write"},
+    "iaso_planning_permissions": {
+        "read": "iaso_planning_read",
+        "write": "iaso_planning_write",
+    },
     "iaso_page_permissions": {"read": "iaso_pages", "write": "iaso_page_write"},
-    "iaso_polio_budget_permissions": {"read": "iaso_polio_budget", "write": "iaso_polio_budget_admin"},
+    "iaso_polio_budget_permissions": {
+        "read": "iaso_polio_budget",
+        "write": "iaso_polio_budget_admin",
+    },
     "iaso_polio_chronogram_permissions": {
         "read": "iaso_polio_chronogram_restricted_write",
         "write": "iaso_polio_chronogram",
     },
     "iaso_polio_vaccine_supply_chain_permissions": {
-        "read": "iaso_polio_vaccine_supply_chain_read",
-        "write": "iaso_polio_vaccine_supply_chain_write",
+        "no_admin": "iaso_polio_vaccine_supply_chain_read",
+        "admin": "iaso_polio_vaccine_supply_chain_write",
     },
     "iaso_polio_vaccine_stock_management_permissions": {
-        "read": "iaso_polio_vaccine_stock_management_read",
-        "write": "iaso_polio_vaccine_stock_management_write",
+        "no_admin": "iaso_polio_vaccine_stock_management_read",
+        "admin": "iaso_polio_vaccine_stock_management_write",
     },
     "iaso_polio_vaccine_authorization_permissions": {
         "no_admin": "iaso_polio_vaccine_authorizations_read_only",
         "admin": "iaso_polio_vaccine_authorizations_admin",
+    },
+    "iaso_polio_vaccine_stock_earmarks_permissions": {
+        "no_admin": "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "admin": "iaso_polio_vaccine_stock_earmarks_admin",
     },
     "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
 }

@@ -11,11 +11,12 @@ import {
     Radio,
     SearchInput,
     Select,
+    TextArea,
     TextInput,
     translateOptions,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactNode, useMemo, useState } from 'react';
+import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
 import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {
@@ -36,6 +37,7 @@ export type InputComponentType =
     | 'number'
     | 'search'
     | 'select'
+    | 'textarea'
     | 'text';
 
 export type NumberInputOptions = {
@@ -62,7 +64,10 @@ export type InputComponentProps = {
     value?: any;
     errors?: string[];
     onChange?: (key: string, value: any, countryData?: BaseCountryData) => void;
-
+    onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+    onFocus?:
+        | FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
+        | undefined;
     options?: any[];
     disabled?: boolean;
     multiline?: boolean;
@@ -104,6 +109,7 @@ export type InputComponentProps = {
     returnFullObject?: boolean;
     dataTestId?: string;
     placeholder?: string;
+    debounceTime?: number;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -130,6 +136,8 @@ const InputComponent: React.FC<InputComponentProps> = ({
     value,
     errors = [],
     onChange = () => null,
+    onBlur,
+    onFocus,
     options = [],
     disabled = false,
     multiline = false,
@@ -158,6 +166,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     phoneInputOptions = {},
     freeSolo = false,
     returnFullObject = false,
+    debounceTime = 0,
     dataTestId,
     placeholder,
 }) => {
@@ -191,6 +200,21 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onChange={input => {
                             onChange(keyValue, input);
                         }}
+                        dataTestId={dataTestId}
+                    />
+                );
+            case 'textarea':
+                return (
+                    <TextArea
+                        value={inputValue}
+                        label={labelText}
+                        errors={errors}
+                        required={required}
+                        disabled={disabled}
+                        onChange={input => {
+                            onChange(keyValue, input);
+                        }}
+                        debounceTime={debounceTime}
                         dataTestId={dataTestId}
                     />
                 );
@@ -230,6 +254,8 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         setFieldError={setFieldError}
                         dataTestId={dataTestId}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
                         {...localizedNumberOptions}
                     />
                 );

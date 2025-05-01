@@ -3,8 +3,10 @@ import logging
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
-from iaso.models import Project, FeatureFlag, Form
+from iaso.models import FeatureFlag, Form, Project
+
 from ..projects import ProjectSerializer
+
 
 logger = logging.getLogger(__name__)
 

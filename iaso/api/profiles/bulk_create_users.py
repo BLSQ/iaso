@@ -4,26 +4,26 @@ import io
 import pandas as pd
 import phonenumbers
 
-from drf_yasg.utils import swagger_auto_schema, no_body
-from rest_framework import serializers, permissions
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
-from django.contrib.auth.models import User, Permission, Group
+from django.contrib.auth.models import Group, Permission, User
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import FileResponse
+from drf_yasg.utils import no_body, swagger_auto_schema
+from rest_framework import permissions, serializers
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 
 from hat.audit.models import PROFILE_API_BULK
 from hat.menupermissions import models as permission
 from iaso.api.profiles.audit import ProfileAuditLogger
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, OrgUnitType, UserRole, Project
+from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, UserRole
 from iaso.utils.module_permissions import account_module_permissions
+
 
 BULK_CREATE_USER_COLUMNS_LIST = [
     "username",
@@ -128,6 +128,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
             has_geo_limit = True
 
+        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
+            request.user.iaso_profile.projects_ids
+        )
+
         if request.FILES:
             # Retrieve and check the validity and format of the CSV File
             try:
@@ -179,8 +183,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         except ValidationError:
                             raise serializers.ValidationError(
                                 {
-                                    "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                                    "again.".format(i)
+                                    "error": f"Operation aborted. Invalid Email at row : {i}. Fix the error and try "
+                                    "again."
                                 }
                             )
                     try:
@@ -233,18 +237,18 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
-                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                            "You don't have access to this orgunit".format(ou, i + 1)
+                                            "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
+                                            "You don't have access to this orgunit"
                                         }
                                     )
                                 org_units_list.add(ou)
                             except ObjectDoesNotExist:
                                 raise serializers.ValidationError(
                                     {
-                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
                                         "Fix the error "
                                         "and try "
-                                        "again.".format(ou, i + 1)
+                                        "again."
                                     }
                                 )
                         else:
@@ -263,24 +267,24 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             if org_unit.count() > 1:
                                 raise serializers.ValidationError(
                                     {
-                                        "error": "Operation aborted. Multiple OrgUnits with `name` or `source_ref`: {0} at row : {1}."
-                                        "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                        "error": f"Operation aborted. Multiple OrgUnits with `name` or `source_ref`: {ou} at row : {i + 1}."
+                                        "Use Orgunit ID instead of name."
                                     }
                                 )
                             if not org_unit.count():
                                 raise serializers.ValidationError(
                                     {
-                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. Fix "
                                         "the error "
                                         "and try "
-                                        "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                                        "again. Use Orgunit ID instead of name."
                                     }
                                 )
                             if org_unit[0] not in importer_access_ou:
                                 raise serializers.ValidationError(
                                     {
-                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                        "You don't have access to this orgunit".format(ou, i + 1)
+                                        "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
+                                        "You don't have access to this orgunit"
                                     }
                                 )
                             org_units_list.add(org_unit[0])
@@ -319,7 +323,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if Profile.objects.filter(dhis2_id=dhis2_id).count() > 0:
                             raise serializers.ValidationError(
                                 {
-                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : { i + 1}. Fix "
+                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : {i + 1}. Fix "
                                     "the error "
                                     "and try "
                                     "again"
@@ -341,55 +345,57 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except (IndexError, ValueError):
                         user_roles = None
                     if user_roles:
-                        user_roles = user_roles.split(value_splitter)
+                        user_roles = [role.strip() for role in user_roles.split(value_splitter) if role]
                         # check if the roles exists in the account of the request user
                         # and add it to user_roles_list
                         for role in user_roles:
-                            if role != "":
-                                role = role[1::] if role[:1] == " " else role
-                                try:
-                                    role_instance = UserRole.objects.get(
-                                        account=importer_account,
-                                        group__name=f"{importer_account.id}_{role}",
-                                    )
-                                    user_roles_list.append(role_instance)
-                                    # get the user group linked to the userrole
-                                    user_group_item = Group.objects.get(pk=role_instance.group.id)
-                                    user_groups_list.append(user_group_item)
+                            try:
+                                role_instance = UserRole.objects.get(
+                                    account=importer_account,
+                                    group__name=f"{importer_account.id}_{role}",
+                                )
+                                user_roles_list.append(role_instance)
+                                # get the user group linked to the userrole
+                                user_group_item = Group.objects.get(pk=role_instance.group.id)
+                                user_groups_list.append(user_group_item)
 
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Error. User Role: {role}, at row {i + 1} does not exists: Fix "
-                                            "the error and try again."
-                                        }
-                                    )
+                            except ObjectDoesNotExist:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": f"Error. User Role: {role}, at row {i + 1} does not exists: Fix "
+                                        "the error and try again."
+                                    }
+                                )
                     try:
                         projects = row[csv_indexes.index("projects")]
                     except (IndexError, ValueError):
                         projects = None
                     if projects:
-                        projects = projects.split(value_splitter)
-                        for project in projects:
-                            if project != "":
-                                project = project[1::] if project[:1] == " " else project
-                                try:
-                                    project_instance = Project.objects.get(account=importer_account, name=project)
-                                    projects_instance_list.append(project_instance)
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Error. User Project: {project}, at row {i + 1} does not exists: Fix "
-                                            "the error and try again."
-                                        }
-                                    )
+                        project_names = [name.strip() for name in projects.split(value_splitter) if name]
+                        if user_has_project_restrictions:
+                            projects_instance_list = Project.objects.filter(
+                                name__in=project_names,
+                                account=importer_account,
+                            ).filter_on_user_projects(request.user)
+                            # If none of the submitted projects is a subset of the user's project restrictions,
+                            # fallback to the same restrictions as the user.
+                            if not projects_instance_list.exists():
+                                projects_instance_list = Project.objects.filter(
+                                    account=importer_account
+                                ).filter_on_user_projects(request.user)
+                        else:
+                            projects_instance_list = Project.objects.filter(
+                                name__in=project_names, account=importer_account
+                            )
+
                     try:
-                        user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
+                        user_permissions = [
+                            perm.strip() for perm in row[csv_indexes.index("permissions")].split(value_splitter) if perm
+                        ]
                         current_account = request.user.iaso_profile.account
                         module_permissions = self.module_permissions(current_account)
                         for perm in user_permissions:
-                            perm = perm[1::] if perm[:1] == " " else perm
-                            if perm and perm in module_permissions:
+                            if perm in module_permissions:
                                 try:
                                     perm = Permission.objects.get(codename=perm)
                                     user.user_permissions.add(perm)
@@ -397,10 +403,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 except ObjectDoesNotExist:
                                     raise serializers.ValidationError(
                                         {
-                                            "error": "Operation aborted. Invalid permission {0} at row : {1}. Fix "
+                                            "error": f"Operation aborted. Invalid permission {perm} at row : {i + 1}. Fix "
                                             "the error "
                                             "and try "
-                                            "again".format(perm, i + 1)
+                                            "again"
                                         }
                                     )
                     except ValueError:

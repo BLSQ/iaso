@@ -1,15 +1,9 @@
 """This module provides various utils and helpers for IASO"""
 
-from datetime import datetime
-from typing import Dict, Any, TextIO, List, Optional, Iterable
+from typing import Any, Dict, Iterable, List, Optional
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
-
-
-def timestamp_to_datetime(timestamp):
-    date = datetime.fromtimestamp(timestamp)
-    return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):
@@ -84,6 +78,7 @@ def slugify_underscore(filename):
 
 import re
 
+
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
 
 
@@ -133,3 +128,7 @@ def is_mobile_request(request):
     user_agent = request.META.get("HTTP_USER_AGENT", "")
     # Check if the User-Agent string contains keywords typical of mobile devices
     return any(mobile in user_agent.lower() for mobile in ["mobile", "android", "iphone", "ipad", "windows phone"])
+
+
+def is_multi_account_user(user):
+    return hasattr(user, "tenant_user")

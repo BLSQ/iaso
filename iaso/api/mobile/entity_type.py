@@ -96,7 +96,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         user = self.request.user
 
         if not user or not user.is_authenticated:
-            raise AuthenticationFailed(f"User not authenticated")
+            raise AuthenticationFailed("User not authenticated")
 
         queryset = EntityType.objects.filter(account=user.iaso_profile.account)
 
@@ -109,7 +109,8 @@ class MobileEntityTypesViewSet(ModelViewSet):
             if project.account is None:
                 raise NotFound(f"Project Account is None for app_id {app_id}")
 
-            queryset = queryset.filter(account=project.account)
+            # queryset = queryset.filter(account=project.account)
+            queryset = queryset.filter(reference_form__projects=project)
 
         except Project.DoesNotExist:
             raise NotFound(f"Project Not Found for app_id {app_id} and User")

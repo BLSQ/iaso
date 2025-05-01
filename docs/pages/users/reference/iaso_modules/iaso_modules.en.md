@@ -14,7 +14,10 @@ IASO is organized according to Modules, which are groups of functionalities whic
 - Visualize on a dynamic map data collected at the different levels of the hierarchy (e.g. Country, Region, District, facility)
 - Validate changes on Organization Units (Name, Type, GPS coordinates, opening/closing dates) submitted from the field via the mobile application
 - Validate data submitted via data collection forms that are linked to specific Organization Units types, called "Reference forms"
+
+##Payments
 - Based on the validated proposed changes per user, generate payment lots to send to Mobile Money provider
+- Indicate the status of the payments lots (pending, sent to Mobile Money provider, etc.)
 
 ## DHIS2 bi-directional integration 
 - Manage the mappings with DHIS2 data elements for import/export of data
@@ -28,4 +31,4 @@ IASO is organized according to Modules, which are groups of functionalities whic
 - Entities are items that can move from a geography to another, for instance a person, a pallet of goods, or other
 - Entities can be created from the mobile application and then managed from the web application
 - Find the entities duplicates by using the web application interface and make the decision to merge two similar entities or not
-- Assign workflows to entity types, enabling specific data collection forms to open according to previsouly given answers
+- Assign workflows to entity types, enabling specific data collection forms to open according to previously given answers

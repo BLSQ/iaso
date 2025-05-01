@@ -1,13 +1,13 @@
+from django.contrib.auth.models import Group, Permission
+from django.db.models import Q, QuerySet
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
 
-from django.contrib.auth.models import Permission, Group
-from django.db.models import Q, QuerySet
-from django.shortcuts import get_object_or_404
-
-from .common import TimestampField, ModelViewSet
 from hat.menupermissions import models as permission
-from iaso.models import Project, OrgUnitType, UserRole
+from iaso.models import OrgUnitType, Project, UserRole
+
+from .common import ModelViewSet, TimestampField
 
 
 class HasUserRolePermission(permissions.BasePermission):

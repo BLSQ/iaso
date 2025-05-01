@@ -131,6 +131,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.orgUnits_read',
         defaultMessage: 'Organisation units management - Read only',
     },
+    iaso_org_units_history: {
+        id: 'iaso.permissions.org_units_history',
+        defaultMessage: 'Organisation units history',
+    },
+    iaso_org_units_history_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_units_history',
+        defaultMessage:
+            'Allows the user to retrieve a former version of an Organisation Unit',
+    },
     iaso_org_units_read_tooltip: {
         id: 'iaso.permissions.tooltip.orgUnits_read',
         defaultMessage: 'See and read organisation units and pyramids',
@@ -160,7 +169,6 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.update_submission',
         defaultMessage: 'View and edit the forms submissions',
     },
-
     iaso_users: {
         id: 'iaso.permissions.users',
         defaultMessage: 'User management - Admin',
@@ -237,7 +245,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
         defaultMessage:
-            'Manage entity types and workflows associated. Entity types can be "Beneficiaries", "Mosquito nets", "Medicines" etc.',
+            'Manage entity types and workflows associated. Entity types can be"Mosquito nets", "Medicines" etc.',
     },
     iaso_dhis2_link: {
         id: 'iaso.permissions.iaso_dhis2_link',
@@ -377,6 +385,24 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read',
         defaultMessage: 'Polio vaccine supply chain - Read',
     },
+    iaso_polio_vaccine_stock_earmarks_nonadmin: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_nonadmin',
+        defaultMessage: 'Polio vaccine stock earmarks - Non-admin',
+    },
+    iaso_polio_vaccine_stock_earmarks_nonadmin_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_nonadmin_tooltip',
+        defaultMessage:
+            'See summary of vaccine stock earmarks, by country and vaccine',
+    },
+    iaso_polio_vaccine_stock_earmarks_admin: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_admin',
+        defaultMessage: 'Polio vaccine stock earmarks - Admin',
+    },
+    iaso_polio_vaccine_stock_earmarks_admin_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_earmarks_admin_tooltip',
+        defaultMessage: 'Edit and add vaccine stock earmarks data',
+    },
+
     iaso_polio_vaccine_supply_chain_read_tooltip: {
         id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read_tooltip',
         defaultMessage:
@@ -539,12 +565,22 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage: 'Manage polio notifications - Read and Write',
     },
     iaso_org_unit_change_request_review: {
-        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
+        id: 'iaso.permissions.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
+    },
+    iaso_org_unit_change_request_review_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
+        defaultMessage:
+            'View, approve or reject proposed Org unit change request',
     },
     iaso_org_unit_change_request_configurations: {
         id: 'iaso.permissions.iaso_org_unit_change_request_configurations',
         defaultMessage: 'Org unit change request configurations',
+    },
+    iaso_org_unit_change_request_configurations_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_configurations',
+        defaultMessage:
+            'View and edit configuration for editable fields per org unit types',
     },
     iaso_polio_vaccine_stock_management_read: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',
@@ -609,7 +645,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     no_admin: {
         id: 'iaso.permissions.readEdit.no_admin',
-        defaultMessage: 'No-admin',
+        defaultMessage: 'Non-admin',
     },
     all: {
         id: 'iaso.permissions.readEdit.all',
@@ -724,6 +760,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Admin and no-admin permission on managing polio vaccine authorizations',
     },
+    iaso_polio_vaccine_stock_earmarks_permissions: {
+        id: 'iaso.permissions.readEdit.polio_vaccine_stock_earmarks_permissions',
+        defaultMessage: 'Polio vaccine stock earmarks',
+    },
+    iaso_polio_vaccine_stock_earmarks_permissions_tooltip: {
+        id: 'iaso.permissions.readEdit.tooltip.polio_vaccine_stock_earmarks_permissions',
+        defaultMessage: 'Manage vaccine stock earmarks',
+    },
     iaso_user_permissions: {
         id: 'iaso.permissions.readEdit.user_permissions',
         defaultMessage: 'User management',
@@ -732,6 +776,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.readEdit.tooltip.user_permissions',
         defaultMessage:
             'Managed (Edition rights limited to the users linked to the children org units of the current user.) and admin permissions on managing users of the account: create or edit users (user name, email, password, permissions/location/language/project/user role)',
+    },
+    iaso_sources_can_change_default_version: {
+        id: 'iaso.permissions.sourcesCanChangeDefaultVersion',
+        defaultMessage: 'Edit geographic default data source',
+    },
+    iaso_sources_can_change_default_version_tooltip: {
+        id: 'iaso.permissions.sourcesCanChangeDefaultVersionTooltip',
+        defaultMessage:
+            'Allows to change the default version of a geo data source',
     },
 });
 

@@ -8,25 +8,31 @@ import {
     FormControl as FormControlComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import MESSAGES from '../messages';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-
-import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DatesRange from '../../../components/filters/DatesRange';
+import InputComponent from '../../../components/forms/InputComponent';
+import { DropdownOptions } from '../../../types/utils';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { ORG_UNITS } from '../../../utils/permissions';
 import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
-import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
+import MESSAGES from '../messages';
+import { OrgUnit, OrgUnitState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
+import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
+    '@global': {
+        body: {
+            overflowX: 'hidden !important',
+            overflowY: 'auto !important',
+        },
+    },
     speedDialTop: {
         top: theme.spacing(12.5),
     },
@@ -53,7 +59,7 @@ type Props = {
         value: string | number | string[] | number[],
     ) => void;
     orgUnitTypes: OrgunitType[];
-    groups: Group[];
+    groups: DropdownOptions<string>[];
     resetTrigger: boolean;
     params: Record<string, string>;
     handleSave: () => void;
@@ -98,9 +104,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             ? `${orgUnitState.parent.value.id}`
             : undefined,
     );
+
     const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,
     );
+
     const disabled = !hasManagementPermission && !isNewOrgunit;
     return (
         <Grid container spacing={2}>
@@ -137,9 +145,9 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     keyValue="groups"
-                    onChange={(name, value) =>
-                        onChangeInfo(name, commaSeparatedIdsToArray(value))
-                    }
+                    onChange={(name, value) => {
+                        onChangeInfo(name, commaSeparatedIdsToArray(value));
+                    }}
                     multi
                     value={
                         isFetchingGroups ? undefined : orgUnitState.groups.value
@@ -147,10 +155,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     loading={isFetchingGroups}
                     errors={orgUnitState.groups.errors}
                     type="select"
-                    options={groups.map(g => ({
-                        label: g.name,
-                        value: g.id,
-                    }))}
+                    options={groups}
                     label={MESSAGES.groups}
                     disabled={disabled}
                 />
@@ -204,6 +209,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                             }
                         }}
                         source={orgUnit.source_id}
+                        version={orgUnit.version_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
                         disabled={disabled}

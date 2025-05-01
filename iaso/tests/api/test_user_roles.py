@@ -1,6 +1,7 @@
-from iaso.test import APITestCase
+from django.contrib.auth.models import Group, Permission
+
 from iaso import models as m
-from django.contrib.auth.models import Permission, Group
+from iaso.test import APITestCase
 
 
 class UserRoleAPITestCase(APITestCase):

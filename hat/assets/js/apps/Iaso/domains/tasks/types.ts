@@ -1,4 +1,5 @@
 import { Nullable } from '../../types/utils';
+import { UrlParams } from 'bluesquare-components';
 
 export type TaskStatus =
     | 'RUNNING'
@@ -43,4 +44,13 @@ export type PolioNotificationImport = {
     created_by: number;
     created_at: string; // DateTime
     updated_at?: string; // DateTime
+};
+
+export type TaskParams = UrlParams & {
+    accountId: number;
+    startDate?: string;
+    endDate?: string;
+    status?: TaskStatus;
+    users?: string;
+    taskType?: string;
 };

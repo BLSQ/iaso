@@ -135,8 +135,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.location',
     },
     entity: {
-        defaultMessage: 'Beneficiary',
-        id: 'iaso.label.beneficiary',
+        defaultMessage: 'Entity',
+        id: 'iaso.label.entity',
     },
     user: {
         defaultMessage: 'User',

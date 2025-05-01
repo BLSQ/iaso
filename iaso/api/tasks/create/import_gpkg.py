@@ -13,12 +13,13 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource, Task
 from iaso.models.import_gpkg import ImportGPKG
 from iaso.tasks.import_gpkg_task import import_gpkg_task
-from hat.menupermissions import models as permission
+
 
 logger = logging.getLogger(__name__)
 

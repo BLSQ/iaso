@@ -1,20 +1,29 @@
-import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
-
+import Search from '@mui/icons-material/Search';
 import { Box, Button, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
-import Search from '@mui/icons-material/Search';
 import {
     QueryBuilderInput,
     commonStyles,
     useHumanReadableJsonLogic,
     useSafeIntl,
     useSkipEffectOnMount,
+    InputWithInfos,
 } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 
 import DatesRange from '../../../components/filters/DatesRange';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
+import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
+import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models.ts';
@@ -22,26 +31,15 @@ import { isValidPeriod } from '../../periods/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 
-import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
-import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
-import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
 import { useGetForms } from '../hooks';
-import { parseJson } from '../utils/jsonLogicParse.ts';
-
-import { Popper } from '../../forms/fields/components/Popper.tsx';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
-import MESSAGES from '../messages';
-
-import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
-import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
+import MESSAGES from '../messages';
+import { parseJson } from '../utils/jsonLogicParse.ts';
+
+
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
@@ -216,7 +214,7 @@ const InstancesFiltersComponent = ({
                     formState.startPeriod.value,
                     formState.endPeriod.value,
                 );
-            } catch (e) {
+            } catch {
                 return true;
             }
         }
@@ -262,16 +260,20 @@ const InstancesFiltersComponent = ({
 
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        keyValue="search"
-                        onChange={handleFormChange}
-                        value={formState.search.value || ''}
-                        type="search"
-                        label={MESSAGES.textSearch}
-                        onEnterPressed={() => handleSearch()}
-                        onErrorChange={setTextSearchError}
-                        blockForbiddenChars
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.searchParams)}
+                    >
+                        <InputComponent
+                            keyValue="search"
+                            onChange={handleFormChange}
+                            value={formState.search.value || ''}
+                            type="search"
+                            label={MESSAGES.textSearch}
+                            onEnterPressed={() => handleSearch()}
+                            onErrorChange={setTextSearchError}
+                            blockForbiddenChars
+                        />
+                    </InputWithInfos>
                     <InputComponent
                         keyValue="projectIds"
                         onChange={handleFormChange}
@@ -596,7 +598,6 @@ InstancesFiltersComponent.propTypes = {
     labelKeys: PropTypes.array.isRequired,
     periodType: PropTypes.string,
     possibleFields: PropTypes.array,
-    formDetails: PropTypes.object,
 };
 
 export default InstancesFiltersComponent;

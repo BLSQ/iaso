@@ -1,13 +1,16 @@
-from iaso.api.tasks import ExternalTaskModelViewSet, ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
-from iaso.models.base import RUNNING, ERRORED, SUCCESS, Task
-from iaso.models.org_unit import OrgUnit
-from rest_framework import permissions, serializers, filters
+from django.db.models import Q
+from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
+from rest_framework import filters, permissions, serializers
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
-from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
-from django.db.models import Q
-from rest_framework.decorators import action
+from iaso.api.tasks.serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
+from iaso.api.tasks.views import ExternalTaskModelViewSet
+from iaso.models.base import ERRORED, RUNNING, SUCCESS, Task
+from iaso.models.org_unit import OrgUnit
+
 
 LQAS_TASK_NAME = "Refresh LQAS data"
 LQAS_CONFIG_SLUG = "lqas-pipeline-config"

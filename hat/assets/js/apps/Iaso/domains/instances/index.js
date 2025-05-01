@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,7 +9,6 @@ import {
     useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { useCallback, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
@@ -61,7 +61,7 @@ const Instances = () => {
 
     const [formIds, setFormIds] = useState(params.formIds?.split(','));
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
-
+    const showTable = tab === 'list' && tableColumns.length > 0;
     const { possibleFields, isLoading: isLoadingPossibleFields } =
         useGetPossibleFields(formId);
     const fieldsSearchApi = useMemo(() => {
@@ -99,12 +99,15 @@ const Instances = () => {
             select: result => result.instances,
         },
     );
-    const { data, isFetching: fetchingList } = useSnackQuery(
-        ['instances', apiParams],
-        () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
-        snackMessages.fetchInstanceDictError,
-        { keepPreviousData: true, enabled: !isLoadingPossibleFields },
-    );
+    const { data, isFetching: fetchingList } = useSnackQuery({
+        queryKey: ['instances', apiParams, showTable],
+        queryFn: () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
+        snackErrorMsg: snackMessages.fetchInstanceDictError,
+        options: {
+            keepPreviousData: true,
+            enabled: !isLoadingPossibleFields && showTable,
+        },
+    });
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
 
@@ -222,7 +225,7 @@ const Instances = () => {
                         </Box>
                     </Tooltip>
                 </Box>
-                {tab === 'list' && tableColumns.length > 0 && (
+                {showTable && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}
                         pages={data?.pages}

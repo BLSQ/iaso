@@ -1,23 +1,22 @@
-import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import { useDebounce } from 'use-debounce';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab } from '@mui/material';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import { Field, useFormikContext } from 'formik';
+import { useDebounce } from 'use-debounce';
 
 import { BooleanInput } from '../../../components/Inputs';
 
 import MESSAGES from '../../../constants/messages';
-import { useStyles } from '../../../styles/theme';
-
-import { ScopeField } from './ScopeField';
-import { useFilteredDistricts } from './Scopes/utils';
-import { useGetGeoJson } from './hooks/useGetGeoJson';
-import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
 
 import { CampaignFormValues } from '../../../constants/types';
+import { useStyles } from '../../../styles/theme';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
+import { useGetGeoJson } from './hooks/useGetGeoJson';
+import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
+import { ScopeField } from './ScopeField';
 import { FilteredDistricts, Round } from './Scopes/types';
+import { useFilteredDistricts } from './Scopes/utils';
 
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 

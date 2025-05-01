@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box, Divider, Grid } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -8,20 +8,20 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
-import { Box, Divider, Grid } from '@mui/material';
+import React, { FunctionComponent, useCallback } from 'react';
+import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import {
     DateInput,
     NumberInput,
     TextInput,
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import MESSAGES from '../../messages';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { useAgeRangeOptions } from '../../hooks/useAgeRangeOptions';
 import { CampaignFormValues, Round } from '../../../../../constants/types';
-import { SubActivityScopeField } from '../SubActivityScopeField';
+import { useAgeRangeOptions } from '../../hooks/useAgeRangeOptions';
 import { useSubActivityValidation } from '../../hooks/useSubActivityValidation';
+import MESSAGES from '../../messages';
 import { SubActivityFormValues } from '../../types';
+import { SubActivityScopeField } from '../SubActivityScopeField';
 
 type Props = {
     closeDialog: () => void;
@@ -46,14 +46,23 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
     const ageRangeOptions = useAgeRangeOptions();
     const validationSchema = useSubActivityValidation();
 
+    // TODO Add parent round dates to formik to enable validation
+    // Then remove them before sending to API
+
     const formik = useFormik<SubActivityFormValues>({
         initialValues: {
             id: subActivity?.id,
             round_number: round?.number,
+            round_start_date: round?.started_at,
+            round_end_date: round?.ended_at,
             campaign: campaign.obr_name,
             name: subActivity?.name,
             start_date: subActivity?.start_date,
             end_date: subActivity?.end_date,
+            lqas_started_at: subActivity?.lqas_started_at,
+            lqas_ended_at: subActivity?.lqas_ended_at,
+            im_started_at: subActivity?.im_started_at,
+            im_ended_at: subActivity?.im_ended_at,
             age_unit: subActivity?.age_unit,
             age_min: subActivity?.age_min,
             age_max: subActivity?.age_max,
@@ -111,76 +120,125 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                 maxWidth="xl"
                 closeOnConfirm={false}
             >
-                <Box minWidth="70vw">
+                <Box>
                     <Box mb={4} mt={2}>
                         <Divider />
                     </Box>
                     {formik.isSubmitting && <LoadingSpinner />}
-                    <Grid container>
-                        <Grid item xs={6}>
-                            <Box mr={2}>
-                                <Field
-                                    component={TextInput}
-                                    name="name"
-                                    label={formatMessage(MESSAGES.name)}
-                                    shrinkLabel={false}
-                                    required
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6}>
-                            <Field
-                                component={DateInput}
-                                name="start_date"
-                                label={formatMessage(MESSAGES.startDate)}
-                                required
-                            />
-                        </Grid>
-                        <Grid container item xs={6}>
+                    <Box>
+                        <Grid container>
                             <Grid item xs={6}>
                                 <Box mr={2}>
                                     <Field
-                                        component={SingleSelect}
-                                        name="age_unit"
-                                        options={ageRangeOptions}
-                                        label={formatMessage(MESSAGES.ageUnit)}
+                                        component={TextInput}
+                                        name="name"
+                                        label={formatMessage(MESSAGES.name)}
+                                        shrinkLabel={false}
+                                        required
+                                    />
+                                </Box>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Field
+                                    component={DateInput}
+                                    name="start_date"
+                                    label={formatMessage(MESSAGES.startDate)}
+                                    required
+                                />
+                            </Grid>
+                            <Grid container item xs={6}>
+                                <Grid item xs={6}>
+                                    <Box mr={2}>
+                                        <Field
+                                            component={SingleSelect}
+                                            name="age_unit"
+                                            options={ageRangeOptions}
+                                            label={formatMessage(
+                                                MESSAGES.ageUnit,
+                                            )}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Box mr={2}>
+                                        <Field
+                                            component={NumberInput}
+                                            name="age_min"
+                                            label={formatMessage(
+                                                MESSAGES.ageMin,
+                                            )}
+                                        />
+                                    </Box>
+                                </Grid>
+                                <Grid item xs={3}>
+                                    <Box mr={2}>
+                                        <Field
+                                            component={NumberInput}
+                                            name="age_max"
+                                            label={formatMessage(
+                                                MESSAGES.ageMax,
+                                            )}
+                                        />
+                                    </Box>
+                                </Grid>
+                            </Grid>
+                            <Grid item xs={6}>
+                                <Field
+                                    component={DateInput}
+                                    name="end_date"
+                                    label={formatMessage(MESSAGES.endDate)}
+                                    required
+                                />
+                            </Grid>
+
+                            <Grid item xs={3}>
+                                <Box mr={2}>
+                                    <Field
+                                        component={DateInput}
+                                        name="lqas_started_at"
+                                        label={formatMessage(
+                                            MESSAGES.lqas_started_at,
+                                        )}
                                     />
                                 </Box>
                             </Grid>
                             <Grid item xs={3}>
                                 <Box mr={2}>
                                     <Field
-                                        component={NumberInput}
-                                        name="age_min"
-                                        label={formatMessage(MESSAGES.ageMin)}
+                                        component={DateInput}
+                                        name="lqas_ended_at"
+                                        label={formatMessage(
+                                            MESSAGES.lqas_ended_at,
+                                        )}
                                     />
                                 </Box>
                             </Grid>
                             <Grid item xs={3}>
                                 <Box mr={2}>
                                     <Field
-                                        component={NumberInput}
-                                        name="age_max"
-                                        label={formatMessage(MESSAGES.ageMax)}
+                                        component={DateInput}
+                                        name="im_started_at"
+                                        label={formatMessage(
+                                            MESSAGES.im_started_at,
+                                        )}
                                     />
                                 </Box>
                             </Grid>
+                            <Grid item xs={3}>
+                                <Field
+                                    component={DateInput}
+                                    name="im_ended_at"
+                                    label={formatMessage(MESSAGES.im_ended_at)}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <SubActivityScopeField
+                                    campaign={campaign}
+                                    round={round}
+                                />
+                            </Grid>
                         </Grid>
-                        <Grid item xs={6}>
-                            <Field
-                                component={DateInput}
-                                name="end_date"
-                                label={formatMessage(MESSAGES.endDate)}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <SubActivityScopeField
-                                campaign={campaign}
-                                round={round}
-                            />
-                        </Grid>
-                    </Grid>
+                    </Box>
                 </Box>
             </ConfirmCancelModal>
         </FormikProvider>

@@ -3,6 +3,7 @@ import random
 import re
 import time
 import typing
+
 from functools import reduce
 from io import StringIO
 from logging import getLogger
@@ -10,6 +11,7 @@ from urllib.error import HTTPError
 from urllib.request import urlopen
 
 import django_cte
+
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django import forms as dj_forms
 from django.contrib import auth
@@ -26,6 +28,7 @@ from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
@@ -42,6 +45,7 @@ from ..utils.jsonlogic import jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
+
 
 logger = getLogger(__name__)
 
@@ -142,6 +146,7 @@ class Account(models.Model):
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
     analytics_script = models.TextField(blank=True, null=True)
+    custom_translations = models.JSONField(null=True, blank=True)
 
     def as_dict(self):
         return {
@@ -153,6 +158,7 @@ class Account(models.Model):
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
+            "custom_translations": self.custom_translations,
         }
 
     def as_small_dict(self):
@@ -165,6 +171,8 @@ class Account(models.Model):
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
             "analytics_script": self.analytics_script,
+            "modules": self.modules,
+            "custom_translations": self.custom_translations,
         }
 
     def __str__(self):
@@ -262,6 +270,7 @@ class Task(models.Model):
     progress_value = models.IntegerField(default=0)
     end_value = models.IntegerField(default=0)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_tasks")
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     result = models.JSONField(null=True, blank=True)
     status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
@@ -274,11 +283,16 @@ class Task(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["name"]),
+            models.Index(fields=["status"]),
+        ]
 
     def __str__(self):
         return "%s - %s - %s -%s" % (
             self.name,
-            self.launcher,
+            self.created_by,
             self.status,
             self.created_at,
         )
@@ -292,6 +306,11 @@ class Task(models.Model):
             "params": self.params,
             "result": self.result,
             "status": self.status,
+            "created_by": (
+                self.created_by.iaso_profile.as_short_dict()
+                if self.created_by and self.created_by.iaso_profile
+                else None
+            ),
             "launcher": (
                 self.launcher.iaso_profile.as_short_dict() if self.launcher and self.launcher.iaso_profile else None
             ),
@@ -885,7 +904,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             if search.startswith("ids:"):
                 ids_str = search.replace("ids:", "")
                 try:
-                    ids = [int(i.strip()) for i in ids_str.split(",")]
+                    ids = re.findall("[A-Za-z0-9_-]+", ids_str)
                     queryset = queryset.filter(id__in=ids)
                 except:
                     queryset = queryset.filter(id__in=[])
@@ -957,6 +976,14 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         new_qs = new_qs.filter(project__account=profile.account_id)
         return new_qs
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(project__in=user_projects_ids)
+
 
 class NonDeletedInstanceManager(models.Manager):
     def get_queryset(self):
@@ -977,6 +1004,7 @@ class Instance(models.Model):
     STATUS_READY = "READY"
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
+    STATUSES = [STATUS_READY, STATUS_DUPLICATED, STATUS_EXPORTED]
 
     ALWAYS_ALLOWED_PATHS_XML = set(
         ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
@@ -1116,7 +1144,7 @@ class Instance(models.Model):
                 identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
             value = int(identifier + random_number)
-            suffix = "{:02d}".format(value % 97)
+            suffix = f"{value % 97:02d}"
             self.correlation_id = identifier + random_number + suffix
             self.save()
 
@@ -1144,11 +1172,9 @@ class Instance(models.Model):
                         flat_results,
                     )
                 return flat_results["flat_json"]
-            else:
-                # warn old form, but keep it working ? or throw error
-                return flat_parse_xml_soup(soup, [], None)["flat_json"]
-        else:
+            # warn old form, but keep it working ? or throw error
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
+        return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
     def get_and_save_json_of_xml(self, force=False, tries=3):
         """
@@ -1163,7 +1189,7 @@ class Instance(models.Model):
         if self.json and not force:
             # already converted, we can use this one
             return self.json
-        elif self.file:
+        if self.file:
             # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
                 for i in range(tries):
@@ -1182,9 +1208,8 @@ class Instance(models.Model):
             self.json = self.xml_file_to_json(file)
             self.save()
             return self.json
-        else:
-            # no file, no json, when/why does this happen?
-            return {}
+        # no file, no json, when/why does this happen?
+        return {}
 
     def get_form_version(self):
         json = self.get_and_save_json_of_xml()
@@ -1527,11 +1552,10 @@ class Profile(models.Model):
             return result | {
                 "org_units": [o.as_very_small_dict() for o in self.org_units.all()],
             }
-        else:
-            return result | {
-                "account": self.account.as_small_dict(),
-                "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-            }
+        return result | {
+            "account": self.account.as_small_dict(),
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+        }
 
     def as_short_dict(self):
         try:
@@ -1564,6 +1588,19 @@ class Profile(models.Model):
         if team:
             return True
         return False
+
+    @cached_property
+    def projects_ids(self) -> set[int]:
+        """
+        Returns the list of project IDs authorized for this profile.
+
+        Note that this is implemented via a `@cached_property` for performance
+        reasons. You may have to manually delete it in unit tests, e.g.:
+
+            user.iaso_profile.projects.add(new_project)
+            del user.iaso_profile.projects_ids
+        """
+        return list(self.projects.values_list("pk", flat=True))
 
     def get_editable_org_unit_type_ids(self) -> set[int]:
         ids_in_user_roles = set(

@@ -3,10 +3,9 @@ import django_filters
 from django import forms
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
-
 from rest_framework.exceptions import ValidationError
 
-from iaso.models import OrgUnit, DataSource
+from iaso.models import DataSource, OrgUnit
 
 
 class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):

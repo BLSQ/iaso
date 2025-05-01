@@ -1,9 +1,5 @@
+import { ReactNode } from 'react';
 import { IntlMessage } from 'bluesquare-components';
-import { ElementType, ReactNode } from 'react';
-import {
-    RouteCustom,
-    Redirection as RoutingRedirection,
-} from '../../routing/types';
 
 export type MenuItem = {
     label: string | IntlMessage;
@@ -23,23 +19,6 @@ export type MenuItems = MenuItem[];
 export type Redirection = {
     path: string;
     component: (args: any) => ReactNode;
-};
-
-export type Plugin = {
-    routes: RouteCustom[];
-    menu: MenuItem[];
-    translations: Record<string, any>;
-    homeUrl?: string;
-    homeOnline?: ElementType;
-    homeOffline?: ElementType;
-    key?: string;
-    baseUrls: Record<string, string>;
-    paramsConfig: Record<string, string[]>;
-    redirections?: RoutingRedirection[];
-};
-
-export type Plugins = {
-    plugins: Plugin[];
 };
 
 export type PaginatedResponse<T> = {

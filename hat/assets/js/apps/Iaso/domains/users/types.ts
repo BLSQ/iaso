@@ -27,6 +27,7 @@ export type UserDialogData = {
     projects: ValueAndErrors<Project[] | null>;
     editable_org_unit_type_ids: ValueAndErrors<number[] | null>;
     user_roles_editable_org_unit_type_ids: ValueAndErrors<number[] | []>;
+    has_multiple_accounts: ValueAndErrors<boolean>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

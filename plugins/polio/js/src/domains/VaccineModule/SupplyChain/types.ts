@@ -7,6 +7,8 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Vaccine } from '../../../constants/types';
 
+export type ScanResultStatus = 'CLEAN' | 'INFECTED' | 'ERROR' | 'PENDING';
+
 export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
 export type VRF = {
@@ -48,6 +50,9 @@ export type PreAlert = {
     vials_shipped: number;
     to_delete?: boolean;
     document?: File;
+    can_edit: boolean;
+    scan_result?: ScanResultStatus;
+    scan_timestamp?: number;
 };
 
 export type VAR = {
@@ -60,6 +65,7 @@ export type VAR = {
     vials_shipped: number;
     vials_received: number;
     to_delete?: boolean;
+    can_edit: boolean;
 };
 
 export type SupplyChainFormData = {
@@ -86,6 +92,7 @@ export type SupplyChainList = {
     updated_at: string;
     vaccine_type: string;
     var: string;
+    can_edit: boolean;
 };
 
 export type ParsedSettledPromise<T> = {

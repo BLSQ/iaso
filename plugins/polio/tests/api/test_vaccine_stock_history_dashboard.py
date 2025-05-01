@@ -1,5 +1,4 @@
 from iaso.test import APITestCase
-
 from plugins.polio import models as pm
 from plugins.polio.models.base import VACCINES
 from plugins.polio.tests.api.test import PolioTestCaseMixin

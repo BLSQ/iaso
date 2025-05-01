@@ -32,6 +32,7 @@ export type SentryConfig = {
 
 type Props = {
     children: React.ReactNode;
+    isCurrentRouteAnonymous: boolean;
 };
 
 const SentryContext = createContext<SentryContextType | undefined>(undefined);
@@ -103,7 +104,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.analytics.consent.accept',
     },
 });
-export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
+export const SentryProvider: FunctionComponent<Props> = ({
+    children,
+    isCurrentRouteAnonymous,
+}) => {
     const [showDialog, setShowDialog] = useState(false);
     const [hasConsent, setHasConsent] = useState(
         () => localStorage.getItem('sentry-consent') === 'true',
@@ -111,7 +115,10 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
     const { formatMessage } = useSafeIntl();
 
     useEffect(() => {
-        if (window.SENTRY_CONFIG?.SENTRY_FRONT_ENABLED) {
+        if (
+            window.SENTRY_CONFIG?.SENTRY_FRONT_ENABLED &&
+            !isCurrentRouteAnonymous
+        ) {
             const hasStoredConsent = localStorage.getItem('sentry-consent');
             if (
                 !hasStoredConsent &&
@@ -125,7 +132,7 @@ export const SentryProvider: FunctionComponent<Props> = ({ children }) => {
                 }
             }
         }
-    }, []);
+    }, [isCurrentRouteAnonymous]);
 
     const handleConsent = useCallback((consent: boolean) => {
         localStorage.setItem('sentry-consent', consent.toString());

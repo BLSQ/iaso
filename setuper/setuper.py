@@ -1,21 +1,33 @@
-import re
+import os
 
+
+# Get the setuper directory path
+SETUPER_DIR = os.path.dirname(os.path.abspath(__file__))
+# Change the working directory to the setuper directory
+os.chdir(SETUPER_DIR)
+
+import argparse
+import random
+import re
+import string
+import sys
+
+from additional_projects import create_projects, link_new_projects_to_main_data_source
+from create_submission_with_picture import create_submission_with_picture
+from data_collection import setup_instances
+from default_healthFacility_form import setup_health_facility_level_default_form
+from entities import (
+    create_entity_types,
+    create_forms_and_entities,
+)
 from iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
-from data_collection import setup_instances
-from pyramid import setup_orgunits
-from entities import setup_entities
-from registry import setup_registry
-from default_healthFacility_form import setup_health_facility_level_default_form
-from review_change_proposal import setup_review_change_proposal
-from create_submission_with_picture import create_submission_with_picture
-from additional_projects import create_projects, link_new_projects_to_main_data_source
-from user_roles_permissions import create_user_role
 from org_unit_pictures import associate_favorite_picture
-import string
-import random
-import argparse
-import sys
+from pyramid import setup_orgunits
+from registry import setup_registry
+from review_change_proposal import setup_review_change_proposal
+from user_roles_permissions import create_user_role
+
 
 seed_default_health_facility_form = True
 
@@ -44,7 +56,23 @@ def setup_account(account_name, server_url, username, password):
         "user_first_name": account_name,
         "user_last_name": account_name,
         "password": account_name,
-        "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS", "DHIS2_MAPPING"],
+        "modules": [
+            "DEFAULT",
+            "REGISTRY",
+            "PLANNING",
+            "ENTITIES",
+            "DATA_COLLECTION_FORMS",
+            "DHIS2_MAPPING",
+            "DATA_VALIDATION",
+            "PAYMENTS",
+        ],
+        "feature_flags": [
+            "SHOW_HOME_ONLINE",
+            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+            "SHOW_PAGES",
+            "SHOW_LINK_INSTANCE_REFERENCE",
+            "ALLOW_CATCHMENT_EDITION",
+        ],
     }
     iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
@@ -78,7 +106,11 @@ def validate_account_name(name: str) -> str:
 
 
 def create_account(
-    server_url: str, username: str, password: str, optional_account_name: str, additional_projects: bool
+    server_url: str,
+    username: str,
+    password: str,
+    optional_account_name: str,
+    additional_projects: bool,
 ):
     account_name = validate_account_name(optional_account_name)
     print("Creating account:", account_name)
@@ -98,11 +130,13 @@ def create_account(
         associate_favorite_picture(iaso_client=iaso_client)
 
     if seed_entities:
-        setup_entities(account_name, iaso_client=iaso_client)
+        print("Attempting to create entity")
+        create_forms_and_entities(iaso_client=iaso_client)
 
     if additional_projects:
         create_projects(account_name, iaso_client=iaso_client)
         link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
+        create_entity_types(iaso_client=iaso_client)
         setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
 
     if seed_review_change_proposal:
@@ -147,6 +181,6 @@ if __name__ == "__main__":
             pass
 
     if not server_url or not username or not password:
-        sys.exit(f"ERROR: Values for server url, user name and password are all required")
+        sys.exit("ERROR: Values for server url, user name and password are all required")
 
     create_account(server_url, username, password, account_name, additional_projects)

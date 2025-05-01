@@ -1,5 +1,7 @@
 import csv
+
 import requests
+
 
 """
 Disclaimer: This script is a work in progress. There are many ways to improve and
@@ -62,11 +64,10 @@ def find_or_create_org_unit(name, org_unit_type_id, parent_id, group_id=None):
         }
         resp = requests.post(create_org_unit_url, headers=headers, json=payload)
         return resp.json()["id"]
-    else:
-        if result_count > 1:
-            print(f"WARNING: Found multiple results for {name}")
-        print("FOUND")
-        return response.json()["orgunits"][0]["id"]
+    if result_count > 1:
+        print(f"WARNING: Found multiple results for {name}")
+    print("FOUND")
+    return response.json()["orgunits"][0]["id"]
 
 
 # Call the function with your csv file path

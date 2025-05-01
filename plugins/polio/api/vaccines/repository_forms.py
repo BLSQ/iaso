@@ -1,7 +1,8 @@
 """API endpoints and serializers for vaccine repository management."""
 
 from datetime import timedelta
-from django.db.models import Max, Min, OuterRef, Subquery
+
+from django.db.models import Case, CharField, Exists, Max, Min, OuterRef, Q, Subquery, When
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers
@@ -9,7 +10,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
-from django.db.models import OuterRef, Subquery, Q, Case, When, CharField, Exists
 
 from iaso.api.common import Paginator
 from plugins.polio.models import (
@@ -137,9 +137,11 @@ class VaccineRepositorySerializer(serializers.Serializer):
             {
                 "date": fa.form_a_reception_date,
                 "file": fa.document.url if fa.document else None,
-                "is_late": fa.form_a_reception_date > (obj["ended_at"] + timedelta(days=14))
-                if fa.form_a_reception_date and obj["ended_at"]
-                else None,
+                "is_late": (
+                    fa.form_a_reception_date > (obj["ended_at"] + timedelta(days=14))
+                    if fa.form_a_reception_date and obj["ended_at"]
+                    else None
+                ),
             }
             for fa in form_as
         ]
@@ -260,6 +262,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
                 campaign__isnull=False,
                 campaign__deleted_at__isnull=True,
                 campaign__campaign_types__name=CampaignType.POLIO,
+                on_hold=False,
             )
             .select_related(
                 "campaign",

@@ -1,4 +1,5 @@
 import copy
+
 from typing import Any, List, Optional, Set, Union
 
 from django.conf import settings
@@ -17,6 +18,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
+from phonenumbers import NumberParseException
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -29,8 +31,9 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
-from iaso.utils import is_mobile_request
+from iaso.utils import is_mobile_request, is_multi_account_user
 from iaso.utils.module_permissions import account_module_permissions
+
 
 PK_ME = "me"
 
@@ -95,6 +98,7 @@ def get_filtered_profiles(
     if search:
         queryset = queryset.filter(
             Q(user__username__icontains=search)
+            | Q(user__tenant_user__main_user__username__icontains=search)
             | Q(user__first_name__icontains=search)
             | Q(user__last_name__icontains=search)
         ).distinct()
@@ -108,7 +112,7 @@ def get_filtered_profiles(
         ).distinct()
 
     parent: Optional[OrgUnit] = None
-    if parent_ou and location or children_ou and location:
+    if (parent_ou and location) or (children_ou and location):
         ou = get_object_or_404(OrgUnit, pk=location)
         if parent_ou and ou.parent is not None:
             parent = ou.parent
@@ -118,7 +122,6 @@ def get_filtered_profiles(
 
             if not parent:
                 queryset = queryset_current
-
             else:
                 queryset = (
                     original_queryset.filter(
@@ -130,11 +133,9 @@ def get_filtered_profiles(
 
         if children_ou and not parent_ou:
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            children_ous = OrgUnit.objects.filter(parent__pk=location)
-            queryset = (
-                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ous])
-                | queryset_current
-            )
+            # Get all descendants in hierarchy instead of just direct children
+            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
+            queryset = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous) | queryset_current
 
         if parent_ou and children_ou:
             if not parent:
@@ -146,10 +147,9 @@ def get_filtered_profiles(
 
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
 
-            children_ous = OrgUnit.objects.filter(parent__pk=location)
-            queryset_children = original_queryset.filter(
-                user__iaso_profile__org_units__in=children_ous.values_list("id", flat=True)
-            )
+            # Get all descendants in hierarchy instead of just direct children
+            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
+            queryset_children = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous)
 
             queryset = queryset_current | queryset_parent | queryset_children
 
@@ -160,10 +160,10 @@ def get_filtered_profiles(
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
     if projects:
-        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects)
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects).distinct()
 
     if user_roles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
+        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles).distinct()
 
     if teams:
         queryset = queryset.filter(user__teams__id__in=teams).distinct()
@@ -333,8 +333,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+        return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
     def create(self, request):
         current_profile = request.user.iaso_profile
@@ -346,12 +345,9 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        else:
-            existing_user = User.objects.filter(username__iexact=username)
-            if existing_user:
-                return JsonResponse(
-                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
-                )
+        existing_user = User.objects.filter(username__iexact=username)
+        if existing_user:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
         main_user = None
@@ -369,23 +365,22 @@ class ProfilesViewSet(viewsets.ViewSet):
                 return JsonResponse(
                     {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
                 )
-            else:
-                # TODO: invitation
-                # TODO what if already main user?
-                old_username = username
-                username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+            # TODO: invitation
+            # TODO what if already main user?
+            old_username = username
+            username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
 
-                # duplicate existing_user into main user and account user
-                main_user = copy.copy(existing_user)
+            # duplicate existing_user into main user and account user
+            main_user = copy.copy(existing_user)
 
-                existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
-                existing_user.set_unusable_password()
-                existing_user.save()
+            existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
+            existing_user.set_unusable_password()
+            existing_user.save()
 
-                main_user.pk = None
-                main_user.save()
+            main_user.pk = None
+            main_user.save()
 
-                TenantUser.objects.create(main_user=main_user, account_user=existing_user)
+            TenantUser.objects.create(main_user=main_user, account_user=existing_user)
         except User.DoesNotExist:
             pass  # no existing user, simply create a new user
 
@@ -445,9 +440,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             dhis2_id = None
         profile.dhis2_id = dhis2_id
 
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.save()
 
@@ -478,7 +471,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         source = f"{PROFILE_API}_mobile" if is_mobile_request(request) else PROFILE_API
         # Validation
         try:
-            self.validate_user(request, user)
+            self.validate_user_name(request, user)
             user_permissions = self.validate_user_permissions(request, current_account)
             org_units = self.validate_org_units(request, profile)
             user_roles_data = self.validate_user_roles(request)
@@ -548,21 +541,18 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_permissions,
         editable_org_unit_types,
     ):
-        username = request.data.get("user_name")
-        user.first_name = request.data.get("first_name", "")
-        user.last_name = request.data.get("last_name", "")
-        user.username = username
-        user.email = request.data.get("email", "")
+        if not is_multi_account_user(user):
+            user.first_name = request.data.get("first_name", "")
+            user.last_name = request.data.get("last_name", "")
+            user.username = request.data.get("user_name")
+            user.email = request.data.get("email", "")
+            self.update_password(user, request)
+
         user.groups.set(user_roles_groups)
         user.save()
         user.user_permissions.set(user_permissions)
 
-        self.update_password(user, request)
-
-        phone_number = self.extract_phone_number(request)
-
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.language = request.data.get("language", "")
         profile.organization = request.data.get("organization", None)
@@ -630,7 +620,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 
-    def validate_user(self, request, user):
+    def validate_user_name(self, request, user):
+        if is_multi_account_user(user):
+            return  # username cannot be updated for multi-account users
+
         username = request.data.get("user_name")
         if not username:
             raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
@@ -710,19 +703,40 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile) -> QuerySet[Project]:
-        result = []
+    def validate_projects(self, request, profile) -> list:
         project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        if project_ids:
-            profile_project_ids = set(profile.projects.values_list("id", flat=True))
-            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids:
+        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
+            request.user.iaso_profile.projects_ids
+        )
+        result = []
+
+        if not project_ids:
+            if user_has_project_restrictions:
+                # Apply the same project restrictions.
+                return list(Project.objects.filter_on_user_projects(request.user))
+            # No project restrictions.
+            return result
+
+        if not request.user.has_perm(permission.USERS_ADMIN):
+            raise PermissionDenied(
+                f"User without permission {permission.USERS_ADMIN} cannot change project attributions."
+            )
+
+        if user_has_project_restrictions:
+            unauthorized_projects_ids = [p for p in project_ids if p not in request.user.iaso_profile.projects_ids]
+            unauthorized_projects_names = Project.objects.filter(id__in=unauthorized_projects_ids).values_list(
+                "name", flat=True
+            )
+            if unauthorized_projects_names:
                 raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
+                    f"You don't have access to the following projects: {','.join(unauthorized_projects_names)}."
                 )
-            for project in Project.objects.filter(id__in=project_ids):
-                if profile.account_id != project.account_id:
-                    raise BadRequest
-                result.append(project)
+
+        for project in Project.objects.filter(id__in=project_ids):
+            if profile.account_id != project.account_id:
+                raise BadRequest
+            result.append(project)
+
         return result
 
     def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
@@ -766,25 +780,23 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def extract_phone_number(request):
-        phone_number = request.data.get("phone_number", None)
-        country_code = request.data.get("country_code", None)
-        number = None
+        phone_number = request.data.get("phone_number")
+        country_code = request.data.get("country_code")
+        number = ""
 
-        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Both phone number and country code must be provided"),
-            )
+        if any([phone_number, country_code]) and not all([phone_number, country_code]):
+            raise ValidationError({"phone_number": _("Both phone number and country code must be provided")})
 
         if phone_number and country_code:
-            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-            if number and number.is_valid():
-                return number
-            else:
-                raise ProfileError(
-                    field="phone_number",
-                    detail=_("Invalid phone number"),
-                )
+            try:
+                number = PhoneNumber.from_string(phone_number, region=country_code.upper())
+            except NumberParseException:
+                raise ValidationError({"phone_number": _("Invalid phone number format")})
+
+            if not number.is_valid():
+                raise ValidationError({"phone_number": _("Invalid phone number")})
+
+        return number
 
     @staticmethod
     def update_password(user, request):

@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,39 +9,39 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 // @ts-ignore
 import moment from 'moment';
 import { useLocation } from 'react-router-dom';
 import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { getCampaignColor } from '../../constants/campaignsColors';
-import { CampaignsCalendar } from './campaignCalendar';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap';
-import {
-    filterCampaigns,
-    getCalendarData,
-    mapCampaigns,
-} from './campaignCalendar/utils';
-
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { getCampaignColor } from '../../constants/campaignsColors';
+
 import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../Campaigns/hooks/api/useGetCampaigns';
-import { ExportCsvModal } from './ExportCsvModal';
+import { CampaignsCalendar } from './campaignCalendar';
 import {
     CampaignsFilters,
     getRedirectUrl,
 } from './campaignCalendar/CampaignsFilters';
-import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
+import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
+import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
-import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
+import {
+    filterCampaigns,
+    getCalendarData,
+    mapCampaigns,
+} from './campaignCalendar/utils/campaigns';
+import { ExportCsvModal } from './ExportCsvModal';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -88,9 +89,8 @@ export const Calendar: FunctionComponent = () => {
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
             fieldset: 'calendar',
-            show_test:
-                params.campaignCategory === 'test' ||
-                params.campaignCategory === 'all',
+            show_test: false,
+            on_hold: true,
         }),
         [
             orders,
@@ -129,8 +129,13 @@ export const Calendar: FunctionComponent = () => {
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
-        () => mapCampaigns(campaigns),
-        [campaigns],
+        () =>
+            mapCampaigns(
+                campaigns,
+                calendarData.firstMonday,
+                calendarData.lastSunday,
+            ),
+        [campaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
     const filteredCampaigns = useMemo(
         () =>
@@ -267,12 +272,12 @@ export const Calendar: FunctionComponent = () => {
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
                             <Box display="flex" justifyContent="flex-end">
-                                {(params.campaignCategory === 'test' ||
-                                    params.campaignCategory === 'all') && (
-                                    <Box mr={2}>
-                                        <IsTestLegend />
-                                    </Box>
-                                )}
+                                <Box mr={2}>
+                                    <IsOnHoldLegend />
+                                </Box>
+                                <Box mr={2}>
+                                    <HasSubActivityLegend />
+                                </Box>
                                 {!isPdf && (
                                     <TogglePeriod
                                         params={params}
@@ -286,7 +291,7 @@ export const Calendar: FunctionComponent = () => {
                                     orders={orders}
                                     campaigns={filteredCampaigns}
                                     calendarData={calendarData}
-                                    loadingCampaigns={isLoading}
+                                    loadingCampaigns={isFetching}
                                     isPdf={isPdf}
                                     url={currentUrl}
                                     isLogged={isLogged}

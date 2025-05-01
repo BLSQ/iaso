@@ -3,10 +3,13 @@ import { useMemo } from 'react';
 import { DocumentsCells } from '../../components/DocumentsCell';
 import MESSAGES from '../../messages';
 
-export const useVaccineRepositoryReportsColumns = (): Column[] => {
+export const useVaccineRepositoryReportsColumns = (
+    params: Record<string, any>,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const { reportFileType } = params;
+    return useMemo(() => {
+        const columns: Column[] = [
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'country__name',
@@ -19,19 +22,24 @@ export const useVaccineRepositoryReportsColumns = (): Column[] => {
                 accessor: 'vaccine',
                 width: 20,
             },
-            {
+        ];
+
+        if (reportFileType !== 'DESTRUCTION') {
+            columns.push({
                 Header: formatMessage(MESSAGES.incidentReports),
                 accessor: 'incident_report_data',
                 Cell: DocumentsCells,
                 sortable: false,
-            },
-            {
+            });
+        }
+        if (reportFileType !== 'INCIDENT') {
+            columns.push({
                 Header: formatMessage(MESSAGES.destructionReports),
                 accessor: 'destruction_report_data',
                 Cell: DocumentsCells,
                 sortable: false,
-            },
-        ],
-        [formatMessage],
-    );
+            });
+        }
+        return columns;
+    }, [reportFileType, formatMessage]);
 };

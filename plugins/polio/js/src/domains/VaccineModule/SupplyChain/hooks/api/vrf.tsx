@@ -1,12 +1,11 @@
+import { useMemo } from 'react';
 import {
     UrlParams,
     renderTagsWithTooltip,
     textPlaceholder,
 } from 'bluesquare-components';
 import moment from 'moment';
-import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
@@ -26,6 +25,7 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { PostArg } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import {
     DropdownOptions,
     DropdownOptionsWithOriginal,
@@ -37,9 +37,10 @@ import { useGetCountries } from '../../../../../hooks/useGetCountries';
 import {
     CAMPAIGNS_ENDPOINT,
     CampaignCategory,
+    Options,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { apiUrl, defaultVaccineOptions } from '../../constants';
+import { apiUrl, singleVaccinesList } from '../../constants';
 import MESSAGES from '../../messages';
 import {
     CampaignDropdowns,
@@ -117,11 +118,13 @@ export const useCampaignDropDowns = (
     campaign?: string,
     vaccine?: string,
 ): CampaignDropdowns => {
-    const options = {
+    const options: Options = {
         enabled: Boolean(countryId),
-        countries: countryId ? [`${countryId}`] : undefined,
+        countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
         campaignCategory: 'regular' as CampaignCategory,
         campaignType: 'polio',
+        on_hold: true,
+        show_test: false,
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);
@@ -129,19 +132,33 @@ export const useCampaignDropDowns = (
     return useMemo(() => {
         const list = (data as Campaign[]) ?? [];
         const selectedCampaign = list.find(c => c.obr_name === campaign);
-        const campaigns = list.map(c => ({
-            label: c.obr_name,
-            value: c.obr_name,
-        }));
-        const vaccines = selectedCampaign?.vaccines
-            ? selectedCampaign.vaccines.split(',').map(vaccineName => ({
-                  label: vaccineName,
-                  value: vaccineName,
+        const campaigns = list
+            .filter(
+                c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
+            )
+            .map(c => ({
+                label: c.obr_name,
+                value: c.obr_name,
+            }));
+        const vaccines = selectedCampaign?.single_vaccines
+            ? selectedCampaign.single_vaccines.split(',').map(vaccineName => ({
+                  label: vaccineName.trim(),
+                  value: vaccineName.trim(),
               }))
-            : defaultVaccineOptions;
+            : singleVaccinesList;
+
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
-                  .filter(round => round.vaccine_names.includes(vaccine))
+                  .filter(round =>
+                      round.vaccine_names_extended.includes(vaccine),
+                  )
+                  .filter(
+                      round =>
+                          (selectedCampaign?.separate_scopes_per_round &&
+                              (round?.scopes ?? []).length > 0) ||
+                          (!selectedCampaign?.separate_scopes_per_round &&
+                              (selectedCampaign?.scopes ?? []).length > 0),
+                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,

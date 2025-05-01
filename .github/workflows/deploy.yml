@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     steps:
       # Merge the workflow_dispatch config with some default for deployment via the on:push
       - name: Set configs
@@ -33,7 +33,7 @@ jobs:
             echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
             echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
             echo "::set-output name=SLACK_CHANNEL::${{ github.event.inputs.slack_channel || env.DEFAULT_SLACK_CHANNEL }}"
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           ref: ${{ steps.config.outputs.GIT_REFERENCE }}
           fetch-depth: 0
@@ -45,7 +45,7 @@ jobs:
           git describe --tags
           echo "::set-output name=VERSION_NAME::$(git describe --tags --match "v[[:digit:]]*")"
       - name: Slack deployement start
-        uses: rtCamp/action-slack-notify@v2.1.3
+        uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
@@ -56,14 +56,14 @@ jobs:
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
       - name: Use node.js 20
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: '20.13.1'
       - name: upgrade npm
         run: |
           npm install --global npm@10.5.2
       - name: Set up Python 3.9
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v5
         with:
           python-version: 3.9
 
@@ -104,7 +104,7 @@ jobs:
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
 
       - name: Slack deployement success notification
-        uses: rtCamp/action-slack-notify@v2.1.3
+        uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}
@@ -117,7 +117,7 @@ jobs:
           MSG_MINIMAL: true
         if: success()
       - name: Slack deployement failure notification
-        uses: rtCamp/action-slack-notify@v2.1.3
+        uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ steps.config.outputs.SLACK_CHANNEL }}

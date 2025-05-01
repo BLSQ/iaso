@@ -1,22 +1,14 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, serializers
+from rest_framework import filters, permissions, serializers
+from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import permissions
-from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
-from iaso.api.common import Paginator
 
-
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
+from hat.menupermissions import models as permission
+from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import Entity, FormVersion, Instance
-from iaso.models.entity import (
-    InvalidJsonContentError,
-    InvalidLimitDateError,
-    UserNotAuthError,
-    ProjectNotFoundError,
-)
-from hat.menupermissions import models as permission
+from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
 
 
 def filter_for_mobile_entity(queryset, request):
@@ -184,8 +176,13 @@ class MobileEntityViewSet(ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
 
+        entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
+
+        queryset = Entity.objects.filter(entity_type__in=entity_types)
+
+        queryset = filter_on_user_and_app_id(queryset, user, app_id)
         queryset = filter_for_mobile_entity(queryset, self.request)
 
         queryset = queryset.select_related("entity_type").prefetch_related(
@@ -211,7 +208,7 @@ class DeletedMobileEntitySerializer(serializers.ModelSerializer):
 
 
 class MobileEntityDeletedViewSet(ModelViewSet):
-    f"""Entity API for mobile
+    """Entity API for mobile
 
     list: /api/mobile/entities/deleted
 

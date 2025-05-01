@@ -1,3 +1,9 @@
+import React, {
+    FunctionComponent,
+    ReactElement,
+    useCallback,
+    useMemo,
+} from 'react';
 import CallMade from '@mui/icons-material/CallMade';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { Tooltip } from '@mui/material';
@@ -11,42 +17,35 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import moment from 'moment';
-import React, {
-    FunctionComponent,
-    ReactElement,
-    useCallback,
-    useMemo,
-} from 'react';
 
-import instancesTableColumns from '../config';
-import MESSAGES from '../messages';
-import { Instance, ShortFile } from '../types/instance';
-import { VisibleColumn } from '../types/visibleColumns';
-
+import { baseUrls } from '../../../constants/urls';
 import { getCookie } from '../../../utils/cookies';
+
 import {
     apiDateFormat,
     apiDateTimeFormat,
     getFromDateString,
     getToDateString,
 } from '../../../utils/dates';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { Form, PossibleField } from '../../forms/types/forms';
+import { Selection } from '../../orgUnits/types/selection';
+import { getLatestOrgUnitLevelId } from '../../orgUnits/utils';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 import ActionTableColumnComponent from '../components/ActionTableColumnComponent';
 
+import { InstanceMetasField } from '../components/ColumnSelect';
 import DeleteDialog from '../components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 
-import { baseUrls } from '../../../constants/urls';
-import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
-
-import { Selection } from '../../orgUnits/types/selection';
-
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
-
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { InstanceMetasField } from '../components/ColumnSelect';
+import { LinkReferenceInstancesModalComponent } from '../components/InstanceReferenceSubmission/LinkReferenceInstancesComponent';
+import { PushGpsModalComponent } from '../components/PushInstanceGps/PushGpsDialogComponent';
+import instancesTableColumns from '../config';
 import { INSTANCE_METAS_FIELDS } from '../constants';
+import MESSAGES from '../messages';
+import { Instance, ShortFile } from '../types/instance';
+import { VisibleColumn } from '../types/visibleColumns';
 
 const NO_VALUE = '/';
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
@@ -427,6 +426,7 @@ export const useInstanceVisibleColumns = ({
             getDefaultCols(
                 formIds,
                 labelKeys,
+                // @ts-ignore
                 instanceMetasFields || INSTANCE_METAS_FIELDS,
                 periodType,
             );
@@ -494,6 +494,36 @@ export const useSelectionActions = (
     );
 
     return useMemo(() => {
+        const assignReferenceSubmissions: SelectionAction = {
+            icon: (newSelection,resetSelection) => {
+                return (
+                    <LinkReferenceInstancesModalComponent
+                        selection={newSelection}
+                        iconProps={{
+                            iconDisabled: newSelection.selectCount === 0,
+                        }}
+                        resetSelection={resetSelection}
+                        filters={filters}
+                    />
+                );
+            },
+
+            label: formatMessage(
+                MESSAGES.linkUnlinkReferenceSubmissionsToOrgUnits,
+            ),
+            disabled: false,
+        };
+        const pushGpsAction: SelectionAction = {
+            icon: newSelection => (
+                <PushGpsModalComponent
+                    selection={newSelection}
+                    iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
+                    filters={filters}
+                />
+            ),
+            label: formatMessage(MESSAGES.pushGpsToOrgUnits),
+            disabled: false,
+        };
         const exportAction: SelectionAction = {
             icon: newSelection => (
                 <ExportInstancesDialogComponent
@@ -557,7 +587,12 @@ export const useSelectionActions = (
 
         const actions: SelectionAction[] = [compareAction];
         if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
-            actions.push(exportAction, deleteAction);
+            actions.push(
+                exportAction,
+                deleteAction,
+                pushGpsAction,
+                assignReferenceSubmissions,
+            );
         }
         return actions;
     }, [
@@ -593,7 +628,7 @@ export const getFilters = (
         status: asBackendStatus(params.status),
         deviceOwnershipId: params.deviceOwnershipId,
         search: params.search,
-        orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        orgUnitParentId: getLatestOrgUnitLevelId(params.levels),
         dateFrom: getFromDateString(params.dateFrom, false),
         dateTo: getToDateString(params.dateTo, false),
         showDeleted: params.showDeleted,

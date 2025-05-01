@@ -5,11 +5,11 @@ from .models import Validation, Record
 class ValidationForm(forms.ModelForm):
     class Meta:
         model = Validation
-        fields = ["comment", "validation_status", "level", "period", "org_unit"]
+        fields = ["comment", "validation_status", "period", "org_unit"]
         widgets = {
             "comment": forms.Textarea(attrs={"rows": 4}),
             "period": forms.HiddenInput(),
-            "org_unit": forms.HiddenInput()
+            "org_unit": forms.HiddenInput(),
         }
 
 

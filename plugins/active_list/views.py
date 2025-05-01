@@ -337,45 +337,53 @@ def validation_api(request, org_unit_id, month):
     previous_period = get_previous_period(month)
     table_content = []
     report_count = 0
+    validation_count = 0
     for org_unit in org_units:
         obj = {}
         obj["Site"] = org_unit.name
         latest_import = Import.objects.filter(org_unit=org_unit).filter(month=month).order_by("-creation_date").first()
 
         obj["A rapporté"] = "Non"
+        obj["Dernier rapport"] = ""
         obj["Actifs"] = ""
         obj["Reçus"] = ""
         obj.update(stats(org_unit.id, month))
+        obj["Date Validation"] = ""
         obj["Statut"] = ""
         obj["Observation"] = ""
-        obj["Niveau Validation"] = ""
-        obj["Dernière modification"] = ""
-        obj["import_id"] = None
+        obj["Validateur"] = ""
 
         if latest_import:
             report_count = report_count + 1
             obj["A rapporté"] = "Oui"
-            latest_validation = (
-                Validation.objects.filter(period=month).filter(org_unit_id=org_unit_id).order_by("-created_at").first()
+            obj["Dernier rapport"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M"))
+
+        latest_validation = (
+                Validation.objects.filter(period=month).filter(org_unit_id=org_unit.id).order_by("-created_at").first()
             )
+        if latest_validation:
+
+            validation_count = validation_count + 1
             obj["Actifs"] = active_count(org_unit_id)
             obj["Reçus"] = "%d (%d)" % (
                 received_count(org_unit_id, month),
                 received_count(org_unit_id, previous_period),
             )
-            if latest_validation:
-                obj["Statut"] = latest_validation.validation_status
-                obj["Observation"] = latest_validation.comment
-                obj["Niveau Validation"] = latest_validation.level
-            else:
+            obj["Date Validation"] = latest_validation.created_at.strftime(("%d/%m/%y %H:%M"))
+            obj["Statut"] = "Validé" if latest_validation.validation_status == "OK" else "Invalide"
+            obj["Observation"] = latest_validation.comment
+            obj["Validateur"] = latest_validation.user_name
+
+        else:
                 obj["Statut"] = ""
                 obj["Observation"] = ""
-                obj["Niveau Validation"] = ""
-            obj["Dernière modification"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M:%S"))
-            obj["import_id"] = latest_import.id
+                obj["Validateur"] = ""
+
+        obj["org_unit_id"] = org_unit.id
+
         table_content.append(obj)
 
-    res = {"table_content": table_content, "completeness": "%s/%s" % (report_count, len(org_units))}
+    res = {"table_content": table_content, "completeness": "Rapports: %d/%d - Validations: %d/%d" % (report_count, len(org_units), validation_count, len(org_units))}
     return JsonResponse(res, status=200, safe=False)
 
 

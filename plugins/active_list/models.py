@@ -115,7 +115,7 @@ class Patient(models.Model):
         print("Evaluating loss for patient:", self.identifier_code, "Active status:", self.active, "last_record:", self.last_record)
         if self.active and self.last_record and self.last_record.next_dispensation_date:
             print("Last record next_dispensation_date:", self.last_record.next_dispensation_date, datetime.date.today() - datetime.timedelta(days=28))
-            if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(days=28):
+            if self.last_record.next_dispensation_date.date() < datetime.date.today() - datetime.timedelta(days=28):
                 self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(days=28)
                 self.active = False
 

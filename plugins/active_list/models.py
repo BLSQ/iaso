@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from iaso.models import OrgUnit
 import datetime
@@ -89,9 +90,10 @@ class Import(models.Model):
     # additional information for Excel imports
     hash_key = models.TextField(null=False)
     file_name = models.TextField(unique=True, null=False)
+    file = models.FileField(upload_to="uploads/%Y/%m/%d/", null=True)
     file_check = models.TextField(null=False)
     on_time = models.BooleanField(default=False)
-
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
 class Patient(models.Model):
     identifier_code = models.CharField(

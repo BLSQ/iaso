@@ -4,7 +4,6 @@ import os
 import uuid
 from datetime import timedelta
 from datetime import datetime
-from datetime import date
 import datetime
 import calendar
 import pytz
@@ -48,8 +47,8 @@ from .models import (
 from ..polio.settings import DISTRICT
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
-FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 349)
-FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", 350)
+FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 4)
+FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", 5)
 
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "ods", "csv", "xlsb", "xltm", "xltx", "xlsm"}
 OK = "OK"
@@ -181,7 +180,7 @@ def upload(request):
                 result = ERROR_WRONG_FILE_FORMAT
             elif file and allowed_file(file.name):
                 filename = smart_str(file.name)
-                result = upload_to_openhexa(filename, file, org_unit_id, period, bypass)
+                result = handle_upload(filename, file, org_unit_id, period, bypass, request.user)
             else:
                 result = ERROR_UNKNOWN
 
@@ -345,7 +344,7 @@ def validation_api(request, org_unit_id, month):
 
         obj["A rapporté"] = "Non"
         obj["Dernier rapport"] = ""
-        obj["Actifs"] = ""
+        obj["Actifs"] = active_count(org_unit_id)
         obj["Reçus"] = ""
         obj.update(stats(org_unit.id, month))
         obj["Date Validation"] = ""
@@ -364,7 +363,7 @@ def validation_api(request, org_unit_id, month):
         if latest_validation:
 
             validation_count = validation_count + 1
-            obj["Actifs"] = active_count(org_unit_id)
+
             obj["Reçus"] = "%d (%d)" % (
                 received_count(org_unit_id, month),
                 received_count(org_unit_id, previous_period),
@@ -450,7 +449,7 @@ def filter_received_patients_for_the_month(patients, month):
 def patient_list_api(request, org_unit_id, month):
     format = request.GET.get("format", "json")
     mode = request.GET.get("mode", "default")
-
+    last_import = None
     if mode == "default":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=month).order_by("-creation_date").first()
@@ -475,7 +474,7 @@ def patient_list_api(request, org_unit_id, month):
     else:
         table_content = []
         for record in records:
-            patient_object = {"Code identifiant": record.patient.identifier_code, "Actif": record.patient.active}
+            patient_object = {"Code identifiant": record.patient.identifier_code, "Actif": "Oui" if record.patient.active else "Non"}
 
             for field in PATIENT_LIST_DISPLAY_FIELDS:
                 patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
@@ -492,7 +491,7 @@ def patient_list_api(request, org_unit_id, month):
         if format == "json":
             return JsonResponse(res, status=200, safe=False)
         else:
-            return render(request, "partials/patient_table.html", {"data": table_content})
+            return render(request, "partials/patient_table.html", {"data": table_content, "last_import": last_import})
 
 
 @login_required
@@ -572,9 +571,7 @@ def hash_blob(binary_blob):
     return hasher.hexdigest()
 
 
-def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
-    client = OpenHEXAClient("https://app.openhexa.org/")
-    client.authenticate(with_credentials=(OPENHEXA_USER, OPENHEXA_PASSWORD), with_token=None)
+def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     content = file.read()
     h = hash_blob(content)
     result = check_presence(h, org_unit_id, month)
@@ -587,12 +584,6 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
     if bypass:
         result = OK
     if result == OK:
-        client.upload_object(
-            "civ-lhspla-file-active-db7fae",
-            "uploads-lhspla/%s" % file_name,
-            content,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        )
         i = Import(
             hash_key=h,
             file_name=file_name,
@@ -600,6 +591,8 @@ def upload_to_openhexa(file_name, file, org_unit_id, month, bypass=False):
             month=month,
             file_check=file_check,
             source=SOURCE_EXCEL,
+            file=file,
+            user=user
         )
         i.save()
         import_data(content, i)

@@ -1,3 +1,15 @@
+<div>
+<div>
+{% if last_import %}
+  <a href="{{ last_import.file.url }}">Fichier uploadé</a> (par {{ last_import.user.username }})
+
+  {% if last_import.date %}
+    le {{ last_import.date|date:"d/m/Y H:i" }}
+  {% endif %}
+{% endif %}
+
+
+</div>
 <table id="generatedTable">
   <thead>
     <tr>
@@ -16,3 +28,4 @@
     {% endfor %}
   </tbody>
 </table>
+</div>

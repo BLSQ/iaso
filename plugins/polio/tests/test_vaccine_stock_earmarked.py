@@ -39,7 +39,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
                 permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
                 permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             ],

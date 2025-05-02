@@ -453,7 +453,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            read_only_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
         )
 
     def get_campaign(self, obj):

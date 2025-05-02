@@ -19,7 +19,7 @@ type Attributes = {
     form_id?: number;
 };
 
-export type Beneficiary = {
+export type Entity = {
     id: number;
     uuid: string;
     name: string;

@@ -28,6 +28,18 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_u
 from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
+from iaso.api import common
+from iaso.api.comment import UserSerializerForComment
+from iaso.api.common import (
+    CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
+    FileFormatEnum,
+    TimestampField,
+    parse_comma_separated_numeric_values,
+    safe_api_import,
+)
+from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
     Entity,
@@ -39,23 +51,10 @@ from iaso.models import (
     OrgUnitChangeRequest,
     Project,
 )
+from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
-
-from ..models.forms import CR_MODE_IF_REFERENCE_FORM
-from ..utils.models.common import check_instance_bulk_gps_push, get_creator_name
-from . import common
-from .comment import UserSerializerForComment
-from .common import (
-    CONTENT_TYPE_CSV,
-    CONTENT_TYPE_XLSX,
-    FileFormatEnum,
-    TimestampField,
-    parse_comma_separated_numeric_values,
-    safe_api_import,
-)
-from .instance_filters import get_form_from_instance_filters, parse_instance_filters
-from .org_units import HasCreateOrgUnitPermission
+from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
 
 
 logger = logging.getLogger(__name__)
@@ -193,7 +192,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def get_queryset(self):
         request = self.request
         queryset: InstanceQuerySet = Instance.objects.order_by("-id")
-        queryset = queryset.filter_for_user(request.user)
+        queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
         return queryset
 
     @action(["GET"], detail=False)
@@ -634,26 +633,7 @@ class InstancesViewSet(viewsets.ViewSet):
         permission_classes=[permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission],
     )
     def check_bulk_gps_push(self, request):
-        # first, let's parse all parameters received from the URL
-        select_all, selected_ids, unselected_ids = self._parse_check_bulk_gps_push_parameters(request.GET)
-
-        # then, let's make sure that each ID actually exists and that the user has access to it
-        instances_query = self.get_queryset()
-        if instances_query.filter(pk__in=selected_ids).count() != len(selected_ids):
-            raise Http404
-        if instances_query.filter(pk__in=unselected_ids).count() != len(unselected_ids):
-            raise Http404
-
-        # let's filter everything
-        filters = parse_instance_filters(request.GET)
-        instances_query = instances_query.select_related("org_unit")
-        instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
-        instances_query = instances_query.for_filters(**filters)
-
-        if not select_all:
-            instances_query = instances_query.filter(pk__in=selected_ids)
-        else:
-            instances_query = instances_query.exclude(pk__in=unselected_ids)
+        instances_query = self._filter_selected_instances(request)
 
         success, errors, warnings = check_instance_bulk_gps_push(instances_query)
 
@@ -672,7 +652,54 @@ class InstancesViewSet(viewsets.ViewSet):
             status=status.HTTP_200_OK,
         )
 
-    def _parse_check_bulk_gps_push_parameters(self, query_parameters):
+    @action(
+        detail=False,
+        methods=["GET"],
+        permission_classes=[permissions.IsAuthenticated, HasInstanceBulkPermission, HasCreateOrgUnitPermission],
+    )
+    def check_bulk_reference_instance_link(self, request):
+        instances_query = self._filter_selected_instances(request)
+
+        success, infos, errors, warnings = check_instance_reference_bulk_link(instances_query)
+
+        if not success:
+            errors["result"] = "errors"
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+        informations = {}
+        informations["result"] = "success"
+        informations["linked"] = infos["linked"]
+        informations["not_linked"] = infos["not_linked"]
+
+        if warnings:
+            informations["warning"] = warnings["no_reference_instances"]
+
+        return Response(informations, status=status.HTTP_200_OK)
+
+    def _filter_selected_instances(self, request):
+        # first, let's parse all parameters received from the URL
+        select_all, selected_ids, unselected_ids = self._parse_check_bulk_action_parameters(request.GET)
+
+        # then, let's make sure that each ID actually exists and that the user has access to it
+        instances_query = self.get_queryset()
+        if instances_query.filter(pk__in=selected_ids).count() != len(selected_ids):
+            raise Http404
+        if instances_query.filter(pk__in=unselected_ids).count() != len(unselected_ids):
+            raise Http404
+
+        # let's filter everything
+        filters = parse_instance_filters(request.GET)
+        instances_query = instances_query.select_related("org_unit")
+        instances_query = instances_query.exclude(file="").exclude(device__test_device=True)
+        instances_query = instances_query.for_filters(**filters)
+
+        if not select_all:
+            instances_query = instances_query.filter(pk__in=selected_ids)
+        else:
+            instances_query = instances_query.exclude(pk__in=unselected_ids)
+        return instances_query
+
+    def _parse_check_bulk_action_parameters(self, query_parameters):
         raw_select_all = query_parameters.get("select_all", True)
         select_all = raw_select_all not in ["false", "False", "0", 0, False]
 

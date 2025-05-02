@@ -1,17 +1,17 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
 
 import InstanceFileContent from '../../../instances/components/InstanceFileContent';
 
+import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { HEIGHT } from '../../config';
 import {
     useGetInstance,
     useGetOrgUnitInstances,
 } from '../../hooks/useGetInstances';
 
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { EmptyInstances } from './EmptyInstances';
 import { InstanceTitle } from './InstanceTitle';

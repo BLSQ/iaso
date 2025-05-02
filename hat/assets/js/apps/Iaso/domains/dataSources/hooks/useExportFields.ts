@@ -55,6 +55,7 @@ export const useExportFields = ({
                 key: 'ref_top_org_unit_id',
                 value: exportData.ref_top_org_unit_id?.value,
                 errors: exportData.ref_top_org_unit_id.errors,
+                disabled: !refDataVersionId,
             },
         }),
         [
@@ -69,7 +70,6 @@ export const useExportFields = ({
             areOrgUnitTypesLoading,
         ],
     );
-
     const toUpdateFields: VersionFields = useMemo(
         () => ({
             version: {
@@ -101,6 +101,7 @@ export const useExportFields = ({
                 key: 'source_top_org_unit_id',
                 value: exportData.source_top_org_unit_id?.value,
                 errors: exportData.source_top_org_unit_id.errors,
+                disabled: !sourceDataVersionId,
             },
         }),
         [

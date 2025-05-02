@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-11 13:19+0000\n"
+"POT-Creation-Date: 2025-04-16 13:27+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -285,7 +285,11 @@ msgstr "Mot de passe requis"
 msgid "Both phone number and country code must be provided"
 msgstr "Le numéro de téléphone et le code pays doivent être fournis"
 
-#: iaso/api/profiles/profiles.py iaso/tests/api/test_profiles.py
+#: iaso/api/profiles/profiles.py
+msgid "Invalid phone number format"
+msgstr "Format de numéro de téléphone invalide"
+
+#: iaso/api/profiles/profiles.py
 msgid "Invalid phone number"
 msgstr "Numéro de téléphone invalide"
 

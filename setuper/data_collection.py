@@ -16,9 +16,7 @@ def setup_instances(account_name, iaso_client):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/?with_units_count=true")["orgUnitTypes"]
-    org_unit_type_ids = [
-        out["id"] for out in org_unit_types if out["name"] != "Health facility/Formation sanitaire - HF"
-    ]
+    org_unit_type_ids = [out["id"] for out in org_unit_types]
 
     # create a form
     data = {

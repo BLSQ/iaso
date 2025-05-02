@@ -78,11 +78,13 @@ _POLIO_CHRONOGRAM_RESTRICTED_WRITE = "iaso_polio_chronogram_restricted_write"
 _POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
-_POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
-_POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"
+_POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"  # This is actually NONADMIN permission
+_POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"  # This is actually ADMIN permission
 _POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = "iaso_polio_vaccine_supply_chain_read_only"
-_POLIO_VACCINE_STOCK_MANAGEMENT_READ = "iaso_polio_vaccine_stock_management_read"
-_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"
+_POLIO_VACCINE_STOCK_MANAGEMENT_READ = (
+    "iaso_polio_vaccine_stock_management_read"  # This is actually NONADMIN permission
+)
+_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"  # This is actually ADMIN permission
 _POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY = "iaso_polio_vaccine_stock_management_read_only"
 _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = "iaso_polio_vaccine_stock_earmarks_nonadmin"
 _POLIO_VACCINE_STOCK_EARMARKS_ADMIN = "iaso_polio_vaccine_stock_earmarks_admin"

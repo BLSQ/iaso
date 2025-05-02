@@ -30,6 +30,7 @@ from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modific
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
+from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, Project
 from iaso.utils.s3_client import download_file
@@ -38,6 +39,7 @@ from iaso.utils.s3_client import download_file
 INSTANCES_JSON = "instances.json"
 ORG_UNITS_JSON = "orgUnits.json"
 STORAGE_LOGS_JSON = "storageLogs.json"
+CHANGE_REQUESTS_JSON = "changeRequests.json"
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +64,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         zip_file_path = download_file(zip_file_object_name)
         logger.info("DONE.")
 
-        stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0}
+        stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
 
         with transaction.atomic():
             with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
@@ -73,28 +75,41 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
-                if INSTANCES_JSON not in zip_ref.namelist():
-                    raise ValueError(f"{zip_file_path}: The file {INSTANCES_JSON} does not exist in the zip file.")
+                if INSTANCES_JSON in zip_ref.namelist():
+                    logger.info("Processing forms and files")
+                    instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
+                    import_instances(instances_data, user, project.app_id)
+                    new_instance_files = []
+                    dirs = get_directory_handlers(zip_ref)
 
-                logger.info("Processing forms and files")
-                instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
-                import_instances(instances_data, user, project.app_id)
-                new_instance_files = []
-                dirs = get_directory_handlers(zip_ref)
+                    for instance_data in instances_data:
+                        uuid = instance_data["id"]
+                        instance = process_instance_xml(uuid, instance_data, zip_ref, user)
+                        stats["new_instances"] += 1
+                        new_instance_files += process_instance_attachments(dirs[uuid], instance)
 
-                for instance_data in instances_data:
-                    uuid = instance_data["id"]
-                    instance = process_instance_xml(uuid, instance_data, zip_ref, user)
-                    stats["new_instances"] += 1
-                    new_instance_files += process_instance_attachments(dirs[uuid], instance)
-
-                duplicated_count = duplicate_instance_files(new_instance_files)
-                stats["new_instance_files"] = len(new_instance_files) + duplicated_count
+                    duplicated_count = duplicate_instance_files(new_instance_files)
+                    stats["new_instance_files"] = len(new_instance_files) + duplicated_count
+                else:
+                    logger.info(f"The file {INSTANCES_JSON} does not exist in the zip file.")
 
                 if STORAGE_LOGS_JSON in zip_ref.namelist():
                     logger.info("Processing storage logs")
                     storage_logs_data = read_json_file_from_zip(zip_ref, STORAGE_LOGS_JSON)
                     import_storage_logs(storage_logs_data, user)
+
+                if CHANGE_REQUESTS_JSON in zip_ref.namelist():
+                    logger.info("Processing change requests")
+                    change_requests_data = read_json_file_from_zip(zip_ref, CHANGE_REQUESTS_JSON)
+                    for change_request in change_requests_data:
+                        serializer = OrgUnitChangeRequestWriteSerializer(data=change_request)
+                        serializer.is_valid()
+                        # TODO: Figure out how to handle permissions in bulk upload
+                        # org_unit_to_change = serializer.validated_data["org_unit"]
+                        # self.has_org_unit_permission(org_unit_to_change)
+                        serializer.validated_data["created_by"] = user
+                        serializer.save()
+                        stats["new_change_requests"] += 1
 
     except Exception as e:
         logger.exception("Exception! Rolling back import: " + str(e))
@@ -235,4 +250,5 @@ Started: {start_date!s}, time spent: {time.time() - start_time} sec
 Number of imported org units: {stats["new_org_units"]}
 Number of imported form submissions: {stats["new_instances"]}
 Number of imported submission attachments: {stats["new_instance_files"]}
+Number of imported org unit change requests: {stats["new_change_requests"]}
     """

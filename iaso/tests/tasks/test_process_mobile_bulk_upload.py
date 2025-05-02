@@ -47,8 +47,8 @@ DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
 
 
-def zip_fixture_dir(tablet_dir):
-    return f"iaso/tests/fixtures/mobile_bulk_uploads/{tablet_dir}"
+def zip_fixture_dir(subdir=""):
+    return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
 
 
 def add_to_zip(zipf, directory, subset):
@@ -628,7 +628,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             entity_uuid,  # the folder with XML submission
         ]
         with zipfile.ZipFile(f"/tmp/{entity_uuid}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir("storage_logs_and_change_requests"), files_for_zip)
+            add_to_zip(zipf, zip_fixture_dir("storage_logs"), files_for_zip)
 
         mock_download_file.return_value = f"/tmp/{entity_uuid}.zip"
 
@@ -675,3 +675,34 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(write_log.org_unit_id, 1)
         self.assertEqual(write_log.entity, entity)
         self.assertEqual(list(write_log.instances.all()), [instance])
+
+    def test_change_requests(self, mock_download_file):
+        with zipfile.ZipFile("/tmp/change_request.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
+
+        mock_download_file.return_value = "/tmp/change_request.zip"
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        mock_download_file.assert_called_once()
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
+        ou_change_req = m.OrgUnitChangeRequest.objects.first()
+        self.assertEqual(ou_change_req.old_name, "LaLaland")
+        self.assertEqual(ou_change_req.new_name, "LaLaland Edited")
+        self.assertEqual(ou_change_req.org_unit_id, 1)
+        self.assertEqual(ou_change_req.created_by, self.user)

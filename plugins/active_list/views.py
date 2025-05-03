@@ -250,7 +250,7 @@ def received_count(org_unit_id, month):
     """
     Returns the count of ActivePatientsList entries for a given org_unit and month.
     """
-    latest_ids = Record.objects.filter(org_unit_id=org_unit_id).annotate(latest_id=Max("id"))
+    latest_ids = Record.objects.filter(org_unit_id=org_unit_id).values("patient_id").annotate(latest_id=Max("id"))
 
     records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
     records = filter_received_patients_for_the_month(records, month)
@@ -264,7 +264,7 @@ def stats(org_unit_id, month):
     previous_month = get_previous_period(month) + "-01"
     anteprevious_month = get_previous_period(month) + "-01"
     month = month + "-01"
-    latest_ids = Record.objects.filter(org_unit_id=org_unit_id).values("id").annotate(latest_id=Max("id"))
+    latest_ids = Record.objects.filter(org_unit_id=org_unit_id).values("patient_id").annotate(latest_id=Max("id"))
 
     records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
 
@@ -344,7 +344,7 @@ def validation_api(request, org_unit_id, month):
 
         obj["A rapporté"] = "Non"
         obj["Dernier rapport"] = ""
-        obj["Actifs"] = active_count(org_unit_id)
+        obj["Actifs"] = active_count(org_unit.id)
         obj["Reçus"] = ""
         obj.update(stats(org_unit.id, month))
         obj["Date Validation"] = ""
@@ -365,8 +365,8 @@ def validation_api(request, org_unit_id, month):
             validation_count = validation_count + 1
 
             obj["Reçus"] = "%d (%d)" % (
-                received_count(org_unit_id, month),
-                received_count(org_unit_id, previous_period),
+                received_count(org_unit.id, month),
+                received_count(org_unit.id, previous_period),
             )
             obj["Date Validation"] = latest_validation.created_at.strftime(("%d/%m/%y %H:%M"))
             obj["Statut"] = "Validé" if latest_validation.validation_status == "OK" else "Invalide"

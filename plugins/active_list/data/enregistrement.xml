@@ -1,0 +1,49 @@
+<?xml version='1.0' ?>
+<data id="file_active_admission" version="2025050101" xmlns:h="http://www.w3.org/1999/xhtml"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa"
+      xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+      xmlns:odk="http://www.opendatakit.org/xforms">
+    <main_title>
+        <statut>
+            <adm_statut_patient>nv</adm_statut_patient>
+        </statut>
+        <group_entete>
+            <code_ets/>
+            <adm_date_rapportage>2025-05-02</adm_date_rapportage>
+            <adm_resp_ex/>
+        </group_entete>
+        <group_identifiant>
+            <code_site/>
+            <annee>2025</annee>
+            <num_ordre/>
+            <enfant/>
+            <code_enfant/>
+        </group_identifiant>
+        <code>
+            <adm_code_patient>//2025/</adm_code_patient>
+            <generated_note_name_26/>
+        </code>
+        <group_suivi_patient>
+            <adm_genre_patient>f</adm_genre_patient>
+            <adm_age_patient>22</adm_age_patient>
+            <adm_poids_patient>54</adm_poids_patient>
+            <adm_jours_disp>60</adm_jours_disp>
+            <adm_regime>az3d</adm_regime>
+            <adm_stable>1</adm_stable>
+            <adm_tb_vih>1</adm_tb_vih>
+            <adm_type_vih>1</adm_type_vih>
+            <adm_ligne_thera>1</adm_ligne_thera>
+        </group_suivi_patient>
+    </main_title>
+    <statut_patient>nv</statut_patient>
+    <code_patient>//2025/</code_patient>
+    <genre_patient>f</genre_patient>
+    <age_patient>22</age_patient>
+    <poids_patient>54</poids_patient>
+    <stable>1</stable>
+    <tb_vih>1</tb_vih>
+    <type_vih>1</type_vih>
+    <adm_is_done>1</adm_is_done>
+    <meta>
+    <instanceID>uuid:f0a4fb76-7791-4ffb-a504-5c2d5416d571</instanceID>
+    </meta></data>

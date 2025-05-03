@@ -821,9 +821,11 @@ def import_data(file, the_import):
             patient.last_record = record
             print("Creating patient %s" % patient.identifier_code, "record", record.id)
         else:
-            if not (patient.last_record) or (new_period.strftime("%y-%m") > patient.last_record.period[:7]):
+            print(new_period, type(new_period))
+            if not (patient.last_record) or (new_period > patient.last_record.period[:7]):
                 patient.active = active
                 print("Updating patient %s" % patient.identifier_code, "record", record.id)
                 patient.last_record = record
         patient.save()
+        patient.refresh_from_db()
         patient.evaluate_loss(save=True)

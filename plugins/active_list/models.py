@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Entity
 import datetime
 
 VALIDATION_STATUS_WAITING_FOR_VALIDATION = "WAITING_FOR_VALIDATION"
@@ -106,6 +106,7 @@ class Patient(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     active = models.BooleanField(default=True, verbose_name="Actif")
     loss_date = models.DateField(null=True, blank=True, verbose_name="Date de perte de suivi")
+    entity = models.ForeignKey(Entity, on_delete=models.CASCADE, null=True, blank=True)
 
     def __str__(self):
         return self.identifier_code
@@ -117,7 +118,7 @@ class Patient(models.Model):
         print("Evaluating loss for patient:", self.identifier_code, "Active status:", self.active, "last_record:", self.last_record)
         if self.active and self.last_record and self.last_record.next_dispensation_date:
             print("Last record next_dispensation_date:", self.last_record.next_dispensation_date, datetime.date.today() - datetime.timedelta(days=28))
-            if self.last_record.next_dispensation_date.date() < datetime.date.today() - datetime.timedelta(days=28):
+            if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(days=28):
                 self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(days=28)
                 self.active = False
 

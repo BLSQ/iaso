@@ -4,12 +4,16 @@ from iaso.models import Instance
 from plugins.active_list.models import Patient
 from logging import getLogger
 import uuid
+import os
 from django.core.files.base import ContentFile
 from iaso.api.instances.instances import import_data
 from hat.sync.views import process_instance_file
 logger = getLogger(__name__)
 
-xml_template = """<?xml version='1.0' ?><data id="file_active_admission" version="2025050304" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+REGISTRY_FORM_ID = os.environ.get("REGISTRY_FORM_ID", 1)
+REGISTRY_FORM_VERSION = os.environ.get("REGISTRY_FORM_VERSION", "2025050304")
+ENTITY_TYPE_ID = int(os.environ.get("ENTITY_TYPE_ID", 1))
+xml_template = """<?xml version='1.0' ?><data id="file_active_admission" version="{REGISTRY_FORM_VERSION}" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
     <main_title>
         <statut>
             <adm_statut_patient>{adm_statut_patient}</adm_statut_patient>
@@ -94,6 +98,7 @@ class Command(BaseCommand):
                 hiv_type = hiv_mapping.get(patient.last_record.hiv_type,"1")
                 print(patient.last_record.regimen)
                 variables = {
+                    "REGISTRY_FORM_VERSION": REGISTRY_FORM_VERSION,
                     "adm_statut_patient": "nv",
                     "statut_patient": "nv",
                     "code_patient": identifier_code,
@@ -137,14 +142,14 @@ class Command(BaseCommand):
                         "created_at": timestamp,
                         "updated_at": timestamp,
                         "orgUnitId": patient.last_record.org_unit_id,
-                        "formId": 1,
+                        "formId": REGISTRY_FORM_ID,
                         "longitude": None,
                         "accuracy": 0,
                         "altitude": 0,
                         "file": file_name,
                         "name": "Registry of patient",
                         "entityUuid": the_uuid,
-                        "entityTypeId": 1,
+                        "entityTypeId": ENTITY_TYPE_ID,
                     }
                 ]
                 print(instance_body)

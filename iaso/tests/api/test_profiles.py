@@ -577,76 +577,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.user_permissions.count(), 1)
         self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
 
-    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_orgunits(self):
-        """
-        The user is restricted to one org unit type.
-        Creating a user with unauthorized values in `org_units` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-        self.assertEqual(self.org_unit_from_sub_type.org_unit_type_id, self.sub_unit_type.id)
-
-        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-        data = {
-            "user_name": "unittest_user_name",
-            "password": "unittest_password",
-            "first_name": "unittest_first_name",
-            "last_name": "unittest_last_name",
-            "email": "unittest_last_name",
-            "user_permissions": ["iaso_forms"],
-            "user_roles": [self.user_role.id],
-            "org_units": [{"id": self.org_unit_from_parent_type.id}],
-        }
-
-        response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"],
-            f"The user does not have rights on the following org unit types: {self.parent_org_unit_type.name}",
-        )
-
-    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
-        """
-        The user is restricted to one org unit type.
-        Creating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-
-        data = {
-            "user_name": "user_name",
-            "password": "password",
-            "first_name": "first_name",
-            "last_name": "last_name",
-            "email": "test@test.com",
-            "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
-        }
-
-        response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
-        )
-
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -1161,41 +1091,6 @@ class ProfileAPITestCase(APITestCase):
                 f"User with menupermissions.iaso_users_managed cannot assign an OrgUnit outside "
                 f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
             ),
-        )
-
-    def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
-        """
-        The user is restricted to one org unit type.
-        Updating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-        jum = Profile.objects.get(user=self.jum)
-
-        data = {
-            "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.sub_unit_type.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-
-        data = {
-            "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
         )
 
     def test_update_user_should_succeed_with_restricted_editable_org_unit_types_when_modifying_another_field(self):

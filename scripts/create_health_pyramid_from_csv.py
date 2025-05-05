@@ -1,5 +1,7 @@
 import csv
 
+from collections import defaultdict
+
 import requests
 
 
@@ -14,7 +16,7 @@ make this script more generic. For the time being, you can set it up as follows:
    desired server.
 """
 
-SERVER_BASE_URL = "https://server.org"
+SERVER_BASE_URL = "https://qa.coda.go.wfp.org"
 
 orgunits_url = SERVER_BASE_URL + "/api/orgunits/"
 groups_url = SERVER_BASE_URL + "/api/groups/"
@@ -24,9 +26,9 @@ org_unit_types_url = SERVER_BASE_URL + "/api/v2/orgunittypes/"
 AUTH_TOKEN = "XXX"
 headers = {"Authorization": "Bearer %s" % AUTH_TOKEN}
 
-SOURCE_ID = 1  # ID of the default source
+SOURCE_VERSION_ID = 1  # ID of the default source
 COUNTRY_ID = 1  # ID of the main node of the org unit tree
-CSV_NAME = "example.csv"
+CSV_NAME = "ethiopia.csv"
 
 
 def csv_to_dict(filename):
@@ -45,10 +47,9 @@ def get_group_id_by_name(groups, name):
 def find_or_create_org_unit(name, org_unit_type_id, parent_id, group_id=None):
     search_url = (
         orgunits_url
-        + f'?limit=20&order=id&page=1&searches=[{{"validation_status":"VALID","search":"{name}","source":{SOURCE_ID},"orgUnitTypeId":"{org_unit_type_id}","orgUnitParentId":"{parent_id}"}}]'
+        + f'?limit=20&order=id&page=1&searches=[{{"validation_status":"VALID","search":"{name}","version":{SOURCE_VERSION_ID},"orgUnitTypeId":"{org_unit_type_id}","orgUnitParentId":"{parent_id}"}}]'
     )
     response = requests.get(search_url, headers=headers)
-
     result_count = response.json()["count"]
     if result_count == 0:
         print("CREATING")
@@ -77,7 +78,6 @@ rows = csv_to_dict(CSV_NAME)
 # Groups
 groups = {}
 print("Fetching group ids, create groups if needed")
-
 groups_in_csv = set([row["partner"] for row in rows])
 existing_groups = requests.get(groups_url, headers=headers).json()["groups"]
 existing_group_names = set([g["name"] for g in existing_groups])
@@ -90,71 +90,60 @@ for group_name in groups_in_csv:
         payload = {"name": group_name, "source_ref": ""}
         response = requests.post(groups_url, headers=headers, json=payload)
         groups[group_name] = response.json()["id"]
-
 print("Groups", groups)
 
 # OU Types
-print("Fetching OU types")
+print("Existing OU types:")
 ou_types = {}
 response = requests.get(org_unit_types_url, headers=headers).json()["orgUnitTypes"]
 for out in response:
-    ou_types[out["short_name"]] = out["id"]
-print("OU types", ou_types)
+    ou_types[out["short_name"]] = out
+
+for key, out in ou_types.items():
+    print(f"Depth {out['depth']}: {out['name']} - {key} (ID: {out['id']})")
 
 
-pyramid_dict = {}
-# Turn the file into a pyramid. E.g. for South Sudan:
-# state
-#   |- county
-#       |- payam
-#           |- CHC-CHP
+# Function to create an recursively (endlessly) nested dictionary
+# https://howchoo.com/python/nested-defaultdict-python/
+def nested_dict():
+    return defaultdict(nested_dict)
+
+
+hierarchy = nested_dict()
+
+# Initialize the nested dictionary
 for row in rows:
-    state = row["State"]
-    lga = row["LGA"]
-    ward = row["Ward"]
-    phc_site = row["PHC/Site"]
-    group_name = row["partner"]
-
-    if state in pyramid_dict:
-        if lga in pyramid_dict[state]:
-            if ward in pyramid_dict[state][lga]:
-                pyramid_dict[state][lga][ward][phc_site] = group_name
-            else:
-                pyramid_dict[state][lga][ward] = {phc_site: group_name}
-        else:
-            pyramid_dict[state][lga] = {ward: {phc_site: group_name}}
-    else:
-        pyramid_dict[state] = {lga: {ward: {phc_site: group_name}}}
+    current_level = hierarchy
+    for org_unit_type_name, name in row.items():
+        tuple = (name, org_unit_type_name)
+        current_level = current_level[tuple]
 
 
-# TODO: Generalize this based on the retrieved OU types
-for state in pyramid_dict.keys():
-    print(state, end=" ")
-    state_id = find_or_create_org_unit(name=state, org_unit_type_id=ou_types["State"], parent_id=COUNTRY_ID)
+# Convert the dict with recursively nested defaultdicts to a regular dict
+def dictify(d):
+    if isinstance(d, defaultdict):
+        d = {k: dictify(v) for k, v in d.items()}
+    return d
 
-    for lga in pyramid_dict[state].keys():
-        print("\t" + lga, end=" ")
-        county_id = find_or_create_org_unit(
-            name=lga,
-            org_unit_type_id=ou_types["LGA"],
-            parent_id=state_id,
+
+final_hierarchy = dictify(hierarchy)
+
+
+# Process the pyramid, create OUs and print out results
+def process_hierarchy(d, level=1, parent_id=COUNTRY_ID):
+    for tuple, value in d.items():
+        ou_name, ou_type = tuple  # Unpack the tuple
+        if not ou_name:
+            continue
+
+        print("\t" * (level - 1) + f"{ou_name} ({ou_type})")
+        org_unit_id = find_or_create_org_unit(
+            name=ou_name,
+            org_unit_type_id=ou_types[ou_type]["id"],
+            parent_id=parent_id,
         )
+        if isinstance(value, dict):
+            process_hierarchy(value, level + 1, org_unit_id)
 
-        for ward in pyramid_dict[state][lga].keys():
-            print("\t\t" + ward, end=" ")
-            payam_id = find_or_create_org_unit(
-                name=ward,
-                org_unit_type_id=ou_types["Ward"],
-                parent_id=county_id,
-            )
 
-            for phc_site in pyramid_dict[state][lga][ward].keys():
-                print("\t\t\t" + phc_site, end=": ")
-                group_name = pyramid_dict[state][lga][ward][phc_site]
-                print(group_name)
-                find_or_create_org_unit(
-                    name=phc_site,
-                    org_unit_type_id=ou_types["PHC/Site"],
-                    parent_id=payam_id,
-                    group_id=groups[group_name],
-                )
+process_hierarchy(final_hierarchy)

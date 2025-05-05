@@ -7,7 +7,6 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
-from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
@@ -597,124 +596,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user.iaso_profile.org_units.count(), 1)
         self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
         self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)
-
-    def test_bulk_create_should_fail_with_restricted_editable_org_unit_types(self):
-        self.source.projects.set([self.project])
-        org_unit = self.org_unit_child
-        org_unit.org_unit_type = self.org_unit_type_country
-        org_unit.save()
-
-        user = self.yoda
-
-        user.iaso_profile.org_units.add(org_unit)
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.org_unit_type_region]
-        )
-
-        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_MANAGED))
-        user.user_permissions.remove(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        self.client.force_authenticate(user)
-
-        csv_str = io.StringIO()
-        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
-        writer.writeheader()
-        writer.writerow(
-            {
-                "username": "john",
-                "password": "yodnj!30dln",
-                "email": "john@foo.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "orgunit": f"{org_unit.id}",
-                "orgunit__source_ref": "",
-                "profile_language": "fr",
-                "dhis2_id": "",
-                "permissions": "",
-                "user_roles": "",
-                "projects": "",
-                "phone_number": "",
-                "organization": "",
-                "editable_org_unit_types": "",
-            }
-        )
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {"error": "Operation aborted. You don't have rights on the following org unit types: Country"},
-        )
-
-    def test_bulk_create_user_with_editable_org_unit_types(self):
-        self.source.projects.set([self.project])
-        org_unit = self.org_unit_child
-        org_unit.org_unit_type = self.org_unit_type_country
-        org_unit.save()
-
-        non_admin_user = self.obi
-        non_admin_user.iaso_profile.org_units.add(org_unit)
-        non_admin_user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.org_unit_type_region]
-        )
-        non_admin_user.user_permissions.add(Permission.objects.get(codename=permission._USERS_MANAGED))
-        non_admin_user.user_permissions.remove(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(non_admin_user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(non_admin_user.has_perm(permission.USERS_ADMIN))
-
-        csv_str = io.StringIO()
-        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
-        writer.writeheader()
-        writer.writerow(
-            {
-                "username": "john",
-                "password": "yodnj!30dln",
-                "email": "john@foo.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "orgunit": f"{org_unit.id}",
-                "orgunit__source_ref": "",
-                "profile_language": "fr",
-                "dhis2_id": "",
-                "organization": "",
-                "permissions": "",
-                "user_roles": "",
-                "projects": "",
-                "phone_number": "",
-                "editable_org_unit_types": f"{self.org_unit_type_region.pk},{self.org_unit_type_country.pk}",
-            }
-        )
-
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-        self.client.force_authenticate(non_admin_user)
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {"error": "Operation aborted. You don't have rights on the following org unit types: Country"},
-        )
-
-        admin_user = self.yoda
-        admin_user.iaso_profile.org_units.add(org_unit)
-        admin_user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(admin_user.has_perm(permission.USERS_ADMIN))
-
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-        self.client.force_authenticate(admin_user)
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 200)
-        new_user = User.objects.get(email="john@foo.com")
-        self.assertEqual(new_user.iaso_profile.editable_org_unit_types.count(), 2)
-        self.assertIn(self.org_unit_type_region, new_user.iaso_profile.editable_org_unit_types.all())
-        self.assertIn(self.org_unit_type_country, new_user.iaso_profile.editable_org_unit_types.all())
 
     def test_valid_phone_number(self):
         phone_number = "+12345678912"

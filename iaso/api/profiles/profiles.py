@@ -1,6 +1,6 @@
 import copy
 
-from typing import Any, List, Optional, Set, Union
+from typing import Any, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
@@ -682,10 +682,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         valid_ids = filtered_org_unit_ids or org_unit_ids
         org_units = OrgUnit.objects.filter(id__in=valid_ids)
 
-        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
-            org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
-
         return org_units
 
     def validate_user_roles(self, request):
@@ -751,25 +747,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")
 
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
-
         return editable_org_unit_types
-
-    def _validate_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
-        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
-        invalid_ids = [
-            org_unit_type_id
-            for org_unit_type_id in org_unit_type_ids_to_check
-            if org_unit_type_id
-            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
-        ]
-
-        if invalid_ids:
-            invalid_names = ", ".join(
-                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
-            )
-            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
 
     @staticmethod
     def module_permissions(current_account):

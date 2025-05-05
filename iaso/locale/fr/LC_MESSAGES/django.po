@@ -664,9 +664,3 @@ msgstr ""
 #: iaso/utils/serializer/three_dim_point_field.py
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
-
-#~ msgid ""
-#~ "This field is deprecated. Use the `geom` field to modify the geometry."
-#~ msgstr ""
-#~ "Ce champ est obsolète. Utilisez le champ `geom` pour modifier la "
-#~ "géométrie."

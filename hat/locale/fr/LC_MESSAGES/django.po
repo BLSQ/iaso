@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-07 12:59+0000\n"
+"POT-Creation-Date: 2025-04-08 10:41+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -231,12 +231,20 @@ msgid "Polio Vaccine Supply Chain Write"
 msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
 
 #: hat/menupermissions/models.py
+msgid "Polio Vaccine Supply Chain Read Only"
+msgstr "Lecture seule chaîne d'approvisionnement vaccin Polio"
+
+#: hat/menupermissions/models.py
 msgid "Polio Vaccine Stock Management Read"
 msgstr "Lecture gestion des stocks vaccin Polio"
 
 #: hat/menupermissions/models.py
 msgid "Polio Vaccine Stock Management Write"
 msgstr "Écriture gestion des stocks vaccin Polio"
+
+#: hat/menupermissions/models.py
+msgid "Polio Vaccine Stock Management Read Only"
+msgstr "Lecture seule gestion des stocks vaccin Polio"
 
 #: hat/menupermissions/models.py
 #, fuzzy
@@ -249,6 +257,10 @@ msgstr "Administration des autorisations vaccin Polio"
 #| msgid "Polio Vaccine Authorizations Admin"
 msgid "Polio Vaccine Stock Earmarks Admin"
 msgstr "Administration des autorisations vaccin Polio"
+
+#: hat/menupermissions/models.py
+msgid "Polio Vaccine Stock Earmarks Read Only"
+msgstr "Lecture seule des réservations de stock de vaccin Polio"
 
 #: hat/menupermissions/models.py
 msgid "Areas"

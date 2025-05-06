@@ -6,11 +6,10 @@ from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
@@ -699,41 +698,26 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile) -> list:
-        project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
-            request.user.iaso_profile.projects_ids
-        )
-        result = []
+    def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
+        new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+        user_projects_ids = set(request.user.iaso_profile.projects_ids)
 
-        if not project_ids:
-            if user_has_project_restrictions:
+        if not new_project_ids:
+            if user_projects_ids:
                 # Apply the same project restrictions.
-                return list(Project.objects.filter_on_user_projects(request.user))
+                return Project.objects.filter(id__in=user_projects_ids, account=profile.account_id)
             # No project restrictions.
-            return result
+            return []
 
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            raise PermissionDenied(
-                f"User without permission {permission.USERS_ADMIN} cannot change project attributions."
-            )
+        if not user_projects_ids:
+            # The current user has no project restrictions.
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
-        if user_has_project_restrictions:
-            unauthorized_projects_ids = [p for p in project_ids if p not in request.user.iaso_profile.projects_ids]
-            unauthorized_projects_names = Project.objects.filter(id__in=unauthorized_projects_ids).values_list(
-                "name", flat=True
-            )
-            if unauthorized_projects_names:
-                raise PermissionDenied(
-                    f"You don't have access to the following projects: {','.join(unauthorized_projects_names)}."
-                )
+        if new_project_ids.issubset(user_projects_ids):
+            # The current user has project restrictions, ensure the new projects are within them.
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
-        for project in Project.objects.filter(id__in=project_ids):
-            if profile.account_id != project.account_id:
-                raise BadRequest
-            result.append(project)
-
-        return result
+        raise PermissionDenied("Some projects are outside your scope.")
 
     def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
         editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))

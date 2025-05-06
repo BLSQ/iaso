@@ -6,14 +6,12 @@ import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { USERS_ADMIN } from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 import MESSAGES from '../messages.ts';
-import { userHasPermission } from '../utils.js';
 
 const useStyles = makeStyles(theme => ({
     alert: {
@@ -28,7 +26,6 @@ const UsersInfos = ({
     allowSendEmailInvitation,
 }) => {
     const loggedUser = useCurrentUser();
-    const isLoggedUserAdmin = userHasPermission(USERS_ADMIN, loggedUser);
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
@@ -198,12 +195,6 @@ const UsersInfos = ({
                         label={MESSAGES.projects}
                         options={availableProjects}
                         loading={isFetchingProjects}
-                        disabled={!isLoggedUserAdmin}
-                        helperText={
-                            !isLoggedUserAdmin
-                                ? formatMessage(MESSAGES.userAdminOnly)
-                                : undefined
-                        }
                     />
                     <InputComponent
                         keyValue="language"

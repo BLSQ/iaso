@@ -1549,7 +1549,6 @@
     "iaso.users.selectAllHelperText": "Leave empty to select all",
     "iaso.users.selectedOrgUnits": "Org units selected",
     "iaso.users.update": "Update user",
-    "iaso.users.userAdminOnly": "Can only be edited by user admin",
     "iaso.users.userPermissions": "User permissions",
     "iaso.users.userRoleOrgUnitTypeRestrictionWarning": "Org Unit Type Write restrictions from User role apply to this user. Refer to the user role configuration for more details",
     "iaso.users.usersHistory": "Users history",

@@ -1336,31 +1336,18 @@ class ProfileAPITestCase(APITestCase):
 
     def test_update_user_projects(self):
         user = self.jam
+        self.client.force_authenticate(user)
+
         self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
         self.assertEqual(user.iaso_profile.projects.count(), 0)
 
         profile_to_edit = Profile.objects.get(user=self.jum)
 
-        self.client.force_authenticate(user)
-
+        # Changing `projects` is allowed for users without restrictions.
         data = {
             "user_name": "jum_new_user_name",
             "projects": [self.project.id],
         }
-
-        # Changing `projects` is not allowed for users without `permission._USERS_ADMIN`.
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"],
-            "User without permission menupermissions.iaso_users cannot change project attributions.",
-        )
-
-        # Changing `projects` is allowed for users with `permission._USERS_ADMIN`.
-        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
-        del user._perm_cache
-        del user._user_perm_cache
         response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         profile_to_edit.refresh_from_db()
@@ -1368,9 +1355,9 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(profile_to_edit.projects.first(), self.project)
         self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
 
-        # Changing `projects` is not allowed for users with restrictions.
+        # A user cannot assign a project outside his own scope.
         user.iaso_profile.projects.set([self.project])
-        del user.iaso_profile.projects_ids
+        del user.iaso_profile.projects_ids  # Refresh cached property.
         new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
         data = {
             "user_name": "jum_new_user_name",
@@ -1380,7 +1367,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.data["detail"],
-            "You don't have access to the following projects: New project.",
+            "Some projects are outside your scope.",
         )
 
         # Current project restrictions of the user should be applied to the edited profile

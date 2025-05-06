@@ -1548,7 +1548,6 @@
     "iaso.users.selectAllHelperText": "Laisser vide pour tout sélectionner",
     "iaso.users.selectedOrgUnits": "Unité d'organisation sélectionnées",
     "iaso.users.update": "Mettre l'utilisateur à jour",
-    "iaso.users.userAdminOnly": "Edition pour les administrateurs uniquement",
     "iaso.users.userPermissions": "Permissions d'utilisateur",
     "iaso.users.userRoleOrgUnitTypeRestrictionWarning": "Des restrictions d'écriture de rôle d’utilisateur s’appliquent à cet utilisateur. Consulter le rôle d’utilisateur en question pour plus de détails",
     "iaso.users.usersHistory": "Historique des utilisateurs",

@@ -1335,45 +1335,76 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.data["phone_number"], None)
 
     def test_update_user_projects(self):
+        new_project_1 = m.Project.objects.create(name="New project 1", app_id="new.project.1", account=self.account)
+        new_project_2 = m.Project.objects.create(name="New project 2", app_id="new.project.2", account=self.account)
+        profile_to_edit = Profile.objects.get(user=self.jum)
+        profile_to_edit.projects.clear()
         user = self.jam
         self.client.force_authenticate(user)
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
         self.assertEqual(user.iaso_profile.projects.count(), 0)
+        self.assertEqual(profile_to_edit.projects.count(), 0)
 
-        profile_to_edit = Profile.objects.get(user=self.jum)
-
-        # Changing `projects` is allowed for users without restrictions.
-        data = {
-            "user_name": "jum_new_user_name",
-            "projects": [self.project.id],
-        }
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        # A user without `projects` restrictions can set any project.
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id],
+            },
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
         self.assertEqual(profile_to_edit.projects.first(), self.project)
         self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
 
-        # A user cannot assign a project outside his own scope.
-        user.iaso_profile.projects.set([self.project])
+        # A user with `projects` restrictions cannot edit a user who has broader access to projects.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
         del user.iaso_profile.projects_ids  # Refresh cached property.
-        new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
-        data = {
-            "user_name": "jum_new_user_name",
-            "projects": [new_project.id],
-        }
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        user.iaso_profile.projects.set([self.project])
+        profile_to_edit.projects.set([self.project, new_project_1, new_project_2])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id],
+            },
+            format="json",
+        )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.data["detail"],
-            "Some projects are outside your scope.",
+            "You cannot edit a user who has broader access to projects.",
         )
+
+        # A user with `projects` restrictions can edit a user who has narrower access to projects.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project, new_project_1])
+        profile_to_edit.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_1.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), new_project_1)
+        self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
 
         # Current project restrictions of the user should be applied to the edited profile
         # when `projects` is not explicitly specified.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
         user.iaso_profile.projects.set([self.project])
-        del user.iaso_profile.projects_ids
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         profile_to_edit.projects.clear()
         self.assertEqual(profile_to_edit.projects.count(), 0)
@@ -1383,6 +1414,25 @@ class ProfileAPITestCase(APITestCase):
         profile_to_edit.refresh_from_db()
         self.assertEqual(profile_to_edit.projects.count(), 1)
         self.assertEqual(profile_to_edit.projects.first(), self.project)
+
+        # A user with `projects` restrictions cannot assign projects outside his range.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "Some projects are outside your scope.",
+        )
 
     def get_new_user_data(self):
         user_name = "audit_user"

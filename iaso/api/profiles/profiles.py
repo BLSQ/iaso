@@ -700,21 +700,23 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
         new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        user_projects_ids = set(request.user.iaso_profile.projects_ids)
+        user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
 
         if not new_project_ids:
-            if user_projects_ids:
+            if user_restricted_projects_ids:
                 # Apply the same project restrictions.
-                return Project.objects.filter(id__in=user_projects_ids, account=profile.account_id)
+                return Project.objects.filter(id__in=user_restricted_projects_ids, account=profile.account_id)
             # No project restrictions.
             return []
 
-        if not user_projects_ids:
-            # The current user has no project restrictions.
+        if not user_restricted_projects_ids:
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
-        if new_project_ids.issubset(user_projects_ids):
-            # The current user has project restrictions, ensure the new projects are within them.
+        profile_restricted_projects_ids = set(profile.projects_ids)
+        if profile_restricted_projects_ids.issuperset(user_restricted_projects_ids):
+            raise PermissionDenied("You cannot edit a user who has broader access to projects.")
+
+        if new_project_ids.issubset(user_restricted_projects_ids):
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
         raise PermissionDenied("Some projects are outside your scope.")

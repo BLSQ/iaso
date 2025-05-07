@@ -1,4 +1,3 @@
-import datetime
 import logging
 
 from traceback import format_exc
@@ -17,7 +16,6 @@ from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
-from iaso.utils.s3_client import upload_file_to_s3
 
 
 logger = logging.getLogger(__name__)

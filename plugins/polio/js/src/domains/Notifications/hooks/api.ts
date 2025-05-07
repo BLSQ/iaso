@@ -107,7 +107,7 @@ export const useCreateEditNotification = (): UseMutationResult => {
 const uploadXlsx = (values: XlsxFile) => {
     return postRequest({
         url: `${baseUrl}import_xlsx/`,
-        fileData: { file: values.file },
+        fileData: { document: values.file },
         data: values,
     });
 };

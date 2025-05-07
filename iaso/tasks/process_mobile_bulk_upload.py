@@ -33,7 +33,6 @@ from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, Project
-from iaso.utils.s3_client import download_file
 
 
 INSTANCES_JSON = "instances.json"
@@ -56,18 +55,13 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     )
     api_import = APIImport.objects.get(id=api_import_id)
     user = api_import.user
-    zip_file_object_name = api_import.json_body["file"]
     project = Project.objects.get(id=project_id)
 
     try:
-        logger.info(f"Downloading {zip_file_object_name} from S3...")
-        zip_file_path = download_file(zip_file_object_name)
-        logger.info("DONE.")
-
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
 
         with transaction.atomic():
-            with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
+            with zipfile.ZipFile(api_import.file, "r") as zip_ref:
                 if ORG_UNITS_JSON in zip_ref.namelist():
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
                     new_org_units = import_org_units(org_units_data, user, project.app_id)

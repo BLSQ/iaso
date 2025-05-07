@@ -70,23 +70,12 @@ class MobileBulkUploadsViewSet(ViewSet):
         try:
             zip_file = serializer.validateZipFile()
 
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-            object_name = "/".join(
-                [
-                    "mobilebulkuploads",
-                    app_id,
-                    str(user.id),
-                    f"mobilebulkupload-{timestamp}.zip",
-                ]
-            )
-
             api_import = APIImport.objects.create(
                 user=user,
                 import_type="bulk",
-                json_body={"file": object_name},
+                file=zip_file,
+                json_body={},
             )
-
-            upload_file_to_s3(file_name=zip_file.temporary_file_path(), object_name=object_name)
 
             process_mobile_bulk_upload(
                 api_import_id=api_import.id,

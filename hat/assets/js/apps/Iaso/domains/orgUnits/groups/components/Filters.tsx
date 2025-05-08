@@ -25,6 +25,7 @@ type Params = {
     version?: string;
     project_ids?: string;
     accountId: string;
+    isInternal?: boolean;
 };
 
 type Props = {
@@ -58,6 +59,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     );
     const [version, setVersion] = useState<Version | undefined>(
         filters?.version,
+    );
+    const [isInternal, setIsInternal] = useState<boolean | undefined>(
+        filters?.isInternal,
     );
 
     const dataSourceDropDown = useMemo(() => {
@@ -114,10 +118,19 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 setDataSource(value);
             } else if (key === 'version') {
                 setVersion(value);
+            } else if (key === 'isInternal') {
+                setIsInternal(value);
             }
             handleChange(key, value);
         },
-        [filters, handleChange, setProjectId, setDataSource, setVersion],
+        [
+            filters,
+            handleChange,
+            setProjectId,
+            setDataSource,
+            setVersion,
+            setIsInternal,
+        ],
     );
     const { formatMessage } = useSafeIntl();
 
@@ -177,6 +190,29 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     blockForbiddenChars
                     onEnterPressed={handleSearch}
                     onErrorChange={setTextSearchError}
+                />
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="isInternal"
+                    onChange={handleChangeSelect}
+                    value={isInternal}
+                    type="select"
+                    label={MESSAGES.isInternalFilter}
+                    options={[
+                        {
+                            label: formatMessage(MESSAGES.isInternalTrue),
+                            value: 'true',
+                        },
+                        {
+                            label: formatMessage(MESSAGES.isInternalFalse),
+                            value: 'false',
+                        },
+                    ]}
+                    blockForbiddenChars
+                    onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    clearable
                 />
             </Grid>
 

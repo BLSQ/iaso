@@ -1,10 +1,10 @@
-import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 import {
     getRequest,
     deleteRequest,
     postRequest,
     patchRequest,
 } from '../../../../libs/Api';
+import { useSnackQuery, useSnackMutation } from '../../../../libs/apiHooks';
 
 import MESSAGES from '../messages';
 
@@ -25,6 +25,9 @@ export const useGetGroups = params => {
     }
     if (params.version) {
         newParams.version = params.version;
+    }
+    if (params.isInternal) {
+        newParams.is_internal = params.isInternal;
     }
 
     const searchParams = new URLSearchParams(newParams);

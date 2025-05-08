@@ -10,13 +10,13 @@ import {
     useRedirectTo,
 } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 import { Filters } from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 import tableColumns from './config';
-import MESSAGES from './messages';
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

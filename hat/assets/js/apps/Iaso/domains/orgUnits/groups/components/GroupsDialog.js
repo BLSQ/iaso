@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Grid } from '@mui/material';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
-import { Grid } from '@mui/material';
-import { userHasPermission } from '../../../users/utils';
-import { useCurrentUser } from '../../../../utils/usersUtils.ts';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
 import * as Permission from '../../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../../utils/usersUtils.ts';
+import { userHasPermission } from '../../../users/utils';
+import MESSAGES from '../messages';
 
 const initialGroup = currentGroup => {
     return {
@@ -19,6 +19,10 @@ const initialGroup = currentGroup => {
         },
         block_of_countries: {
             value: get(currentGroup, 'block_of_countries'),
+            errors: [],
+        },
+        is_internal: {
+            value: get(currentGroup, 'is_internal'),
             errors: [],
         },
     };
@@ -58,6 +62,7 @@ const GroupDialog = ({
             name: group.name.value,
             source_ref: group.source_ref.value,
             block_of_countries: group.block_of_countries.value,
+            is_internal: group.is_internal.value,
         };
 
         saveGroup(currentGroup)
@@ -128,6 +133,14 @@ const GroupDialog = ({
                             label={MESSAGES.blockOfCountries}
                         />
                     )}
+                    <InputComponent
+                        keyValue="is_internal"
+                        value={group.is_internal.value}
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        type="checkbox"
+                        errors={group.is_internal.errors}
+                        label={MESSAGES.isInternal}
+                    />
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

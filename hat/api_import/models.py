@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import CASCADE
@@ -9,6 +11,11 @@ IMPORT_TYPE = (
     ("bulk", "Bulk Org Units and Instances"),
     ("storageLog", "Storage logs"),
 )
+
+
+def bulk_uploads_path(_api_import, filename):
+    extension = filename.split(".")[-1]
+    return f"mobilebulkuploads/{filename}_{uuid.uuid4()}.{extension}"
 
 
 class APIImport(models.Model):
@@ -30,7 +37,7 @@ class APIImport(models.Model):
     headers = models.JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
-    file = models.FileField(upload_to="mobilebulkuploads", null=True, blank=True)
+    file = models.FileField(upload_to=bulk_uploads_path, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (

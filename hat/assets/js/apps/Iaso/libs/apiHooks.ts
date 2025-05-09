@@ -1,6 +1,6 @@
+import { useRef } from 'react';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { isArray } from 'lodash';
-import { useRef } from 'react';
 import { defineMessages } from 'react-intl';
 import {
     MutationFunction,
@@ -357,15 +357,15 @@ export const useSnackQuery = <
  * @param queries
  */
 
-export const useSnackQueries = <QueryFnData>(
+export const useSnackQueries = <TData extends readonly unknown[]>(
     queries: {
         queryKey: QueryKey;
-        queryFn: QueryFunction<QueryFnData>;
+        queryFn: QueryFunction<TData[number]>;
         snackErrorMsg?: IntlMessage;
         options: UseQueryOptions;
         dispatchOnError?: boolean;
     }[],
-): Array<UseQueryResult<unknown, unknown>> => {
+): { [K in keyof TData]: UseQueryResult<TData[K]> } => {
     const newQueries = queries.map(query => {
         const {
             options,
@@ -387,7 +387,9 @@ export const useSnackQueries = <QueryFnData>(
         };
         return { ...query, ...newOptions };
     });
-    return useQueries<Array<UseQueryResult<unknown, unknown>>>(newQueries);
+    return useQueries(newQueries) as {
+        [K in keyof TData]: UseQueryResult<TData[K]>;
+    };
 };
 
 export const useAbortController = ():

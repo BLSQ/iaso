@@ -1,5 +1,5 @@
-import { textPlaceholder } from 'bluesquare-components';
 import React, { useCallback } from 'react';
+import { textPlaceholder } from 'bluesquare-components';
 
 import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';

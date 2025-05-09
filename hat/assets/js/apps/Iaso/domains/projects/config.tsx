@@ -1,3 +1,4 @@
+import React, { ReactElement, useMemo } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Switch, Tooltip } from '@mui/material';
 import {
@@ -6,26 +7,17 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
+import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
-import { baseUrls } from '../../constants/urls';
-
+import QrCode from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-};
-
 export const baseUrl = baseUrls.projects;
 export const columns = (
     formatMessage: (msg: IntlMessage) => string,
-    params: Params,
     saveProject: (s: Project) => Promise<any>,
 ): Array<Column> => [
     {
@@ -55,14 +47,22 @@ export const columns = (
         resizable: false,
         sortable: false,
         Cell: (settings): ReactElement => (
-            <section>
+            <Box
+                display="flex"
+                alignItems="center"
+                gap={1}
+                justifyContent="center"
+            >
                 <EditProjectDialog
                     initialData={settings.row.original}
                     saveProject={saveProject}
                     dialogType="edit"
                     iconProps={{}}
                 />
-            </section>
+                {settings.row.original.qr_code && (
+                    <QrCode qrCode={settings.row.original.qr_code} />
+                )}
+            </Box>
         ),
     },
 ];

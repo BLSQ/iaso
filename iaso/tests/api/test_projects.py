@@ -51,6 +51,8 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
+        # Verify QR code is not included in non-paginated response
+        self.assertNotIn("qr_code", response.json()["projects"][0])
 
     def test_feature_flags_list_ok(self):
         """GET /featureflags/ happy path: we expect one result"""
@@ -88,6 +90,9 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["pages"], 2)
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
+        # Verify QR code is included in paginated response
+        self.assertIn("qr_code", response_data["projects"][0])
+        self.assertIsInstance(response_data["projects"][0]["qr_code"], str)
 
     def test_feature_flags_list_paginated(self):
         """GET /featureflags/ paginated happy path"""
@@ -134,6 +139,8 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidProjectData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
         self.assertValidFeatureFlagData(response_data["feature_flags"][0])
+        # Verify QR code is not included in detail view
+        self.assertNotIn("qr_code", response_data)
 
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""

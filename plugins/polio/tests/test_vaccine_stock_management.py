@@ -65,6 +65,15 @@ class VaccineStockManagementAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="TestlandRef",
         )
+
+        cls.country_2 = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="Testland 2",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="TestlandRef2",
+        )
+
         cls.campaign = pm.Campaign.objects.create(
             obr_name="Test Campaign",
             country=cls.country,
@@ -104,6 +113,13 @@ class VaccineStockManagementAPITestCase(APITestCase):
             country=cls.country,
             vaccine=pm.VACCINES[0][0],
         )
+
+        cls.vaccine_stock_2 = pm.VaccineStock.objects.create(
+            account=cls.account,
+            country=cls.country_2,
+            vaccine=pm.VACCINES[0][0],
+        )
+
         cls.outgoing_stock_movement = pm.OutgoingStockMovement.objects.create(
             campaign=cls.campaign,
             vaccine_stock=cls.vaccine_stock,
@@ -113,6 +129,15 @@ class VaccineStockManagementAPITestCase(APITestCase):
             lot_numbers=["LOT123"],
             comment="Hello world",
         )
+
+        cls.outgoing_stock_movement_2 = pm.OutgoingStockMovement.objects.create(
+            campaign=cls.campaign,
+            vaccine_stock=cls.vaccine_stock_2,
+            report_date=cls.now - datetime.timedelta(days=3),
+            form_a_reception_date=cls.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+
         cls.destruction_report = pm.DestructionReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
             action="Destroyed due to expiration",
@@ -189,7 +214,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         results = response.json()["results"]
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results), 2)
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
@@ -809,8 +834,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         for result in data["results"]:
             self.assertEqual(result["vaccine_stock"], self.vaccine_stock.pk)
 
-            # Add a new test which adds the order=date_of_incident_report and verify that the results are ordered by date_of_incident_report
-
     def test_outgoing_stock_movement_list_ordered_by_date(self):
         self.client.force_authenticate(self.user_rw_perms)
 
@@ -1148,7 +1171,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         results = response.json()["results"]
-        self.assertEqual(len(results), 1)
+        self.assertEqual(len(results), 2)
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])

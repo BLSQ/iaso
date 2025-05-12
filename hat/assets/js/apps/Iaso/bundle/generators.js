@@ -3,9 +3,22 @@ const path = require('path');
 const { getAvailableLanguages } = require('./languages.js');
 const { getPluginFolders } = require('./plugins.js');
 
+/**
+ * Checks if file content is the same to avoid rewriting the same file.
+ * The goal is to avoid having webpack generate a new bundle every time with the same content.
+ * @param filePath
+ * @param content
+ */
+function writeFileIfChanged(filePath, content) {
+    if (fs.existsSync(filePath)) {
+        const existing = fs.readFileSync(filePath, 'utf-8');
+        if (existing === content) return;
+    }
+    fs.writeFileSync(filePath, content);
+}
+
 /** @param {string} rootDir */
 /** @param {string[]} availableLanguages */
-
 const generateCombinedTranslations = rootDir => {
     const availableLanguages = getAvailableLanguages(rootDir);
     const combinedTranslationsPath = path.resolve(
@@ -103,7 +116,7 @@ export default translations;
     }
 
     // Write the file
-    fs.writeFileSync(combinedTranslationsPath, fileContent);
+    writeFileIfChanged(combinedTranslationsPath, fileContent);
     return combinedTranslationsPath;
 };
 
@@ -154,7 +167,7 @@ export default combinedConfigs;
     }
 
     // Write the file
-    fs.writeFileSync(combinedConfigPath, fileContent);
+    writeFileIfChanged(combinedConfigPath, fileContent);
     return combinedConfigPath;
 };
 
@@ -183,7 +196,7 @@ export default pluginKeys;
     }
 
     // Write the file
-    fs.writeFileSync(pluginKeysPath, fileContent);
+    writeFileIfChanged(pluginKeysPath, fileContent);
     return pluginKeysPath;
 };
 
@@ -279,7 +292,7 @@ export default LANGUAGE_CONFIGS;
     }
 
     // Write the file
-    fs.writeFileSync(languageConfigsPath, fileContent);
+    writeFileIfChanged(languageConfigsPath, fileContent);
     return languageConfigsPath;
 };
 

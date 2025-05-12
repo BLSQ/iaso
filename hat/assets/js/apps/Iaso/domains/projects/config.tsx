@@ -10,7 +10,7 @@ import {
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
-import QrCode from './components/QrCode';
+import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';

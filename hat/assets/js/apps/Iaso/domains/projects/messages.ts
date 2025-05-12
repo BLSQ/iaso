@@ -308,14 +308,6 @@ const MESSAGES = defineMessages({
         defaultMessage: "Can't load project QR code",
         id: 'iaso.label.project.qrCodeError',
     },
-    failedToCopyImage: {
-        defaultMessage: 'Failed to copy image to clipboard',
-        id: 'iaso.label.project.failedToCopyImage',
-    },
-    qrCodeCopied: {
-        defaultMessage: 'QR Code copied to clipboard',
-        id: 'iaso.label.project.qrCodeCopied',
-    },
     qrCodeTitle: {
         defaultMessage:
             'This is the QR code to scan from the mobile application for this Project. Click on the sharing icon to copy and paste it',

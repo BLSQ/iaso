@@ -1,27 +1,20 @@
-import React, { useState, useCallback, memo } from 'react';
+import React, { useState, useCallback, FunctionComponent } from 'react';
 import {
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
     Button,
-    Snackbar,
-    Alert,
     Box,
-    Paper,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { openSnackBar } from 'Iaso/components/snackBars/EventDispatcher';
+import { errorSnackBar, succesfullSnackBar } from 'Iaso/constants/snackBars';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 
 type Props = {
     qrCode: string;
-};
-
-type SnackbarState = {
-    open: boolean;
-    message: string;
-    isError: boolean;
 };
 
 const styles: SxStyles = {
@@ -49,20 +42,12 @@ const styles: SxStyles = {
     },
 };
 
-const QrCode: React.FunctionComponent<Props> = ({ qrCode }) => {
+export const QrCode: FunctionComponent<Props> = ({ qrCode }) => {
     const [open, setOpen] = useState(false);
-    const [snackbar, setSnackbar] = useState<SnackbarState>({
-        open: false,
-        message: '',
-        isError: false,
-    });
     const { formatMessage } = useSafeIntl();
 
     const handleOpen = useCallback(() => setOpen(true), []);
     const handleClose = useCallback(() => setOpen(false), []);
-    const handleSnackbarClose = useCallback(() => {
-        setSnackbar(prev => ({ ...prev, open: false }));
-    }, []);
 
     const handleShare = useCallback(async () => {
         try {
@@ -71,21 +56,12 @@ const QrCode: React.FunctionComponent<Props> = ({ qrCode }) => {
 
             const item = new ClipboardItem({ 'image/png': blob });
             await navigator.clipboard.write([item]);
-
-            setSnackbar({
-                open: true,
-                message: formatMessage(MESSAGES.qrCodeCopied),
-                isError: false,
-            });
+            openSnackBar(succesfullSnackBar('qrCodeCopied'));
         } catch (error) {
             console.error('Failed to copy image:', error);
-            setSnackbar({
-                open: true,
-                message: formatMessage(MESSAGES.failedToCopyImage),
-                isError: true,
-            });
+            openSnackBar(errorSnackBar('failedToCopyImage'));
         }
-    }, [qrCode, formatMessage]);
+    }, [qrCode]);
 
     return (
         <>
@@ -121,26 +97,6 @@ const QrCode: React.FunctionComponent<Props> = ({ qrCode }) => {
                     </Button>
                 </DialogActions>
             </Dialog>
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={3000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            >
-                {snackbar.isError ? (
-                    <Alert
-                        onClose={handleSnackbarClose}
-                        severity="error"
-                        variant="filled"
-                    >
-                        {snackbar.message}
-                    </Alert>
-                ) : (
-                    <Paper sx={styles.snackbarPaper}>{snackbar.message}</Paper>
-                )}
-            </Snackbar>
         </>
     );
 };
-
-export default memo(QrCode);

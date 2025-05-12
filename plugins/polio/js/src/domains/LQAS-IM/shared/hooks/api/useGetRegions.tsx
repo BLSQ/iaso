@@ -1,22 +1,25 @@
+import { UseQueryResult } from 'react-query';
+import { PaginatedResponse } from 'Iaso/domains/app/types';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-export const useGetRegions = country => {
+export const useGetRegions = (
+    country?: number,
+): UseQueryResult<PaginatedResponse<OrgUnit>> => {
     const params = {
         validation_status: 'all',
-        limit: 3000,
+        limit: '3000',
         order: 'id',
-        orgUnitParentId: country,
-        // FIXME this is not super safe as the ids can change from one account to the other
-        // orgUnitTypeId: 6,
+        orgUnitParentId: `${country}`,
         orgUnitTypeCategory: 'REGION',
     };
 
-    const queryString = new URLSearchParams(params);
+    const queryString = new URLSearchParams(params).toString();
 
     return useSnackQuery(
         ['regions', params],
-        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        () => getRequest(`/api/orgunits/?${queryString}`),
         undefined,
         {
             enabled: Boolean(country),

@@ -100,6 +100,12 @@ class PaymentLotsViewSet(ModelViewSet):
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
         payments = (
             Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
@@ -406,7 +412,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
 
-    This API allows to list potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
+    This API allows listing potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
     The Django model that stores "Potential payment" is `PotentialPayment`.
 
@@ -446,6 +452,12 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self):
         queryset = (
@@ -549,7 +561,7 @@ class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
 
-    This API allows to list and update Payments.
+    This API allows listing and updating Payments.
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
@@ -567,6 +579,12 @@ class PaymentsViewSet(ModelViewSet):
     results_key = "results"
     serializer_class = PaymentSerializer
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self) -> models.QuerySet:
         user = self.request.user

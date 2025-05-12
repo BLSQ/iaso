@@ -620,7 +620,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         def get_reference_instance_ids(instances):
             if not instances.exists():
                 return ""
-            return ",".join(sorted(str(instance.id) for instance in instances.all()))
+            return ",".join(str(instance.id) for instance in instances.all().order_by("id"))
 
         # Basic expected data
         expected_row_data = [
@@ -737,14 +737,7 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         expected_row_data = ["" if v is None else str(v) for v in expected_row_data]
         first_data_row = ["" if v is None else str(v) for v in first_data_row]
 
-        # Sort instance IDs in both lists before comparison
-        for i, (expected, actual) in enumerate(zip(expected_row_data, first_data_row)):
-            if "," in expected and "," in actual:  # Check if this is a comma-separated list of IDs
-                expected_sorted = ",".join(sorted(expected.split(",")))
-                actual_sorted = ",".join(sorted(actual.split(",")))
-                self.assertEqual(expected_sorted, actual_sorted, f"Difference at index {i}")
-            else:
-                self.assertEqual(expected, actual, f"Difference at index {i}")
+        self.assertEqual(first_data_row, expected_row_data)
 
     def test_export_to_csv_with_new_change_request(self):
         """

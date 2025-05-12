@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, FormHelperText, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { DropdownOptions } from '../../../types/utils';
@@ -14,6 +14,7 @@ type Field = {
     isLoading?: boolean;
     options?: DropdownOptions<string | number>[];
     required?: boolean;
+    disabled?: boolean;
 };
 
 export type VersionFields = {
@@ -72,7 +73,13 @@ export const VersionPicker: FunctionComponent<Props> = ({
                         resetTrigger={resetTrigger}
                         hardReset
                         required={orgUnit.required}
+                        disabled={orgUnit.disabled}
                     />
+                    {orgUnit.disabled && (
+                        <FormHelperText sx={{ mt: -1.5 }}>
+                            {formatMessage(MESSAGES.pleaseSelectVersionFirst)}
+                        </FormHelperText>
+                    )}
                 </Box>
                 <InputComponent
                     type="select"

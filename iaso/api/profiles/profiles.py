@@ -711,7 +711,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
         profile_restricted_projects_ids = set(profile.projects_ids)
-        if profile_restricted_projects_ids.issuperset(user_restricted_projects_ids):
+        if profile_restricted_projects_ids > user_restricted_projects_ids:
             raise PermissionDenied("You cannot edit a user who has broader access to projects.")
 
         if new_project_ids.issubset(user_restricted_projects_ids):

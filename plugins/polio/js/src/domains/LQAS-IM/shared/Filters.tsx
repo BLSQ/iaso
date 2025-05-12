@@ -40,9 +40,7 @@ type Props = {
     imType?: IMType & 'imHH';
 };
 
-const getCurrentUrl = (
-    imType?: 'imGlobal' | 'imHH' | 'imOHH' | 'imIHH',
-): string => {
+const getCurrentUrl = (imType?: IMType | 'imHH'): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }

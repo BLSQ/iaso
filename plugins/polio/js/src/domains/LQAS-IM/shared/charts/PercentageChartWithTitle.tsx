@@ -1,13 +1,14 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import { FormatLqasDataForChartResult } from '../../LQAS/utils';
 import { PercentageBarChart } from './PercentageBarChart';
+import { GraphTooltipFormatter } from './PercentageBarChart/types';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     title?: string;
-    data: any[];
-    tooltipFormatter: (...args: any) => any;
+    data: FormatLqasDataForChartResult[];
+    tooltipFormatter: GraphTooltipFormatter;
     isLoading: boolean;
     chartKey: string;
     showChart: boolean;

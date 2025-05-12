@@ -1,4 +1,5 @@
 import { IntlFormatMessage } from 'bluesquare-components';
+import MESSAGES from '../../../constants/messages';
 import {
     BarChartData,
     ConvertedLqasImData,
@@ -10,11 +11,10 @@ import {
     LqasImParams,
     LqasImRound,
 } from '../../../constants/types';
-import { sumChildrenCheckedLqas } from '../LQAS/utils';
-import MESSAGES from '../../../constants/messages';
+import { imNfmKeys, imRfaKeys } from '../IM/constants';
 import { sumChildrenCheckedIm } from '../IM/utils';
 import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
-import { imNfmKeys, imRfaKeys } from '../IM/constants';
+import { sumChildrenCheckedLqas } from '../LQAS/utils';
 
 const accessFullRoundData = (
     data: LqasImCampaign,

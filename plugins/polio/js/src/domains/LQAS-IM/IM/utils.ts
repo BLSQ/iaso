@@ -142,11 +142,17 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
     );
 };
 
-export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
-    // eslint-disable-next-line react/prop-types
-    const ratio = `${props.payload.marked}/${props.payload.checked}`;
-    return [ratio, formatMessage(MESSAGES.vaccinated)];
-};
+export const imTooltipFormatter =
+    formatMessage =>
+    (
+        _value: any,
+        _name: any,
+        props: { payload: { marked: number; checked: number } },
+    ): [string, string] => {
+        // eslint-disable-next-line react/prop-types
+        const ratio = `${props.payload.marked}/${props.payload.checked}`;
+        return [ratio, formatMessage(MESSAGES.vaccinated)];
+    };
 
 export const formatImDataForNFMChart = ({
     data,

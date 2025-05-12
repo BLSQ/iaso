@@ -40,6 +40,16 @@ export type LqasImCampaign = {
     bad_round_number?: number;
 };
 
+export type LQASDistrictStatus =
+    | '1lqasOK'
+    | '3lqasverypoor'
+    | '3lqaspoor'
+    | '3lqasmoderate'
+    | '2lqasDisqualified'
+    | '3lqasundersampled'
+    | '3lqasoversampled'
+    | 'inScope';
+
 export type LqasImDistrictData = {
     total_child_fmd: number;
     total_child_checked: number;
@@ -47,15 +57,7 @@ export type LqasImDistrictData = {
     district?: number;
     total_sites_visited: number;
     region_name?: string;
-    status:
-        | '1lqasOK'
-        | '3lqasverypoor'
-        | '3lqaspoor'
-        | '3lqasmoderate'
-        | '2lqasDisqualified'
-        | '3lqasundersampled'
-        | '3lqasoversampled'
-        | 'inScope';
+    status: LQASDistrictStatus;
 };
 
 export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {

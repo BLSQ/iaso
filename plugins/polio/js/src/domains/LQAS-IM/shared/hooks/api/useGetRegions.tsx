@@ -1,12 +1,10 @@
 import { UseQueryResult } from 'react-query';
-import { PaginatedResponse } from 'Iaso/domains/app/types';
-import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetRegions = (
     country?: number,
-): UseQueryResult<PaginatedResponse<OrgUnit>> => {
+): UseQueryResult<{ name: string; id: number }[]> => {
     const params = {
         validation_status: 'all',
         limit: '3000',
@@ -26,12 +24,12 @@ export const useGetRegions = (
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: data =>
-                data.orgunits
+                data?.orgunits
                     .filter(orgUnit => orgUnit.parent_id === country)
                     .map(orgUnit => ({
                         name: orgUnit.name,
                         id: orgUnit.id,
-                    })),
+                    })) ?? [],
         },
     );
 };

@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { array, func, object, string } from 'prop-types';
+/* eslint-disable react/no-array-index-key */
+import React, { FunctionComponent, useEffect, useState } from 'react';
+import { Box } from '@mui/material';
 import {
     Bar,
     BarChart,
@@ -10,20 +11,36 @@ import {
     LabelList,
     Cell,
 } from 'recharts';
-import { Box } from '@mui/material';
 import {
     FAIL_COLOR,
     OK_COLOR,
     WARNING_COLOR,
 } from '../../../../../styles/constants';
-import { determineColor, customLabel } from './utils';
+import { FormatLqasDataForChartResult } from '../../../LQAS/utils';
 import { BAR_HEIGHT } from './constants';
+import { GraphTooltipFormatter } from './types';
+import { determineColor, customLabel } from './utils';
 
-export const PercentageBarChart = ({
+type Props = {
+    data: FormatLqasDataForChartResult[];
+    tooltipFormatter: GraphTooltipFormatter;
+    colorPalette?: { ok: string; warning: string; fail: string };
+    colorTresholds?: { ok: number; warning: number };
+    chartKey: string;
+};
+
+export const PercentageBarChart: FunctionComponent<Props> = ({
     data,
-    tooltipFormatter,
-    colorPalette,
-    colorTresholds,
+    tooltipFormatter = null,
+    colorPalette = {
+        ok: OK_COLOR,
+        warning: WARNING_COLOR,
+        fail: FAIL_COLOR,
+    },
+    colorTresholds = {
+        ok: 95,
+        warning: 90,
+    },
     chartKey,
 }) => {
     const [renderCount, setRenderCount] = useState(0);
@@ -71,25 +88,4 @@ export const PercentageBarChart = ({
             </ResponsiveContainer>
         </Box>
     );
-};
-
-PercentageBarChart.propTypes = {
-    data: array,
-    tooltipFormatter: func,
-    chartKey: string.isRequired,
-    colorPalette: object,
-    colorTresholds: object,
-};
-PercentageBarChart.defaultProps = {
-    data: [],
-    colorPalette: {
-        ok: OK_COLOR,
-        warning: WARNING_COLOR,
-        fail: FAIL_COLOR,
-    },
-    colorTresholds: {
-        ok: 95,
-        warning: 90,
-    },
-    tooltipFormatter: null,
 };

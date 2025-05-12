@@ -5,6 +5,7 @@ import {
     ConvertedLqasImData,
     LqasImCampaign,
     LqasImDistrictData,
+    LQASDistrictStatus,
 } from '../../../constants/types';
 import {
     OK_COLOR,
@@ -13,6 +14,8 @@ import {
     POOR_COLOR,
 } from '../../../styles/constants';
 import { makeLegendItem } from '../../../utils';
+import { GraphTooltipFormatter } from '../shared/charts/PercentageBarChart/types';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 import {
     accessArrayRound,
     accessDictRound,
@@ -26,14 +29,13 @@ import {
     LQAS_UNDERSAMPLED,
     LQAS_VERY_POOR,
 } from './constants';
-import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 
 /** @deprecated
  *
  * The API returns the LQAS district status directly.
  * This method is only used to avoid breaking a map component shared with IM
  */
-export const determineStatusForDistrict = district => {
+export const determineStatusForDistrict = (district): string | null => {
     if (!district) return null;
     return district.status;
 };
@@ -42,17 +44,7 @@ export const getLqasStatsForRound = (
     lqasData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
     round: number,
-): (
-    | '1lqasOK'
-    | '3lqaspoor'
-    | '3lqasmoderate'
-    | '2lqasDisqualified'
-    | '3lqasundersampled'
-    | '3lqasoversampled'
-    | '3lqasverypoor'
-    | 'inScope'
-    | null
-)[][] => {
+): (LQASDistrictStatus | null)[][] => {
     if (!campaign || !lqasData[campaign]) return [[], [], [], []];
     const totalEvaluated = accessArrayRound(lqasData[campaign], round).map(
         district => ({
@@ -130,7 +122,22 @@ export const makeLqasMapLegendItems =
         ];
     };
 
-export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
+type GetLqasStatsWithStatusArgs = {
+    data: Record<string, ConvertedLqasImData>;
+    campaign: string;
+    round: number | 'latest';
+};
+
+export type GetLqasStatsWithStatusResult = Array<
+    LqasImDistrictDataWithNameAndRegion & {
+        status: LQASDistrictStatus;
+    }
+>;
+export const getLqasStatsWithStatus = ({
+    data,
+    campaign,
+    round,
+}: GetLqasStatsWithStatusArgs): GetLqasStatsWithStatusResult => {
     if (!data[campaign]) return [];
     return [...accessArrayRound(data[campaign], round)].map(district => ({
         ...district,
@@ -138,13 +145,32 @@ export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     }));
 };
 
-export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
-    const dataForRound = getLqasStatsWithStatus({
+type FormatLqasDataForChartArgs = {
+    data: Record<string, ConvertedLqasImData>;
+    campaign: string;
+    round: number | 'latest';
+    regions?: { name: string; id: number }[];
+};
+
+export type FormatLqasDataForChartResult = {
+    name: string;
+    value: number;
+    found: number;
+    passing: number;
+};
+
+export const formatLqasDataForChart = ({
+    data,
+    campaign,
+    round,
+    regions = [],
+}: FormatLqasDataForChartArgs): FormatLqasDataForChartResult[] => {
+    const dataForRound: GetLqasStatsWithStatusResult = getLqasStatsWithStatus({
         data,
         campaign,
         round,
     });
-    const regionsList: any[] = [];
+    const regionsList: FormatLqasDataForChartResult[] = [];
     regions.forEach(region => {
         const regionData = dataForRound.filter(
             district => district.region_name === region.name,
@@ -168,14 +194,16 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
             });
         }
     });
-    return regionsList.sort(
-        (a, b) => parseFloat(b.value) - parseFloat(a.value),
-    );
+    return regionsList.sort((a, b) => b.value - a.value);
 };
 
 export const lqasChartTooltipFormatter =
-    formatMessage => (_value, _name, props) => {
-        // eslint-disable-next-line react/prop-types
+    (formatMessage: IntlFormatMessage): GraphTooltipFormatter =>
+    (
+        _value: any,
+        _name: any,
+        props: { payload: { passing: number; found: number } },
+    ): [string, string] => {
         const ratio = `${props.payload.passing}/${props.payload.found}`;
         return [ratio, formatMessage(MESSAGES.passing)];
     };

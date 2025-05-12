@@ -37,14 +37,16 @@ type Props = {
     campaigns: any[];
     campaignsFetching: boolean;
     params: Params;
-    imType?: IMType;
+    imType?: IMType & 'imHH';
 };
 
-const getCurrentUrl = (imType?: 'imGlobal' | 'imHH' | 'imOHH'): string => {
+const getCurrentUrl = (
+    imType?: 'imGlobal' | 'imHH' | 'imOHH' | 'imIHH',
+): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }
-    if (imType === 'imHH') {
+    if (imType === 'imHH' || imType === 'imIHH') {
         return baseUrls.imHH;
     }
     if (imType === 'imOHH') {

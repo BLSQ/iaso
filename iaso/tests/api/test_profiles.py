@@ -1254,6 +1254,24 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(profile_to_edit.projects.first(), self.project)
         self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
 
+        # A user with `projects` restrictions can edit a user with the same `projects` restrictions.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project, new_project_1, new_project_2])
+        profile_to_edit.projects.set([self.project, new_project_1, new_project_2])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id, new_project_1.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 2)
+
         # A user with `projects` restrictions cannot edit a user who has broader access to projects.
         user.iaso_profile.projects.clear()
         profile_to_edit.projects.clear()

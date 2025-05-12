@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { makeImMapLegendItems } from '../utils';
 import MESSAGES from '../../../../constants/messages';
 import { IMType } from '../../../../constants/types';
-import { imDistrictColors } from '../constants';
 import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
+import { imDistrictColors } from '../constants';
+import { makeImMapLegendItems } from '../utils';
 
 const getMainLayerStyles = shape => {
     return imDistrictColors[shape.status];

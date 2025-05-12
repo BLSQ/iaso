@@ -1,5 +1,5 @@
-import { isEqual } from 'lodash';
 import { IntlFormatMessage } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import MESSAGES from '../../../constants/messages';
 import {
     BarChartData,
@@ -8,14 +8,15 @@ import {
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../../constants/types';
-import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
+import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import {
     LegendItem,
     findDataForShape,
     findScopeIds,
     makeLegendItem,
 } from '../../../utils';
-import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
+import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 import {
     sortGraphKeys,
     convertStatToPercentNumber,
@@ -24,7 +25,6 @@ import {
     accessArrayRound,
 } from '../shared/LqasIm';
 
-import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
 import { LQASIMType } from '../shared/types/types';
 import { IM_ERROR, IM_FAIL, IM_PASS, IM_WARNING, imNfmKeys } from './constants';
 
@@ -51,7 +51,9 @@ export const getImStatsForRound = (
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
-    const errored = allStatuses.filter(status => status === IM_ERROR); // Will be fixed when all statuses come from API
+    // Will be fixed when all statuses come from API
+    // @ts-ignore
+    const errored = allStatuses.filter(status => status === IM_ERROR);
 
     return [passed, failed, disqualified, errored];
 };

@@ -1,25 +1,25 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
 
 import { ConvertedLqasImData } from '../../../../constants/types';
-import { PercentageChartWithTitle } from './PercentageChartWithTitle';
-import { useGetRegions } from '../hooks/api/useGetRegions';
+import { imBarColorTresholds } from '../../IM/constants';
 import { formatImDataForChart, imTooltipFormatter } from '../../IM/utils';
+import { lqasBarColorTresholds } from '../../LQAS/constants';
 import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../../LQAS/utils';
+import { useGetRegions } from '../hooks/api/useGetRegions';
 import { NoData } from './NoData';
-import { lqasBarColorTresholds } from '../../LQAS/constants';
-import { imBarColorTresholds } from '../../IM/constants';
+import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
     round: number;
     campaign: string;
-    countryId: number;
+    countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
 };

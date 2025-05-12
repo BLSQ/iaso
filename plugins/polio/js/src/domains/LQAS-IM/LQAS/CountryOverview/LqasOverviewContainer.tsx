@@ -17,9 +17,9 @@ import { LqasSummary } from './LqasSummary';
 
 type Props = {
     round: number;
-    campaign: string;
+    campaign?: string;
     campaigns: Array<unknown>;
-    country: string;
+    countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isFetching: boolean;
     debugData: Record<string, unknown> | null | undefined;
@@ -36,7 +36,7 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     round,
     campaign,
     campaigns,
-    country,
+    countryId,
     data,
     isFetching,
     debugData,
@@ -51,7 +51,6 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
         params,
         side,
     });
-    const countryId = parseInt(country, 10);
     const { shapes, isFetchingGeoJson, regionShapes, isFetchingRegions } =
         useMapShapes(countryId);
 

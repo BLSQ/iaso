@@ -37,6 +37,7 @@ export type LqasImCampaign = {
     country_id: number;
     country_name?: string;
     has_scope: boolean;
+    bad_round_number?: number;
 };
 
 export type LqasImDistrictData = {
@@ -65,7 +66,7 @@ export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
 };
 
-export type IMType = 'imGlobal' | 'imHH' | 'imOHH';
+export type IMType = 'imGlobal' | 'imIHH' | 'imOHH';
 
 export type LqasIMtype = IMType | 'lqas';
 
@@ -495,7 +496,10 @@ export type MapColor = {
 
 export type Side = 'left' | 'right';
 
-export const Sides = { left: 'left', right: 'right' };
+export const Sides: Record<'left' | 'right', Side> = {
+    left: 'left',
+    right: 'right',
+};
 
 export type CampaignType = {
     id: number;

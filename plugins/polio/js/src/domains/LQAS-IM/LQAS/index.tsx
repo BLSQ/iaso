@@ -2,38 +2,44 @@
 import React from 'react';
 import { Grid, Box, Paper } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
-import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
-import MESSAGES from '../../../constants/messages.ts';
-import { Sides } from '../../../constants/types.ts';
-import { baseUrls } from '../../../constants/urls.ts';
-import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
-import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
-import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
-import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
-import { paperElevation } from '../shared/constants.ts';
-import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
-import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
-import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
-import { Filters } from '../shared/Filters.tsx';
-import { useLqasIm } from '../shared/hooks/api/useLqasIm.ts';
-import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
-import { useStyles } from '../shared/hooks/useStyles.ts';
-import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
-import { CaregiversTable } from './Graphs/CaregiversTable.tsx';
-import { useLqasData } from './hooks/useLqasData.ts';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import {
+    ParamsWithAccountId,
+    useParamsObject,
+} from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { HorizontalDivider } from '../../../components/HorizontalDivider';
+import MESSAGES from '../../../constants/messages';
+import { LqasImData, Sides } from '../../../constants/types';
+import { baseUrls } from '../../../constants/urls';
+import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns';
+import { GraphTitle } from '../shared/charts/GraphTitle';
+import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart';
+import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart';
+import { paperElevation } from '../shared/constants';
+import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber';
+import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored';
+import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound';
+import { Filters, Params } from '../shared/Filters';
+import { useLqasIm } from '../shared/hooks/api/useLqasIm';
+import { useSelectedRounds } from '../shared/hooks/useSelectedRounds';
+import { useStyles } from '../shared/hooks/useStyles';
+import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer';
+import { CaregiversTable } from './Graphs/CaregiversTable';
+import { UseLQASData, useLqasData } from './hooks/useLqasData';
 
 const baseUrl = baseUrls.lqasCountry;
 
 export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
-    const params = useParamsObject(baseUrl);
+    const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrl) as Params & ParamsWithAccountId;
     const { campaign, country } = params;
 
-    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
+    const { data: LQASData, isFetching }: UseQueryResult<LqasImData> =
+        useLqasIm('lqas', country);
+
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
             countries: country,
@@ -44,13 +50,15 @@ export const Lqas = () => {
 
     const { onRoundChange, selectedRounds, dropDownOptions } =
         useSelectedRounds({ baseUrl, campaigns, params });
-    const { convertedData, debugData, hasScope, chartData } = useLqasData({
-        campaign,
-        country,
-        selectedRounds,
-        LQASData,
-    });
 
+    const { convertedData, debugData, hasScope, chartData }: UseLQASData =
+        useLqasData({
+            campaign,
+            country,
+            selectedRounds,
+            LQASData,
+        });
+    const countryId = country ? parseInt(country, 10) : undefined;
     return (
         <>
             <TopBar
@@ -63,7 +71,6 @@ export const Lqas = () => {
                         isFetching={isFetching}
                         campaigns={campaigns}
                         campaignsFetching={campaignsFetching}
-                        isLqas
                         params={params}
                     />
                 </Box>
@@ -73,7 +80,7 @@ export const Lqas = () => {
                             round={parseInt(selectedRounds[0], 10)} // parsing the rnd because it will be a string when coming from params
                             campaign={campaign}
                             campaigns={campaigns}
-                            country={country}
+                            countryId={countryId}
                             data={convertedData}
                             isFetching={isFetching || campaignsFetching}
                             debugData={debugData}
@@ -89,7 +96,7 @@ export const Lqas = () => {
                             round={parseInt(selectedRounds[1], 10)} // parsing the rnd because it will be a string when coming from params
                             campaign={campaign}
                             campaigns={campaigns}
-                            country={country}
+                            countryId={countryId}
                             data={convertedData}
                             isFetching={isFetching || campaignsFetching}
                             debugData={debugData}
@@ -129,7 +136,7 @@ export const Lqas = () => {
                                             type="lqas"
                                             round={parseInt(rnd, 10)}
                                             campaign={campaign}
-                                            countryId={parseInt(country, 10)}
+                                            countryId={countryId}
                                             data={convertedData}
                                             isLoading={isFetching}
                                         />
@@ -223,15 +230,17 @@ export const Lqas = () => {
                                         marginTop={false}
                                         campaign={campaign}
                                         round={c.round}
-                                        chartKey={c.chartKey}
                                         data={convertedData}
                                         paperElevation={paperElevation}
+                                        isLoading={campaignsFetching}
                                     />
                                 </Grid>
                             ))}
                         </Grid>
                         {Object.keys(convertedData).length > 0 && (
-                            <DisplayIfUserHasPerm permission="iaso_polio_config">
+                            <DisplayIfUserHasPerm
+                                permissions={['iaso_polio_config']}
+                            >
                                 <HorizontalDivider
                                     mt={2}
                                     mb={4}
@@ -242,7 +251,7 @@ export const Lqas = () => {
                                 <Grid container item spacing={2}>
                                     <Grid item xs={4}>
                                         <DistrictsNotFound
-                                            data={LQASData.stats}
+                                            data={LQASData?.stats}
                                             campaign={campaign}
                                         />
                                     </Grid>

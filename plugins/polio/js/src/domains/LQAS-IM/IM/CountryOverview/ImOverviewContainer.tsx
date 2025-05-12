@@ -45,7 +45,8 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
     side,
     params,
 }) => {
-    const baseUrl = baseUrls[type];
+    // check on type because url uses legacy `imHH` code.
+    const baseUrl = type === 'imIHH' ? baseUrls.imHH : baseUrls[type];
     const { tab, handleChangeTab } = useLqasImTabState({
         baseUrl,
         params,

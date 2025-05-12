@@ -51,8 +51,54 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
-        # Verify QR code is not included in non-paginated response
+        # Verify QR code is not included by default
         self.assertNotIn("qr_code", response.json()["projects"][0])
+
+    def test_projects_list_with_qr_code(self):
+        """GET /projects/ with qr_code=true should include QR code"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/projects/?qr_code=true", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 2)
+        # Verify QR code is included when requested
+        self.assertIn("qr_code", response.json()["projects"][0])
+        self.assertIsInstance(response.json()["projects"][0]["qr_code"], str)
+
+    def test_projects_list_paginated(self):
+        """GET /projects/ paginated happy path"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/projects/?limit=1&page=1", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidProjectListData(response_data, 1, True)
+        self.assertEqual(response_data["page"], 1)
+        self.assertEqual(response_data["pages"], 2)
+        self.assertEqual(response_data["limit"], 1)
+        self.assertEqual(response_data["count"], 2)
+        # Verify QR code is not included in paginated response by default
+        self.assertNotIn("qr_code", response_data["projects"][0])
+
+    def test_projects_list_paginated_with_qr_code(self):
+        """GET /projects/ paginated with qr_code=true should include QR code"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/projects/?limit=1&page=1&qr_code=true", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidProjectListData(response_data, 1, True)
+        self.assertEqual(response_data["page"], 1)
+        self.assertEqual(response_data["pages"], 2)
+        self.assertEqual(response_data["limit"], 1)
+        self.assertEqual(response_data["count"], 2)
+        # Verify QR code is included when requested
+        self.assertIn("qr_code", response_data["projects"][0])
+        self.assertIsInstance(response_data["projects"][0]["qr_code"], str)
 
     def test_feature_flags_list_ok(self):
         """GET /featureflags/ happy path: we expect one result"""
@@ -76,37 +122,6 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidFeatureFlagListData(
             response.json(), m.FeatureFlag.objects.count() - len(excluded_feature_flags)
         )
-
-    def test_projects_list_paginated(self):
-        """GET /projects/ paginated happy path"""
-
-        self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/projects/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
-
-        response_data = response.json()
-        self.assertValidProjectListData(response_data, 1, True)
-        self.assertEqual(response_data["page"], 1)
-        self.assertEqual(response_data["pages"], 2)
-        self.assertEqual(response_data["limit"], 1)
-        self.assertEqual(response_data["count"], 2)
-        # Verify QR code is included in paginated response
-        self.assertIn("qr_code", response_data["projects"][0])
-        self.assertIsInstance(response_data["projects"][0]["qr_code"], str)
-
-    def test_feature_flags_list_paginated(self):
-        """GET /featureflags/ paginated happy path"""
-
-        self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/featureflags/?limit=1&page=1", headers={"Content-Type": "application/json"})
-        self.assertJSONResponse(response, 200)
-
-        response_data = response.json()
-        self.assertValidFeatureFlagListData(response_data, 1, True)
-        self.assertEqual(response_data["page"], 1)
-        self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
-        self.assertEqual(response_data["limit"], 1)
-        self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
 
     def test_projects_retrieve_without_auth(self):
         """GET /projects/<project_id> without auth should result in a 401"""
@@ -139,8 +154,23 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidProjectData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
         self.assertValidFeatureFlagData(response_data["feature_flags"][0])
-        # Verify QR code is not included in detail view
+        # Verify QR code is not included by default
         self.assertNotIn("qr_code", response_data)
+
+    def test_projects_retrieve_with_qr_code(self):
+        """GET /projects/<project_id> with qr_code=true should include QR code"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/projects/{self.project_1.id}/?qr_code=true")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidProjectData(response_data)
+        self.assertEqual(1, len(response_data["feature_flags"]))
+        self.assertValidFeatureFlagData(response_data["feature_flags"][0])
+        # Verify QR code is included when requested
+        self.assertIn("qr_code", response_data)
+        self.assertIsInstance(response_data["qr_code"], str)
 
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""

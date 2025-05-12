@@ -704,10 +704,8 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not new_project_ids:
             if user_restricted_projects_ids:
-                # Apply the same project restrictions.
-                return Project.objects.filter(id__in=user_restricted_projects_ids, account=profile.account_id)
-            # No project restrictions.
-            return []
+                raise PermissionDenied("You must specify which projects are authorized for this user.")
+            return []  # No project restrictions.
 
         if not user_restricted_projects_ids:
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)

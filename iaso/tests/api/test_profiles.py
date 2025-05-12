@@ -1294,8 +1294,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(profile_to_edit.projects.first(), new_project_1)
         self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
 
-        # Current project restrictions of the user should be applied to the edited profile
-        # when `projects` is not explicitly specified.
+        # A user with `projects` restrictions cannot create a user without restrictions.
         user.iaso_profile.projects.clear()
         profile_to_edit.projects.clear()
         del user.iaso_profile.projects_ids  # Refresh cached property.
@@ -1303,12 +1302,16 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.iaso_profile.projects.count(), 1)
         profile_to_edit.projects.clear()
         self.assertEqual(profile_to_edit.projects.count(), 0)
-        data = {"user_name": "jum_new_user_name"}
-        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-        profile_to_edit.refresh_from_db()
-        self.assertEqual(profile_to_edit.projects.count(), 1)
-        self.assertEqual(profile_to_edit.projects.first(), self.project)
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={"user_name": "jum_new_user_name", "projects": []},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "You must specify which projects are authorized for this user.",
+        )
 
         # A user with `projects` restrictions cannot assign projects outside his range.
         user.iaso_profile.projects.clear()

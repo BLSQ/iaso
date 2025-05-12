@@ -38,6 +38,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "needs_authentication",
+            "qr_code",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
@@ -54,17 +55,14 @@ class ProjectSerializer(serializers.ModelSerializer):
     feature_flags = FeatureFlagSerializer(many=True, required=True, allow_empty=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    qr_code = serializers.SerializerMethodField()
 
-    def to_representation(self, instance):
-        data = super().to_representation(instance)
+    def get_qr_code(self, instance):
         request = self.context.get("request")
-
-        # Only include QR code if the request is paginated
-        if request and (request.query_params.get("page") or request.query_params.get("limit")):
+        if request and request.query_params.get("qr_code") == "true":
             qr_image = make_qr_code_image(
                 data='{"url": "' + request.build_absolute_uri("/") + '", "app_id": "' + instance.app_id + '"}',
                 qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),
             )
-            data["qr_code"] = f"data:image/png;base64,{base64.b64encode(qr_image).decode('utf-8')}"
-
-        return data
+            return f"data:image/png;base64,{base64.b64encode(qr_image).decode('utf-8')}"
+        return None

@@ -1,4 +1,4 @@
-import { ApiParams, UrlParams } from 'bluesquare-components';
+import { UrlParams } from 'bluesquare-components';
 import { UseMutationResult, useQueryClient, UseQueryResult } from 'react-query';
 import { getRequest, postRequest, putRequest } from '../../../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
@@ -38,6 +38,13 @@ export const useGetProjectsDropdownOptions = (
         },
     });
 };
+export type ApiParams = {
+    limit: string;
+    order: string;
+    page: string;
+    search?: string;
+    qr_code: string;
+};
 
 export const useGetProjectsPaginated = (
     params: UrlParams,
@@ -46,6 +53,7 @@ export const useGetProjectsPaginated = (
         limit: params.pageSize || '10',
         order: params.order || 'id',
         page: params.page || '1',
+        qr_code: 'true',
     };
     if (params.search) {
         newParams.search = params.search;

@@ -3,7 +3,7 @@ import { LqasImData } from '../../../../constants/types';
 
 export const makeDebugData = (
     data: LqasImData | undefined,
-    campaign: string,
+    campaign?: string,
 ): Record<string, { hasScope: boolean; districtsNotFound: string[] }> => {
     if (!data?.stats || !campaign || !data.stats[campaign]) return {};
     return {
@@ -16,7 +16,7 @@ export const makeDebugData = (
 
 export const useDebugData = (
     data: LqasImData | undefined,
-    campaign: string,
+    campaign?: string,
 ): Record<string, { hasScope: boolean; districtsNotFound: string[] }> => {
     return useMemo(() => makeDebugData(data, campaign), [data, campaign]);
 };

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useGetGeoJson } from '../../../../Campaigns/Scope/hooks/useGetGeoJson';
 
 const defaultShapes = [];
-export const useMapShapes = (countryId: number) => {
+export const useMapShapes = (countryId?: number) => {
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson(countryId, 'DISTRICT');
     const {

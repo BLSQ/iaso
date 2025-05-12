@@ -1,5 +1,5 @@
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { LqasImCampaign } from '../../../../constants/types';
 import { makeRatioUnmarked } from '../LqasIm';
@@ -19,7 +19,7 @@ export const useNfmTitle = ({
     campaign,
     type,
     selectedRounds,
-}: Params): string[] => {
+}: Params): [string, string] => {
     const { formatMessage } = useSafeIntl();
     const makeTitle = translateTitle(formatMessage);
     const [ratioUnmarkedRound1, ratioUnmarkedRound2] = makeRatioUnmarked({

@@ -20,7 +20,7 @@ export const useVerticalChartData = ({
     formatter,
     type,
     selectedRounds,
-}: Params): BarChartData[][] => {
+}: Params): [BarChartData[], BarChartData[]] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [

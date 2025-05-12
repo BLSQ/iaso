@@ -38,7 +38,7 @@ export const useRfaTitle = ({
     campaign,
     type,
     selectedRounds,
-}: Params): string[] => {
+}: Params): [string, string] => {
     const { formatMessage } = useSafeIntl();
     const makeTitle = translateTitle(formatMessage);
     const accessor = type === 'lqas' ? 'childabsent' : 'Tot_child_Absent_HH';

@@ -15,11 +15,6 @@ import MESSAGES from '../../../constants/messages';
 import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
 import { IMType } from '../types';
 
-type Props = {
-    countryId?: string;
-    imType?: IMType;
-};
-
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 const LQAS_CONFIG_SLUG = 'lqas-pipeline-config';
 const IM_HH_TASK_ENDPOINT = '/api/polio/tasks/refreshim/hh/';
@@ -99,6 +94,11 @@ const useLastUpdate = (
         result.updateStatus = updateStatus;
     }
     return result;
+};
+
+type Props = {
+    countryId?: string;
+    imType?: IMType;
 };
 
 export const RefreshLqasIMData: FunctionComponent<Props> = ({

@@ -1,10 +1,23 @@
-import React from 'react';
+/* eslint-disable react/no-array-index-key */
+import React, { FunctionComponent } from 'react';
 import { Grid, Paper, Box, Typography } from '@mui/material';
-import { array, oneOf, string } from 'prop-types';
+import { convertWidth } from '../../../utils/index';
+import { LqasImLegendItem } from '../../LQAS-IM/LQAS/utils';
 import { useStyles } from './styles';
-import { convertWidth } from '../../../utils/index.tsx';
 
-export const MapLegend = ({ title, legendItems, width, name }) => {
+type Props = {
+    title: string;
+    legendItems: LqasImLegendItem[];
+    width?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    name: string;
+};
+
+export const MapLegend: FunctionComponent<Props> = ({
+    title,
+    legendItems,
+    width = 'sm',
+    name,
+}) => {
     const classes = useStyles();
     return (
         <Paper elevation={1} style={{ width: convertWidth(width) }}>
@@ -59,14 +72,4 @@ export const MapLegend = ({ title, legendItems, width, name }) => {
             </Box>
         </Paper>
     );
-};
-
-MapLegend.propTypes = {
-    title: string.isRequired,
-    legendItems: array.isRequired,
-    width: oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
-    name: string.isRequired,
-};
-MapLegend.defaultProps = {
-    width: 'sm',
 };

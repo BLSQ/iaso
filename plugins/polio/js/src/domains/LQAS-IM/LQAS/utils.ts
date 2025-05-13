@@ -68,18 +68,20 @@ export const getLqasStatsForRound = (
     return [passed, moderate, poor, failed, oversampled, undersampled, inScope];
 };
 
+export type LqasImLegendItem = {
+    label: string;
+    value: string;
+    color?: string;
+    background?: string;
+};
+
 export const makeLqasMapLegendItems =
     (formatMessage: IntlFormatMessage) =>
     (
         lqasData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
         round: number | undefined,
-    ): {
-        label: string;
-        value: string;
-        color?: string;
-        background?: string;
-    }[] => {
+    ): LqasImLegendItem[] => {
         const [passed, moderate, poor, failed, oversampled, undersampled] =
             getLqasStatsForRound(lqasData, campaign, round);
         const noValidDataCount =

@@ -786,6 +786,37 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_create_user_is_atomic(self):
+        project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
+        project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
+
+        username = "john_doe"
+
+        user = self.jim
+        user.iaso_profile.projects.set([project_1])
+
+        self.client.force_authenticate(user)
+
+        self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
+
+        data = {
+            "user_name": username,
+            "password": "password",
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john@doe.com",
+            "projects": [project_2.id],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "Some projects are outside your scope.",
+        )
+
+        # If the creation is not successfully completed, no changes should be committed to the database.
+        self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
+
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
         self.assertHasField(project_data, "first_name", str)
@@ -1229,7 +1260,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["phone_number"], None)
 
-    def test_update_user_projects(self):
+    def test_update_user_with_projects_restrictions(self):
         new_project_1 = m.Project.objects.create(name="New project 1", app_id="new.project.1", account=self.account)
         new_project_2 = m.Project.objects.create(name="New project 2", app_id="new.project.2", account=self.account)
         profile_to_edit = Profile.objects.get(user=self.jum)

@@ -72,6 +72,20 @@ class ProjectsAPITestCase(APITestCase):
         self.assertIn("qr_code", response_data["projects"][0])
         self.assertIsInstance(response_data["projects"][0]["qr_code"], str)
 
+    def test_feature_flags_list_paginated(self):
+        """GET /featureflags/ paginated happy path"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/featureflags/?limit=1&page=1", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidFeatureFlagListData(response_data, 1, True)
+        self.assertEqual(response_data["page"], 1)
+        self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
+        self.assertEqual(response_data["limit"], 1)
+        self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
+
     def test_feature_flags_list_ok(self):
         """GET /featureflags/ happy path: we expect one result"""
 

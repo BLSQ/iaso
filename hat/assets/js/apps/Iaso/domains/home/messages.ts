@@ -9,9 +9,9 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
     },
-    beneficiaries: {
-        defaultMessage: 'Beneficiaries',
-        id: 'iaso.label.beneficiaries',
+    entities: {
+        defaultMessage: 'Entities',
+        id: 'iaso.label.entities',
     },
     storages: {
         defaultMessage: 'External storage',

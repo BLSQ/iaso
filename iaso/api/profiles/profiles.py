@@ -1,16 +1,15 @@
 import copy
 
-from typing import Any, List, Optional, Set, Union
+from typing import Any, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
@@ -682,10 +681,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         valid_ids = filtered_org_unit_ids or org_unit_ids
         org_units = OrgUnit.objects.filter(id__in=valid_ids)
 
-        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
-            org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
-
         return org_units
 
     def validate_user_roles(self, request):
@@ -703,41 +698,26 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile) -> list:
-        project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
-            request.user.iaso_profile.projects_ids
-        )
-        result = []
+    def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
+        new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+        user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
 
-        if not project_ids:
-            if user_has_project_restrictions:
-                # Apply the same project restrictions.
-                return list(Project.objects.filter_on_user_projects(request.user))
-            # No project restrictions.
-            return result
+        if not new_project_ids:
+            if user_restricted_projects_ids:
+                raise PermissionDenied("You must specify which projects are authorized for this user.")
+            return []  # No project restrictions.
 
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            raise PermissionDenied(
-                f"User without permission {permission.USERS_ADMIN} cannot change project attributions."
-            )
+        if not user_restricted_projects_ids:
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
-        if user_has_project_restrictions:
-            unauthorized_projects_ids = [p for p in project_ids if p not in request.user.iaso_profile.projects_ids]
-            unauthorized_projects_names = Project.objects.filter(id__in=unauthorized_projects_ids).values_list(
-                "name", flat=True
-            )
-            if unauthorized_projects_names:
-                raise PermissionDenied(
-                    f"You don't have access to the following projects: {','.join(unauthorized_projects_names)}."
-                )
+        profile_restricted_projects_ids = set(profile.projects_ids)
+        if profile_restricted_projects_ids > user_restricted_projects_ids:
+            raise PermissionDenied("You cannot edit a user who has broader access to projects.")
 
-        for project in Project.objects.filter(id__in=project_ids):
-            if profile.account_id != project.account_id:
-                raise BadRequest
-            result.append(project)
+        if new_project_ids.issubset(user_restricted_projects_ids):
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
-        return result
+        raise PermissionDenied("Some projects are outside your scope.")
 
     def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
         editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
@@ -751,25 +731,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")
 
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
-
         return editable_org_unit_types
-
-    def _validate_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
-        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
-        invalid_ids = [
-            org_unit_type_id
-            for org_unit_type_id in org_unit_type_ids_to_check
-            if org_unit_type_id
-            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
-        ]
-
-        if invalid_ids:
-            invalid_names = ", ".join(
-                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
-            )
-            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
 
     @staticmethod
     def module_permissions(current_account):

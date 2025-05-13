@@ -1,3 +1,4 @@
+import decimal
 import uuid
 
 from django.contrib.auth.models import User
@@ -12,6 +13,7 @@ from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
 from iaso.utils import geojson_queryset
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
+from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
@@ -285,6 +287,13 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         allow_null=True,
     )
     new_location = ThreeDimPointField(
+        required=False,
+        allow_null=True,
+    )
+    new_location_accuracy = RoundedDecimalField(
+        max_digits=7,
+        decimal_places=2,
+        rounding=decimal.ROUND_HALF_UP,
         required=False,
         allow_null=True,
     )

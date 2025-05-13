@@ -294,6 +294,57 @@ npm run build
 
 The system will automatically detect the new language file and include it in the generated files.
 
+## Account-Specific Custom Translations
+
+Iaso supports account-specific custom translations that can be managed through the Django admin interface. This feature allows administrators to override default translations for specific accounts.
+
+### How It Works
+
+1. **Account Custom Translations Storage**:
+   - Custom translations are stored in the `custom_translations` field of the Account model
+   - The field is a JSON field that follows the same structure as regular translation files
+   - Each account can have its own set of custom translations
+
+2. **Translation Override Process**:
+   - When a user logs in, their account's custom translations are loaded
+   - These custom translations are merged with the default translations
+   - Custom translations take precedence over default translations
+   - The merging happens at the key level for each language
+
+### Example of Custom Translations Structure
+
+```json
+{
+    "fr": {
+        "iaso.label.entities": "Bénéficiaires personnalisés",
+        "iaso.label.entity": "Bénéficiaire personnalisé"
+    },
+    "en": {
+        "iaso.label.entities": "Custom Beneficiaries",
+        "iaso.label.entity": "Custom Beneficiary"
+    }
+}
+```
+
+### Managing Custom Translations
+
+To manage custom translations for an account:
+
+1. Log in to the Django admin interface
+2. Navigate to the Account model
+3. Select the account you want to modify
+4. Edit the `custom_translations` field
+5. Save the changes
+
+### Important Notes
+
+- Custom translations are merged with default translations at runtime
+- Only authenticated users with an account will see their custom translations
+- Anonymous users will see only the default translations
+- Custom translations are scoped to the account level
+- Changes to custom translations take effect immediately after saving
+- The system maintains a clean separation between default and custom translations
+
 ## Date Formatting in Components
 
 Several components can be enhanced to use language-specific date formats:

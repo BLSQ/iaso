@@ -118,7 +118,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
          These parameter can totally conflict and the result is undocumented
         """
         queryset = self.get_queryset().defer("geom").select_related("parent__org_unit_type")
-        forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+        forms = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        ).distinct()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
@@ -166,18 +168,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
-        distinct_fields = [item.replace("-", "") for item in order]
-
         if not is_export:
             if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
 
                 if page_offset > paginator.num_pages:
@@ -212,12 +206,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response({"orgUnits": org_units})
             if as_location:
                 limit = int(limit)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []

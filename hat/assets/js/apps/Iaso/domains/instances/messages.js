@@ -267,7 +267,7 @@ const MESSAGES = defineMessages({
     },
     unLinkReferenceSubmissionsConfirmMessage: {
         defaultMessage:
-            'You selected {unLinkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
+            'You selected {linkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
         id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
     },
     approveAllWarningsMessage: {
@@ -700,9 +700,9 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Select one form to enable search using form submitted fields',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     projects: {
         id: 'iaso.label.projects',

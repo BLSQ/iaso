@@ -6,6 +6,7 @@ import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Ia
 import {
     POLIO_SUPPLY_CHAIN_READ,
     POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_SUPPLY_CHAIN_READ_ONLY,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';

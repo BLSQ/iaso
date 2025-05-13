@@ -1,8 +1,8 @@
 /* eslint-disable react/require-default-props */
+import React, { FunctionComponent } from 'react';
 import { Box, Table, TableBody } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { PaperTableRow } from '../../../components/tables/PaperTableRow';
 import { Field } from '../types/fields';
 
@@ -19,7 +19,7 @@ type Props = {
     fields: Field[];
 };
 
-export const BeneficiaryBaseInfoContents: FunctionComponent<Props> = ({
+export const EntityBaseInfoContents: FunctionComponent<Props> = ({
     fields,
 }) => {
     const classes: Record<string, string> = useStyles();

@@ -59,14 +59,14 @@ export const ImSummary: FunctionComponent<Props> = ({
             <Grid container direction="row" className={classes.containerGrid}>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[childrenChecked.id])}
+                        {formatMessage(MESSAGES[childrenChecked?.id])}
                     </Typography>
                     <Typography
                         variant="h6"
                         className={`${classes.centerText} ${classes.boldText}`}
                     >
                         <NumberCell
-                            value={parseInt(childrenChecked.value, 10)}
+                            value={parseInt(childrenChecked?.value, 10)}
                         />
                     </Typography>
                 </Grid>
@@ -75,13 +75,13 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[sitesVisited.id])}
+                        {formatMessage(MESSAGES[sitesVisited?.id])}
                     </Typography>
                     <Typography
                         variant="h6"
                         className={`${classes.centerText} ${classes.boldText}`}
                     >
-                        <NumberCell value={parseInt(sitesVisited.value, 10)} />
+                        <NumberCell value={parseInt(sitesVisited?.value, 10)} />
                     </Typography>
                 </Grid>
                 <Box mt={-2} mb={-2}>
@@ -89,14 +89,14 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[reportingDistricts.id])}
+                        {formatMessage(MESSAGES[reportingDistricts?.id])}
                     </Typography>
                     <Typography
                         variant="h6"
                         className={`${classes.centerText} ${classes.boldText}`}
                     >
                         <NumberCell
-                            value={parseInt(`${reportingDistricts.value}`, 10)}
+                            value={parseInt(`${reportingDistricts?.value}`, 10)}
                         />
                     </Typography>
                 </Grid>
@@ -105,13 +105,13 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[vaccinated.id])}
+                        {formatMessage(MESSAGES[vaccinated?.id])}
                     </Typography>
                     <Typography
                         variant="h6"
                         className={`${classes.centerText} ${classes.boldText} ${colorVaccinated}`}
                     >
-                        {vaccinated.value}
+                        {vaccinated?.value}
                     </Typography>
                 </Grid>
             </Grid>

@@ -23,6 +23,7 @@ import {
     BarChartData,
     ConvertedLqasImData,
     FormatForNFMArgs,
+    ImDataForChart,
     IMDistrictStatus,
     LqasImCampaign,
     LqasImDistrictData,
@@ -101,7 +102,13 @@ export const makeImMapLegendItems =
         ];
     };
 
-export const formatImDataForChart = ({ data, campaign, round, regions }) => {
+export const formatImDataForChart = ({
+    data,
+    campaign,
+    round,
+    regions,
+}): ImDataForChart[] => {
+    if (!regions) return [];
     const dataForRound =
         campaign && data[campaign]
             ? accessArrayRound(data[campaign], round)
@@ -129,14 +136,15 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
             const { checked, marked } = aggregatedData;
             // forcing aggregatedData.checked to 1 to avoid dividing by 0
             const markedRatio = (marked / checked) * 100;
-            regionsList.push({
+            const chartData: ImDataForChart = {
                 name: region.name,
                 value: Number.isSafeInteger(markedRatio)
                     ? markedRatio
                     : Math.round(markedRatio),
                 marked: aggregatedData.marked,
                 checked: aggregatedData.checked,
-            });
+            };
+            regionsList.push(chartData);
         }
     });
     return regionsList.sort(

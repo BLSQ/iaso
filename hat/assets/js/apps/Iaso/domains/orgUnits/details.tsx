@@ -154,7 +154,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             return formatMessage(MESSAGES.newOrgUnit);
         }
         if (currentOrgUnit?.org_unit_type_name) {
-            return `${currentOrgUnit?.name}${
+            return `${currentOrgUnit?.name ?? ''}${
                 currentOrgUnit.org_unit_type_name
                     ? ` - ${currentOrgUnit.org_unit_type_name}`
                     : ''
@@ -430,7 +430,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                 />
                             )}
                             <OrgUnitForm
-                                orgUnit={currentOrgUnit as OrgUnit}
+                                orgUnit={currentOrgUnit}
                                 orgUnitTypes={orgUnitTypes}
                                 groups={groups}
                                 onResetOrgUnit={() => handleResetOrgUnit()}

@@ -70,7 +70,7 @@ type Props = {
     isFetchingOrgUnitTypes: boolean;
     isFetchingGroups: boolean;
     referenceInstances: Instance[];
-    orgUnit: OrgUnit;
+    orgUnit: Partial<OrgUnit>;
 };
 
 export const OrgUnitInfos: FunctionComponent<Props> = ({
@@ -210,8 +210,8 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                                 onChangeInfo('parent', treeviewOrgUnit);
                             }
                         }}
-                        source={orgUnit.source_id}
-                        version={orgUnit.version_id}
+                        source={orgUnit?.source_id}
+                        version={orgUnit?.version_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
                         disabled={disabled}

@@ -21,22 +21,24 @@ import {
 import { OrgUnit, OrgunitInititialState } from '../types/orgUnit';
 import { OrgUnitInfos } from './OrgUnitInfos';
 
-const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
-    id: orgUnit.id,
-    name: orgUnit.name,
-    org_unit_type_id: orgUnit.org_unit_type_id
+const initialFormState = (
+    orgUnit: Partial<OrgUnit> | null,
+): OrgunitInititialState => ({
+    id: orgUnit?.id ?? 0,
+    name: orgUnit?.name ?? '',
+    org_unit_type_id: orgUnit?.org_unit_type_id
         ? `${orgUnit.org_unit_type_id}`
         : undefined,
-    groups: orgUnit.groups?.map(g => g.id) ?? [],
-    sub_source: orgUnit.sub_source,
-    validation_status: orgUnit.validation_status,
-    aliases: orgUnit.aliases ?? ([] as string[]),
-    source_id: orgUnit.source_id,
-    parent: orgUnit.parent,
-    source_ref: orgUnit.source_ref,
-    reference_instance_id: orgUnit.reference_instance_id,
-    opening_date: orgUnit.opening_date ? orgUnit.opening_date : undefined,
-    closed_date: orgUnit.closed_date ? orgUnit.closed_date : undefined,
+    groups: orgUnit?.groups?.map(g => g.id) ?? [],
+    sub_source: orgUnit?.sub_source,
+    validation_status: orgUnit?.validation_status,
+    aliases: orgUnit?.aliases ?? ([] as string[]),
+    source_id: orgUnit?.source_id,
+    parent: orgUnit?.parent,
+    source_ref: orgUnit?.source_ref,
+    reference_instance_id: orgUnit?.reference_instance_id,
+    opening_date: orgUnit?.opening_date ? orgUnit.opening_date : undefined,
+    closed_date: orgUnit?.closed_date ? orgUnit.closed_date : undefined,
 });
 
 const useStyles = makeStyles(theme => ({
@@ -44,7 +46,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    orgUnit: OrgUnit;
+    orgUnit: Partial<OrgUnit> | null;
     orgUnitTypes: OrgUnitTypeDropdownOption[];
     groups: GroupDropdownOption[];
     saveOrgUnit: (
@@ -123,7 +125,7 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
     // This fix assumes we can only add one alias at a time
     const handleChangeAlias = useCallback(
         (key, value) => {
-            const orgUnitAliases = orgUnit.aliases ?? [];
+            const orgUnitAliases = orgUnit?.aliases ?? [];
             const newAlias = value[value.length - 1];
             const actualAliases = value.filter(alias => alias !== '');
             const modifiedState = { ...currentStateValues, [key]: value };
@@ -142,7 +144,7 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
             }
             setFieldValue(key, value);
         },
-        [orgUnit.aliases, setFieldValue, initialState, currentStateValues],
+        [orgUnit?.aliases, setFieldValue, initialState, currentStateValues],
     );
 
     const handleChangeInfo = useCallback(
@@ -165,11 +167,11 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
     const isNewOrgunit = params.orgUnitId === '0';
 
     useEffect(() => {
-        if (orgUnit.id !== formState.id.value) {
+        if (orgUnit?.id !== formState.id.value) {
             setFormState(initialFormState(orgUnit));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgUnit.id]);
+    }, [orgUnit?.id]);
     return (
         <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
@@ -178,21 +180,23 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
                 alignItems="center"
                 className={classnames(!isNewOrgunit && classes.marginTopBig)}
             >
-                <OrgUnitInfos
-                    params={params}
-                    orgUnitState={formState}
-                    orgUnit={orgUnit}
-                    orgUnitTypes={orgUnitTypes}
-                    groups={groups}
-                    onChangeInfo={handleChangeInfo}
-                    resetTrigger={!orgUnitModified}
-                    handleSave={handleSave}
-                    handleReset={handleReset}
-                    orgUnitModified={orgUnitModified}
-                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                    isFetchingGroups={isFetchingGroups}
-                    referenceInstances={orgUnit.reference_instances}
-                />
+                {orgUnit && (
+                    <OrgUnitInfos
+                        params={params}
+                        orgUnitState={formState}
+                        orgUnit={orgUnit}
+                        orgUnitTypes={orgUnitTypes}
+                        groups={groups}
+                        onChangeInfo={handleChangeInfo}
+                        resetTrigger={!orgUnitModified}
+                        handleSave={handleSave}
+                        handleReset={handleReset}
+                        orgUnitModified={orgUnitModified}
+                        isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                        isFetchingGroups={isFetchingGroups}
+                        referenceInstances={orgUnit?.reference_instances ?? []}
+                    />
+                )}
             </Grid>
         </Box>
     );

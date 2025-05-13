@@ -300,9 +300,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Project feature flags',
         id: 'iaso.label.project.featureFlags',
     },
+    close: {
+        defaultMessage: 'Close',
+        id: 'iaso.label.close',
+    },
     qrCodeError: {
-      defaultMessage: "Can't load project QR code",
-      id: 'iaso.label.project.qrCodeError',
+        defaultMessage: "Can't load project QR code",
+        id: 'iaso.label.project.qrCodeError',
+    },
+    qrCodeTitle: {
+        defaultMessage:
+            'This is the QR code to scan from the mobile application for this Project. Click on the sharing icon to copy and paste it',
+        id: 'iaso.label.project.qrCodeTitle',
+    },
+    copyToClipboard: {
+        defaultMessage: 'Copy to clipboard',
+        id: 'iaso.label.copyToClipboard',
     },
 });
 

@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,7 +9,6 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
@@ -61,7 +61,7 @@ export const Projects: FunctionComponent = () => {
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns(formatMessage, params, saveProject)}
+                    columns={columns(formatMessage, saveProject)}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

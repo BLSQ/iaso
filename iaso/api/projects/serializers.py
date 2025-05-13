@@ -59,6 +59,9 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def get_qr_code(self, instance):
         request = self.context.get("request")
+        if not request or not instance.app_id:
+            return None
+
         qr_image = make_qr_code_image(
             data='{"url": "' + request.build_absolute_uri("/") + '", "app_id": "' + instance.app_id + '"}',
             qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),

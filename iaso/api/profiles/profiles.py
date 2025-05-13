@@ -703,6 +703,11 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
         new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+
+        if not request.user.has_perm(permission.USERS_MANAGED) and (request.user.iaso_profile.pk == profile.pk):
+            # An admin should be able to add himself to any project.
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
+
         user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
 
         if not new_project_ids:

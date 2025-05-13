@@ -18,6 +18,7 @@ export type VRF = {
     campaign: string; // obr_name
     obr_name: string;
     vaccine_type: Vaccine;
+    created_at: string; // date in string form
     rounds: { number: number }[];
     date_vrf_signature: string; // date in string form
     quantities_ordered_in_doses?: number;

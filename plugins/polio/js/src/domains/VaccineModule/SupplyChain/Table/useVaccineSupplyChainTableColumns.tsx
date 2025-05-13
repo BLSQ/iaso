@@ -54,6 +54,12 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
             {
+                Header: formatMessage(MESSAGES.vrfCreatedAt),
+                accessor: 'created_at',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'start_date',
                 sortable: true,

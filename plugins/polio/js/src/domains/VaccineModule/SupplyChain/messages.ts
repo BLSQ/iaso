@@ -354,6 +354,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.PoNumberNoPrefix',
         defaultMessage: 'Please input PO number without prefix',
     },
+    vrfCreatedAt: {
+        id: 'iaso.polio.label.vrfCreatedAt',
+        defaultMessage: 'VRF created at',
+    },
 });
 
 export default MESSAGES;

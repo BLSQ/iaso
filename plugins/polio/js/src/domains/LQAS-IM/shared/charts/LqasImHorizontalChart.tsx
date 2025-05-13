@@ -18,7 +18,7 @@ import { PercentageChartWithTitle } from './PercentageChartWithTitle';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
-    round: number;
+    round: number | undefined | string;
     campaign: string;
     countryId?: number;
     data: Record<string, ConvertedLqasImData>;
@@ -27,7 +27,7 @@ type Props = {
 
 export const LqasImHorizontalChart: FunctionComponent<Props> = ({
     type,
-    round,
+    round: roundProps,
     campaign,
     countryId,
     data,
@@ -35,6 +35,8 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
 }) => {
     // TODO: add consition on scope
     const { formatMessage } = useSafeIntl();
+    const round =
+        typeof roundProps === 'string' ? parseInt(roundProps, 10) : roundProps;
     const {
         data: regions,
         isLoading: isLoadingRegions,
@@ -68,7 +70,7 @@ export const LqasImHorizontalChart: FunctionComponent<Props> = ({
         type === 'lqas' ? lqasBarColorTresholds : imBarColorTresholds;
 
     const hasData =
-        data && campaign && data[campaign]
+        data && campaign && data[campaign] && round
             ? !isEqual(data[campaign][round], [])
             : false;
     return (

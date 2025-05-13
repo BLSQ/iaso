@@ -8,7 +8,7 @@ type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 };
 
 const translateTitle = (formatMessage: IntlFormatMessage) => (ratio: string) =>

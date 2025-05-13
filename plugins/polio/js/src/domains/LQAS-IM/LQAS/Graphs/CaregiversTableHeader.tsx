@@ -3,8 +3,8 @@ import React, { FunctionComponent } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData } from '../../../../constants/types';
 import MESSAGES from '../../../../constants/messages';
+import { ConvertedLqasImData } from '../../../../constants/types';
 import {
     accessArrayRound,
     convertStatToPercent,
@@ -14,7 +14,7 @@ import {
 
 type Props = {
     campaign?: string;
-    round: number;
+    round: number | undefined;
     data: Record<string, ConvertedLqasImData>;
     paperElevation: number;
 };

@@ -1,4 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef, FunctionComponent } from 'react';
+import { Card, CardContent } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     mapPopupStyles,
@@ -6,20 +8,32 @@ import {
 } from 'bluesquare-components';
 import { Popup } from 'react-leaflet';
 import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
-import { Card, CardContent } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { number, object, string } from 'prop-types';
-import MESSAGES from '../../../../constants/messages.ts';
-import { findDataForShape } from '../../../../utils/index.tsx';
+
+import MESSAGES from '../../../../constants/messages';
+import { ConvertedLqasImData } from '../../../../constants/types';
+import { findDataForShape } from '../../../../utils/index';
 
 const style = theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };
 };
 
+// @ts-ignore
 const useStyle = makeStyles(style);
 
-export const LqasImPopup = ({ shape, data, round, campaign }) => {
-    const classes = useStyle();
+type Props = {
+    shape: any;
+    data: any;
+    round: number | undefined;
+    campaign?: string;
+};
+
+export const LqasImPopup: FunctionComponent<Props> = ({
+    shape,
+    data,
+    round,
+    campaign = '',
+}) => {
+    const classes: Record<string, string> = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
     const dataForShape = findDataForShape({
@@ -29,7 +43,9 @@ export const LqasImPopup = ({ shape, data, round, campaign }) => {
         campaign,
     });
     return dataForShape ? (
-        <Popup className={classes.popup} ref={ref} pane="popupPane">
+        // removing the pane prop causes zIndex bug
+        // @ts-ignore
+        <Popup ref={ref} pane="popupPane">
             <Card className={classes.popupCard}>
                 <CardContent className={classes.popupCardContent}>
                     <PopupItemComponent
@@ -56,18 +72,12 @@ export const LqasImPopup = ({ shape, data, round, campaign }) => {
     ) : null;
 };
 
-LqasImPopup.propTypes = {
-    shape: object.isRequired,
-    data: object.isRequired,
-    round: number.isRequired,
-    campaign: string,
-};
-
-LqasImPopup.defaultProps = {
-    campaign: '',
-};
 export const makePopup =
-    (LQASData, round, campaign = '') =>
+    (
+        LQASData: Record<string, ConvertedLqasImData>,
+        round: number | undefined,
+        campaign = '',
+    ) =>
     shape => {
         return (
             <LqasImPopup

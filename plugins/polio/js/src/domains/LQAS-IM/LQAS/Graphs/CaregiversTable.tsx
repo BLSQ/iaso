@@ -1,12 +1,12 @@
 /* eslint-disable react/require-default-props */
-import { Box } from '@mui/material';
-import { Table, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
+import { Box } from '@mui/material';
+import { Table, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import {
     ConvertedLqasImData,
@@ -26,7 +26,7 @@ import { CaregiversTableHeader } from './CaregiversTableHeader';
 type Props = {
     marginTop?: boolean;
     campaign?: string;
-    round: number;
+    round: number | undefined;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
     paperElevation: number;
@@ -147,7 +147,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const pages = useMemo(
         () =>
             dataForTable?.length
-                ? Math.ceil(dataForTable?.length / rowsPerPage)
+                ? Math.ceil(dataForTable?.length ?? 0 / rowsPerPage)
                 : 0,
         [dataForTable, rowsPerPage],
     );
@@ -158,33 +158,32 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         }),
         [rowsPerPage, page],
     );
-    return (
-        <>
-            {!isLoading && campaign && (
-                <>
-                    <CaregiversTableHeader
-                        campaign={campaign}
-                        round={round}
-                        data={data}
-                        paperElevation={paperElevation}
+    if (!isLoading && campaign) {
+        return (
+            <>
+                <CaregiversTableHeader
+                    campaign={campaign}
+                    round={round}
+                    data={data}
+                    paperElevation={paperElevation}
+                />
+                <Box mt={marginTop ? 4 : 0}>
+                    <Table
+                        countOnTop={false}
+                        data={sortedData}
+                        pages={pages}
+                        defaultSorted={defaultSorted}
+                        columns={columns(formatMessage)}
+                        marginTop={false}
+                        count={dataForTable?.length ?? 0}
+                        params={params}
+                        resetPageToOne={resetPageToOne}
+                        onTableParamsChange={handleTableParamsChange}
+                        elevation={paperElevation}
                     />
-                    <Box mt={marginTop ? 4 : 0}>
-                        <Table
-                            countOnTop={false}
-                            data={sortedData}
-                            pages={pages}
-                            defaultSorted={defaultSorted}
-                            columns={columns(formatMessage)}
-                            marginTop={false}
-                            count={dataForTable?.length ?? 0}
-                            params={params}
-                            resetPageToOne={resetPageToOne}
-                            onTableParamsChange={handleTableParamsChange}
-                            elevation={paperElevation}
-                        />
-                    </Box>
-                </>
-            )}
-        </>
-    );
+                </Box>
+            </>
+        );
+    }
+    return null;
 };

@@ -11,7 +11,7 @@ type Params = {
     campaign?: string;
     formatter: (args: FormatForNFMArgs<string>) => BarChartData[];
     type: string;
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 };
 
 export const useVerticalChartData = ({

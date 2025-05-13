@@ -9,7 +9,7 @@ import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types'
 export type FormatForNFMArgs<T> = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: number;
+    round: number | undefined;
     formatMessage: IntlFormatMessage;
     type: T;
 };
@@ -39,6 +39,8 @@ export type LqasImCampaign = {
     has_scope: boolean;
     bad_round_number?: number;
 };
+
+export type IMDistrictStatus = '1imOK' | '2imWarning' | '3imFail';
 
 export type LQASDistrictStatus =
     | '1lqasOK'
@@ -263,8 +265,8 @@ export type RoundDateHistoryEntry = {
 export type Round = {
     id: number;
     vaccine_names_extended: string;
-    started_at: Nullable<string>;
-    ended_at: Nullable<string>;
+    started_at: string; // date
+    ended_at: string; // date
     mop_up_started_at: Nullable<string>; // date
     mop_up_ended_at: Nullable<string>; // date
     im_started_at: Nullable<string>; // date

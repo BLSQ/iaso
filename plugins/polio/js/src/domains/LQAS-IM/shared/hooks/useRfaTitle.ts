@@ -8,7 +8,7 @@ type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 };
 
 const translateTitle =
@@ -19,7 +19,7 @@ const translateTitle =
 type CalcParams = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: number;
+    round: number | undefined;
     accessor: string;
 };
 

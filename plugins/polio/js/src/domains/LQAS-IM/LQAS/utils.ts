@@ -35,17 +35,16 @@ import {
  * The API returns the LQAS district status directly.
  * This method is only used to avoid breaking a map component shared with IM
  */
-export const determineStatusForDistrict = (district): string | null => {
-    if (!district) return null;
+export const determineStatusForDistrict = (district): LQASDistrictStatus => {
     return district.status;
 };
 
 export const getLqasStatsForRound = (
     lqasData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
-    round: number,
+    round: number | undefined,
 ): (LQASDistrictStatus | null)[][] => {
-    if (!campaign || !lqasData[campaign]) return [[], [], [], []];
+    if (!campaign || !lqasData[campaign] || !round) return [[], [], [], []];
     const totalEvaluated = accessArrayRound(lqasData[campaign], round).map(
         district => ({
             ...district,
@@ -74,7 +73,7 @@ export const makeLqasMapLegendItems =
     (
         lqasData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
-        round: number,
+        round: number | undefined,
     ): {
         label: string;
         value: string;
@@ -125,7 +124,7 @@ export const makeLqasMapLegendItems =
 type GetLqasStatsWithStatusArgs = {
     data: Record<string, ConvertedLqasImData>;
     campaign: string;
-    round: number | 'latest';
+    round: number | 'latest' | undefined;
 };
 
 export type GetLqasStatsWithStatusResult = Array<
@@ -148,7 +147,7 @@ export const getLqasStatsWithStatus = ({
 type FormatLqasDataForChartArgs = {
     data: Record<string, ConvertedLqasImData>;
     campaign: string;
-    round: number | 'latest';
+    round: number | 'latest' | undefined;
     regions?: { name: string; id: number }[];
 };
 
@@ -209,7 +208,7 @@ export const lqasChartTooltipFormatter =
     };
 
 export const sumChildrenCheckedLqas = (
-    round: number,
+    round: number | undefined,
     data?: Record<string, LqasImCampaign>,
     campaign?: string,
 ): number => {
@@ -225,7 +224,7 @@ export const sumChildrenCheckedLqas = (
 export const makeDataForTable = (
     data: Record<string, ConvertedLqasImData>,
     campaign: string,
-    round: number,
+    round: number | undefined,
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (!data || !campaign || !data[campaign]) return [];
     return accessArrayRound(data[campaign], round);

@@ -16,7 +16,7 @@ import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
 type UseLQASDataParams = {
     campaign?: string;
     country?: string;
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
     LQASData?: LqasImData;
 };
 
@@ -31,11 +31,11 @@ type ChartData = {
     cg: [
         {
             chartKey: 'rfaLeft';
-            round: number;
+            round: number | undefined;
         },
         {
             chartKey: 'rfaRight';
-            round: number;
+            round: number | undefined;
         },
     ];
 };

@@ -18,22 +18,22 @@ import { sumChildrenCheckedLqas } from '../LQAS/utils';
 
 const accessFullRoundData = (
     data: LqasImCampaign,
-    round: number,
+    round: number | undefined,
 ): LqasImRound =>
     data.rounds.find(rnd => rnd.number === round) ?? ({} as LqasImRound);
 
 export const accessDictRound = (
     data: LqasImCampaign,
-    round: number,
+    round: number | undefined,
 ): Record<string, LqasImDistrictData> => {
     return accessFullRoundData(data, round)?.data ?? {};
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number | 'latest',
+    round: number | 'latest' | undefined,
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (round === 'latest') {
-        if (data.rounds.length === 0) return [];
+        if (data.rounds.length === 0 || round === undefined) return [];
         return data.rounds[data.rounds.length - 1].data;
     }
     return data.rounds.find(rnd => rnd.number === round)?.data ?? [];
@@ -41,14 +41,14 @@ export const accessArrayRound = (
 
 export const accessNfmStats = (
     data: LqasImCampaign,
-    round: number,
+    round: number | undefined,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_stats ?? {};
 };
 
 export const accessNfmAbsStats = (
     data: LqasImCampaign,
-    round: number,
+    round: number | undefined,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_abs_stats ?? {};
 };
@@ -162,7 +162,7 @@ const childrenNotMarked = ({
 }: {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: number;
+    round: number | undefined;
 }): number => {
     if (!data || !campaign || !data[campaign]) return 0;
     const campaignData: Record<string, number> = accessNfmStats(
@@ -184,7 +184,7 @@ export const makeRatioUnmarked = ({
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 }): string[] => {
     const childrenCheckedLeft =
         type === 'lqas'

@@ -1,8 +1,16 @@
 import { useMemo } from 'react';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { useGetGeoJson } from '../../../../Campaigns/Scope/hooks/useGetGeoJson';
 
-const defaultShapes = [];
-export const useMapShapes = (countryId?: number) => {
+export type MapShapes = {
+    shapes: OrgUnit[];
+    isFetchingGeoJson: boolean;
+    regionShapes: OrgUnit[];
+    isFetchingRegions: boolean;
+};
+
+const defaultShapes: OrgUnit[] = [];
+export const useMapShapes = (countryId?: number): MapShapes => {
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson(countryId, 'DISTRICT');
     const {

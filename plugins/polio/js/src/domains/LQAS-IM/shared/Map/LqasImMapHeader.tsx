@@ -14,7 +14,7 @@ export type LqasImRefDate = {
 };
 
 type Props = {
-    round: number;
+    round: number | undefined;
     startDate: LqasImRefDate;
     endDate: LqasImRefDate;
     options: DropdownOptions<number>[];

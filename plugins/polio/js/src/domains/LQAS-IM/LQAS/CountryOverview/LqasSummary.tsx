@@ -1,18 +1,17 @@
 /* eslint-disable react/require-default-props */
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Typography, Grid, Divider } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData } from '../../../../constants/types';
-
-import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
-import { getLqasStatsForRound, makeCaregiversRatio } from '../utils';
-import { accessArrayRound, convertStatToPercent } from '../../shared/LqasIm';
 import MESSAGES from '../../../../constants/messages';
+import { ConvertedLqasImData } from '../../../../constants/types';
+import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
+import { accessArrayRound, convertStatToPercent } from '../../shared/LqasIm';
+import { getLqasStatsForRound, makeCaregiversRatio } from '../utils';
 
 type Props = {
     campaign?: string;
-    round: number;
+    round: number | undefined;
     data: Record<string, ConvertedLqasImData>;
     scopeCount: number;
 };

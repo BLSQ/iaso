@@ -4,9 +4,9 @@ import { Divider, Paper } from '@mui/material';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { ConvertedLqasImData, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
-import { getLqasImMapLayer } from '../../IM/utils';
+import { getLqasImMapLayer, LqasImMapLayer } from '../../IM/utils';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
-import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
+import { MapShapes, useMapShapes } from '../../shared/hooks/api/useMapShapes';
 import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
 import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
@@ -16,7 +16,7 @@ import { LqasCountryMap } from './LqasCountryMap';
 import { LqasSummary } from './LqasSummary';
 
 type Props = {
-    round: number;
+    round: number | undefined | string;
     campaign?: string;
     campaigns: Array<unknown>;
     countryId?: number;
@@ -33,7 +33,7 @@ type Props = {
 const baseUrl = baseUrls.lqasCountry;
 
 export const LqasOverviewContainer: FunctionComponent<Props> = ({
-    round,
+    round: roundProp,
     campaign,
     campaigns,
     countryId,
@@ -46,15 +46,21 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     side,
     params,
 }) => {
+    const round =
+        typeof roundProp === 'string' ? parseInt(roundProp, 10) : roundProp;
     const { tab, handleChangeTab } = useLqasImTabState({
         baseUrl,
         params,
         side,
     });
-    const { shapes, isFetchingGeoJson, regionShapes, isFetchingRegions } =
-        useMapShapes(countryId);
+    const {
+        shapes,
+        isFetchingGeoJson,
+        regionShapes,
+        isFetchingRegions,
+    }: MapShapes = useMapShapes(countryId);
 
-    const mainLayer = useMemo(() => {
+    const mainLayer: LqasImMapLayer[] = useMemo(() => {
         return getLqasImMapLayer({
             data,
             selectedCampaign: campaign,

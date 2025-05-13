@@ -11,7 +11,7 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { HorizontalDivider } from '../../../components/HorizontalDivider';
 import MESSAGES from '../../../constants/messages';
-import { LqasImData, Sides } from '../../../constants/types';
+import { Campaign, LqasImData, Sides } from '../../../constants/types';
 import { baseUrls } from '../../../constants/urls';
 import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns';
 import { GraphTitle } from '../shared/charts/GraphTitle';
@@ -23,7 +23,10 @@ import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored';
 import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound';
 import { Filters, Params } from '../shared/Filters';
 import { useLqasIm } from '../shared/hooks/api/useLqasIm';
-import { useSelectedRounds } from '../shared/hooks/useSelectedRounds';
+import {
+    useSelectedRounds,
+    UseSelectedRoundsResult,
+} from '../shared/hooks/useSelectedRounds';
 import { useStyles } from '../shared/hooks/useStyles';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer';
 import { CaregiversTable } from './Graphs/CaregiversTable';
@@ -46,10 +49,17 @@ export const Lqas = () => {
             enabled: Boolean(country),
             show_test: false,
             on_hold: true,
-        });
+        }) as UseQueryResult<Campaign[], Error>;
 
-    const { onRoundChange, selectedRounds, dropDownOptions } =
-        useSelectedRounds({ baseUrl, campaigns, params });
+    const {
+        onRoundChange,
+        selectedRounds,
+        dropDownOptions,
+    }: UseSelectedRoundsResult = useSelectedRounds({
+        baseUrl,
+        campaigns,
+        params,
+    });
 
     const { convertedData, debugData, hasScope, chartData }: UseLQASData =
         useLqasData({
@@ -77,7 +87,7 @@ export const Lqas = () => {
                 <Grid container spacing={2} direction="row">
                     <Grid item xs={6} key={`round_${selectedRounds[0]}_${0}`}>
                         <LqasOverviewContainer
-                            round={parseInt(selectedRounds[0], 10)} // parsing the rnd because it will be a string when coming from params
+                            round={selectedRounds[0]}
                             campaign={campaign}
                             campaigns={campaigns}
                             countryId={countryId}
@@ -93,7 +103,7 @@ export const Lqas = () => {
                     </Grid>
                     <Grid item xs={6} key={`round_${selectedRounds[1]}_${1}`}>
                         <LqasOverviewContainer
-                            round={parseInt(selectedRounds[1], 10)} // parsing the rnd because it will be a string when coming from params
+                            round={selectedRounds[1]}
                             campaign={campaign}
                             campaigns={campaigns}
                             countryId={countryId}
@@ -134,7 +144,7 @@ export const Lqas = () => {
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart
                                             type="lqas"
-                                            round={parseInt(rnd, 10)}
+                                            round={rnd}
                                             campaign={campaign}
                                             countryId={countryId}
                                             data={convertedData}

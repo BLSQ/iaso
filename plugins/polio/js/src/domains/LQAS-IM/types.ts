@@ -121,6 +121,12 @@ export type LqasDataForChart = {
     found: number;
     passing: number;
 };
+export type ImDataForChart = {
+    name: string;
+    value: number;
+    marked: number;
+    checked: number;
+};
 
 export type LqasImDebugData = Record<
     string,

@@ -2,7 +2,11 @@ import React, { FunctionComponent, useMemo } from 'react';
 
 import { Divider, Paper } from '@mui/material';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { ConvertedLqasImData, Side } from '../../../../constants/types';
+import {
+    Campaign,
+    ConvertedLqasImData,
+    Side,
+} from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
 import { getLqasImMapLayer, LqasImMapLayer } from '../../IM/utils';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
@@ -18,7 +22,7 @@ import { LqasSummary } from './LqasSummary';
 type Props = {
     round: number | undefined | string;
     campaign?: string;
-    campaigns: Array<unknown>;
+    campaigns: Array<Campaign>;
     countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isFetching: boolean;

@@ -1,18 +1,17 @@
-/* eslint-disable react/require-default-props */
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import { ConvertedLqasImData } from '../../../../constants/types';
+import MESSAGES from '../../../../constants/messages';
+import { ConvertedLqasImData, IMType } from '../../../../constants/types';
 import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
 import { makeAccordionData } from '../../shared/LqasIm';
-import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     campaign?: string;
-    round: number;
-    type: 'imGlobal' | 'imIHH' | 'imOHH';
+    round: number | undefined;
+    type: IMType;
     data: Record<string, ConvertedLqasImData>;
 };
 

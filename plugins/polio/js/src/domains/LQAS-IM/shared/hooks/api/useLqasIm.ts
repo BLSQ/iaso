@@ -1,8 +1,6 @@
-// @ts-ignore
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-// @ts-ignore
 import { LqasImData } from '../../../../../constants/types';
 import {
     IM_COUNTRY_URL,
@@ -12,7 +10,7 @@ import {
 } from '../../../IM/constants';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
 
-export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imHH' | 'imGlobal';
+export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
 
 export const getLqasIm = (
     type: LQASIMRequestType,
@@ -21,7 +19,7 @@ export const getLqasIm = (
     switch (type) {
         case 'imOHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_OHH_SLUG}_${countryId}`);
-        case 'imHH':
+        case 'imIHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_HH_SLUG}_${countryId}`);
         case 'imGlobal':
             return getRequest(

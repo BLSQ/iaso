@@ -86,7 +86,7 @@ export type LqasImParams = {
     type: LqasIMtype;
     data?: Record<string, ConvertedLqasImData>;
     campaign?: string;
-    round: number;
+    round?: number;
 };
 
 export type GroupedCampaign = {

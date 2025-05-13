@@ -11,7 +11,7 @@ const getMainLayerStyles = shape => {
 };
 
 type Props = {
-    round: number;
+    round?: number;
     campaigns?: any[];
     selectedCampaign?: string;
     type: IMType;

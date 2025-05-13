@@ -5,10 +5,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import {
-    ParamsWithAccountId,
-    useParamsObject,
-} from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { HorizontalDivider } from '../../../components/HorizontalDivider';
 import MESSAGES from '../../../constants/messages';
 import { Campaign, LqasImData, Sides } from '../../../constants/types';
@@ -21,13 +18,14 @@ import { paperElevation } from '../shared/constants';
 import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber';
 import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored';
 import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound';
-import { Filters, Params } from '../shared/Filters';
+import { Filters } from '../shared/Filters';
 import { useLqasIm } from '../shared/hooks/api/useLqasIm';
 import {
     useSelectedRounds,
     UseSelectedRoundsResult,
 } from '../shared/hooks/useSelectedRounds';
 import { useStyles } from '../shared/hooks/useStyles';
+import { LqasImUrlParams } from '../types';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer';
 import { CaregiversTable } from './Graphs/CaregiversTable';
 import { UseLQASData, useLqasData } from './hooks/useLqasData';
@@ -37,7 +35,7 @@ const baseUrl = baseUrls.lqasCountry;
 export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const params = useParamsObject(baseUrl) as Params & ParamsWithAccountId;
+    const params = useParamsObject(baseUrl) as LqasImUrlParams;
     const { campaign, country } = params;
 
     const { data: LQASData, isFetching }: UseQueryResult<LqasImData> =

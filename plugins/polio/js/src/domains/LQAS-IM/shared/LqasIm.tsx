@@ -86,7 +86,7 @@ const makeCollectionStats = ({
     campaign,
     round,
 }: LqasImParams): LqasImMapLegendData | Record<string, never> => {
-    if (!data || !campaign || !data[campaign]) return {};
+    if (!data || !campaign || !data[campaign] || !round) return {};
     if (type !== 'lqas') {
         const aggregatedData = accessArrayRound(data[campaign], round).reduce(
             (total, current) => {

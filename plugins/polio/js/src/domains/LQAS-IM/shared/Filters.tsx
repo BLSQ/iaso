@@ -18,14 +18,9 @@ import { POLIO_ADMIN } from '../../../constants/permissions';
 import { IMType } from '../../../constants/types';
 import { baseUrls } from '../../../constants/urls';
 import { makeCampaignsDropDown } from '../../../utils/index';
+import { LqasImFilterParams } from '../types';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasIMData } from './RefreshLqasIMData';
-
-export type Params = {
-    campaign: string | undefined;
-    country: string | undefined;
-    rounds: string | undefined;
-};
 
 type FiltersState = {
     campaign: string | undefined;
@@ -36,8 +31,8 @@ type Props = {
     isFetching: boolean;
     campaigns: any[];
     campaignsFetching: boolean;
-    params: Params;
-    imType?: IMType & 'imHH';
+    params: LqasImFilterParams;
+    imType?: IMType;
 };
 
 const getCurrentUrl = (imType?: IMType | 'imHH'): string => {

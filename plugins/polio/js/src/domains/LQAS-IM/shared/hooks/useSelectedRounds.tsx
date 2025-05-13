@@ -3,17 +3,16 @@ import {
     useRedirectToReplace,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import { ParamsWithAccountId } from 'Iaso/routing/hooks/useParamsObject';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { commaSeparatedIdsToArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { Campaign } from '../../../../constants/types';
+import { LqasImUrlParams } from '../../types';
 import { LIST } from '../constants';
-import { Params } from '../Filters';
 
 type UseSelectedRoundsArgs = {
     baseUrl: string;
     campaigns: Campaign[];
-    params: Params & ParamsWithAccountId;
+    params: LqasImUrlParams;
 };
 
 type OnRoundChange = (index: number) => (value: number) => void;

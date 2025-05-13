@@ -12,6 +12,7 @@ import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
 import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
+import { ChartData, LqasImDebugData } from '../../types';
 
 type UseLQASDataParams = {
     campaign?: string;
@@ -20,32 +21,9 @@ type UseLQASDataParams = {
     LQASData?: LqasImData;
 };
 
-type ChartDataEntry = {
-    chartKey: string;
-    data: BarChartData[];
-    title: string;
-};
-type ChartData = {
-    nfm: [ChartDataEntry, ChartDataEntry];
-    rfa: [ChartDataEntry, ChartDataEntry];
-    cg: [
-        {
-            chartKey: 'rfaLeft';
-            round: number | undefined;
-        },
-        {
-            chartKey: 'rfaRight';
-            round: number | undefined;
-        },
-    ];
-};
-
 export type UseLQASData = {
     convertedData: Record<string, ConvertedLqasImData>;
-    debugData: Record<
-        string,
-        { hasScope: boolean; districtsNotFound: string[] }
-    >;
+    debugData: LqasImDebugData;
     hasScope: boolean;
     chartData: ChartData;
 };

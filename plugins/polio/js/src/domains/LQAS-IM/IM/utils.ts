@@ -43,9 +43,9 @@ export const determineStatusForDistrict = (district): IMDistrictStatus => {
 export const getImStatsForRound = (
     imData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
-    round: number,
+    round: number | undefined,
 ): ('1imOK' | '2imWarning' | '3imFail' | '4imError' | null)[][] => {
-    if (!campaign || !imData[campaign]) return [[], [], []];
+    if (!campaign || !imData[campaign] || !round) return [[], [], []];
     const allStatuses = accessArrayRound(imData[campaign], round).map(
         district => {
             return determineStatusForDistrict(district);
@@ -66,7 +66,7 @@ export const makeImMapLegendItems =
     (
         imData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
-        round: number,
+        round: number | undefined,
     ): LegendItem[] => {
         const [passed, failed, disqualified, errored] = getImStatsForRound(
             imData,

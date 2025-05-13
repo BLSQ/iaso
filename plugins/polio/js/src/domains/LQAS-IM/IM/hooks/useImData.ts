@@ -1,28 +1,30 @@
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
-import {
-    BarChartData,
-    ConvertedLqasImData,
-    LqasImData,
-} from '../../../../constants/types';
-import { LQASIMRequestType, useLqasIm } from '../../shared/hooks/api/useLqasIm';
+import { useLqasIm } from '../../shared/hooks/api/useLqasIm';
 import { useConvertedLqasImData } from '../../shared/hooks/useConvertedLqasImData';
 import { useDebugData } from '../../shared/hooks/useDebugData';
 import { useNfmTitle } from '../../shared/hooks/useNfmTitle';
 import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
 import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
-import { ChartData, LqasImDebugData } from '../../types';
+import {
+    BarChartData,
+    ChartData,
+    ConvertedLqasImData,
+    LqasImData,
+    LqasImDebugData,
+    LqasIMType,
+} from '../../types';
 
 type UseImDataParams = {
     campaign?: string;
     country?: string;
-    imType: LQASIMRequestType;
+    imType: LqasIMType;
     selectedRounds: [number | undefined, number | undefined];
 };
 
 export type UseImData = {
-    imData: LqasImData | undefined;
+    imData?: LqasImData;
     isFetching: boolean;
     convertedData: Record<string, ConvertedLqasImData>;
     debugData: LqasImDebugData;

@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { UseQueryResult } from 'react-query';
-import { ConvertedLqasImData } from '../../../../constants/types';
 import { imBarColorTresholds } from '../../IM/constants';
 import { formatImDataForChart, imTooltipFormatter } from '../../IM/utils';
 import { lqasBarColorTresholds } from '../../LQAS/constants';
@@ -11,6 +10,7 @@ import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../../LQAS/utils';
+import { ConvertedLqasImData } from '../../types';
 import { useGetRegions } from '../hooks/api/useGetRegions';
 import { NoData } from './NoData';
 import { GraphTooltipFormatter } from './PercentageBarChart/types';

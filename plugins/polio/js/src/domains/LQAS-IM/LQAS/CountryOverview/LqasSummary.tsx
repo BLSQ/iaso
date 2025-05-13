@@ -4,9 +4,9 @@ import { Box, Typography, Grid, Divider } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import { ConvertedLqasImData } from '../../../../constants/types';
 import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
 import { accessArrayRound, convertStatToPercent } from '../../shared/LqasIm';
+import { ConvertedLqasImData } from '../../types';
 import { getLqasStatsForRound, makeCaregiversRatio } from '../utils';
 
 type Props = {

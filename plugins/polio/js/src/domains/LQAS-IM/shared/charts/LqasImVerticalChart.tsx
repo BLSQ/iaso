@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
 import { Box, Typography } from '@mui/material';
+import { blue } from '@mui/material/colors';
 import {
     Bar,
     BarChart,
@@ -10,13 +11,12 @@ import {
     Cell,
     LabelList,
 } from 'recharts';
-import { blue } from '@mui/material/colors';
-import { BarChartData } from '../../../../constants/types';
-import { BAR_HEIGHT } from './PercentageBarChart/constants';
-import { CustomTick } from './CustomTick';
-import { customLabelHorizontal } from './PercentageBarChart/utils';
-import { NoData } from './NoData';
+import { BarChartData } from '../../types';
 import { verticalChartTooltipFormatter } from '../LqasIm';
+import { CustomTick } from './CustomTick';
+import { NoData } from './NoData';
+import { BAR_HEIGHT } from './PercentageBarChart/constants';
+import { customLabelHorizontal } from './PercentageBarChart/utils';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props

@@ -1,10 +1,7 @@
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
-import {
-    Campaign,
-    LqasImDistrictDataWithNameAndRegion,
-    Round,
-} from '../constants/types';
+import { Campaign, Round } from '../constants/types';
 import { accessArrayRound } from '../domains/LQAS-IM/shared/LqasIm';
+import { LqasImDistrictDataWithNameAndRegion } from '../domains/LQAS-IM/types';
 
 type Shape = {
     id: string;

@@ -16,13 +16,13 @@ import {
     OK_COLOR,
     WARNING_COLOR,
 } from '../../../../../styles/constants';
-import { FormatLqasDataForChartResult } from '../../../LQAS/utils';
+import { LqasDataForChart } from '../../../types';
 import { BAR_HEIGHT } from './constants';
 import { GraphTooltipFormatter } from './types';
 import { determineColor, customLabel } from './utils';
 
 type Props = {
-    data: FormatLqasDataForChartResult[];
+    data: LqasDataForChart[];
     tooltipFormatter: GraphTooltipFormatter;
     colorPalette?: { ok: string; warning: string; fail: string };
     colorTresholds?: { ok: number; warning: number };

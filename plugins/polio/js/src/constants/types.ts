@@ -1,93 +1,11 @@
-import { IntlFormatMessage, Pagination } from 'bluesquare-components';
+import { Pagination } from 'bluesquare-components';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import {
     DropdownOptionsWithOriginal,
     Nullable,
 } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
-
-export type FormatForNFMArgs<T> = {
-    data?: Record<string, LqasImCampaign>;
-    campaign?: string;
-    round: number | undefined;
-    formatMessage: IntlFormatMessage;
-    type: T;
-};
-export type LqasImData = {
-    stats: Record<string, LqasImCampaign>;
-    form_count: number;
-    form_campaign_not_found_count: number;
-    day_country_not_found: Record<string, Record<string, number>>;
-};
-
-export type BarChartData = {
-    name: string;
-    value: number; // value as percentage
-    absValue: number; // absolute number
-};
-export type LqasImRound = {
-    number: number;
-    data: Record<string, LqasImDistrictData>;
-    nfm_stats: Record<string, number>;
-    nfm_abs_stats: Record<string, number>;
-};
-export type LqasImCampaign = {
-    rounds: LqasImRound[];
-    districts_not_found: string[];
-    country_id: number;
-    country_name?: string;
-    has_scope: boolean;
-    bad_round_number?: number;
-};
-
-export type IMDistrictStatus = '1imOK' | '2imWarning' | '3imFail';
-
-export type LQASDistrictStatus =
-    | '1lqasOK'
-    | '3lqasverypoor'
-    | '3lqaspoor'
-    | '3lqasmoderate'
-    | '2lqasDisqualified'
-    | '3lqasundersampled'
-    | '3lqasoversampled'
-    | 'inScope';
-
-export type LqasImDistrictData = {
-    total_child_fmd: number;
-    total_child_checked: number;
-    care_giver_stats?: Record<string, number>;
-    district?: number;
-    total_sites_visited: number;
-    region_name?: string;
-    status: LQASDistrictStatus;
-};
-
-export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {
-    name: string;
-    region_name: Nullable<string>;
-};
-export type ConvertedLqasImData = {
-    rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
-};
-
-export type IMType = 'imGlobal' | 'imIHH' | 'imOHH';
-
-export type LqasIMtype = IMType | 'lqas';
-
-export type LqasImMapLegendData = {
-    reportingDistricts: number;
-    total_child_checked: number;
-    total_child_fmd?: number;
-    total_sites_visited: number;
-    ratioUnvaccinated?: string;
-};
-
-export type LqasImParams = {
-    type: LqasIMtype;
-    data?: Record<string, ConvertedLqasImData>;
-    campaign?: string;
-    round?: number;
-};
 
 export type GroupedCampaign = {
     id: number;
@@ -213,13 +131,6 @@ export type BudgetStatusDeprecated =
     | 'REVIEWED';
 
 export type PaymentMode = 'DIRECT' | 'DFC' | 'MOBILE_PAYMENT';
-
-export type Translations = {
-    messages: Record<
-        string,
-        { id: string; defaultMessage: string; values?: string }
-    >;
-};
 
 export type Scope = {
     vaccine?: Vaccine;
@@ -496,6 +407,13 @@ export type MapColor = {
     weight: string; // a number as string: "2"
     opacity: string; // a number as string: "2"
     zIndex: number;
+};
+
+export type MapShapes = {
+    shapes: OrgUnit[];
+    isFetchingGeoJson: boolean;
+    regionShapes: OrgUnit[];
+    isFetchingRegions: boolean;
 };
 
 export type Side = 'left' | 'right';

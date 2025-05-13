@@ -18,7 +18,10 @@ import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber';
 import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored';
 import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound';
 import { Filters } from '../shared/Filters';
-import { useSelectedRounds } from '../shared/hooks/useSelectedRounds';
+import {
+    useSelectedRounds,
+    UseSelectedRoundsResult,
+} from '../shared/hooks/useSelectedRounds';
 import { useStyles } from '../shared/hooks/useStyles';
 import { LqasImUrlParams } from '../types';
 import { ImOverviewContainer } from './CountryOverview/ImOverviewContainer';
@@ -40,8 +43,15 @@ export const ImStats: FunctionComponent = () => {
             on_hold: true,
         }) as UseQueryResult<Campaign[], Error>;
 
-    const { onRoundChange, selectedRounds, dropDownOptions } =
-        useSelectedRounds({ baseUrl, campaigns, params });
+    const {
+        onRoundChange,
+        selectedRounds,
+        dropDownOptions,
+    }: UseSelectedRoundsResult = useSelectedRounds({
+        baseUrl,
+        campaigns,
+        params,
+    });
 
     const {
         imData,

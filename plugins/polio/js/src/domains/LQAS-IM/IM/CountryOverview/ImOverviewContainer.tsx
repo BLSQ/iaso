@@ -1,12 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Paper } from '@mui/material';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import {
-    Campaign,
-    ConvertedLqasImData,
-    IMType,
-    Side,
-} from '../../../../constants/types';
+import { Campaign, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
 import { LIST, MAP } from '../../shared/constants';
 import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
@@ -14,6 +9,7 @@ import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderDat
 import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
 import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { ConvertedLqasImData, IMType } from '../../types';
 import { getLqasImMapLayer } from '../utils';
 import { ImCountryListOverview } from './ImCountryListOverview';
 import { ImCountryMap } from './ImCountryMap';

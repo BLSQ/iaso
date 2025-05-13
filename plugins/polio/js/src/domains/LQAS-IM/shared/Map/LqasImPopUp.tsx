@@ -10,8 +10,8 @@ import { Popup } from 'react-leaflet';
 import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
 
 import MESSAGES from '../../../../constants/messages';
-import { ConvertedLqasImData } from '../../../../constants/types';
 import { findDataForShape } from '../../../../utils/index';
+import { ConvertedLqasImData } from '../../types';
 
 const style = theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };

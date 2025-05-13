@@ -15,10 +15,9 @@ import {
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
 import { POLIO_ADMIN } from '../../../constants/permissions';
-import { IMType } from '../../../constants/types';
 import { baseUrls } from '../../../constants/urls';
 import { makeCampaignsDropDown } from '../../../utils/index';
-import { LqasImFilterParams } from '../types';
+import { IMType, LqasImFilterParams } from '../types';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasIMData } from './RefreshLqasIMData';
 

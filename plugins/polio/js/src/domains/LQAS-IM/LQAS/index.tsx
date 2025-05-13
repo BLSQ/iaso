@@ -8,7 +8,7 @@ import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Ia
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { HorizontalDivider } from '../../../components/HorizontalDivider';
 import MESSAGES from '../../../constants/messages';
-import { Campaign, LqasImData, Sides } from '../../../constants/types';
+import { Campaign, Sides } from '../../../constants/types';
 import { baseUrls } from '../../../constants/urls';
 import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns';
 import { GraphTitle } from '../shared/charts/GraphTitle';
@@ -25,7 +25,7 @@ import {
     UseSelectedRoundsResult,
 } from '../shared/hooks/useSelectedRounds';
 import { useStyles } from '../shared/hooks/useStyles';
-import { LqasImUrlParams } from '../types';
+import { LqasImData, LqasImUrlParams } from '../types';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer';
 import { CaregiversTable } from './Graphs/CaregiversTable';
 import { UseLQASData, useLqasData } from './hooks/useLqasData';

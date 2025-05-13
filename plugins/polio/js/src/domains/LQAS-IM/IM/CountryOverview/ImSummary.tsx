@@ -4,9 +4,9 @@ import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../../../constants/messages';
-import { ConvertedLqasImData, IMType } from '../../../../constants/types';
 import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
 import { makeAccordionData } from '../../shared/LqasIm';
+import { ConvertedLqasImData, IMType } from '../../types';
 
 type Props = {
     campaign?: string;

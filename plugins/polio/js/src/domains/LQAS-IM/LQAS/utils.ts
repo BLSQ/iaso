@@ -1,13 +1,6 @@
 import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import {
-    LqasImDistrictDataWithNameAndRegion,
-    ConvertedLqasImData,
-    LqasImCampaign,
-    LqasImDistrictData,
-    LQASDistrictStatus,
-} from '../../../constants/types';
-import {
     OK_COLOR,
     FAIL_COLOR,
     MODERATE_COLOR,
@@ -21,6 +14,15 @@ import {
     accessDictRound,
     convertStatToPercent,
 } from '../shared/LqasIm';
+import {
+    ConvertedLqasImData,
+    LqasDataForChart,
+    LQASDistrictStatus,
+    LqasImCampaign,
+    LqasImDistrictData,
+    LqasImDistrictDataWithNameAndRegion,
+    LqasImLegendItem,
+} from '../types';
 import {
     LQAS_PASS,
     LQAS_POOR,
@@ -66,13 +68,6 @@ export const getLqasStatsForRound = (
     );
     const inScope = allStatuses.filter(status => status === IN_SCOPE);
     return [passed, moderate, poor, failed, oversampled, undersampled, inScope];
-};
-
-export type LqasImLegendItem = {
-    label: string;
-    value: string;
-    color?: string;
-    background?: string;
 };
 
 export const makeLqasMapLegendItems =
@@ -129,7 +124,7 @@ type GetLqasStatsWithStatusArgs = {
     round: number | 'latest' | undefined;
 };
 
-export type GetLqasStatsWithStatusResult = Array<
+type GetLqasStatsWithStatusResult = Array<
     LqasImDistrictDataWithNameAndRegion & {
         status: LQASDistrictStatus;
     }
@@ -153,25 +148,18 @@ type FormatLqasDataForChartArgs = {
     regions?: { name: string; id: number }[];
 };
 
-export type FormatLqasDataForChartResult = {
-    name: string;
-    value: number;
-    found: number;
-    passing: number;
-};
-
 export const formatLqasDataForChart = ({
     data,
     campaign,
     round,
     regions = [],
-}: FormatLqasDataForChartArgs): FormatLqasDataForChartResult[] => {
+}: FormatLqasDataForChartArgs): LqasDataForChart[] => {
     const dataForRound: GetLqasStatsWithStatusResult = getLqasStatsWithStatus({
         data,
         campaign,
         round,
     });
-    const regionsList: FormatLqasDataForChartResult[] = [];
+    const regionsList: LqasDataForChart[] = [];
     regions.forEach(region => {
         const regionData = dataForRound.filter(
             district => district.region_name === region.name,

@@ -2,16 +2,6 @@ import { IntlFormatMessage } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import MESSAGES from '../../../constants/messages';
-import {
-    BarChartData,
-    ConvertedLqasImData,
-    FormatForNFMArgs,
-    IMDistrictStatus,
-    LQASDistrictStatus,
-    LqasImCampaign,
-    LqasImDistrictData,
-    LqasImDistrictDataWithNameAndRegion,
-} from '../../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import {
     LegendItem,
@@ -29,7 +19,16 @@ import {
     accessArrayRound,
 } from '../shared/LqasIm';
 
-import { LQASIMType } from '../shared/types/types';
+import {
+    BarChartData,
+    ConvertedLqasImData,
+    FormatForNFMArgs,
+    IMDistrictStatus,
+    LqasImCampaign,
+    LqasImDistrictData,
+    LqasImMapLayer,
+    LqasIMType,
+} from '../types';
 import { IM_ERROR, IM_FAIL, IM_PASS, IM_WARNING, imNfmKeys } from './constants';
 
 export const determineStatusForDistrict = (district): IMDistrictStatus => {
@@ -215,16 +214,12 @@ export const sumChildrenCheckedIm = (
 type GetMapLayerArgs = {
     selectedCampaign?: string;
     data: Record<string, ConvertedLqasImData>;
-    type: LQASIMType;
+    type: LqasIMType;
     campaigns: any[];
     round: number | undefined;
     shapes: OrgUnit[];
 };
 
-export type LqasImMapLayer = OrgUnit & {
-    data: LqasImDistrictDataWithNameAndRegion | null;
-    status: LQASDistrictStatus | IMDistrictStatus;
-};
 export const getLqasImMapLayer = ({
     data,
     selectedCampaign,

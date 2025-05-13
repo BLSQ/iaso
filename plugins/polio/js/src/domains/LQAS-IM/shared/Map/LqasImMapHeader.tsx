@@ -6,12 +6,8 @@ import classNames from 'classnames';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
+import { LqasImRefDate } from '../../types';
 import { LqasImDates } from './LqasImDates';
-
-export type LqasImRefDate = {
-    date: string;
-    isDefault: boolean;
-};
 
 type Props = {
     round: number | undefined;

@@ -1,10 +1,4 @@
 import { useMemo } from 'react';
-
-import {
-    BarChartData,
-    ConvertedLqasImData,
-    LqasImData,
-} from '../../../../constants/types';
 import { useConvertedLqasImData } from '../../shared/hooks/useConvertedLqasImData';
 import { useDebugData } from '../../shared/hooks/useDebugData';
 import { useNfmTitle } from '../../shared/hooks/useNfmTitle';
@@ -12,7 +6,13 @@ import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
 import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
-import { ChartData, LqasImDebugData } from '../../types';
+import {
+    BarChartData,
+    ChartData,
+    ConvertedLqasImData,
+    LqasImData,
+    LqasImDebugData,
+} from '../../types';
 
 type UseLQASDataParams = {
     campaign?: string;

@@ -1,10 +1,14 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import { ConvertedLqasImData, Side } from '../../../../constants/types';
-import { LqasImMapLayer } from '../../IM/utils';
+import { Side } from '../../../../constants/types';
 import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
-import { lqasDistrictColors, MapColorConfig } from '../constants';
+import {
+    ConvertedLqasImData,
+    LqasImMapLayer,
+    MapColorConfig,
+} from '../../types';
+import { lqasDistrictColors } from '../constants';
 import { makeLqasMapLegendItems } from '../utils';
 
 const getMainLayerStyles = (shape: LqasImMapLayer): MapColorConfig => {

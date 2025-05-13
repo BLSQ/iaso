@@ -1,5 +1,5 @@
-import { useRedirectToReplace } from 'bluesquare-components';
 import { useCallback, useMemo, useState } from 'react';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { Side, Sides } from '../../../../constants/types';
 import { MAP } from '../constants';
 

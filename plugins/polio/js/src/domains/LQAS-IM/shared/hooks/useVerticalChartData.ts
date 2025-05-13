@@ -1,10 +1,6 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    BarChartData,
-    FormatForNFMArgs,
-    LqasImCampaign,
-} from '../../../../constants/types';
+import { BarChartData, FormatForNFMArgs, LqasImCampaign } from '../../types';
 
 type Params = {
     data?: Record<string, LqasImCampaign>;

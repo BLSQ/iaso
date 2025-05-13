@@ -1,6 +1,6 @@
 import { useLocation } from 'react-router-dom';
-import { IMType } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
+import { IMType } from '../../types';
 
 type UseImTypeResult = { url: string; type: IMType };
 

@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import { IMType } from '../../../../constants/types';
 import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
+import { IMType } from '../../types';
 import { imDistrictColors } from '../constants';
 import { makeImMapLegendItems } from '../utils';
 

@@ -8,10 +8,6 @@ import React, {
 import { Box } from '@mui/material';
 import { Table, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import {
-    ConvertedLqasImData,
-    LqasImDistrictDataWithNameAndRegion,
-} from '../../../../constants/types';
 import { floatToPercentString } from '../../../../utils';
 import {
     sortbyDistrictNameAsc,
@@ -19,6 +15,10 @@ import {
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
 } from '../../shared/tableUtils';
+import {
+    ConvertedLqasImData,
+    LqasImDistrictDataWithNameAndRegion,
+} from '../../types';
 import { makeDataForTable } from '../utils';
 import { CaregiverInfoSource } from './CaregiverInfoSource';
 import { CaregiversTableHeader } from './CaregiversTableHeader';

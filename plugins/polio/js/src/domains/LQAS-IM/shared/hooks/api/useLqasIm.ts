@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { LqasImData } from '../../../../../constants/types';
+
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,
@@ -9,11 +9,10 @@ import {
     IM_HH_SLUG,
 } from '../../../IM/constants';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
-
-export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
+import { LqasImData, LqasIMType } from '../../../types';
 
 export const getLqasIm = (
-    type: LQASIMRequestType,
+    type: LqasIMType,
     countryId?: string,
 ): Promise<any> => {
     switch (type) {
@@ -35,7 +34,7 @@ export const getLqasIm = (
 };
 
 export const useLqasIm = (
-    type: LQASIMRequestType,
+    type: LqasIMType,
     countryId?: string,
 ): UseQueryResult<LqasImData> => {
     return useSnackQuery({

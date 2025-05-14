@@ -1,13 +1,14 @@
 import React, { Fragment, FunctionComponent, useState } from 'react';
 
-import { TableRow } from '@mui/material';
+import { Box, TableCell, TableRow } from '@mui/material';
 
+import classnames from 'classnames';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { StaticSubactivitiesFields } from './cells/StaticSubactivitiesFields';
 import { useStyles } from './Styles';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
 import { getRoundsCells } from './utils/rounds';
-import { getSubActivitiesCells } from './utils/subactivities';
+import { getSubActivitiesRow } from './utils/subactivities';
 
 type Props = {
     campaign: MappedCampaign;
@@ -27,7 +28,8 @@ export const CampaignRows: FunctionComponent<Props> = ({
     params,
 }) => {
     const classes = useStyles();
-    const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(false);
+    const [subActivitiesExpanded, setSubActivitiesExpanded] = useState(true);
+    const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     return (
         <Fragment key={`row-${campaign.id}`}>
             <TableRow className={classes.tableRow}>
@@ -48,24 +50,46 @@ export const CampaignRows: FunctionComponent<Props> = ({
             {subActivitiesExpanded &&
                 campaign.rounds
                     .filter(round => round.subActivities.length > 0)
-                    .map(round => (
-                        <TableRow
-                            className={classes.tableRowSmall}
-                            key={`round-${round.id}`}
-                        >
-                            <StaticSubactivitiesFields
-                                isPdf={isPdf}
-                                roundNumber={round.number}
-                            />
-                            {getSubActivitiesCells(
-                                campaign,
-                                round.subActivities,
-                                currentWeekIndex,
-                                firstMonday,
-                                lastSunday,
-                            )}
-                        </TableRow>
-                    ))}
+                    .map(round =>
+                        round.subActivities.map((subActivity, idx) => (
+                            <TableRow
+                                className={classes.tableRowSmall}
+                                key={`round-${round.id}-subactivity-${subActivity.id}`}
+                            >
+                                {idx === 0 && (
+                                    <TableCell
+                                        rowSpan={round.subActivities.length}
+                                        className={classnames(
+                                            defaultCellStyles,
+                                        )}
+                                        sx={{
+                                            fontSize: '9px',
+                                        }}
+                                    >
+                                        <Box
+                                            sx={{
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                            }}
+                                        >
+                                            R{round.number}
+                                        </Box>
+                                    </TableCell>
+                                )}
+                                <StaticSubactivitiesFields
+                                    isPdf={isPdf}
+                                    subActivity={subActivity}
+                                />
+                                {getSubActivitiesRow(
+                                    subActivity,
+                                    firstMonday,
+                                    lastSunday,
+                                    currentWeekIndex,
+                                    campaign,
+                                )}
+                            </TableRow>
+                        )),
+                    )}
         </Fragment>
     );
 };

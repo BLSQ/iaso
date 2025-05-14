@@ -8,15 +8,16 @@ import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { colSpanTitle } from '../constants';
 import { useStyles } from '../Styles';
+import { SubActivity } from '../types';
 
 type Props = {
     isPdf: boolean;
-    roundNumber: number;
+    subActivity: SubActivity;
 };
 
 export const StaticSubactivitiesFields: FunctionComponent<Props> = ({
     isPdf,
-    roundNumber,
+    subActivity,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -24,7 +25,7 @@ export const StaticSubactivitiesFields: FunctionComponent<Props> = ({
     const fields = useStaticFields(isPdf);
     return (
         <TableCell
-            colSpan={colSpanTitle * fields.length}
+            colSpan={colSpanTitle * fields.length - 1}
             className={classnames(defaultCellStyles)}
         >
             <Box
@@ -35,11 +36,9 @@ export const StaticSubactivitiesFields: FunctionComponent<Props> = ({
                 sx={{
                     display: 'flex',
                     justifyContent: 'center',
-                    textTransform: 'uppercase',
                 }}
             >
-                {formatMessage(MESSAGES.subactivities)}{' '}
-                {formatMessage(MESSAGES.round)} {roundNumber}
+                {formatMessage(MESSAGES.subactivity)}: {subActivity.name}
             </Box>
         </TableCell>
     );

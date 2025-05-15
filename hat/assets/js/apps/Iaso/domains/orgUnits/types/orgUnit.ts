@@ -2,7 +2,7 @@ import { ReactNode } from 'react';
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
-import { File, Instance } from '../../instances/types/instance';
+import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 

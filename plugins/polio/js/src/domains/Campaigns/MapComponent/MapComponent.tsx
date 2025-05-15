@@ -1,20 +1,10 @@
-import React, { useMemo } from 'react';
-import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import React, { FunctionComponent, useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
-import {
-    arrayOf,
-    func,
-    object,
-    objectOf,
-    string,
-    number,
-    bool,
-    array,
-} from 'prop-types';
-
-import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
-import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern.tsx';
+import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
+import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
+import { Shape } from '../Scope/Scopes/types';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
@@ -25,20 +15,36 @@ const findBackgroundShape = (shape, backgroundShapes) => {
 const boundsOptions = {
     padding: [5, 5],
 };
-export const MapComponent = ({
+
+type Props = {
+    name: string;
+    onSelectShape?: (id: Shape) => void;
+    mainLayer?: any[];
+    backgroundLayer?: any[];
+    getMainLayerStyle?: (shape: any) => Record<string, any>;
+    getBackgroundLayerStyle?: (shape: any) => Record<string, any>;
+    tooltipLabels?: { main: string; background: string };
+    height?: number;
+    fitToBounds?: boolean;
+    makePopup;
+    fitBoundsToBackground?: boolean;
+    shapePatterns?: any[];
+    shapePatternIds?: any[];
+};
+export const MapComponent: FunctionComponent<Props> = ({
     name,
-    onSelectShape,
-    mainLayer,
-    backgroundLayer,
-    getMainLayerStyle,
-    getBackgroundLayerStyle,
-    tooltipLabels,
-    height,
-    fitToBounds,
-    makePopup,
-    fitBoundsToBackground,
-    shapePatterns,
-    shapePatternIds,
+    onSelectShape = () => null,
+    mainLayer = [],
+    backgroundLayer = [],
+    getMainLayerStyle = () => null,
+    getBackgroundLayerStyle = () => null,
+    tooltipLabels = { main: 'District', background: 'Region' },
+    height = 500,
+    fitToBounds = true,
+    makePopup = () => null,
+    fitBoundsToBackground = false,
+    shapePatterns = [],
+    shapePatternIds = [],
 }) => {
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
@@ -98,6 +104,7 @@ export const MapComponent = ({
                 patterns={shapePatterns}
                 patternIds={shapePatternIds}
             >
+                {/* @ts-ignore */}
                 {mainLayer?.length > 0 &&
                     mainLayer.map(shape => (
                         <GeoJSON
@@ -130,35 +137,4 @@ export const MapComponent = ({
             </PaneWithPattern>
         </MapContainer>
     );
-};
-
-MapComponent.propTypes = {
-    name: string.isRequired,
-    onSelectShape: func,
-    mainLayer: arrayOf(object),
-    backgroundLayer: arrayOf(object),
-    getMainLayerStyle: func,
-    getBackgroundLayerStyle: func,
-    tooltipLabels: objectOf(string),
-    height: number,
-    fitToBounds: bool,
-    makePopup: func,
-    fitBoundsToBackground: bool,
-    shapePatterns: array,
-    shapePatternIds: array,
-};
-
-MapComponent.defaultProps = {
-    height: 500,
-    onSelectShape: () => null,
-    mainLayer: [],
-    backgroundLayer: [],
-    fitToBounds: true,
-    getMainLayerStyle: () => null,
-    getBackgroundLayerStyle: () => null,
-    tooltipLabels: { main: 'District', background: 'Region' },
-    makePopup: () => null,
-    fitBoundsToBackground: false,
-    shapePatterns: [],
-    shapePatternIds: [],
 };

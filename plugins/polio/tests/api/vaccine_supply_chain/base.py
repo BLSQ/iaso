@@ -67,6 +67,10 @@ class BaseVaccineSupplyChainAPITestCase(APITestCase):
 
         cls.org_unit_type_country.projects.set([cls.project, cls.project_2])
         cls.org_unit_type_country.save()
+        cls.org_unit_type_district = m.OrgUnitType.objects.create(name="DISTRICT", category="DISTRICT")
+
+        cls.org_unit_type_district.projects.set([cls.project, cls.project_2])
+        cls.org_unit_type_district.save()
 
         cls.org_unit_DRC = m.OrgUnit.objects.create(
             org_unit_type=cls.org_unit_type_country,

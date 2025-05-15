@@ -354,6 +354,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'project_ids',
             'dataSource',
             'version',
+            'isInternal',
             ...paginationPathParams,
         ],
     },

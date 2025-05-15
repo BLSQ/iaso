@@ -1381,6 +1381,22 @@ class ProfileAPITestCase(APITestCase):
             "Some projects are outside your scope.",
         )
 
+        # An "admin" user with `projects` restrictions can assign projects outside his range.
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        del user._perm_cache
+        del user._user_perm_cache
+        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+        user.iaso_profile.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
     def test_admin_should_be_able_to_bypass_projects_restrictions_for_himself(self):
         """
         An admin with `projects` restrictions should be able to assign himself to any project.

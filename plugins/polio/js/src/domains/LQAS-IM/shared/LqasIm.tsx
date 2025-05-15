@@ -18,7 +18,7 @@ import {
 
 const accessFullRoundData = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): LqasImRound =>
     data.rounds.find(rnd => rnd.number === round) ?? ({} as LqasImRound);
 

@@ -13,7 +13,7 @@ from hat.menupermissions import models as iaso_permission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models.org_unit import OrgUnit
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 
 
 class HasPolioPermission(permissions.BasePermission):
@@ -45,16 +45,18 @@ class LqasImCountryFilter(django_filters.rest_framework.FilterSet):
         except:
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
         countries_with_lqas = (
-            Campaign.objects.filter(country__in=queryset)
+            Round.objects.filter(campaign__country__in=queryset)
             .filter(
-                Q(Q(rounds__lqas_ended_at__gte=first_day) & Q(rounds__lqas_ended_at__lte=last_day))
+                Q(Q(lqas_ended_at__gte=first_day) & Q(lqas_ended_at__lte=last_day) & Q(lqas_ended_at__isnull=False))
                 | Q(
-                    Q(rounds__ended_at__gte=first_day - timedelta(days=10))  # TODO check days buffer value
-                    & Q(rounds__ended_at__lte=last_day - timedelta(days=10))
+                    Q(ended_at__gte=first_day - timedelta(days=10))  # When no lqas end date we use round date +10
+                    & Q(ended_at__lte=last_day - timedelta(days=10))
+                    & Q(lqas_ended_at__isnull=True)
                 )
             )
-            .values_list("country__id")
+            .values_list("campaign__country__id")
         )
+
         return queryset.filter(id__in=countries_with_lqas).distinct("id")
 
 
@@ -80,6 +82,8 @@ class LqasImCountriesViewset(PolioOrgunitViewSet):
     http_method_names = ["get"]
     permission_classes = [HasPolioPermission | HasPolioAdminPermission]
     filterset_class = LqasImCountryFilter
+    remove_results_key_if_paginated = False
+    results_key = "results"
 
     def get_serializer_class(self):
         return OrgUnitDropDownSerializer

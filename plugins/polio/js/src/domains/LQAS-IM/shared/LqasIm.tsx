@@ -30,7 +30,7 @@ export const accessDictRound = (
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number | 'latest' | undefined,
+    round?: number | 'latest',
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (round === 'latest') {
         if (data.rounds.length === 0 || round === undefined) return [];

@@ -225,13 +225,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.select_related("org_unit_type").get(id=int(ou))
-                                if has_geo_limit and ou not in importer_access_ou:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
-                                            "has to create users with OrgUnits that are in the its controlled pyramid"
-                                        }
-                                    )
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {

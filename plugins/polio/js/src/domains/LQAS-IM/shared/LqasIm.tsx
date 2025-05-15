@@ -24,7 +24,7 @@ const accessFullRoundData = (
 
 export const accessDictRound = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): Record<string, LqasImDistrictData> => {
     return accessFullRoundData(data, round)?.data ?? {};
 };

@@ -13,7 +13,7 @@ from hat.menupermissions import models as iaso_permission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models.org_unit import OrgUnit
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
-from plugins.polio.models import Campaign, Round
+from plugins.polio.models import Round
 
 
 class HasPolioPermission(permissions.BasePermission):

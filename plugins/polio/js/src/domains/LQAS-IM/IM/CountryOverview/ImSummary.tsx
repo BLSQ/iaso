@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../../../constants/messages';
 import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
@@ -75,7 +75,9 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[sitesVisited?.id])}
+                        {sitesVisited
+                            ? formatMessage(MESSAGES[sitesVisited.id])
+                            : textPlaceholder}
                     </Typography>
                     <Typography
                         variant="h6"
@@ -89,15 +91,23 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[reportingDistricts?.id])}
+                        {reportingDistricts
+                            ? formatMessage(MESSAGES[reportingDistricts.id])
+                            : textPlaceholder}
                     </Typography>
                     <Typography
                         variant="h6"
                         className={`${classes.centerText} ${classes.boldText}`}
                     >
-                        <NumberCell
-                            value={parseInt(`${reportingDistricts?.value}`, 10)}
-                        />
+                        {reportingDistricts && (
+                            <NumberCell
+                                value={parseInt(
+                                    `${reportingDistricts.value}`,
+                                    10,
+                                )}
+                            />
+                        )}
+                        {!reportingDistricts && <Box>{textPlaceholder}</Box>}
                     </Typography>
                 </Grid>
                 <Box mt={-2} mb={-2}>
@@ -105,7 +115,9 @@ export const ImSummary: FunctionComponent<Props> = ({
                 </Box>
                 <Grid item xs={3} sm={2}>
                     <Typography variant="body1" className={classes.centerText}>
-                        {formatMessage(MESSAGES[vaccinated?.id])}
+                        {vaccinated
+                            ? formatMessage(MESSAGES[vaccinated.id])
+                            : textPlaceholder}
                     </Typography>
                     <Typography
                         variant="h6"

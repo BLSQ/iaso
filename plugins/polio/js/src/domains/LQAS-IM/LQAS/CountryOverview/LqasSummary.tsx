@@ -11,7 +11,7 @@ import { getLqasStatsForRound, makeCaregiversRatio } from '../utils';
 
 type Props = {
     campaign?: string;
-    round: number | undefined;
+    round?: number;
     data: Record<string, ConvertedLqasImData>;
     scopeCount: number;
 };

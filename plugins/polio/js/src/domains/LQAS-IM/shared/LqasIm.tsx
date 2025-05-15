@@ -41,7 +41,7 @@ export const accessArrayRound = (
 
 export const accessNfmStats = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_stats ?? {};
 };

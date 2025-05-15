@@ -14,7 +14,7 @@ import { ConvertedLqasImData } from '../../types';
 
 type Props = {
     campaign?: string;
-    round: number | undefined;
+    round?: number;
     data: Record<string, ConvertedLqasImData>;
     paperElevation: number;
 };

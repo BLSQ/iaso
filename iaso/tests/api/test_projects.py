@@ -2,6 +2,9 @@ import typing
 
 from itertools import chain
 
+from django.contrib.auth.models import Permission
+
+from hat.menupermissions import models as permission_models
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
 from iaso.test import APITestCase
@@ -85,6 +88,35 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
+
+    def test_projects_list_bypass_restrictions(self):
+        user = self.jane
+        project = m.Project.objects.create(name="Project", app_id="project.foo", account=user.iaso_profile.account)
+        self.client.force_authenticate(user)
+
+        # Projects list should be restricted by default.
+        user.iaso_profile.projects.set([project])
+        self.assertFalse(user.has_perm(permission_models.USERS_ADMIN))
+        response = self.client.get("/api/projects/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProjectListData(response.json(), 1)
+
+        # You should NOT be able to bypass restrictions if you're not an admin.
+        response = self.client.get("/api/projects/?bypass_restrictions=1")
+        json_response = self.assertJSONResponse(response, 403)
+        self.assertEqual(
+            json_response, {"detail": "menupermissions.iaso_users permission is required to access all projects."}
+        )
+
+        # You should be able to bypass restrictions if you're admin.
+        user.user_permissions.add(Permission.objects.get(codename=permission_models._USERS_ADMIN))
+        del user._perm_cache
+        del user._user_perm_cache
+        self.assertTrue(user.has_perm(permission_models.USERS_ADMIN))
+        response = self.client.get("/api/projects/?bypass_restrictions=1")
+        self.assertJSONResponse(response, 200)
+        total_projects_for_account = m.Project.objects.filter(account=user.iaso_profile.account).count()
+        self.assertValidProjectListData(response.json(), total_projects_for_account)
 
     def test_feature_flags_list_ok(self):
         """GET /featureflags/ happy path: we expect one result"""

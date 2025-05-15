@@ -43,6 +43,7 @@ import { Profile } from '../teams/types/profile';
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import * as Permission from '../../utils/permissions';
+import { userHasPermission } from '../users/utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 
@@ -61,6 +62,10 @@ export const Users: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
+    const canBypassProjectRestrictions = userHasPermission(
+        Permission.USERS_ADMIN,
+        currentUser,
+    );
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
@@ -121,6 +126,7 @@ export const Users: FunctionComponent = () => {
                 saveMulti={(saveData: Record<string, any>) =>
                     bulkSave({ ...saveData, ...params })
                 }
+                canBypassProjectRestrictions={canBypassProjectRestrictions}
             />
             <TopBar
                 title={formatMessage(MESSAGES.users)}
@@ -128,7 +134,11 @@ export const Users: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {multiActionPopupOpen && 'SHOW MODALE'}
-                <Filters baseUrl={baseUrl} params={params} />
+                <Filters
+                    baseUrl={baseUrl}
+                    params={params}
+                    canBypassProjectRestrictions={canBypassProjectRestrictions}
+                />
                 <DisplayIfUserHasPerm
                     permissions={[
                         Permission.USERS_ADMIN,
@@ -149,6 +159,9 @@ export const Users: FunctionComponent = () => {
                             iconProps={{
                                 dataTestId: 'add-user-button',
                             }}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
                         />
                         <Box ml={2}>
                             {/* @ts-ignore */}
@@ -172,6 +185,7 @@ export const Users: FunctionComponent = () => {
                         currentUser,
                         saveProfile,
                         exportMobileSetup,
+                        canBypassProjectRestrictions,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

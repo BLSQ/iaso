@@ -24,6 +24,7 @@ const UsersInfos = ({
     currentUser,
     initialData,
     allowSendEmailInvitation,
+    canBypassProjectRestrictions,
 }) => {
     const loggedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -48,7 +49,7 @@ const UsersInfos = ({
         }
     }
     const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
+        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
 
     const availableProjects = useMemo(() => {
         if (!loggedUser || !loggedUser.projects) {

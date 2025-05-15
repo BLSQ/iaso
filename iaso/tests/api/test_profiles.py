@@ -792,7 +792,7 @@ class ProfileAPITestCase(APITestCase):
 
         username = "john_doe"
 
-        user = self.jim
+        user = self.user_managed_geo_limit
         user.iaso_profile.projects.set([project_1])
 
         self.client.force_authenticate(user)
@@ -806,6 +806,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "Doe",
             "email": "john@doe.com",
             "projects": [project_2.id],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1380,6 +1381,54 @@ class ProfileAPITestCase(APITestCase):
             response.data["detail"],
             "Some projects are outside your scope.",
         )
+
+        # An "admin" user with `projects` restrictions can assign projects outside his range.
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        del user._perm_cache
+        del user._user_perm_cache
+        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+        user.iaso_profile.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_admin_should_be_able_to_bypass_projects_restrictions_for_himself(self):
+        """
+        An admin with `projects` restrictions should be able to assign himself to any project.
+        """
+        project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
+        project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
+
+        user_admin = self.jim
+        self.assertFalse(user_admin.has_perm(permission.USERS_MANAGED))
+        self.assertTrue(user_admin.has_perm(permission.USERS_ADMIN))
+
+        profile_to_edit = user_admin.iaso_profile
+        profile_to_edit.projects.set([project_1])
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), project_1)
+
+        self.client.force_authenticate(user_admin)
+
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": user_admin.username,
+                "projects": [project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), project_2)
 
     def get_new_user_data(self):
         user_name = "audit_user"

@@ -21,6 +21,7 @@ export const usersTableColumns = ({
     currentUser,
     saveProfile,
     exportMobileSetup,
+    canBypassProjectRestrictions,
 }) => [
     {
         Header: formatMessage(MESSAGES.projects),
@@ -78,6 +79,7 @@ export const usersTableColumns = ({
                     titleMessage={MESSAGES.updateUser}
                     params={params}
                     saveProfile={saveProfile}
+                    canBypassProjectRestrictions={canBypassProjectRestrictions}
                 />
                 {currentUser.id !== settings.row.original.id &&
                     userHasOneOfPermissions(

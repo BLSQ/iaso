@@ -792,7 +792,7 @@ class ProfileAPITestCase(APITestCase):
 
         username = "john_doe"
 
-        user = self.jim
+        user = self.user_managed_geo_limit
         user.iaso_profile.projects.set([project_1])
 
         self.client.force_authenticate(user)
@@ -806,6 +806,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "Doe",
             "email": "john@doe.com",
             "projects": [project_2.id],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 403)

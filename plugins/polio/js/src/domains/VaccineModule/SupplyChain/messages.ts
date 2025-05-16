@@ -356,7 +356,7 @@ const MESSAGES = defineMessages({
     },
     vrfCreatedAt: {
         id: 'iaso.polio.label.vrfCreatedAt',
-        defaultMessage: 'VRF created at',
+        defaultMessage: 'VRF created',
     },
 });
 

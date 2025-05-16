@@ -1,6 +1,5 @@
 import datetime
 
-from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 

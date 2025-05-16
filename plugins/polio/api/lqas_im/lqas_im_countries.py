@@ -35,7 +35,7 @@ class LqasImCountryFilter(django_filters.rest_framework.FilterSet):
         model = OrgUnit
         fields = ["id"]
 
-    month = django_filters.CharFilter(method="filter_month", label=_("Month (with year)"))
+    month = django_filters.CharFilter(method="filter_month")
 
     def filter_month(self, queryset: QuerySet[OrgUnit], name: str, value: str):
         try:

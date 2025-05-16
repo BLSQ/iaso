@@ -1,9 +1,11 @@
 import React, { FunctionComponent } from 'react';
 
-import { LoadingSpinner } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { chipColors } from 'Iaso/constants/chipColors';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { useGetProjectQRCode } from '../hooks/requests/useGetProjectQRCode';
 import MESSAGES from '../messages';
 
 type Form = {
@@ -11,24 +13,38 @@ type Form = {
     errors: Array<string>;
 };
 
-type ProjectForm = {
+export type ProjectForm = {
     id?: Form;
     app_id: Form;
     name: Form;
+    feature_flags: {
+        value: Array<string | number> | undefined;
+        errors: Array<string>;
+    };
+    qr_code: Form;
+    color: Form;
 };
 
 type Props = {
     setFieldValue: (key: string, value: string) => void;
     currentProject: ProjectForm;
 };
-
+const styles: SxStyles = {
+    qrCodeLarge: {
+        width: 300,
+        height: 300,
+    },
+    qrCodeContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        pt: 2,
+        pb: 2,
+    },
+};
 const ProjectInfos: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
 }) => {
-    const { data: qrCode, isFetching: fetchingProjectQRCode } =
-        useGetProjectQRCode(currentProject?.id?.value);
-
     return (
         <>
             <InputComponent
@@ -49,11 +65,22 @@ const ProjectInfos: FunctionComponent<Props> = ({
                 label={MESSAGES.appId}
                 required
             />
-            {fetchingProjectQRCode && <LoadingSpinner />}
-            {!fetchingProjectQRCode && qrCode && (
-                <div style={{ textAlign: 'center' }}>
-                    <img width={200} height={200} alt="QRCode" src={qrCode} />
-                </div>
+            <Box mt={2}>
+                <ColorPicker
+                    currentColor={currentProject.color.value ?? ''}
+                    onChangeColor={color => setFieldValue('color', color)}
+                    colors={[...chipColors, '#1976D2']}
+                />
+            </Box>
+            {currentProject.qr_code.value && (
+                <Box sx={styles.qrCodeContainer}>
+                    <Box
+                        component="img"
+                        src={currentProject.qr_code.value}
+                        sx={styles.qrCodeLarge}
+                        alt="QR Code Large"
+                    />
+                </Box>
             )}
         </>
     );

@@ -319,6 +319,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org unit(s) without geolocation found',
         id: 'iaso.completenessStats.completenessMapWarning',
     },
+    qrCodeCopied: {
+        defaultMessage: 'QR Code copied to clipboard',
+        id: 'iaso.label.project.qrCodeCopied',
+    },
+    failedToCopyImage: {
+        defaultMessage: 'Failed to copy image to clipboard',
+        id: 'iaso.label.project.failedToCopyImage',
+    },
 });
 
 export default MESSAGES;

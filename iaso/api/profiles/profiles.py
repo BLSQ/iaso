@@ -9,6 +9,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
+from django.db.transaction import atomic
 from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
@@ -334,6 +335,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(res)
         return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
+    @atomic
     def create(self, request):
         current_profile = request.user.iaso_profile
         current_account = current_profile.account
@@ -457,6 +459,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return Response(user.profile.as_dict())
 
+    @atomic
     def partial_update(self, request, pk=None):
         if pk == PK_ME:
             return self.update_user_own_profile(request)
@@ -704,16 +707,14 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not new_project_ids:
             if user_restricted_projects_ids:
-                # Apply the same project restrictions.
-                return Project.objects.filter(id__in=user_restricted_projects_ids, account=profile.account_id)
-            # No project restrictions.
-            return []
+                raise PermissionDenied("You must specify which projects are authorized for this user.")
+            return []  # No project restrictions.
 
         if not user_restricted_projects_ids:
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
         profile_restricted_projects_ids = set(profile.projects_ids)
-        if profile_restricted_projects_ids.issuperset(user_restricted_projects_ids):
+        if profile_restricted_projects_ids > user_restricted_projects_ids:
             raise PermissionDenied("You cannot edit a user who has broader access to projects.")
 
         if new_project_ids.issubset(user_restricted_projects_ids):

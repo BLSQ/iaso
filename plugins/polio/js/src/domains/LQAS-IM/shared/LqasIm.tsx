@@ -18,19 +18,19 @@ import {
 
 const accessFullRoundData = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): LqasImRound =>
     data.rounds.find(rnd => rnd.number === round) ?? ({} as LqasImRound);
 
 export const accessDictRound = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): Record<string, LqasImDistrictData> => {
     return accessFullRoundData(data, round)?.data ?? {};
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number | 'latest' | undefined,
+    round?: number | 'latest',
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (round === 'latest') {
         if (data.rounds.length === 0 || round === undefined) return [];
@@ -41,14 +41,14 @@ export const accessArrayRound = (
 
 export const accessNfmStats = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_stats ?? {};
 };
 
 export const accessNfmAbsStats = (
     data: LqasImCampaign,
-    round: number | undefined,
+    round?: number,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_abs_stats ?? {};
 };

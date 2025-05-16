@@ -1,6 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
+import { DataSource } from 'Iaso/domains/dataSources/types/dataSources';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { SearchButton } from '../../../../components/SearchButton';
+import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { useFilterState } from '../../../../hooks/useFilterState';
+import { scoreOptions } from '../../../links/components/LinksFilters';
 import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
@@ -8,17 +13,12 @@ import {
     useSourceOptions,
     useStatusOptions,
 } from '../../../links/hooks/filters';
-import InputComponent from '../../../../components/forms/InputComponent';
-import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
-import { scoreOptions } from '../../../links/components/LinksFilters';
-import { SearchButton } from '../../../../components/SearchButton';
 import MESSAGES from '../../../links/messages';
-import { DropdownOptions } from '../../../../types/utils';
 
 type Props = {
     params: any;
     baseUrl: string;
-    sources: DropdownOptions<number>[];
+    sources: DataSource[];
     isLoadingSources: boolean;
 };
 

@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useState } from 'react';
 import { FormLabel, Box, Popper, ClickAwayListener } from '@mui/material';
 
 import { makeStyles } from '@mui/styles';
-import { FormattedMessage, defineMessages } from 'react-intl';
 import { TwitterPicker } from 'react-color';
-
-import { chipColors } from '../../constants/chipColors';
+import { FormattedMessage, defineMessages } from 'react-intl';
+import { chipColors } from 'Iaso/constants/chipColors';
 
 const MESSAGES = defineMessages({
     color: {
@@ -17,6 +15,7 @@ const MESSAGES = defineMessages({
 
 const useStyles = makeStyles(theme => ({
     button: {
+        // @ts-ignore
         border: `3px solid ${theme.palette.ligthGray.border}`,
         borderRadius: theme.spacing(3),
         width: theme.spacing(3),
@@ -39,7 +38,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
+type Props = {
+    currentColor: string;
+    onChangeColor: (color: string) => void;
+    colors?: string[];
+    displayLabel?: boolean;
+};
+
+export const ColorPicker: FunctionComponent<Props> = ({
+    currentColor,
+    onChangeColor,
+    colors = chipColors,
+    displayLabel = true,
+}) => {
     const [anchorEl, setAnchorEl] = useState(null);
     const classes = useStyles();
     const handleClick = event => {
@@ -48,7 +59,7 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
     const open = Boolean(anchorEl);
 
     const handleChangeColor = newColor => {
-        handleClick();
+        handleClick(null);
         onChangeColor(newColor.hex);
     };
     return (
@@ -65,7 +76,7 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
                     onClick={handleClick}
                     className={classes.button}
                     role="button"
-                    tabIndex="0"
+                    tabIndex={0}
                     style={{ backgroundColor: currentColor }}
                 >
                     {' '}
@@ -92,15 +103,3 @@ const ColorPicker = ({ currentColor, onChangeColor, colors, displayLabel }) => {
         </Box>
     );
 };
-ColorPicker.defaultProps = {
-    colors: chipColors,
-    displayLabel: true,
-};
-
-ColorPicker.propTypes = {
-    currentColor: PropTypes.string.isRequired,
-    onChangeColor: PropTypes.func.isRequired,
-    colors: PropTypes.arrayOf(PropTypes.string),
-    displayLabel: PropTypes.bool,
-};
-export { ColorPicker };

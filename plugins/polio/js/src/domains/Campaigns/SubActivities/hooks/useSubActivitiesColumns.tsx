@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { AgeRangeCell } from '../components/AgeRangeCell';
-import MESSAGES from '../messages';
-import { EditSubActivity } from '../components/Modal/CreateEditSubActivity';
-import { useDeleteSubActivity } from './api/useDeleteSubActivity';
+import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { Round } from '../../../../constants/types';
+import { AgeRangeCell } from '../components/AgeRangeCell';
+import { EditSubActivity } from '../components/Modal/CreateEditSubActivity';
+import MESSAGES from '../messages';
+import { useDeleteSubActivity } from './api/useDeleteSubActivity';
 
 export const useSubActivitiesColumns = (round?: Round): Column[] => {
     const { formatMessage } = useSafeIntl();

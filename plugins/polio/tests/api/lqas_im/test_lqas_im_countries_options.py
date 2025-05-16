@@ -115,7 +115,6 @@ class PolioCountriesOptionsTestCase(APITestCase, PolioTestCaseMixin):
         response = self.client.get(self.endpoint)
         response = self.assertJSONResponse(response, 200)
         res_keys = list(response.keys())
-        print(res_keys)
         self.assertEqual(res_keys, ["results"])
         results = response["results"]
         result_keys = list(results[1].keys())

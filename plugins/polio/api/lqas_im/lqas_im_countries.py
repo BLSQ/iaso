@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 import django_filters
 
 from django.db.models import Q, QuerySet
-from django.utils.translation import gettext_lazy as _
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import ValidationError
 

@@ -1,5 +1,7 @@
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { Campaign, Round } from '../constants/types';
 import { accessArrayRound } from '../domains/LQAS-IM/shared/LqasIm';
+import { LqasImDistrictDataWithNameAndRegion } from '../domains/LQAS-IM/types';
 
 type Shape = {
     id: string;
@@ -22,11 +24,11 @@ export const findDataForShape = ({
     round,
     campaign,
 }: {
-    shape: Shape;
+    shape: OrgUnit;
     data: Data;
-    round: number;
+    round: number | undefined;
     campaign: string;
-}): any | null => {
+}): LqasImDistrictDataWithNameAndRegion | null => {
     if (!data || !data[campaign]) return null;
     const dataForRound = accessArrayRound(data[campaign], round);
     const result = dataForRound.filter((d: any) => d.district === shape.id)[0];
@@ -104,7 +106,7 @@ export const getScopeStyle = (
 export const findScopeIds = (
     obrName: string | undefined,
     campaigns: Campaign[],
-    currentRound: number,
+    currentRound: number | undefined,
 ): number[] => {
     const filteredCampaigns = obrName
         ? campaigns.filter(campaign => campaign.obr_name === obrName)

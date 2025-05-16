@@ -1234,6 +1234,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.subactivityName',
         defaultMessage: 'Sub-activity name',
     },
+    subactivity: {
+        id: 'iaso.polio.label.subactivity',
+        defaultMessage: 'Sub-activity',
+    },
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',

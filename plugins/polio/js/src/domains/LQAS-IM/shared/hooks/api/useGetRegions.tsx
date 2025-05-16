@@ -1,34 +1,35 @@
+import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
-export const useGetRegions = country => {
+export const useGetRegions = (
+    country?: number,
+): UseQueryResult<{ name: string; id: number }[]> => {
     const params = {
         validation_status: 'all',
-        limit: 3000,
+        limit: '3000',
         order: 'id',
-        orgUnitParentId: country,
-        // FIXME this is not super safe as the ids can change from one account to the other
-        // orgUnitTypeId: 6,
+        orgUnitParentId: `${country}`,
         orgUnitTypeCategory: 'REGION',
     };
 
-    const queryString = new URLSearchParams(params);
+    const queryString = new URLSearchParams(params).toString();
 
     return useSnackQuery(
         ['regions', params],
-        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        () => getRequest(`/api/orgunits/?${queryString}`),
         undefined,
         {
             enabled: Boolean(country),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: data =>
-                data.orgunits
+                data?.orgunits
                     .filter(orgUnit => orgUnit.parent_id === country)
                     .map(orgUnit => ({
                         name: orgUnit.name,
                         id: orgUnit.id,
-                    })),
+                    })) ?? [],
         },
     );
 };

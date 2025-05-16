@@ -3,29 +3,40 @@ import {
     useRedirectToReplace,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
+import { DropdownOptions } from 'Iaso/types/utils';
 import { commaSeparatedIdsToArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { Campaign } from '../../../../constants/types';
+import { LqasImUrlParams } from '../../types';
 import { LIST } from '../constants';
 
-export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
+type UseSelectedRoundsArgs = {
+    baseUrl: string;
+    campaigns: Campaign[];
+    params: LqasImUrlParams;
+};
+
+type OnRoundChange = (index: number) => (value: number) => void;
+
+export type UseSelectedRoundsResult = {
+    onRoundChange: OnRoundChange;
+    selectedRounds: [number | undefined, number | undefined];
+    dropDownOptions: DropdownOptions<number>[];
+};
+
+export const useSelectedRounds = ({
+    baseUrl,
+    campaigns,
+    params,
+}: UseSelectedRoundsArgs): UseSelectedRoundsResult => {
     const { campaign, country, rounds } = params;
-    const round_values = rounds
-        ? rounds
-              ?.split(',')
-              ?.filter(
-                  r => r in (campaign?.rounds?.filter(rc => !rc.on_hold) || []),
-              )
-              .join(',')
-        : rounds;
 
     const redirectToReplace = useRedirectToReplace();
 
-    const [selectedRounds, setSelectedRounds] = useState(
-        round_values
-            ? commaSeparatedIdsToArray(round_values)
-            : [undefined, undefined],
-    );
+    const [selectedRounds, setSelectedRounds] = useState<
+        [number | undefined, number | undefined]
+    >(rounds ? commaSeparatedIdsToArray(rounds) : [undefined, undefined]);
 
-    const dropDownOptions = useMemo(() => {
+    const dropDownOptions: DropdownOptions<number>[] = useMemo(() => {
         return campaigns
             ?.filter(c => c.obr_name === campaign)[0]
             ?.rounds.filter(r => !r.on_hold)
@@ -38,9 +49,11 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
             });
     }, [campaign, campaigns]);
 
-    const onRoundChange = useCallback(
+    const onRoundChange: OnRoundChange = useCallback(
         index => value => {
-            const updatedSelection = [...selectedRounds];
+            const updatedSelection: [number | undefined, number | undefined] = [
+                ...selectedRounds,
+            ];
             updatedSelection[index] = value;
             setSelectedRounds(updatedSelection);
             redirectToReplace(baseUrl, {
@@ -78,15 +91,7 @@ export const useSelectedRounds = ({ baseUrl, campaigns, params }) => {
                 ]);
             }
         }
-    }, [
-        dropDownOptions,
-        campaign,
-        rounds,
-        redirectToReplace,
-        params,
-        baseUrl,
-        round_values,
-    ]);
+    }, [dropDownOptions, campaign, rounds, redirectToReplace, params, baseUrl]);
 
     return useMemo(() => {
         return {

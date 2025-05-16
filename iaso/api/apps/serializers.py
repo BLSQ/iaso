@@ -30,6 +30,7 @@ class AppSerializer(ProjectSerializer):
             "min_version",
             "created_at",
             "updated_at",
+            "color",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "min_version"]
 
@@ -73,10 +74,12 @@ class AppSerializer(ProjectSerializer):
         name = validated_data.get("name", None)
         forms = validated_data.get("forms", None)
         feature_flags = validated_data.get("feature_flags", None)
+        color = validated_data.get("color", Project.DEFAULT_PROJECT_COLOR)
 
         new_app.app_id = app_id
         new_app.name = name
         new_app.account = account
+        new_app.color = color
 
         new_app.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
         new_app.save()
@@ -89,10 +92,13 @@ class AppSerializer(ProjectSerializer):
         forms = validated_data.pop("forms", None)
         app_id = validated_data.pop("app_id", None)
         name = validated_data.pop("name", None)
+        color = validated_data.pop("color", None)
         if app_id is not None:
             instance.app_id = app_id
         if name is not None:
             instance.name = name
+        if color is not None:
+            instance.color = color
 
         instance.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
         instance.save()

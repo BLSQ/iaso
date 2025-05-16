@@ -17,7 +17,7 @@ class ProjectsAPITestCase(APITestCase):
         cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
-        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi)
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi, color="#FF5733")
         flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
         cls.project_1.feature_flags.set([flag])
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
@@ -51,9 +51,9 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/projects/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
-        # Verify QR code is included
-        self.assertIn("qr_code", response.json()["projects"][0])
-        self.assertIsInstance(response.json()["projects"][0]["qr_code"], str)
+        # Verify color is included
+        self.assertIn("color", response.json()["projects"][0])
+        self.assertEqual(response.json()["projects"][0]["color"], "#FF5733")
 
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
@@ -68,9 +68,9 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["pages"], 2)
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
-        # Verify QR code is included
-        self.assertIn("qr_code", response_data["projects"][0])
-        self.assertIsInstance(response_data["projects"][0]["qr_code"], str)
+        # Verify color is included
+        self.assertIn("color", response_data["projects"][0])
+        self.assertEqual(response_data["projects"][0]["color"], "#FF5733")
 
     def test_feature_flags_list_paginated(self):
         """GET /featureflags/ paginated happy path"""
@@ -140,30 +140,43 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidProjectData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
         self.assertValidFeatureFlagData(response_data["feature_flags"][0])
-        # Verify QR code is included
-        self.assertIn("qr_code", response_data)
-        self.assertIsInstance(response_data["qr_code"], str)
+        # Verify color is included
+        self.assertIn("color", response_data)
+        self.assertEqual(response_data["color"], "#FF5733")
 
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""
-
         self.client.force_authenticate(self.jane)
         response = self.client.post("/api/projects/", data={}, format="json")
         self.assertJSONResponse(response, 405)
 
     def test_projects_update(self):
         """PUT /projects/<project_id>: not authorized for now"""
-
         self.client.force_authenticate(self.jane)
         response = self.client.put(f"/api/projects/{self.project_1.id}/", data={}, format="json")
         self.assertJSONResponse(response, 405)
 
     def test_projects_delete(self):
         """DELETE /projects/<project_id>: not authorized for now"""
-
         self.client.force_authenticate(self.jane)
         response = self.client.delete(f"/api/projects/{self.project_1.id}/", format="json")
         self.assertJSONResponse(response, 405)
+
+    def test_project_color_in_api(self):
+        """Test that color field is properly handled in API responses"""
+        self.client.force_authenticate(self.jane)
+
+        # Test color in list response
+        response = self.client.get("/api/projects/")
+        self.assertJSONResponse(response, 200)
+        self.assertIn("color", response.json()["projects"][0])
+        self.assertEqual(response.json()["projects"][0]["color"], "#FF5733")
+
+        # Test color in detail response
+        response = self.client.get(f"/api/projects/{self.project_1.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertIn("color", response.json())
+        self.assertEqual(response.json()["color"], "#FF5733")
 
     def test_qr_code_unauthenticated(self):
         """GET /projects/<project_id>/qr_code/: return the proper QR code"""
@@ -206,3 +219,14 @@ class ProjectsAPITestCase(APITestCase):
         self.assertHasField(feature_flag_data, "description", str)
         self.assertHasField(feature_flag_data, "created_at", float)
         self.assertHasField(feature_flag_data, "updated_at", float)
+
+    def assertValidProjectData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "name", str)
+        self.assertHasField(project_data, "app_id", str)
+        self.assertHasField(project_data, "feature_flags", list)
+        # Color is optional, so we only check its type if it exists
+        if "color" in project_data:
+            self.assertIsInstance(project_data["color"], str)
+        for feature_flag_data in project_data["feature_flags"]:
+            self.assertValidFeatureFlagData(feature_flag_data)

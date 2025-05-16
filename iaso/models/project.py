@@ -49,6 +49,8 @@ class ProjectQuerySet(models.QuerySet):
 
 ProjectManager = models.Manager.from_queryset(ProjectQuerySet)
 
+DEFAULT_PROJECT_COLOR = "#1976D2"
+
 
 class Project(models.Model):
     """A data collection project, associated with a single mobile application"""
@@ -64,6 +66,7 @@ class Project(models.Model):
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
     redirection_url = models.URLField(null=True, blank=True)
+    color = models.CharField(max_length=7, null=True, blank=True, default=DEFAULT_PROJECT_COLOR)
 
     objects = ProjectManager()
 

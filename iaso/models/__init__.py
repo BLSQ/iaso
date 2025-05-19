@@ -3,7 +3,7 @@ from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
-from .entity import Entity, EntityType
+from .entity import Entity, EntityType, Session
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .microplanning import Planning, Team

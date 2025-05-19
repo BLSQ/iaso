@@ -743,6 +743,7 @@
     "iaso.polio.label.Volunteers": "Volunteers",
     "iaso.polio.label.VRF": "VRF",
     "iaso.polio.label.VRF_NOT_SIGNED": "VRF not signed",
+    "iaso.polio.label.vrfCreatedAt": "VRF created",
     "iaso.polio.label.vrfTitle": "Vaccine request form",
     "iaso.polio.label.vrfType": "Vaccine request form Type",
     "iaso.polio.label.vrfTypeMissing": "Missing",

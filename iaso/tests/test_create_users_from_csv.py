@@ -7,6 +7,7 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
+from hat.menupermissions import models as permission_models
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
@@ -513,40 +514,66 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
 
-        # The user is restricted to `project2`.
-        self.yoda.iaso_profile.projects.set([self.project2.id])
-
-        self.client.force_authenticate(self.yoda)
-
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             csv_reader = list(csv.reader(csv_users))
 
             csv_line_1 = csv_reader[1]
             csv_line_2 = csv_reader[2]
+            csv_line_3 = csv_reader[3]
 
             username_index = 0
             projects_index = 12
 
             username_1 = csv_line_1[username_index]
             username_2 = csv_line_2[username_index]
+            username_3 = csv_line_3[username_index]
 
             # Ensure the CSV tries to set `project` as an authorized project.
             self.assertEqual(csv_line_1[projects_index], self.project.name)
             self.assertEqual(csv_line_2[projects_index], self.project.name)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+        self.user_managed_geo_limit.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
+        self.assertTrue(self.user_managed_geo_limit.has_perm(permission_models.USERS_MANAGED))
+        self.assertFalse(self.user_managed_geo_limit.has_perm(permission_models.USERS_ADMIN))
+
+        self.client.force_authenticate(self.user_managed_geo_limit)
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+            self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(response.status_code, 200)
-
-        # Because `user` is restricted to `project2`, `project` should've been skipped
-        # and new profiles should end up having the same restrictions.
+        # The current project restrictions of a `user` without the admin perm should be applied.
+        # That means that projects in the CSV should've been skipped and new profiles should
+        # end up having the same restriction as `user`.
         profile_1 = Profile.objects.get(user__username=username_1)
         self.assertEqual(1, profile_1.projects.count())
         self.assertEqual(profile_1.projects.first(), self.project2)
         profile_2 = Profile.objects.get(user__username=username_2)
         self.assertEqual(1, profile_2.projects.count())
         self.assertEqual(profile_2.projects.first(), self.project2)
+
+        self.client.logout()
+        User.objects.filter(username__in=[username_1, username_2, username_3]).delete()
+
+        self.yoda.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
+        self.yoda.iaso_profile.org_units.set([self.org_unit_child])
+        self.assertFalse(self.yoda.has_perm(permission_models.USERS_MANAGED))
+        self.assertTrue(self.yoda.has_perm(permission_models.USERS_ADMIN))
+
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+            self.assertEqual(response.status_code, 200)
+
+        # A `user` with the admin perm should be able to bypass project restrictions.
+        # Here, the CSV content should be applied.
+        profile_1 = Profile.objects.get(user__username=username_1)
+        self.assertEqual(1, profile_1.projects.count())
+        self.assertEqual(profile_1.projects.first(), self.project)
+        profile_2 = Profile.objects.get(user__username=username_2)
+        self.assertEqual(1, profile_2.projects.count())
+        self.assertEqual(profile_2.projects.first(), self.project)
+        profile_3 = Profile.objects.get(user__username=username_3)
+        self.assertEqual(0, profile_3.projects.count())
 
     def test_should_create_user_with_the_correct_org_unit_from_source_ref(self):
         """

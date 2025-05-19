@@ -49,6 +49,7 @@ type Props = {
     selection: Selection<Profile>;
     setSelection: Dispatch<SetStateAction<Selection<Profile>>>;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
+    canBypassProjectRestrictions: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -114,6 +115,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     selection,
     setSelection,
     saveMulti,
+    canBypassProjectRestrictions,
 }) => {
     const currentUser = useCurrentUser();
     const appLocales = useAppLocales();
@@ -121,7 +123,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
+        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
 
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesDropDown();

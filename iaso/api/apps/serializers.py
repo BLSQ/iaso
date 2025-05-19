@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from iaso.models import FeatureFlag, Form, Project
+from iaso.models.project import DEFAULT_PROJECT_COLOR
 
 from ..projects import ProjectSerializer
 
@@ -74,7 +75,7 @@ class AppSerializer(ProjectSerializer):
         name = validated_data.get("name", None)
         forms = validated_data.get("forms", None)
         feature_flags = validated_data.get("feature_flags", None)
-        color = validated_data.get("color", Project.DEFAULT_PROJECT_COLOR)
+        color = validated_data.get("color", DEFAULT_PROJECT_COLOR)
 
         new_app.app_id = app_id
         new_app.name = name

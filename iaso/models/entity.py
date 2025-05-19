@@ -330,3 +330,13 @@ class Entity(SoftDeletableModel):
             if (saved_at := instance.source_created_at or instance.created_at) is not None
         )
         return max(instance_dates, default=self.created_at)
+
+
+class Session(SoftDeletableModel):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    entity = models.ForeignKey(Entity, on_delete=models.PROTECT, related_name="sessions")
+
+    def __str__(self):
+        return "%s %s %s" % (self.uuid, self.entity, self.created_at)

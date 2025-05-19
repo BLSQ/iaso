@@ -55,13 +55,10 @@ const UsersInfos = ({
         if (!loggedUser || !loggedUser.projects) {
             return [];
         }
-        if (loggedUser.projects.length === 0) {
-            return allProjects;
-        }
-        return loggedUser.projects.map(project => {
+        return allProjects.map(project => {
             return {
-                value: project.id.toString(),
-                label: project.name,
+                value: project.value,
+                label: project.label,
             };
         });
     }, [allProjects, loggedUser]);

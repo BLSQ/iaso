@@ -74,9 +74,16 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').invoke('val', 'Link');
-            cy.get('#id_username').trigger('input');
-            cy.get('#id_username').trigger('change');
+            cy.get('#id_username').then($input => {
+                const input = $input[0];
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype,
+                    'value',
+                ).set;
+                nativeInputValueSetter.call(input, 'Link');
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
@@ -87,9 +94,16 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').invoke('val', 'Link');
-            cy.get('#id_username').trigger('input');
-            cy.get('#id_username').trigger('change');
+            cy.get('#id_username').then($input => {
+                const input = $input[0];
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLInputElement.prototype,
+                    'value',
+                ).set;
+                nativeInputValueSetter.call(input, 'Link');
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+            });
 
             // Handle password input
             cy.get('#id_password')

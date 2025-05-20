@@ -64,7 +64,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_password').invoke('val', 'Link');
+            cy.get('#id_password').type('Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
@@ -74,7 +74,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').invoke('val', 'Link');
+            cy.get('#id_username').type('Link');
             cy.get('#submit').click();
             cy.url().should('eq', signInUrl);
         });
@@ -85,7 +85,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_username').invoke('val', 'Link');
+            cy.get('#id_username').type('Link');
 
             // Handle password input
             cy.get('#id_password')
@@ -93,7 +93,7 @@ describe('Log in page', () => {
                 .should('be.visible')
                 .and('not.be.disabled')
                 .and('not.have.attr', 'readonly');
-            cy.get('#id_password').invoke('val', 'ZELDA');
+            cy.get('#id_password').type('ZELDA');
 
             cy.get('.auth__text--error').should('not.exist');
             cy.get('#submit').click();

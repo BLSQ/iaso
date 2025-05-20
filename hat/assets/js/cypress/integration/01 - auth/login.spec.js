@@ -21,10 +21,12 @@ const selectLanguage = lang => {
     // Perform selection
     cy.get('.language-picker').select(lang, { force: true });
 
+    // Wait for the HTML lang attribute to update
+    cy.get('html', { timeout: 10000 }).should('have.attr', 'lang', lang);
+
     // Verify selection and wait for reload
     cy.get('.language-picker').should('have.value', lang);
     cy.window().should('not.have.prop', 'beforeReload');
-    cy.get('html').invoke('attr', 'lang').should('equal', lang);
     cy.getCookie(langageCookie).should('have.property', 'value', lang);
 };
 

@@ -17,28 +17,25 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
 
         err_msg = "No active account found with the given credentials"
+        request = self.context.get("request")
+        app_id = request.query_params.get("app_id", None)
+        if app_id and self.user.tenant_users.exists():
+            try:
+                project = Project.objects.get(app_id=app_id)
+            except Project.DoesNotExist:
+                raise AuthenticationFailed(err_msg)
 
-        if self.user.tenant_users.exists():
-            request = self.context.get("request")
-            if request:
-                app_id = request.query_params.get("app_id", None)
+            account_user = User.objects.filter(
+                tenant_user__main_user=self.user,
+                iaso_profile__account=project.account,
+            ).first()
 
-                try:
-                    project = Project.objects.get(app_id=app_id)
-                except Project.DoesNotExist:
-                    raise AuthenticationFailed(err_msg)
+            if account_user is None:
+                raise AuthenticationFailed(err_msg)
 
-                account_user = User.objects.filter(
-                    tenant_user__main_user=self.user,
-                    iaso_profile__account=project.account,
-                ).first()
+            refresh = self.get_token(account_user)
 
-                if account_user is None:
-                    raise AuthenticationFailed(err_msg)
-
-                refresh = self.get_token(account_user)
-
-                data["refresh"] = str(refresh)
-                data["access"] = str(refresh.access_token)
+            data["refresh"] = str(refresh)
+            data["access"] = str(refresh.access_token)
 
         return data

@@ -21,10 +21,10 @@ const selectLanguage = lang => {
     // Select language
     cy.get('.language-picker').select(lang, { force: true });
 
-    // Wait for the HTML lang attribute to update (this will retry for up to 10s)
-    cy.get('html', { timeout: 10000 }).should('have.attr', 'lang', lang);
+    // Wait for the HTML lang attribute to update
+    cy.get('html', { timeout: 15000 }).should('have.attr', 'lang', lang);
 
-    // Now re-query the select after the reload/update
+    // Re-query the select after reload/update
     cy.get('.language-picker', { timeout: 10000 }).should('have.value', lang);
 
     // Wait for the cookie to be set

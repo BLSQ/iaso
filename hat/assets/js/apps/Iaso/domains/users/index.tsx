@@ -4,6 +4,7 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
+import EditIcon from '@mui/icons-material/Settings';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -17,35 +18,33 @@ import {
     useRedirectTo,
 } from 'bluesquare-components';
 
-import EditIcon from '@mui/icons-material/Settings';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import * as Permission from '../../utils/permissions';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { Selection } from '../orgUnits/types/selection';
+import { Profile } from '../teams/types/profile';
+import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
 
-import { baseUrls } from '../../constants/urls';
+import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
+import { useUsersTableColumns } from './config';
+import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
+import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
+import { useDeleteProfile } from './hooks/useDeleteProfile';
 import {
     useGetProfilesApiParams,
     useGetProfiles,
 } from './hooks/useGetProfiles';
-import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
-import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
 
-import { usersTableColumns } from './config';
 import MESSAGES from './messages';
 
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
-import { useCurrentUser } from '../../utils/usersUtils';
-
-import { Selection } from '../orgUnits/types/selection';
-import { Profile } from '../teams/types/profile';
-import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
-import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
-import * as Permission from '../../utils/permissions';
-import { userHasPermission } from '../users/utils';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { userHasPermission } from './utils';
 
 const baseUrl = baseUrls.users;
 
@@ -114,7 +113,14 @@ export const Users: FunctionComponent = () => {
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
     const apiParams = useGetProfilesApiParams(params);
-
+    const columns = useUsersTableColumns({
+        deleteProfile,
+        params,
+        currentUser,
+        saveProfile,
+        exportMobileSetup,
+        canBypassProjectRestrictions,
+    });
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -178,15 +184,7 @@ export const Users: FunctionComponent = () => {
                     data={data?.profiles ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'user__username', desc: false }]}
-                    columns={usersTableColumns({
-                        formatMessage,
-                        deleteProfile,
-                        params,
-                        currentUser,
-                        saveProfile,
-                        exportMobileSetup,
-                        canBypassProjectRestrictions,
-                    })}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

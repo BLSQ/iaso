@@ -12,23 +12,30 @@ const selectLanguage = lang => {
         w.beforeReload = true;
     });
 
-    // Check selector is ready
+    // Ensure selector is ready
     cy.get('.language-picker')
         .should('exist')
         .should('be.visible')
         .and('not.be.disabled');
 
-    // Perform selection
+    // Select language
     cy.get('.language-picker').select(lang, { force: true });
-    cy.wait(500); // Give the app time to reload/update
 
-    // Wait for the HTML lang attribute to update
+    // Wait for the HTML lang attribute to update (this will retry for up to 10s)
     cy.get('html', { timeout: 10000 }).should('have.attr', 'lang', lang);
 
-    // Verify selection and wait for reload
-    cy.get('.language-picker').should('have.value', lang);
+    // Now re-query the select after the reload/update
+    cy.get('.language-picker', { timeout: 10000 }).should('have.value', lang);
+
+    // Wait for the cookie to be set
+    cy.getCookie(langageCookie, { timeout: 10000 }).should(
+        'have.property',
+        'value',
+        lang,
+    );
+
+    // Optionally, check the beforeReload property is gone
     cy.window().should('not.have.prop', 'beforeReload');
-    cy.getCookie(langageCookie).should('have.property', 'value', lang);
 };
 
 describe('Log in page', () => {

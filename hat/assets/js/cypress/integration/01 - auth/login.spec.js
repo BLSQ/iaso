@@ -20,6 +20,7 @@ const selectLanguage = lang => {
 
     // Perform selection
     cy.get('.language-picker').select(lang, { force: true });
+    cy.wait(500); // Give the app time to reload/update
 
     // Wait for the HTML lang attribute to update
     cy.get('html', { timeout: 10000 }).should('have.attr', 'lang', lang);

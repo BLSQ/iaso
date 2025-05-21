@@ -359,17 +359,27 @@ class TokenAPITestCase(APITestCase):
 
     def test_user_with_project_restrictions(self):
         user = self.yoda
-        app_id = self.project.app_id
+        authorized_project = self.project
+        unauthorized_project = m.Project.objects.create(
+            name="Unauthorized project",
+            app_id="unauthorized.project",
+            account=self.default_account,
+            needs_authentication=True,
+        )
         login = {"username": user.username, "password": "IMomLove"}
 
         # Without project restrictions.
         self.assertEqual(0, user.iaso_profile.projects.count())
-        response = self.client.post(f"/api/token/?app_id={app_id}", data=login, format="json")
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
         self.assertJSONResponse(response, 200)
 
         # With project restrictions.
-        user.iaso_profile.projects.set([self.project])
+        user.iaso_profile.projects.set([authorized_project])
         self.assertEqual(1, user.iaso_profile.projects.count())
-        response = self.client.post(f"/api/token/?app_id={app_id}", data=login, format="json")
+
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
         self.assertJSONResponse(response, 403)
         self.assertEqual(response.data["detail"], "You don't have access to this project.")

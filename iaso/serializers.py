@@ -45,7 +45,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             # Handle project restrictions.
             user = account_user or self.user
             restricted_projects_ids = user.iaso_profile.projects_ids
-            if restricted_projects_ids and project not in restricted_projects_ids:
+            if restricted_projects_ids and project.id not in restricted_projects_ids:
                 raise PermissionDenied("You don't have access to this project.")  # 403
 
         return data

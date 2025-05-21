@@ -346,7 +346,7 @@ class TokenAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "No active account found with the given credentials.",
         )
 
         # Login with main user and non-existent app_id
@@ -354,5 +354,22 @@ class TokenAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "Unknown project.",
         )
+
+    def test_user_with_project_restrictions(self):
+        user = self.yoda
+        app_id = self.project.app_id
+        login = {"username": user.username, "password": "IMomLove"}
+
+        # Without project restrictions.
+        self.assertEqual(0, user.iaso_profile.projects.count())
+        response = self.client.post(f"/api/token/?app_id={app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        # With project restrictions.
+        user.iaso_profile.projects.set([self.project])
+        self.assertEqual(1, user.iaso_profile.projects.count())
+        response = self.client.post(f"/api/token/?app_id={app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"], "You don't have access to this project.")

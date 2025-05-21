@@ -2,6 +2,7 @@ import React, { FunctionComponent } from 'react';
 
 import { Box } from '@mui/material';
 import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import { chipColors } from 'Iaso/constants/chipColors';
 import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -67,9 +68,11 @@ const ProjectInfos: FunctionComponent<Props> = ({
             />
             <Box mt={2}>
                 <ColorPicker
-                    currentColor={currentProject.color.value ?? ''}
+                    currentColor={
+                        currentProject.color.value ?? defaultProjectColor
+                    }
                     onChangeColor={color => setFieldValue('color', color)}
-                    colors={[...chipColors, '#1976D2']}
+                    colors={[...chipColors, defaultProjectColor]}
                 />
             </Box>
             {currentProject.qr_code.value && (

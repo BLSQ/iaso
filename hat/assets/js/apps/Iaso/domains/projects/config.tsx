@@ -25,8 +25,8 @@ export const useColumns = (
                     const textColor = Color(
                         settings.row.original.color,
                     ).isDark()
-                        ? '#fff'
-                        : '#000';
+                        ? 'white'
+                        : 'black';
                     return (
                         <Chip
                             label={settings.row.original.name}

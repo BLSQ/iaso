@@ -15,6 +15,7 @@ import {
 } from 'bluesquare-components';
 import get from 'lodash/get';
 
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
@@ -110,7 +111,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                     errors: [],
                 },
                 color: {
-                    value: get(pr, 'color', ''),
+                    value: get(pr, 'color', defaultProjectColor),
                     errors: [],
                 },
             };
@@ -185,7 +186,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             app_id: project.app_id.value || '',
             name: project.name.value || '',
             old_app_id: initialData?.app_id,
-            color: project.color.value || '#1976D2',
+            color: project.color.value || defaultProjectColor,
         };
         saveProject(currentProject)
             .then(() => {

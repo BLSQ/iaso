@@ -198,12 +198,10 @@ class ProfileLogsTestCase(APITestCase):
         cls.other_account = m.Account.objects.create(name="Other account")
         cls.project_1 = m.Project.objects.create(
             name="Project 1",
-            app_id="test.app.id",
             account=cls.account,
         )
         cls.project_2 = m.Project.objects.create(
             name="Project 2",
-            app_id="test.app.id",
             account=cls.account,
         )
         source = m.DataSource.objects.create(name="Main data source")

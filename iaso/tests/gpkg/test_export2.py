@@ -13,7 +13,7 @@ class GPKGExport(TestCase):
     def setUpTestData(cls):
         cls.source_name = "test_import"
         cls.account = m.Account.objects.create(name="a")
-        cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
+        cls.project = m.Project.objects.create(name="Project 1", account=cls.account)
         cls.source = m.DataSource.objects.create(name=cls.source_name)
         cls.version = m.SourceVersion.objects.create(number=1, data_source=cls.source)
         out = m.OrgUnitType.objects.create(name="type1", depth=2)
@@ -50,7 +50,7 @@ class GPKGExport(TestCase):
     def test_export_import(self):
         source_to_gpkg(self.filename, self.version)
         # import in a new version and project
-        new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
+        new_project = m.Project.objects.create(name="Project 2", account=self.account)
         import_gpkg_file(
             "/tmp/temporary_test.gpkg",
             project_id=new_project.id,
@@ -109,7 +109,7 @@ class GPKGExport(TestCase):
         p = Point(x=1, y=3, z=3)
         m.OrgUnit.objects.create(name="ou5", version=self.version, org_unit_type=out3, location=p)
         source_to_gpkg(self.filename, self.version)
-        new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
+        new_project = m.Project.objects.create(name="Project 2", account=self.account)
 
         import_gpkg_file(
             "/tmp/temporary_test.gpkg",

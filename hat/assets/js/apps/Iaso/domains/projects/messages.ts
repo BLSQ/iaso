@@ -310,7 +310,7 @@ const MESSAGES = defineMessages({
     },
     qrCodeTitle: {
         defaultMessage:
-            'This is the QR code to scan from the mobile application for this Project. Click on the sharing icon to copy and paste it',
+            'This is the QR code to scan from the mobile application for this Project. Click on the sharing button to copy and paste it',
         id: 'iaso.label.project.qrCodeTitle',
     },
     copyToClipboard: {

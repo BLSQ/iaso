@@ -3,17 +3,16 @@ import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
-    Table,
     UrlParams,
     commonStyles,
-    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { CreateProjectDialog } from './components/CreateEditProjectDialog';
-import { baseUrl, columns } from './config';
+import { baseUrl, useColumns } from './config';
 import { useGetProjectsPaginated, useSave } from './hooks/requests';
 import MESSAGES from './messages';
 
@@ -25,7 +24,6 @@ export const Projects: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.projects) as unknown as UrlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingProjects } =
         useGetProjectsPaginated(params);
@@ -33,6 +31,7 @@ export const Projects: FunctionComponent = () => {
     const { mutateAsync: saveProject, isLoading: saving } = useSave();
 
     const isLoading = fetchingProjects || saving;
+    const columns = useColumns(saveProject);
 
     return (
         <>
@@ -57,15 +56,14 @@ export const Projects: FunctionComponent = () => {
                         }}
                     />
                 </Grid>
-                <Table
+                <TableWithDeepLink
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns(formatMessage, saveProject)}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    onTableParamsChange={p => redirectTo(baseUrl, p)}
                 />
             </Box>
         </>

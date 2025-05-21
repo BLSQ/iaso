@@ -39,6 +39,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "updated_at",
             "needs_authentication",
             "qr_code",
+            "color",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 

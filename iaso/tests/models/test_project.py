@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.models.project import DEFAULT_PROJECT_COLOR
 from iaso.test import TestCase
 
 
@@ -36,3 +37,22 @@ class ProjectModelTestCase(TestCase):
         del self.user.iaso_profile.projects_ids
         filtered_projects = m.Project.objects.filter_on_user_projects(self.user)
         self.assertEqual(filtered_projects.count(), 2)
+
+    def test_project_color(self):
+        # Test creating project with color
+        project_with_color = m.Project.objects.create(
+            name="Project with color", app_id="org.ghi.p4", account=self.account, color="#FF5733"
+        )
+        self.assertEqual(project_with_color.color, "#FF5733")
+
+        # Test creating project without color (should use default)
+        project_without_color = m.Project.objects.create(
+            name="Project without color", app_id="org.ghi.p5", account=self.account
+        )
+        self.assertEqual(project_without_color.color, DEFAULT_PROJECT_COLOR)
+
+        # Test updating project color
+        project_without_color.color = "#33FF57"
+        project_without_color.save()
+        project_without_color.refresh_from_db()
+        self.assertEqual(project_without_color.color, "#33FF57")

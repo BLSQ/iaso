@@ -707,7 +707,7 @@
     "iaso.label.project.featureFlags": "Options du projet",
     "iaso.label.project.qrCodeCopied": "QR Code copié dans le presse-papiers",
     "iaso.label.project.qrCodeError": "Erreur de chargement du code QR du projet",
-    "iaso.label.project.qrCodeTitle": "C'est le QR code à scanner depuis l'application mobile pour ce Projet. Cliquez sur l'icône partager pour copier et coller",
+    "iaso.label.project.qrCodeTitle": "C'est le QR code à scanner depuis l'application mobile pour ce Projet. Cliquez sur le bouton partager pour copier et coller",
     "iaso.label.projects": "Projets",
     "iaso.label.published": "Publié",
     "iaso.label.publishingStatus": "Statut de publication",

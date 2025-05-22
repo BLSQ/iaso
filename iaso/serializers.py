@@ -1,7 +1,9 @@
 from django.contrib.auth.models import User
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
 
 
@@ -16,26 +18,35 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         """
         data = super().validate(attrs)
 
-        err_msg = "No active account found with the given credentials"
         request = self.context.get("request")
-        app_id = request.query_params.get("app_id", None)
-        if app_id and self.user.tenant_users.exists():
+        app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=False)
+
+        if app_id:
             try:
                 project = Project.objects.get(app_id=app_id)
             except Project.DoesNotExist:
-                raise AuthenticationFailed(err_msg)
+                raise NotFound("Unknown project.")  # 404
 
-            account_user = User.objects.filter(
-                tenant_user__main_user=self.user,
-                iaso_profile__account=project.account,
-            ).first()
+            # Handle multi-account users.
+            account_user = None
+            if self.user.tenant_users.exists():
+                account_user = User.objects.filter(
+                    tenant_user__main_user=self.user,
+                    iaso_profile__account=project.account,
+                ).first()
 
-            if account_user is None:
-                raise AuthenticationFailed(err_msg)
+                if not account_user:
+                    raise AuthenticationFailed("No active account found with the given credentials.")  # 401
 
-            refresh = self.get_token(account_user)
+                refresh = self.get_token(account_user)
 
-            data["refresh"] = str(refresh)
-            data["access"] = str(refresh.access_token)
+                data["refresh"] = str(refresh)
+                data["access"] = str(refresh.access_token)
+
+            # Handle project restrictions.
+            user = account_user or self.user
+            restricted_projects_ids = user.iaso_profile.projects_ids
+            if restricted_projects_ids and project.id not in restricted_projects_ids:
+                raise PermissionDenied("You don't have access to this project.")  # 403
 
         return data

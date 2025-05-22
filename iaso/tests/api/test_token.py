@@ -351,7 +351,7 @@ class TokenAPITestCase(APITestCase):
 
         # Login with main user and non-existent app_id
         response = self.client.post("/api/token/?app_id=account.c", data=login, format="json")
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, 404)
         self.assertEqual(
             response.json()["detail"],
             "Unknown project.",

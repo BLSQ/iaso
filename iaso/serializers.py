@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -24,7 +24,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             try:
                 project = Project.objects.get(app_id=app_id)
             except Project.DoesNotExist:
-                raise AuthenticationFailed("Unknown project.")  # 401
+                raise NotFound("Unknown project.")  # 404
 
             # Handle multi-account users.
             account_user = None

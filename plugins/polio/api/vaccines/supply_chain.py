@@ -57,6 +57,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
             if isinstance(round, dict) and "number" in round:
                 try:
                     round_obj = Round.objects.get(number=round["number"], campaign=new_campaign)
+                    if not round_obj.actual_scopes:
+                        raise forms.ValidationError("Rounds without scope are not allowed")
                     new_rounds.append(round_obj)
                 except Round.MultipleObjectsReturned:
                     raise forms.ValidationError(f"Multiple rounds with number {round['number']} found in the campaign.")
@@ -64,6 +66,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
                     raise forms.ValidationError(f"No round with number {round['number']} found in the campaign.")
             elif hasattr(round, "campaign") and round.campaign != new_campaign:
                 raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+            elif not round.actual_scopes:
+                raise forms.ValidationError("Rounds without scope are not allowed")
         data["rounds"] = new_rounds
     else:
         try:
@@ -71,6 +75,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
             for round in rounds_data.all():
                 if round.campaign != new_campaign:
                     raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+                if not round.actual_scopes:
+                    raise forms.ValidationError("Rounds without scope are not allowed")
                 new_rounds.append(round)
             data["rounds"] = new_rounds
         except AttributeError:

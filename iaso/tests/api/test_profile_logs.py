@@ -196,14 +196,8 @@ class ProfileLogsTestCase(APITestCase):
         cls.MODULES = [module["codename"] for module in MODULES]
         cls.account = m.Account.objects.create(name="Main account", modules=cls.MODULES)
         cls.other_account = m.Account.objects.create(name="Other account")
-        cls.project_1 = m.Project.objects.create(
-            name="Project 1",
-            account=cls.account,
-        )
-        cls.project_2 = m.Project.objects.create(
-            name="Project 2",
-            account=cls.account,
-        )
+        cls.project_1 = m.Project.objects.create(name="Project 1", account=cls.account, app_id="project_1")
+        cls.project_2 = m.Project.objects.create(name="Project 2", account=cls.account, app_id="project_2")
         source = m.DataSource.objects.create(name="Main data source")
         source.projects.add(cls.project_1)
         source.projects.add(cls.project_2)

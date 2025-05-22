@@ -3,6 +3,7 @@ from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework_simplejwt.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
 
 
@@ -18,7 +19,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
 
         request = self.context.get("request")
-        app_id = request.query_params.get("app_id")
+        app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=False)
 
         if app_id:
             try:

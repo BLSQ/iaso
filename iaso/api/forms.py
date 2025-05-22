@@ -11,6 +11,7 @@ from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
+from rest_framework.permissions import AllowAny
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
@@ -248,6 +249,16 @@ class FormsViewSet(ModelViewSet):
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
+    def get_permissions(self):
+        """
+        Instantiates and returns the list of permissions that this view requires.
+        """
+        if self.action == "manifest":
+            # Allow any user (authenticated or not) to access the 'manifest' action
+            return [AllowAny()]
+        # For all other actions, use the default permission classes defined
+        return super().get_permissions()
+
     def get_queryset(self):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
@@ -426,7 +437,10 @@ class FormsViewSet(ModelViewSet):
         This is used for the mobile app and Enketo to fetch the list of file attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
-        form = self.get_object()
+
+        form_pk = kwargs.get(self.lookup_field)
+        form = Form.objects.get(pk=form_pk)
+
         attachments = form.attachments.all()
         media_files = []
         for attachment in attachments:

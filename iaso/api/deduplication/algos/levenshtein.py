@@ -62,19 +62,21 @@ def _build_query(params):
             # For numeric types, use the same comparison as numbers
             if cast_type in ["integer", "bigint", "double precision"]:
                 fc_arr.append(
-                    "(1.0 - ( abs ( (instance1.json->>%s)::%s - (instance2.json->>%s)::%s ) / greatest( (instance1.json->>%s)::%s, (instance2.json->>%s)::%s )))"
+                    f"(1.0 - ( abs ( (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / greatest( (instance1.json->>%s)::{cast_type}, (instance2.json->>%s)::{cast_type} )))"
                 )
-                query_params.extend([f_name, cast_type, f_name, cast_type, f_name, cast_type, f_name, cast_type])
+                query_params.extend([f_name, f_name, f_name, f_name])
             # For boolean types, compare as 0/1
             elif cast_type == "boolean":
-                fc_arr.append("(1.0 - abs( (instance1.json->>%s)::%s::integer - (instance2.json->>%s)::%s::integer ))")
-                query_params.extend([f_name, cast_type, f_name, cast_type])
+                fc_arr.append(
+                    f"(1.0 - abs( (instance1.json->>%s)::{cast_type}::integer - (instance2.json->>%s)::{cast_type}::integer ))"
+                )
+                query_params.extend([f_name, f_name])
             # For date/time types, compare as timestamps
             elif cast_type in ["date", "time", "timestamp"]:
                 fc_arr.append(
-                    "(1.0 - abs( extract(epoch from (instance1.json->>%s)::%s - (instance2.json->>%s)::%s ) / 86400.0 ))"
+                    f"(1.0 - abs( extract(epoch from (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / 86400.0 ))"
                 )
-                query_params.extend([f_name, cast_type, f_name, cast_type])
+                query_params.extend([f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
 

@@ -1,17 +1,18 @@
 import http
 
 from datetime import timedelta
+from logging import getLogger
 
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 
-from iaso.models.base import Task, RUNNING, QUEUED
+from iaso.models.base import QUEUED, RUNNING, Task
 
 from . import task_service
-from logging import getLogger
+
 
 logger = getLogger(__name__)
 

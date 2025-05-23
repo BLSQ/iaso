@@ -1,8 +1,8 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Grid, Stack, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';

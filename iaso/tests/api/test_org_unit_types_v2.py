@@ -1,11 +1,12 @@
 import typing
 
 from django.test import TestCase
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 
 from iaso import models as m
 from iaso.api.org_unit_types.serializers import validate_reference_forms
-from iaso.api.query_params import PROJECT
+from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
 from iaso.test import APITestCase
 
 
@@ -40,6 +41,8 @@ class ValidateReferenceFormsTestCase(TestCase):
 
 
 class OrgUnitTypesAPITestCase(APITestCase):
+    BASE_URL = "/api/v2/orgunittypes/"
+
     @classmethod
     def setUpTestData(cls):
         cls.data_source_1 = data_source_1 = m.DataSource.objects.create(name="DataSource1")
@@ -48,9 +51,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.ead = ead = m.Project.objects.create(name="End All Diseases", account=ghi)
         cls.esd = esd = m.Project.objects.create(name="End Some Diseases", account=ghi)
         cls.data_source_2 = data_source_2 = m.DataSource.objects.create(name="DataSource2")
-        version_2 = m.SourceVersion.objects.create(number=1, data_source=data_source_2)
+        cls.version_2 = m.SourceVersion.objects.create(number=1, data_source=data_source_2)
 
-        wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=version_2)
+        wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=cls.version_2)
         cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
 
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
@@ -85,7 +88,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
-        response = self.client.get("/api/v2/orgunittypes/")
+        response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
@@ -93,7 +96,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """GET /orgunittypes/ with auth but empty app id should return list of org unit types"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get("/api/v2/orgunittypes/")
+        response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -178,14 +181,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
         """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""
 
-        response = self.client.get(f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/")
+        response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
         self.assertJSONResponse(response, 404)
 
     def test_org_unit_types_retrieve_ok(self):
         """GET /orgunittypes/<org_unit_type_id>/ happy path"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/")
+        response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
 
@@ -193,7 +196,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         f"""GET /orgunittypes/?{PROJECT}=... happy path"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: self.ead.id})
+        response = self.client.get(self.BASE_URL, {PROJECT: self.ead.id})
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 2)
 
@@ -201,23 +204,21 @@ class OrgUnitTypesAPITestCase(APITestCase):
         f"""GET /orgunittypes/?{PROJECT}=... wrong id"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: -1})
+        response = self.client.get(self.BASE_URL, {PROJECT: -1})
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 401"""
 
-        response = self.client.post("/api/v2/orgunittypes/", data={}, format="json")
+        response = self.client.post(self.BASE_URL, data={}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.post(
-            "/api/v2/orgunittypes/", data={"name": "", "depth": 1, "project_ids": []}, format="json"
-        )
+        response = self.client.post(self.BASE_URL, data={"name": "", "depth": 1, "project_ids": []}, format="json")
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "name", "This field may not be blank.")
         self.assertHasError(response.json(), "short_name", "This field is required.")
@@ -228,7 +229,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -248,7 +249,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -268,7 +269,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -291,7 +292,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -312,7 +313,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -335,7 +336,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
-            "/api/v2/orgunittypes/",
+            self.BASE_URL,
             data={
                 "name": "Bimbam",
                 "short_name": "Bi",
@@ -359,7 +360,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.put(
-            f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/",
+            f"{self.BASE_URL}{self.org_unit_type_1.id}/",
             data={
                 "name": "Plop updated",
                 "short_name": "Bi",
@@ -379,7 +380,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.put(
-            f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/",
+            f"{self.BASE_URL}{self.org_unit_type_1.id}/",
             data={
                 "name": "Plop updated",
                 "short_name": "Bi",
@@ -399,7 +400,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.patch(
-            f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/", data={"short_name": "P"}, format="json"
+            f"{self.BASE_URL}{self.org_unit_type_1.id}/", data={"short_name": "P"}, format="json"
         )
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
@@ -410,8 +411,118 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """DELETE /orgunittypes/<org_unit_type_id>: 200 OK"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.delete(f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/", format="json")
+        response = self.client.delete(f"{self.BASE_URL}{self.org_unit_type_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
+
+    def test_org_unit_type_dropdown(self):
+        # Default path that returns all OUTs to which the user has access
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}dropdown/")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_json = response.json()
+        for out in response_json:
+            self.assertValidOrgUnitTypeDropdownData(out)
+        self.assertEqual(len(response_json), 5)  # The 5 types created in setUpTestData
+
+    def test_org_unit_type_dropdown_with_source_version(self):
+        # Let's make sure that some OUTs from the setup account are actually used
+        m.OrgUnit.objects.create(
+            name="OUT 1",
+            version=self.version_1,
+            org_unit_type=self.org_unit_type_1,
+        )
+        m.OrgUnit.objects.create(
+            name="OUT 2",
+            version=self.version_1,
+            org_unit_type=self.org_unit_type_2,
+        )
+        m.OrgUnit.objects.create(
+            name="OUT 3",
+            version=self.version_2,
+            org_unit_type=self.org_unit_type_3,
+        )
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_1.id}")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_json = response.json()
+        self.assertEqual(len(response_json), 2)  # Because 2 OU were created above with that version
+        for out in response_json:
+            self.assertValidOrgUnitTypeDropdownData(out)
+            self.assertIn(out["id"], [self.org_unit_type_1.id, self.org_unit_type_2.id])
+
+        # Now let's try with the other version
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_2.id}")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = response.json()
+
+        self.assertEqual(len(response_json), 1)  # Because only 1 OU was created above with that version
+        out = response_json[0]
+        self.assertValidOrgUnitTypeDropdownData(out)
+        self.assertEqual(out["id"], self.org_unit_type_3.id)
+
+    def test_org_unit_type_dropdown_with_source_version_unknown_version(self):
+        probably_not_a_valid_source_version_id = 1234567890
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={probably_not_a_valid_source_version_id}"
+        )
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 0)  # Because no OU was created with that version
+
+    def test_org_unit_type_dropdown_with_source_version_error_version_wrong_account(self):
+        # First, let's create a parallel account/project/....
+        new_account, new_datasource, new_source_version, new_project = self.create_account_datasource_version_project(
+            "new source", "new account", "new project"
+        )
+        new_user = self.create_user_with_profile(username="new user", account=new_account, permissions=["iaso_forms"])
+        new_out_1 = m.OrgUnitType.objects.create(name="new out 1", short_name="new out 1")
+        new_out_2 = m.OrgUnitType.objects.create(name="new out 2", short_name="new out 2")
+        new_project.unit_types.set([new_out_1, new_out_2])
+        m.OrgUnit.objects.create(
+            name="new OUT 1",
+            version=new_source_version,
+            org_unit_type=new_out_1,
+        )
+        m.OrgUnit.objects.create(
+            name="new OUT 2",
+            version=new_source_version,
+            org_unit_type=new_out_2,
+        )
+
+        # Then let's make sure that OUTs from the setup account are actually used
+        m.OrgUnit.objects.create(
+            name="OUT 1",
+            version=self.version_1,
+            org_unit_type=self.org_unit_type_1,
+        )
+        m.OrgUnit.objects.create(
+            name="OUT 2",
+            version=self.version_1,
+            org_unit_type=self.org_unit_type_2,
+        )
+        m.OrgUnit.objects.create(
+            name="OUT 3",
+            version=self.version_1,
+            org_unit_type=self.org_unit_type_3,
+        )
+
+        # Let's make sure that the dropdown properly returns values for the setup account
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_1.id}")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 3)  # Because 3 OU were created above
+
+        # Now let's make sure that nothing is returned for the setup source version and the new user because it's the wrong account
+        self.client.force_authenticate(new_user)
+        response = self.client.get(f"{self.BASE_URL}dropdown/?{SOURCE_VERSION_ID}={self.version_1.id}")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_json = response.json()
+        self.assertEqual(len(response_json), 0)
 
     def assertValidOrgUnitTypeListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
@@ -439,3 +550,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         if "sub_unit_types" in org_unit_type_data:
             for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
                 self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
+
+    def assertValidOrgUnitTypeDropdownData(self, data):
+        self.assertHasField(data, "id", int)
+        self.assertHasField(data, "name", str)
+        self.assertHasField(data, "depth", int, optional=True)

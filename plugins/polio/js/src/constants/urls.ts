@@ -8,6 +8,7 @@ import {
 import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
     DESTRUCTION,
+    EARMARKED,
     FORM_A,
     INCIDENT,
     UNUSABLE_VIALS,
@@ -20,6 +21,7 @@ export const CALENDAR_BASE_URL = 'polio/calendar';
 export const EMBEDDED_CALENDAR_URL = 'polio/embeddedCalendar';
 export const EMBEDDED_VACCINE_REPOSITORY_URL =
     'polio/embeddedVaccineRepository';
+export const EMBEDDED_VACCINE_STOCK_URL = 'polio/embeddedVaccineStock';
 export const CONFIG_BASE_URL = 'polio/config';
 export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
@@ -55,8 +57,8 @@ export const campaignParams = [
     'campaignCategory',
     'campaignGroups',
     'show_test',
+    'on_hold',
     'filterLaunched',
-    'notShowTest',
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {
@@ -133,6 +135,17 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'reportCountryBlock',
             'reportFileType',
             'reportVaccineName',
+        ],
+    },
+    embeddedVaccineStock: {
+        url: EMBEDDED_VACCINE_STOCK_URL,
+        params: [
+            ...paginationPathParams,
+            'country',
+            'action_type',
+            'country_block',
+            'vaccine',
+            'tab',
         ],
     },
     lqasCountry: {
@@ -239,6 +252,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${UNUSABLE_VIALS}Order`,
             `${UNUSABLE_VIALS}PageSize`,
             `${UNUSABLE_VIALS}Page`,
+            `${EARMARKED}Order`,
+            `${EARMARKED}PageSize`,
+            `${EARMARKED}Page`,
         ],
     },
     stockVariation: {
@@ -256,6 +272,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${INCIDENT}Order`,
             `${INCIDENT}PageSize`,
             `${INCIDENT}Page`,
+            `${EARMARKED}Order`,
+            `${EARMARKED}PageSize`,
+            `${EARMARKED}Page`,
         ],
     },
     countryConfig: {
@@ -328,6 +347,7 @@ export type PolioBaseUrls = {
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
     embeddedVaccineRepository: string;
+    embeddedVaccineStock: string;
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;

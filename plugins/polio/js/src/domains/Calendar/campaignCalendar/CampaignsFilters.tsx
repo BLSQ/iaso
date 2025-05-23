@@ -1,6 +1,3 @@
-import FiltersIcon from '@mui/icons-material/FilterList';
-import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -8,22 +5,25 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import MESSAGES from '../../../constants/messages';
-import { useGetCountries } from '../../../hooks/useGetCountries';
-import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
-
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+
 import { appId } from '../../../constants/app';
+import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
+import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
+import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 import { CalendarParams } from './types';
 
 type Props = {
@@ -65,16 +65,17 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignCategory, setCampaignCategory] = useState(
-        isEmbedded ? params.campaignCategory ?? 'all' : params.campaignCategory,
+        isEmbedded
+            ? (params.campaignCategory ?? 'all')
+            : params.campaignCategory,
     );
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
-    const [notShowTest, setNotShowTest] = useState(
-        params.notShowTest === 'true',
-    );
+    const [hideTest, setHideTest] = useState(params.show_test === 'false');
+
     const [roundStartFrom, setRoundStartFrom] = useState(
         dateApiToDateRangePicker(params.roundStartFrom),
     );
@@ -88,11 +89,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom ||
         roundStartTo ||
         showOnlyDeleted ||
+        hideTest ||
         campaignType ||
         campaignCategory ||
         campaignGroups ||
-        orgUnitGroups ||
-        notShowTest;
+        orgUnitGroups;
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -111,11 +112,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 campaignType,
                 campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
+                show_test: hideTest ? 'false' : 'true',
                 campaignGroups,
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
                 periodType: params?.periodType,
-                notShowTest: notShowTest ? 'true' : undefined,
             };
             redirectToReplace(redirectUrl, urlParams);
         }
@@ -129,10 +130,10 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignType,
         campaignCategory,
         showOnlyDeleted,
+        hideTest,
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
-        notShowTest,
         redirectToReplace,
         redirectUrl,
     ]);
@@ -142,7 +143,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         useGetGroupedCampaigns();
     // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True', appId });
+        useGetGroupDropdown({ blockOfCountries: 'true', appId });
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -166,11 +167,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom,
         roundStartTo,
         showOnlyDeleted,
+        hideTest,
         campaignType,
         campaignCategory,
         campaignGroups,
         orgUnitGroups,
-        notShowTest,
     ]);
 
     useEffect(() => {
@@ -321,7 +322,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     </>
                 )}
                 {!disableOnlyDeleted && (
-                    <>
+                    <Box mt={1}>
                         <InputComponent
                             keyValue="showOnlyDeleted"
                             onChange={(key, value) => {
@@ -330,17 +331,24 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             value={showOnlyDeleted}
                             type="checkbox"
                             label={MESSAGES.showOnlyDeleted}
+                            withMarginTop={false}
                         />
+                    </Box>
+                )}
+                {!isCalendar && (
+                    <Box mt={disableOnlyDeleted ? 1 : undefined}>
                         <InputComponent
-                            keyValue="NotShowTest"
+                            keyValue="show_test"
                             onChange={(key, value) => {
-                                setNotShowTest(value);
+                                setHideTest(value);
                             }}
-                            value={notShowTest}
+                            value={hideTest}
                             type="checkbox"
-                            label={MESSAGES.notShowTestCampaigns}
+                            label={MESSAGES.hideTestCampaigns}
+                            withMarginTop={false}
+                            disabled={campaignCategory === 'on_hold'}
                         />
-                    </>
+                    </Box>
                 )}
             </Grid>
 

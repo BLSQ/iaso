@@ -1,9 +1,10 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
+
+from hat.menupermissions import models as permission
 from iaso.api.common import parse_comma_separated_numeric_values
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.profiles_bulk_update import profiles_bulk_update
-from hat.menupermissions import models as permission
 
 
 class HasBulkUpdatePermission(permissions.BasePermission):

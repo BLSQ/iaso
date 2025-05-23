@@ -1,5 +1,4 @@
 from iaso.api.data_store import DataStoreViewSet
-
 from iaso.models.data_store import JsonDataStore
 from plugins.polio.api.permission_classes import PolioReadPermission
 
@@ -13,5 +12,4 @@ class LQASIMCountryViewset(DataStoreViewSet):
         slug = self.kwargs.get("slug", None)
         if slug:
             return JsonDataStore.objects.filter(account=self.request.user.iaso_profile.account, slug=slug)
-        else:
-            return JsonDataStore.objects.none()
+        return JsonDataStore.objects.none()

@@ -13,7 +13,9 @@
     window.STATIC_URL = "{{ STATIC_URL }}";
     window.IASO_VERSION = "{{ VERSION }}";
     window.SENTRY_CONFIG = {{ sentry_config | safe }};
-
+    const productFruitsConfig = {{ product_fruits_config | safe }};
+    window.PRODUCT_FRUITS_WORKSPACE_CODE = productFruitsConfig.PRODUCT_FRUITS_WORKSPACE_CODE;
+    window.AVAILABLE_LANGUAGES = {{ AVAILABLE_LANGUAGES | safe }};
     const PLUGINS_ENABLED = {{ PLUGINS_ENABLED| safe }};
     const USER_HOME_PAGE = "{{ USER_HOME_PAGE |default:"" }}";
     // From context processor

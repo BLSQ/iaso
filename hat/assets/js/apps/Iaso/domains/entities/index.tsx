@@ -7,21 +7,21 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
-import { Filters } from './components/Filters';
-import {
-    useGetBeneficiariesLocations,
-    useGetBeneficiariesPaginated,
-    useGetBeneficiaryTypesDropdown,
-} from './hooks/requests';
-import { useColumns, baseUrl, defaultSorted } from './config';
-import MESSAGES from './messages';
-import { ListMap } from './components/ListMap';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
-import { DisplayedLocation } from './types/locations';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { Filters } from './components/Filters';
+import { ListMap } from './components/ListMap';
+import { useColumns, baseUrl, defaultSorted } from './config';
+import {
+    useGetEntitiesLocations,
+    useGetEntitiesPaginated,
+    useGetEntityTypesDropdown,
+} from './hooks/requests';
+import MESSAGES from './messages';
+import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -51,7 +51,7 @@ type Params = {
     fieldsSearch?: string;
 };
 
-export const Beneficiaries: FunctionComponent = () => {
+export const Entities: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entities) as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
@@ -59,7 +59,7 @@ export const Beneficiaries: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
-    const { data, isFetching } = useGetBeneficiariesPaginated(params);
+    const { data, isFetching } = useGetEntitiesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const isLoading = isFetching;
@@ -94,7 +94,7 @@ export const Beneficiaries: FunctionComponent = () => {
     }, [data]);
     const columns = useColumns(entityTypeIds, extraColumns || []);
 
-    const { data: types } = useGetBeneficiaryTypesDropdown();
+    const { data: types } = useGetEntityTypesDropdown();
 
     let entityTypeName;
     if (entityTypeIds.length === 1) {
@@ -106,13 +106,13 @@ export const Beneficiaries: FunctionComponent = () => {
         }
     }
     const { data: locations, isFetching: isFetchingLocations } =
-        useGetBeneficiariesLocations(params, displayedLocation);
+        useGetEntitiesLocations(params, displayedLocation);
 
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
-                title={`${formatMessage(MESSAGES.beneficiaries)}${
+                title={`${formatMessage(MESSAGES.entities)}${
                     entityTypeName ? ` - ${entityTypeName}` : ''
                 }`}
                 displayBackButton={false}

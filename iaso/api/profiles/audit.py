@@ -1,11 +1,9 @@
-from hat.audit.audit_logger import AuditLogger
-from rest_framework import serializers
-from django.contrib.auth.models import User
-from hat.audit.models import PROFILE_API, Modification
-from iaso.models.base import Profile, UserRole
-from iaso.models.org_unit import OrgUnit
-from iaso.models.project import Project
 from django.utils import timezone
+from rest_framework import serializers
+
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import PROFILE_API, Modification
+from iaso.models.base import Profile
 
 
 class ProfileAuditSerializer(serializers.ModelSerializer):

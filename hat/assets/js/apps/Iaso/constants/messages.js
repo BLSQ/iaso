@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.title',
     },
     entityTypesTitle: {
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
         id: 'iaso.entityTypes.title',
     },
     submissionsTitle: {
@@ -41,9 +41,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Links List',
         id: 'iaso.label.linksList',
     },
-    beneficiariesList: {
-        defaultMessage: 'Beneficiaries List',
-        id: 'iaso.label.beneficiariesList',
+    entitiesList: {
+        defaultMessage: 'Entities List',
+        id: 'iaso.label.entitiesList',
     },
     planningList: {
         defaultMessage: 'Planning List',
@@ -161,9 +161,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
         id: 'iaso.assignment.map.parent',
     },
-    beneficiaries: {
-        defaultMessage: 'Beneficiaries',
-        id: 'iaso.label.beneficiaries',
+    entities: {
+        defaultMessage: 'Entities',
+        id: 'iaso.label.entities',
     },
     storages: {
         defaultMessage: 'External storage',

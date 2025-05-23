@@ -1,10 +1,8 @@
 import json
-from unittest.mock import patch
 
 from django.test import SimpleTestCase
-from django.utils.dateparse import parse_datetime
 
-from iaso.odk.validator import validate_xls_form, get_list_name_from_select
+from iaso.odk.validator import get_list_name_from_select, validate_xls_form
 
 
 class ValidatorTestCase(SimpleTestCase):
@@ -15,7 +13,7 @@ class ValidatorTestCase(SimpleTestCase):
             self.assertEqual(errors, [])
 
     def test_parse_xls_form_invalid(self):
-        with open("iaso/tests/fixtures/odk_invalid_xlsform_expected_errors.json", "r") as expected_errors_file:
+        with open("iaso/tests/fixtures/odk_invalid_xlsform_expected_errors.json") as expected_errors_file:
             expected_errors = json.loads(expected_errors_file.read())
         with open("iaso/tests/fixtures/odk_invalid_xlsform.xlsx", "rb") as xls_file:
             errors = validate_xls_form(xls_file)

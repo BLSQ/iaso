@@ -3,14 +3,14 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
-from hat.menupermissions.constants import PERMISSIONS_PRESENTATION, READ_EDIT_PERMISSIONS
-from iaso.utils.module_permissions import account_module_permissions
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from hat.menupermissions.models import CustomPermissionSupport
 from hat.menupermissions import models as p
+from hat.menupermissions.constants import PERMISSIONS_PRESENTATION, READ_EDIT_PERMISSIONS
+from hat.menupermissions.models import CustomPermissionSupport
+from iaso.utils.module_permissions import account_module_permissions
 
 
 class PermissionsViewSet(viewsets.ViewSet):

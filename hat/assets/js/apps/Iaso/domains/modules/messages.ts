@@ -82,6 +82,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Trypelim project',
         id: 'iaso.modules.trypelim_project',
     },
+    data_validation: {
+        defaultMessage: 'Data validation',
+        id: 'iaso.modules.data_validation',
+    },
 });
 
 export default MESSAGES;

@@ -2,12 +2,11 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers, status
 from rest_framework.response import Response
+from unidecode import unidecode
 
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Entity, EntityType
-from iaso.models.deduplication import ValidationStatus
-from unidecode import unidecode
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):

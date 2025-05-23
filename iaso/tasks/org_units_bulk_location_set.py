@@ -1,7 +1,7 @@
 from copy import deepcopy
 from logging import getLogger
 from time import time
-from typing import Optional, List
+from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import GeometryCollectionField
@@ -14,7 +14,7 @@ from django.db.models import Q, QuerySet
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.org_unit_search import build_org_units_queryset
-from iaso.models import Task, OrgUnit, DataSource
+from iaso.models import DataSource, OrgUnit, Task
 from iaso.utils.gis import convert_2d_point_to_3d
 
 

@@ -1,7 +1,8 @@
-from logging import getLogger
 import math
 import xml.etree.ElementTree as ET
+
 from copy import copy, deepcopy
+from logging import getLogger
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
@@ -18,15 +19,17 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
+
+from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
-from hat.menupermissions import models as permission
 from iaso.utils.emoji import fix_emoji
+
 
 logger = getLogger(__name__)
 
@@ -107,8 +110,7 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
     def get_ignored_reason(self, obj):
         if "ignored_reason" in obj.metadata:
             return obj.metadata["ignored_reason"]
-        else:
-            return ""
+        return ""
 
     def get_similarity(self, obj):
         return obj.similarity_score
@@ -351,38 +353,37 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
                 "entity1_id": validated_data["entity1"].pk,
                 "entity2_id": validated_data["entity2"].pk,
             }
-        else:
-            # Actualy merge the entities
-            e1 = validated_data["entity1"]
-            e2 = validated_data["entity2"]
+        # Actualy merge the entities
+        e1 = validated_data["entity1"]
+        e2 = validated_data["entity2"]
 
-            current_user = self.context.get("request").user
-            new_entity = merge_entities(e1, e2, validated_data["merge"], current_user)
+        current_user = self.context.get("request").user
+        new_entity = merge_entities(e1, e2, validated_data["merge"], current_user)
 
-            # Leave audit trail from both entity reference forms to the new merged one
-            log_modification(
-                e1.attributes,
-                new_entity.attributes,
-                ENTITY_DUPLICATE_MERGE,
-                user=current_user,
-            )
-            log_modification(
-                e2.attributes,
-                new_entity.attributes,
-                ENTITY_DUPLICATE_MERGE,
-                user=current_user,
-            )
+        # Leave audit trail from both entity reference forms to the new merged one
+        log_modification(
+            e1.attributes,
+            new_entity.attributes,
+            ENTITY_DUPLICATE_MERGE,
+            user=current_user,
+        )
+        log_modification(
+            e2.attributes,
+            new_entity.attributes,
+            ENTITY_DUPLICATE_MERGE,
+            user=current_user,
+        )
 
-            # needs to add the id of the new entity as metadata to the entity duplicate
-            ed.metadata["new_entity_id"] = new_entity.pk
-            ed.validation_status = ValidationStatus.VALIDATED
-            ed.save()
+        # needs to add the id of the new entity as metadata to the entity duplicate
+        ed.metadata["new_entity_id"] = new_entity.pk
+        ed.validation_status = ValidationStatus.VALIDATED
+        ed.save()
 
-            return {
-                "new_entity_id": new_entity.pk,
-                "entity1_id": validated_data["entity1"].pk,
-                "entity2_id": validated_data["entity2"].pk,
-            }
+        return {
+            "new_entity_id": new_entity.pk,
+            "entity1_id": validated_data["entity1"].pk,
+            "entity2_id": validated_data["entity2"].pk,
+        }
 
 
 duplicate_detail_entities_param = openapi.Parameter(
@@ -424,12 +425,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
-    results_key = "results"
     model = EntityDuplicate
     pagination_class = Paginator
-
-    def get_results_key(self):
-        return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -441,9 +438,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
-            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
-        else:
-            return Response(data=serializer.data, content_type="application/json")
+            return Response(data={self.results_key: serializer.data}, content_type="application/json")
+        return Response(data=serializer.data, content_type="application/json")
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account

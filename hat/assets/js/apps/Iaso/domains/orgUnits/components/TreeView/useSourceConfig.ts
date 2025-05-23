@@ -1,5 +1,5 @@
-import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { User, useCurrentUser } from '../../../../utils/usersUtils';
 import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 import { useGetDataSourceVersion } from '../../../dataSources/hooks/useGetDataSourceVersion';

@@ -20,22 +20,33 @@ import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRou
 import Input from '@mui/icons-material/Input';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
-import RuleIcon from '@mui/icons-material/Rule';
-import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
 import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
+import RuleIcon from '@mui/icons-material/Rule';
 import Settings from '@mui/icons-material/Settings';
 import StorageIcon from '@mui/icons-material/Storage';
 import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
-import PublishedWithChangesIcon from '@mui/icons-material/PublishedWithChanges';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import BeneficiarySvg from '../components/svg/Beneficiary';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
+import EntitySvg from '../components/svg/Entity';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
+
+import { MenuItem, MenuItems } from '../domains/app/types';
+import { useGetEntityTypesDropdown } from '../domains/entities/hooks/requests';
+import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
+import {
+    listMenuPermission,
+    userHasOneOfPermissions,
+} from '../domains/users/utils';
+import { PluginsContext } from '../plugins/context';
+import { Plugins } from '../plugins/types';
+import { DropdownOptions } from '../types/utils';
 import {
     hasFeatureFlag,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
@@ -43,19 +54,9 @@ import {
     SHOW_DHIS2_LINK,
     SHOW_PAGES,
 } from '../utils/featureFlags';
-import * as paths from './routes';
-
-import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
-import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
-import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
-import {
-    listMenuPermission,
-    userHasOneOfPermissions,
-} from '../domains/users/utils';
-import { DropdownOptions } from '../types/utils';
-import { PluginsContext } from '../utils';
 import { useCurrentUser } from '../utils/usersUtils';
 import MESSAGES from './messages';
+import * as paths from './routes';
 import { CHANGE_REQUEST, CHANGE_REQUEST_CONFIG } from './urls';
 
 // !! remove permission property if the menu has a subMenu !!
@@ -65,14 +66,14 @@ const menuItems = (
     currentUser,
     orgUnitExtraPath?: string,
 ): MenuItems => {
-    const beneficiariesListEntry: MenuItem = {
-        label: formatMessage(MESSAGES.beneficiariesList),
+    const entitiesListEntry: MenuItem = {
+        label: formatMessage(MESSAGES.entitiesList),
         permissions: paths.entitiesPath.permissions,
         key: 'list',
         icon: props => <FormatListBulleted {...props} />,
     };
     if (hasFeatureFlag(currentUser, SHOW_BENEFICIARY_TYPES_IN_LIST_MENU)) {
-        beneficiariesListEntry.subMenu = entityTypes.map(entityType => ({
+        entitiesListEntry.subMenu = entityTypes.map(entityType => ({
             label: `${entityType.label}`,
             permissions: paths.entitiesPath.permissions,
             mapKey: `${entityType.value}`,
@@ -149,12 +150,6 @@ const menuItems = (
                     icon: props => <FormatListBulleted {...props} />,
                 },
                 {
-                    label: formatMessage(MESSAGES.registry),
-                    permissions: paths.registryPath.permissions,
-                    key: 'registry',
-                    icon: props => <MenuBookIcon {...props} />,
-                },
-                {
                     label: formatMessage(MESSAGES.configuration),
                     key: 'configuration',
                     icon: props => <Settings {...props} />,
@@ -182,23 +177,10 @@ const menuItems = (
             ],
         },
         {
-            label: formatMessage(MESSAGES.payments),
-            key: 'payments',
-            icon: props => <PaymentsIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.potentialPayments),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'potential',
-                    icon: props => <PriceCheckIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.lots),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'lots',
-                    icon: props => <AccountBalanceIcon {...props} />,
-                },
-            ],
+            label: formatMessage(MESSAGES.registry),
+            permissions: paths.registryPath.permissions,
+            key: 'registry',
+            icon: props => <MenuBookIcon {...props} />,
         },
         {
             label: formatMessage(MESSAGES.validation),
@@ -217,6 +199,25 @@ const menuItems = (
                         paths.orgUnitsChangeRequestConfiguration.permissions,
                     key: `${CHANGE_REQUEST_CONFIG}`,
                     icon: props => <CategoryIcon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.payments),
+            key: 'payments',
+            icon: props => <PaymentsIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.potentialPayments),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'potential',
+                    icon: props => <PriceCheckIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.lots),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'lots',
+                    icon: props => <AccountBalanceIcon {...props} />,
                 },
             ],
         },
@@ -333,9 +334,9 @@ const menuItems = (
             ],
         },
         {
-            label: formatMessage(MESSAGES.beneficiaries),
+            label: formatMessage(MESSAGES.entities),
             key: 'entities',
-            icon: props => <BeneficiarySvg {...props} />,
+            icon: props => <EntitySvg {...props} />,
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.entityTypesTitle),
@@ -343,7 +344,7 @@ const menuItems = (
                     key: 'types',
                     icon: props => <CategoryIcon {...props} />,
                 },
-                { ...beneficiariesListEntry },
+                { ...entitiesListEntry },
                 {
                     label: formatMessage(MESSAGES.entityDuplicatesTitle),
                     permissions: paths.entityDuplicatesPath.permissions,
@@ -380,7 +381,7 @@ export const useMenuItems = (): MenuItems => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const orgUnitExtraPath = useGetOrgunitsExtraPath();
-    const { data: entityTypes } = useGetBeneficiaryTypesDropdown();
+    const { data: entityTypes } = useGetEntityTypesDropdown();
     const { plugins }: Plugins = useContext(PluginsContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
     const allBasicItems = useMemo(

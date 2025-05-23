@@ -1,3 +1,14 @@
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Stack, Typography } from '@mui/material';
 import {
     ConfirmCancelModal,
     IntlMessage,
@@ -8,18 +19,7 @@ import {
 import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
-import React, {
-    FunctionComponent,
-    ReactNode,
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
 
-import { Stack, Typography } from '@mui/material';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useFormState } from '../../../../hooks/form';
@@ -116,7 +116,9 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions(undefined, true);
+        useGetOrgUnitTypesDropdownOptions({
+            onlyWriteAccess: true,
+        });
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {

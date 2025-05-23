@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Beneficiary, Journey, Step, Visit, MonthlyStatistics
+
+from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
 
 
 @admin.register(Beneficiary)

@@ -3,7 +3,6 @@ import React, { FunctionComponent } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData } from '../../../../constants/types';
 import MESSAGES from '../../../../constants/messages';
 import {
     accessArrayRound,
@@ -11,10 +10,11 @@ import {
     totalCaregivers,
     totalCaregiversInformed,
 } from '../../shared/LqasIm';
+import { ConvertedLqasImData } from '../../types';
 
 type Props = {
     campaign?: string;
-    round: number;
+    round?: number;
     data: Record<string, ConvertedLqasImData>;
     paperElevation: number;
 };

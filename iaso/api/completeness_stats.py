@@ -35,6 +35,7 @@ from typing import Any, List, Mapping, Optional, TypedDict, Union
 import rest_framework.fields
 import rest_framework.renderers
 import rest_framework_csv.renderers
+
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import models
@@ -104,10 +105,9 @@ class PrimaryKeysRelatedField(serializers.ManyRelatedField):
     def get_value(self, dictionary: Mapping[Any, str]) -> Union[Any, List[Any]]:
         if self.field_name not in dictionary:
             return rest_framework.fields.empty
-        else:
-            value: str
-            value = dictionary[self.field_name]
-            return value.split(",")
+        value: str
+        value = dictionary[self.field_name]
+        return value.split(",")
 
 
 # noinspection PyMethodMayBeStatic
@@ -369,7 +369,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 raise serializers.ValidationError(
                     {"order": ["Sorting by `orgunit__name` is not supported, please use `name` instead"]}
                 )
-            if not (order.startswith("form_stats") or order.startswith("-form_stats")):
+            if not order.startswith(("form_stats", "-form_stats")):
                 converted_orders.append(order)
             else:
                 # Expect something like `form_stats__form_12__total_instances`

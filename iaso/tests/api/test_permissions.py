@@ -1,10 +1,10 @@
+from django.contrib.auth.models import Permission
+
 from hat import settings
 from hat.menupermissions.constants import PERMISSIONS_PRESENTATION
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.test import APITestCase
 from iaso import models as m
-from django.contrib.auth.models import Permission
-
+from iaso.test import APITestCase
 from iaso.utils.module_permissions import account_module_permissions
 
 

@@ -1,16 +1,27 @@
+import React, {
+    FunctionComponent,
+    ReactElement,
+    useMemo,
+    useState,
+} from 'react';
+import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+
 import Color from 'color';
-import React, { FunctionComponent, ReactElement, useMemo } from 'react';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { ColumnCell } from '../../../../types/general';
+import { useTableSelection } from '../../../../utils/table';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { IconButton } from '../details';
+import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { PAYMENTS_MODULE } from '../constants';
+import { IconButton } from '../details';
 import MESSAGES from '../messages';
 import {
     ApproveOrgUnitParams,
@@ -19,10 +30,16 @@ import {
     OrgUnitChangeRequestsPaginated,
 } from '../types';
 
+const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
+    ou.status !== 'new';
+
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
+
+    return useMemo(() => {
+        const columns = [
             {
                 Header: 'id',
                 id: 'id',
@@ -152,9 +169,15 @@ const useColumns = (): Column[] => {
                     );
                 },
             },
-        ],
-        [formatMessage],
-    );
+        ];
+
+        // Remove payment status column when the current account has no payments module
+        if (!modules.includes(PAYMENTS_MODULE)) {
+            return columns.filter(column => column.id !== 'payment_status');
+        }
+
+        return columns;
+    }, [formatMessage, modules]);
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
@@ -192,20 +215,68 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
+    const { selection, handleTableSelection, handleUnselectAll } =
+        useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
 
+    const [multiActionPopupOpen, setMultiActionPopupOpen] =
+        useState<boolean>(false);
+    const { formatMessage } = useSafeIntl();
+
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled:
+                    multiActionPopupOpen ||
+                    (selection.selectedItems.length === 0 &&
+                        !selection.selectAll),
+            },
+        ],
+        [
+            formatMessage,
+            multiActionPopupOpen,
+            selection.selectAll,
+            selection.selectedItems.length,
+        ],
+    );
     return (
-        <TableWithDeepLink
-            marginTop={false}
-            data={data?.results ?? []}
-            pages={data?.pages ?? 1}
-            defaultSorted={[{ id: 'updated_at', desc: true }]}
-            columns={columns}
-            count={data?.count ?? 0}
-            baseUrl={baseUrl}
-            countOnTop
-            params={params}
-            rowProps={getRowProps}
-            extraProps={{ loading: isFetching }}
-        />
+        <>
+            <MultiActionsDialog
+                open={multiActionPopupOpen}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                resetSelection={handleUnselectAll}
+                params={params}
+            />
+            <TableWithDeepLink
+                marginTop={false}
+                data={data?.results ?? []}
+                pages={data?.pages ?? 1}
+                defaultSorted={[{ id: 'updated_at', desc: true }]}
+                columns={columns}
+                count={data?.count ?? 0}
+                baseUrl={baseUrl}
+                countOnTop
+                params={params}
+                rowProps={getRowProps}
+                extraProps={{ loading: isFetching }}
+                multiSelect={Boolean(
+                    data?.select_all_count && data?.select_all_count > 0,
+                )}
+                selection={selection}
+                selectionActions={selectionActions}
+                selectAllCount={data?.select_all_count ?? 0}
+                getIsSelectionDisabled={getIsSelectionDisabled}
+                setTableSelection={(selectionType, items) =>
+                    handleTableSelection(
+                        selectionType,
+                        items,
+                        data?.select_all_count,
+                    )
+                }
+            />
+        </>
     );
 };

@@ -1,5 +1,4 @@
 import gspread.utils  # type: ignore
-from translated_fields import TranslatedFieldAdmin
 
 from django import forms
 from django.contrib import admin, messages
@@ -8,6 +7,7 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from translated_fields import TranslatedFieldAdmin
 
 from iaso.admin import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
@@ -16,13 +16,14 @@ from plugins.polio.models.base import VaccineStockHistory
 from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
-    CampaignType,
     CampaignGroup,
+    CampaignType,
     Chronogram,
     ChronogramTask,
     ChronogramTemplateTask,
     CountryUsersGroup,
     DestructionReport,
+    EarmarkedStock,
     IncidentReport,
     Notification,
     NotificationImport,
@@ -83,7 +84,7 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         html = ""
 
         for sheet in obj.content["sheets"]:
-            html += f'<details open><summary><b>{sheet["title"]}</b></summary><table>'
+            html += f"<details open><summary><b>{sheet['title']}</b></summary><table>"
             try:
                 if not sheet["values"]:
                     html += "Empty</table></details>"
@@ -106,7 +107,7 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
             except Exception as e:
                 print(e)
                 html += f"<error>render error: {e}</error>"
-                html += f'<pre>{sheet["values"]}</pre>'
+                html += f"<pre>{sheet['values']}</pre>"
             html += "</table></details>"
 
         # print(html)
@@ -209,6 +210,11 @@ class DestructionReport(admin.ModelAdmin):
 @admin.register(IncidentReport)
 class IncidentReport(admin.ModelAdmin):
     model = IncidentReport
+
+
+@admin.register(EarmarkedStock)
+class EarmarkedStockAdmin(admin.ModelAdmin):
+    model = EarmarkedStock
 
 
 @admin.register(Round)

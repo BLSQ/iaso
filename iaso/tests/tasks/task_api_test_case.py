@@ -1,5 +1,5 @@
-from iaso.models import Task, QUEUED
 from beanstalk_worker.services import TestTaskService
+from iaso.models import QUEUED, Task
 from iaso.test import APITestCase
 
 

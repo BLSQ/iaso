@@ -1,12 +1,17 @@
-import uuid
-from datetime import datetime
-from submissions import (
-    submission2xml,
-    org_unit_gps_point,
-    submission_org_unit_gps_point,
-    create_default_reference_submission,
-)
 import random
+import uuid
+
+from datetime import datetime
+
+from names_generator import generate_name
+from submissions import (
+    create_default_reference_submission,
+    org_unit_gps_point,
+    picture_by_org_unit_type_name,
+    rename_entity_submission_picture,
+    submission2xml,
+    submission_org_unit_gps_point,
+)
 
 
 def define_health_facility_reference_form(iaso_client):
@@ -44,81 +49,93 @@ def create_submission_with_picture(account_name, iaso_client):
     form = define_health_facility_reference_form(iaso_client=iaso_client)
     # fetch orgunit ids
     limit = form["number_of_org_units"]
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]})[
-        "orgunits"
-    ]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": form["org_unit_type_id"]},
+    )["orgunits"]
     current_datetime = int(datetime.now().timestamp())
 
-    # Creating 2 submissions with picture by org unit for first 10 Health facilities and setting up reference instance
-    pictures = ["CS_communautaire.png", "burkina_cs.jpg"]
-    for picture in pictures:
-        for orgunit in orgunits:
-            org_unit_id = orgunit["id"]
-            the_uuid = str(uuid.uuid4())
-            file_name = "example_%s.xml" % the_uuid
-            local_path = "generated/%s" % file_name
-            form_id = form["form_ids"][0]
+    # Creating submissions with picture by org unit for first 10 Health facilities and setting up reference instance
+    for orgunit in orgunits:
+        picture = picture_by_org_unit_type_name(orgunit["org_unit_type_name"])
+        org_unit_id = orgunit["id"]
+        the_uuid = str(uuid.uuid4())
+        file_name = "example_%s.xml" % the_uuid
+        local_path = "generated/%s" % file_name
+        form_id = form["form_ids"][0]
 
-            instance_body = [
-                {
-                    **org_unit_gps_point(orgunit),
-                    "id": the_uuid,
-                    "created_at": current_datetime,
-                    "updated_at": current_datetime,
-                    "orgUnitId": org_unit_id,
-                    "formId": form_id,
-                    "accuracy": 0,
-                    "imgUrl": "imgUrl",
-                    "file": local_path,
-                    "name": file_name,
-                    "is_reference_instance": True,
-                    "is_instance_of_reference_form": True,
-                }
-            ]
-            iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
-            form_versions = iaso_client.get(f"/api/formversions/")["form_versions"]
-            form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
-
-            instance_json = {
-                "start": "2022-09-07T17:54:55.805+02:00",
-                "end": "2022-09-07T17:55:31.192+02:00",
-                "geo_group": {
-                    "responsable_fosa": random.choice(["Nom 1", "Nom 2", "Nom 3"]),
-                    "statut_fosa": random.choice(
-                        ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
-                    ),
-                    "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
-                },
-                "equipment_group": {
-                    "HFR_CS_16": random.choice(["yes", "no"]),
-                    "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                    "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
-                },
-                "services_group": {
-                    "HFR_CS_26": random.choice(["yes", "no"]),
-                    "HFR_CS_28": random.choice(["yes", "no"]),
-                    "HFR_CS_29": random.choice(["yes", "no"]),
-                    "HFR_CS_32": random.choice(["yes", "no"]),
-                    "HFR_CS_33": random.choice(["yes", "no"]),
-                    "HFR_CS_40": random.choice(["yes", "no"]),
-                },
-                "meta": {"instanceID": "uuid:" + the_uuid},
+        instance_body = [
+            {
+                **org_unit_gps_point(orgunit),
+                "id": the_uuid,
+                "created_at": current_datetime,
+                "updated_at": current_datetime,
+                "orgUnitId": org_unit_id,
+                "formId": form_id,
+                "accuracy": 0,
+                "imgUrl": "photo_fosa",
+                "file": local_path,
+                "name": file_name,
+                "is_reference_instance": True,
+                "is_instance_of_reference_form": True,
             }
+        ]
+        iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
+        form_versions = iaso_client.get("/api/formversions/")["form_versions"]
+        form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
 
-            with open(f"./data/{picture}", "rb") as fp_image:
-                iaso_client.post(
-                    "/sync/form_upload/",
-                    files={
-                        "xml_submission_file": (
-                            local_path,
-                            submission2xml(
-                                instance_json,
-                                form_version_id=form_version[0]["version_id"],
-                                form_id="SAMPLE_FORM_new6",
-                            ),
-                        ),
-                        "photo_fosa": fp_image,
-                    },
-                )
-                # Creating default reference submission for the org unit
-                create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)
+        instance_json = {
+            "start": "2022-09-07T17:54:55.805+02:00",
+            "end": "2022-09-07T17:55:31.192+02:00",
+            "geo_group": {
+                "responsable_fosa": generate_name(style="capital"),
+                "statut_fosa": random.choice(
+                    [
+                        "public",
+                        "prive_confessionel",
+                        "prive_laic",
+                        "militaire",
+                        "ong",
+                        "autre",
+                    ]
+                ),
+                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
+                "photo_fosa": picture,
+            },
+            "equipment_group": {
+                "HFR_CS_16": random.choice(["yes", "no"]),
+                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
+                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+            },
+            "services_group": {
+                "HFR_CS_26": random.choice(["yes", "no"]),
+                "HFR_CS_28": random.choice(["yes", "no"]),
+                "HFR_CS_29": random.choice(["yes", "no"]),
+                "HFR_CS_32": random.choice(["yes", "no"]),
+                "HFR_CS_33": random.choice(["yes", "no"]),
+                "HFR_CS_40": random.choice(["yes", "no"]),
+            },
+            "meta": {"instanceID": "uuid:" + the_uuid},
+        }
+        files = {
+            "xml_submission_file": (
+                local_path,
+                submission2xml(
+                    instance_json,
+                    form_version_id=form_version[0]["version_id"],
+                    form_id="SAMPLE_FORM_new6",
+                ),
+            )
+        }
+
+        if instance_json.get("geo_group") is not None:
+            picture = instance_json["geo_group"]["photo_fosa"]
+            path = "./data"
+            files = rename_entity_submission_picture(path, picture, files, "photo_fosa", the_uuid)
+
+        iaso_client.post(
+            "/sync/form_upload/",
+            files=files,
+        )
+        # Creating default reference submission for the org unit
+        create_default_reference_submission(account_name, iaso_client, org_unit_id, form_id, the_uuid)

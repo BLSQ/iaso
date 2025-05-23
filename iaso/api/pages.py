@@ -1,12 +1,10 @@
-from django.contrib.auth.models import User
-from django.db.models import Q
-from django_filters.rest_framework import FilterSet, CharFilter, BooleanFilter
 from django.utils.translation import gettext_lazy as _
-from rest_framework import serializers, permissions
-from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
-from iaso.models import Page
+from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
+from rest_framework import permissions, serializers
 
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet
+from iaso.models import Page, User
 
 
 class PagesSerializer(serializers.ModelSerializer):
@@ -66,5 +64,10 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
+
         users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
-        return Page.objects.filter(users__in=users).order_by(*order).distinct()
+        queryset = Page.objects.filter(users__in=users)
+        if user.has_perm(permission.PAGES) and not user.has_perm(permission.PAGE_WRITE):
+            queryset = queryset.filter(users=user)
+
+        return queryset.order_by(*order).distinct()

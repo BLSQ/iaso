@@ -1,15 +1,15 @@
 /// <reference types="cypress" />
 
-import superUser from '../../fixtures/profiles/me/superuser.json';
-import orgUnitTypes from '../../fixtures/orgunittypes/dummy-list.json';
-import projects from '../../fixtures/projects/list.json';
 import form from '../../fixtures/forms/detail.json';
+import orgUnitTypes from '../../fixtures/orgunittypes/dummy-list.json';
+import superUser from '../../fixtures/profiles/me/superuser.json';
+import projects from '../../fixtures/projects/list.json';
 import {
     makeFormVersions,
     makePaginatedResponse,
 } from '../../support/dummyData';
-import { testTablerender } from '../../support/testTableRender';
 import { testPermission } from '../../support/testPermission';
+import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
 import { mockSaveCall } from '../../support/utils';
 
@@ -60,7 +60,6 @@ describe('Forms details', () => {
             form,
         ).as('getForm');
         cy.visit(baseUrl);
-        cy.wait('@orgUnitTypes');
         cy.wait('@projects');
     });
     describe('Filters', () => {
@@ -198,7 +197,6 @@ describe('mounts when empty', () => {
             form,
         );
         cy.visit(baseUrl);
-        cy.wait('@emptyTypes');
         cy.wait('@emptyProjects');
     });
     it('project and org unit types', () => {
@@ -244,7 +242,6 @@ describe('Does not crash on API errors', () => {
                 body: 'Error 400',
             }).as('projects');
             cy.visit(baseUrl);
-            cy.wait('@orgUnitTypes');
             cy.wait('@projects');
             cy.getAndAssert('#input-text-name');
             cy.getAndAssert('#period_type');
@@ -257,7 +254,6 @@ describe('Does not crash on API errors', () => {
                 body: 'Error 400',
             }).as('projects');
             cy.visit(baseUrl);
-            cy.wait('@orgUnitTypes');
             cy.wait('@projects');
             cy.getAndAssert('#input-text-name');
             cy.getAndAssert('#period_type');

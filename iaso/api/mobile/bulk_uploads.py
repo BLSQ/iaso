@@ -1,5 +1,5 @@
-import datetime
 import logging
+
 from traceback import format_exc
 
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
@@ -16,7 +16,7 @@ from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
-from iaso.utils.s3_client import upload_file_to_s3
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,23 +68,12 @@ class MobileBulkUploadsViewSet(ViewSet):
         try:
             zip_file = serializer.validateZipFile()
 
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H:%M:%S.%f")
-            object_name = "/".join(
-                [
-                    "mobilebulkuploads",
-                    app_id,
-                    str(user.id),
-                    f"mobilebulkupload-{timestamp}.zip",
-                ]
-            )
-
             api_import = APIImport.objects.create(
                 user=user,
                 import_type="bulk",
-                json_body={"file": object_name},
+                file=zip_file,
+                json_body={},
             )
-
-            upload_file_to_s3(file_name=zip_file.temporary_file_path(), object_name=object_name)
 
             process_mobile_bulk_upload(
                 api_import_id=api_import.id,
@@ -94,11 +83,11 @@ class MobileBulkUploadsViewSet(ViewSet):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as exc:
-            logger.exception(f"ValueError: {str(exc)}")
+            logger.exception(f"ValueError: {exc!s}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:
             api_import.has_problem = True
             api_import.exception = format_exc()
             api_import.save()
-            logger.exception(f"Exception: {str(exc)}")
+            logger.exception(f"Exception: {exc!s}")
             return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

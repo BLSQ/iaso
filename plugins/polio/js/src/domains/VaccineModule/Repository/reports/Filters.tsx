@@ -1,20 +1,20 @@
-import FiltersIcon from '@mui/icons-material/FilterList';
-import { Box, Button, Grid } from '@mui/material';
-import { useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Grid } from '@mui/material';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { appId } from '../../../../constants/app';
 import MESSAGES from '../../../../constants/messages';
 
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
-import { appId } from '../../../../constants/app';
 import { singleVaccinesList } from '../../SupplyChain/constants';
 import { useGetReportFileTypes } from '../hooks/useGetFileTypes';
 import { VaccineRepositoryParams } from '../types';
@@ -65,7 +65,7 @@ export const Filters: FunctionComponent<Props> = ({ params, redirectUrl }) => {
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     // Pass the appId to have it works in the embedded vaccine stock where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True', appId });
+        useGetGroupDropdown({ blockOfCountries: 'true', appId });
 
     const countriesList = (data && data.orgUnits) || [];
 

@@ -1,22 +1,19 @@
 import django_filters
 
-from rest_framework import filters
-from rest_framework import status
-from rest_framework import viewsets
-from rest_framework.decorators import action
-from rest_framework.response import Response
-
 from django.db.models import F
 from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 from iaso.models import OrgUnitType
-
+from iaso.utils.clamav import scan_uploaded_file_for_virus
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
-from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
+from plugins.polio.api.notifications.serializers import NotificationImportSerializer, NotificationSerializer
 from plugins.polio.models import Notification, NotificationImport, create_polio_notifications_async
 
 
@@ -81,7 +78,11 @@ class NotificationViewSet(viewsets.ModelViewSet):
         account = user.iaso_profile.account
         serializer = NotificationImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        notification_import = serializer.save(account=account, created_by=user)
+        result, timestamp = scan_uploaded_file_for_virus(serializer.validated_data["file"])
+        notification_import = serializer.save(
+            account=account, created_by=user, file_last_scan=timestamp, file_scan_status=result
+        )
+        # TODO: don't do the async if the file is positive?
         create_polio_notifications_async(pk=notification_import.pk, user=user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 

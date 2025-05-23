@@ -19,7 +19,7 @@ from iaso.utils.models.soft_deletable import (
 class OrgUnitChangeRequestConfigurationQuerySet(QuerySet):
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authenticated")
+            raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
         return self.filter(project__account=profile.account)
@@ -33,9 +33,19 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
     or restrict the list of possible values for each field.
     """
 
+    class Type(models.TextChoices):
+        """
+        OrgUnitChangeRequestConfiguration can be applied to OrgUnit creation or edition.
+        The type tells us to which scenario does the configuration apply.
+        """
+
+        CREATION = "creation", _("Creation")
+        EDITION = "edition", _("Edition")
+
     project = models.ForeignKey("Project", on_delete=models.CASCADE)
     org_unit_type = models.ForeignKey("OrgUnitType", on_delete=models.PROTECT)
     org_units_editable = models.BooleanField(default=True)  # = is it possible to edit org units of that type
+    type = models.CharField(max_length=10, choices=Type.choices)
     editable_fields = ArrayField(
         models.CharField(max_length=30, blank=True),
         default=list,
@@ -104,10 +114,11 @@ class OrgUnitChangeRequestConfiguration(SoftDeletableModel):
         indexes = [
             models.Index(fields=["project"]),
             models.Index(fields=["org_unit_type"]),
+            models.Index(fields=["type"]),
         ]
         constraints = [
             models.UniqueConstraint(
-                fields=["project", "org_unit_type"],
+                fields=["project", "org_unit_type", "type"],
                 condition=Q(deleted_at__isnull=True),
                 name="unique_project_org_unit_type_if_not_deleted",
             ),

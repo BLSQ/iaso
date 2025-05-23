@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -6,7 +7,6 @@ import {
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../components/Buttons/XslxButton';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -14,12 +14,12 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
-import { useBeneficiariesDetailsColumns } from './config';
-import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
-import { useGetBeneficiaryFields } from './hooks/useGetBeneficiaryFields';
+import { EntityBaseInfo } from './components/EntityBaseInfo';
+import { useEntitiesDetailsColumns } from './config';
+import { useGetEntity, useGetSubmissions } from './hooks/requests';
+import { useGetEntityFields } from './hooks/useGetEntityFields';
 import MESSAGES from './messages';
-import { Beneficiary } from './types/beneficiary';
+import { Entity } from './types/entity';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -35,14 +35,14 @@ export const Details: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
 
     const {
-        data: beneficiary,
+        data: entity,
     }: {
-        data?: Beneficiary;
-    } = useGetBeneficiary(entityId as string);
-    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
-        useGetBeneficiaryFields(beneficiary);
+        data?: Entity;
+    } = useGetEntity(entityId as string);
+    const { isLoading: isLoadingEntityFields, fields: entityFields } =
+        useGetEntityFields(entity);
 
-    const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
+    const columns = useEntitiesDetailsColumns(entity?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,
@@ -50,21 +50,20 @@ export const Details: FunctionComponent = () => {
     );
 
     const duplicates = useMemo(() => {
-        return beneficiary?.duplicates ?? [];
-    }, [beneficiary]);
+        return entity?.duplicates ?? [];
+    }, [entity]);
 
     const duplicateUrl =
         duplicates.length === 1
             ? `/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
             : `/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
-    const isLoading =
-        !beneficiary || isLoadingBeneficiaryFields || isLoadingSubmissions;
+    const isLoading = !entity || isLoadingEntityFields || isLoadingSubmissions;
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.beneficiary)}
+                title={formatMessage(MESSAGES.entity)}
                 displayBackButton
                 goBack={goBack}
             />
@@ -73,9 +72,9 @@ export const Details: FunctionComponent = () => {
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                     <Grid container spacing={2} alignItems="flex-start">
                         <Grid item xs={12} md={4}>
-                            <BeneficiaryBaseInfo
-                                beneficiary={beneficiary}
-                                fields={beneficiaryFields}
+                            <EntityBaseInfo
+                                entity={entity}
+                                fields={entityFields}
                                 hasDuplicates={duplicates.length > 0}
                                 duplicateUrl={duplicateUrl}
                             />

@@ -1,4 +1,5 @@
 import random
+
 from submissions import org_unit_gps_point
 
 
@@ -56,7 +57,7 @@ def setup_review_change_proposal(account_name, iaso_client):
             data["new_groups"] = groups
             approved_fields.append("new_groups")
         if name_extension != "":
-            data["new_name"] = f'{org_unit["name"]} {name_extension}'
+            data["new_name"] = f"{org_unit['name']} {name_extension}"
             approved_fields.append("new_name")
 
         if new_location is not None:

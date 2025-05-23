@@ -3,7 +3,8 @@ import json
 from rest_framework.test import APIClient
 
 from iaso.test import APITestCase
-from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, DataSource, SourceVersion
+
+from ..models import Account, DataSource, Form, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
 
 
 class MultiTenantTestCase(APITestCase):

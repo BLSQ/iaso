@@ -1,6 +1,17 @@
 import json
-from fake import fake_person
+import random
+
 from datetime import datetime, timedelta
+
+from fake import fake_person
+
+
+NEW = "new"
+REJECTED = "rejected"
+APPROVED = "approved"
+PENDING = "pending"
+SAME = "same"
+UNKNOWN = "unknown"
 
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
@@ -38,7 +49,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     users = iaso_client.get("/api/profiles?limit=20000")["profiles"]
 
-    print(f"\t{len(users) -1 } users created")
+    print(f"\t{len(users) - 1} users created")
 
     manager = iaso_client.get("/api/profiles/me/")
 
@@ -62,7 +73,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
 
     teams = iaso_client.get("/api/microplanning/teams/?limit=20000")["results"]
 
-    print(f"\t{len(teams) -1 } teams created")
+    print(f"\t{len(teams) - 1} teams created")
 
     iaso_client.post(
         "/api/microplanning/teams/",
@@ -76,6 +87,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         },
     )
     forms = iaso_client.get("/api/forms")["forms"]
+    planning_form = [form for form in forms if form["form_id"] == "SAMPLE_FORM_new5"][0]
 
     source_id = manager["account"]["default_version"]["data_source"]["id"]
     country = iaso_client.get(
@@ -84,7 +96,14 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "limit": 3000,
             "order": "id",
             "searches": json.dumps(
-                [{"validation_status": "VALID", "color": "f4511e", "source": str(source_id), "depth": 1}]
+                [
+                    {
+                        "validation_status": "VALID",
+                        "color": "f4511e",
+                        "source": str(source_id),
+                        "depth": 1,
+                    }
+                ]
             ),
         },
     )["orgunits"][0]
@@ -95,7 +114,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
         "/api/microplanning/plannings/",
         {
             "name": "Campagne Carte Sanitaire",
-            "forms": [f["id"] for f in forms if f["form_id"] == "SAMPLE_FORM_new5"],
+            "forms": [planning_form["id"]],
             "project": project_id,
             "team": team["id"],
             "org_unit": country["id"],
@@ -108,22 +127,91 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     health_facitities = iaso_client.get(
         "/api/orgunits/",
         params={
-            "validation_status": "VALID",
-            "geography": "any",
-            "onlyDirectChildren": "false",
-            "page": 1,
-            "withParents": "true",
+            "limit": 70,
             "order": "name",
-            "depth": 5,
+            "page": 1,
+            "searches": json.dumps(
+                [
+                    {
+                        "validation_status": "VALID",
+                        "geography": "any",
+                        "depth": 5,
+                    }
+                ]
+            ),
+            "locationLimit": 100,
         },
-    )["orgUnits"]
+    )["orgunits"]
+
+    # Get the users from the team
+    team_users = team["users"]
+
+    print(f"Found {len(team_users)} users in team {team['name']} but assign only {len(team_users[:3])}")
 
     for health_facitity in health_facitities:
-        print("assigning", health_facitity["name"], "to", team["name"])
+        # Select an arbitrary user from the team for this assignment
+        selected_user_id = random.choice(team_users[:3])
+
+        print(
+            "assigning",
+            health_facitity["name"],
+            "to",
+            team["name"],
+            "user ID:",
+            selected_user_id,
+        )
 
         iaso_client.post(
             "/api/microplanning/assignments/",
-            json={"planning": campaign["id"], "org_unit": health_facitity["id"], "team": team["id"]},
+            json={
+                "planning": campaign["id"],
+                "org_unit": health_facitity["id"],
+                "user": selected_user_id,
+            },
         )
 
     print(campaign)
+
+
+# Define the function outside the loop to avoid the loop variable binding issue
+def get_conclusion(field_name, old_value, new_value, change_request):
+    # If the change request is new, no conclusion is made
+    if change_request.status == NEW:
+        return PENDING
+
+    # If the change request is rejected, all fields are rejected
+    if change_request.status == REJECTED:
+        return REJECTED
+
+    # If the change request is approved, check if the field is in approved_fields
+    if change_request.status == APPROVED:
+        # Map field names to their corresponding field in requested_fields
+        field_mapping = {
+            "name": "new_name",
+            "parent": "new_parent",
+            "ref_ext_parent_1": "new_parent",
+            "ref_ext_parent_2": "new_parent",
+            "ref_ext_parent_3": "new_parent",
+            "opening_date": "new_opening_date",
+            "closing_date": "new_closed_date",
+            "groups": "new_groups",
+            "localisation": "new_location",
+            "reference_submission": "new_reference_instances",
+        }
+
+        # Get the corresponding field name in requested_fields
+        requested_field = field_mapping.get(field_name)
+
+        # If the field is not in requested_fields, it means no change was requested
+        if requested_field not in change_request.requested_fields:
+            return SAME
+
+        # If the field is in approved_fields, it was approved
+        if requested_field in change_request.approved_fields:
+            return APPROVED
+
+        # If the field is in requested_fields but not in approved_fields, it was rejected
+        return REJECTED
+
+    # Default case (should not happen)
+    return UNKNOWN

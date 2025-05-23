@@ -46,7 +46,7 @@ class Command(BaseCommand):
 
         no_path_count_after = OrgUnit.objects.filter(path=None).count()
         if no_path_count_after == 0:
-            self.stdout.write(f"After this operation, all org units have a path")
+            self.stdout.write("After this operation, all org units have a path")
         else:
             self.stdout.write(f"After this operation, {no_path_count_after} org units are left without path")
             self.stdout.write("Attempting fix")
@@ -56,7 +56,7 @@ class Command(BaseCommand):
 
             no_path_count_final = OrgUnit.objects.filter(path=None).count()
             if no_path_count_final == 0:
-                self.stdout.write(f"After this fix, all org units have a path")
+                self.stdout.write("After this fix, all org units have a path")
             else:
                 self.stdout.write(f"After fix attempt, still {no_path_count_final} org units are left without path")
                 self.stdout.write("Should be fixed manually")

@@ -5,7 +5,7 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import { Analysis } from '../types';
 import MESSAGES from '../messages';
-import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
+import { useGetEntityTypesDropdown } from '../../hooks/requests';
 
 type Props = {
     analysis: Analysis;
@@ -26,7 +26,7 @@ export const AnalysisTooltipTitle: FunctionComponent<Props> = ({
             ),
         [analysis.metadata.parameters],
     );
-    const { data: entityTypesDropdown } = useGetBeneficiaryTypesDropdown();
+    const { data: entityTypesDropdown } = useGetEntityTypesDropdown();
 
     const entytypeName: string = useMemo(() => {
         if (entityTypesDropdown) {

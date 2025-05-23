@@ -1,4 +1,4 @@
-from django.db.models import Q, ExpressionWrapper, BooleanField, Value
+from django.db.models import BooleanField, ExpressionWrapper, Q
 from django.db.models.query import QuerySet
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -9,7 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.query_params import APP_ID, SHOW_DELETED
+from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import GroupSet, Project
 

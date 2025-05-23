@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useGetVaccineStockList } from '../hooks/api';
-import { useVaccineStockManagementTableColumns } from './useVaccineStockManagementTableColumns';
-import { StockManagementListParams } from '../types';
 import { baseUrls } from '../../../../constants/urls';
+import { useGetVaccineStockList } from '../hooks/api';
+import { StockManagementListParams } from '../types';
+import { useVaccineStockManagementTableColumns } from './useVaccineStockManagementTableColumns';
 
 type Props = { params: StockManagementListParams };
 

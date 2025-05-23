@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.utils.timezone import now
 
 from iaso import models as m
-from iaso.models import Profile, Instance
+from iaso.models import Instance, Profile
 from iaso.test import APITestCase
 
 

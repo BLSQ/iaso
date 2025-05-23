@@ -65,8 +65,9 @@ plugins:
 
               - En savoir plus sur IASO:
                 - Demander une démo: https://www.openiaso.com/ 
-                - Bluesquare: https://www.bluesquarehub.com/
                 - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+                - Release notes: https://github.com/BLSQ/iaso/releases
+                - Bluesquare: https://www.bluesquarehub.com/
 
   - search #built-in search input in the theme
   - mermaid2 #enables rendering mermaid diagrams
@@ -136,9 +137,10 @@ nav: # nav configures the side bar menu
       #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
   - More about IASO:
-    - Get a demo: https://www.openiaso.com/ 
-    - Bluesquare: https://www.bluesquarehub.com/
+    - IASO website: https://www.openiaso.com/ 
     - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+    - Release notes: https://github.com/BLSQ/iaso/releases
+    - Bluesquare website: https://www.bluesquarehub.com/
 
 
 

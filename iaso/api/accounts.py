@@ -1,7 +1,6 @@
 """This api is only there so the default version on an account can be modified"""
 
 from django.contrib.auth import login
-from django.contrib.auth.models import User
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -93,5 +92,4 @@ class AccountViewSet(ModelViewSet):
             login(request, user_to_login)
             # Return an empty response since no data is needed by the frontend
             return Response({}, status=status.HTTP_200_OK)
-        else:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        return Response(status=status.HTTP_404_NOT_FOUND)

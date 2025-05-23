@@ -1,11 +1,12 @@
 import typing
 
-from rest_framework import serializers, permissions
+from rest_framework import permissions, serializers
 
-from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
-from iaso.models import ExportRequest, Form, DERIVED
-from .common import ModelViewSet, HasPermission
 from hat.menupermissions import models as permission
+from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
+from iaso.models import DERIVED, ExportRequest, Form
+
+from .common import HasPermission, ModelViewSet
 
 
 class DerivedInstanceSerializer(serializers.Serializer):

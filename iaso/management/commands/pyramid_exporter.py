@@ -1,13 +1,15 @@
 import logging
 import time
 
+
 logger = logging.getLogger(__name__)
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from .command_logger import CommandLogger
 
-from iaso.models import DataSource, SourceVersion
 from iaso.diffing import Differ, Dumper, Exporter
+from iaso.models import DataSource, SourceVersion
+
+from .command_logger import CommandLogger
 
 
 def get_option(options, key):
@@ -63,12 +65,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         logger.debug("let's diff")
         file_name = options.get("output_csv")
-        validation_status = options.get("validation_status", None)
-        validation_status_ref = options.get("validation_status_ref", None)
-        top_org_unit = options.get("top_org_unit", None)
-        top_org_unit_ref = options.get("top_org_unit_ref", None)
-        org_unit_types = options.get("org_unit_types", None)
-        org_unit_types_ref = options.get("org_unit_types_ref", None)
+        validation_status = options.get("validation_status")
+        validation_status_ref = options.get("validation_status_ref")
+        top_org_unit = options.get("top_org_unit")
+        top_org_unit_ref = options.get("top_org_unit_ref")
+        org_unit_types = options.get("org_unit_types")
+        org_unit_types_ref = options.get("org_unit_types_ref")
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
@@ -107,7 +109,7 @@ class Command(BaseCommand):
             iaso_logger.ok("================= Exporting =================")
             Exporter(self.iaso_logger).export_to_dhis2(self.get_api(options), diffs, fields)
         else:
-            iaso_logger.warn("not exporting, specify --export")
+            iaso_logger.warning("not exporting, specify --export")
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 

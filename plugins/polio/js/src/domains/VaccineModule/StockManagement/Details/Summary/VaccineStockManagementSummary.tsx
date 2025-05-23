@@ -3,8 +3,8 @@ import { Table, TableBody } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import { PaperTableRow } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/PaperTableRow';
 import WidgetPaper from '../../../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
+import { PaperTableRow } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/PaperTableRow';
 import MESSAGES from '../../messages';
 import { SummaryTitle } from './SummaryTitle';
 
@@ -62,6 +62,16 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
                             isLoading={isLoading}
                         />
                     )}
+                    <PaperTableRow
+                        label={formatMessage(MESSAGES.earmarked_vials)}
+                        value={data?.total_earmarked_vials}
+                        isLoading={isLoading}
+                    />
+                    <PaperTableRow
+                        label={formatMessage(MESSAGES.earmarked_doses)}
+                        value={data?.total_earmarked_doses}
+                        isLoading={isLoading}
+                    />
                 </TableBody>
             </Table>
         </WidgetPaper>

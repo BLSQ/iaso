@@ -1,6 +1,7 @@
 import datetime
 
 import time_machine
+
 from django.core.exceptions import ValidationError
 
 from iaso import models as m
@@ -70,6 +71,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
     def test_create_happy_path(self):
         kwargs = {
             "project": self.project_johto,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type": self.ou_type_fire_pokemons,
             "editable_fields": [
                 "name",
@@ -107,6 +109,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
     def test_create_config_preventing_any_data_modification(self):
         kwargs = {
             "project": self.project_johto,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type": self.ou_type_water_pokemons,
             "created_by": self.user_misty,
             "editable_fields": [],
@@ -130,6 +133,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
     def test_create_error_same_project_and_orgunit_type(self):
         kwargs = {
             "project": self.project_johto,
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "org_unit_type": self.ou_type_rock_pokemons,
             "editable_fields": ["name"],
             "created_by": self.user_brock,
@@ -151,6 +155,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
     def test_create_config_delete_and_recreate(self):
         kwargs = {
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "project": self.project_johto,
             "org_unit_type": self.ou_type_rock_pokemons,
             "editable_fields": [],
@@ -190,6 +195,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
     def test_filtering_for_user(self):
         # Preparing first OUCRC on default account
         kwargs = {
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "project": self.project_johto,
             "org_unit_type": self.ou_type_water_pokemons,
             "editable_fields": [],
@@ -209,6 +215,7 @@ class OrgUnitChangeRequestConfigurationModelTestCase(TestCase):
 
         # Preparing a second OUCRC on second account
         new_kwargs = {
+            "type": m.OrgUnitChangeRequestConfiguration.Type.EDITION,
             "project": new_project_digital_world,
             "org_unit_type": new_ou_type_dinosaur_digimons,
             "editable_fields": [],

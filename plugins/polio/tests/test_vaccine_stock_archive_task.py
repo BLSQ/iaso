@@ -1,12 +1,12 @@
-from beanstalk_worker.services import TestTaskService
-from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 import datetime
 
 from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now
 
 import hat.menupermissions.models as permissions
+
 from iaso import models as m
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 from plugins.polio import models as pm
 
 
@@ -92,22 +92,22 @@ class TestVaccineStockArchive(TaskAPITestCase):
 
         cls.campaign_rdc_1_round_1 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 10),
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 10),
             number=1,
         )
 
         cls.campaign_rdc_1_round_2 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
-            started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 10),
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 10),
             number=2,
         )
 
         cls.campaign_rdc_1_round_3 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
-            started_at=datetime.datetime(2021, 3, 1),
-            ended_at=datetime.datetime(2021, 3, 10),
+            started_at=datetime.date(2021, 3, 1),
+            ended_at=datetime.date(2021, 3, 10),
             number=3,
         )
 
@@ -145,7 +145,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             form_a_reception_date=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=3),
             usable_vials_used=10,  # 200 doses
             lot_numbers=["LOT123"],
-            missing_vials=2,  # 40 doses
             comment="Hello world",
         )
 
@@ -167,7 +166,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -175,7 +174,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_4 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -183,7 +182,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_mopv_5 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_rdc_1_round_3.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_3.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -201,8 +200,8 @@ class TestVaccineStockArchive(TaskAPITestCase):
 
         cls.campaign_chad_1_round_1 = pm.Round.objects.create(
             campaign=cls.campaign_chad_1,
-            started_at=datetime.datetime(2021, 1, 1),
-            ended_at=datetime.datetime(2021, 1, 10),
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 10),
             number=1,
         )
 
@@ -217,8 +216,8 @@ class TestVaccineStockArchive(TaskAPITestCase):
 
         cls.campaign_chad_1_round_2 = pm.Round.objects.create(
             campaign=cls.campaign_chad_1,
-            started_at=datetime.datetime(2021, 2, 1),
-            ended_at=datetime.datetime(2021, 2, 10),
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 10),
             number=2,
         )
 
@@ -235,8 +234,8 @@ class TestVaccineStockArchive(TaskAPITestCase):
 
         cls.campaign_chad_1_round_3 = pm.Round.objects.create(
             campaign=cls.campaign_chad_1,
-            started_at=datetime.datetime(2021, 3, 1),
-            ended_at=datetime.datetime(2021, 3, 10),
+            started_at=datetime.date(2021, 3, 1),
+            ended_at=datetime.date(2021, 3, 10),
             number=3,
         )
 
@@ -300,7 +299,6 @@ class TestVaccineStockArchive(TaskAPITestCase):
             form_a_reception_date=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=3),
             usable_vials_used=10,  # 500 doses
             lot_numbers=["LOT123"],
-            missing_vials=2,  # 100 doses
             comment="Hello world",
         )
 
@@ -322,7 +320,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_chad_nopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -331,7 +329,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         # should be ignored when computing round 1 values based on date
         cls.incident_report_rdc_chad_nopv_4 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -339,7 +337,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         )
         cls.incident_report_rdc_chad_mopv = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_mopv,
-            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY,
+            stock_correction=pm.IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY_ADD,
             date_of_incident_report=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
@@ -395,9 +393,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round)
         self.assertEqual(archived_round.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_round.usable_doses_in, 440)
+        self.assertEqual(archived_round.usable_doses_in, 480)
         self.assertEqual(archived_round.unusable_doses_in, 220)
-        self.assertEqual(archived_round.usable_vials_in, 22)
+        self.assertEqual(archived_round.usable_vials_in, 24)
         self.assertEqual(archived_round.unusable_vials_in, 11)
 
         # Launch second task with another date
@@ -427,9 +425,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round_2)
         self.assertEqual(archived_round_2.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_round_2.usable_doses_in, 640)
+        self.assertEqual(archived_round_2.usable_doses_in, 680)
         self.assertEqual(archived_round_2.unusable_doses_in, 220)
-        self.assertEqual(archived_round_2.usable_vials_in, 32)
+        self.assertEqual(archived_round_2.usable_vials_in, 34)
         self.assertEqual(archived_round_2.unusable_vials_in, 11)
 
     # Also tests that round without vaccine in scope will not be archived
@@ -456,9 +454,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round)
         self.assertEqual(archived_round.vaccine_stock, self.vaccine_stock_chad_nopv)
-        self.assertEqual(archived_round.usable_doses_in, 500)
+        self.assertEqual(archived_round.usable_doses_in, 600)
         self.assertEqual(archived_round.unusable_doses_in, 550)
-        self.assertEqual(archived_round.usable_vials_in, 10)
+        self.assertEqual(archived_round.usable_vials_in, 12)
         self.assertEqual(archived_round.unusable_vials_in, 11)
 
         # Launch second task with another date
@@ -534,9 +532,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round_1)
         self.assertEqual(archived_round_1.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_round_1.usable_doses_in, 840)
+        self.assertEqual(archived_round_1.usable_doses_in, 880)
         self.assertEqual(archived_round_1.unusable_doses_in, 220)
-        self.assertEqual(archived_round_1.usable_vials_in, 42)
+        self.assertEqual(archived_round_1.usable_vials_in, 44)
         self.assertEqual(archived_round_1.unusable_vials_in, 11)
 
         archived_round_2 = pm.VaccineStockHistory.objects.filter(
@@ -544,9 +542,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round_2)
         self.assertEqual(archived_round_2.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_round_2.usable_doses_in, 840)
+        self.assertEqual(archived_round_2.usable_doses_in, 880)
         self.assertEqual(archived_round_2.unusable_doses_in, 220)
-        self.assertEqual(archived_round_2.usable_vials_in, 42)
+        self.assertEqual(archived_round_2.usable_vials_in, 44)
         self.assertEqual(archived_round_2.unusable_vials_in, 11)
 
         archived_round_3 = pm.VaccineStockHistory.objects.filter(
@@ -554,9 +552,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_round_3)
         self.assertEqual(archived_round_3.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_round_3.usable_doses_in, 840)
+        self.assertEqual(archived_round_3.usable_doses_in, 880)
         self.assertEqual(archived_round_3.unusable_doses_in, 220)
-        self.assertEqual(archived_round_3.usable_vials_in, 42)
+        self.assertEqual(archived_round_3.usable_vials_in, 44)
         self.assertEqual(archived_round_3.unusable_vials_in, 11)
 
         # Check with chad that archives are created for each vaccine
@@ -580,9 +578,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_chad_round_1)
         self.assertEqual(archived_chad_round_1.vaccine_stock, self.vaccine_stock_chad_nopv)
-        self.assertEqual(archived_chad_round_1.usable_doses_in, 1000)
+        self.assertEqual(archived_chad_round_1.usable_doses_in, 1100)
         self.assertEqual(archived_chad_round_1.unusable_doses_in, 550)
-        self.assertEqual(archived_chad_round_1.usable_vials_in, 20)
+        self.assertEqual(archived_chad_round_1.usable_vials_in, 22)
         self.assertEqual(archived_chad_round_1.unusable_vials_in, 11)
 
         archived_chad_round_2 = pm.VaccineStockHistory.objects.filter(
@@ -614,9 +612,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_drc_round_1)
         self.assertEqual(archived_drc_round_1.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_drc_round_1.usable_doses_in, 840)
+        self.assertEqual(archived_drc_round_1.usable_doses_in, 880)
         self.assertEqual(archived_drc_round_1.unusable_doses_in, 220)
-        self.assertEqual(archived_drc_round_1.usable_vials_in, 42)
+        self.assertEqual(archived_drc_round_1.usable_vials_in, 44)
         self.assertEqual(archived_drc_round_1.unusable_vials_in, 11)
 
         archived_drc_round_2 = pm.VaccineStockHistory.objects.filter(
@@ -624,9 +622,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_drc_round_2)
         self.assertEqual(archived_drc_round_2.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_drc_round_2.usable_doses_in, 840)
+        self.assertEqual(archived_drc_round_2.usable_doses_in, 880)
         self.assertEqual(archived_drc_round_2.unusable_doses_in, 220)
-        self.assertEqual(archived_drc_round_2.usable_vials_in, 42)
+        self.assertEqual(archived_drc_round_2.usable_vials_in, 44)
         self.assertEqual(archived_drc_round_2.unusable_vials_in, 11)
 
         archived_drc_round_3 = pm.VaccineStockHistory.objects.filter(
@@ -634,9 +632,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_drc_round_3)
         self.assertEqual(archived_drc_round_3.vaccine_stock, self.vaccine_stock_rdc_mopv)
-        self.assertEqual(archived_drc_round_3.usable_doses_in, 840)
+        self.assertEqual(archived_drc_round_3.usable_doses_in, 880)
         self.assertEqual(archived_drc_round_3.unusable_doses_in, 220)
-        self.assertEqual(archived_drc_round_3.usable_vials_in, 42)
+        self.assertEqual(archived_drc_round_3.usable_vials_in, 44)
         self.assertEqual(archived_drc_round_3.unusable_vials_in, 11)
 
         archived_chad_round_1 = pm.VaccineStockHistory.objects.filter(
@@ -644,9 +642,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         ).first()
         self.assertIsNotNone(archived_chad_round_1)
         self.assertEqual(archived_chad_round_1.vaccine_stock, self.vaccine_stock_chad_nopv)
-        self.assertEqual(archived_chad_round_1.usable_doses_in, 1000)
+        self.assertEqual(archived_chad_round_1.usable_doses_in, 1100)
         self.assertEqual(archived_chad_round_1.unusable_doses_in, 550)
-        self.assertEqual(archived_chad_round_1.usable_vials_in, 20)
+        self.assertEqual(archived_chad_round_1.usable_vials_in, 22)
         self.assertEqual(archived_chad_round_1.unusable_vials_in, 11)
 
         archived_chad_round_2 = pm.VaccineStockHistory.objects.filter(

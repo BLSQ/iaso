@@ -1,12 +1,13 @@
 import operator
 import typing
+
 from functools import reduce
 
 from django.contrib.auth.models import User
 from django.db import models, transaction
 from django_ltree.fields import PathField  # type: ignore
 
-from iaso.models import Project, Form, OrgUnit
+from iaso.models import Form, OrgUnit, Project
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
@@ -25,7 +26,7 @@ class TeamQuerySet(models.QuerySet):
         elif isinstance(teams, (list,)):
             query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in teams])
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
         return self.filter(query)
 

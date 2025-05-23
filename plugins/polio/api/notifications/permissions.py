@@ -1,6 +1,5 @@
 from rest_framework import permissions
 
-
 from hat.menupermissions import models as iaso_permission
 
 

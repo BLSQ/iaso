@@ -14,7 +14,7 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     },
     entities: {
         id: 'iaso.permissions.group.entities',
-        defaultMessage: 'Beneficiaries:',
+        defaultMessage: 'Entities:',
     },
     payments: {
         id: 'iaso.permissions.group.payments',
@@ -47,6 +47,14 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     admin: {
         id: 'iaso.permissions.group.admin',
         defaultMessage: 'Admin:',
+    },
+    data_validation: {
+        id: 'iaso.permissions.group.data_validation',
+        defaultMessage: 'Validation',
+    },
+    registry: {
+        id: 'iaso.permissions.group.registry',
+        defaultMessage: 'Registry:',
     },
 });
 

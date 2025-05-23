@@ -1,5 +1,4 @@
-import { last } from 'lodash';
-import React, { ElementType, ReactElement, useContext, useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import { Route, Routes } from 'react-router';
 
 import {
@@ -9,50 +8,20 @@ import {
 } from '../../../constants/routes';
 
 import { baseUrls } from '../../../constants/urls';
+import {
+    useHomeOnlineComponent,
+    useHomeOfflineComponent,
+    usePluginsRouteConfigs,
+} from '../../../plugins/hooks/routes';
 import { useRedirections } from '../../../routing/hooks/useRedirections';
 import { RouteCustom } from '../../../routing/types';
-import { PluginsContext } from '../../../utils';
-import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
-import { HomeOnline } from '../../home/HomeOnline';
 import ProtectedRoute from '../../users/components/ProtectedRoute';
-import { useGetCurrentUser } from '../../users/hooks/useGetCurrentUser';
-import { Plugins } from '../types';
 
 type Result = {
     routes: ReactElement | null;
     nonDashboardRoutes: ReactElement | null;
-    isLoadingRoutes: boolean;
     isCurrentRouteAnonymous: boolean;
-};
-
-const useHomeOnlineComponent = (): ElementType | undefined => {
-    const { plugins }: Plugins = useContext(PluginsContext);
-    const currentUser = useCurrentUser();
-    const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
-    const PluginHome = last(
-        plugins
-            .filter(plugin => plugin.homeOnline)
-            .map(plugin => plugin.homeOnline),
-    );
-    // using the last plugin override (arbitrary choice)
-    return useMemo(
-        () => (canShowHome ? PluginHome || HomeOnline : undefined),
-        [PluginHome, canShowHome],
-    );
-};
-export const useHomeOfflineComponent = (): ElementType | undefined => {
-    const { plugins }: Plugins = useContext(PluginsContext);
-    // using the last plugin override (arbitrary choice)
-    return useMemo(
-        () =>
-            last(
-                plugins
-                    .filter(plugin => plugin.homeOffline)
-                    .map(plugin => plugin.homeOffline),
-            ),
-        [plugins],
-    );
 };
 
 const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
@@ -85,21 +54,6 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
             element: <HomeComponent />,
         },
     ];
-};
-
-const usePluginsRouteConfigs = (): {
-    pluginRoutes: RouteCustom[];
-    pluginRedirections: any[];
-} => {
-    const { plugins }: Plugins = useContext(PluginsContext);
-    const pluginRoutes = plugins.map(plugin => plugin.routes).flat();
-    const pluginRedirections = plugins
-        .map(plugin => plugin.redirections)
-        .flat();
-    return useMemo(
-        () => ({ pluginRoutes, pluginRedirections }),
-        [pluginRedirections, pluginRoutes],
-    );
 };
 
 const useGetProtectedRoutes = (
@@ -137,7 +91,9 @@ const useGetProtectedRoutes = (
     }, [hasNoAccount, routes]);
 };
 
-const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
+export const useCurrentRoute = (
+    routes: RouteCustom[],
+): RouteCustom | undefined => {
     return useMemo(() => {
         return routes.find(route => {
             return (
@@ -153,7 +109,7 @@ type UseGetRouteConfigsArgs = {
     userHomePage?: string;
     pluginRoutes: RouteCustom[];
 };
-const useGetRoutesConfigs = ({
+export const useGetRoutesConfigs = ({
     userHomePage,
     pluginRoutes,
 }: UseGetRouteConfigsArgs): RouteCustom[] => {
@@ -181,60 +137,46 @@ export const useRoutes = (userHomePage?: string): Result => {
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);
 
-    const { isFetching: isFetchingCurrentUser } = useGetCurrentUser(
-        !currentRoute?.allowAnonymous ||
-            currentRoute?.baseUrl === baseUrls.home,
-        false,
-    );
     const isCurrentRouteAnonymous = Boolean(currentRoute?.allowAnonymous);
     const redirections = useRedirections({
         hasNoAccount,
-        isFetchingCurrentUser,
         pluginRedirections,
         userHomePage,
         allowAnonymous: isCurrentRouteAnonymous,
     });
     // routes should protectedRoutes change if currentUser has changed
     const routes: ReactElement | null = useMemo(
-        () =>
-            isFetchingCurrentUser ? null : (
-                <Routes>
-                    {[
-                        ...protectedRoutes.filter(
-                            route => route.props.useDashboard !== false,
-                        ),
-                        ...redirections,
-                    ]}
-                </Routes>
-            ),
-        [isFetchingCurrentUser, protectedRoutes, redirections],
+        () => (
+            <Routes>
+                {[
+                    ...protectedRoutes.filter(
+                        route => route.props.useDashboard !== false,
+                    ),
+                    ...redirections,
+                ]}
+            </Routes>
+        ),
+        [protectedRoutes, redirections],
     );
     const nonDashboardRoutes: ReactElement | null = useMemo(
-        () =>
-            isFetchingCurrentUser ? null : (
-                <Routes>
-                    {[
-                        ...protectedRoutes.filter(
-                            route => !route.props.useDashboard,
-                        ),
-                        ...redirections,
-                    ]}
-                </Routes>
-            ),
-        [isFetchingCurrentUser, protectedRoutes, redirections],
+        () => (
+            <Routes>
+                {[
+                    ...protectedRoutes.filter(
+                        route => !route.props.useDashboard,
+                    ),
+                    ...redirections,
+                ]}
+            </Routes>
+        ),
+        [protectedRoutes, redirections],
     );
     return useMemo(
         () => ({
             routes,
             nonDashboardRoutes,
-            isLoadingRoutes: isFetchingCurrentUser,
             isCurrentRouteAnonymous,
         }),
-        [
-            routes,
-            isFetchingCurrentUser,
-            nonDashboardRoutes,
-            isCurrentRouteAnonymous,
-        ],
+        [routes, nonDashboardRoutes, isCurrentRouteAnonymous],
     );
 };

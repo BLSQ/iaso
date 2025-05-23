@@ -1,7 +1,14 @@
-import uuid
-from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
+import uuid
+
+from datetime import datetime
+
+from names_generator import generate_name
+from submissions import (
+    org_unit_gps_point,
+    submission2xml,
+    submission_org_unit_gps_point,
+)
 
 
 def setup_health_facility_level_default_form(account_name, iaso_client):
@@ -44,9 +51,10 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]})[
-        "orgunits"
-    ]
+    orgunits = iaso_client.get(
+        "/api/orgunits/",
+        params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]},
+    )["orgunits"]
     print("-- Submitting %d submissions" % limit)
 
     for orgunit in orgunits:
@@ -64,7 +72,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 "orgUnitId": orgunit["id"],
                 "formId": sample_form_id,
                 "accuracy": 0,
-                "imgUrl": "imgUrl",
+                "imgUrl": "photo_fosa",
                 "file": local_path,
                 "name": file_name,
             }
@@ -86,9 +94,16 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                             "start": "2022-09-07T17:54:55.805+02:00",
                             "end": "2022-09-07T17:55:31.192+02:00",
                             "geo_group": {
-                                "responsable_fosa": random.choice(["Respo 1", "Respo 2", "Respo 3"]),
+                                "responsable_fosa": generate_name(style="capital"),
                                 "statut_fosa": random.choice(
-                                    ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
+                                    [
+                                        "public",
+                                        "prive_confessionel",
+                                        "prive_laic",
+                                        "militaire",
+                                        "ong",
+                                        "autre",
+                                    ]
                                 ),
                                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                             },
@@ -121,4 +136,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 )
             },
         )
-    print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")
+    print(
+        iaso_client.get("/api/instances", params={"limit": 1})["count"],
+        "instances created",
+    )

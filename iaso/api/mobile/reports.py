@@ -1,6 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, permissions
-from rest_framework import serializers
+from rest_framework import filters, permissions, serializers
 
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Report

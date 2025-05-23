@@ -1,6 +1,6 @@
 from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class ModuleAPITestCase(APITestCase):
@@ -67,4 +67,4 @@ class ModuleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
 
-        self.assertEqual(len(r["results"]), 1)
+        self.assertEqual(len(r["results"]), 2)

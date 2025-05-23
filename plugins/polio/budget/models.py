@@ -1,23 +1,24 @@
-from functools import reduce
 import logging
+
+from functools import reduce
 from typing import Union
 
 from django.conf import settings
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
-from django.template import Engine, TemplateSyntaxError, Context
+from django.template import Context, Engine, TemplateSyntaxError
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
+from plugins.polio.budget.workflow import Category, Node, Transition, Workflow, can_user_transition, next_transitions
+from plugins.polio.models import PAYMENT, Campaign
 from plugins.polio.time_cache import time_cache
-from plugins.polio.models import Campaign, PAYMENT
 
 
 class BudgetStepQuerySet(models.QuerySet):

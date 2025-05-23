@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,13 +14,6 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
@@ -53,6 +53,7 @@ type Props = {
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
+    canBypassProjectRestrictions: boolean;
 };
 
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
@@ -64,6 +65,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     saveProfile,
     allowSendEmailInvitation = false,
     closeDialog,
+    canBypassProjectRestrictions,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -265,6 +267,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             initialData={initialData}
                             currentUser={user}
                             allowSendEmailInvitation={allowSendEmailInvitation}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
                         />
                     </div>
                     {tab === 'permissions' && (

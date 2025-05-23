@@ -402,7 +402,7 @@ const useRoundShape = () => {
             .min(0, formatMessage(MESSAGES.positiveRangeInteger))
             .max(100, formatMessage(MESSAGES.positiveRangeInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        is_test: yup.boolean().nullable(),
+        on_hold: yup.boolean().nullable(),
     });
 };
 
@@ -519,6 +519,7 @@ export const useFormValidator = () => {
         gpei_coordinator: yup.string().nullable(),
         is_preventive: yup.bool(),
         is_test: yup.bool(),
+        on_hold: yup.bool(),
         rounds: yup.array(round_shape).nullable(),
     };
     return {

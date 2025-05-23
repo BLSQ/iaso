@@ -1,5 +1,7 @@
 import csv
-from random import randint, random
+
+from random import randint
+
 
 reader = csv.DictReader(open("./data/persons.csv"))
 persons = [line for line in reader]

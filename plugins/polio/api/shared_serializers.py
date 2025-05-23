@@ -1,15 +1,15 @@
-from django.utils.translation import gettext as _
-from plugins.polio.api.rounds.reasons_for_delay import (
-    ReasonForDelayFieldSerializer,
-    ReasonForDelayForCampaignSerializer,
-)
 from rest_framework import serializers
 from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
 from iaso.models import Group
+from plugins.polio.api.rounds.reasons_for_delay import (
+    ReasonForDelayFieldSerializer,
+    ReasonForDelayForCampaignSerializer,
+)
 from plugins.polio.models import RoundDateHistoryEntry
 from plugins.polio.preparedness.spreadsheet_manager import *
+
 
 logger = getLogger(__name__)
 

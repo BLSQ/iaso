@@ -1,4 +1,4 @@
-from os.path import dirname, abspath
+from os.path import abspath, dirname
 
 
 # Enable/Disable the loading of the python test then when plugin is not enabled
@@ -10,8 +10,8 @@ from os.path import dirname, abspath
 def load_tests(loader, _, pattern):
     # not sure why but we must do the import other there is some strange scope issue.
     # eg it import the apps from the Polio directory since django 3.2 if we do it globally.
-    from django.conf import settings
     from django.apps import apps
+    from django.conf import settings
 
     if apps.is_installed("plugins.polio"):
         # doc say passing top_level_dir is not required, but it os necessary if you pass the module name directly to

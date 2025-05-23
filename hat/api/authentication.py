@@ -19,5 +19,4 @@ class UserAccessPermission(permissions.BasePermission):
             access_granted = True
         if access_granted:
             return user and user.is_authenticated
-        else:
-            return False
+        return False

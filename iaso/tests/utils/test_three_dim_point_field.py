@@ -1,7 +1,6 @@
-from django.test import TestCase
-
-from rest_framework.exceptions import ValidationError
 from django.contrib.gis.geos import GEOSGeometry
+from django.test import TestCase
+from rest_framework.exceptions import ValidationError
 
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
@@ -42,7 +41,7 @@ class ThreeDimPointFieldTestCase(TestCase):
 
     def test_to_representation(self):
         field = ThreeDimPointField()
-        data = GEOSGeometry(f"POINT(6.166667 49.133333 10)", srid=4326)
+        data = GEOSGeometry("POINT(6.166667 49.133333 10)", srid=4326)
         value = field.to_representation(data)
         self.assertEqual(value, {"latitude": 49.133333, "longitude": 6.166667, "altitude": 10.0})
 

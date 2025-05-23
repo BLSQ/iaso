@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { LqasImData } from '../../../../constants/types';
+import { LqasImData, LqasImDebugData } from '../../types';
 
 export const makeDebugData = (
     data: LqasImData | undefined,
-    campaign: string,
-): Record<string, { hasScope: boolean; districtsNotFound: string[] }> => {
+    campaign?: string,
+): LqasImDebugData => {
     if (!data?.stats || !campaign || !data.stats[campaign]) return {};
     return {
         [campaign]: {
@@ -16,7 +16,7 @@ export const makeDebugData = (
 
 export const useDebugData = (
     data: LqasImData | undefined,
-    campaign: string,
+    campaign?: string,
 ): Record<string, { hasScope: boolean; districtsNotFound: string[] }> => {
     return useMemo(() => makeDebugData(data, campaign), [data, campaign]);
 };

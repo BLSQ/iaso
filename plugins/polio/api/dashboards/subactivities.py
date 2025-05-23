@@ -1,8 +1,9 @@
+from rest_framework import permissions, serializers
+
 from iaso.api.common import EtlModelViewset
 from iaso.api.serializers import OrgUnitSerializer
 from plugins.polio.models import OrgUnit
 from plugins.polio.models.base import SubActivity, SubActivityScope
-from rest_framework import permissions, serializers
 
 
 class SubActivityDashboardSerializer(serializers.ModelSerializer):

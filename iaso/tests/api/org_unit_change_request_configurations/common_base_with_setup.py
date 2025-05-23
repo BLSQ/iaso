@@ -1,5 +1,5 @@
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class OUCRCAPIBase(APITestCase):
@@ -90,18 +90,42 @@ class OUCRCAPIBase(APITestCase):
         cls.oucrc_type_fire = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=cls.ou_type_fire_pokemons,
             project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            created_by=cls.user_ash_ketchum,
+            editable_fields=["name", "aliases", "location", "opening_date", "closing_date"],
+        )
+        cls.oucrc_type_fire_creation = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=cls.ou_type_fire_pokemons,
+            project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.CREATION,
             created_by=cls.user_ash_ketchum,
             editable_fields=["name", "aliases", "location", "opening_date", "closing_date"],
         )
         cls.oucrc_type_water = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=cls.ou_type_water_pokemons,
             project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            created_by=cls.user_misty,
+            org_units_editable=False,
+        )
+        cls.oucrc_type_water_creation = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=cls.ou_type_water_pokemons,
+            project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.CREATION,
             created_by=cls.user_misty,
             org_units_editable=False,
         )
         cls.oucrc_type_rock = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=cls.ou_type_rock_pokemons,
             project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.EDITION,
+            created_by=cls.user_brock,
+            editable_fields=["name", "aliases", "location"],
+        )
+        cls.oucrc_type_rock_creation = m.OrgUnitChangeRequestConfiguration.objects.create(
+            org_unit_type=cls.ou_type_rock_pokemons,
+            project=cls.project_johto,
+            type=m.OrgUnitChangeRequestConfiguration.Type.CREATION,
             created_by=cls.user_brock,
             editable_fields=["name", "aliases", "location"],
         )

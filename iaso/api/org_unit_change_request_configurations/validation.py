@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.models import OrgUnitType, GroupSet, Form, Group
+from iaso.models import Form, Group, GroupSet, OrgUnitType
 
 
 def validate_org_unit_types(user, org_unit_types):

@@ -1,3 +1,6 @@
+from django.contrib.auth.models import Permission
+
+from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -105,7 +108,7 @@ class DataSourcesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 201)
 
-    def test_datasource_put_with_read_but_no_write_perms(self):
+    def test_datasource_post_with_read_but_no_write_perms(self):
         """Can not create the data source with no write permission"""
 
         self.client.force_authenticate(self.john)
@@ -170,6 +173,73 @@ class DataSourcesAPITestCase(APITestCase):
         response = self.client.get(f"/api/datasources/{source_id}/")
         self.assertJSONResponse(response, 200)
 
+    def test_datasource_update(self):
+        self.client.force_authenticate(self.joe)
+        data = {
+            "id": self.data_source.id,
+            "name": "New Name",
+            "read_only": False,
+            "credentials": None,
+            "description": "Lorem ipsum dolor sit amet",
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+
+        self.data_source.refresh_from_db()
+        self.assertEqual(self.data_source.name, data["name"])
+        self.assertEqual(self.data_source.read_only, data["read_only"])
+        self.assertEqual(self.data_source.description, data["description"])
+
+    def test_datasource_update_default_version(self):
+        self.client.force_authenticate(self.joe)
+
+        self.assertIsNone(self.data_source.default_version)
+        new_default_version_id = self.data_source.versions.first().pk
+
+        data = {
+            "id": self.data_source.id,
+            "name": self.data_source.name,
+            "read_only": False,
+            "credentials": None,
+            "description": self.data_source.description,
+            "created_at": None,
+            "updated_at": None,
+            "default_version": None,
+            "tree_config_status_fields": self.data_source.tree_config_status_fields,
+            "projects": None,
+            "versions": None,
+            "url": None,
+            # Non serializer fields… they should have been part of the serializer.
+            "default_version_id": new_default_version_id,
+            "project_ids": None,
+        }
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(
+            ["User doesn't have the permission to change the default version of a data source."], json_response
+        )
+
+        perm = Permission.objects.get(codename=permission._SOURCES_CAN_CHANGE_DEFAULT_VERSION)
+        self.joe.user_permissions.add(perm)
+        del self.joe._perm_cache
+        del self.joe._user_perm_cache
+        self.assertTrue(self.joe.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION))
+
+        response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+
+        self.data_source.refresh_from_db()
+        self.assertEqual(self.data_source.default_version_id, new_default_version_id)
+
     def test_datasource_filters(self):
         self.client.force_authenticate(self.joe)
 
@@ -185,3 +255,21 @@ class DataSourcesAPITestCase(APITestCase):
         data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(data["sources"]), 1)
         self.assertEqual(data["sources"][0]["id"], self.data_source.pk)
+
+    def test_dropdown_datasource(self):
+        self.client.force_authenticate(self.joe)
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(data), 2)
+        self.assertEqual(data[0]["id"], self.data_source.pk)
+        self.assertEqual(data[0]["name"], self.data_source.name)
+        self.assertEqual(data[0]["projects"], [self.project.pk])
+
+    def test_dropdown_datasource_without_user_authentication(self):
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        self.assertJSONResponse(response, 401)
+
+    def test_dropdown_datasource_with_user_without_permission(self):
+        self.client.force_authenticate(self.jim)
+        response = self.client.get("/api/datasources/dropdown/?order=name")
+        self.assertJSONResponse(response, 403)

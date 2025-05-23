@@ -1,12 +1,10 @@
-from datetime import date
+from hat.menupermissions import models as permission
 from iaso.models.base import Account
-from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.models import SpreadSheetImport
-from hat.menupermissions import models as permission
 
 
-class SupplyChainDashboardsAPITestCase(APITestCase):
+class PreparednessDashboardsAPITestCase(APITestCase):
     @classmethod
     def setUp(cls):
         cls.url = "/api/polio/dashboards/preparedness_sheets/"

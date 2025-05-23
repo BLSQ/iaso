@@ -4,9 +4,9 @@ from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 
 from iaso.models.base import Account
+from iaso.models.json_config import Config
 from iaso.test import APITestCase
 
-from iaso.models.json_config import Config
 
 content = {"beurk": "lol"}
 

@@ -24,13 +24,15 @@ import time
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
-from .command_logger import CommandLogger
+from iaso.models import DataSource, OrgUnit, OrgUnitType, SourceVersion
+
 from ...tasks.dhis2_ou_importer import (
-    get_api_config,
     get_api,
+    get_api_config,
     import_orgunits_and_groups,
 )
+from .command_logger import CommandLogger
+
 
 # as geometry/coordinates might be big, increase the field size to its max
 csv.field_size_limit(sys.maxsize)
@@ -130,10 +132,9 @@ class Command(BaseCommand):
                         % version_count
                     )
                     return
-                else:
-                    deleted = OrgUnit.objects.filter(version=version).delete()
-                    iaso_logger.warn(deleted)
-                    iaso_logger.warn(("%d org units records deleted" % version_count).upper())
+                deleted = OrgUnit.objects.filter(version=version).delete()
+                iaso_logger.warning(deleted)
+                iaso_logger.warning(("%d org units records deleted" % version_count).upper())
 
             type_dict = {}
             if org_unit_type_csv_file:

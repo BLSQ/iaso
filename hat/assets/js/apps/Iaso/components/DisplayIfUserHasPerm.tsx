@@ -1,4 +1,5 @@
-import { FunctionComponent, ReactElement } from 'react';
+/* eslint-disable react/jsx-no-useless-fragment */
+import React, { FunctionComponent, ReactElement } from 'react';
 import {
     userHasAllPermissions,
     userHasOneOfPermissions,
@@ -7,7 +8,7 @@ import { useCurrentUser } from '../utils/usersUtils';
 
 type Props = {
     permissions: string[];
-    children: false | ReactElement;
+    children: false | ReactElement | ReactElement[];
     strict?: boolean;
 };
 
@@ -19,10 +20,12 @@ export const DisplayIfUserHasPerm: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     if (strict) {
         if (userHasAllPermissions(permissions, currentUser) && children) {
-            return children;
+            // Use fragment to avoid TS error when children is an array
+            return <>{children}</>;
         }
     } else if (userHasOneOfPermissions(permissions, currentUser) && children) {
-        return children;
+        // Use fragment to avoid TS error when children is an array
+        return <>{children}</>;
     }
 
     return null;

@@ -40,6 +40,13 @@ class PyramidBaseTest(TestCase):
             name="Group C", source_ref="group-c", source_version=cls.source_version_to_compare_with
         )
 
+        # GroupSet in the pyramid to update.
+
+        cls.groupset_a = m.GroupSet.objects.create(
+            name="GroupSet A", source_ref="groupset-a", source_version=cls.source_version_to_update
+        )
+        cls.groupset_a.groups.set([cls.group_a1, cls.group_b])
+
         cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
 
         # Angola pyramid to update.

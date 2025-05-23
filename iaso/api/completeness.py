@@ -1,12 +1,13 @@
-from iaso.models.org_unit import OrgUnit
-from iaso.utils.expressions import ArraySubquery
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
 import iaso.periods as periods
-from iaso.models import Instance, MappingVersion
-from .common import HasPermission
+
 from hat.menupermissions import models as permission
+from iaso.models import Instance, MappingVersion
+from iaso.models.org_unit import OrgUnit
+
+from .common import HasPermission
 
 
 class CompletenessViewSet(viewsets.ViewSet):

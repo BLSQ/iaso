@@ -186,7 +186,25 @@
                 ],
                 "react/prop-types": "off",
                 "react/require-default-props": "off",
-                "valid-typeof": "warn"
+                "valid-typeof": "warn",
+                "import/order": [
+                    "error",
+                    {
+                        "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+                        "pathGroups": [
+                            {
+                                "pattern": "react",
+                                "group": "external",
+                                "position": "before"
+                            }
+                        ],
+                        "pathGroupsExcludedImportTypes": ["react"],
+                        "alphabetize": {
+                            "order": "asc",
+                            "caseInsensitive": true
+                        }
+                    }
+                ]
             }
         }
     ],
@@ -308,7 +326,25 @@
             }
         ],
         "react/prop-types": "warn",
-        "valid-typeof": "warn"
+        "valid-typeof": "warn",
+        "import/order": [
+            "error",
+            {
+                "groups": ["builtin", "external", "internal", "parent", "sibling", "index"],
+                "pathGroups": [
+                    {
+                        "pattern": "react",
+                        "group": "external",
+                        "position": "before"
+                    }
+                ],
+                "pathGroupsExcludedImportTypes": ["react"],
+                "alphabetize": {
+                    "order": "asc",
+                    "caseInsensitive": true
+                }
+            }
+        ]
     },
     "settings": {
         "import/resolver": {

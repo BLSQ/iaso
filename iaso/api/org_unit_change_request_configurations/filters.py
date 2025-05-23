@@ -1,4 +1,5 @@
 import django_filters
+
 from django.utils.translation import gettext_lazy as _
 
 from iaso.api.common import parse_comma_separated_numeric_values
@@ -14,8 +15,9 @@ class OrgUnitChangeRequestConfigurationListFilter(django_filters.rest_framework.
 
     class Meta:
         model = OrgUnitChangeRequestConfiguration
-        fields = []
+        fields = ["type"]
 
-    def filter_created_by(self, queryset, name, value):
+    @staticmethod
+    def filter_created_by(queryset, name, value):
         user_ids = parse_comma_separated_numeric_values(value, name)
         return queryset.filter(created_by_id__in=user_ids)

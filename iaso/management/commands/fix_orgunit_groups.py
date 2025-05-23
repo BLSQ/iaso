@@ -6,7 +6,7 @@
 from django.core.management.base import BaseCommand
 from django.db import connection
 
-from iaso.models import OrgUnit, Group
+from iaso.models import Group, OrgUnit
 
 
 class Command(BaseCommand):

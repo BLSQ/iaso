@@ -1,9 +1,9 @@
 import json
 
-from hat.menupermissions import models as permission
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
+
 
 data_store_content1 = json.dumps({"hello": "world"})
 data_store_content2 = json.dumps({"wait": "what"})

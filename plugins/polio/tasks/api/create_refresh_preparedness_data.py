@@ -1,12 +1,11 @@
-from plugins.polio.models import Campaign
-from plugins.polio.tasks.refresh_preparedness_data import refresh_data
-
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
+from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
-from hat.menupermissions import models as permission
+from plugins.polio.models import Campaign
+from plugins.polio.tasks.refresh_preparedness_data import refresh_data
 
 
 class RefreshPreparednessLaucherSerializer(serializers.Serializer):

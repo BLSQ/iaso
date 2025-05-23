@@ -1,10 +1,10 @@
+import React from 'react';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
 import { DialogContentText } from '@mui/material';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import omit from 'lodash/omit';
-import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { baseUrls } from '../../../constants/urls.ts';
@@ -19,7 +19,7 @@ import {
     useCurrentUser,
 } from '../../../utils/usersUtils.ts';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import { userHasPermission } from '../../users/utils';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import MESSAGES from '../messages';
 // eslint-disable-next-line camelcase
@@ -41,18 +41,6 @@ const initialFormState = (
         reference_instance_id: referenceSubmissionId,
         reference_instance_action: referenceSubmissionAction,
     };
-};
-
-const getUrlOrgUnit = data => {
-    const rowOriginal = data.row.original;
-    // each instance should have a formId
-    let initialUrl = `/${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
-    // there are some instances which don't have a reference form Id
-    if (rowOriginal.is_reference_instance) {
-        initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
-    }
-    // each instance has an id
-    return `${initialUrl}/instanceId/${rowOriginal.id}`;
 };
 
 const getUrlInstance = data => {
@@ -119,14 +107,6 @@ const ActionTableColumnComponent = ({ settings }) => {
         !settings.row.original.is_reference_instance &&
         userHasPermission(Permission.ORG_UNITS, user);
 
-    const showOrgUnitButton =
-        settings.row.original.org_unit &&
-        userHasOneOfPermissions(
-            [Permission.ORG_UNITS, Permission.ORG_UNITS_READ],
-            user,
-        ) &&
-        userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
-
     const confirmCancelTitleMessage = isItLinked => {
         return !isItLinked
             ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
@@ -158,13 +138,7 @@ const ActionTableColumnComponent = ({ settings }) => {
                 icon="remove-red-eye"
                 tooltipMessage={MESSAGES.view}
             />
-            {showOrgUnitButton && (
-                <IconButtonComponent
-                    url={getUrlOrgUnit(settings)}
-                    icon="orgUnit"
-                    tooltipMessage={MESSAGES.viewOrgUnit}
-                />
-            )}
+
             {showLinkOrgUnitInstanceReferenceButton && (
                 <ConfirmCancelDialogComponent
                     titleMessage={confirmCancelTitleMessage(notLinked)}

@@ -1,14 +1,17 @@
-from copy import deepcopy
 import uuid
+
+from copy import deepcopy
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
-from iaso.models import WorkflowVersion, EntityType, WorkflowChange, WorkflowFollowup
-from iaso.models.workflow import WorkflowVersionsStatus
+from iaso.models import WorkflowVersion
 
 
 def validate_version_id(version_id, user):
+    from iaso.models import EntityType, WorkflowVersion
+    from iaso.models.workflow import WorkflowVersionsStatus
+
     wfv = get_object_or_404(WorkflowVersion, pk=version_id)
     et = get_object_or_404(EntityType, pk=wfv.workflow.entity_type_id)
     if wfv.status != WorkflowVersionsStatus.DRAFT:
@@ -21,13 +24,20 @@ def validate_version_id(version_id, user):
 
 
 def make_deep_copy_with_relations(orig_version):
+    from iaso.models import WorkflowChange, WorkflowFollowup
+    from iaso.models.workflow import WorkflowVersionsStatus
+
     orig_changes = WorkflowChange.objects.filter(workflow_version=orig_version)
     orig_follow_ups = WorkflowFollowup.objects.filter(workflow_version=orig_version)
 
     new_version = deepcopy(orig_version)
     new_version.id = None
     new_version.uuid = uuid.uuid4()
-    new_version.name = "Copy of " + orig_version.name
+    new_name_prefix = "Copy of "
+    if len(new_name_prefix + orig_version.name) > WorkflowVersion.NAME_MAX_LENGTH:
+        new_version.name = f"Copy of version {orig_version.id}"
+    else:
+        new_version.name = new_name_prefix + orig_version.name
     new_version.status = WorkflowVersionsStatus.DRAFT
     new_version.save()
 

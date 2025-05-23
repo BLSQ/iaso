@@ -22,6 +22,7 @@ const splitAndMapToNumbers = (str?: string) => {
 type ApiValues = {
     org_units_editable: boolean;
     project_id?: number;
+    type?: string;
     org_unit_type_id?: number;
     editable_fields?: string[];
     possible_type_ids?: number[];
@@ -41,6 +42,7 @@ const mapValuesForSaving = (
     // These two fields can't be updated so they are only set for creation
     if (!configId) {
         apiValues.project_id = values.projectId;
+        apiValues.type = values.type;
         apiValues.org_unit_type_id = values.orgUnitTypeId;
     }
 

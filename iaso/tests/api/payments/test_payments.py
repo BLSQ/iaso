@@ -1,8 +1,7 @@
+from hat.audit import models as am
+from iaso import models as m
 from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
-from iaso import models as m
-from hat.audit import models as am
-from django.utils.translation import override
 
 
 class PaymentViewSetAPITestCase(APITestCase):
@@ -45,7 +44,7 @@ class PaymentViewSetAPITestCase(APITestCase):
 
     def test_list(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/")
+        response = self.client.get("/api/payments/")
         r = self.assertJSONResponse(response, 200)
         results = r["results"]
         result = results[0]
@@ -84,7 +83,7 @@ class PaymentViewSetAPITestCase(APITestCase):
 
     def test_dropdown_options(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/options/")
+        response = self.client.get("/api/payments/options/")
         r = self.assertJSONResponse(response, 200)
         for item in r:
             if item["value"] == PaymentStatuses.PENDING:

@@ -1,0 +1,19 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+  <h1>Convert {{ user.username }} to a multi-account user</h1>
+  {% if user.iaso_profile and user.iaso_profile.account %}
+    <p>This user already has access to account: <strong>{{user.iaso_profile.account}}</strong>
+  {% endif %}
+  <p>Please select the accounts to which this user should additionally have access.</p>
+
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="hidden" name="action" value="edit_multi_account_user">
+    <input type="hidden" name="apply" value="true">
+    <input type="submit" value="Apply">
+  </form>
+  <p>
+    <strong>Warning: permissions on new accounts should be set in the user management in the dashboard.</strong>
+  </p>
+{% endblock %}

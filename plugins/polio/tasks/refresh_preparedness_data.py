@@ -1,12 +1,14 @@
 import logging
+
 from datetime import datetime, timedelta
 
 from django.utils.timezone import now
 
 from beanstalk_worker import task_decorator
-from plugins.polio.models import Campaign, Round, SpreadSheetImport
+from plugins.polio.models import Round, SpreadSheetImport
 from plugins.polio.preparedness import warning_email
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
+
 
 logger = logging.getLogger(__name__)
 

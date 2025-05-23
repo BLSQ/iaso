@@ -1,10 +1,9 @@
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils.encoding import smart_str
 from django.utils.translation import gettext_lazy as _
-from rest_framework import serializers, mixins, permissions
-from rest_framework.exceptions import ValidationError, PermissionDenied
+from rest_framework import mixins, permissions, serializers
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.relations import RelatedField
 from rest_framework.viewsets import GenericViewSet

@@ -2,8 +2,9 @@ import logging
 
 from django.db import migrations
 
-from plugins.polio.budget.models import get_workflow
 import plugins
+
+from plugins.polio.budget.models import get_workflow
 
 
 def budgetstep_fill_from_to_nodes(apps, schema_editor):
@@ -13,7 +14,7 @@ def budgetstep_fill_from_to_nodes(apps, schema_editor):
         return
     steps_to_fix = BudgetStep.objects.filter(node_key_to__isnull=True, node_key_from__isnull=True)
     logging.info(f"Migration: {steps_to_fix.count()} steps without nodes info")
-    step: "plugins.polio.budget.models.BudgetStep"
+    step: plugins.polio.budget.models.BudgetStep
     for step in steps_to_fix:
         transition = workflow.transitions_dict.get(step.transition_key)
         if transition:

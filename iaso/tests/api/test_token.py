@@ -1,5 +1,6 @@
-import jwt
 from unittest import mock
+
+import jwt
 
 from django.contrib.auth.models import User
 from django.core.files import File
@@ -23,7 +24,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
     def test_acquire_token_and_authenticate(self):
         """Test that token authentication is possible."""
         response = self.client.post(
-            f"/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
+            "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -33,7 +34,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
         with self.settings(DISABLE_PASSWORD_LOGINS=True):
             self.reload_urls(urlconfs)
             response = self.client.post(
-                f"/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
+                "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
             )
             self.assertEqual(response.status_code, 404)
         self.reload_urls(urlconfs)
@@ -84,7 +85,7 @@ class TokenAPITestCase(APITestCase):
         cls.project.save()
 
     def authenticate_using_token(self):
-        response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
+        response = self.client.post("/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
@@ -110,7 +111,7 @@ class TokenAPITestCase(APITestCase):
         self.assertTrue(self.form_2.id in form_ids)
 
     def test_incorrect_username_or_password(self):
-        response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "incorrect"}, format="json")
+        response = self.client.post("/api/token/", data={"username": "yoda", "password": "incorrect"}, format="json")
         self.assertJSONResponse(response, 401)
         self.assertEqual(
             response.json()["detail"],
@@ -188,7 +189,7 @@ class TokenAPITestCase(APITestCase):
         # Unauthenticated case is already tested in test_api
         response_data = self.authenticate_using_token()
         refresh_token = response_data.get("refresh")
-        response = self.client.post(f"/api/token/refresh/", data={"refresh": refresh_token}, format="json")
+        response = self.client.post("/api/token/refresh/", data={"refresh": refresh_token}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
@@ -204,14 +205,14 @@ class TokenAPITestCase(APITestCase):
         """Test invalid authentication tokens"""
         # Unauthenticated case is already tested in test_api
 
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  ")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer  ")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
         self.assertJSONResponse(response, 401)
 
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  WRONG")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer  WRONG")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
@@ -307,7 +308,7 @@ class TokenAPITestCase(APITestCase):
         login = {"username": "main_user", "password": "MainPass1"}
 
         # Login with main user and app_id for Account A
-        response = self.client.post(f"/api/token/?app_id=account.a", data=login, format="json")
+        response = self.client.post("/api/token/?app_id=account.a", data=login, format="json")
         self.assertJSONResponse(response, 200)
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
@@ -315,7 +316,7 @@ class TokenAPITestCase(APITestCase):
         self.assertEqual(payload["user_id"], account_user_a.id)
 
         # Login with main user and app_id for Account B
-        response = self.client.post(f"/api/token/?app_id=account.b", data=login, format="json")
+        response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
         self.assertJSONResponse(response, 200)
         access_token = response.json().get("access")
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
@@ -341,17 +342,44 @@ class TokenAPITestCase(APITestCase):
         login = {"username": "main_user", "password": "MainPass1"}
 
         # Login with main user and app_id for Account B
-        response = self.client.post(f"/api/token/?app_id=account.b", data=login, format="json")
+        response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
         self.assertJSONResponse(response, 401)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "No active account found with the given credentials.",
         )
 
         # Login with main user and non-existent app_id
-        response = self.client.post(f"/api/token/?app_id=account.c", data=login, format="json")
-        self.assertJSONResponse(response, 401)
+        response = self.client.post("/api/token/?app_id=account.c", data=login, format="json")
+        self.assertJSONResponse(response, 404)
         self.assertEqual(
             response.json()["detail"],
-            "No active account found with the given credentials",
+            "Unknown project.",
         )
+
+    def test_user_with_project_restrictions(self):
+        user = self.yoda
+        authorized_project = self.project
+        unauthorized_project = m.Project.objects.create(
+            name="Unauthorized project",
+            app_id="unauthorized.project",
+            account=self.default_account,
+            needs_authentication=True,
+        )
+        login = {"username": user.username, "password": "IMomLove"}
+
+        # Without project restrictions.
+        self.assertEqual(0, user.iaso_profile.projects.count())
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        # With project restrictions.
+        user.iaso_profile.projects.set([authorized_project])
+        self.assertEqual(1, user.iaso_profile.projects.count())
+
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"], "You don't have access to this project.")

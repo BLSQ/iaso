@@ -1,16 +1,17 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
     IconButton as IconButtonBlsq,
     useGoBack,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { SxStyles } from '../../../types/general';
 import { ApproveOrgUnitChangesButtons } from './Components/ReviewOrgUnitChangesButtons';
 import { ReviewOrgUnitChangesTitle } from './Components/ReviewOrgUnitChangesTitle';
+import { CHANGE_REQUEST_STATUS, ORG_UNIT_CREATION } from './constants';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { useSaveChangeRequest } from './hooks/api/useSaveChangeRequest';
 import { useNewFields } from './hooks/useNewFields';
@@ -54,17 +55,18 @@ export const ReviewOrgUnitChangesDetail: FunctionComponent = () => {
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
         useGetApprovalProposal(Number(params.changeRequestId));
     const isNew: boolean =
-        !isFetchingChangeRequest && changeRequest?.status === 'new';
+        !isFetchingChangeRequest &&
+        changeRequest?.status === CHANGE_REQUEST_STATUS.NEW;
     const isNewOrgUnit = changeRequest
-        ? changeRequest.org_unit.validation_status === 'NEW'
+        ? changeRequest.kind === ORG_UNIT_CREATION
         : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
     const goBack = useGoBack(baseUrls.orgUnitsChangeRequest);
     const titleMessage = useMemo(() => {
-        if (changeRequest?.status === 'rejected') {
+        if (changeRequest?.status === CHANGE_REQUEST_STATUS.REJECTED) {
             return formatMessage(MESSAGES.seeRejectedChanges);
         }
-        if (changeRequest?.status === 'approved') {
+        if (changeRequest?.status === CHANGE_REQUEST_STATUS.APPROVED) {
             return formatMessage(MESSAGES.seeApprovedChanges);
         }
         if (isNewOrgUnit) {

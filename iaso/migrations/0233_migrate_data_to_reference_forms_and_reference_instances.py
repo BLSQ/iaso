@@ -3,7 +3,6 @@
 Migrate data between fields.
 """
 
-
 from django.db import migrations
 
 

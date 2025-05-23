@@ -1,3 +1,6 @@
+import React, { ReactElement, useMemo } from 'react';
+
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
     Column,
     IconButton as IconButtonComponent,
@@ -6,9 +9,6 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
-
-import FileCopyIcon from '@mui/icons-material/FileCopy';
 import _ from 'lodash';
 import moment from 'moment';
 import {
@@ -16,17 +16,16 @@ import {
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-
-import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
 import getDisplayName from '../../utils/usersUtils';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { formatLabel } from '../instances/utils';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { filterOrgUnitsByGroupUrl } from '../orgUnits/utils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
+import MESSAGES from './messages';
 import { ExtraColumn } from './types/fields';
 
 export const baseUrl = baseUrls.entities;
@@ -212,7 +211,7 @@ export const useColumnsFromFieldsList = (
     );
 };
 
-export const useBeneficiariesDetailsColumns = (
+export const useEntitiesDetailsColumns = (
     entityId: number | null,
     fields: Array<string> = [],
 ): Column[] => {

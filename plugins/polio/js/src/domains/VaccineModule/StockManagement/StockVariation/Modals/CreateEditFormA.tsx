@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -7,7 +8,6 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
@@ -54,7 +54,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
             // unusable_vials: formA?.unusable_vials,
-            missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
             document: formA?.document,
             comment: formA?.comment ?? null,
@@ -136,14 +135,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     component={DateInput}
                     required
                 />
-                <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.forma_vials_missing)}
-                        name="missing_vials"
-                        component={NumberInput}
-                        required
-                    />
-                </Box>
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_used)}

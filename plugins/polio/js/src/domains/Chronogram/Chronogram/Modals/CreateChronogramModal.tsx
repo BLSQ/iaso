@@ -1,6 +1,5 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
-import { Field, FormikProvider, useFormik } from 'formik';
 
 import {
     AddButton,
@@ -9,14 +8,15 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik } from 'formik';
 
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
-import MESSAGES from '../messages';
 import { DropdownOptions } from '../../types';
-import { useAvailableRoundsForCreate } from '../api/useGetChronogramAvailableRounds';
 import { useCreateChronogram } from '../api/useCreateChronogram';
+import { useAvailableRoundsForCreate } from '../api/useGetChronogramAvailableRounds';
 import { useCreateChronogramSchema } from '../hooks/validation';
+import MESSAGES from '../messages';
 
 type Props = {
     isOpen: boolean;
@@ -64,9 +64,18 @@ const CreateChronogramModal: FunctionComponent<Props> = ({
     >([]);
     useEffect(() => {
         const rounds = dropdownsData?.rounds || [];
-        const filtered = rounds.filter(
-            i => String(i.campaign_id) === String(formik.values.campaign),
-        );
+        const filtered = rounds
+            .filter(
+                i =>
+                    String(i.campaign_id) === String(formik.values.campaign) &&
+                    !i.on_hold,
+            )
+            .map(r => {
+                return {
+                    label: `${formatMessage(MESSAGES.round)} ${r.label}`,
+                    value: r.value,
+                };
+            });
         formik.setFieldValue('round', undefined);
         setRoundsOptions(filtered);
         // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -1,3 +1,10 @@
+import React, {
+    ComponentType,
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { NavigateBefore, NavigateNext } from '@mui/icons-material';
 import {
     Box,
@@ -8,15 +15,11 @@ import {
     IconButton,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import React, {
-    ComponentType,
-    FunctionComponent,
-    useCallback,
-    useState,
-} from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
+import { fileScanResultInfected } from '../../../constants/fileScanResults';
 import { SxStyles } from '../../../types/general';
-import PdfSvgComponent from '../../svg/PdfSvgComponent';
+import { FileScanHeader } from './FileScanHeader';
+import { FileScanStatusOpenButton } from './FileScanStatusOpenButton';
 import MESSAGES from './messages';
 
 // Set the workerSrc for pdfjs to enable the use of Web Workers.
@@ -35,6 +38,9 @@ type PdfPreviewProps = {
         disabled: boolean;
     }>;
     buttonProps?: Record<string, unknown>;
+    scanResult?: string | undefined;
+    scanTimestamp?: number | undefined;
+    coloredScanResultIcon?: boolean;
 };
 
 const styles: SxStyles = {
@@ -72,23 +78,13 @@ const styles: SxStyles = {
     },
 };
 
-const DefaultOpenButton: FunctionComponent<{
-    onClick: () => void;
-    disabled: boolean;
-}> = ({ onClick, disabled }) => (
-    <IconButton
-        onClick={onClick}
-        aria-label="preview document"
-        disabled={disabled}
-    >
-        <PdfSvgComponent />
-    </IconButton>
-);
-
 export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     pdfUrl,
     OpenButtonComponent,
     buttonProps,
+    scanResult,
+    scanTimestamp,
+    coloredScanResultIcon,
 }) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
@@ -96,7 +92,6 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
 
     const { formatMessage } = useSafeIntl();
     const handleOpen = () => {
-        console.log('handleOpen');
         setOpen(true);
     };
 
@@ -104,8 +99,11 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
         setOpen(false);
     };
 
+    const isFileSafeToDisplayAndDownload =
+        !scanResult || scanResult !== fileScanResultInfected;
+
     const handleDownload = useCallback(() => {
-        if (pdfUrl) {
+        if (pdfUrl && isFileSafeToDisplayAndDownload) {
             const link = document.createElement('a');
             link.href = pdfUrl;
             const urlParts = pdfUrl.split('/');
@@ -113,7 +111,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
             link.download = fileName;
             link.click();
         }
-    }, [pdfUrl]);
+    }, [isFileSafeToDisplayAndDownload, pdfUrl]);
 
     const onDocumentLoadSuccess = ({
         numPages: nextNumPages,
@@ -131,13 +129,15 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
         });
     };
 
-    const OpenButton = OpenButtonComponent || DefaultOpenButton;
+    const OpenButton = OpenButtonComponent || FileScanStatusOpenButton;
 
     return (
         <>
             <OpenButton
                 onClick={handleOpen}
                 disabled={!pdfUrl}
+                coloredIcon={coloredScanResultIcon}
+                scanResult={scanResult}
                 {...buttonProps}
             />
             {open && (
@@ -148,46 +148,58 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                     onClose={handleClose}
                 >
                     <DialogContent sx={styles.dialogContent}>
-                        <Box sx={styles.documentContainer}>
-                            <Document
-                                file={pdfUrl}
-                                onLoadSuccess={onDocumentLoadSuccess}
-                                loading={<LoadingSpinner fixed={false} />}
-                            >
-                                <Page
-                                    pageNumber={pageNumber}
-                                    width={880}
-                                    renderTextLayer={false}
-                                    renderAnnotationLayer={false}
-                                />
-                            </Document>
-                        </Box>
+                        <FileScanHeader
+                            scanResult={scanResult}
+                            scanTimestamp={scanTimestamp}
+                        />
+                        {isFileSafeToDisplayAndDownload && (
+                            <Box sx={styles.documentContainer}>
+                                <Document
+                                    file={pdfUrl}
+                                    onLoadSuccess={onDocumentLoadSuccess}
+                                    loading={<LoadingSpinner fixed={false} />}
+                                >
+                                    <Page
+                                        pageNumber={pageNumber}
+                                        width={880}
+                                        renderTextLayer={false}
+                                        renderAnnotationLayer={false}
+                                    />
+                                </Document>
+                            </Box>
+                        )}
                     </DialogContent>
                     <DialogActions sx={styles.dialogActions}>
-                        <Box sx={styles.pageControls}>
-                            <IconButton
-                                onClick={() => changePage(-1)}
-                                disabled={pageNumber <= 1}
-                                size="small"
-                            >
-                                <NavigateBefore />
-                            </IconButton>
-                            <Box>
-                                {formatMessage(MESSAGES.pageInfo, {
-                                    current: pageNumber,
-                                    total: numPages || 0,
-                                })}
+                        {isFileSafeToDisplayAndDownload && (
+                            <Box sx={styles.pageControls}>
+                                <IconButton
+                                    onClick={() => changePage(-1)}
+                                    disabled={pageNumber <= 1}
+                                    size="small"
+                                >
+                                    <NavigateBefore />
+                                </IconButton>
+                                <Box>
+                                    {formatMessage(MESSAGES.pageInfo, {
+                                        current: pageNumber,
+                                        total: numPages || 0,
+                                    })}
+                                </Box>
+                                <IconButton
+                                    onClick={() => changePage(1)}
+                                    disabled={pageNumber >= (numPages || 1)}
+                                    size="small"
+                                >
+                                    <NavigateNext />
+                                </IconButton>
                             </Box>
-                            <IconButton
-                                onClick={() => changePage(1)}
-                                disabled={pageNumber >= (numPages || 1)}
-                                size="small"
-                            >
-                                <NavigateNext />
-                            </IconButton>
-                        </Box>
+                        )}
                         <Box sx={styles.dialogActionsButtons}>
-                            <Button onClick={handleDownload} color="primary">
+                            <Button
+                                onClick={handleDownload}
+                                color="primary"
+                                disabled={!isFileSafeToDisplayAndDownload}
+                            >
                                 {formatMessage(MESSAGES.download)}
                             </Button>
                             <Button onClick={handleClose} color="primary">

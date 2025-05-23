@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { DatePicker, useSafeIntl } from 'bluesquare-components';
-import { baseUrls } from '../../../../constants/urls';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import MESSAGES from '../messages';
-import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-import { useGetCountriesOptions } from '../hooks/api/vrf';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { baseUrls } from '../../../../constants/urls';
 import { singleVaccinesList } from '../constants';
+import { useGetCountriesOptions } from '../hooks/api/vrf';
+import MESSAGES from '../messages';
 
 type Props = { params: any };
 
@@ -21,7 +21,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
         useFilterState({ baseUrl: baseUrls.vaccineSupplyChain, params });
     const { data: countries, isFetching } = useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True' });
+        useGetGroupDropdown({ blockOfCountries: 'true' });
     return (
         <Grid container spacing={2}>
             <Grid item xs={6} md={3} lg={3}>

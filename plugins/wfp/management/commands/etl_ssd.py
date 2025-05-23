@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand
+
 from plugins.wfp.tasks import etl_ssd
 
 

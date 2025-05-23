@@ -2,6 +2,7 @@
 
 import django.contrib.postgres.fields
 import django.contrib.postgres.fields.citext
+
 from django.db import migrations
 
 

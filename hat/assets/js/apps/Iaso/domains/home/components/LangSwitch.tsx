@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
-import React, { FunctionComponent, useCallback } from 'react';
 import { useHasNoAccount } from '../../../utils/usersUtils';
-import { APP_LOCALES } from '../../app/constants';
+import { useAppLocales } from '../../app/constants';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';
 
@@ -13,9 +13,7 @@ const useStyles = makeStyles(theme => ({
         textTransform: 'uppercase',
         cursor: 'pointer',
         padding: theme.spacing(0, 0.5),
-    },
-    languageSwitchActive: {
-        color: theme.palette.primary.main,
+        color: '#ffffff',
     },
     languageSwitchButton: {
         backgroundColor: theme.palette.success.main,
@@ -25,9 +23,17 @@ const useStyles = makeStyles(theme => ({
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
     },
+    languageSwithActive: {
+        color: 'rgba(255, 255, 255, 0.5)',
+        cursor: 'text',
+    },
 }));
 
-export const LangSwitch: FunctionComponent = () => {
+type Props = {
+    topBar?: boolean;
+};
+
+export const LangSwitch: FunctionComponent<Props> = () => {
     const classes: Record<string, string> = useStyles();
     const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
@@ -44,23 +50,26 @@ export const LangSwitch: FunctionComponent = () => {
         },
         [hasNoAccount, setLocale, saveCurrentUser],
     );
+    const appLocales = useAppLocales();
     return (
         <>
-            {APP_LOCALES.map((locale, index) => (
-                <Box key={locale.code}>
-                    <Box
-                        className={classNames(
-                            classes.languageSwitch,
-                            locale.code === activeLocale &&
-                                classes.languageSwitchActive,
-                        )}
-                        onClick={() => handleClick(locale.code)}
-                    >
-                        {locale.code}
+            {appLocales.map((locale, index) => {
+                return (
+                    <Box key={locale.code}>
+                        <Box
+                            className={classNames(classes.languageSwitch, {
+                                [classes.languageSwithActive]:
+                                    locale.code === activeLocale,
+                            })}
+                            onClick={() => handleClick(locale.code)}
+                        >
+                            {locale.code}
+                        </Box>
+
+                        {index + 1 !== appLocales.length && '-'}
                     </Box>
-                    {index + 1 !== APP_LOCALES.length && '-'}
-                </Box>
-            ))}
+                );
+            })}
         </>
     );
 };
@@ -80,9 +89,10 @@ export const OffLineLangSwitch: FunctionComponent = () => {
         },
         [setLocale],
     );
+    const appLocales = useAppLocales();
     return (
         <>
-            {APP_LOCALES.map((locale, index) => {
+            {appLocales.map((locale, index) => {
                 return (
                     <Box key={locale.code} ml={index === 1 ? 2 : undefined}>
                         <Button

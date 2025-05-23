@@ -4,7 +4,6 @@ from django.template import Context
 
 from iaso import models as m
 from iaso.test import TestCase
-
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Node
 from plugins.polio.models import Campaign, Round

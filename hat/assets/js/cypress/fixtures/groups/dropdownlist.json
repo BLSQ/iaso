@@ -1,18 +1,22 @@
 [
     {
         "id": 1,
-        "name": "GROUP TEST 1"
+        "name": "GROUP TEST 1",
+        "label": "GROUP TEST 1 (datsource - version)"
     },
     {
         "id": 2,
-        "name": "GROUP TEST 2"
+        "name": "GROUP TEST 2",
+        "label": "GROUP TEST 2 (datsource - version)"
     },
     {
         "id": 3,
-        "name": "GORONS"
+        "name": "GORONS",
+        "label": "GORONS (datsource - version)"
     },
     {
         "id": 4,
-        "name": "GERUDO"
+        "name": "GERUDO",
+        "label": "GERUDO (datsource - version)"
     }
 ]

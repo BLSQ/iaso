@@ -315,7 +315,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
         self.client.force_authenticate(self.geo_limited_user)
-        response = self.client.get(f"/api/payments/lots/")
+        response = self.client.get("/api/payments/lots/")
         self.assertJSONResponse(response, 200)
         data = response.json()
         results = data["results"]

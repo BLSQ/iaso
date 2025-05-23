@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
+
 from iaso.models import Account
-from iaso.models.base import Instance, Mapping, InstanceFile
+from iaso.models.base import Instance, InstanceFile, Mapping
 from iaso.models.forms import Form
 
 

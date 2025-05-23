@@ -2,9 +2,10 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import patch
 
+from django.utils.timezone import now
+
 from iaso import models as m
 from iaso.test import APITestCase
-from django.utils.timezone import now
 
 
 class MetadataLastUpdatesTestCase(APITestCase):
@@ -103,14 +104,14 @@ class MetadataLastUpdatesTestCase(APITestCase):
     def test_last_updates_with_wrong_app_id(self):
         """GET /api/mobile/metadata/lastupdates/?app_id=WRONG: returns 404 for invalid app id"""
 
-        response = self.client.get(f"/api/mobile/metadata/lastupdates/?app_id=WRONG")
+        response = self.client.get("/api/mobile/metadata/lastupdates/?app_id=WRONG")
         self.assertJSONResponse(response, 404)
 
     def test_last_updates_with_auth_but_no_app_id(self):
         """GET /api/mobile/metadata/lastupdates/: authenticated but returns 400 for missing app id"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/mobile/metadata/lastupdates/")
+        response = self.client.get("/api/mobile/metadata/lastupdates/")
         self.assertJSONResponse(response, 400)
 
     def test_last_updates_with_auth_and_app_id(self):

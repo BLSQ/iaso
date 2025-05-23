@@ -2,6 +2,7 @@ import jsonschema
 
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
+
 BASE_API = "/api/mobile/workflows/"
 
 
@@ -68,4 +69,4 @@ class WorkflowsMobileAPITestCase(BaseWorkflowsAPITestCase):
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
 
-        assert len(response.data["workflows"]) == 2
+        self.assertEqual(len(response.data["workflows"]), 2)

@@ -12,7 +12,7 @@ export type Project = {
     name: string;
 };
 
-export type OrgUnitType = {
+export type OrgUnitTypeDropdownOption = {
     id: number;
     name: string;
 };
@@ -27,9 +27,10 @@ export type Form = {
     name: string;
 };
 
-export type Group = {
+export type GroupDropdownOption = {
     id: number;
     name: string;
+    label?: string;
 };
 
 export type NestedUser = Partial<User>;
@@ -38,7 +39,7 @@ export type OrgUnitChangeRequestConfigListElement = {
     id: number;
     project: Project;
     Type: string;
-    org_unit_type: OrgUnitType;
+    org_unit_type: OrgUnitTypeDropdownOption;
     org_units_editable: boolean;
     editable_fields: Array<string>;
     created_by: NestedUser;
@@ -51,14 +52,14 @@ export type OrgUnitChangeRequestConfigurationFull = {
     id: number;
     project: Project;
     type: string;
-    org_unit_type: OrgUnitType;
+    org_unit_type: OrgUnitTypeDropdownOption;
     org_units_editable?: boolean;
     editable_fields?: string[];
-    possible_types?: Array<OrgUnitType>;
-    possible_parent_types?: Array<OrgUnitType>;
+    possible_types?: Array<OrgUnitTypeDropdownOption>;
+    possible_parent_types?: Array<OrgUnitTypeDropdownOption>;
     group_sets?: Array<GroupSet>;
     editable_reference_forms?: Array<Form>;
-    other_groups?: Array<Group>;
+    other_groups?: Array<GroupDropdownOption>;
 };
 
 export type OrgUnitChangeRequestConfigurationForm = {
@@ -78,7 +79,7 @@ export type OrgUnitChangeRequestConfiguration = {
     id?: number;
     project: Project;
     type: string;
-    orgUnitType: OrgUnitType;
+    orgUnitType: OrgUnitTypeDropdownOption;
 };
 
 export interface OrgUnitChangeRequestConfigsPaginated extends Pagination {

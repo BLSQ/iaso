@@ -593,6 +593,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noOptions',
         defaultMessage: 'No result found',
     },
+    fetchLinksError: {
+        id: 'iaso.snackBar.fetchLinksError',
+        defaultMessage: 'An error occurred while fetching links list',
+    },
 });
 
 export default MESSAGES;

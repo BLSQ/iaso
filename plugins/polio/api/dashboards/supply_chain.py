@@ -5,7 +5,7 @@ from rest_framework import serializers
 
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet
-from plugins.polio.api.vaccines.permissions import VaccineStockManagementPermission
+from plugins.polio.api.vaccines.permissions import VaccineStockPermission
 from plugins.polio.models import (
     DestructionReport,
     OutgoingStockMovement,
@@ -145,9 +145,10 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     model = VaccineRequestForm
@@ -178,9 +179,10 @@ class PreAlertDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     model = VaccinePreAlert
@@ -205,9 +207,10 @@ class VaccineArrivalReportDashboardViewSet(ModelViewSet):
 
     http_method_names = ["get"]
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     model = VaccinePreAlert

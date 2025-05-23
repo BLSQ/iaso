@@ -7,7 +7,7 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/[1,2]/tab/infos`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/1,2/tab/infos`;
 
 const newSourceIndex = 2;
 

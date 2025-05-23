@@ -2,7 +2,7 @@ import React from 'react';
 import { Typography, Box } from '@mui/material';
 import { BAR_HEIGHT } from './constants';
 
-export const determineColor = (data, palette, treshold) => {
+export const determineColor = (data, palette, treshold): string => {
     const valueAsFloat = parseFloat(data.value);
     if (valueAsFloat >= treshold.ok) return palette.ok;
     if (valueAsFloat >= treshold.warning) return palette.warning;

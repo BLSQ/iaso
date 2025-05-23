@@ -76,7 +76,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user_with_perm)
 
-        with self.assertNumQueries(23):
+        with self.assertNumQueries(17):
             response = self.client.get("/api/potential_payments/")
             self.assertJSONResponse(response, 200)
 

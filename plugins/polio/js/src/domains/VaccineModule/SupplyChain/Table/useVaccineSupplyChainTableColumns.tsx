@@ -26,6 +26,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteVrf } = useDeleteVrf();
     const currentUser = useCurrentUser();
+    console.log('this is a dummy branch');
     return useMemo(() => {
         const columns: Column[] = [
             {

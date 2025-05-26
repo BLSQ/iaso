@@ -196,3 +196,6 @@ plugins/trypelim
 plugins/snt_malaria
 
 plugins/snt-malaria
+.direnv
+CACHEDIR.TAG
+iaso_3_9_18

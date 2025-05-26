@@ -14,6 +14,7 @@ import {
     SortableTable,
     useHumanReadableJsonLogic,
     useGoBack,
+    ColumnWithAccessor,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { Box, Grid, Button } from '@mui/material';
@@ -65,7 +66,9 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.workflowDetail) as WorkflowParams;
+    const params = useParamsObject(
+        baseUrls.workflowDetail,
+    ) as unknown as WorkflowParams;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
@@ -219,7 +222,7 @@ export const Details: FunctionComponent = () => {
                                             items={followUps}
                                             onChange={handleSortChange}
                                             columns={
-                                                followUpsColumns as Column[]
+                                                followUpsColumns as ColumnWithAccessor[]
                                             }
                                         />
                                     )}

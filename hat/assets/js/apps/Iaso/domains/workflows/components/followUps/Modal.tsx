@@ -12,9 +12,10 @@ import {
     QueryBuilder,
     QueryBuilderFields,
     AddButton,
+    JsonLogicEditor,
 } from 'bluesquare-components';
 
-import { Grid, Box, useTheme } from '@mui/material';
+import { Grid, Box, useTheme, Tab, Tabs } from '@mui/material';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
@@ -52,6 +53,10 @@ const FollowUpsModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
+    const [tab, setTab] = useState<string>('query');
+    const handleChangeTab = (newTab: string) => {
+        setTab(newTab);
+    };
 
     const [logic, setLogic] = useState<JSONValue | undefined>(
         followUp?.condition,
@@ -122,7 +127,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="md"
+            maxWidth="lg"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -140,13 +145,38 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                     <Popper />
                 </Box>
                 {fields && (
-                    <QueryBuilder
-                        logic={logic}
-                        fields={fields}
-                        onChange={handleChangeLogic}
-                        currentDateString="current_date"
-                        currentDateTimeString="current_datetime"
-                    />
+                    <>
+                        <Tabs
+                            value={tab}
+                            onChange={(_, newtab) => handleChangeTab(newtab)}
+                        >
+                            <Tab
+                                value="query"
+                                label={formatMessage(MESSAGES.queryTab)}
+                            />
+                            <Tab
+                                value="json"
+                                label={formatMessage(MESSAGES.jsonTab)}
+                            />
+                        </Tabs>
+                        {tab === 'query' && (
+                            <Box mt={2}>
+                                <QueryBuilder
+                                    logic={logic}
+                                    fields={fields}
+                                    onChange={handleChangeLogic}
+                                />
+                            </Box>
+                        )}
+                        {tab === 'json' && (
+                            <JsonLogicEditor
+                                initialLogic={logic}
+                                changeLogic={newLogic =>
+                                    setLogic(newLogic as JSONValue)
+                                }
+                            />
+                        )}
+                    </>
                 )}
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={8}>

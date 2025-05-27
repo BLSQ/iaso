@@ -59,13 +59,8 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
     params,
     side,
 }) => {
-    console.log('side', side);
-    console.log('params', params);
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
-    // const [filters, setFilters] = useState<LqasUrlParams>({
-    //     ...params,
-    // });
 
     const { data: countriesOptions, isFetching: isFetchingCountriesOptions } =
         useGetLqasCountriesOptions({ side, params });
@@ -78,17 +73,12 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
                 ...params,
                 [key]: value,
             };
-            if (key === `${side}Month`) {
-                // newParams[`${side}Year`] = undefined;
+            if (key === `${side}Month` || key === `${side}Year`) {
                 newParams[`${side}Country`] = undefined;
                 newParams[`${side}Campaign`] = undefined;
                 newParams[`${side}Round`] = undefined;
             }
-            if (key === `${side}Year`) {
-                newParams[`${side}Country`] = undefined;
-                newParams[`${side}Campaign`] = undefined;
-                newParams[`${side}Round`] = undefined;
-            }
+
             if (key === `${side}Country`) {
                 newParams[`${side}Campaign`] = undefined;
                 newParams[`${side}Round`] = undefined;
@@ -104,7 +94,7 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box>
+        <Box mb={2}>
             <Grid container spacing={2}>
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6}>

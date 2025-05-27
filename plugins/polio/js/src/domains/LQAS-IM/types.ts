@@ -168,3 +168,12 @@ export type LqasImRefDate = {
     date: string;
     isDefault: boolean;
 };
+
+export type LqasChartData = {
+    nfm: ChartDataEntry;
+    rfa: ChartDataEntry;
+    cg: {
+        chartKey: string;
+        round: number | undefined;
+    };
+};

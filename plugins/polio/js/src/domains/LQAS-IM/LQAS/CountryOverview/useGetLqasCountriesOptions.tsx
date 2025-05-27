@@ -35,7 +35,6 @@ export const useGetLqasCountriesOptions = ({
     params,
 }: UseGetLqasCountriesOptionsArgs) => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
-    console.log('monthYear', monthYear);
     return useSnackQuery({
         queryKey: ['lqasCountries', monthYear],
         queryFn: () => getLqasCountriesOptions(monthYear),
@@ -73,6 +72,44 @@ export const useGetLqasCampaignsOptions = ({
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
             select: data => data?.results ?? [],
+        },
+    });
+};
+const getLqasRoundOptions = (
+    monthYear?: MonthYear,
+    country?: NumberAsString,
+) => {
+    const endpoint = '/api/polio/lqasim/roundoptions';
+    return getRequest(`${endpoint}/?month=${monthYear}&country=${country}`);
+};
+
+type UseGetLqasRoundOptionsArgs = UseGetLqasCountriesOptionsArgs;
+
+export const useGetLqasRoundOptions = ({
+    side,
+    params,
+}: UseGetLqasRoundOptionsArgs) => {
+    const monthYear: MonthYear | undefined = useMonthYear({ side, params });
+    const country = params[`${side}Country`];
+    return useSnackQuery({
+        queryKey: ['lqasRounds', monthYear, country],
+        queryFn: () => getLqasRoundOptions(monthYear, country),
+        options: {
+            enabled: Boolean(monthYear) && Boolean(country),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
+            select: data => {
+                if (!data) return [];
+                //  TODO fix API response in backend
+                return data.results.map(option => ({
+                    label: option.label,
+                    value: parseInt(
+                        option.label.charAt(option.label.length - 1),
+                        10,
+                    ),
+                }));
+            },
         },
     });
 };

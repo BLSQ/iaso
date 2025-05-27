@@ -1,4 +1,6 @@
+import csv
 import importlib
+import io
 import typing
 
 from unittest import mock
@@ -11,6 +13,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -146,6 +149,12 @@ class IasoTestCaseMixin:
         )
         return org_unit
 
+    def load_fixture_with_jinja_template(self, path_to_fixtures: str, fixture_name: str, context: dict = {}) -> str:
+        # Loads a fixture with Jinja2 templating support - context contains all variables
+        env = Environment(loader=FileSystemLoader(path_to_fixtures))
+        template = env.get_template(fixture_name)
+        return template.render(context)
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
@@ -198,6 +207,29 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+        )
+        decoded_response = response.getvalue().decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
 
     def assertValidListData(
         self,

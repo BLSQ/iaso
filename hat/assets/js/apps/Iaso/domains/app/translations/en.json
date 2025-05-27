@@ -611,6 +611,7 @@
     "iaso.label.instanceStatus.readyMulti": "Ready",
     "iaso.label.instanceStatus.readySingle": "ready",
     "iaso.label.invalidDate": "Invalid date",
+    "iaso.label.isReferenceInstance": "Reference submission",
     "iaso.label.key": "Key",
     "iaso.label.label": "Label",
     "iaso.label.lastName": "Last name",

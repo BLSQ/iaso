@@ -37,8 +37,11 @@ class MobileOrgUnitsSetPagination(Paginator):
         return int(request.query_params.get(self.page_query_param, 1))
 
     def get_page_size(self, request):
+        page_size = super().get_page_size(request)
         if request.query_params.get("shapes", "false").lower() == "true":
-            return SHAPE_RESULTS_MAX  # Max limit when shapes=true
+            if page_size and page_size > SHAPE_RESULTS_MAX:
+                return SHAPE_RESULTS_MAX
+
         return super().get_page_size(request)
 
 

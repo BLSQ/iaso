@@ -15,7 +15,8 @@ import { CountryNotificationsConfig } from '../domains/Config/CountryNotificatio
 import { ReasonsForDelay } from '../domains/Config/ReasonsForDelay/ReasonsForDelay';
 import { GroupedCampaigns } from '../domains/GroupedCampaigns/GroupedCampaigns';
 import { ImStats } from '../domains/LQAS-IM/IM';
-import { Lqas } from '../domains/LQAS-IM/LQAS';
+// import { Lqas } from '../domains/LQAS-IM/LQAS';
+import { Lqas } from '../domains/LQAS-IM/LQAS/lqas';
 import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
 import { Notifications } from '../domains/Notifications';
 import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';

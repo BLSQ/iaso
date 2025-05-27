@@ -72,6 +72,8 @@ export type LqasImFilterParams = {
     rounds: string | undefined;
 };
 
+export type LqasTabValue = 'map' | 'list';
+
 // This one should probably be renamed
 export type LqasImParams = {
     type: LqasIMType;

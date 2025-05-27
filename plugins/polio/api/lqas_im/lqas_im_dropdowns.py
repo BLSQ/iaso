@@ -85,6 +85,28 @@ class LqasImCampaignOptionsFilter(django_filters.rest_framework.FilterSet):
 
     country_id = django_filters.NumberFilter(field_name="country", label="Country")
 
+    month = django_filters.CharFilter(method="filter_month")
+
+    def filter_month(self, queryset: QuerySet[OrgUnit], name: str, value: str):
+        try:
+            date_obj = datetime.strptime(value, "%m-%Y")
+            first_day = date_obj.replace(day=1)
+            last_day = date_obj.replace(day=calendar.monthrange(date_obj.year, date_obj.month)[1])
+        except:
+            raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
+
+        with_lqas_end_date = Q(lqas_ended_at__isnull=False, lqas_ended_at__gte=first_day, lqas_ended_at__lte=last_day)
+        # When no lqas end date we use round date +10
+        without_lqas_end_date = Q(
+            lqas_ended_at__isnull=True,
+            ended_at__gte=first_day - timedelta(days=10),
+            ended_at__lte=last_day - timedelta(days=10),
+        )
+
+        rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date)
+
+        return queryset.filter(rounds__in=rounds_with_lqas)
+
 
 class CampaignDropDownSerializer(serializers.ModelSerializer):
     label = serializers.CharField(source="obr_name")
@@ -92,7 +114,7 @@ class CampaignDropDownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = ["label", "value"]
+        fields = ["value", "label"]
 
 
 class LqasImCampaignOptionsViewset(ModelViewSet):
@@ -115,7 +137,7 @@ class RoundDropDownSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = ["label", "value"]
+        fields = ["value", "label"]
 
     def get_label(self, obj):
         return f"Round {obj.number}"

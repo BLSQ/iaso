@@ -299,6 +299,13 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
             read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
+    filter_backends = [
+        filters.OrderingFilter,
+    ]
+    ordering_fields = [
+        "report_date",
+        "form_a_reception_date",
+    ]
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")

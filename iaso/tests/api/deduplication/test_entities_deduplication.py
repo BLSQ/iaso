@@ -152,28 +152,88 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         create_instance_and_entity(
-            cls, "same_entity_1", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+            cls,
+            "same_entity_1",
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "same_entity_2", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+            cls,
+            "same_entity_2",
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "close_entity", {"Prenom": "same_instancX", "Nom": "iasX", "Age": 20}, form_version_id
+            cls,
+            "close_entity",
+            {
+                "Prenom": "same_instancX",
+                "Nom": "iasX",
+                "age__int__": "21",
+                "height_cm__decimal__": "143.5",
+                "weight_kgs__double__": "61.0",
+                "transfer_from_tsfp__bool__": "false",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "far_entity", {"Prenom": "Far. Ent.", "Nom": "Yeeeeeaaaahhhhhhhhhhh", "Age": 99}, form_version_id
+            cls,
+            "far_entity",
+            {
+                "Prenom": "Far. Ent.",
+                "Nom": "Yeeeeeaaaahhhhhhhhhhh",
+                "age__int__": "99",
+                "height_cm__decimal__": "180.5",
+                "weight_kgs__double__": "80.0",
+                "transfer_from_tsfp__bool__": "false",
+                "something_else": "Blablabla",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
             cls,
             "same_entity_in_other_ou",
-            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
             form_version_id,
             orgunit=cls.another_orgunit,
         )
         create_instance_and_entity(
             cls,
             "same_entity_other_entity_type",
-            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
             form_version_id,
             entity_type=cls.another_entity_type,
         )
@@ -263,7 +323,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
                 "parameters": [],
             },
@@ -286,7 +346,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(response_data["status"], "SUCCESS")
         self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
-        self.assertEqual(response_data["fields"], ["Prenom", "Nom", "Age"])
+        self.assertEqual(response_data["fields"], ["Prenom", "Nom", "age__int__"])
         self.assertEqual(response_data["algorithm"], "levenshtein")
         self.assertEqual(response_data["parameters"], {})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
@@ -319,7 +379,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
                 "parameters": [],
             },
@@ -581,7 +641,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
                 "parameters": [],
             },
@@ -620,7 +680,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
                 "parameters": [],
             },

@@ -283,6 +283,14 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 2)
 
+    def filter_by_country(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.endpoint}?country={self.rdc.id}")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["value"], self.rdc.id)
+
     def test_return_campaign_with_lqasend_date_within_month_param(self):
         self.client.force_authenticate(self.user)
 
@@ -411,6 +419,14 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
         self.assertEqual(len(results), 6)  # 2 campaigns * 3 rounds
+
+    def filter_by_campaign(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{self.endpoint}?country={self.rdc_campaign.id}")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["value"], str(self.rdc_campaign.id))
 
     def test_return_rounds_with_lqasend_date_within_month_param(self):
         self.client.force_authenticate(self.user)

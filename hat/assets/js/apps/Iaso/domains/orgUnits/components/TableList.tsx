@@ -124,6 +124,7 @@ export const TableList: FunctionComponent<Props> = ({
                     extraProps={{
                         columns,
                         data: orgUnitsData?.orgunits || [],
+                        count: orgUnitsData?.count,
                     }}
                     multiSelect
                     selection={selection}

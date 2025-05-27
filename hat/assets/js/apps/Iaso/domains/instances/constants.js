@@ -155,14 +155,16 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
-        key: 'is_reference_instance',
+        key: 'orgunitreferenceinstance',
         accessor: 'orgunitreferenceinstance',
-        id: 'orgunitreferenceinstance',
         active: true,
         tableOrder: 3,
         type: 'info',
         renderValue: data => <YesNoCell value={data.is_reference_instance} />,
-        Cell: YesNoCell,
+        Cell: settings => {
+            const data = settings.row.original;
+            return <YesNoCell value={data.is_reference_instance} />;
+        },
     },
     {
         key: 'planning',

@@ -754,8 +754,8 @@ const MESSAGES = defineMessages({
             'Use prefix “ids:” for internal submissions ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “ids: 123456 654321”',
         id: 'iaso.instances.searchParams',
     },
-    isReferenceInstance: {
-        id: 'iaso.label.isReferenceInstance',
+    orgunitreferenceinstance: {
+        id: 'iaso.label.orgunitreferenceinstance',
         defaultMessage: 'Reference submission',
     },
 });

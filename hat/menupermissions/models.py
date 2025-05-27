@@ -17,12 +17,13 @@ The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
 
-from django.conf import settings, LazySettings
+from importlib import import_module
+
+from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import PermissionDenied
-from importlib import import_module
 
 
 _ASSIGNMENTS = "iaso_assignments"

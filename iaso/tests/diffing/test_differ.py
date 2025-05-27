@@ -307,3 +307,8 @@ class DifferTestCase(PyramidBaseTest):
         for diff in diffs:
             for comparison in diff.comparisons:
                 self.assertTrue(comparison.field.startswith("group"))
+
+    def test_diff_with_group_filtering(self):
+        """
+        Test that we can filter out OrgUnits from the differ based on their Groups.
+        """

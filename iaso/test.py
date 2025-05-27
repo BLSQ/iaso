@@ -1,4 +1,6 @@
+import csv
 import importlib
+import io
 import typing
 
 from unittest import mock
@@ -205,6 +207,29 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+        )
+        decoded_response = response.getvalue().decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
 
     def assertValidListData(
         self,

@@ -1,6 +1,6 @@
 from django.db.models import Q
 
-from iaso.models import Group, GroupSet, OrgUnit
+from iaso.models import Group, OrgUnit
 
 from .comparisons import Comparison, Diff, as_field_types
 
@@ -21,7 +21,9 @@ class Differ:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def load_pyramid(self, version, validation_status=None, top_org_unit=None, org_unit_types=None):
+    def load_pyramid(
+        self, version, validation_status=None, top_org_unit=None, org_unit_types=None, org_unit_group=None
+    ):
         self.iaso_logger.info(f"loading pyramid {version.data_source} {version} {top_org_unit} {org_unit_types}")
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
@@ -40,6 +42,8 @@ class Differ:
             queryset = queryset.hierarchy(parent)
         if org_unit_types:
             queryset = queryset.filter(org_unit_type__in=org_unit_types)
+        if org_unit_group:
+            queryset = queryset.filter(groups=org_unit_group).distinct()  # distinct because groups is m2m
         return queryset
 
     def diff(
@@ -54,6 +58,8 @@ class Differ:
         top_org_unit_ref=None,
         org_unit_types=None,
         org_unit_types_ref=None,
+        org_unit_group=None,
+        org_unit_group_ref=None,
         field_names=None,
     ):
         if field_names is None:
@@ -61,29 +67,34 @@ class Differ:
         elif not isinstance(field_names, list):
             field_names = list(field_names)
         if not ignore_groups:
-            groups_with_with_groupset = []
-            for group_set in GroupSet.objects.filter(source_version=version):
-                if group_set.source_ref:
-                    field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
-                    for group in group_set.groups.all():
-                        groups_with_with_groupset.append(group.id)
-            for group in Group.objects.filter(Q(source_version=version) | Q(source_version=version_ref)).distinct(
-                "source_ref"
-            ):
-                if group.id not in groups_with_with_groupset and group.source_ref:
-                    field_names.append("group:" + group.source_ref + ":" + group.name)
+            # groups_with_with_groupset = []
+            # for group_set in GroupSet.objects.filter(source_version=version):
+            #     if group_set.source_ref:
+            #         field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
+            #         for group in group_set.groups.all():
+            #             groups_with_with_groupset.append(group.id)
+            for group in Group.objects.filter(
+                Q(Q(source_version=version) | Q(source_version=version_ref)), source_ref__isnull=False
+            ).distinct("source_ref"):
+                # if group.id not in groups_with_with_groupset and group.source_ref:
+                field_names.append("group:" + group.source_ref + ":" + group.name)
 
         self.iaso_logger.info(f"will compare the following fields {field_names}")
         field_types = as_field_types(field_names)
 
         orgunits_dhis2 = self.load_pyramid(
-            version, validation_status=validation_status, top_org_unit=top_org_unit, org_unit_types=org_unit_types
+            version,
+            validation_status=validation_status,
+            top_org_unit=top_org_unit,
+            org_unit_types=org_unit_types,
+            org_unit_group=org_unit_group,
         )
         orgunit_refs = self.load_pyramid(
             version_ref,
             validation_status=validation_status_ref,
             top_org_unit=top_org_unit_ref,
             org_unit_types=org_unit_types_ref,
+            org_unit_group=org_unit_group_ref,
         )
         self.iaso_logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
         # speed how to index_by(&:source_ref)

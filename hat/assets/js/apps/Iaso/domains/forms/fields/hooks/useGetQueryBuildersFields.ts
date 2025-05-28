@@ -68,9 +68,10 @@ export const useGetQueryBuildersFields = (
     const fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {
         const fieldCopy = { ...field };
-        const mapping = calculateMapping.find(
-            m => field.name.endsWith(m.suffix) && field.type === 'calculate',
-        );
+        const mapping =  field.type === 'calculate' ? 
+            mapping = calculateMapping.find(
+                m => field.name.endsWith(m.suffix),
+            ) : null;
         if (mapping) {
             fieldCopy.type = mapping.type as FieldType;
         }

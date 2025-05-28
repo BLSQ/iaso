@@ -3,12 +3,18 @@
 from django.db import migrations, models
 
 
+def migrate_data_forward(apps, schema_editor):
+    Project = apps.get_model("iaso", "Project")
+    Project.objects.filter(app_id="").update(app_id=None)
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("iaso", "0325_merge_0324_auto_20250514_1244_0324_project_color"),
     ]
 
     operations = [
+        migrations.RunPython(migrate_data_forward, migrations.RunPython.noop, elidable=True),
         migrations.AlterField(
             model_name="project",
             name="app_id",

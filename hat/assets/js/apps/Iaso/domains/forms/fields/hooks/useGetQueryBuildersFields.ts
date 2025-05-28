@@ -1,16 +1,17 @@
 import { QueryBuilderFields, useSafeIntl } from 'bluesquare-components';
 
+import { findDescriptorInChildren } from '../../../../utils';
 import { formatLabel } from '../../../instances/utils';
 
+import MESSAGES from '../../../workflows/messages';
 import { PossibleFieldsForForm } from '../../hooks/useGetPossibleFields';
 import { FieldType, FormDescriptor, PossibleField } from '../../types/forms';
 
-import { findDescriptorInChildren } from '../../../../utils';
 import { Field, iasoFields } from '../constants';
-import MESSAGES from '../../../workflows/messages';
 
 // existing mappings are referenced here: https://docs.openiaso.com/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html#type-indicators
-const calculateMapping = [
+
+const calculateMapping: { suffix: string; type: FieldType }[] = [
     {
         suffix: '__int__',
         type: 'integer',
@@ -68,12 +69,12 @@ export const useGetQueryBuildersFields = (
     const fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {
         const fieldCopy = { ...field };
-        const mapping =  field.type === 'calculate' ? 
-            mapping = calculateMapping.find(
-                m => field.name.endsWith(m.suffix),
-            ) : null;
+        const mapping =
+            field.type === 'calculate'
+                ? calculateMapping.find(m => field.name.endsWith(m.suffix))
+                : undefined;
         if (mapping) {
-            fieldCopy.type = mapping.type as FieldType;
+            fieldCopy.type = mapping.type;
         }
         const currentField: Field | undefined = configFields.find(
             iasoField =>
@@ -112,12 +113,12 @@ export const useGetQueryBuildersFields = (
             }
         }
     });
-    fields['current_date'] = {
+    fields.current_date = {
         label: formatMessage(MESSAGES.currentDate),
         type: 'currentDate',
         valueSources: ['value', 'field'],
     };
-    fields['current_datetime'] = {
+    fields.current_datetime = {
         label: formatMessage(MESSAGES.currentDateTime),
         type: 'currentDatetime',
         valueSources: ['value', 'field'],

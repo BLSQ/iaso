@@ -52,7 +52,7 @@ const getLqasCampaignsOptions = (
     country?: NumberAsString,
 ) => {
     const endpoint = '/api/polio/lqasim/campaignoptions';
-    return getRequest(`${endpoint}/?month=${monthYear}&country=${country}`);
+    return getRequest(`${endpoint}/?month=${monthYear}&country_id=${country}`);
 };
 
 type UseGetLqasCampaignsOptionsArgs = UseGetLqasCountriesOptionsArgs;

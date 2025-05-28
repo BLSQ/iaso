@@ -194,12 +194,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         expected_attachment_filename: str = None,
         streaming: bool = False,
     ):
-        if streaming:
-            self.assertIsInstance(response, StreamingHttpResponse)
-            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
-            self.assertIsInstance(list(response.streaming_content), list)
-        else:
-            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response["Content-Type"])
 
@@ -208,20 +202,32 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
 
+        content = response.getvalue()
+
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
+        return content
+
     def assertCsvFileResponse(
         self,
         response: typing.Any,
         expected_name: str = None,
+        streaming: bool = False,
         return_as_lists: bool = False,
         return_as_str: bool = False,
     ):
-        self.assertFileResponse(
+        content = self.assertFileResponse(
             response,
             expected_status_code=200,
             expected_content_type="text/csv",
             expected_attachment_filename=expected_name,
+            streaming=streaming,
         )
-        decoded_response = response.getvalue().decode("utf-8")
+        decoded_response = content.decode("utf-8")
 
         if return_as_lists:
             response_string = "".join(s for s in decoded_response)

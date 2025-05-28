@@ -18,5 +18,3 @@ export type AfroMapParams = {
 export type MapCategory = 'lqas' | 'imIHH' | 'imOHH' | 'imGlobal';
 
 export type RoundSelection = number | 'latest' | 'penultimate';
-
-export type Side = 'left' | 'right';

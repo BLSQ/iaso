@@ -100,7 +100,7 @@ const MESSAGES = defineMessages({
     },
     ok: {
         id: 'iaso.label.ok',
-        defaultMessage: 'Ok',
+        defaultMessage: 'OK',
     },
     cancel: {
         id: 'iaso.label.cancel',

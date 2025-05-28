@@ -7,10 +7,11 @@ import TILES from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/
 import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-import { AfroMapParams, Side } from '../types';
+import { AfroMapParams } from '../types';
 import { LqasAfroMapLegend } from './LqasAfroMapLegend';
 import { defaultViewport } from '../../../../Calendar/campaignCalendar/map/constants';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
+import { Side } from '../../../../../../src/constants/types';
 
 type Props = {
     params: AfroMapParams;

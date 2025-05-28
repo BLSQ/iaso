@@ -6,7 +6,6 @@ from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
 class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
-    __test__ = False
     endpoint: str
     endpoint = ""
 

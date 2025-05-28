@@ -1,6 +1,11 @@
 import { UseQueryResult } from 'react-query';
 import { LqasUrlParams } from '../lqas';
-import { MonthYear, NumberAsString, Side } from '../../../../constants/types';
+import {
+    MonthYear,
+    NumberAsString,
+    Side,
+    UuidAsString,
+} from '../../../../constants/types';
 import { useMemo } from 'react';
 import moment from 'moment';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
@@ -77,10 +82,12 @@ export const useGetLqasCampaignsOptions = ({
 };
 const getLqasRoundOptions = (
     monthYear?: MonthYear,
-    country?: NumberAsString,
+    campaign?: UuidAsString,
 ) => {
     const endpoint = '/api/polio/lqasim/roundoptions';
-    return getRequest(`${endpoint}/?month=${monthYear}&country=${country}`);
+    return getRequest(
+        `${endpoint}/?month=${monthYear}&campaign_id=${campaign}`,
+    );
 };
 
 type UseGetLqasRoundOptionsArgs = UseGetLqasCountriesOptionsArgs;
@@ -90,26 +97,16 @@ export const useGetLqasRoundOptions = ({
     params,
 }: UseGetLqasRoundOptionsArgs) => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
-    const country = params[`${side}Country`];
+    const campaign = params[`${side}Campaign`];
     return useSnackQuery({
-        queryKey: ['lqasRounds', monthYear, country],
-        queryFn: () => getLqasRoundOptions(monthYear, country),
+        queryKey: ['lqasRounds', monthYear, campaign],
+        queryFn: () => getLqasRoundOptions(monthYear, campaign),
         options: {
-            enabled: Boolean(monthYear) && Boolean(country),
+            enabled: Boolean(monthYear) && Boolean(campaign),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
-            select: data => {
-                if (!data) return [];
-                //  TODO fix API response in backend
-                return data.results.map(option => ({
-                    label: option.label,
-                    value: parseInt(
-                        option.label.charAt(option.label.length - 1),
-                        10,
-                    ),
-                }));
-            },
+            select: data => data?.results ?? [],
         },
     });
 };

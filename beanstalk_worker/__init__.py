@@ -58,7 +58,10 @@ def task_decorator(task_name=""):
             # enqueue the task
             task = Task()
             user = kwargs.pop("user")
-            task.account = user.iaso_profile.account
+            if user:
+                task.account = user.iaso_profile.account
+            else:
+                task.account_id = kwargs.pop("account_id")
             task.created_by = user
             task.launcher = user
             task.name = task_name

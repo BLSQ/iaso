@@ -11,7 +11,20 @@ import { Field, iasoFields } from '../constants';
 
 // existing mappings are referenced here: https://docs.openiaso.com/pages/dev/how_to/create_forms_for_entities/create_forms_for_entities.html#type-indicators
 
-const calculateMapping: { suffix: string; type: FieldType }[] = [
+type CalculateFieldSuffix =
+    | '__time__'
+    | '__date__'
+    | '__boolean__'
+    | '__bool__'
+    | '__double__'
+    | '__decimal__'
+    | '__long__'
+    | '__integer__'
+    | '__int__'
+    | '__datetime__'
+    | '__date_time__';
+
+const calculateMapping: { suffix: CalculateFieldSuffix; type: FieldType }[] = [
     {
         suffix: '__int__',
         type: 'integer',
@@ -50,11 +63,11 @@ const calculateMapping: { suffix: string; type: FieldType }[] = [
     },
     {
         suffix: '__date_time__',
-        type: 'integer',
+        type: 'dateTime',
     },
     {
         suffix: '__datetime__',
-        type: '__date_time__',
+        type: 'dateTime',
     },
 ];
 

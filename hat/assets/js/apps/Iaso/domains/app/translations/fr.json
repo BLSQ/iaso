@@ -1588,6 +1588,8 @@
     "iaso.workflows.order": "Ordre",
     "iaso.workflows.publish": "Publier",
     "iaso.workflows.publishVersion": "Publier la version",
+    "iaso.workflows.queryBuilder.currentDate": "Date actuelle - constante",
+    "iaso.workflows.queryBuilder.currentDateTime": "Date et heure actuelle - constante",
     "iaso.workflows.resetOrder": "Réinitialiser l'ordre",
     "iaso.workflows.saveOrder": "Sauver l'ordre",
     "iaso.workflows.source": "Source",

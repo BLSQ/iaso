@@ -718,6 +718,7 @@
     "iaso.label.reAssignInstance": "Assigner la soumission",
     "iaso.label.reAssignInstanceAction": "Assigner",
     "iaso.label.refresh": "Actualiser",
+    "iaso.label.orgunitreferenceinstance": "Soumission de référence",
     "iaso.label.rejected": "Refusé",
     "iaso.label.removeParameter": "Supprimer le paramètre",
     "iaso.label.renderError": "Erreur de rendu de la valeur",

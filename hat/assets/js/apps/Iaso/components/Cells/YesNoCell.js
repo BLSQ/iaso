@@ -12,9 +12,11 @@ const MESSAGES = defineMessages({
     },
 });
 
-export const YesNoCell = cellInfo =>
-    cellInfo.value === true ? (
+export const YesNoCell = cellInfo => {
+    console.log('cellInfo', cellInfo);
+    return cellInfo.value === true ? (
         <FormattedMessage {...MESSAGES.yes} />
     ) : (
         <FormattedMessage {...MESSAGES.no} />
     );
+};

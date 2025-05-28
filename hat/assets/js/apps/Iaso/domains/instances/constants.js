@@ -6,6 +6,7 @@ import {
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
+import { YesNoCell } from '../../components/Cells/YesNoCell';
 import * as Permission from '../../utils/permissions.ts';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils.ts';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
@@ -154,6 +155,18 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'orgunitreferenceinstance',
+        accessor: 'orgunitreferenceinstance',
+        active: true,
+        tableOrder: 3,
+        type: 'info',
+        renderValue: data => <YesNoCell value={data.is_reference_instance} />,
+        Cell: settings => {
+            const data = settings.row.original;
+            return <YesNoCell value={data.is_reference_instance} />;
+        },
+    },
+    {
         key: 'planning',
         type: 'info',
         renderValue: data => {
@@ -177,7 +190,7 @@ export const INSTANCE_METAS_FIELDS = [
         accessor: 'formVersion',
         active: false,
         sortable: false,
-        tableOrder: 3,
+        tableOrder: 4,
         type: 'info',
         renderValue: data => {
             return data.file_content?._version || textPlaceholder;
@@ -188,24 +201,42 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
-        key: 'source_created_at',
-        active: false,
-        render: value => displayDateFromTimestamp(value),
-        tableOrder: 7,
-        type: 'info',
-    },
-    {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
         active: true,
-        tableOrder: 4,
+        tableOrder: 5,
+        type: 'info',
+    },
+    {
+        key: 'source_created_at',
+        active: false,
+        render: value => displayDateFromTimestamp(value),
+        tableOrder: 6,
+        type: 'info',
+    },
+    {
+        key: 'org_unit',
+        accessor: 'org_unit__name',
+        render: value => {
+            if (!value) return null;
+            return <OrgUnitLabelHyperLink value={value} />;
+        },
+        active: true,
+        tableOrder: 7,
+        type: 'location',
+    },
+    {
+        key: 'period',
+        render: value => <PrettyPeriod value={value} />,
+        tableOrder: 8,
+        active: true,
         type: 'info',
     },
     {
         key: 'created_at',
         active: false,
         render: value => displayDateFromTimestamp(value),
-        tableOrder: 6,
+        tableOrder: 9,
         type: 'info',
     },
     {
@@ -213,7 +244,7 @@ export const INSTANCE_METAS_FIELDS = [
         accessor: 'created_by__username',
         translationKey: 'created_by',
         active: false,
-        tableOrder: 7,
+        tableOrder: 10,
         type: 'info',
         Cell: settings => {
             const data = settings.row.original;
@@ -232,24 +263,6 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
     {
-        key: 'org_unit',
-        accessor: 'org_unit__name',
-        render: value => {
-            if (!value) return null;
-            return <OrgUnitLabelHyperLink value={value} />;
-        },
-        active: true,
-        tableOrder: 5,
-        type: 'location',
-    },
-    {
-        key: 'period',
-        render: value => <PrettyPeriod value={value} />,
-        tableOrder: 6,
-        active: true,
-        type: 'info',
-    },
-    {
         key: 'status',
         render: value =>
             value && MESSAGES[value.toLowerCase()] ? (
@@ -258,7 +271,7 @@ export const INSTANCE_METAS_FIELDS = [
                 textPlaceholder
             ),
         active: true,
-        tableOrder: 7,
+        tableOrder: 9,
         type: 'info',
     },
     {

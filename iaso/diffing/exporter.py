@@ -86,7 +86,7 @@ class Exporter:
         if task:
             task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
         self.iaso_logger.ok("   ------ Modified groups----")
-        self.update_groups_with_groupsets(api, diffs, fields)
+        # self.update_groups_with_groupsets(api, diffs, fields)  # IA-4106 - removed groupsets from differ
         self.update_groups_without_groupsets(api, diffs, fields)
 
     def create_missings(self, api, diffs: List[Diff], task=None):
@@ -274,6 +274,7 @@ class Exporter:
             payload["parent"] = {"id": comparison.after}
 
     def update_groups_with_groupsets(self, api, diffs: List[Diff], fields):
+        # IA-4106 - this is no longer used, groupsets are no longer supported by differ
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(

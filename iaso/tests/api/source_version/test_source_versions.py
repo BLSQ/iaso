@@ -1,9 +1,11 @@
 from django.contrib.auth.models import Permission
+from rest_framework import status
 
 from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.test import APITestCase
 from iaso.tests.diffing.utils import PyramidBaseTest
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 class SourceVersionAPITestCase(APITestCase):
@@ -142,7 +144,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(version["data_source_name"], self.data_source2.name)
 
 
-class SourceVersionPyramidsAPITestCase(PyramidBaseTest, APITestCase):
+class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
     BASE_URL = "/api/sourceversions/"
     PATH_TO_FIXTURES = "iaso/tests/fixtures/pyramid_diff_csv"
     EXPECTED_FILE_NAME = "comparison.csv"
@@ -223,7 +225,9 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, APITestCase):
         }
 
         expected_csv = self.load_fixture_with_jinja_template(
-            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="diff_csv_with_group_filtering.csv", context=context_group_ids
+            path_to_fixtures=self.PATH_TO_FIXTURES,
+            fixture_name="diff_csv_with_group_filtering.csv",
+            context=context_group_ids,
         )
         self.assertEqual(expected_csv, csv_data)  # 2 lines: 1 org unit + header
 
@@ -257,5 +261,120 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, APITestCase):
         self.assertEqual(expected_csv, csv_data)  # 3 lines: 2 org units + header
         # the region is considered as a "deleted" org unit even though it's in the previous pyramid because it was filtered out by groups
 
+    def test_diff_csv_without_login(self):
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": self.group_c.id,
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": self.group_b.id,
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
+        self.assertContains(response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED)
 
-    # TODO : test export DHIS2
+    def test_diff_csv_without_perms(self):
+        self.client.force_authenticate(self.user)
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": self.group_c.id,
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": self.group_b.id,
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
+        self.assertContains(response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN)
+
+    def test_export_to_dhis2_happy_path(self):
+        # Adding missing credentials to the data source
+        credentials = m.ExternalCredentials.objects.create(
+            name="Test Credentials",
+            url="https://example.com/dhis2",
+            login="admin",
+            password="district",
+            account=self.account,
+        )
+        self.data_source.credentials = credentials
+        self.data_source.save()
+        self.data_source.refresh_from_db()
+
+        total_tasks_before = m.Task.objects.count()
+
+        self.client.force_authenticate(self.user_with_perms)
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": "",
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": "",
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # Don't know why it's not 201
+
+        total_tasks_after = m.Task.objects.count()
+        self.assertEqual(total_tasks_before + 1, total_tasks_after)  # one new task created
+
+        response_data = response.json()["task"]
+        self.assertValidTaskAndInDB(response_data, name="dhis2_ou_exporter")
+        # Not starting the task here, don't want to mess with DHIS2 mocks (see tasks folder)
+
+    def test_export_to_dhis2_missing_credentials(self):
+        total_tasks_before = m.Task.objects.count()
+        self.client.force_authenticate(self.user_with_perms)
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": "",
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": "",
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
+        self.assertContains(response, "No valid DHIS2 configured on source", status_code=status.HTTP_400_BAD_REQUEST)
+        total_tasks_after = m.Task.objects.count()
+        self.assertEqual(total_tasks_before, total_tasks_after)  # no new task created
+
+    def test_export_to_dhis2_without_login(self):
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": "",
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": "",
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
+        self.assertContains(response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED)
+
+    def test_export_to_dhis2_without_perms(self):
+        self.client.force_authenticate(self.user)
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": "",
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": "",
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
+        self.assertContains(response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN)

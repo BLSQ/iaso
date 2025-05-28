@@ -2,19 +2,15 @@ from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
-from iaso.api.source_versions_serializers import DiffSerializer
+from iaso.api.source_versions_serializers import DiffSerializer, ExportSerializer
 from iaso.test import TestCase
 
 
-# TODO: add tests for SourceVersionListSerializer
-# TODO: add tests for ExportSerializer
+# TODO: add tests for SourceVersionsDropdownSerializer
+# TODO: add tests for SourceVersionSerializer
 
 
-class DiffSerializerTestCase(TestCase):
-    """
-    Test Diff serializer.
-    """
-
+class BaseSourceVersionSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
@@ -51,6 +47,12 @@ class DiffSerializerTestCase(TestCase):
         factory = APIRequestFactory()
         self.drf_request = Request(factory.get("/i-dont-care-about-the-url/", format="json"))
         self.drf_request.user = self.user
+
+
+class DiffSerializerTestCase(BaseSourceVersionSerializerTestCase):
+    """
+    Test Diff serializer.
+    """
 
     def test_deserialize_happy_path(self):
         data = {
@@ -133,3 +135,59 @@ class DiffSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
 
     # TODO: test errors linked to other fields in DiffSerializer validation
+
+
+class ExportSerializerTestCase(BaseSourceVersionSerializerTestCase):
+    """
+    Test ExportSerializer for DHIS2 pyramid exports.
+    """
+
+    def test_happy_path(self):
+        # Adding missing credentials to the data source
+        credentials = m.ExternalCredentials.objects.create(
+            name="Test Credentials",
+            url="https://example.com/dhis2",
+            login="admin",
+            password="district",
+            account=self.account,
+        )
+        self.data_source.credentials = credentials
+        self.data_source.save()
+        self.data_source.refresh_from_db()
+
+        data = {
+            "ref_version_id": self.source_version.id,
+            "ref_status": "",
+            "ref_top_org_unit_id": None,
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": None,
+            "source_version_id": self.source_version.id,
+            "source_status": "",
+            "source_top_org_unit_id": None,
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": None,
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        serializer = ExportSerializer(data=data, context={"request": self.drf_request})
+        self.assertTrue(serializer.is_valid())
+
+    def test_error_no_credentials(self):
+        data = {
+            "ref_version_id": self.source_version.id,
+            "ref_status": "",
+            "ref_top_org_unit_id": None,
+            "ref_org_unit_type_ids": [],
+            "ref_org_unit_group_id": None,
+            "source_version_id": self.source_version.id,
+            "source_status": "",
+            "source_top_org_unit_id": None,
+            "source_org_unit_type_ids": [],
+            "source_org_unit_group_id": None,
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+        }
+        serializer = ExportSerializer(data=data, context={"request": self.drf_request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("source_version_id", serializer.errors)
+        self.assertIn("No valid DHIS2 configured on source", serializer.errors["source_version_id"][0])
+
+    # TODO: test errors linked to other fields in ExportSerializer validation

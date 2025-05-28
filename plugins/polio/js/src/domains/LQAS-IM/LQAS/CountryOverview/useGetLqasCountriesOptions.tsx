@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import moment from 'moment';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 const getLqasCountriesOptions = (monthYear?: MonthYear) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
@@ -38,7 +39,9 @@ const useMonthYear = ({
 export const useGetLqasCountriesOptions = ({
     side,
     params,
-}: UseGetLqasCountriesOptionsArgs) => {
+}: UseGetLqasCountriesOptionsArgs): UseQueryResult<
+    DropdownOptions<number>[]
+> => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
     return useSnackQuery({
         queryKey: ['lqasCountries', monthYear],
@@ -65,7 +68,9 @@ type UseGetLqasCampaignsOptionsArgs = UseGetLqasCountriesOptionsArgs;
 export const useGetLqasCampaignsOptions = ({
     side,
     params,
-}: UseGetLqasCampaignsOptionsArgs) => {
+}: UseGetLqasCampaignsOptionsArgs): UseQueryResult<
+    DropdownOptions<UuidAsString>[]
+> => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
     const country = params[`${side}Country`];
     return useSnackQuery({
@@ -95,7 +100,9 @@ type UseGetLqasRoundOptionsArgs = UseGetLqasCountriesOptionsArgs;
 export const useGetLqasRoundOptions = ({
     side,
     params,
-}: UseGetLqasRoundOptionsArgs) => {
+}: UseGetLqasRoundOptionsArgs): UseQueryResult<
+    DropdownOptions<NumberAsString>[]
+> => {
     const monthYear: MonthYear | undefined = useMonthYear({ side, params });
     const campaign = params[`${side}Campaign`];
     return useSnackQuery({

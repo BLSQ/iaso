@@ -4,14 +4,14 @@ import {
     useSafeIntl,
     Select,
 } from 'bluesquare-components';
-import { LqasUrlParams } from '../lqas';
+import { LqasUrlParams } from '..';
 import { Box, Grid } from '@mui/material';
 import MESSAGES from '../../../../constants/messages';
 import { baseUrls } from '../../../../constants/urls';
 import {
     useGetLqasCampaignsOptions,
     useGetLqasCountriesOptions,
-} from './useGetLqasCountriesOptions';
+} from '../hooks/useGetLqasCountriesOptions';
 import { NumberAsString, Side } from '../../../../constants/types';
 import { DropdownOptions } from 'Iaso/types/utils';
 import moment from 'moment';

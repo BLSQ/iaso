@@ -40,7 +40,7 @@ type Props = {
     side: Side;
 };
 
-export const LqasCountryMapV2: FunctionComponent<Props> = ({
+export const LqasCountryMapView: FunctionComponent<Props> = ({
     roundNumber,
     side,
     campaign,

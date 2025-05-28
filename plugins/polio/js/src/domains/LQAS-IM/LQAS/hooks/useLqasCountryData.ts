@@ -14,7 +14,7 @@ import {
     useLqasNfmTitle,
     useLqasRfaTitle,
     useLqasVerticalChartData,
-} from './utils';
+} from '../CountryOverview/utils';
 
 type UseLqasCountryDataArgs = {
     campaignObrName?: string;

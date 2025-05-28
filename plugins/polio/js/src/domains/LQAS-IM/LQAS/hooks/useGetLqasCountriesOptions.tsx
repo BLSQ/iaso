@@ -1,5 +1,5 @@
 import { UseQueryResult } from 'react-query';
-import { LqasUrlParams } from '../lqas';
+import { LqasUrlParams } from '..';
 import {
     MonthYear,
     NumberAsString,

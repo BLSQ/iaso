@@ -256,7 +256,6 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(result["value"], self.benin.id)
 
 
-# TODO: test no multiple instance of same campaign in response
 class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
     endpoint = "/api/polio/lqasim/campaignoptions/"
 
@@ -285,7 +284,7 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
 
     def filter_by_country(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?country={self.rdc.id}")  # expecting rdc in result
+        response = self.client.get(f"{self.endpoint}?country_id={self.rdc.id}")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
         self.assertEqual(len(results), 1)
@@ -396,15 +395,22 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
     endpoint = "/api/polio/lqasim/roundoptions/"
 
     def test_filter_rounds_for_user(self):
+        # Add a rnd 4 to the India campaign to test it's not returned in the results
+
+        india_rnd_4 = Round.objects.create(
+            campaign=self.emro_campaign,
+            started_at=datetime.date(2021, 6, 1),
+            ended_at=datetime.date(2021, 6, 10),
+            number=4,
+        )
+
         self.client.force_authenticate(self.user)
         response = self.client.get(self.endpoint)
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
         self.assertEqual(len(results), 6)
-        round_ids = [result["value"] for result in results]
-        self.assertFalse(self.india_round_1.id in round_ids)
-        self.assertFalse(self.india_round_2.id in round_ids)
-        self.assertFalse(self.india_round_3.id in round_ids)
+        round_numbers = [result["value"] for result in results]
+        self.assertFalse(str(india_rnd_4.number) in round_numbers)
 
         response = self.client.get(
             f"{self.endpoint}?month=03-2021"
@@ -422,7 +428,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
 
     def filter_by_campaign(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?country={self.rdc_campaign.id}")  # expecting rdc in result
+        response = self.client.get(f"{self.endpoint}?campaign_id={self.rdc_campaign.id}")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
         self.assertEqual(len(results), 1)
@@ -438,7 +444,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(result["label"], f"Round {self.rdc_round_3.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_3.id))
+        self.assertEqual(result["value"], str(self.rdc_round_3.number))
 
         # test when lqas end = first day of month
         response = self.client.get(f"{self.endpoint}?month=02-2021")  # expecting rdc in result
@@ -447,7 +453,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(result["label"], f"Round {self.rdc_round_2.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_2.id))
+        self.assertEqual(result["value"], str(self.rdc_round_2.number))
 
         # test when month start is one day after lqas end (here rdc round 2)
         response = self.client.get(f"{self.endpoint}?month=03-2021")
@@ -465,7 +471,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(result["label"], f"Round {self.benin_round_2.number}")
-        self.assertEqual(result["value"], str(self.benin_round_2.id))
+        self.assertEqual(result["value"], str(self.benin_round_2.number))
 
         # test end round +10 = last of month
         response = self.client.get(f"{self.endpoint}?month=12-2020")  # expecting benin in result
@@ -474,7 +480,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(result["label"], f"Round {self.benin_round_1.number}")
-        self.assertEqual(result["value"], str(self.benin_round_1.id))
+        self.assertEqual(result["value"], str(self.benin_round_1.number))
 
         # test first of month (end round +10) +1
         response = self.client.get(f"{self.endpoint}?month=01-2021")
@@ -484,7 +490,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         result = results[0]
         # expect only rdc in result
         self.assertEqual(result["label"], f"Round {self.rdc_round_1.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_1.id))
+        self.assertEqual(result["value"], str(self.rdc_round_1.number))
 
         # test (end round +10) = first of next month
         Round.objects.create(
@@ -526,4 +532,4 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertEqual(len(results), 1)
         result = results[0]
         self.assertEqual(result["label"], f"Round {self.benin_round_3.number}")
-        self.assertEqual(result["value"], str(self.benin_round_3.id))
+        self.assertEqual(result["value"], str(self.benin_round_3.number))

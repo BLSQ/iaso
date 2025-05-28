@@ -133,10 +133,10 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
 class RoundDropDownSerializer(serializers.ModelSerializer):
     label = serializers.SerializerMethodField(read_only=True)
-    value = serializers.CharField(source="id")
+    value = serializers.CharField(source="number")
 
     class Meta:
-        model = Campaign
+        model = Round
         fields = ["value", "label"]
 
     def get_label(self, obj):

@@ -5,6 +5,7 @@ import React, {
     useCallback,
 } from 'react';
 
+import { Grid, Box, useTheme, Tab, Tabs } from '@mui/material';
 import {
     useSafeIntl,
     ConfirmCancelModal,
@@ -15,15 +16,14 @@ import {
     JsonLogicEditor,
 } from 'bluesquare-components';
 
-import { Grid, Box, useTheme, Tab, Tabs } from '@mui/material';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 import { Popper } from '../../../forms/fields/components/Popper';
-import { useGetForms } from '../../hooks/requests/useGetForms';
+import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';
-import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
+import { useGetForms } from '../../hooks/requests/useGetForms';
 
 import MESSAGES from '../../messages';
 
@@ -171,8 +171,8 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                         {tab === 'json' && (
                             <JsonLogicEditor
                                 initialLogic={logic}
-                                changeLogic={newLogic =>
-                                    setLogic(newLogic as JSONValue)
+                                changeLogic={(newLogic: JSONValue) =>
+                                    setLogic(newLogic)
                                 }
                             />
                         )}

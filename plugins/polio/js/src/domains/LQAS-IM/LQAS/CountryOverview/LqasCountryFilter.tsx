@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     useRedirectToReplace,
     useSafeIntl,
@@ -12,13 +7,14 @@ import {
 import { LqasUrlParams } from '../lqas';
 import { Box, Grid } from '@mui/material';
 import MESSAGES from '../../../../constants/messages';
-import { MonthYear, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
-import moment from 'moment';
 import {
     useGetLqasCampaignsOptions,
     useGetLqasCountriesOptions,
 } from './useGetLqasCountriesOptions';
+import { NumberAsString, Side } from '../../../../constants/types';
+import { DropdownOptions } from 'Iaso/types/utils';
+import moment from 'moment';
 
 type Props = {
     params: LqasUrlParams;
@@ -40,18 +36,22 @@ const monthOptions = [
     { label: '12', value: '12' },
 ];
 
-// TODO get from backend
-const yearOptions = [
-    { label: '2025', value: '2025' },
-    { label: '2024', value: '2024' },
-    { label: '2023', value: '2023' },
-    { label: '2022', value: '2022' },
-    { label: '2021', value: '2021' },
-    { label: '2020', value: '2020' },
-    { label: '2019', value: '2019' },
-    { label: '2018', value: '2018' },
-    { label: '2017', value: '2017' },
-];
+// AI generated code
+const generateYearOptions = (
+    startYear = 2018,
+): DropdownOptions<NumberAsString>[] => {
+    const currentYear = moment().year();
+
+    const years: DropdownOptions<NumberAsString>[] = [];
+
+    for (let year = currentYear; year >= startYear; year--) {
+        const yearStr = year.toString();
+        years.push({ label: yearStr, value: yearStr });
+    }
+
+    return years;
+};
+const yearOptions = generateYearOptions();
 
 const baseUrl = baseUrls.lqasCountry;
 

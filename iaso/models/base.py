@@ -1115,12 +1115,12 @@ class Instance(models.Model):
         f = field_name
         if f is None:
             f = self.form.location_field
-
             location = self.json.get(f, None)
             if location:
-                latitude, longitude, altitude, accuracy = [float(x) for x in location.split(" ")]
+                coords = [float(x) for x in location.split(" ")]
+                latitude, longitude, altitude = coords[:3]
                 self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-                self.accuracy = accuracy
+                self.accuracy = coords[3] if len(coords) > 3 else None
                 self.save()
 
     def convert_device(self):

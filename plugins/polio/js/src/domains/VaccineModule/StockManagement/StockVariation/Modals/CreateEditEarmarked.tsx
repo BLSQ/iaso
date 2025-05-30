@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -7,11 +8,11 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback } from 'react';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { VaccineForStock } from '../../../../../constants/types';
+import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
 import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
 import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
@@ -59,6 +60,9 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     const { campaignOptions, isFetching, roundNumberOptions } =
         useCampaignOptions(countryName, formik.values.campaign);
 
+    const selectedRound = roundNumberOptions.find(
+        round => round.value === formik.values.round_number,
+    );
     const earmarkTypeOptions = useEarmarkOptions();
 
     const handleVialsChange = useCallback(
@@ -76,7 +80,17 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.earmarked)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-
+    const { data: vrfList } = useGetVrfListByRound(selectedRound?.original?.id);
+    const quantityOrdered = vrfList?.reduce(
+        (acc, vrf) => acc + vrf.quantities_ordered_in_doses,
+        0,
+    );
+    // https://bluesquare.atlassian.net/browse/POLIO-1924
+    useEffect(() => {
+        if (quantityOrdered && quantityOrdered > 0 && !earmark?.id) {
+            handleVialsChange(quantityOrdered);
+        }
+    }, [quantityOrdered, earmark?.id, handleVialsChange]);
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

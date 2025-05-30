@@ -818,6 +818,14 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
         return ""
 
 
+class RoundFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        round_id = request.query_params.get("round_id")
+        if round_id:
+            return queryset.filter(rounds=round_id)
+        return queryset
+
+
 class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
@@ -827,6 +835,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
     - rounds__ended_at : Use a date in the format YYYY-MM-DD
+    - round_id : Filter by a specific round ID
 
     Available ordering:
     - country
@@ -879,6 +888,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
         NoFormDjangoFilterBackend,
         VRFCustomOrderingFilter,
         VRFCustomFilter,
+        RoundFilter,
         filters.OrderingFilter,
     ]
     filterset_fields = {

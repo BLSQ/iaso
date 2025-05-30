@@ -373,6 +373,7 @@ export const useCampaignOptions = (
                       return {
                           label: `${formatMessage(MESSAGES.round)} ${round.number}`,
                           value: round.number,
+                          original: round,
                       };
                   })
             : [];

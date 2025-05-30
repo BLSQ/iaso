@@ -32,7 +32,7 @@ def deep_getattr(obj, attr, default=None):
     return obj
 
 
-def buid_substitutions(instance):
+def build_substitutions(instance):
     substitutions = {}
     if instance and instance.org_unit:
         substitutions = {
@@ -210,7 +210,7 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id, instanc
         edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
     edit_user_id_tag.text = str(user_id)
 
-    substitutions = buid_substitutions(instance)
+    substitutions = build_substitutions(instance)
 
     for xpath, value in substitutions.items():
         node = root.xpath(xpath)

@@ -10,7 +10,7 @@ from django.test import override_settings
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.enketo.enketo_xml import buid_substitutions
+from iaso.enketo.enketo_xml import build_substitutions
 from iaso.models import Instance
 from iaso.test import APITestCase
 
@@ -710,7 +710,7 @@ class EnketoAPITestCase(APITestCase):
             project=self.project,
             uuid=submission_uuid,
         )
-        substitutions = buid_substitutions(instance=instance1)
+        substitutions = build_substitutions(instance=instance1)
         self.assertEqual(
             substitutions,
             {
@@ -738,7 +738,7 @@ class EnketoAPITestCase(APITestCase):
             project=self.project,
             uuid=submission_uuid,
         )
-        substitutions = buid_substitutions(instance=instance1)
+        substitutions = build_substitutions(instance=instance1)
         self.assertEqual(
             substitutions,
             {

@@ -43,6 +43,7 @@ type Props = {
     isApproved: boolean;
     isPartiallyApproved: boolean;
     approvedFields: string[];
+    isNewOrgUnit: boolean;
 };
 
 export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
@@ -52,6 +53,7 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
     isApproved,
     isPartiallyApproved,
     approvedFields,
+    isNewOrgUnit,
 }) => {
     const [comment, setComment] = useState<string | undefined>();
     const { formatMessage } = useSafeIntl();
@@ -105,8 +107,20 @@ export const ReviewOrgUnitChangesConfirmDialog: FunctionComponent<Props> = ({
             )}
             {isApproved && !isPartiallyApproved && (
                 <>
-                    <p>{formatMessage(MESSAGES.confirmAcceptChangeRequest)}</p>
-                    <p>{formatMessage(MESSAGES.confirmMessage)}</p>
+                    <p>
+                        {formatMessage(
+                            isNewOrgUnit
+                                ? MESSAGES.confirmOrgUnitCreationChangeRequest
+                                : MESSAGES.confirmAcceptChangeRequest,
+                        )}
+                    </p>
+                    <p>
+                        {formatMessage(
+                            isNewOrgUnit
+                                ? MESSAGES.confirmOrgUnitCreationMessage
+                                : MESSAGES.confirmMessage,
+                        )}
+                    </p>
                 </>
             )}
         </SimpleModal>

@@ -162,9 +162,18 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You are about to replace the original version (left) with the modified version (right).',
     },
+    confirmOrgUnitCreationChangeRequest: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationChangeRequest',
+        defaultMessage:
+            'You are about to create new Org Unit through change request.',
+    },
     confirmMessage: {
         id: 'iaso.changeRequest.confirmMessage',
         defaultMessage: 'Do you confirm those changes?',
+    },
+    confirmOrgUnitCreationMessage: {
+        id: 'iaso.changeRequest.confirmOrgUnitCreationMessage',
+        defaultMessage: 'Do you confirm the creation?',
     },
     comment: {
         id: 'iaso.changeRequest.comment',
@@ -252,8 +261,8 @@ const MESSAGES = defineMessages({
     },
 
     multiSelectionAction: {
-        defaultMessage: 'Edit selected users',
-        id: 'iaso.users.multiSelectionAction',
+        defaultMessage: 'Edit selected change requests',
+        id: 'iaso.changeRequest.multiSelectionAction',
     },
 
     changeSelectedChangeRequests: {
@@ -284,6 +293,15 @@ const MESSAGES = defineMessages({
     bulkChangeCount: {
         id: 'iaso.orgUnits.bulkChangeCount',
         defaultMessage: 'You are about to change {count} Org units',
+    },
+    searchByIds: {
+        id: 'iaso.orgUnits.searchByIds',
+        defaultMessage: 'Search by multiple IDs',
+    },
+    searchByIdsInfo: {
+        id: 'iaso.orgUnits.searchByIdsInfo',
+        defaultMessage:
+            'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
 });
 

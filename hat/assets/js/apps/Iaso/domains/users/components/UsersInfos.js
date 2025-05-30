@@ -1,19 +1,17 @@
 /* eslint-disable no-param-reassign */
-import { Alert, Grid, SxProps, Theme } from '@mui/material';
+import React, { useCallback, useMemo } from 'react';
+import { Alert, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import isEmpty from 'lodash/isEmpty';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo } from 'react';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { APP_LOCALES } from '../../app/constants';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages.ts';
-import { userHasPermission } from '../utils.js';
-import { USERS_ADMIN } from '../../../utils/permissions';
 
 const useStyles = makeStyles(theme => ({
     alert: {
@@ -26,9 +24,9 @@ const UsersInfos = ({
     currentUser,
     initialData,
     allowSendEmailInvitation,
+    canBypassProjectRestrictions,
 }) => {
     const loggedUser = useCurrentUser();
-    const isLoggedUserAdmin = userHasPermission(USERS_ADMIN, loggedUser);
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
@@ -51,19 +49,16 @@ const UsersInfos = ({
         }
     }
     const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
+        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
 
     const availableProjects = useMemo(() => {
         if (!loggedUser || !loggedUser.projects) {
             return [];
         }
-        if (loggedUser.projects.length === 0) {
-            return allProjects;
-        }
-        return loggedUser.projects.map(project => {
+        return allProjects.map(project => {
             return {
-                value: project.id.toString(),
-                label: project.name,
+                value: project.value,
+                label: project.label,
             };
         });
     }, [allProjects, loggedUser]);
@@ -83,7 +78,7 @@ const UsersInfos = ({
     );
 
     const isMultiAccountUser = currentUser.has_multiple_accounts.value;
-
+    const appLocales = useAppLocales();
     return (
         <form>
             {isMultiAccountUser && (
@@ -198,12 +193,6 @@ const UsersInfos = ({
                         label={MESSAGES.projects}
                         options={availableProjects}
                         loading={isFetchingProjects}
-                        disabled={!isLoggedUserAdmin}
-                        helperText={
-                            !isLoggedUserAdmin
-                                ? formatMessage(MESSAGES.userAdminOnly)
-                                : undefined
-                        }
                     />
                     <InputComponent
                         keyValue="language"
@@ -213,7 +202,7 @@ const UsersInfos = ({
                         type="select"
                         multi={false}
                         label={MESSAGES.locale}
-                        options={APP_LOCALES.map(locale => {
+                        options={appLocales.map(locale => {
                             return {
                                 value: locale.code,
                                 label: locale.label,

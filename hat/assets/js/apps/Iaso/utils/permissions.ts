@@ -15,6 +15,7 @@ const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
 const ORG_UNITS_READ = 'iaso_org_units_read';
+const ORG_UNITS_HISTORY = 'iaso_org_units_history';
 const PAGES = 'iaso_pages';
 const PAGE_WRITE = 'iaso_page_write';
 const PLANNING_READ = 'iaso_planning_read';
@@ -26,12 +27,19 @@ const POLIO_CHRONOGRAM_RESTRICTED_WRITE =
     'iaso_polio_chronogram_restricted_write';
 const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
 const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
+const POLIO_SUPPLY_CHAIN_READ_ONLY =
+    'iaso_polio_vaccine_supply_chain_read_only';
 const POLIO_VACCINE_STOCK_READ = 'iaso_polio_vaccine_stock_management_read';
+const POLIO_VACCINE_STOCK_READ_ONLY =
+    'iaso_polio_vaccine_stock_management_read_only';
 const POLIO_VACCINE_STOCK_WRITE = 'iaso_polio_vaccine_stock_management_write';
+
 const POLIO_VACCINE_STOCK_EARMARKS_NONADMIN =
     'iaso_polio_vaccine_stock_earmarks_nonadmin';
 const POLIO_VACCINE_STOCK_EARMARKS_ADMIN =
     'iaso_polio_vaccine_stock_earmarks_admin';
+const POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY =
+    'iaso_polio_vaccine_stock_earmarks_read_only';
 const PROJECTS = 'iaso_projects';
 const REGISTRY_WRITE = 'iaso_registry_write';
 const REGISTRY_READ = 'iaso_registry_read';
@@ -73,6 +81,7 @@ export {
     ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION,
     ORG_UNITS_CHANGE_REQUEST_REVIEW,
     ORG_UNITS_READ,
+    ORG_UNITS_HISTORY,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     PAGES,
@@ -86,11 +95,14 @@ export {
     POLIO_CONFIG,
     POLIO_NOTIFICATIONS,
     POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_READ_ONLY,
     POLIO_SUPPLY_CHAIN_WRITE,
     POLIO_VACCINE_STOCK_READ,
+    POLIO_VACCINE_STOCK_READ_ONLY,
     POLIO_VACCINE_STOCK_WRITE,
     POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
     PROJECTS,
     REGISTRY_READ,
     REGISTRY_WRITE,

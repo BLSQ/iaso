@@ -51,10 +51,8 @@ def update_single_profile_from_bulk(
     org_units_to_be_added = []
     org_units_to_be_removed = []
 
-    has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
-    editable_org_unit_type_ids = (
-        user.iaso_profile.get_editable_org_unit_type_ids() if not has_perm_users_admin else set()
-    )
+    user_has_project_restrictions = hasattr(user, "iaso_profile") and bool(user.iaso_profile.projects_ids)
+    user_has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
 
     if teams_id_added and not user.has_perm(permission.TEAMS):
         raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
@@ -66,7 +64,7 @@ def update_single_profile_from_bulk(
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not has_perm_users_admin:
+                if not user_has_perm_users_admin:
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_added.append(role)
@@ -75,73 +73,51 @@ def update_single_profile_from_bulk(
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not has_perm_users_admin:
+                if not user_has_perm_users_admin:
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_removed.append(role)
 
     if projects_ids_added:
-        if not has_perm_users_admin:
+        if not user_has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
-        for project_id in projects_ids_added:
-            project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == account_id:
-                projects_to_be_added.append(project)
+        if user_has_project_restrictions:
+            authorized_projects_ids = [id_ for id_ in projects_ids_added if id_ in user.iaso_profile.projects_ids]
+            projects_to_be_added = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
+        else:
+            projects_to_be_added = Project.objects.filter(pk__in=projects_ids_added, account_id=account_id)
 
     if projects_ids_removed:
-        if not has_perm_users_admin:
+        if not user_has_perm_users_admin:
             raise PermissionDenied(
                 f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
-        for project_id in projects_ids_removed:
-            project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == account_id:
-                projects_to_be_removed.append(project)
+        if user_has_project_restrictions:
+            authorized_projects_ids = [id_ for id_ in projects_ids_removed if id_ in user.iaso_profile.projects_ids]
+            projects_to_be_removed = Project.objects.filter(pk__in=authorized_projects_ids, account_id=account_id)
+        else:
+            projects_to_be_removed = Project.objects.filter(pk__in=projects_ids_removed, account_id=account_id)
 
     if location_ids_added:
         for location_id in location_ids_added:
-            if managed_org_units and (not has_perm_users_admin) and (location_id not in managed_org_units):
+            if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_added.append(org_unit)
 
     if location_ids_removed:
         for location_id in location_ids_removed:
-            if managed_org_units and (not has_perm_users_admin) and (location_id not in managed_org_units):
+            if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
                     f"User with permission {permission.USERS_MANAGED} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_removed.append(org_unit)
 
     # Update

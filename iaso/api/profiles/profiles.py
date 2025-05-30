@@ -1,16 +1,16 @@
 import copy
 
-from typing import Any, List, Optional, Set, Union
+from typing import Any, List, Optional, Union
 
 from django.conf import settings
 from django.contrib.auth import login, models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.core.exceptions import BadRequest
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
-from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
+from django.db.transaction import atomic
+from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
@@ -18,6 +18,7 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
+from phonenumbers import NumberParseException
 from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -334,6 +335,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(res)
         return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
+    @atomic
     def create(self, request):
         current_profile = request.user.iaso_profile
         current_account = current_profile.account
@@ -439,9 +441,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             dhis2_id = None
         profile.dhis2_id = dhis2_id
 
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.save()
 
@@ -459,6 +459,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return Response(user.profile.as_dict())
 
+    @atomic
     def partial_update(self, request, pk=None):
         if pk == PK_ME:
             return self.update_user_own_profile(request)
@@ -553,9 +554,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
         user.user_permissions.set(user_permissions)
 
-        phone_number = self.extract_phone_number(request)
-        if phone_number is not None:
-            profile.phone_number = phone_number
+        profile.phone_number = self.extract_phone_number(request)
 
         profile.language = request.data.get("language", "")
         profile.organization = request.data.get("organization", None)
@@ -685,10 +684,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         valid_ids = filtered_org_unit_ids or org_unit_ids
         org_units = OrgUnit.objects.filter(id__in=valid_ids)
 
-        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
-            org_unit_type_ids_to_check = set(org_units.values_list("org_unit_type_id", flat=True))
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, org_unit_type_ids_to_check)
-
         return org_units
 
     def validate_user_roles(self, request):
@@ -706,20 +701,30 @@ class ProfilesViewSet(viewsets.ViewSet):
             result["user_roles"].append(user_role_item)
         return result
 
-    def validate_projects(self, request, profile) -> QuerySet[Project]:
-        result = []
-        project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
-        if project_ids:
-            profile_project_ids = set(profile.projects.values_list("id", flat=True))
-            if not request.user.has_perm(permission.USERS_ADMIN) and profile_project_ids != project_ids:
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change project attributions"
-                )
-            for project in Project.objects.filter(id__in=project_ids):
-                if profile.account_id != project.account_id:
-                    raise BadRequest
-                result.append(project)
-        return result
+    def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
+        new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
+
+        if request.user.has_perm(permission.USERS_ADMIN):
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
+
+        user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
+
+        if not new_project_ids:
+            if user_restricted_projects_ids:
+                raise PermissionDenied("You must specify which projects are authorized for this user.")
+            return []  # No project restrictions.
+
+        if not user_restricted_projects_ids:
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
+
+        profile_restricted_projects_ids = set(profile.projects_ids)
+        if profile_restricted_projects_ids > user_restricted_projects_ids:
+            raise PermissionDenied("You cannot edit a user who has broader access to projects.")
+
+        if new_project_ids.issubset(user_restricted_projects_ids):
+            return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
+
+        raise PermissionDenied("Some projects are outside your scope.")
 
     def validate_editable_org_unit_types(self, request, profile: Profile) -> QuerySet[OrgUnitType]:
         editable_org_unit_type_ids = set(request.data.get("editable_org_unit_type_ids", []))
@@ -733,25 +738,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if editable_org_unit_types.count() != len(editable_org_unit_type_ids):
             raise ValidationError("Invalid editable org unit type submitted.")
 
-        if not request.user.has_perm(permission.USERS_ADMIN):
-            self._validate_profile_editable_org_unit_types(request.user.iaso_profile, editable_org_unit_type_ids)
-
         return editable_org_unit_types
-
-    def _validate_profile_editable_org_unit_types(self, iaso_profile: Profile, org_unit_type_ids_to_check: Set[int]):
-        user_editable_org_unit_type_ids = iaso_profile.get_editable_org_unit_type_ids()
-        invalid_ids = [
-            org_unit_type_id
-            for org_unit_type_id in org_unit_type_ids_to_check
-            if org_unit_type_id
-            and not iaso_profile.has_org_unit_write_permission(org_unit_type_id, user_editable_org_unit_type_ids)
-        ]
-
-        if invalid_ids:
-            invalid_names = ", ".join(
-                name for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list("name", flat=True)
-            )
-            raise PermissionDenied(f"The user does not have rights on the following org unit types: {invalid_names}")
 
     @staticmethod
     def module_permissions(current_account):
@@ -762,24 +749,23 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def extract_phone_number(request):
-        phone_number = request.data.get("phone_number", None)
-        country_code = request.data.get("country_code", None)
-        number = None
+        phone_number = request.data.get("phone_number")
+        country_code = request.data.get("country_code")
+        number = ""
 
-        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Both phone number and country code must be provided"),
-            )
+        if any([phone_number, country_code]) and not all([phone_number, country_code]):
+            raise ValidationError({"phone_number": _("Both phone number and country code must be provided")})
 
         if phone_number and country_code:
-            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
-            if number and number.is_valid():
-                return number
-            raise ProfileError(
-                field="phone_number",
-                detail=_("Invalid phone number"),
-            )
+            try:
+                number = PhoneNumber.from_string(phone_number, region=country_code.upper())
+            except NumberParseException:
+                raise ValidationError({"phone_number": _("Invalid phone number format")})
+
+            if not number.is_valid():
+                raise ValidationError({"phone_number": _("Invalid phone number")})
+
+        return number
 
     @staticmethod
     def update_password(user, request):

@@ -1,15 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import { LoadingSpinner } from 'bluesquare-components';
 // @ts-ignore
-import { Moment } from 'moment';
 
 import { Box, Table, TableContainer } from '@mui/material';
-
-import { useStyles } from './Styles';
+import { LoadingSpinner } from 'bluesquare-components';
+import { Moment } from 'moment';
 
 import { Body } from './Body';
 import { Head } from './Head';
 import { Nav } from './Nav';
+import { useStyles } from './Styles';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
 
 type Props = {

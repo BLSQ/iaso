@@ -457,6 +457,6 @@ def import_orgunits_and_groups(
 
     load_groupsets(api, version, group_dict)
     # If there is nothing in the fallback type, delete it.
-    if unknown_unit_type.orgunit_set.count() == 0:
+    if unknown_unit_type.org_units.count() == 0:
         unknown_unit_type.delete()
     return error_count, unit_dict

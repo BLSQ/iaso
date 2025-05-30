@@ -1,4 +1,5 @@
 import json
+import logging
 
 from copy import deepcopy
 from datetime import datetime
@@ -30,6 +31,8 @@ from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
+
+logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 
@@ -100,22 +103,69 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list(self, request):
         """Power the almighty Search function, and export
 
-        which all the power should be really specified.
+        This endpoint supports various parameters for filtering and searching org units:
 
-        Can serve these formats, depending on the combination of GET Parameters:
-         * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
-         * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
-         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
-         * GeoPackage format (if `gpkg` is passed)
-         * Excel XLSX  (if `xslx` is passed)
-         * CSV (if `csv` is passed)
+        Search Parameters:
+        - search: Text search in name and aliases
+        - searches: JSON array of search objects for multiple searches
+        - validation_status: Filter by validation status (comma-separated list or "all")
+        - hasInstances: Filter by presence of instances ("true", "false", "duplicates")
+        - dateFrom: Filter instances created after this date
+        - dateTo: Filter instances created before this date
+        - orgUnitTypeId: Filter by org unit type ID (comma-separated list)
+        - sourceId: Filter by source ID
+        - withShape: Filter by presence of shape ("true", "false")
+        - withLocation: Filter by presence of location ("true", "false")
+        - geography: Filter by geography type ("location", "shape", "none", "any")
+        - parent_id: Filter by parent ID (use "0" for root org units)
+        - source: Filter by source
+        - project: Filter by project
+        - group: Filter by group (comma-separated list)
+        - version: Filter by version
+        - defaultVersion: Use default version of the user account("true")
+        - onlyDirectChildren: Filter direct children only ("true", "false")
+        - orgUnitParentId: Filter by parent ID in hierarchy
+        - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - linkedTo: Filter by linked org unit
+        - linkValidated: Filter by link validation status
+        - linkSource: Filter by link source
+        - linkVersion: Filter by link version
+        - rootsForUser: Filter roots for user ("true")
+        - ignoreEmptyNames: Ignore empty names ("true")
+        - orgUnitTypeCategory: Filter by org unit type category
+        - depth: Filter by path depth
+        - opening_date: Filter by opening date (format: DD-MM-YYYY)
+        - closed_date: Filter by closing date (format: DD-MM-YYYY)
 
-         These parameter can totally conflict and the result is undocumented
+        Output Format Parameters:
+        - limit: Number of results per page
+        - page: Page number
+        - order: Order by field(s) (comma-separated)
+        - withShapes: Include shapes in output
+        - asLocation: Return as location format
+        - smallSearch: Return simplified output
+        - csv: Export as CSV
+        - xlsx: Export as Excel
+        - gpkg: Export as GeoPackage
+
+        Special Search Formats:
+        - ids:search: Search by IDs (e.g. "ids:1,2,3")
+        - refs:search: Search by references (e.g. "refs:ref1,ref2")
+
+        Example Response Formats:
+        * Simple JSON (default) -> as_dict_for_mobile
+        * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+        * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
+        * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
+        * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
+        * GeoPackage format (if `gpkg` is passed)
+        * Excel XLSX  (if `xslx` is passed)
+        * CSV (if `csv` is passed)
         """
         queryset = self.get_queryset().defer("geom").select_related("parent__org_unit_type")
-        forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+        forms = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        ).distinct()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
@@ -311,7 +361,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit.get("creator__first_name", None),
                 org_unit.get("creator__last_name", None),
             )
-            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso:{org_unit.get('id')}"
 
             parents_source_ref = [
                 get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)
@@ -460,21 +510,28 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         "errorMessage": _(f"Invalid validation status : {validation_status}"),
                     }
                 )
-        if "geo_json" in request.data:
-            geo_json = request.data["geo_json"]
-            geometry = geo_json["features"][0]["geometry"] if geo_json else None
-            coordinates = geometry["coordinates"] if geometry else None
-            if coordinates:
-                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
-                # keep geom and simplified geom consistent
-                org_unit.geom = multi_polygon
-                org_unit.simplified_geom = simplify_geom(multi_polygon)
+
+        if "geom" in request.data:
+            geom = request.data["geom"]
+            if geom:
+                try:
+                    # Keep geom and simplified geom consistent.
+                    org_unit.geom = GEOSGeometry(geom)
+                    org_unit.simplified_geom = simplify_geom(org_unit.geom)
+                except Exception:
+                    errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
             else:
-                # keep geom and simplified geom consistent
+                # Keep geom and simplified geom consistent.
                 org_unit.simplified_geom = None
                 org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
+
+        if "geo_json" in request.data and request.data["geo_json"]:
+            logger.warning(
+                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
+                extra={"request_data": request.data},
+            )
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -561,8 +618,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
-        if "default_image" in request.data:
-            default_image_id = request.data["default_image"]
+        if "default_image_id" in request.data:
+            default_image_id = request.data["default_image_id"]
             if default_image_id is not None:
                 try:
                     default_image = InstanceFile.objects.get(id=default_image_id)
@@ -577,11 +634,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 org_unit.default_image = None
 
-        opening_date = request.data.get("opening_date", None)
-        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
-
-        closed_date = request.data.get("closed_date", None)
-        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
+        org_unit.opening_date = self.get_date(request.data.get("opening_date"))
+        org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
         if not errors:
             org_unit.save()
@@ -605,11 +659,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
-        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
                 return datetime.strptime(date, date_input_format).date()
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         return None
 

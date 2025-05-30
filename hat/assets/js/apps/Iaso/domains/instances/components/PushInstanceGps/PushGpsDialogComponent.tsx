@@ -13,29 +13,31 @@ import {
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
-import MESSAGES from '../../messages';
-import { Instance } from '../../types/instance';
-import { Selection } from '../../../orgUnits/types/selection';
-import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
-import PushBulkGpsWarning from './PushBulkGpsWarning';
-import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
 import { baseUrls } from '../../../../constants/urls';
-import { userHasPermission } from '../../../users/utils';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
-import PushGpsWarningMessage from './PushGpsWarningMessage';
+import { Selection } from '../../../orgUnits/types/selection';
+import { userHasPermission } from '../../../users/utils';
+import { useGetCheckBulkGpsPush } from '../../hooks/useGetCheckBulkGpsPush';
+import { useInstanceBulkgpspush } from '../../hooks/useInstanceBulkgpspush';
+import MESSAGES from '../../messages';
+import { Instance } from '../../types/instance';
+import WarningMessage from '../../utils/WarningMessage';
+import PushBulkGpsWarning from './PushBulkGpsWarning';
 import { PushGpsModalButton } from './PushGpsModalButton';
 
 type Props = {
     selection: Selection<Instance>;
     isOpen: boolean;
     closeDialog: () => void;
+    filters: Record<string, string>;
 };
 
 const PushGpsDialogComponent: FunctionComponent<Props> = ({
     selection,
     isOpen,
     closeDialog,
+    filters,
 }) => {
     const INSTANCE_HAS_NO_GPS = 'instanceHasNoGPS';
     const ORG_UNIT_HAS_ALREADY_GPS = 'orgUnitHasAlreadyGps';
@@ -66,6 +68,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
         selected_ids: selected_ids.map(item => item.id).join(','),
         select_all,
         unselected_ids: unselected_ids.map(item => item.id).join(','),
+        ...filters,
     });
 
     const instancebulkgpspush = useCallback(async () => {
@@ -73,8 +76,9 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
             select_all,
             selected_ids: selected_ids.map(item => item.id),
             unselected_ids: unselected_ids.map(item => item.id),
+            filters,
         });
-    }, [bulkgpspush, select_all, selected_ids, unselected_ids]);
+    }, [bulkgpspush, select_all, selected_ids, unselected_ids, filters]);
 
     const onConfirm = useCallback(async () => {
         await instancebulkgpspush();
@@ -183,7 +187,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     <Grid item xs={12}>
                         <Typography variant="subtitle1">
                             {isError ? (
-                                <PushGpsWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.multipleInstancesOneOrgUnitWarningMessage,
                                     )}
@@ -219,7 +223,7 @@ const PushGpsDialogComponent: FunctionComponent<Props> = ({
                     {!approved && (
                         <Grid item xs={12}>
                             <Typography variant="subtitle1">
-                                <PushGpsWarningMessage
+                                <WarningMessage
                                     message={formatMessage(
                                         MESSAGES.approveAllWarningsMessage,
                                     )}

@@ -178,7 +178,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
     def test_synchronize_source_versions_async(self):
         # We use an empty `json_diff` here because `synchronize_source_versions()` (which
         # is called in the background task) is already fully tested in the model tests.
-        # We're just interested to check that the background task works as expected.
+        # We're just interested in checking that the background task works as expected.
         self.data_source_sync_1.json_diff = "[]"
         self.data_source_sync_1.save()
 

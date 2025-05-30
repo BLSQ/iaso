@@ -389,7 +389,7 @@ def import_data(org_units, user, app_id):
                 org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
             else:
                 org_unit_db.updated_at = org_unit.get("created_at", None)
-            if not user.is_anonymous:
+            if user and not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"
             if org_unit_location:

@@ -13,11 +13,10 @@ const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
 };
 
-export const useGetApprovalProposals = (
+export const useGetApprovalProposalsParams = (
     params: ApproveOrgUnitParams,
-): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
-    const { locale } = useLocale();
-    const apiParams = {
+): Record<string, any> => {
+    return {
         parent_id: params.parent_id,
         groups: params.groups,
         org_unit_type_id: params.org_unit_type_id,
@@ -37,7 +36,14 @@ export const useGetApprovalProposals = (
         source_version_id: params.source_version_id,
         potential_payment_ids: params.potentialPaymentIds,
         data_source_synchronization_id: params.data_source_synchronization_id,
+        ids: params.ids,
     };
+};
+export const useGetApprovalProposals = (
+    params: ApproveOrgUnitParams,
+): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
+    const { locale } = useLocale();
+    const apiParams = useGetApprovalProposalsParams(params);
 
     const url = makeUrlWithParams(apiUrl, apiParams);
     return useSnackQuery({

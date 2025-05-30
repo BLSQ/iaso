@@ -30,7 +30,7 @@ def assign_dhis2_ids(to_create_diffs):
     # ideally should run on diff
     # assign source_ref for orgunits to avoid double creation
     for to_create in to_create_diffs:
-        if to_create.org_unit.source_ref is None:
+        if not to_create.org_unit.source_ref:
             to_create.org_unit.source_ref = generate_id_for_dhis_2()
             to_create.org_unit.save()
 
@@ -99,7 +99,7 @@ class Exporter:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating Orgunits", progress_value=0, end_value=len(to_create_diffs)
             )
-        # build the "minimal" payloads for creation, groups only done at later stage
+        # build the "minimal" payloads for creation, groups only done at a later stage
         index = 0
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")

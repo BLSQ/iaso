@@ -2,6 +2,7 @@ from itertools import chain
 
 import django_filters
 
+from django.db.models import Q
 from django.utils import timezone
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
@@ -15,9 +16,10 @@ from iaso.api.org_unit_change_request_configurations.permissions import (
     HasOrgUnitsChangeRequestConfigurationReadPermission,
 )
 from iaso.api.org_unit_change_request_configurations.serializers import (
+    IncludeCreationSerializer,
     MobileOrgUnitChangeRequestConfigurationListSerializer,
 )
-from iaso.api.query_params import APP_ID
+from iaso.api.query_params import APP_ID, INCLUDE_CREATION
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import OrgUnitChangeRequestConfiguration, Project
 
@@ -34,6 +36,13 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
         required=True,
         description="Application id (`Project.app_id`)",
         type=openapi.TYPE_STRING,
+    )
+    include_creation_param = openapi.Parameter(
+        name=INCLUDE_CREATION,
+        in_=openapi.IN_QUERY,
+        required=True,
+        description="Whether to include OUCRC creations (used for legacy reasons)",
+        type=openapi.TYPE_BOOLEAN,
     )
 
     def get_queryset(self):
@@ -70,7 +79,12 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
 
         """
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+        include_creation = IncludeCreationSerializer(data=self.request.query_params).get_include_creation(
+            raise_exception=True
+        )
         queryset = self.get_queryset()
+        if not include_creation:
+            queryset = queryset.exclude(type=OrgUnitChangeRequestConfiguration.Type.CREATION)
 
         user_editable_org_unit_type_ids = self.request.user.iaso_profile.get_editable_org_unit_type_ids()
 
@@ -80,6 +94,7 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
 
             dynamic_configurations = [
                 OrgUnitChangeRequestConfiguration(
+                    type=OrgUnitChangeRequestConfiguration.Type.EDITION,
                     org_unit_type_id=org_unit_type_id,
                     org_units_editable=False,
                     created_at=timezone.now(),
@@ -92,7 +107,10 @@ class MobileOrgUnitChangeRequestConfigurationViewSet(ListModelMixin, viewsets.Ge
             # we have to sort the resulting list manually to keep the pagination working properly.
             queryset = list(
                 chain(
-                    queryset.exclude(org_unit_type__in=non_editable_org_unit_type_ids),
+                    queryset.exclude(
+                        Q(org_unit_type__in=non_editable_org_unit_type_ids)
+                        & Q(type=OrgUnitChangeRequestConfiguration.Type.EDITION)
+                    ),
                     dynamic_configurations,
                 )
             )

@@ -13,6 +13,7 @@ import { ColumnCell } from '../../../../../../../../hat/assets/js/apps/Iaso/type
 import {
     POLIO_SUPPLY_CHAIN_WRITE,
     POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_READ_ONLY,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { baseUrls } from '../../../../constants/urls';
@@ -51,6 +52,12 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                     const { rounds } = settings.row.original;
                     return <span>{rounds.map(r => r.number).join(', ')}</span>;
                 },
+            },
+            {
+                Header: formatMessage(MESSAGES.vrfCreatedAt),
+                accessor: 'created_at',
+                sortable: true,
+                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.startDate),
@@ -125,26 +132,34 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                     row: { original },
                 }: ColumnCell<SupplyChainList>): ReactElement => {
                     return (
-                        <DisplayIfUserHasPerm
-                            permissions={[
-                                POLIO_SUPPLY_CHAIN_WRITE,
-                                POLIO_SUPPLY_CHAIN_READ,
-                            ]}
-                        >
-                            <>
+                        <>
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    POLIO_SUPPLY_CHAIN_WRITE,
+                                    POLIO_SUPPLY_CHAIN_READ,
+                                    POLIO_SUPPLY_CHAIN_READ_ONLY,
+                                ]}
+                            >
                                 <IconButton
                                     icon="edit"
                                     overrideIcon={EditIcon}
                                     tooltipMessage={MESSAGES.edit}
                                     url={`/${baseUrls.vaccineSupplyChainDetails}/id/${original.id}`}
                                 />
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    POLIO_SUPPLY_CHAIN_WRITE,
+                                    POLIO_SUPPLY_CHAIN_READ,
+                                ]}
+                            >
                                 <DeleteDialog
                                     titleMessage={MESSAGES.deleteVRF}
                                     message={MESSAGES.deleteVRFWarning}
                                     onConfirm={() => deleteVrf(original.id)}
                                 />
-                            </>
-                        </DisplayIfUserHasPerm>
+                            </DisplayIfUserHasPerm>
+                        </>
                     );
                 },
             },

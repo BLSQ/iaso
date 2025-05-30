@@ -180,7 +180,8 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
+    autocomplete_fields = ("creator", "org_unit_type", "version")
+    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -929,6 +930,7 @@ class ConfigAdmin(admin.ModelAdmin):
 class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "change_request_ids", "user")
+    autocomplete_fields = ("user", "payment_lot", "task")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
@@ -965,6 +967,7 @@ class PaymentAdmin(admin.ModelAdmin):
 class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
+    search_fields = ("id",)
 
     def payment_ids(self, obj):
         payments = obj.payments.all()
@@ -995,6 +998,7 @@ class DataSourceAdmin(admin.ModelAdmin):
 
 @admin.register(Account)
 class AccountAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ["name", "id"]
     list_display = ["name", "created_at", "updated_at"]
     autocomplete_fields = ["default_version"]

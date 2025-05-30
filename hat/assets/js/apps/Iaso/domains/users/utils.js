@@ -97,7 +97,9 @@ export const getFirstAllowedUrl = (
             untestedPermissions.splice(i, 1);
         }
     });
-    const newPath = routes.find(p => p.permissions?.some(kp => kp === newRoot));
+    const newPath = routes
+        .filter(route => route.baseUrl !== 'secret')
+        .find(p => p.permissions?.some(kp => kp === newRoot));
     if (newPath) {
         return newPath.baseUrl;
     }

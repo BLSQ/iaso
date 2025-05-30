@@ -8,7 +8,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
 from django.core import mail
 from django.test import override_settings
-from django.utils.translation import gettext as _
 from rest_framework import status
 
 from hat.menupermissions import models as permission
@@ -578,76 +577,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(user.user_permissions.count(), 1)
         self.assertEqual(user.user_permissions.first().codename, "iaso_forms")
 
-    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_orgunits(self):
-        """
-        The user is restricted to one org unit type.
-        Creating a user with unauthorized values in `org_units` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-        self.assertEqual(self.org_unit_from_sub_type.org_unit_type_id, self.sub_unit_type.id)
-
-        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-        data = {
-            "user_name": "unittest_user_name",
-            "password": "unittest_password",
-            "first_name": "unittest_first_name",
-            "last_name": "unittest_last_name",
-            "email": "unittest_last_name",
-            "user_permissions": ["iaso_forms"],
-            "user_roles": [self.user_role.id],
-            "org_units": [{"id": self.org_unit_from_parent_type.id}],
-        }
-
-        response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"],
-            f"The user does not have rights on the following org unit types: {self.parent_org_unit_type.name}",
-        )
-
-    def test_create_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
-        """
-        The user is restricted to one org unit type.
-        Creating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-
-        data = {
-            "user_name": "user_name",
-            "password": "password",
-            "first_name": "first_name",
-            "last_name": "last_name",
-            "email": "test@test.com",
-            "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
-        }
-
-        response = self.client.post("/api/profiles/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
-        )
-
     def test_create_user_with_not_allowed_user_roles(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -856,6 +785,38 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post("/api/profiles/", data=data, format="json")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_create_user_is_atomic(self):
+        project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
+        project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
+
+        username = "john_doe"
+
+        user = self.user_managed_geo_limit
+        user.iaso_profile.projects.set([project_1])
+
+        self.client.force_authenticate(user)
+
+        self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
+
+        data = {
+            "user_name": username,
+            "password": "password",
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john@doe.com",
+            "projects": [project_2.id],
+            "org_units": [{"id": self.org_unit_from_parent_type.id}],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "Some projects are outside your scope.",
+        )
+
+        # If the creation is not successfully completed, no changes should be committed to the database.
+        self.assertEqual(get_user_model().objects.filter(username=username).count(), 0)
 
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
@@ -1164,41 +1125,6 @@ class ProfileAPITestCase(APITestCase):
             ),
         )
 
-    def test_update_user_should_fail_with_restricted_editable_org_unit_types_for_field_editableorgunittypeids(self):
-        """
-        The user is restricted to one org unit type.
-        Updating a user with unauthorized values in `editable_org_unit_type_ids` should fail.
-        """
-        user = self.jam
-
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.sub_unit_type]
-        )
-
-        self.client.force_authenticate(user)
-        jum = Profile.objects.get(user=self.jum)
-
-        data = {
-            "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.sub_unit_type.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-
-        data = {
-            "user_name": "new_user_name",
-            "editable_org_unit_type_ids": [self.parent_org_unit_type.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.data["detail"], "The user does not have rights on the following org unit types: Jedi Council"
-        )
-
     def test_update_user_should_succeed_with_restricted_editable_org_unit_types_when_modifying_another_field(self):
         """
         A user restricted to a given OrgUnitType should be able to edit another user as long as
@@ -1284,81 +1210,225 @@ class ProfileAPITestCase(APITestCase):
         updated_jum = Profile.objects.get(user=self.jum)
         self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
-        def test_update_user_with_malformed_phone_number(self):
-            self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
-            self.client.force_authenticate(self.jam)
-            jum = Profile.objects.get(user=self.jum)
-            data = {
-                "user_name": "unittest_user_name",
-                "password": "unittest_password",
-                "first_name": "unittest_first_name",
-                "last_name": "unittest_last_name",
-                "phone_number": "not_a_phone_number",
-                "country_code": "US",
-            }
-            response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
-            self.assertNotEqual(response.status_code, 200)
-            self.assertEqual(response.data["errorKey"], "phone_number")
-            self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))
-
-    def test_update_user_projects(self):
+    def test_update_user_with_malformed_phone_number(self):
         user = self.jam
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        jum_profile = Profile.objects.get(user=self.jum)
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
+        profile_to_edit = Profile.objects.get(user=self.jum)
 
         self.client.force_authenticate(user)
 
-        # Case 1.
-        # Because `projects` is always sent by the front-end, modifying another value (here `user_name`)
-        # should be allowed without touching `projects`.
         data = {
-            "user_name": "jum_new_user_name",
-            "projects": [self.project.id],
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "",
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
-        self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
-        self.assertEqual(jum_profile.user.username, "jum_new_user_name")
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Both phone number and country code must be provided")
 
-        # Case 2.
-        # Changing `projects` should not be allowed for users without `permission._USERS_ADMIN`.
-        new_project = m.Project.objects.create(name="New project", app_id="new.project", account=self.account)
         data = {
-            "user_name": "jum_new_user_name",
-            "projects": [new_project.id],
+            "user_name": "new_name",
+            "phone_number": "not_a_phone_number",
+            "country_code": "US",
         }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number format")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "03666666",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["phone_number"], "Invalid phone number")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "0387762121",
+            "country_code": "FR",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], "+33387762121")
+
+        data = {
+            "user_name": "new_name",
+            "phone_number": "",
+            "country_code": "",
+        }
+        response = self.client.patch(f"/api/profiles/{profile_to_edit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["phone_number"], None)
+
+    def test_update_user_with_projects_restrictions(self):
+        new_project_1 = m.Project.objects.create(name="New project 1", app_id="new.project.1", account=self.account)
+        new_project_2 = m.Project.objects.create(name="New project 2", app_id="new.project.2", account=self.account)
+        profile_to_edit = Profile.objects.get(user=self.jum)
+        profile_to_edit.projects.clear()
+        user = self.jam
+        self.client.force_authenticate(user)
+        self.assertEqual(user.iaso_profile.projects.count(), 0)
+        self.assertEqual(profile_to_edit.projects.count(), 0)
+
+        # A user without `projects` restrictions can set any project.
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), self.project)
+        self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
+
+        # A user with `projects` restrictions can edit a user with the same `projects` restrictions.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project, new_project_1, new_project_2])
+        profile_to_edit.projects.set([self.project, new_project_1, new_project_2])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id, new_project_1.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 2)
+
+        # A user with `projects` restrictions cannot edit a user who has broader access to projects.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project])
+        profile_to_edit.projects.set([self.project, new_project_1, new_project_2])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [self.project.id],
+            },
+            format="json",
+        )
         self.assertEqual(response.status_code, 403)
         self.assertEqual(
             response.data["detail"],
-            "User with permission menupermissions.iaso_users_managed cannot change project attributions",
+            "You cannot edit a user who has broader access to projects.",
         )
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), self.project)
 
-        # Case 3.
-        # Changing `projects` should be allowed for users with `permission._USERS_ADMIN`.
-        perm = Permission.objects.get(codename=permission._USERS_ADMIN)
-        user.user_permissions.add(perm)
+        # A user with `projects` restrictions can edit a user who has narrower access to projects.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project, new_project_1])
+        profile_to_edit.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_1.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), new_project_1)
+        self.assertEqual(profile_to_edit.user.username, "jum_new_user_name")
+
+        # A user with `projects` restrictions cannot create a user without restrictions.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project])
+        self.assertEqual(user.iaso_profile.projects.count(), 1)
+        profile_to_edit.projects.clear()
+        self.assertEqual(profile_to_edit.projects.count(), 0)
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={"user_name": "jum_new_user_name", "projects": []},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "You must specify which projects are authorized for this user.",
+        )
+
+        # A user with `projects` restrictions cannot assign projects outside his range.
+        user.iaso_profile.projects.clear()
+        profile_to_edit.projects.clear()
+        del user.iaso_profile.projects_ids  # Refresh cached property.
+        user.iaso_profile.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.data["detail"],
+            "Some projects are outside your scope.",
+        )
+
+        # An "admin" user with `projects` restrictions can assign projects outside his range.
+        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
         del user._perm_cache
         del user._user_perm_cache
         self.assertTrue(user.has_perm(permission.USERS_ADMIN))
-        data = {
-            "user_name": "jum_new_user_name",
-            "projects": [new_project.id],
-        }
-        response = self.client.patch(f"/api/profiles/{jum_profile.id}/", data=data, format="json")
+        user.iaso_profile.projects.set([self.project])
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": "jum_new_user_name",
+                "projects": [new_project_2.id],
+            },
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
-        jum_profile.refresh_from_db()
-        self.assertEqual(jum_profile.projects.count(), 1)
-        self.assertEqual(jum_profile.projects.first(), new_project)
+
+    def test_admin_should_be_able_to_bypass_projects_restrictions_for_himself(self):
+        """
+        An admin with `projects` restrictions should be able to assign himself to any project.
+        """
+        project_1 = m.Project.objects.create(name="Project 1", app_id="project.1", account=self.account)
+        project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
+
+        user_admin = self.jim
+        self.assertFalse(user_admin.has_perm(permission.USERS_MANAGED))
+        self.assertTrue(user_admin.has_perm(permission.USERS_ADMIN))
+
+        profile_to_edit = user_admin.iaso_profile
+        profile_to_edit.projects.set([project_1])
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), project_1)
+
+        self.client.force_authenticate(user_admin)
+
+        response = self.client.patch(
+            f"/api/profiles/{profile_to_edit.id}/",
+            data={
+                "user_name": user_admin.username,
+                "projects": [project_2.id],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        profile_to_edit.refresh_from_db()
+        self.assertEqual(profile_to_edit.projects.count(), 1)
+        self.assertEqual(profile_to_edit.projects.first(), project_2)
 
     def get_new_user_data(self):
         user_name = "audit_user"

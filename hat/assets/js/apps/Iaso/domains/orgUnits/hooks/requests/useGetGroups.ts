@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
+import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 // @ts-ignore
-import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
 import { staleTime } from '../../config';
@@ -33,7 +33,7 @@ type ApiParams = {
 type Params = {
     dataSourceId?: number;
     sourceVersionId?: number;
-    blockOfCountries?: string;
+    blockOfCountries?: string | boolean;
     appId?: string;
     defaultVersion?: string;
     projectIds?: string;

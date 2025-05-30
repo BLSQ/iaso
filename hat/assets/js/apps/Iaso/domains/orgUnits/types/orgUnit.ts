@@ -1,8 +1,8 @@
-import { Pagination, UrlParams } from 'bluesquare-components';
 import { ReactNode } from 'react';
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
-import { File, Instance } from '../../instances/types/instance';
+import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 
@@ -77,6 +77,7 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
+    version_id: number;
     groups: Group[];
     org_unit_type: OrgunitType;
     org_unit_type_short_name?: string;
@@ -87,7 +88,7 @@ export type OrgUnit = {
     reference_instance_action?: string;
     opening_date?: Date;
     closed_date?: Date;
-    default_image?: File;
+    default_image_id?: number;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];
@@ -112,7 +113,6 @@ type FormStateRequired<T> = {
     value: T;
     errors?: string[];
 };
-
 export type OrgUnitState = {
     id: FormStateRequired<number>;
     name: FormStateRequired<string>;

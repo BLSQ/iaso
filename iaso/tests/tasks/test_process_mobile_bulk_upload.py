@@ -47,8 +47,8 @@ DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
 
 
-def zip_fixture_dir(tablet_dir):
-    return f"iaso/tests/fixtures/mobile_bulk_uploads/{tablet_dir}"
+def zip_fixture_dir(subdir=""):
+    return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
 
 
 def add_to_zip(zipf, directory, subset):
@@ -59,6 +59,13 @@ def add_to_zip(zipf, directory, subset):
             dir_path = os.path.dirname(relative_path)
             if relative_path in subset or any(dir_path.startswith(path) for path in subset):
                 zipf.write(file_path, relative_path)
+
+
+def save_file_to_api_import(api_import, file_path):
+    assert os.path.exists(file_path)
+    with open(file_path, "rb") as f:
+        api_import.file = File(f, name=os.path.basename(file_path))
+        api_import.save()
 
 
 def create_entity_with_registration(
@@ -94,7 +101,6 @@ def create_entity_with_registration(
     return entity
 
 
-@mock.patch("iaso.tasks.process_mobile_bulk_upload.download_file")
 class ProcessMobileBulkUploadTest(TestCase):
     fixtures = ["user.yaml", "orgunit.yaml"]
 
@@ -104,7 +110,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.api_import = APIImport.objects.create(
             user=self.user,
             import_type="bulk",
-            json_body={"file": CATT_TABLET_DIR},
+            json_body={},
         )
         self.account = m.Account.objects.first()
         self.task = m.Task.objects.create(
@@ -121,14 +127,17 @@ class ProcessMobileBulkUploadTest(TestCase):
             id=1, name="Participant", reference_form=self.form_registration
         )
 
-    def test_success(self, mock_download_file):
+    def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
         # to return the filepath to this zip.
-        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        save_file_to_api_import(self.api_import, zip_path)
 
-        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+    def test_success(self):
+        self._create_zip_file()
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -140,8 +149,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -190,17 +197,84 @@ class ProcessMobileBulkUploadTest(TestCase):
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
 
-    def test_fail_in_the_middle_of_import(self, mock_download_file):
+    def test_success_when_user_is_none(self):
+        self.api_import.user = None
+        self.api_import.save()
+        self.task.launcher = None
+        self.task.save()
+
+        self._create_zip_file()
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.InstanceFile.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Org unit was created
+        ou = m.OrgUnit.objects.get(name="New Org Unit")
+        self.assertIsNotNone(ou)
+        self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+
+        # Instances (Submissions) + Entity were created
+        self.assertEqual(m.Entity.objects.count(), 2)
+        ent_disasi = m.Entity.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        entity_patrice = m.Entity.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
+        self.assertEqual(m.Instance.objects.count(), 4)
+        self.assertEqual(m.InstanceFile.objects.count(), 2)
+
+        # Entity 1: Disasi Makulo
+        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        self.assertEqual(reg_instance.json.get("_full_name"), "Disasi Makulo")
+        self.assertEqual(reg_instance.entity, ent_disasi)
+        self.assertEqual(reg_instance.instancefile_set.count(), 0)
+
+        catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
+        self.assertEqual(catt_instance.json.get("result"), "positive")
+        self.assertEqual(catt_instance.entity, ent_disasi)
+        self.assertEqual(catt_instance.instancefile_set.count(), 1)
+        image = catt_instance.instancefile_set.first()
+        self.assertEqual(image.name, "1712326156339.webp")
+
+        # Entity 2: Patrice Akambu
+        reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
+        self.assertEqual(reg_instance.json.get("_full_name"), "Patrice Akambu")
+        self.assertEqual(reg_instance.entity, entity_patrice)
+        self.assertEqual(reg_instance.instancefile_set.count(), 0)
+
+        catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
+        self.assertEqual(catt_instance.json.get("result"), "positive")
+        self.assertEqual(catt_instance.entity, entity_patrice)
+        self.assertEqual(catt_instance.instancefile_set.count(), 1)
+        # image from Disasi's CATT was duplicated to this test
+        image = catt_instance.instancefile_set.first()
+        self.assertEqual(image.name, "1712326156339.webp")
+
+    def test_fail_in_the_middle_of_import(self):
         # Org unit doesn't exist. The job will fail, then verify that
         # nothing was created.
         INCORRECT_FILES_FOR_ZIP = ["instances.json"]
-        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(
                 zipf,
                 zip_fixture_dir(CATT_TABLET_DIR),
                 INCORRECT_FILES_FOR_ZIP,
             )
-        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -211,8 +285,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -230,11 +302,11 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     # SLEEP-1448: Update an existing registration form (with a different file path
     # on the already created instance)
-    def test_reference_form_update(self, mock_download_file):
+    def test_reference_form_update(self):
         # Do an import with the CATT tablet first to already create Disasi Makulo
-        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+
+        self._create_zip_file()
+
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
             project_id=self.project.id,
@@ -262,9 +334,11 @@ class ProcessMobileBulkUploadTest(TestCase):
             json_body={"file": LABO_TABLET_DIR},
         )
 
-        with zipfile.ZipFile(f"/tmp/{LABO_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        labo_zip_path = f"/tmp/{LABO_TABLET_DIR}.zip"
+        with zipfile.ZipFile(labo_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        mock_download_file.return_value = f"/tmp/{LABO_TABLET_DIR}.zip"
+        save_file_to_api_import(api_import, labo_zip_path)
+
         process_mobile_bulk_upload(
             api_import_id=api_import.id,
             project_id=self.project.id,
@@ -305,7 +379,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-17")
 
-    def test_soft_deleted_entity(self, mock_download_file):
+    def test_soft_deleted_entity(self):
         # Create soft-deleted entity Disasi with only registration form
         ent_disasi = create_entity_with_registration(
             self,
@@ -315,10 +389,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         )
         reg_disasi = ent_disasi.attributes
 
-        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-
-        mock_download_file.return_value = f"/tmp/{CATT_TABLET_DIR}.zip"
+        self._create_zip_file()
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.exclude(deleted=True).count(), 0)
@@ -332,8 +403,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -363,7 +432,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
 
-    def test_merged_entity(self, mock_download_file):
+    def test_merged_entity(self):
         # Setup: Create entity Disasi (with uuid as in bulk upload), along with a
         # duplicate, then merge them.
         ent_disasi_A = create_entity_with_registration(self, name="Disasi A", uuid=DISASI_MAKULO_REGISTRATION)
@@ -375,9 +444,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 3)
 
         # Only add data for Disasi to avoid confusion
-        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
             self.assertEqual(ent.attributes.source_updated_at.date().isoformat(), DEFAULT_CREATED_AT_STR)
@@ -388,8 +458,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -430,7 +498,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(modif.past_value[0]["fields"]["source_updated_at"].split("T")[0], DEFAULT_CREATED_AT_STR)
         self.assertEqual(modif.new_value[0]["fields"]["source_updated_at"].split("T")[0], "2024-04-05")
 
-    def test_double_merged_entity(self, mock_download_file):
+    def test_double_merged_entity(self):
         """
         When we merge a merged entity, we should still receive the data on the
         correct (final) entity.
@@ -464,10 +532,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(m.Instance.objects.count(), 5)
 
         # Only add data for Disasi to avoid confusion
-        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-
-        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         all_entities = [ent_disasi_A, ent_disasi_B, ent_disasi_C, ent_disasi_merged_1, ent_disasi_merged_2]
         for ent in all_entities:
@@ -479,8 +547,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -528,7 +594,7 @@ class ProcessMobileBulkUploadTest(TestCase):
     # - 0 active, 1 delete -> covered by test_soft_deleted_entity
     # - 0 active, 2 deleted -> take the most "correc" deleted one
     # - More than 1 active, n deleted -> take an active one, log Sentry exception
-    def test_duplicate_uuids_1_active_1_deleted(self, mock_download_file):
+    def test_duplicate_uuids_1_active_1_deleted(self):
         # Create active + soft-deleted entity Disasi with same uuid
         ent_active = create_entity_with_registration(self, name="Disasi Active", uuid=DISASI_MAKULO_REGISTRATION)
         # create it with a different uuid to avoid clash on instance uuid
@@ -538,15 +604,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         ent_deleted.save()
 
         # Only add data for Disasi to avoid confusion
-        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -558,7 +623,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent_active.instances.count(), 2)
         self.assertEqual(ent_deleted.instances.count(), 1)
 
-    def test_duplicate_uuids_0_active_2_deleted(self, mock_download_file):
+    def test_duplicate_uuids_0_active_2_deleted(self):
         # Create two soft-deleted entities Disasi with same uuid.
         # Make the 1st one the more "correct" one.
         ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION, deleted=True)
@@ -570,15 +635,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         attrs.save()
 
         # Only add data for Disasi to avoid confusion
-        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -590,8 +654,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ent1.instances.count(), 2)
         self.assertEqual(ent2.instances.count(), 1)
 
-    @mock.patch("iaso.api.instances.logger")
-    def test_duplicate_uuids_multiple_active(self, mock_logger, mock_download_file):
+    @mock.patch("iaso.api.instances.instances.logger")
+    def test_duplicate_uuids_multiple_active(self, mock_logger):
         # Create two active Disasi with same uuid
         ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
         ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4())
@@ -599,15 +663,14 @@ class ProcessMobileBulkUploadTest(TestCase):
         ent2.save()
 
         # Only add data for Disasi to avoid confusion
-        with zipfile.ZipFile(f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        mock_download_file.return_value = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
+        save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id, project_id=self.project.id, task=self.task, _immediate=True
         )
-
-        mock_download_file.assert_called_once()
 
         # The job passes without error
         self.task.refresh_from_db()
@@ -620,17 +683,17 @@ class ProcessMobileBulkUploadTest(TestCase):
         err_msg = f"Multiple non-deleted entities for UUID {ent1.uuid}, entity_type_id {self.default_entity_type.id}"
         mock_logger.exception.assert_called_once_with(err_msg)
 
-    def test_storage_logs(self, mock_download_file):
+    def test_storage_logs(self):
         entity_uuid = "5475bfcf-5a3f-4170-9d88-245d89352362"
         files_for_zip = [
             "instances.json",
             "storageLogs.json",
             entity_uuid,  # the folder with XML submission
         ]
-        with zipfile.ZipFile(f"/tmp/{entity_uuid}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir("storage_logs_and_change_requests"), files_for_zip)
-
-        mock_download_file.return_value = f"/tmp/{entity_uuid}.zip"
+        zip_path = f"/tmp/{entity_uuid}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir("storage_logs"), files_for_zip)
+        save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -643,8 +706,6 @@ class ProcessMobileBulkUploadTest(TestCase):
             task=self.task,
             _immediate=True,
         )
-
-        mock_download_file.assert_called_once()
 
         # check Task status and result
         self.task.refresh_from_db()
@@ -675,3 +736,32 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(write_log.org_unit_id, 1)
         self.assertEqual(write_log.entity, entity)
         self.assertEqual(list(write_log.instances.all()), [instance])
+
+    def test_change_requests(self):
+        zip_path = "/tmp/change_request.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
+        save_file_to_api_import(self.api_import, zip_path)
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 1)
+        ou_change_req = m.OrgUnitChangeRequest.objects.first()
+        self.assertEqual(ou_change_req.old_name, "LaLaland")
+        self.assertEqual(ou_change_req.new_name, "LaLaland Edited")
+        self.assertEqual(ou_change_req.org_unit_id, 1)
+        self.assertEqual(ou_change_req.created_by, self.user)

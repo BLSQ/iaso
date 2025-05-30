@@ -1,4 +1,7 @@
 import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
+import { mapObject } from './objectUtils';
+
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';
 /**
@@ -78,24 +81,8 @@ export const getToDateString = (
     return null;
 };
 
-export const longDateFormats = {
-    fr: {
-        LT: 'HH:mm',
-        LTS: 'DD/MM/YYYY HH:mm',
-        L: 'DD/MM/YYYY',
-        LL: 'Do MMMM YYYY',
-        LLL: 'Do MMMM YYYY LT',
-        LLLL: 'dddd, MMMM Do YYYY LT',
-    },
-    en: {
-        LT: 'h:mm A',
-        LTS: 'DD/MM/YYYY HH:mm',
-        L: 'DD/MM/YYYY',
-        LL: 'Do MMMM YYYY',
-        LLL: 'Do MMMM YYYY LT',
-        LLLL: 'dddd, MMMM Do YYYY LT',
-    },
-};
+// Create a dynamic mapping of language codes to their date formats
+export const longDateFormats = mapObject(LANGUAGE_CONFIGS, 'dateFormats');
 
 /**
  * Configure the local for time displayed to the user.
@@ -103,7 +90,10 @@ export const longDateFormats = {
  */
 export const getLocaleDateFormat = longType => {
     const locale = moment.locale();
-    return longDateFormats[locale][longType];
+    return (
+        LANGUAGE_CONFIGS[locale]?.dateFormats?.[longType] ||
+        LANGUAGE_CONFIGS.en?.dateFormats?.[longType]
+    );
 };
 
 // Convert from Api format to format expected by DateRange picker

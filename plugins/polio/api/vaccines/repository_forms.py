@@ -262,6 +262,7 @@ class VaccineRepositoryFormsViewSet(GenericViewSet, ListModelMixin):
                 campaign__isnull=False,
                 campaign__deleted_at__isnull=True,
                 campaign__campaign_types__name=CampaignType.POLIO,
+                on_hold=False,
             )
             .select_related(
                 "campaign",

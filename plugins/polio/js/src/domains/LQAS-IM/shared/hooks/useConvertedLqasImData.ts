@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import {
     ConvertedLqasImData,
-    LqasImDistrictData,
     LqasImData,
-} from '../../../../constants/types';
+    LqasImDistrictData,
+} from '../../types';
 
 const convertRoundDataToArray = roundDataAsDict => {
     const roundData = Object.entries(roundDataAsDict);

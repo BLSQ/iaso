@@ -14,6 +14,28 @@ import {
     TabValue,
 } from '../../types';
 
+var GetFileBlobUsingURL = function (url, convertBlob) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url);
+    xhr.responseType = 'blob';
+    xhr.addEventListener('load', function () {
+        convertBlob(xhr.response);
+    });
+    xhr.send();
+};
+
+var blobToFile = function (blob, name) {
+    blob.lastModifiedDate = new Date();
+    blob.name = name;
+    return blob;
+};
+
+var GetFileObjectFromURL = function (filePathOrUrl, fileName, convertBlob) {
+    GetFileBlobUsingURL(filePathOrUrl, function (blob) {
+        convertBlob(blobToFile(blob, fileName));
+    });
+};
+
 export const saveTab = (
     key: 'pre_alerts' | 'arrival_reports',
     supplyChainData: SupplyChainFormData,
@@ -60,11 +82,16 @@ export const saveTab = (
                     } else if (typeof item[keyy] === 'string') {
                         const filePath = item[keyy];
                         const fileName = filePath.split('/').pop();
-                        const file = new File(
-                            [filePath],
-                            fileName || 'document',
-                        );
-                        formData.append(`${key}[${index}].${keyy}`, file);
+                        GetFileObjectFromURL(filePath, fileName, fileBlob => {
+                            const fileObject = new File(
+                                [fileBlob],
+                                fileBlob.name,
+                            );
+                            formData.append(
+                                `${key}[${index}].${keyy}`,
+                                fileObject,
+                            );
+                        });
                     }
                 } else if (item[keyy] !== null && item[keyy] !== undefined) {
                     formData.append(`${key}[${index}].${keyy}`, item[keyy]);

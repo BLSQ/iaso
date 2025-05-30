@@ -4,8 +4,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { cloneDeep, sortBy } from 'lodash';
+import MapIcon from '@mui/icons-material/Map';
 import {
     TableContainer,
     Table as MuiTable,
@@ -18,13 +17,21 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import MapIcon from '@mui/icons-material/Map';
+import { useSafeIntl } from 'bluesquare-components';
+import { cloneDeep, sortBy } from 'lodash';
+import MESSAGES from '../../../../constants/messages';
 import {
     OK_COLOR,
     FAIL_COLOR,
     MODERATE_COLOR,
     POOR_COLOR,
 } from '../../../../styles/constants';
+import { useStyles } from '../../../../styles/theme';
+import { TablePlaceHolder } from '../../../Campaigns/Scope/Scopes/TablePlaceHolder';
+import { TableText } from '../../../Campaigns/Scope/Scopes/TableText';
+import { IN_SCOPE } from '../../shared/constants';
+import { HasLocationIcon } from '../../shared/HasLocationIcon';
+import { findRegionShape } from '../../shared/utils';
 import {
     LQAS_PASS,
     LQAS_FAIL,
@@ -32,13 +39,6 @@ import {
     LQAS_POOR,
     LQAS_VERY_POOR,
 } from '../constants';
-import { useStyles } from '../../../../styles/theme';
-import MESSAGES from '../../../../constants/messages';
-import { TablePlaceHolder } from '../../../Campaigns/Scope/Scopes/TablePlaceHolder';
-import { TableText } from '../../../Campaigns/Scope/Scopes/TableText';
-import { IN_SCOPE } from '../../shared/constants';
-import { HasLocationIcon } from '../../shared/HasLocationIcon';
-import { findRegionShape } from '../../shared/utils';
 
 type SortFocus =
     | 'DISTRICT'

@@ -6,8 +6,8 @@ import {
 import { BudgetProcessList } from '../domains/Budget';
 import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
 import { Calendar } from '../domains/Calendar/Calendar';
-import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { CampaignHistory } from '../domains/Campaigns/campaignHistory/CampaignHistory';
+import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { Chronogram } from '../domains/Chronogram/Chronogram';
 import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
 import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
@@ -22,6 +22,7 @@ import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Author
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
 import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
+import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
 import { VaccineStockVariation } from '../domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
 import { VaccineStockManagement } from '../domains/VaccineModule/StockManagement/VaccineStockManagement';
 import { VaccineSupplyChainDetails } from '../domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
@@ -35,13 +36,16 @@ import {
     POLIO,
     POLIO_ADMIN,
     STOCK_MANAGEMENT_READ,
+    STOCK_MANAGEMENT_READ_ONLY,
     STOCK_MANAGEMENT_WRITE,
     SUPPLYCHAIN_READ,
+    SUPPLYCHAIN_READ_ONLY,
     SUPPLYCHAIN_WRITE,
 } from './permissions';
 import {
     EMBEDDED_CALENDAR_URL,
     EMBEDDED_VACCINE_REPOSITORY_URL,
+    EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
 
@@ -94,6 +98,13 @@ export const embeddedVaccineRepositoryPath: AnonymousRoutePath = {
     baseUrl: EMBEDDED_VACCINE_REPOSITORY_URL,
     routerUrl: `${EMBEDDED_VACCINE_REPOSITORY_URL}/*`,
     element: <VaccineRepository />,
+    isRootUrl: false,
+};
+export const embeddedVaccineStockPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: EMBEDDED_VACCINE_STOCK_URL,
+    routerUrl: `${EMBEDDED_VACCINE_STOCK_URL}/*`,
+    element: <PublicVaccineStock />,
     isRootUrl: false,
 };
 
@@ -162,35 +173,47 @@ export const supplychainPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChain,
     routerUrl: `${baseUrls.vaccineSupplyChain}/*`,
     element: <VaccineSupplyChain />,
-    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const supplychainDetailsPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChainDetails,
     routerUrl: `${baseUrls.vaccineSupplyChainDetails}/*`,
     element: <VaccineSupplyChainDetails />,
-    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const stockManagementPath: RoutePath = {
     baseUrl: baseUrls.stockManagement,
     routerUrl: `${baseUrls.stockManagement}/*`,
     element: <VaccineStockManagement />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockManagementDetailsPath: RoutePath = {
     baseUrl: baseUrls.stockManagementDetails,
     routerUrl: `${baseUrls.stockManagementDetails}/*`,
     element: <VaccineStockManagementDetails />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockVariationPath: RoutePath = {
     baseUrl: baseUrls.stockVariation,
     routerUrl: `${baseUrls.stockVariation}/*`,
     element: <VaccineStockVariation />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const notificationPath: RoutePath = {
@@ -243,6 +266,7 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     embeddedCalendarPath,
     vaccineRepositoryPath,
     embeddedVaccineRepositoryPath,
+    embeddedVaccineStockPath,
     lqasCountryPath,
     lqasAfroPath,
     imGlobalPath,

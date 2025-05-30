@@ -220,7 +220,7 @@ const MESSAGES = defineMessages({
     },
     quantities_ordered_in_doses: {
         id: 'iaso.polio.label.quantities_ordered_in_doses',
-        defaultMessage: 'Quantity ordered in doses',
+        defaultMessage: 'Quantity needed in doses',
     },
     date_vrf_reception: {
         id: 'iaso.polio.label.date_vrf_reception',
@@ -353,6 +353,10 @@ const MESSAGES = defineMessages({
     PoNumberNoPrefix: {
         id: 'iaso.polio.label.PoNumberNoPrefix',
         defaultMessage: 'Please input PO number without prefix',
+    },
+    vrfCreatedAt: {
+        id: 'iaso.polio.label.vrfCreatedAt',
+        defaultMessage: 'VRF created',
     },
 });
 

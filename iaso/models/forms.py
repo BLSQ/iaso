@@ -21,6 +21,7 @@ from ..utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
+from ..utils.models.virus_scan import VirusScanStatus
 from .project import Project
 
 
@@ -76,6 +77,14 @@ class FormQuerySet(models.QuerySet):
             Prefetch("form_versions", queryset=latest_versions, to_attr="latest_versions")
         )
         return queryset
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(projects__in=user_projects_ids)
 
 
 class Form(SoftDeletableModel):
@@ -366,6 +375,8 @@ class FormAttachment(models.Model):
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
     file = models.FileField(upload_to=form_folder)
+    file_last_scan = models.DateTimeField(blank=True, null=True)
+    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -113,7 +113,7 @@ bin/
 include/python3.6m
 
 pip-selfcheck.json
-data
+# data
 
 # dev environment
 .env*
@@ -138,6 +138,9 @@ extracted_translation.json
 
 hat/assets/webpack/
 docker/DHIS2_home/
+
+# Auto-generated files
+hat/assets/js/apps/Iaso/bundle/generated/
 
 # enketo build
 docker/enketo/checksum/
@@ -190,7 +193,6 @@ originals
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
-
-
-
 plugins/snt_malaria
+
+plugins/snt-malaria

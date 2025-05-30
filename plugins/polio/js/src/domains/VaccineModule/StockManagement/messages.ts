@@ -205,9 +205,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.return_to_supplier',
         defaultMessage: 'Return to supplier',
     },
-    losses: {
-        id: 'iaso.polio.label.losses',
-        defaultMessage: 'Losses',
+    missing: {
+        id: 'iaso.polio.label.missing',
+        defaultMessage: 'Missing',
     },
     vaccine_expired: {
         id: 'iaso.polio.label.vaccine_expired',
@@ -400,6 +400,11 @@ const MESSAGES = defineMessages({
     temporary_campaign_name: {
         id: 'iaso.polio.label.temporary_campaign_name',
         defaultMessage: 'Temporary campaign name',
+    },
+    duplicate_destruction: {
+        id: 'iaso.polio.label.duplicate_destruction',
+        defaultMessage:
+            'A destruction report with the same date and unusable vials destroyed already exists',
     },
 });
 

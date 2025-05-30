@@ -51,7 +51,7 @@ const MESSAGES = defineMessages({
     },
     entityTypes: {
         id: 'iaso.entityTypes.title',
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
     },
     startDatefrom: {
         id: 'iaso.label.startDatefrom',
@@ -131,11 +131,11 @@ const MESSAGES = defineMessages({
     },
     softDeleteA: {
         id: 'iaso.label.entities.deleteA',
-        defaultMessage: 'Delete beneficiary A',
+        defaultMessage: 'Delete entity A',
     },
     softDeleteB: {
         id: 'iaso.label.entities.deleteB',
-        defaultMessage: 'Delete beneficiary B',
+        defaultMessage: 'Delete entity B',
     },
     ignore: {
         id: 'iaso.label.ignore',
@@ -158,7 +158,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entity.label.noSubmissionFound',
     },
     submissionsForEntity: {
-        defaultMessage: 'Submissions for Beneficiary {entity}',
+        defaultMessage: 'Submissions for entity {entity}',
         id: 'iaso.entity.label.submissionsForEntity',
     },
     created_at: {
@@ -187,7 +187,7 @@ const MESSAGES = defineMessages({
     },
     entityType: {
         id: 'iaso.entityTypes.label',
-        defaultMessage: 'Beneficiary type',
+        defaultMessage: 'Entity type',
     },
     latestAnalysis: {
         defaultMessage: 'Latest analysis completed: {finishedAt}',
@@ -219,7 +219,7 @@ const MESSAGES = defineMessages({
     },
     messageErrorMissingFields: {
         defaultMessage:
-            'No fields to analyse. You can set them up in the beneficiaries types page',
+            'No fields to analyse. You can set them up in the entities types page',
         id: 'iaso.duplicate.messageErrorMissingFields',
     },
 });

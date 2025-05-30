@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReportIcon from '@mui/icons-material/Report';
 import {
     Box,
@@ -19,12 +20,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 // @ts-ignore
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { UseMutateAsyncFunction } from 'react-query';
-import { useCurrentUser } from '../../../utils/usersUtils';
-
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
+import { useCurrentUser } from '../../../utils/usersUtils';
+
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import MESSAGES from '../messages';
@@ -89,10 +89,9 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions(
-        undefined,
-        true,
-    );
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions({
+        onlyWriteAccess: true,
+    });
     const [editGroups, setEditGroups] = useState<boolean>(false);
     const [groupsAdded, setGroupsAdded] = useState<number[]>([]);
     const [groupsRemoved, setGroupsRemoved] = useState<number[]>([]);

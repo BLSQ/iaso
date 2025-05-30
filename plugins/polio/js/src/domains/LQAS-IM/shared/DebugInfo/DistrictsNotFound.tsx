@@ -1,13 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Typography, Chip, Box } from '@mui/material';
-import { LqasImCampaign } from '../../../../constants/types';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
+import { LqasImCampaign } from '../../types';
 
 type Props = {
-    // eslint-disable-next-line react/require-default-props
     campaign?: string;
-    // eslint-disable-next-line react/require-default-props
     data?: Record<string, LqasImCampaign>;
 };
 

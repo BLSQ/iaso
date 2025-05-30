@@ -483,6 +483,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "is_test",
             "is_preventive",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -636,7 +637,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         def to_representation(self, instance):
             # Skip test rounds
-            if instance.is_test:
+            if instance.on_hold:
                 return None
             return super().to_representation(instance)
 
@@ -690,6 +691,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "campaign_types",
             "description",
             "is_test",
+            "on_hold",
         ]
         read_only_fields = fields
 
@@ -822,17 +824,22 @@ class CampaignViewSet(ModelViewSet):
         campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
+        if on_hold == "false":
+            campaigns = campaigns.filter(on_hold=False)
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if campaign_category == "test":
-            campaigns = campaigns.filter(is_test=True)
-        if campaign_category == "regular":
+        if campaign_category == "on_hold":
+            campaigns = campaigns.filter(on_hold=True)
+        if campaign_category == "regular" and on_hold == "true":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
+        if campaign_category == "regular" and on_hold == "false":
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(on_hold=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
@@ -952,7 +959,9 @@ class CampaignViewSet(ModelViewSet):
         rounds = (
             Round.objects.select_related("campaign")
             .filter(query_rounds)
-            .exclude(Q(campaign__isnull=True) | Q(campaign__is_test=True))
+            .exclude(
+                Q(campaign__isnull=True) | Q(campaign__is_test=True)
+            )  # TODO see if on hold should be excluded as well
         )
 
         # get filtered rounds
@@ -1204,7 +1213,7 @@ class CampaignViewSet(ModelViewSet):
 
         # Filter out test rounds if requested
         if exclude_test_rounds:
-            rounds = rounds.filter(is_test=False)
+            rounds = rounds.filter(on_hold=False)
 
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
@@ -1212,10 +1221,16 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_category == "on_hold":
+            rounds = rounds.filter(campaign__on_hold=True)
         if campaign_category == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
         if campaign_category == "regular":
-            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+            rounds = (
+                rounds.filter(campaign__is_preventive=False)
+                .filter(campaign__is_test=False)
+                .filter(campaign__on_hold=False)
+            )
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
         if org_unit_groups:
@@ -1423,7 +1438,7 @@ Timeline tracker Automated message
         return Response({"message": "email sent"})
 
     # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
-    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    # But Patching the campaign directly is very much error prone, so we disable it indirectly
     # Updates are done in the CampaignSerializer
     def partial_update(self):
         """Don't PATCH this way, it won't do anything

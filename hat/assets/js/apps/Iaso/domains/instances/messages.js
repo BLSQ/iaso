@@ -69,6 +69,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
         defaultMessage: 'Unlink reference submission from orgUnit',
     },
+    linkUnlinkReferenceSubmissionsToOrgUnits: {
+        defaultMessage:
+            'link or unlink reference submissions to/from org units',
+        id: 'iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -231,9 +236,39 @@ const MESSAGES = defineMessages({
             'An error occurred while pushing GPS from submissions to Org units',
         id: 'iaso.snackBar.pushGpsTaskError',
     },
+    referenceInstanceLinkTaskPlanned: {
+        defaultMessage:
+            'Bulk reference submissions link or unlink to/from Org units was planned with success.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskPlanned',
+    },
+    referenceInstanceLinkTaskError: {
+        defaultMessage:
+            'An error occurred while linking or unlinking to/from Org units.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskError',
+    },
     multipleInstancesOneOrgUnitWarningMessage: {
         defaultMessage: 'Multiple submissions are using the same org unit',
         id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
+    },
+    multipleReferenceInstancesOneOrgUnitWarningMessage: {
+        defaultMessage:
+            'Multiple reference submissions are using the same org units and same forms',
+        id: 'iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage',
+    },
+    noReferenceSubmissionsWarningMessage: {
+        defaultMessage:
+            '{selectedSubmissionsCount} selected submissions cannot become reference submissions (their form is not configured as a reference form for their respective org unit type)',
+        id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
+    },
+    linkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'You selected {unLinkedCount} standard submissions. Please check this checkbox in order to link them to their respective org unit as a reference submission.',
+        id: 'iaso.instance.linkReferenceSubmissionsConfirmMessage',
+    },
+    unLinkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'You selected {linkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
+        id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
     },
     approveAllWarningsMessage: {
         defaultMessage:
@@ -665,9 +700,9 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Select one form to enable search using form submitted fields',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     projects: {
         id: 'iaso.label.projects',
@@ -718,6 +753,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Use prefix “ids:” for internal submissions ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “ids: 123456 654321”',
         id: 'iaso.instances.searchParams',
+    },
+    orgunitreferenceinstance: {
+        id: 'iaso.label.orgunitreferenceinstance',
+        defaultMessage: 'Reference submission',
     },
 });
 

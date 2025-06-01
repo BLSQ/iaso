@@ -13,7 +13,7 @@ type Props = {
     round: number | undefined;
     startDate: LqasImRefDate;
     endDate: LqasImRefDate;
-    options: DropdownOptions<number>[];
+    options: DropdownOptions<number | string>[];
     onRoundSelect: (round: number) => void;
     campaignObrName?: string;
     isFetching: boolean;

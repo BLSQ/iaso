@@ -39,6 +39,7 @@ import {
     LQAS_POOR,
     LQAS_VERY_POOR,
 } from '../constants';
+import { Side } from '../../../../constants/types';
 
 type SortFocus =
     | 'DISTRICT'
@@ -53,6 +54,7 @@ type Props = {
     shapes: any;
     isFetching: boolean;
     regionShapes: any;
+    side: Side;
 };
 
 const useTableStyle = makeStyles(theme => {
@@ -74,14 +76,14 @@ const useTableStyle = makeStyles(theme => {
         [LQAS_VERY_POOR]: { color: FAIL_COLOR },
         [LQAS_MODERATE]: { color: MODERATE_COLOR },
         [LQAS_POOR]: { color: POOR_COLOR },
-        [LQAS_VERY_POOR]: { color: FAIL_COLOR },
     };
 });
 
-export const LqasCountryListOverview: FunctionComponent<Props> = ({
+export const LqasCountryListView: FunctionComponent<Props> = ({
     shapes,
     isFetching,
     regionShapes,
+    side,
 }) => {
     const classes: Record<string, string> = useStyles();
     const tableClasses: Record<string, string> = useTableStyle();
@@ -230,7 +232,7 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
                                 shapesForTable?.map((shape, i) => {
                                     return (
                                         <TableRow
-                                            key={shape.id}
+                                            key={`${shape.id}-${side}`}
                                             className={
                                                 i % 2 > 0
                                                     ? classes.districtListRow

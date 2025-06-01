@@ -72,6 +72,8 @@ export type LqasImFilterParams = {
     rounds: string | undefined;
 };
 
+export type LqasTabValue = 'map' | 'list';
+
 // This one should probably be renamed
 export type LqasImParams = {
     type: LqasIMType;
@@ -165,4 +167,13 @@ export type LqasImMapLayer = OrgUnit & {
 export type LqasImRefDate = {
     date: string;
     isDefault: boolean;
+};
+
+export type LqasChartData = {
+    nfm: ChartDataEntry;
+    rfa: ChartDataEntry;
+    cg: {
+        chartKey: string;
+        round: number | undefined;
+    };
 };

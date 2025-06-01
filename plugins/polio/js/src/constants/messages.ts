@@ -2481,6 +2481,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.hideSubactivities',
         defaultMessage: 'Hide sub-activities',
     },
+    month: {
+        id: 'iaso.polio.periods.month',
+        defaultMessage: 'Month',
+    },
 });
 
 export default MESSAGES;

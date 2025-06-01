@@ -528,3 +528,18 @@ export type CampaignTypesDropdown = DropdownOptionsWithOriginal<
     string,
     CampaignType
 >;
+
+/** UUID as string */
+export type UuidAsString = string;
+/**
+ * YYYY-MM-dd
+ */
+export type DateAsString = string;
+/**
+ * MM-YYYY e.g 12-2024
+ */
+export type MonthYear = string;
+/**
+ * number as string e.g. "5"
+ */
+export type NumberAsString = string;

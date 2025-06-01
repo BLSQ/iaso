@@ -475,6 +475,7 @@ class Group(models.Model):
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_internal = models.BooleanField(default=False)  # iaso-only groups that are not exported to DHIS2
 
     objects = DefaultGroupManager()
     all_objects = models.Manager()
@@ -501,6 +502,7 @@ class Group(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
             "block_of_countries": self.block_of_countries,  # This field is used to mark a group containing only countries
+            "is_internal": self.is_internal,  # iaso-only groups that are not exported to DHIS2
         }
 
         if with_counts:

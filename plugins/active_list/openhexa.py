@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 
 import requests
 
@@ -34,12 +33,12 @@ class OpenHEXAClient:
 
     def prepare_object_upload(self, workspace_slug, object_key, content_type):
         raw_upload_url = self.query(
-            f"""
-            mutation PrepareObjectUpload($input: PrepareObjectUploadInput!) {{
-                prepareObjectUpload(input: $input) {{
+            """
+            mutation PrepareObjectUpload($input: PrepareObjectUploadInput!) {
+                prepareObjectUpload(input: $input) {
                     success uploadUrl
-                }}
-            }}
+                }
+            }
         """,
             {
                 "input": {
@@ -54,14 +53,14 @@ class OpenHEXAClient:
 
     def run_pipeline(self, pipeline_id, config):
         raw_run_pipeline = self.query(
-            f"""
-            mutation RunPipeline($input: RunPipelineInput!) {{
-                runPipeline(input: $input) {{
-                    success run {{
+            """
+            mutation RunPipeline($input: RunPipelineInput!) {
+                runPipeline(input: $input) {
+                    success run {
                         id
-                    }}
-                }}
-            }}
+                    }
+                }
+            }
         """,
             {"input": {"id": pipeline_id, "config": config}},
         )["runPipeline"]
@@ -74,12 +73,12 @@ class OpenHEXAClient:
 
     def create_dataset_file_upload_url(self, version_id, content_type, filename):
         raw_upload_url = self.query(
-            f"""
-            mutation createDatasetVersionFile($input: CreateDatasetVersionFileInput!) {{
-                createDatasetVersionFile(input: $input) {{
+            """
+            mutation createDatasetVersionFile($input: CreateDatasetVersionFileInput!) {
+                createDatasetVersionFile(input: $input) {
                     success uploadUrl
-                }}
-            }}
+                }
+            }
         """,
             {
                 "input": {
@@ -94,17 +93,17 @@ class OpenHEXAClient:
 
     def create_dataset_version(self, datasetId, name, description):
         raw_dataset_version = self.query(
-            f"""
-            mutation CreateDatasetVersion($input: CreateDatasetVersionInput!) {{
-                createDatasetVersion(input: $input) {{
-                    success version {{
+            """
+            mutation CreateDatasetVersion($input: CreateDatasetVersionInput!) {
+                createDatasetVersion(input: $input) {
+                    success version {
                         id
                         name
                         description
                         createdAt
-                    }}
-                }}
-            }}
+                    }
+                }
+            }
         """,
             {
                 "input": {
@@ -119,18 +118,18 @@ class OpenHEXAClient:
 
     def create_dataset(self, workspaceSlug, name, description):
         raw_dataset = self.query(
-            f"""
-            mutation CreateDataset($input: CreateDatasetInput!) {{
-                createDataset(input: $input) {{
-                    success dataset {{
+            """
+            mutation CreateDataset($input: CreateDatasetInput!) {
+                createDataset(input: $input) {
+                    success dataset {
                         id
                         name
                         description
                         createdAt
                         updatedAt
-                    }}
-                }}
-            }}
+                    }
+                }
+            }
         """,
             {
                 "input": {
@@ -145,12 +144,12 @@ class OpenHEXAClient:
 
     def file(self, workspaceSlug, objectKey):
         raw_file = self.query(
-            f"""
-            mutation GetFile($workspace: String!, $key: String!) {{
-                prepareObjectDownload (input: {{ workspaceSlug: $workspace, objectKey: $key }}) {{
+            """
+            mutation GetFile($workspace: String!, $key: String!) {
+                prepareObjectDownload (input: { workspaceSlug: $workspace, objectKey: $key }) {
                     success downloadUrl
-                }}
-            }}
+                }
+            }
         """,
             {"workspace": workspaceSlug, "key": objectKey},
         )["prepareObjectDownload"]
@@ -165,19 +164,19 @@ class OpenHEXAClient:
 
     def create_folder(self, workspaceSlug, folderName):
         raw_folder = self.query(
-            f"""
-            mutation CreateBucketFolderInput($input: CreateBucketFolderInput!) {{
-                createBucketFolder(input: $input) {{
+            """
+            mutation CreateBucketFolderInput($input: CreateBucketFolderInput!) {
+                createBucketFolder(input: $input) {
                     success 
-                    folder {{
+                    folder {
                         key
                         name
                         path
                         updatedAt
-                    }}
+                    }
                     errors
-                }}
-            }}
+                }
+            }
         """,
             {
                 "input": {
@@ -191,9 +190,9 @@ class OpenHEXAClient:
 
     def run(self, run_id):
         raw_run = self.query(
-            f"""
-            query PipelineRun($run: UUID!) {{
-                pipelineRun(id: $run) {{
+            """
+            query PipelineRun($run: UUID!) {
+                pipelineRun(id: $run) {
                     id
                     run_id
                     duration
@@ -202,15 +201,15 @@ class OpenHEXAClient:
                     status
                     logs
                     executionDate
-                    outputs {{
-                        ... on BucketObject {{
+                    outputs {
+                        ... on BucketObject {
                             key
                             name
                             path
-                        }}
-                    }}
-                }}
-            }}
+                        }
+                    }
+                }
+            }
         """,
             {"run": run_id},
         )["pipelineRun"]
@@ -243,17 +242,17 @@ class OpenHEXAClient:
 
     def workspace(self, slug):
         raw_workspace = self.query(
-            f"""
-            query Workspace($slug: String!) {{
-                workspace (slug: $slug) {{
+            """
+            query Workspace($slug: String!) {
+                workspace (slug: $slug) {
                     slug
                     name
                     description
                     createdAt
                     updatedAt
-                    createdBy {{ id, email }}
-                }}
-            }}
+                    createdBy { id, email }
+                }
+            }
         """,
             {"slug": slug},
         )["workspace"]

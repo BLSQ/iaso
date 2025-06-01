@@ -1,5 +1,6 @@
 from django import forms
-from .models import Validation, Record
+
+from .models import Record, Validation
 
 
 class ValidationForm(forms.ModelForm):

@@ -1,13 +1,18 @@
+import os
+import uuid
+
 from argparse import ArgumentParser
+from logging import getLogger
+
+from django.core.files.base import ContentFile
 from django.core.management.base import BaseCommand
+
+from hat.sync.views import process_instance_file
+from iaso.api.instances.instances import import_data
 from iaso.models import Instance
 from plugins.active_list.models import Patient
-from logging import getLogger
-import uuid
-import os
-from django.core.files.base import ContentFile
-from iaso.api.instances.instances import import_data
-from hat.sync.views import process_instance_file
+
+
 logger = getLogger(__name__)
 
 REGISTRY_FORM_ID = os.environ.get("REGISTRY_FORM_ID", 1)
@@ -63,6 +68,7 @@ xml_template = """<?xml version='1.0' ?><data id="file_active_admission" version
 </data>
 """
 
+
 class Command(BaseCommand):
     help = """checks all the patients to see if they should be marked as lost and updates the patient status"""
 
@@ -73,9 +79,8 @@ class Command(BaseCommand):
         patients = Patient.objects.all()
         for patient in patients:
             if not patient.entity:
-
                 xml = xml_template
-               # f.close()
+                # f.close()
                 the_uuid = str(uuid.uuid4())
                 file_name = "register_from_xls%s.xml" % the_uuid
 
@@ -95,7 +100,7 @@ class Command(BaseCommand):
                     "HIV1": "1",
                     "HIV2": "2",
                 }
-                hiv_type = hiv_mapping.get(patient.last_record.hiv_type,"1")
+                hiv_type = hiv_mapping.get(patient.last_record.hiv_type, "1")
                 print(patient.last_record.regimen)
                 variables = {
                     "REGISTRY_FORM_VERSION": REGISTRY_FORM_VERSION,
@@ -123,8 +128,10 @@ class Command(BaseCommand):
                     "tb_vih": tb_vih,
                     "adm_type_vih": hiv_type,
                     "type_vih": hiv_type,
-                    "adm_ligne_thera": "1" if patient.last_record.treatment_line == "" else 2, #à corriger
-                    "adm_resp_ex": patient.last_record.import_source.user.username if patient.last_record.import_source.user else "",
+                    "adm_ligne_thera": "1" if patient.last_record.treatment_line == "" else 2,  # à corriger
+                    "adm_resp_ex": patient.last_record.import_source.user.username
+                    if patient.last_record.import_source.user
+                    else "",
                     "enfant": "1" if code_enfant else "0",
                     "adm_is_done": 1,
                     "instanceID": the_uuid,
@@ -134,7 +141,7 @@ class Command(BaseCommand):
                 print(identifier_code, patient.last_record.regimen)
                 instance_file = ContentFile(instance_xml, name=file_name)
 
-                timestamp = int(patient.last_record.import_source.creation_date.timestamp()*1000)
+                timestamp = int(patient.last_record.import_source.creation_date.timestamp() * 1000)
                 instance_body = [
                     {
                         "id": the_uuid,
@@ -158,4 +165,3 @@ class Command(BaseCommand):
                 process_instance_file(instance, instance_file, patient.last_record.import_source.user)
                 patient.entity = instance.entity
                 patient.save()
-

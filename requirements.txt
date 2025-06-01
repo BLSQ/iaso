@@ -101,6 +101,7 @@ django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/
 # ------------------------------------------------------------------------------
 https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
+git+https://github.com/madewulf/spreadsheet-xlsform-validator.git#egg=django-xlsform-validator
 # ODK-specific libraries.
 # ------------------------------------------------------------------------------
 # pyxform depends on:

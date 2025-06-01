@@ -1,9 +1,13 @@
 from argparse import ArgumentParser
-from django.core.management.base import BaseCommand
-from plugins.active_list.models import Patient
 from logging import getLogger
 
+from django.core.management.base import BaseCommand
+
+from plugins.active_list.models import Patient
+
+
 logger = getLogger(__name__)
+
 
 class Command(BaseCommand):
     help = """checks all the patients to see if they should be marked as lost and updates the patient status"""

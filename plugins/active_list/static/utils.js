@@ -35,10 +35,34 @@ function submitForm (formData) {
           submitForm(formData)
         }
       } else {
-        alert(response['message'])
+        alert(response['message']);
+        if (response.download_id) {
+          // If a download ID is provided, trigger the download
+          downloadFileWithAnchor(`/active_list/download/?id=${response.download_id}`)
+        }
       }
     }
   })
+}
+
+function downloadFileWithAnchor(path) {
+  const downloadUrl = path;
+
+  // Create a temporary anchor element
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+
+  // Set the download attribute. This attribute suggests a filename to the browser.
+  // While the server's Content-Disposition header is primary, this can be a fallback
+  // or a way to suggest a name if the server doesn't set one (though it should).
+  // You might not know the exact filename here, so you can omit it or make a guess.
+  link.setAttribute('download', 'annotated_file'); // Suggests a filename
+
+  // Append to the document, click, and then remove
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  // Or link.remove() in modern browsers
 }
 
 function generateMonthList () {

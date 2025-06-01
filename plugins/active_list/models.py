@@ -1,7 +1,10 @@
+import datetime
+
 from django.contrib.auth.models import User
 from django.db import models
-from iaso.models import OrgUnit, Entity
-import datetime
+
+from iaso.models import Entity, OrgUnit
+
 
 VALIDATION_STATUS_WAITING_FOR_VALIDATION = "WAITING_FOR_VALIDATION"
 VALIDATION_STATUS_DISTRICT_VALIDATED = "DISTRICT_VALIDATED"
@@ -95,6 +98,7 @@ class Import(models.Model):
     on_time = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
+
 class Patient(models.Model):
     identifier_code = models.CharField(
         max_length=255, null=False, db_index=True, verbose_name="Code identifiant", unique=True
@@ -115,9 +119,20 @@ class Patient(models.Model):
         """
         Evaluate if the patient is lost based on the last record's discontinuation date.
         """
-        print("Evaluating loss for patient:", self.identifier_code, "Active status:", self.active, "last_record:", self.last_record)
+        print(
+            "Evaluating loss for patient:",
+            self.identifier_code,
+            "Active status:",
+            self.active,
+            "last_record:",
+            self.last_record,
+        )
         if self.active and self.last_record and self.last_record.next_dispensation_date:
-            print("Last record next_dispensation_date:", self.last_record.next_dispensation_date, datetime.date.today() - datetime.timedelta(days=28))
+            print(
+                "Last record next_dispensation_date:",
+                self.last_record.next_dispensation_date,
+                datetime.date.today() - datetime.timedelta(days=28),
+            )
             if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(days=28):
                 self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(days=28)
                 self.active = False
@@ -149,6 +164,7 @@ class PatientInactiveEvent(models.Model):
 
     def __str__(self):
         return f"Patient {self.patient.identifier_code} inactive on {self.date} for reason {self.reason}"
+
 
 class Record(models.Model):
     number = models.IntegerField(null=False, verbose_name="Numéro")
@@ -202,7 +218,6 @@ PATIENT_LIST_DISPLAY_FIELDS = {
     #  "code_ets": "Code établissement",
     #  "facility_name": "Nom établissement",
     #   "period": "Période",
-
     "sex": "Sexe",
     "age": "Âge",
     "weight": "Poids",

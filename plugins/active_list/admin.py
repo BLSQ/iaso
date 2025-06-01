@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from .models import Validation, Record, Import, Patient, PatientInactiveEvent
+from .models import Import, Patient, PatientInactiveEvent, Record, Validation
+
 
 @admin.register(Validation)
 class ValidationAdmin(admin.ModelAdmin):
@@ -38,5 +39,3 @@ class PatientInactiveEventAdmin(admin.ModelAdmin):
     raw_id_fields = ("patient",)
     search_fields = ("patient__identifier_code",)
     list_filter = ("reason",)
-
-

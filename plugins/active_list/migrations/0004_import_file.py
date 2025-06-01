@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('active_list', '0003_patientinactiveevent_last_patient_record_at_time_of_loss_and_more'),
+        ("active_list", "0003_patientinactiveevent_last_patient_record_at_time_of_loss_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='import',
-            name='file',
-            field=models.FileField(null=True, upload_to='uploads/%Y/%m/%d/'),
+            model_name="import",
+            name="file",
+            field=models.FileField(null=True, upload_to="uploads/%Y/%m/%d/"),
         ),
     ]

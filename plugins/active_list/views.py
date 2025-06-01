@@ -1,50 +1,47 @@
 import calendar
+import copy
+import datetime
 import hashlib
+import math
 import os
 import uuid
-from datetime import timedelta
-from datetime import datetime
-import datetime
-import calendar
+
+from datetime import datetime, timedelta
+
+import openpyxl
+import pandas as pd
 import pytz
 
-import pandas as pd
-import math
-import openpyxl
-from django.core.exceptions import FieldDoesNotExist
-
-from django.db.models import Max
-from django.http import HttpResponse
-from django.db import models
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-
-
-from iaso.models import OrgUnit
-from .forms import ValidationForm, ActivePatientsListForm
-from .settings import OPENHEXA_USER, OPENHEXA_PASSWORD
+from django.core.exceptions import FieldDoesNotExist
+from django.db import models
+from django.db.models import Max
+from django.http import FileResponse, Http404, HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.encoding import smart_str
-from .openhexa import *
+from django_xlsform_validator.validation import XLSFormValidator
 
+from iaso.models import Form, FormVersion, OrgUnit
+
+from ..polio.settings import DISTRICT
+from .forms import ActivePatientsListForm, ValidationForm
 from .models import (
-    Import,
-    SOURCE_EXCEL,
-    Record,
-    VALIDATION_STATUS_CHOICES,
-    Validation,
-    PATIENT_LIST_DISPLAY_FIELDS,
-    HIV_UNKNOWN,
     HIV_HIV1,
-    HIV_HIV2,
     HIV_HIV1_AND_2,
+    HIV_HIV2,
+    HIV_UNKNOWN,
     PATIENT_HISTORY_DISPLAY_FIELDS,
+    PATIENT_LIST_DISPLAY_FIELDS,
+    SOURCE_EXCEL,
+    VALIDATION_STATUS_CHOICES,
+    Import,
     Patient,
     PatientInactiveEvent,
+    Record,
+    Validation,
 )
-from ..polio.settings import DISTRICT
+from .openhexa import *
+
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 4)
@@ -52,6 +49,7 @@ FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", 5)
 
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "ods", "csv", "xlsb", "xltm", "xltx", "xlsm"}
 OK = "OK"
+FILE_DATA_PROBLEM = "FILE_DATA_PROBLEM"
 ERROR_FILE_ALREADY_UPLOADED = "ERROR_FILE_ALREADY_UPLOADED"
 ERROR_PERIOD_ALREADY_UPLOADED = "ERROR_PERIOD_ALREADY_UPLOADED"
 ERROR_NO_FILE = "ERROR_NO_FILE"
@@ -73,6 +71,11 @@ RESPONSES = {
     ERROR_NO_FILE: {"message": "Vous n'avez pas ajouté de fichier", "status": 400, "bypassable": False},
     ERROR_WRONG_FILE_FORMAT: {"message": "Ce fichier n'est pas un fichier excel", "status": 400, "bypassable": True},
     ERROR_UNKNOWN: {"message": "Erreur", "status": 400, "bypassable": False},
+    FILE_DATA_PROBLEM: {
+        "message": "Erreur dans les données du fichier, regardez la version annotée du fichier pour trouver les problèmes",
+        "status": 400,
+        "bypassable": False,
+    },
 }
 
 
@@ -180,11 +183,20 @@ def upload(request):
                 result = ERROR_WRONG_FILE_FORMAT
             elif file and allowed_file(file.name):
                 filename = smart_str(file.name)
-                result = handle_upload(filename, file, org_unit_id, period, bypass, request.user)
+                result, annotated_file = handle_upload(filename, file, org_unit_id, period, bypass, request.user)
+                if result == FILE_DATA_PROBLEM:
+                    validation_id = str(uuid.uuid4())
+                    request.session[f"validation_{validation_id}"] = {"file_path": annotated_file}
             else:
                 result = ERROR_UNKNOWN
+        answer = RESPONSES[result]
+        if result == FILE_DATA_PROBLEM:  # we need to add a download_id here
+            answer = copy.deepcopy(RESPONSES[result])
+            print("FILE_DATA_PROBLEM", answer)
+            answer["download_id"] = validation_id
+            print("FILE_DATA_PROBLEM", answer)
 
-        return JsonResponse(RESPONSES[result], status=RESPONSES[result]["status"])
+        return JsonResponse(answer, status=RESPONSES[result]["status"])
 
     return render(
         request,
@@ -194,6 +206,29 @@ def upload(request):
             "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
         },
     )
+
+
+@login_required
+def download(request):
+    """
+    Download the highlighted Excel file with errors.
+    """
+    validation_id = request.GET.get("id")
+    if not validation_id:
+        raise Http404("Download ID not provided")
+
+    session_key = f"validation_{validation_id}"
+    validation_data = request.session.get(session_key)
+
+    if not validation_data or not os.path.exists(validation_data["file_path"]):
+        raise Http404("File not found or expired")
+
+    response = FileResponse(
+        open(validation_data["file_path"], "rb"),
+        as_attachment=True,
+        filename="highlighted_spreadsheet.xlsx",
+    )
+    return response
 
 
 @login_required
@@ -355,34 +390,37 @@ def validation_api(request, org_unit_id, month):
         if latest_import:
             report_count = report_count + 1
             obj["A rapporté"] = "Oui"
-            obj["Dernier rapport"] = latest_import.creation_date.strftime(("%d/%m/%y %H:%M"))
+            obj["Dernier rapport"] = latest_import.creation_date.strftime("%d/%m/%y %H:%M")
 
         latest_validation = (
-                Validation.objects.filter(period=month).filter(org_unit_id=org_unit.id).order_by("-created_at").first()
-            )
+            Validation.objects.filter(period=month).filter(org_unit_id=org_unit.id).order_by("-created_at").first()
+        )
         if latest_validation:
-
             validation_count = validation_count + 1
 
             obj["Reçus"] = "%d (%d)" % (
                 received_count(org_unit.id, month),
                 received_count(org_unit.id, previous_period),
             )
-            obj["Date Validation"] = latest_validation.created_at.strftime(("%d/%m/%y %H:%M"))
+            obj["Date Validation"] = latest_validation.created_at.strftime("%d/%m/%y %H:%M")
             obj["Statut"] = "Validé" if latest_validation.validation_status == "OK" else "Invalide"
             obj["Observation"] = latest_validation.comment
             obj["Validateur"] = latest_validation.user_name
 
         else:
-                obj["Statut"] = ""
-                obj["Observation"] = ""
-                obj["Validateur"] = ""
+            obj["Statut"] = ""
+            obj["Observation"] = ""
+            obj["Validateur"] = ""
 
         obj["org_unit_id"] = org_unit.id
 
         table_content.append(obj)
 
-    res = {"table_content": table_content, "completeness": "Rapports: %d/%d - Validations: %d/%d" % (report_count, len(org_units), validation_count, len(org_units))}
+    res = {
+        "table_content": table_content,
+        "completeness": "Rapports: %d/%d - Validations: %d/%d"
+        % (report_count, len(org_units), validation_count, len(org_units)),
+    }
     return JsonResponse(res, status=200, safe=False)
 
 
@@ -403,7 +441,7 @@ def get_human_readable_value(model_instance, field_name):
         if field.choices:
             method_name = f"get_{field_name}_display"
             return getattr(model_instance, method_name)()
-        elif isinstance(field, models.BooleanField):
+        if isinstance(field, models.BooleanField):
             return "Oui" if getattr(model_instance, field_name) else "Non"
     except FieldDoesNotExist:
         return None
@@ -471,27 +509,28 @@ def patient_list_api(request, org_unit_id, month):
     if format == "xls":
         org_unit = OrgUnit.objects.get(pk=org_unit_id)
         return export_active_patients_excel(records, org_unit.name, month)
-    else:
-        table_content = []
-        for record in records:
-            patient_object = {"Code identifiant": record.patient.identifier_code, "Actif": "Oui" if record.patient.active else "Non"}
-
-            for field in PATIENT_LIST_DISPLAY_FIELDS:
-                patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
-                if mode in ("expected", "lost", "active"):
-                    if field == "days_dispensed":
-                        patient_object["Date de rupture"] = get_human_readable_value(record, "next_dispensation_date")
-            patient_object["Voir"] = (
-                '<a href="/active_list/patient_history/?identifier=%s">Voir</a>' % record.patient.identifier_code
-            )
-            table_content.append(patient_object)
-        res = {
-            "table_content": table_content,
+    table_content = []
+    for record in records:
+        patient_object = {
+            "Code identifiant": record.patient.identifier_code,
+            "Actif": "Oui" if record.patient.active else "Non",
         }
-        if format == "json":
-            return JsonResponse(res, status=200, safe=False)
-        else:
-            return render(request, "partials/patient_table.html", {"data": table_content, "last_import": last_import})
+
+        for field in PATIENT_LIST_DISPLAY_FIELDS:
+            patient_object[PATIENT_LIST_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
+            if mode in ("expected", "lost", "active"):
+                if field == "days_dispensed":
+                    patient_object["Date de rupture"] = get_human_readable_value(record, "next_dispensation_date")
+        patient_object["Voir"] = (
+            '<a href="/active_list/patient_history/?identifier=%s">Voir</a>' % record.patient.identifier_code
+        )
+        table_content.append(patient_object)
+    res = {
+        "table_content": table_content,
+    }
+    if format == "json":
+        return JsonResponse(res, status=200, safe=False)
+    return render(request, "partials/patient_table.html", {"data": table_content, "last_import": last_import})
 
 
 @login_required
@@ -572,6 +611,27 @@ def hash_blob(binary_blob):
 
 
 def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
+    validator = XLSFormValidator()
+    form = Form.objects.get(form_id="file_active_excel_validation")
+
+    form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
+    print("form_version", type(form_version), form_version)
+    print("form_version.xls_file.file", form_version.xls_file.file, type(form_version.xls_file.file))
+    # os.makedirs('/tmp/forms/', exist_ok=True) #this is a temporary fix, this should be
+    validator.parse_xlsform(form_version.xls_file)
+
+    result = validator.validate_spreadsheet(file)
+
+    if result["is_valid"]:
+        print("Validation successful!")
+    else:
+        print("Validation failed:")
+        for error in result["errors"]:
+            print(f"Line {error['line']}, Column {error['column']}: {error['error_explanation']}")
+        error_file = validator.create_highlighted_excel(file, result["errors"])
+        print("error_file", error_file, type(error_file))
+        return FILE_DATA_PROBLEM, error_file
+
     content = file.read()
     h = hash_blob(content)
     result = check_presence(h, org_unit_id, month)
@@ -592,11 +652,11 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
             file_check=file_check,
             source=SOURCE_EXCEL,
             file=file,
-            user=user
+            user=user,
         )
         i.save()
         import_data(content, i)
-    return result
+    return result, None
 
 
 def validate_import(the_import):

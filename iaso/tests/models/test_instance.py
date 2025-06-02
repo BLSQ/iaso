@@ -554,6 +554,29 @@ class InstanceModelTestCase(TestCase, InstanceBase):
         user_without_profile_form_instances = m.Instance.objects.filter_on_user_projects(user=user_without_profile)
         self.assertEqual(user_without_profile_form_instances.count(), total_form_instances)
 
+    def test_convert_location_from_field(self):
+        """
+        `convert_location_from_field()` should not fail when accuracy is missing.
+        """
+        self.form_1.location_field = "gps"
+        self.form_1.save()
+
+        instance = self.create_form_instance(form=self.form_1, project=self.project_1)
+
+        # All coords: latitude + longitude + altitude + accuracy.
+        instance.json = {"gps": "11.716788 -3.339844 0.0 5.1"}
+        instance.save()
+        instance.convert_location_from_field()
+        self.assertEqual(instance.location, "SRID=4326;POINT Z (-3.339844 11.716788 0)")
+        self.assertEqual(instance.accuracy, 5.1)
+
+        # Coords without accuracy.
+        instance.json = {"gps": "11.716788 -3.339844 0.0"}
+        instance.save()
+        instance.convert_location_from_field()
+        self.assertEqual(instance.location, "SRID=4326;POINT Z (-3.339844 11.716788 0)")
+        self.assertEqual(instance.accuracy, None)
+
 
 class InstanceAPITestCase(APITestCase, InstanceBase):
     @classmethod

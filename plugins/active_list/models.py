@@ -3,7 +3,8 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from iaso.models import Entity, OrgUnit, Instance
+from iaso.models import Entity, Instance, OrgUnit
+
 
 VALIDATION_STATUS_WAITING_FOR_VALIDATION = "WAITING_FOR_VALIDATION"
 VALIDATION_STATUS_DISTRICT_VALIDATED = "DISTRICT_VALIDATED"
@@ -214,6 +215,7 @@ class Record(models.Model):
     instance = models.ForeignKey(
         Instance, on_delete=models.CASCADE, verbose_name="Soumission", related_name="records", null=True
     )
+
 
 PATIENT_LIST_DISPLAY_FIELDS = {
     "number": "Index",

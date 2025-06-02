@@ -1,23 +1,20 @@
-import os
-import uuid
+
+import datetime
 
 from argparse import ArgumentParser
+from collections import defaultdict
 from logging import getLogger
 
 from django.core.management.base import BaseCommand
-from collections import defaultdict
-from django.utils.timezone import make_naive
+from django.db import transaction
 from django.db.models.functions import TruncMonth
+from django.utils.timezone import make_naive
 
-
-from iaso.models import Instance, Form
+from iaso.models import Form, Instance
 from plugins.active_list.models import (
-    Patient,
-    Record,
-    Import,
     HIV_HIV1,
-    HIV_HIV2,
     HIV_HIV1_AND_2,
+    HIV_HIV2,
     HIV_UNKNOWN,
     SEX_FEMALE,
     SEX_MALE,
@@ -25,9 +22,10 @@ from plugins.active_list.models import (
     TREATMENT_2NDLINE,
     TREATMENT_3RDLINE,
     TREATMENT_LINE_UNKNOWN,
+    Import,
+    Patient,
+    Record,
 )
-import datetime
-from django.db import transaction
 
 
 logger = getLogger(__name__)
@@ -71,7 +69,6 @@ class Command(BaseCommand):
 class DataImportError(Exception):
     """Custom exception for data import issues."""
 
-    pass
 
 
 def create_patient_and_first_record(instance, import_source):

@@ -1,4 +1,3 @@
-
 import datetime
 
 from argparse import ArgumentParser
@@ -68,7 +67,6 @@ class Command(BaseCommand):
 
 class DataImportError(Exception):
     """Custom exception for data import issues."""
-
 
 
 def create_patient_and_first_record(instance, import_source):

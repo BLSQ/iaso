@@ -283,6 +283,9 @@ def import_gpkg_file2(
         source.default_version = version
         source.save()
 
+    if not created:
+        version.save()
+
     # TODO: check: what if the source has no projects? Or the project has no account?
     account = source.projects.first().account  # type: ignore
     if not account.default_version:  # type: ignore

@@ -66,21 +66,6 @@ class Differ:
             field_names = ["name", "geometry", "parent", "opening_date", "closed_date"]
         elif not isinstance(field_names, list):
             field_names = list(field_names)
-        if not ignore_groups:
-            # groups_with_with_groupset = []
-            # for group_set in GroupSet.objects.filter(source_version=version):
-            #     if group_set.source_ref:
-            #         field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
-            #         for group in group_set.groups.all():
-            #             groups_with_with_groupset.append(group.id)
-            for group in Group.objects.filter(
-                Q(Q(source_version=version) | Q(source_version=version_ref)), source_ref__isnull=False
-            ).distinct("source_ref"):
-                # if group.id not in groups_with_with_groupset and group.source_ref:
-                field_names.append("group:" + group.source_ref + ":" + group.name)
-
-        self.iaso_logger.info(f"will compare the following fields {field_names}")
-        field_types = as_field_types(field_names)
 
         orgunits_dhis2 = self.load_pyramid(
             version,
@@ -96,6 +81,24 @@ class Differ:
             org_unit_types=org_unit_types_ref,
             org_unit_group=org_unit_group_ref,
         )
+
+        # Fetching IDs to restrict groups to the ones that are in the pyramid
+        orgunit_ids_in_ref_pyramid = set(orgunit_refs.values_list("id", flat=True))
+        orgunit_ids_in_dhis2_pyramid = set(orgunits_dhis2.values_list("id", flat=True))
+        org_unit_ids = orgunit_ids_in_dhis2_pyramid | orgunit_ids_in_ref_pyramid
+
+        if not ignore_groups:
+            groups = Group.objects.filter(
+                Q(Q(source_version=version) | Q(source_version=version_ref)),
+                source_ref__isnull=False,
+                org_units__in=org_unit_ids,
+            ).distinct("source_ref")
+            for group in groups:
+                field_names.append("group:" + group.source_ref + ":" + group.name)
+
+        self.iaso_logger.info(f"will compare the following fields {field_names}")
+        field_types = as_field_types(field_names)
+
         self.iaso_logger.info(f"comparing {version_ref} ({len(orgunits_dhis2)}) and {version} ({len(orgunit_refs)})")
         # speed how to index_by(&:source_ref)
         diffs = []

@@ -261,6 +261,51 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
         self.assertEqual(expected_csv, csv_data)  # 3 lines: 2 org units + header
         # the region is considered as a "deleted" org unit even though it's in the previous pyramid because it was filtered out by groups
 
+    def test_diff_csv_with_relevant_groups_in_columns(self):
+        # Let's add some new groups to both pyramids, without assigning them to any OrgUnit
+        # They shouldn't appear in the diff CSV
+        new_group_in_source_pyramid = m.Group.objects.create(
+            name="new group 1",
+            source_version=self.source_version_to_compare_with,
+            source_ref="new-group-1",
+        )
+        new_group_in_target_pyramid = m.Group.objects.create(
+            name="new group 2",
+            source_version=self.source_version_to_update,
+            source_ref="new-group-2",
+        )
+
+        self.client.force_authenticate(self.user_with_perms)
+
+        payload = {
+            "ref_version_id": self.source_version_to_compare_with.id,
+            "ref_status": "",
+            "ref_org_unit_type_ids": [],
+            "source_version_id": self.source_version_to_update.id,
+            "source_status": "",
+            "source_org_unit_type_ids": [],
+            "fields_to_export": ["name", "groups", "opening_date"],
+        }
+
+        response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
+        csv_data = self.assertCsvFileResponse(response, expected_name=self.EXPECTED_FILE_NAME, return_as_str=True)
+
+        # Prepare values for each variable in the Jinja template
+        context_group_ids = {
+            "id_group_a1": self.group_a1.id,
+            "id_group_b": self.group_b.id,
+            "id_group_a2": self.group_a2.id,
+            "id_group_c": self.group_c.id,
+        }
+        expected_csv = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES,
+            fixture_name="diff_relevant_groups.csv",
+            context=context_group_ids,
+        )
+        self.assertEqual(expected_csv, csv_data)  # 4 lines: 3 org units + header
+        self.assertNotIn(new_group_in_source_pyramid.source_ref, csv_data)
+        self.assertNotIn(new_group_in_target_pyramid.source_ref, csv_data)
+
     def test_diff_csv_without_login(self):
         payload = {
             "ref_version_id": self.source_version_to_compare_with.id,

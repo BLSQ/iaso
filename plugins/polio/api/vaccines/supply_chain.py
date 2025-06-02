@@ -3,12 +3,15 @@ import os
 from logging import getLogger
 from typing import Any
 
+import django_filters
+
 from django import forms
 from django.db import IntegrityError
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django.utils.translation import gettext_lazy as _
+from django_filters.rest_framework import DjangoFilterBackend
 from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
@@ -818,12 +821,12 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
         return ""
 
 
-class RoundFilter(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        round_id = request.query_params.get("round_id")
-        if round_id:
-            return queryset.filter(rounds=round_id)
-        return queryset
+class RoundFilterSet(django_filters.FilterSet):
+    round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))
+
+    class Meta:
+        model = VaccineRequestForm
+        fields = ["round_id"]
 
 
 class VaccineRequestFormViewSet(ModelViewSet):
@@ -888,9 +891,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
         NoFormDjangoFilterBackend,
         VRFCustomOrderingFilter,
         VRFCustomFilter,
-        RoundFilter,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
+    filterset_class = RoundFilterSet
     filterset_fields = {
         "campaign__obr_name": ["exact"],
         "campaign__country": ["exact"],

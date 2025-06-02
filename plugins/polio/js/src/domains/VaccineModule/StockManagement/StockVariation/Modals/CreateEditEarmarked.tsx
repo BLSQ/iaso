@@ -82,15 +82,17 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
     const { data: vrfList } = useGetVrfListByRound(selectedRound?.original?.id);
     const quantityOrdered = vrfList?.reduce(
-        (acc, vrf) => acc + vrf.quantities_ordered_in_doses,
+        (acc, vrf) => acc + (vrf.quantities_ordered_in_doses || 0),
         0,
     );
+    const isNewEarmark = !earmark?.id;
+    const hasQuantityOrdered = quantityOrdered && quantityOrdered > 0;
     // https://bluesquare.atlassian.net/browse/POLIO-1924
     useEffect(() => {
-        if (quantityOrdered && quantityOrdered > 0 && !earmark?.id) {
+        if (hasQuantityOrdered && isNewEarmark) {
             handleVialsChange(quantityOrdered);
         }
-    }, [quantityOrdered, earmark?.id, handleVialsChange]);
+    }, [hasQuantityOrdered, isNewEarmark, handleVialsChange, quantityOrdered]);
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

@@ -188,6 +188,20 @@ create database iaso;
 ```
 to create the missing database.)
 
+(If you get a message saying that /opt/app/entrypoint.sh does not exist, you need to disable auto crlf from github, more details: https://stackoverflow.com/questions/38905135/why-wont-my-docker-entrypoint-sh-execute)
+``` bash
+git config --global core.autocrlf input
+git rm --cached -r .
+git reset --hard
+```
+
+Then rebuild & migration
+
+``` bash
+docker compose build
+docker compose run --rm iaso manage migrate
+```
+
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)

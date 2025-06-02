@@ -40,7 +40,6 @@ from .models import (
     Record,
     Validation,
 )
-from .openhexa import *
 
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
@@ -192,9 +191,7 @@ def upload(request):
         answer = RESPONSES[result]
         if result == FILE_DATA_PROBLEM:  # we need to add a download_id here
             answer = copy.deepcopy(RESPONSES[result])
-            print("FILE_DATA_PROBLEM", answer)
             answer["download_id"] = validation_id
-            print("FILE_DATA_PROBLEM", answer)
 
         return JsonResponse(answer, status=RESPONSES[result]["status"])
 
@@ -615,21 +612,14 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     form = Form.objects.get(form_id="file_active_excel_validation")
 
     form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
-    print("form_version", type(form_version), form_version)
-    print("form_version.xls_file.file", form_version.xls_file.file, type(form_version.xls_file.file))
-    # os.makedirs('/tmp/forms/', exist_ok=True) #this is a temporary fix, this should be
+
+    # os.makedirs('/tmp/forms/', exist_ok=True) #this has been needed as a temporary fix at some point, leaving it here for now. Feels a bad idea to have a tmp directory when running on multiple web servers though
     validator.parse_xlsform(form_version.xls_file)
 
     result = validator.validate_spreadsheet(file)
 
-    if result["is_valid"]:
-        print("Validation successful!")
-    else:
-        print("Validation failed:")
-        for error in result["errors"]:
-            print(f"Line {error['line']}, Column {error['column']}: {error['error_explanation']}")
+    if not result["is_valid"]:
         error_file = validator.create_highlighted_excel(file, result["errors"])
-        print("error_file", error_file, type(error_file))
         return FILE_DATA_PROBLEM, error_file
 
     content = file.read()

@@ -3,8 +3,7 @@ import datetime
 from django.contrib.auth.models import User
 from django.db import models
 
-from iaso.models import Entity, OrgUnit
-
+from iaso.models import Entity, OrgUnit, Instance
 
 VALIDATION_STATUS_WAITING_FOR_VALIDATION = "WAITING_FOR_VALIDATION"
 VALIDATION_STATUS_DISTRICT_VALIDATED = "DISTRICT_VALIDATED"
@@ -63,11 +62,13 @@ SOURCE_CHOICES = [
 TREATMENT_1STLINE = "1STLINE"
 TREATMENT_2NDLINE = "2NDLINE"
 TREATMENT_3RDLINE = "3RDLINE"
+TREATMENT_LINE_UNKNOWN = "UNKNOWN"
 
 TREATMENT_CHOICES = [
     (TREATMENT_1STLINE, "1er Ligne"),
     (TREATMENT_2NDLINE, "2e Ligne"),
     (TREATMENT_3RDLINE, "3e Ligne"),
+    (TREATMENT_LINE_UNKNOWN, "Inconnu"),
 ]
 
 INACTIVE_DEATH = "DEATH"
@@ -91,10 +92,10 @@ class Import(models.Model):
     source = models.CharField(max_length=255, null=False)
 
     # additional information for Excel imports
-    hash_key = models.TextField(null=False)
-    file_name = models.TextField(unique=True, null=False)
+    hash_key = models.TextField(null=True)
+    file_name = models.TextField(unique=True, null=True)
     file = models.FileField(upload_to="uploads/%Y/%m/%d/", null=True)
-    file_check = models.TextField(null=False)
+    file_check = models.TextField(null=True)
     on_time = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
@@ -210,6 +211,9 @@ class Record(models.Model):
         OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle", related_name="records"
     )
 
+    instance = models.ForeignKey(
+        Instance, on_delete=models.CASCADE, verbose_name="Soumission", related_name="records", null=True
+    )
 
 PATIENT_LIST_DISPLAY_FIELDS = {
     "number": "Index",

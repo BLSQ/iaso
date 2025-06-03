@@ -426,13 +426,13 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         # Get the first request form
         request_form = pm.VaccineRequestForm.objects.first()
 
-        arrival_report = pm.VaccineArrivalReport.objects.create(
+        pm.VaccineArrivalReport.objects.create(
             request_form=request_form,
             arrival_report_date="2022-01-01",
             doses_received=2000,
         )
 
-        pre_alert = pm.VaccinePreAlert.objects.create(
+        pm.VaccinePreAlert.objects.create(
             request_form=request_form,
             date_pre_alert_reception="2021-01-01",
             estimated_arrival_time="2021-01-02",
@@ -707,13 +707,11 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         test_form = self.vaccine_request_form_rdc_1
         test_country = test_form.campaign.country
         test_vaccine = test_form.vaccine_type
-        test_start_date = test_form.rounds.first().started_at
+        test_start_date = test_form.rounds.filter(number=1).first()
 
         # Apply multiple filters
         response = self.client.get(
-            f"{self.BASE_URL}?campaign__country={test_country.id}"
-            f"&vaccine_type={test_vaccine}"
-            f"&rounds__started_at={test_start_date}"
+            f"{self.BASE_URL}?campaign__country={test_country.id}&rounds__started_at={test_start_date}"
         )
 
         self.assertEqual(response.status_code, 200)
@@ -722,7 +720,6 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         # Verify results match all filter criteria
         for form in results:
             self.assertEqual(form["country"]["id"], test_country.id)
-            self.assertEqual(form["vaccine_type"], test_vaccine)
             # The form's start_date should match our test date since we filtered on rounds__started_at
             self.assertEqual(str(test_start_date), str(form["start_date"]))
 

@@ -706,7 +706,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
 
         test_form = self.vaccine_request_form_rdc_1
         test_country = test_form.campaign.country
-        test_vaccine = test_form.vaccine_type
+
         test_start_date = test_form.rounds.filter(number=1).first().started_at
 
         # Apply multiple filters

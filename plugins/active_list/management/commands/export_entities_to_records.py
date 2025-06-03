@@ -42,8 +42,10 @@ class Command(BaseCommand):
 
         instances = (
             Instance.objects.filter(form=form)
-            .filter(created_at__gt=limit_date, deleted=False)
+            .filter(created_at__gt=limit_date)
+            .filter(deleted=False)
             .exclude(org_unit__isnull=True)
+            .filter(records__isnull=True)
             .annotate(month=TruncMonth("created_at"))
             .order_by("month", "org_unit_id", "created_at")
         )
@@ -216,6 +218,7 @@ def create_patient_and_first_record(instance, import_source):
                 death=False,
                 art_stoppage=False,
                 served_elsewhere=False,
+                instance=instance,
             )
             print(f"Record {record.id} created for patient '{patient.identifier_code}'.")
 

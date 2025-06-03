@@ -493,7 +493,12 @@ def patient_list_api(request, org_unit_id, month):
         records = Record.objects.filter(org_unit_id=org_unit_id)
         records = filter_expected_patients_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "active":
-        records = Record.objects.filter(patient__active=True).filter(org_unit_id=org_unit_id)
+        record_ids = (
+            Patient.objects.filter(active=True)
+            .filter(last_record__org_unit_id=org_unit_id)
+            .values_list("last_record__id", flat=True)
+        )
+        records = Record.objects.filter(id__in=record_ids).order_by("number")
     elif mode == "lost":
         first_day, last_day = get_first_and_last_day(month)
         inactive_events = (

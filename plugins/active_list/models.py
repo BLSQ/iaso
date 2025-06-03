@@ -175,7 +175,7 @@ class Record(models.Model):
     code_ets = models.CharField(max_length=255, null=False, verbose_name="Code ETS")
     facility_name = models.TextField(null=False, verbose_name="Nom de l'établissement")
     period = models.TextField(db_index=True, verbose_name="Période")
-    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patient")
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="records")
     sex = models.TextField(choices=SEX_CHOICES, verbose_name="Sexe")
     age = models.IntegerField(verbose_name="Âge")
     weight = models.IntegerField(null=True, verbose_name="Poids")
@@ -215,6 +215,10 @@ class Record(models.Model):
     instance = models.ForeignKey(
         Instance, on_delete=models.CASCADE, verbose_name="Soumission", related_name="records", null=True
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Record {self.number} for patient {self.patient.identifier_code} in period {self.period} at {self.org_unit.name} created on {self.created_at}"
 
 
 PATIENT_LIST_DISPLAY_FIELDS = {

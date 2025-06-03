@@ -5,12 +5,15 @@ from datetime import datetime
 import django_filters
 
 from django.db.models import Prefetch
+from django.db.transaction import atomic
 from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import filters, viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
+from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
@@ -19,6 +22,7 @@ from iaso.api.org_unit_change_requests.permissions import (
     HasOrgUnitsChangeRequestReviewPermission,
 )
 from iaso.api.org_unit_change_requests.serializers import (
+    OrgUnitChangeRequestBulkDeleteSerializer,
     OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
@@ -96,7 +100,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     pagination_class = OrgUnitChangeRequestPagination
 
     def get_permissions(self):
-        if self.action in ["partial_update", "bulk_review"]:
+        if self.action in ["partial_update", "bulk_review", "bulk_delete"]:
             permission_classes = [HasOrgUnitsChangeRequestReviewPermission]
         else:
             permission_classes = [HasOrgUnitsChangeRequestPermission]
@@ -231,6 +235,37 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             )
 
         return Response({"task": TaskSerializer(instance=task).data})
+
+    @atomic
+    @action(detail=False, methods=["post"])
+    def bulk_delete(self, request):
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        select_all = serializer.validated_data["select_all"]
+        selected_ids = serializer.validated_data["selected_ids"]
+        unselected_ids = serializer.validated_data["unselected_ids"]
+
+        queryset = self.filter_queryset(self.get_queryset())
+
+        if select_all:
+            queryset = queryset.exclude(pk__in=unselected_ids)
+        else:
+            queryset = queryset.filter(pk__in=selected_ids)
+
+        now = timezone.now()
+        for change_request in queryset:
+            original_change_request = audit_models.serialize_instance(change_request)
+            # Soft delete.
+            change_request.deleted_at = now
+            change_request.updated_by = request.user
+            change_request.save()
+            # Log changes.
+            audit_models.log_modification(
+                original_change_request, change_request, audit_models.ORG_UNIT_CHANGE_REQUEST_API, user=request.user
+            )
+
+        return Response({"result": "success"}, status=201)
 
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):

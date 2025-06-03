@@ -457,6 +457,31 @@ class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
         return validated_data
 
 
+class OrgUnitChangeRequestBulkDeleteSerializer(serializers.Serializer):
+    """
+    Bulk-delete `OrgUnitChangeRequest`s.
+    """
+
+    # Selection.
+    select_all = serializers.BooleanField(default=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+
+    def validate(self, validated_data):
+        # Selection.
+        select_all = validated_data["select_all"]
+        selected_ids = validated_data["selected_ids"]
+        unselected_ids = validated_data["unselected_ids"]
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
+
+        return validated_data
+
+
 class AuditOrgUnitChangeRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest

@@ -23,7 +23,12 @@ const bulkDeleteChangeRequests = async (
         `/api/orgunits/changes/bulk_delete/`,
         apiParams,
     );
-    return postRequest(url, body);
+    const formattedBody = {
+        selected_ids: body.selectedItems?.map(item => item.id),
+        unselected_ids: body.unSelectedItems?.map(item => item.id),
+        select_all: body.selectAll,
+    };
+    return postRequest(url, formattedBody);
 };
 
 export const useBulkDeleteChangeRequests = (

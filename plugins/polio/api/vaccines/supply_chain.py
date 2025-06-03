@@ -821,12 +821,18 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
         return ""
 
 
-class RoundFilterSet(django_filters.FilterSet):
+class VaccineRequestFormFilterSet(django_filters.FilterSet):
     round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))
 
     class Meta:
         model = VaccineRequestForm
-        fields = ["round_id"]
+        fields = {
+            "campaign__obr_name": ["exact"],
+            "campaign__country": ["exact"],
+            "vaccine_type": ["exact"],
+            "rounds__started_at": ["exact", "gte", "lte", "range"],
+            "rounds__ended_at": ["exact", "gte", "lte", "range"],
+        }
 
 
 class VaccineRequestFormViewSet(ModelViewSet):
@@ -894,14 +900,8 @@ class VaccineRequestFormViewSet(ModelViewSet):
         DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filterset_class = RoundFilterSet
-    filterset_fields = {
-        "campaign__obr_name": ["exact"],
-        "campaign__country": ["exact"],
-        "vaccine_type": ["exact"],
-        "rounds__started_at": ["exact", "gte", "lte", "range"],
-        "rounds__ended_at": ["exact", "gte", "lte", "range"],
-    }
+    filterset_class = VaccineRequestFormFilterSet
+
     ordering_fields = ["created_at", "updated_at"]
     search_fields = [
         "campaign__obr_name",

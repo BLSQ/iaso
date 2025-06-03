@@ -7,6 +7,7 @@ import React, {
 
 import ReportIcon from '@mui/icons-material/Report';
 import {
+    Alert,
     Box,
     Button,
     Dialog,
@@ -171,6 +172,13 @@ export const MultiActionsDialog: FunctionComponent<Props> = ({
             closeOnConfirm={false}
             allowConfirm={!!status}
         >
+            <Box mb={2}>
+                <Alert severity="warning">
+                    {formatMessage(
+                        MESSAGES.changeSelectedChangeRequestsWarning,
+                    )}
+                </Alert>
+            </Box>
             <InputComponent
                 type="select"
                 clearable

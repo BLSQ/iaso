@@ -19,8 +19,8 @@ from iaso.enketo import (
     EnketoError,
     calculate_file_md5,
     enketo_settings,
-    enketo_url_for_creation,
     enketo_url_for_edition,
+    extract_xml_instance_from_form_xml,
     inject_instance_id_in_form,
     to_xforms_xml,
 )
@@ -44,6 +44,31 @@ def public_url_for_enketo(request: HttpRequest, path):
     return resolved_path
 
 
+# it's now actually an edition, we extract a fresh "data" xml from the form definition
+# and inject special variables like current_ou_name as described in iaso_special_question_names doc in the xml
+# that will get edited by enketo and the enduser
+def _enketo_url_for_creation(form, instance, request, return_url):
+    user_id = None
+    profile = request.user.iaso_profile if request.user and not request.user.is_anonymous else None
+    if profile:
+        user_id = profile.user.id
+    instance_xml = extract_xml_instance_from_form_xml(form.latest_version.file.read(), instance.uuid)
+
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
+    )
+
+    edit_url = enketo_url_for_edition(
+        public_url_for_enketo(request, "/api/enketo"),
+        form_id_string=instance.uuid,
+        instance_xml=new_xml,
+        instance_id=instance_uuid,
+        return_url=return_url,
+    )
+    return edit_url
+
+
 # Used by Create submission in Iaso Dashboard
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
@@ -57,7 +82,7 @@ def enketo_create_url(request):
     now = timezone.now()
     form = get_object_or_404(Form, id=form_id)
 
-    i = Instance(
+    instance = Instance(
         form_id=form_id,
         name=form.name,
         period=period,
@@ -70,16 +95,13 @@ def enketo_create_url(request):
         source_created_at=now,
         source_updated_at=now,
     )  # warning for access rights here
-    i.save()
+    instance.save()
 
     try:
         if not return_url:
-            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id)
-        edit_url = enketo_url_for_creation(
-            server_url=public_url_for_enketo(request, "/api/enketo"),
-            uuid=uuid,
-            return_url=return_url,
-        )
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
+
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
         return JsonResponse({"edit_url": edit_url}, status=201)
     except EnketoError as error:
@@ -182,9 +204,8 @@ def enketo_public_create_url(request):
     try:
         if not return_url:
             return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
-        edit_url = enketo_url_for_creation(
-            server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
-        )
+
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
         return JsonResponse({"url": edit_url}, status=201)
     except EnketoError as error:
@@ -212,7 +233,8 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     i.save()
 
     try:
-        edit_url = enketo_url_for_creation(server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid)
+        # return_url with just tell enketo to show a thank you page
+        edit_url = _enketo_url_for_creation(form=form, instance=i, request=request, return_url="")
 
         return HttpResponseRedirect(edit_url)
     except EnketoError as error:
@@ -225,7 +247,7 @@ def _build_url_for_edition(request, instance, user_id=None):
     instance_xml = instance.file.read()
     version_id = instance.form.latest_version.version_id
     instance_uuid, new_xml = inject_xml_find_uuid(
-        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
     )
 
     edit_url = enketo_url_for_edition(

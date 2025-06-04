@@ -250,7 +250,7 @@ class NotificationImportAdmin(admin.ModelAdmin):
 
     actions = (create_notifications,)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-    list_display = ("pk", "file", "status", "created_by", "account")
+    list_display = ("pk", "document", "status", "created_by", "account")
     list_filter = ("status",)
     raw_id_fields = ("account", "created_by")
 

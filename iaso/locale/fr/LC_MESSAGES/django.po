@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-16 13:27+0000\n"
+"POT-Creation-Date: 2025-06-04 09:54+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -97,6 +97,10 @@ msgstr "ID du parent"
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Groups IDs (comma-separated)"
 msgstr "IDs des groupes (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Soft deleted"
+msgstr "Suppression réversible"
 
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Data source synchronization ID"

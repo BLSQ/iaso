@@ -20,6 +20,10 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
         fields = []
 
 
+class CharInFilter(django_filters.BaseInFilter, django_filters.CharFilter):
+    pass
+
+
 class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     pass
 
@@ -35,17 +39,18 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     data_source_synchronization_id = django_filters.CharFilter(
         field_name="data_source_synchronization_id", label=_("Data source synchronization ID")
     )
-
     forms = django_filters.CharFilter(method="filter_forms", label=_("Forms IDs (comma-separated)"))
     users = django_filters.CharFilter(method="filter_users", label=_("Users IDs (comma-separated)"))
     user_roles = django_filters.CharFilter(method="filter_user_roles", label=_("User roles IDs (comma-separated)"))
     with_location = django_filters.CharFilter(method="filter_with_location", label=_("With or without location"))
-    status = django_filters.CharFilter(method="filter_status", label=_("Status (comma-separated)"))
+    status = CharInFilter(field_name="status", widget=CSVWidget, label=_("Status (comma-separated)"))
     projects = django_filters.CharFilter(method="filter_projects", label=_("Projects IDs (comma-separated)"))
     payment_status = django_filters.CharFilter(method="filter_payment_status", label=_("Payment status"))
-    payment_ids = django_filters.CharFilter(method="filter_payments", label=_("Payment IDs (comma-separated)"))
-    potential_payment_ids = django_filters.CharFilter(
-        method="filter_potential_payments", label=_("Potential Payment IDs (comma-separated)")
+    # Used when redirecting from payment lots to see related change requests. It is not otherwise visible in the UI
+    payment_ids = NumberInFilter(field_name="payment", widget=CSVWidget, label=_("Payment IDs (comma-separated)"))
+    # Used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
+    potential_payment_ids = NumberInFilter(
+        field_name="potential_payment", widget=CSVWidget, label=_("Potential Payment IDs (comma-separated)")
     )
     source_version_id = django_filters.NumberFilter(field_name="org_unit__version", label=_("Source version ID"))
 
@@ -101,12 +106,6 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             | Q(updated_by__iaso_profile__user_roles__id__in=users_roles_ids)
         )
 
-    def filter_status(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        if value:
-            statuses = value.split(",")
-            queryset = queryset.filter(status__in=statuses)
-        return queryset
-
     def filter_with_location(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         """
         `value` is intended to be boolean string "true" or "false".
@@ -138,13 +137,3 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             ) | Q(payment__status=PaymentStatuses.PENDING)
             return queryset.filter(pending_filter)
         return queryset.filter(payment__status=value)
-
-    # This filter is used when redirecting from potential payments to see related change requests. It is not otherwise visible in the UI
-    def filter_potential_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        potential_payment_ids = parse_comma_separated_numeric_values(value, name)
-        return queryset.filter(potential_payment__in=potential_payment_ids)
-
-    # This filter is used when redirecting from payment lots to see related change requests. It is not otherwise visible in the UI
-    def filter_payments(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        payment_ids = parse_comma_separated_numeric_values(value, name)
-        return queryset.filter(payment__in=payment_ids)

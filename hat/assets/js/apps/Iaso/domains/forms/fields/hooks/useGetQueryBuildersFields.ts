@@ -163,6 +163,7 @@ export const useGetQueryBuilderFieldsForAllForms = (
 ): QueryBuilderFields => {
     const { formatMessage } = useSafeIntl();
     if (!allPossibleFields || !formDescriptors) return {};
+    const reducedFields : QueryBuilderFields = {}
     return allPossibleFields.reduce(
         (fields, { form_id, name, possibleFields }) => ({
             ...fields,
@@ -181,6 +182,6 @@ export const useGetQueryBuilderFieldsForAllForms = (
                 ),
             },
         }),
-        {} as QueryBuilderFields,
+        reducedFields,
     );
 };

@@ -12,6 +12,7 @@ import hat.menupermissions.models as permissions
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
+from plugins.polio.models import OutgoingStockMovement
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -1308,3 +1309,38 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("results", data)
+
+    def test_outgoing_stock_movement_without_campaign(self):
+        """Test that an OutgoingStockMovement can be created without a campaign"""
+        FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        VIALS_COUNT = 1831  # using a remarkable number to avoid ambiguity in test result
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": VIALS_COUNT,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+        }
+
+        response = self.client.post(f"{FORMA_URL}", data=data)
+        self.assertEqual(response.status_code, 201)
+
+        # Verify the movement was created
+        movement = OutgoingStockMovement.objects.get(id=response.json()["id"])
+        self.assertIsNone(movement.campaign)
+        self.assertIsNone(movement.round)
+        self.assertEqual(movement.usable_vials_used, VIALS_COUNT)
+
+        # Verify it appears in usable vials list
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
+        data = self.assertJSONResponse(response, 200)
+
+        results = data["results"]
+        forma = [result for result in results if result["vials_out"] == VIALS_COUNT]
+        self.assertTrue(len(forma) == 1)  # There's only the one we created
+        self.assertTrue(
+            forma[0]["action"] == "Form A - Vials Used", "Movement without campaign should appear in usable vials list"
+        )

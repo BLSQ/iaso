@@ -1,7 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { apiDateFormat, formatDateString } from 'Iaso/utils/dates';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
+import { makeUrlWithParams } from '../../../../libs/utils';
 import { Selection } from '../../../orgUnits/types/selection';
 import {
     PotentialPaymentParams,
@@ -26,8 +27,16 @@ const getSelectedPotentialPayments = (
     const { selectAll, selectedItems, unSelectedItems } = selection;
     const apiParams = {
         order: options.order || 'user__last_name',
-        change_requests__created_at_after,
-        change_requests__created_at_before,
+        change_requests__created_at_after: formatDateString(
+            change_requests__created_at_after,
+            'L',
+            apiDateFormat,
+        ),
+        change_requests__created_at_before: formatDateString(
+            change_requests__created_at_before,
+            'L',
+            apiDateFormat,
+        ),
         parent_id,
         forms,
         users,

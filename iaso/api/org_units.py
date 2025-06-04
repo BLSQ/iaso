@@ -103,22 +103,69 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list(self, request):
         """Power the almighty Search function, and export
 
-        which all the power should be really specified.
+        This endpoint supports various parameters for filtering and searching org units:
 
-        Can serve these formats, depending on the combination of GET Parameters:
-         * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
-         * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
-         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
-         * GeoPackage format (if `gpkg` is passed)
-         * Excel XLSX  (if `xslx` is passed)
-         * CSV (if `csv` is passed)
+        Search Parameters:
+        - search: Text search in name and aliases
+        - searches: JSON array of search objects for multiple searches
+        - validation_status: Filter by validation status (comma-separated list or "all")
+        - hasInstances: Filter by presence of instances ("true", "false", "duplicates")
+        - dateFrom: Filter instances created after this date
+        - dateTo: Filter instances created before this date
+        - orgUnitTypeId: Filter by org unit type ID (comma-separated list)
+        - sourceId: Filter by source ID
+        - withShape: Filter by presence of shape ("true", "false")
+        - withLocation: Filter by presence of location ("true", "false")
+        - geography: Filter by geography type ("location", "shape", "none", "any")
+        - parent_id: Filter by parent ID (use "0" for root org units)
+        - source: Filter by source
+        - project: Filter by project
+        - group: Filter by group (comma-separated list)
+        - version: Filter by version
+        - defaultVersion: Use default version of the user account("true")
+        - onlyDirectChildren: Filter direct children only ("true", "false")
+        - orgUnitParentId: Filter by parent ID in hierarchy
+        - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - linkedTo: Filter by linked org unit
+        - linkValidated: Filter by link validation status
+        - linkSource: Filter by link source
+        - linkVersion: Filter by link version
+        - rootsForUser: Filter roots for user ("true")
+        - ignoreEmptyNames: Ignore empty names ("true")
+        - orgUnitTypeCategory: Filter by org unit type category
+        - depth: Filter by path depth
+        - opening_date: Filter by opening date (format: DD-MM-YYYY)
+        - closed_date: Filter by closing date (format: DD-MM-YYYY)
 
-         These parameter can totally conflict and the result is undocumented
+        Output Format Parameters:
+        - limit: Number of results per page
+        - page: Page number
+        - order: Order by field(s) (comma-separated)
+        - withShapes: Include shapes in output
+        - asLocation: Return as location format
+        - smallSearch: Return simplified output
+        - csv: Export as CSV
+        - xlsx: Export as Excel
+        - gpkg: Export as GeoPackage
+
+        Special Search Formats:
+        - ids:search: Search by IDs (e.g. "ids:1,2,3")
+        - refs:search: Search by references (e.g. "refs:ref1,ref2")
+
+        Example Response Formats:
+        * Simple JSON (default) -> as_dict_for_mobile
+        * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+        * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
+        * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
+        * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
+        * GeoPackage format (if `gpkg` is passed)
+        * Excel XLSX  (if `xslx` is passed)
+        * CSV (if `csv` is passed)
         """
         queryset = self.get_queryset().defer("geom").select_related("parent__org_unit_type")
-        forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+        forms = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        ).distinct()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
@@ -166,18 +213,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
-        distinct_fields = [item.replace("-", "") for item in order]
-
         if not is_export:
             if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
 
                 if page_offset > paginator.num_pages:
@@ -212,12 +251,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response({"orgUnits": org_units})
             if as_location:
                 limit = int(limit)
-
-                # Avoid a `SELECT DISTINCT ON expressions must match initial ORDER BY expressions` exception
-                # because `build_org_units_queryset()` can set `.distinct()` clauses.
-                if queryset.query.combinator != "union":  # `.distinct()` is not allowed with `.union()`.
-                    queryset = queryset.distinct(*distinct_fields)
-
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []

@@ -1,12 +1,41 @@
+// Mock the LANGUAGE_CONFIGS module
+import React from 'react';
 import Adapter from '@wojtekmaj/enzyme-adapter-react-17';
-import { expect } from 'chai';
 import { configure, mount, render, shallow } from 'enzyme';
 import nodeFetch from 'node-fetch';
-import React from 'react';
 import sinon from 'sinon';
-import { mockMessages } from './utils/intl';
 import './utils/pdf';
+import { mockMessages } from './utils/intl';
 import { baseUrl as baseUrlConst } from './utils/requests';
+import { expect } from 'chai';
+
+const mockLANGUAGE_CONFIGS = {
+    en: {
+        dateFormats: {
+            LT: 'h:mm A',
+            LTS: 'DD/MM/YYYY HH:mm',
+            L: 'DD/MM/YYYY',
+            LL: 'Do MMMM YYYY',
+            LLL: 'Do MMMM YYYY LT',
+            LLLL: 'dddd, MMMM Do YYYY LT',
+        },
+    },
+    fr: {
+        dateFormats: {
+            LT: 'HH:mm',
+            LTS: 'DD/MM/YYYY HH:mm',
+            L: 'DD/MM/YYYY',
+            LL: 'Do MMMM YYYY',
+            LLL: 'Do MMMM YYYY LT',
+            LLLL: 'dddd, MMMM Do YYYY LT',
+        },
+    },
+};
+
+// Set up the mock
+require('mock-require')('IasoModules/language/configs', {
+    LANGUAGE_CONFIGS: mockLANGUAGE_CONFIGS,
+});
 
 configure({ adapter: new Adapter() });
 

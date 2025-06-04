@@ -3,12 +3,15 @@ import os
 from logging import getLogger
 from typing import Any
 
+import django_filters
+
 from django import forms
 from django.db import IntegrityError
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django.utils.translation import gettext_lazy as _
+from django_filters.rest_framework import DjangoFilterBackend
 from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
@@ -20,17 +23,8 @@ from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from iaso.utils.clamav import scan_uploaded_file_for_virus
-from plugins.polio.api.vaccines.permissions import (
-    VaccineStockManagementPermission,
-    can_edit_helper,
-)
-from plugins.polio.models import (
-    Campaign,
-    Round,
-    VaccineArrivalReport,
-    VaccinePreAlert,
-    VaccineRequestForm,
-)
+from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
+from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 
 logger = getLogger(__name__)
@@ -66,6 +60,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
             if isinstance(round, dict) and "number" in round:
                 try:
                     round_obj = Round.objects.get(number=round["number"], campaign=new_campaign)
+                    if not round_obj.actual_scopes:
+                        raise forms.ValidationError("Rounds without scope are not allowed")
                     new_rounds.append(round_obj)
                 except Round.MultipleObjectsReturned:
                     raise forms.ValidationError(f"Multiple rounds with number {round['number']} found in the campaign.")
@@ -73,6 +69,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
                     raise forms.ValidationError(f"No round with number {round['number']} found in the campaign.")
             elif hasattr(round, "campaign") and round.campaign != new_campaign:
                 raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+            elif not round.actual_scopes:
+                raise forms.ValidationError("Rounds without scope are not allowed")
         data["rounds"] = new_rounds
     else:
         try:
@@ -80,6 +78,8 @@ def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, for
             for round in rounds_data.all():
                 if round.campaign != new_campaign:
                     raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+                if not round.actual_scopes:
+                    raise forms.ValidationError("Rounds without scope are not allowed")
                 new_rounds.append(round)
             data["rounds"] = new_rounds
         except AttributeError:
@@ -207,6 +207,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
     def get_scan_result(self, obj):
@@ -306,6 +307,7 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
 
@@ -370,6 +372,7 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         ar.created_at,
                         admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
                         non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
                             ar.save()
@@ -446,6 +449,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                         ar.created_at,
                         admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
                         non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
                             ar.save()
@@ -604,6 +608,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
 
@@ -648,6 +653,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             obj.created_at,
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
     def get_prefetched_data(self, obj):
@@ -815,6 +821,20 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
         return ""
 
 
+class VaccineRequestFormFilterSet(django_filters.FilterSet):
+    round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))
+
+    class Meta:
+        model = VaccineRequestForm
+        fields = {
+            "campaign__obr_name": ["exact"],
+            "campaign__country": ["exact"],
+            "vaccine_type": ["exact"],
+            "rounds__started_at": ["exact", "gte", "lte", "range"],
+            "rounds__ended_at": ["exact", "gte", "lte", "range"],
+        }
+
+
 class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
@@ -824,6 +844,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
     - rounds__ended_at : Use a date in the format YYYY-MM-DD
+    - round_id : Filter by a specific round ID
 
     Available ordering:
     - country
@@ -862,9 +883,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
     # - add GET arrival reports and pre alerts
 
     permission_classes = [
-        lambda: VaccineStockManagementPermission(
+        lambda: VaccineStockPermission(
             admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     http_method_names = ["get", "post", "delete", "patch"]
@@ -875,15 +897,11 @@ class VaccineRequestFormViewSet(ModelViewSet):
         NoFormDjangoFilterBackend,
         VRFCustomOrderingFilter,
         VRFCustomFilter,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filterset_fields = {
-        "campaign__obr_name": ["exact"],
-        "campaign__country": ["exact"],
-        "vaccine_type": ["exact"],
-        "rounds__started_at": ["exact", "gte", "lte", "range"],
-        "rounds__ended_at": ["exact", "gte", "lte", "range"],
-    }
+    filterset_class = VaccineRequestFormFilterSet
+
     ordering_fields = ["created_at", "updated_at"]
     search_fields = [
         "campaign__obr_name",

@@ -139,6 +139,9 @@ extracted_translation.json
 hat/assets/webpack/
 docker/DHIS2_home/
 
+# Auto-generated files
+hat/assets/js/apps/Iaso/bundle/generated/
+
 # enketo build
 docker/enketo/checksum/
 docker/enketo/css/
@@ -193,7 +196,6 @@ plugins/trypelim
 plugins/snt_malaria
 
 plugins/snt-malaria
-
-# Auto-generated plugin config files
-hat/assets/js/combinedPluginConfigs.js
-hat/assets/js/pluginKeys.js
+.direnv
+CACHEDIR.TAG
+iaso_3_9_18

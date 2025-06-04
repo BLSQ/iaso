@@ -37,6 +37,7 @@ declare global {
         SENTRY_CONFIG?: SentryConfig;
         SENTRY_INITIALIZED?: boolean;
         PRODUCT_FRUITS_WORKSPACE_CODE?: string;
+        AVAILABLE_LANGUAGES?: string;
         iasoApp: (
             element: HTMLElement,
             enabledPluginsName: string[],
@@ -64,7 +65,11 @@ const IasoApp: React.FC<{
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
                             <LocaleProvider>
-                                <LocalizedAppComponent>
+                                <LocalizedAppComponent
+                                    userHomePage={
+                                        pluginHomePage || userHomePage
+                                    }
+                                >
                                     <SnackbarProvider
                                         maxSnack={3}
                                         autoHideDuration={4000}

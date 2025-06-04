@@ -1,8 +1,3 @@
-import {
-    Column,
-    useRedirectToReplace,
-    useSafeIntl,
-} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     ReactElement,
@@ -10,6 +5,11 @@ import React, {
     useEffect,
     useMemo,
 } from 'react';
+import {
+    Column,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { Form } from '../../forms/types/forms';

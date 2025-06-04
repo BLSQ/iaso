@@ -31,6 +31,9 @@ class SetupAccountApiTestCase(APITestCase):
         admin = m.User.objects.create_superuser(username="zelda", password="tiredofplayingthesameagain")
         cls.admin = admin
 
+        user1 = m.User.objects.create_superuser(username="user1", password="tiredofplayingthesameagain")
+        cls.user1 = user1
+
     def test_setupaccount_unauthorized(self):
         self.client.force_authenticate(self.user)
         response = self.client.post("/api/setupaccount/", data={}, format="json")
@@ -246,3 +249,38 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json()["feature_flags"], ["feature_flags_empty"])
+
+    def test_create_new_account_with_user_multi_account(self):
+        new_user = m.User.objects.create(username=self.account, is_superuser=True)
+        m.TenantUser.objects.create(main_user=self.user1, account_user=new_user)
+
+        self.client.force_authenticate(new_user)
+
+        data = {
+            "account_name": "account_multi_account",
+            "user_username": "username",
+            "password": "password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.json()["account_name"], data["account_name"])
+
+    def test_create_new_account_via_no_super_user_multi_account(self):
+        new_user = m.User.objects.create(
+            username=self.account,
+        )
+        m.TenantUser.objects.create(main_user=self.user1, account_user=new_user)
+        self.client.force_authenticate(new_user)
+        data = {
+            "account_name": "account_multi_account",
+            "user_username": "username",
+            "password": "password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(
+            response.json()["detail"],
+            "You do not have permission to perform this action.",
+        )

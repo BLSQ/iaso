@@ -350,12 +350,14 @@ export const useCampaignOptions = (
             campaign => campaign.obr_name === campaignName,
         );
         return selectedCampaign
-            ? selectedCampaign.rounds.map(round => {
-                  return {
-                      label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                      value: round.id,
-                  };
-              })
+            ? selectedCampaign.rounds
+                  .filter(r => !r.on_hold)
+                  .map(round => {
+                      return {
+                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
+                          value: round.id,
+                      };
+                  })
             : [];
     }, [campaignName, data, formatMessage]);
 
@@ -363,13 +365,17 @@ export const useCampaignOptions = (
         const selectedCampaign = (data ?? []).find(
             campaign => campaign.obr_name === campaignName,
         );
+
         return selectedCampaign
-            ? selectedCampaign.rounds.map(round => {
-                  return {
-                      label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                      value: round.number,
-                  };
-              })
+            ? selectedCampaign.rounds
+                  .filter(r => !r.on_hold)
+                  .map(round => {
+                      return {
+                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
+                          value: round.number,
+                          original: round,
+                      };
+                  })
             : [];
     }, [campaignName, data, formatMessage]);
 

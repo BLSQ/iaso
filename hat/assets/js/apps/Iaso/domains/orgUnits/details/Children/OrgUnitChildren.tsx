@@ -1,8 +1,8 @@
-import { Box } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
+import { Box } from '@mui/material';
 import DownloadButtonsComponent from '../../../../components/DownloadButtonsComponent';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';
-import { DropdownOptions } from '../../../../types/utils';
+import { GroupDropdownOption } from '../../configuration/types';
 import { useGetOrgUnitChildren } from '../../hooks/requests/useGetOrgUnitChildren';
 import { OrgUnitChildrenFilters } from './OrgUnitChildrenFilters';
 import { OrgUnitChildrenTable } from './OrgUnitChildrenTable';
@@ -13,7 +13,7 @@ const apiUrl = '/api/orgunits';
 type Props = {
     params: any;
     baseUrl: string;
-    groups?: DropdownOptions<string>[];
+    groups?: GroupDropdownOption[];
 };
 
 export const OrgUnitChildren: FunctionComponent<Props> = ({

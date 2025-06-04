@@ -76,6 +76,7 @@ export type DropdownOptionsCampaigns = {
 export type DropdownOptionsRounds = {
     value: number;
     label: string;
+    on_hold: boolean;
     campaign_id: number;
 };
 

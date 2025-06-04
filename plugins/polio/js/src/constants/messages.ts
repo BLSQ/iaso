@@ -1234,6 +1234,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.subactivityName',
         defaultMessage: 'Sub-activity name',
     },
+    subactivity: {
+        id: 'iaso.polio.label.subactivity',
+        defaultMessage: 'Sub-activity',
+    },
     round: {
         id: 'iaso.polio.label.round',
         defaultMessage: 'Round',
@@ -2460,9 +2464,9 @@ const MESSAGES = defineMessages({
         id: 'blsq.dialog.unsavedDataWillBeLost',
         defaultMessage: 'Unsaved data will be lost',
     },
-    testRound: {
-        id: 'iaso.polio.label.testRound',
-        defaultMessage: 'Test round / On hold',
+    onHoldRound: {
+        id: 'iaso.polio.label.onHoldRound',
+        defaultMessage: 'Round on hold',
     },
     disclaimer: {
         id: 'iaso.polio.disclaimer',

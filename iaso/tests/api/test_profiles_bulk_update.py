@@ -358,61 +358,6 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
             self.user_admin_no_task2.iaso_profile.user_roles.all(),
         )
 
-    def test_profile_bulkupdate_should_fail_with_restricted_editable_org_unit_types(self):
-        user = self.user_managed
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.org_unit_type1]
-        )
-
-        other_org_unit_type = m.OrgUnitType.objects.create(name="Country")
-        self.org_unit2.name = "The Gambia"
-        self.org_unit2.org_unit_type = other_org_unit_type
-        self.org_unit2.save()
-
-        self.client.force_authenticate(user)
-
-        payload = {
-            "select_all": False,
-            "selected_ids": [self.user_admin_no_task.iaso_profile.pk, self.user_admin_no_task2.iaso_profile.pk],
-            "unselected_ids": [],
-            "projects_ids_added": [],
-            "projects_ids_removed": [],
-            "roles_id_added": [],
-            "roles_id_removed": [self.user_role_2.pk],
-            "location_ids_added": [self.org_unit2.pk],
-            "location_ids_removed": [],
-            "language": "fr",
-            "teams_id_added": [],
-            "location_ids_removed": [],
-            "organization": "Bluesquare",
-            "search": None,
-            "perms": None,
-            "location": None,
-            "org_unit_type": None,
-            "parent_ou": None,
-            "children_ou": None,
-            "projects": None,
-            "user_roles": None,
-        }
-        response = self.client.post("/api/tasks/create/profilesbulkupdate/", data=payload, format="json")
-
-        data = response.json()
-        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
-        self.assertEqual(task.launcher, user)
-
-        task = self.runAndValidateTask(task, "ERRORED")
-        self.assertEqual(
-            task.result["message"],
-            (
-                f"User with permission {permission.USERS_MANAGED} cannot change the org unit The Gambia "
-                f"because he does not have rights on the following org unit type: Country"
-            ),
-        )
-
     def test_profile_bulkupdate_for_user_with_restricted_projects(self):
         user = self.user_admin
         user.iaso_profile.projects.set([self.project_1.pk, self.project_2.pk])

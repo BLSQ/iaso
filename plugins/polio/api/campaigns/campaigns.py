@@ -637,7 +637,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         def to_representation(self, instance):
             # Skip test rounds
-            if instance.is_test:
+            if instance.on_hold:
                 return None
             return super().to_representation(instance)
 
@@ -1213,7 +1213,7 @@ class CampaignViewSet(ModelViewSet):
 
         # Filter out test rounds if requested
         if exclude_test_rounds:
-            rounds = rounds.filter(is_test=False)
+            rounds = rounds.filter(on_hold=False)
 
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
@@ -1438,7 +1438,7 @@ Timeline tracker Automated message
         return Response({"message": "email sent"})
 
     # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
-    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    # But Patching the campaign directly is very much error prone, so we disable it indirectly
     # Updates are done in the CampaignSerializer
     def partial_update(self):
         """Don't PATCH this way, it won't do anything

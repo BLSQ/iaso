@@ -195,7 +195,9 @@ class GroupsViewSet(ModelViewSet):
         if self.request.GET.get("defaultVersion", None) == "true":
             versions = versions.filter(pk=default_version_id)
 
-        groups = Group.objects.filter(source_version__in=versions).distinct()
+        groups = (
+            Group.objects.filter(source_version__in=versions).select_related("source_version__data_source").distinct()
+        )
 
         queryset = self.filter_queryset(groups, allow_anon=True)
         page = self.paginate_queryset(queryset)

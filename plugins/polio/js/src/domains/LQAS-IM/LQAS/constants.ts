@@ -7,6 +7,7 @@ import {
     WARNING_COLOR,
 } from '../../../styles/constants';
 import { HASHED_MAP_PATTERN, IN_SCOPE } from '../shared/constants';
+import { MapColorConfig } from '../types';
 
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
@@ -18,7 +19,7 @@ export const LQAS_OVERSAMPLED = '3lqasoversampled';
 export const LQAS_UNDERSAMPLED = '3lqasundersampled';
 export const LQAS_COUNTRY_URL = '/api/polio/lqasimmap/country/lqas_';
 
-export const lqasDistrictColors = {
+export const lqasDistrictColors: Record<string, MapColorConfig> = {
     [LQAS_PASS]: {
         color: '#5e5e5e',
         weight: '2',

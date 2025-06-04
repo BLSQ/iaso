@@ -12,7 +12,6 @@ logger = logging.getLogger(__name__)
 
 
 class ET_Under5:
-
     def group_visit_by_entity(self, entities):
         instances = []
         i = 0
@@ -51,25 +50,18 @@ class ET_Under5:
                         instances[i]["last_name"] = current_record.get("last_name", "")
 
                     if current_record.get("first_name") is not None:
-                        instances[i]["first_name"] = current_record.get(
-                            "first_name", ""
-                        )
+                        instances[i]["first_name"] = current_record.get("first_name", "")
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    if (
-                        current_record.get("weight_kgs") is not None
-                        and current_record.get("weight_kgs") != ""
-                    ):
+                    if current_record.get("weight_kgs") is not None and current_record.get("weight_kgs") != "":
                         current_weight = current_record.get("weight_kgs", 0)
                     elif (
                         current_record.get("previous_weight_kgs__decimal__") is not None
                         and current_record.get("previous_weight_kgs__decimal__") != ""
                     ):
-                        current_weight = current_record.get(
-                            "previous_weight_kgs__decimal__", 0
-                        )
+                        current_weight = current_record.get("previous_weight_kgs__decimal__", 0)
                     current_date = visit.get(
                         "source_created_at",
                         visit.get(
@@ -100,9 +92,7 @@ class ET_Under5:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
 
-                    weight = ETL().compute_gained_weight(
-                        initial_weight, current_weight, duration
-                    )
+                    weight = ETL().compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]
                     current_record["weight_loss"] = weight["weight_loss"]
@@ -140,25 +130,19 @@ class ET_Under5:
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
-        logger.info(
-            f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}"
-        )
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
 
         # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(
-            account=account, programme_type="U5"
-        ).delete()
+        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
 
         for index, instance in enumerate(instances):
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(
-                instance["visits"], ["ethiopia_anthro_child"]
-            )
+            instance["journey"] = self.journeyMapper(instance["visits"], ["ethiopia_anthro_child"])
             beneficiary = Beneficiary()
             if (
                 instance["entity_id"] not in existing_beneficiaries
@@ -172,9 +156,7 @@ class ET_Under5:
                 beneficiary.save()
                 logger.info("Created new beneficiary")
             else:
-                beneficiary = Beneficiary.objects.filter(
-                    entity_id=instance["entity_id"]
-                ).first()
+                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
 
             logger.info("Retrieving journey linked to beneficiary")
             if beneficiary is not None:
@@ -183,14 +165,10 @@ class ET_Under5:
                         journey = self.save_journey(beneficiary, journey_instance)
                         visits = ETL().save_visit(journey_instance["visits"], journey)
                         logger.info(f"Inserted {len(visits)} Visits")
-                        grouped_steps = ETL().get_admission_steps(
-                            journey_instance["steps"]
-                        )
+                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
                         admission_step = grouped_steps[0]
 
-                        followUpVisits = ETL().group_followup_steps(
-                            grouped_steps, admission_step
-                        )
+                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
                         steps = ETL().save_steps(visits, followUpVisits)
                         logger.info(f"Inserted {len(steps)} Steps")
                     else:
@@ -206,9 +184,7 @@ class ET_Under5:
             "ethiopia_child_antropometric_followUp_otp",
         ]
 
-        visit_nutrition_program = [
-            visit for visit in visits if visit["form_id"] in admission_form
-        ]
+        visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
 
         if len(visit_nutrition_program) > 0:
             nutrition_programme = ETL().program_mapper(visit_nutrition_program[0])

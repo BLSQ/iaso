@@ -81,7 +81,6 @@ export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 
 export interface OrgUnitChangeRequestsPaginated extends Pagination {
     results: OrgUnitChangeRequest[];
-    select_all_count: number;
 }
 
 export type OrgUnitChangeRequestKind = 'org_unit_creation' | 'org_unit_change';

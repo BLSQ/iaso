@@ -26,3 +26,5 @@ export type Redirection = {
     path: string; // origin url
     to: string; // destination url
 };
+
+export type Url = string;

@@ -41,6 +41,10 @@ export const useFormATableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
+                Cell: settings =>
+                    settings.row.original.campaign
+                        ? settings.row.original.campaign
+                        : textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.round),

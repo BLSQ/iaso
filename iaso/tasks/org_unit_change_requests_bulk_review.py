@@ -18,7 +18,7 @@ def org_unit_change_requests_bulk_approve(
     with transaction.atomic():
         for change_request in change_requests:
             # In bulk review, there is no way to select just a subset of `requested_fields`.
-            # So we approve *all* fields for a which a change was requested.
+            # So we approve *all* fields for which a change was requested.
             approved_fields = change_request.requested_fields
             change_request.approve(user, approved_fields)
 

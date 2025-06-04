@@ -5,6 +5,7 @@ import React, {
     useState,
 } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
@@ -19,6 +20,7 @@ import { useTableSelection } from '../../../../utils/table';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { MultiActionsDialog } from '../Components/MultiActionsDialog';
+import { BulkDeleteDialog } from '../Components/BulkDeleteDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
 import { PAYMENTS_MODULE } from '../constants';
 import { IconButton } from '../details';
@@ -29,9 +31,6 @@ import {
     OrgUnitChangeRequest,
     OrgUnitChangeRequestsPaginated,
 } from '../types';
-
-const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
-    ou.status !== 'new';
 
 const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -215,12 +214,16 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const columns = useColumns();
+    const { formatMessage } = useSafeIntl();
+
     const { selection, handleTableSelection, handleUnselectAll } =
-        useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
+        useTableSelection<OrgUnitChangeRequest>(data?.results?.length ?? 0);
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
-    const { formatMessage } = useSafeIntl();
+
+    const [bulkDeletePopupOpen, setBulkDeletePopupIsOpen] =
+        useState<boolean>(false);
 
     const selectionActions = useMemo(
         () => [
@@ -230,22 +233,34 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 onClick: () => setMultiActionPopupOpen(true),
                 disabled:
                     multiActionPopupOpen ||
-                    (selection.selectedItems.length === 0 &&
-                        !selection.selectAll),
+                    (!selection.selectAll &&
+                        selection.selectedItems.length === 0),
+            },
+            {
+                icon: <DeleteIcon />,
+                label: formatMessage(MESSAGES.bulkDeleteAction),
+                onClick: () => setBulkDeletePopupIsOpen(true),
+                disabled:
+                    bulkDeletePopupOpen ||
+                    (!selection.selectAll &&
+                        selection.selectedItems.length === 0),
             },
         ],
-        [
-            formatMessage,
-            multiActionPopupOpen,
-            selection.selectAll,
-            selection.selectedItems.length,
-        ],
+        [formatMessage, selection],
     );
+
     return (
         <>
             <MultiActionsDialog
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                resetSelection={handleUnselectAll}
+                params={params}
+            />
+            <BulkDeleteDialog
+                isOpen={bulkDeletePopupOpen}
+                closeDialog={() => setBulkDeletePopupIsOpen(false)}
                 selection={selection}
                 resetSelection={handleUnselectAll}
                 params={params}
@@ -262,18 +277,14 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 params={params}
                 rowProps={getRowProps}
                 extraProps={{ loading: isFetching }}
-                multiSelect={Boolean(
-                    data?.select_all_count && data?.select_all_count > 0,
-                )}
+                multiSelect
                 selection={selection}
                 selectionActions={selectionActions}
-                selectAllCount={data?.select_all_count ?? 0}
-                getIsSelectionDisabled={getIsSelectionDisabled}
                 setTableSelection={(selectionType, items) =>
                     handleTableSelection(
                         selectionType,
                         items,
-                        data?.select_all_count,
+                        data?.results?.length,
                     )
                 }
             />

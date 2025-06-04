@@ -51,9 +51,6 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
         : '-';
     const isNewOrgunit = params.orgUnitId === '0';
     const { account } = useCurrentUser();
-    console.log('orgUnit', orgUnit);
-
-    console.log('account.default_version', account.default_version);
     return (
         <>
             {!orgUnit && <LoadingSpinner absolute />}

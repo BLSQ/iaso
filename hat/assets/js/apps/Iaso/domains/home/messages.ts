@@ -9,9 +9,9 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
     },
-    beneficiaries: {
-        defaultMessage: 'Beneficiaries',
-        id: 'iaso.label.beneficiaries',
+    entities: {
+        defaultMessage: 'Entities',
+        id: 'iaso.label.entities',
     },
     storages: {
         defaultMessage: 'External storage',
@@ -20,5 +20,13 @@ export const MESSAGES = defineMessages({
     planning: {
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
+    },
+    users: {
+        defaultMessage: 'Users',
+        id: 'iaso.label.users',
+    },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
     },
 });

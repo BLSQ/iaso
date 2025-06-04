@@ -1,8 +1,10 @@
-from django.test import TestCase
-from iaso import models as m
-from django.contrib.auth.models import User
 from datetime import datetime
 
+from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.test import TestCase
+
+from iaso import models as m
 from iaso.models.payments import PaymentStatuses
 
 
@@ -72,12 +74,17 @@ class PotentialPaymentModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        user = User.objects.create(username="test_user")
+        cls.user = User.objects.create(username="test_user")
         cls.org_unit = m.OrgUnit.objects.create(name="Test OrgUnit")
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
-        cls.potential_payment = m.PotentialPayment.objects.create(user=user)
-        cls.potential_payment.change_requests.add(change_request)
+        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
 
     def test_create(self):
+        self.potential_payment = m.PotentialPayment.objects.create(user=self.user)
+        self.potential_payment.change_requests.add(self.change_request)
         self.assertEqual(self.potential_payment.user.username, "test_user")
         self.assertEqual(self.potential_payment.change_requests.first().new_name, "Foo")
+
+    def test_user_unicity(self):
+        self.potential_payment = m.PotentialPayment.objects.create(user=self.user)
+        with self.assertRaises(IntegrityError):
+            m.PotentialPayment.objects.create(user=self.user)

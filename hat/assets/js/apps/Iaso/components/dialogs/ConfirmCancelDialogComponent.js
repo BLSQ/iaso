@@ -45,21 +45,23 @@ function RawConfirmCancelActions({
             >
                 <FormattedMessage {...confirmMessage} />
             </Button>
-            {additionalButton && additionalMessage && onAdditionalButtonClick && (
-                <Button
-                    data-test="additional-button"
-                    onClick={() => onAdditionalButtonClick(closeDialog)}
-                    color="primary"
-                    disabled={
-                        allowConfimAdditionalButton !== null &&
-                        allowConfimAdditionalButton !== undefined
-                            ? !allowConfimAdditionalButton
-                            : !allowConfirm
-                    }
-                >
-                    <FormattedMessage {...additionalMessage} />
-                </Button>
-            )}
+            {additionalButton &&
+                additionalMessage &&
+                onAdditionalButtonClick && (
+                    <Button
+                        data-test="additional-button"
+                        onClick={() => onAdditionalButtonClick(closeDialog)}
+                        color="primary"
+                        disabled={
+                            allowConfimAdditionalButton !== null &&
+                            allowConfimAdditionalButton !== undefined
+                                ? !allowConfimAdditionalButton
+                                : !allowConfirm
+                        }
+                    >
+                        <FormattedMessage {...additionalMessage} />
+                    </Button>
+                )}
         </DialogActions>
     );
 }

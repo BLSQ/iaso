@@ -1,27 +1,19 @@
 export type Filters = {
-    search?: string;
-    location?: string;
     dateFrom?: string;
     dateTo?: string;
-    submitterId?: string;
-    submitterTeamId?: string;
     entityTypeIds?: string;
+    fieldsSearch?: string;
+    location?: string;
     locationLimit?: string;
     groups?: string;
+    search?: string;
+    submitterId?: string;
+    submitterTeamId?: string;
 };
 
-export type Params = {
-    pageSize: string;
+export type Params = Filters & {
     order: string;
     page: string;
+    pageSize: string;
     tab: string;
-    search?: string;
-    location?: string;
-    dateFrom?: string;
-    dateTo?: string;
-    submitterId?: string;
-    submitterTeamId?: string;
-    entityTypeIds?: string;
-    locationLimit?: string;
-    groups?: string;
 };

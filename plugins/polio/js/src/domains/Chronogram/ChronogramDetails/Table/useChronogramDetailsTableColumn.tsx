@@ -63,8 +63,7 @@ export const useChronogramDetailsTableColumn = (
             {
                 Header: formatMessage(MESSAGES.labelUserInCharge),
                 id: 'user_in_charge',
-                accessor: row =>
-                    row.user_in_charge.full_name || row.user_in_charge.username,
+                accessor: 'user_in_charge',
                 sortable: false,
             },
             {

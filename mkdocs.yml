@@ -1,12 +1,78 @@
 site_name: IASO
 theme:
-  name: readthedocs
+  name: material
   highlightjs: true
+  logo: ./assets/iaso.png
+  favicon: ./assets/iaso-favicon.png
+  custom_dir: ./docs/overrides # here we need to specify /docs in the path. That's just how it is
+  palette:
+    primary: 'custom'
+    secondary: 'custom'
+  features:
+    - content.action.edit
 plugins:
+  - i18n: 
+      languages:
+        - locale: en
+          name: English
+          build: true
+          default: true
+        - locale: fr
+          name: Français
+          build: true
+          # Because we have a nested nav menu, we need to duplicate it for each additional language
+          nav: 
+              - Accueil: index.md
+              - Guide d'utilisateur:
+                - ./pages/users/reference/iaso_concepts/iaso_concepts.md
+                - ./pages/users/reference/iaso_modules/iaso_modules.md
+                - ./pages/users/reference/iaso_web/user_guide.md
+                - ./pages/users/reference/iaso_mobile/iaso_mobile.md
+              - Développeurs:
+                - Références:
+                  # - Data model glossary:
+                  - ./pages/dev/reference/data_model_glossary/data_model_glossary.md
+                  # - SQL dashboard : 
+                  - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
+                  - ./pages/dev/reference/docker/docker.md
+                  - ./pages/dev/reference/background_tasks/background_tasks.md
+                  - ./pages/dev/reference/env_variables/env_variables.md
+                  # - Entities:
+                  #   - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
+                  # - Front-end:
+                  #   - ./pages/dev/reference/front-end_reference/front-end_reference.md
+                  # - Audit:
+                  #   - ./pages/dev/reference/audit/audit.md
+                  # - Vector control:
+                  #   - ./pages/dev/reference/vector_control/vector_control.md
+                  - Modèles: 
+                    - ./pages/dev/reference/API/entity.md
+                - Guides:
+                  # - Contribute:
+                  - ./pages/dev/how_to/contribute/contribute.md 
+                  # - Set up a dev environment:
+                  - ./pages/dev/how_to/setup_dev_env/setup_dev_env.md 
+                  # - Test Enketo public_create_url:
+                  #   - ./pages/dev/how_to/manually_test_enketo/manually_test_enketo.md 
+                  # - Deploy:
+                  #   - ./pages/dev/how_to/deploy/deploy.md
+                  # - Use the APIs:
+                  - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+                  # - Run docs locally:
+                  #   - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
+                  # - Write a visit on an NFC card: 
+                  #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
+
+              - En savoir plus sur IASO:
+                - Demander une démo: https://www.openiaso.com/ 
+                - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+                - Release notes: https://github.com/BLSQ/iaso/releases
+                - Bluesquare: https://www.bluesquarehub.com/
+
   - search #built-in search input in the theme
   - mermaid2 #enables rendering mermaid diagrams
   - awesome-pages:
-          collapse_single_pages: true # prevents all sub menus to be open by default
+      collapse_single_pages: true # prevents all sub menus to be open by default
   - mkdocstrings:
       handlers:
         # See: https://mkdocstrings.gipip3 thub.io/python/usage/
@@ -21,6 +87,12 @@ markdown_extensions:
       permalink: "#" # adds a link to headers
 repo_url: https://github.com/BLSQ/iaso 
 edit_uri: edit/main/docs # for the edit on github button
+extra_css: 
+  - ./stylesheets/extra.css
+extra_javascript:
+  - ./extrajs/html2pdf.bundle.min.js
+  - ./extrajs/pdfDownload.js
+  - https://plausible.io/js/script.js
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu
   - Home: index.md
@@ -64,9 +136,11 @@ nav: # nav configures the side bar menu
       # - Write a visit on an NFC card: 
       #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
-  - More about Iaso:
-    - Get a demo: https://www.bluesquarehub.com/iaso/ 
-    - Bluesquare: https://www.bluesquarehub.com/
+  - More about IASO:
+    - IASO website: https://www.openiaso.com/ 
+    - Digital Public Goods Registry: https://www.digitalpublicgoods.net/r/iaso
+    - Release notes: https://github.com/BLSQ/iaso/releases
+    - Bluesquare website: https://www.bluesquarehub.com/
 
 
 

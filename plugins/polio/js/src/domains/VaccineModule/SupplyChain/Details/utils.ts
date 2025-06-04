@@ -1,4 +1,5 @@
 import { FormikErrors, FormikProps, FormikTouched } from 'formik';
+import { baseUrls } from '../../../../constants/urls';
 import { VRF } from '../constants';
 import {
     PreAlert,
@@ -7,7 +8,6 @@ import {
     UseHandleSubmitArgs,
     VAR,
 } from '../types';
-import { baseUrls } from '../../../../constants/urls';
 
 type SaveAllArgs = {
     changedTabs: TabValue[];
@@ -153,8 +153,7 @@ export const makeHandleSubmit =
         setInitialValues,
         saveForm,
         redirect,
-    }: // eslint-disable-next-line no-unused-vars
-    UseHandleSubmitArgs): ((saveAll?: boolean) => void) =>
+    }: UseHandleSubmitArgs): ((saveAll?: boolean) => void) =>
     (saveAll = false): void => {
         formik.submitForm();
         saveForm(

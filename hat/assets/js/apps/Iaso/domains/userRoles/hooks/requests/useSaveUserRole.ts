@@ -1,7 +1,6 @@
-/* eslint-disable camelcase */
-import { UseMutationResult } from 'react-query';
 import { isEmpty } from 'lodash';
-import { putRequest, postRequest } from '../../../../libs/Api';
+import { UseMutationResult } from 'react-query';
+import { postRequest, putRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 import { Permission } from '../../types/userRoles';
 
@@ -9,16 +8,16 @@ export type SaveUserRoleQuery = {
     id?: number;
     name: string;
     permissions?: Array<Permission>;
+    editable_org_unit_type_ids?: number[];
 };
 
-const convertToApi = data => {
+const convertToApi = (data: Partial<SaveUserRoleQuery>) => {
     const { permissions, ...converted } = data;
-    if (!isEmpty(permissions)) {
-        converted.permissions = permissions.map(
-            permission => permission.codename,
-        );
-    }
-    return converted;
+    return {
+        ...converted,
+        permissions: !isEmpty(permissions) ? permissions : undefined,
+        editable_org_unit_types: converted.editable_org_unit_type_ids,
+    };
 };
 
 const endpoint = '/api/userroles/';

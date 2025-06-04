@@ -1,30 +1,25 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box, Radio } from '@mui/material';
 import { Theme, useTheme } from '@mui/material/styles';
-import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
+import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
-import { AssignmentsApi } from '../types/assigment';
-import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
-
 import { Profile } from '../../../utils/usersUtils';
+import { colors } from '../constants/colors';
+import MESSAGES from '../messages';
+import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import { getTeamUserName } from '../utils';
-
-import { colors } from '../constants/colors';
-
-import MESSAGES from '../messages';
 
 type Props = {
     assignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
-    // eslint-disable-next-line no-unused-vars
     setItemColor: (color: string, teamId: number) => void;
     selectedItem: SubTeam | User | undefined;
-    // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
     currentTeam: Team | undefined;
     orgUnits: Array<AssignmentUnit>;
@@ -87,19 +82,17 @@ export const useColumns = ({
                 width: 30,
                 Cell: settings => {
                     return (
-                        <>
-                            <Box display="flex" justifyContent="center">
-                                <Radio
-                                    checked={
-                                        selectedItem?.id ===
-                                        settings.row.original.id
-                                    }
-                                    onChange={() =>
-                                        setSelectedItem(settings.row.original)
-                                    }
-                                />
-                            </Box>
-                        </>
+                        <Box display="flex" justifyContent="center">
+                            <Radio
+                                checked={
+                                    selectedItem?.id ===
+                                    settings.row.original.id
+                                }
+                                onChange={() =>
+                                    setSelectedItem(settings.row.original)
+                                }
+                            />
+                        </Box>
                     );
                 },
             },
@@ -158,8 +151,7 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <div>
-                            {!isLoadingAssignments &&
-                                getAssignationsCount(settings.row.original.id)}
+                            {getAssignationsCount(settings.row.original.id)}
                         </div>
                     );
                 },
@@ -170,7 +162,6 @@ export const useColumns = ({
         formatMessage,
         getAssignationsCount,
         getFullItem,
-        isLoadingAssignments,
         profiles,
         selectedItem?.id,
         setItemColor,

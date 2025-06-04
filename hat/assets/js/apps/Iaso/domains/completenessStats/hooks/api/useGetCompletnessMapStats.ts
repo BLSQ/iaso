@@ -3,8 +3,8 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import {
     CompletenessMapApiResponse,
-    CompletenessRouterParams,
     CompletenessMapStats,
+    CompletenessRouterParams,
 } from '../../types';
 
 // Correspondance between the name in the filter object and what the API expect
@@ -30,7 +30,6 @@ const getParams = (params: CompletenessRouterParams) => {
 export const buildQueryString = (
     params: CompletenessRouterParams,
 ): URLSearchParams => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const queryParams = {};
     queryParamsMap.forEach((value, key) => {
         if (params[key]) {

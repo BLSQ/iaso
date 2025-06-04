@@ -189,9 +189,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lot_numbers',
         defaultMessage: 'Lot numbers',
     },
-    physical_inventory: {
-        id: 'iaso.polio.label.physical_inventory',
-        defaultMessage: 'Physical inventory',
+    physical_inventory_add: {
+        id: 'iaso.polio.label.physical_inventory_add',
+        defaultMessage: 'Add to Physical inventory',
+    },
+    physical_inventory_remove: {
+        id: 'iaso.polio.label.physical_inventory_remove',
+        defaultMessage: 'Remove from Physical inventory',
     },
     stealing: {
         id: 'iaso.polio.label.stealing',
@@ -201,9 +205,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.return_to_supplier',
         defaultMessage: 'Return to supplier',
     },
-    losses: {
-        id: 'iaso.polio.label.losses',
-        defaultMessage: 'Losses',
+    missing: {
+        id: 'iaso.polio.label.missing',
+        defaultMessage: 'Missing',
     },
     vaccine_expired: {
         id: 'iaso.polio.label.vaccine_expired',
@@ -303,6 +307,15 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Are you sure you want to delete this incident report ?',
     },
+    deleteEarmarked: {
+        id: 'iaso.polio.label.deleteEarmarked',
+        defaultMessage: 'Delete Earmarked Stock',
+    },
+    deleteEarmarkedWarning: {
+        id: 'iaso.polio.label.deleteEarmarkedWarning',
+        defaultMessage:
+            'Are you sure you want to delete this earmarked stock ?',
+    },
     title: {
         id: 'iaso.polio.label.title',
         defaultMessage: 'Title',
@@ -343,6 +356,55 @@ const MESSAGES = defineMessages({
     inventoryUnusableMovement: {
         id: 'iaso.incident.inventoryUnusableMovement',
         defaultMessage: 'Unusable vials in: {movement}',
+    },
+    document: {
+        id: 'iaso.polio.label.document',
+        defaultMessage: 'Document',
+    },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
+    },
+    download: {
+        defaultMessage: 'Download',
+        id: 'iaso.polio.label.download',
+    },
+    stockToModify: {
+        id: 'iaso.polio.label.stockToModify',
+        defaultMessage: 'Stock to modify',
+    },
+    earmarked: {
+        id: 'iaso.polio.label.earmarked',
+        defaultMessage: 'Earmarked',
+    },
+    earmarked_doses: {
+        id: 'iaso.polio.label.earmarked_doses',
+        defaultMessage: 'Earmarked doses',
+    },
+    earmarked_vials: {
+        id: 'iaso.polio.label.earmarked_vials',
+        defaultMessage: 'Earmarked vials',
+    },
+    created: {
+        id: 'iaso.label.created_at',
+        defaultMessage: 'Created',
+    },
+    used: {
+        id: 'iaso.label.used',
+        defaultMessage: 'Used',
+    },
+    returned: {
+        id: 'iaso.label.returned',
+        defaultMessage: 'Returned',
+    },
+    temporary_campaign_name: {
+        id: 'iaso.polio.label.temporary_campaign_name',
+        defaultMessage: 'Temporary campaign name',
+    },
+    duplicate_destruction: {
+        id: 'iaso.polio.label.duplicate_destruction',
+        defaultMessage:
+            'A destruction report with the same date and unusable vials destroyed already exists',
     },
 });
 

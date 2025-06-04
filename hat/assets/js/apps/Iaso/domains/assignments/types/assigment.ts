@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Shape } from '../../orgUnits/types/shapes';
 
 export type AssignmentParams = {

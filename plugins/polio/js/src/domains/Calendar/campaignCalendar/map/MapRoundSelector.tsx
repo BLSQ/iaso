@@ -1,15 +1,13 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState } from 'react';
 import { Box } from '@mui/material';
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
+import React, { FunctionComponent, useState } from 'react';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import MESSAGES from '../../../../constants/messages';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../../constants/messages';
 import { MapRoundButton } from './MapRoundButton';
 
 type Props = {
     selection: 'all' | 'latest' | string;
-    // eslint-disable-next-line no-unused-vars
     onChange: (value: 'all' | 'latest' | string) => void;
     options: DropdownOptions<'all' | 'latest' | string>[];
     isOpen: boolean;

@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import { useDispatch } from 'react-redux';
-import { DialogContentText } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { DialogContentText } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { bulkDelete } from '../actions';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -27,18 +26,15 @@ const DeleteInstanceDialog = ({
     isUnDeleteAction,
 }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
     const [allowConfirm, setAllowConfirm] = useState(true);
     const onConfirm = closeDialog => {
         setAllowConfirm(false);
-        dispatch(
-            bulkDelete(selection, filters, isUnDeleteAction, () => {
-                closeDialog();
-                resetSelection();
-                setForceRefresh();
-                setAllowConfirm(false);
-            }),
-        );
+        bulkDelete(selection, filters, isUnDeleteAction, () => {
+            closeDialog();
+            resetSelection();
+            setForceRefresh();
+            setAllowConfirm(false);
+        });
     };
 
     const renderTrigger = ({ openDialog }) => {

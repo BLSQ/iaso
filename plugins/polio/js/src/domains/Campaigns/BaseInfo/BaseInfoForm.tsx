@@ -1,8 +1,7 @@
-/* eslint-disable camelcase */
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
@@ -147,6 +146,16 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 label={formatMessage(MESSAGES.testCampaign)}
                                 name="is_test"
                                 component={BooleanInput}
+                                disabled={values.on_hold}
+                            />
+                        )}
+                        {isUserAdmin && (
+                            <Field
+                                className={classes.input}
+                                label={formatMessage(MESSAGES.campaignOnHold)}
+                                name="on_hold"
+                                component={BooleanInput}
+                                disabled={values.is_test}
                             />
                         )}
                         {isUserAdmin && (

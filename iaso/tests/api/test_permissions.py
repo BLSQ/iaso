@@ -1,10 +1,10 @@
+from django.contrib.auth.models import Permission
+
 from hat import settings
 from hat.menupermissions.constants import PERMISSIONS_PRESENTATION
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.test import APITestCase
 from iaso import models as m
-from django.contrib.auth.models import Permission
-
+from iaso.test import APITestCase
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -56,6 +56,6 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(list(response.json()["permissions"].keys()), ["org_units", "admin"])
         self.assertTrue(
-            set([permission["codename"] for permission in response.json()["permissions"]["org_units"]])
-            <= set(PERMISSIONS_PRESENTATION["org_units"]),
+            [permission["codename"] for permission in response.json()["permissions"]["org_units"]]
+            <= PERMISSIONS_PRESENTATION["org_units"],
         )

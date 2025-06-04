@@ -98,34 +98,32 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     };
 
     return (
-        <>
-            <SimpleModal
-                titleMessage={titleMessage}
-                maxWidth="sm"
-                open={isOpen}
-                closeDialog={closeDialog}
-                id={id ?? 'bulk-user-create'}
-                dataTestId="test-bulk-user-create"
-                onClose={() => resetForm()}
-                buttons={Buttons}
-            >
-                <Box mt={2}>
-                    <FilesUpload
-                        files={values.file ?? []}
-                        onFilesSelect={files => {
-                            setFieldTouched('file', true);
-                            setFieldValue('file', files);
-                        }}
-                        required
-                        multi={false}
-                        errors={formikAndApiErrors}
-                        placeholder={formatMessage(MESSAGES.selectCsvFile)}
-                    />
-                </Box>
-                {/* The loading spinner is set so users can still close the modal when the users are loading */}
-                {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
-            </SimpleModal>
-        </>
+        <SimpleModal
+            titleMessage={titleMessage}
+            maxWidth="sm"
+            open={isOpen}
+            closeDialog={closeDialog}
+            id={id ?? 'bulk-user-create'}
+            dataTestId="test-bulk-user-create"
+            onClose={() => resetForm()}
+            buttons={Buttons}
+        >
+            <Box mt={2}>
+                <FilesUpload
+                    files={values.file ?? []}
+                    onFilesSelect={files => {
+                        setFieldTouched('file', true);
+                        setFieldValue('file', files);
+                    }}
+                    required
+                    multi={false}
+                    errors={formikAndApiErrors}
+                    placeholder={formatMessage(MESSAGES.selectCsvFile)}
+                />
+            </Box>
+            {/* The loading spinner is set so users can still close the modal when the users are loading */}
+            {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
+        </SimpleModal>
     );
 };
 

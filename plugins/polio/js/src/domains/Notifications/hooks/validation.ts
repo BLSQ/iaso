@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as yup from 'yup';
 import { mixed, object, ObjectSchema } from 'yup';
 import { useMemo } from 'react';

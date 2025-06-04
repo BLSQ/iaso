@@ -1,22 +1,21 @@
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import React from 'react';
 import { act } from 'react-dom/test-utils';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { expect } from 'chai';
 import { withQueryClientProvider } from '../../../../../test/utils';
-import { renderWithStore } from '../../../../../test/utils/redux';
+import { renderWithIntl } from '../../../../../test/utils/intl';
+import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import formVersionFixture from '../fixtures/formVersions.json';
 import MESSAGES from '../messages';
-import FormVersionsDialog from './FormVersionsDialogComponent';
+import FormVersionsDialogComponent from './FormVersionsDialogComponent';
 
 let connectedWrapper;
 
-const requestsStub = require('../../../utils/requests');
+const requestsStub = require('../requests');
 
 const fakeFormVersion = formVersionFixture.form_versions[0];
 const formId = 69;
@@ -34,15 +33,12 @@ const awaitUseEffect = async wrapper => {
     return Promise.resolve();
 };
 
-const getConnectedWrapper = () =>
+const renderComponent = () =>
     mount(
-        withQueryClientProvider(
-            renderWithStore(
-                <LocalizationProvider
-                    dateAdapter={AdapterMoment}
-                    adapterLocale="en"
-                >
-                    <FormVersionsDialog
+        renderWithIntl(
+            renderWithMuiTheme(
+                withQueryClientProvider(
+                    <FormVersionsDialogComponent
                         formId={formId}
                         formVersion={fakeFormVersion}
                         titleMessage={MESSAGES.createFormVersion}
@@ -56,13 +52,8 @@ const getConnectedWrapper = () =>
                         )}
                         onConfirmed={() => null}
                         periodType={PERIOD_TYPE_DAY}
-                    />
-                </LocalizationProvider>,
-                {
-                    forms: {
-                        current: undefined,
-                    },
-                },
+                    />,
+                ),
             ),
         ),
     );
@@ -71,27 +62,26 @@ describe('FormVersionsDialog connected component', () => {
     describe('with a new form version', () => {
         before(() => {
             connectedWrapper = mount(
-                withQueryClientProvider(
-                    renderWithStore(
-                        <FormVersionsDialog
-                            formId={formId}
-                            titleMessage={MESSAGES.createFormVersion}
-                            onConfirmed={() => null}
-                            periodType={PERIOD_TYPE_DAY}
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    id="open-dialog"
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.createFormVersion}
-                                />
-                            )}
-                        />,
-                        {
-                            forms: {
-                                current: undefined,
-                            },
-                        },
+                renderWithIntl(
+                    renderWithMuiTheme(
+                        withQueryClientProvider(
+                            <FormVersionsDialogComponent
+                                formId={formId}
+                                titleMessage={MESSAGES.createFormVersion}
+                                onConfirmed={() => null}
+                                periodType={PERIOD_TYPE_DAY}
+                                renderTrigger={({ openDialog }) => (
+                                    <IconButtonComponent
+                                        id="open-dialog"
+                                        onClick={openDialog}
+                                        icon="edit"
+                                        tooltipMessage={
+                                            MESSAGES.createFormVersion
+                                        }
+                                    />
+                                )}
+                            />,
+                        ),
                     ),
                 ),
             );
@@ -124,7 +114,7 @@ describe('FormVersionsDialog connected component', () => {
 
     describe('with a full form version', () => {
         before(() => {
-            connectedWrapper = getConnectedWrapper();
+            connectedWrapper = renderComponent();
             inputComponent = connectedWrapper.find('#open-dialog').at(0);
             inputComponent.props().onClick();
             connectedWrapper.update();
@@ -191,7 +181,7 @@ describe('FormVersionsDialog connected component', () => {
 
         describe('onConfirm', () => {
             before(() => {
-                connectedWrapper = getConnectedWrapper();
+                connectedWrapper = renderComponent();
                 inputComponent = connectedWrapper.find('#open-dialog').at(0);
                 inputComponent.props().onClick();
                 connectedWrapper.update();

@@ -1,5 +1,5 @@
-import { useCallback } from 'react';
 import { cloneDeep } from 'lodash';
+import { useCallback } from 'react';
 
 import { ChangesOption, Mapping } from '../types';
 
@@ -12,8 +12,7 @@ export const useGetUnUsedChangesOptions = ({
     mappingKey,
     mappingArray,
     value,
-}: // eslint-disable-next-line no-unused-vars
-getUnUsedOptionsProps): ((options: ChangesOption[]) => ChangesOption[]) => {
+}: getUnUsedOptionsProps): ((options: ChangesOption[]) => ChangesOption[]) => {
     const getUnUsedOptions = useCallback(
         (options: ChangesOption[]) => {
             const newOptions: ChangesOption[] = cloneDeep(options).filter(

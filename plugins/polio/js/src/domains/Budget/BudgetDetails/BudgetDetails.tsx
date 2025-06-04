@@ -1,5 +1,3 @@
-/* eslint-disable react/no-array-index-key */
-/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useCallback,
@@ -44,7 +42,9 @@ type BudgetProcessDetailsParams = {
 
 const baseUrl = baseUrls.budgetDetails;
 export const BudgetProcessDetails: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as BudgetProcessDetailsParams;
+    const params = useParamsObject(
+        baseUrl,
+    ) as unknown as BudgetProcessDetailsParams;
     const goBack = useGoBack(baseUrls.budget);
     const redirectToReplace = useRedirectToReplace();
     const classes = useStyles();

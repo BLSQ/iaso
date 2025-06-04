@@ -1,8 +1,7 @@
-from datetime import datetime
-
-from django.utils import timezone
 from rest_framework.exceptions import ValidationError
+
 from iaso.models import OrgUnit
+from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 
 
 def filter_by_forms(request, queryset, key=None):
@@ -21,24 +20,19 @@ def filter_by_forms(request, queryset, key=None):
 
 def filter_by_dates(request, queryset, start_date=None, end_date=None, key=None):
     date_format = "%Y-%m-%d"
+
     if start_date:
         try:
-            start_date_dt = datetime.strptime(start_date, date_format)
-            start_date_dt = timezone.make_aware(start_date_dt, timezone.get_default_timezone())
-            start_date_dt = start_date_dt.replace(hour=0, minute=0, second=0)
             filter_key = f"{key}__created_at__gte" if key else "created_at__gte"
-            filter_params = {filter_key: start_date_dt}
+            filter_params = {filter_key: date_string_to_start_of_day(start_date, date_format)}
             queryset = queryset.filter(**filter_params)
         except ValueError:
             pass
 
     if end_date:
         try:
-            end_date_dt = datetime.strptime(end_date, date_format)
-            end_date_dt = timezone.make_aware(end_date_dt, timezone.get_default_timezone())
-            end_date_dt = end_date_dt.replace(hour=23, minute=59, second=59)
             filter_key = f"{key}__created_at__lte" if key else "created_at__lte"
-            filter_params = {filter_key: end_date_dt}
+            filter_params = {filter_key: date_string_to_end_of_day(end_date, date_format)}
             queryset = queryset.filter(**filter_params)
         except ValueError:
             pass

@@ -1,35 +1,35 @@
 import {
+    Box,
+    Button,
     Dialog,
+    DialogActions,
     DialogContent,
     DialogTitle,
-    DialogActions,
-    Button,
-    Box,
     Divider,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl, Table } from 'bluesquare-components';
+import { commonStyles, Table, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
-    useState,
-    useEffect,
     useCallback,
+    useEffect,
     useMemo,
+    useState,
 } from 'react';
 
-import { ChildrenOrgUnits } from '../types/orgUnit';
-import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
-import { SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
+import { SaveAssignmentQuery } from '../types/assigment';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 import { Planning } from '../types/planning';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 import { useColumns } from '../configs/ParentDialogColumns';
 
-import { getTeamUserName, getMultiSaveParams } from '../utils';
+import { getMultiSaveParams, getTeamUserName } from '../utils';
 
-import MESSAGES from '../messages';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import MESSAGES from '../messages';
 
 type Props = {
     currentTeam: Team | undefined;
@@ -37,12 +37,10 @@ type Props = {
     profiles: Profile[];
     childrenOrgunits: ChildrenOrgUnits | undefined;
     parentSelected: ParentOrgUnit | undefined;
-    // eslint-disable-next-line no-unused-vars
     setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
     selectedItem: SubTeam | User | undefined;
     planning: Planning | undefined;
     isFetchingChildrenOrgunits: boolean;
-    // eslint-disable-next-line no-unused-vars
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
 };
 const useStyles = makeStyles(theme => ({

@@ -1,22 +1,21 @@
-import React, { ReactElement, useMemo } from 'react';
 import {
     Column,
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
-import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import React, { ReactElement, useMemo } from 'react';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../constants/urls';
+import { PLANNING_WRITE } from '../../utils/permissions';
+import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { PLANNING_WRITE } from '../../utils/permissions';
 
 const getAssignmentUrl = (planning: PlanningApi): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
 export const usePlanningColumns = (
-    // eslint-disable-next-line no-unused-vars
     deletePlanning: (id: number) => void,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();

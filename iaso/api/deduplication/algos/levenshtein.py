@@ -6,6 +6,7 @@ from ..common import PotentialDuplicate  # type: ignore
 from .base import DeduplicationAlgorithm
 from .finalize import finalize_from_task
 
+
 LEVENSHTEIN_MAX_DISTANCE = 3
 ABOVE_SCORE_DISPLAY = 50
 
@@ -28,24 +29,58 @@ def _build_query(params):
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
             fc_arr.append(
-                f"(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
+                "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
             )
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(f_name)
+            query_params.extend([f_name, f_name, f_name, f_name])
         elif f_type == "text":
-            fc_arr.append(f"(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(levenshtein_max_distance)
-            query_params.append(levenshtein_max_distance)
+            fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
+            query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+        elif f_type == "calculate":
+            # Handle type casting based on field name suffix
+            if f_name.endswith(("__int__", "__integer__")):
+                cast_type = "integer"
+            elif f_name.endswith("__long__"):
+                cast_type = "bigint"
+            elif f_name.endswith(("__decimal__", "__double__")):
+                cast_type = "double precision"
+            elif f_name.endswith(("__bool__", "__boolean__")):
+                cast_type = "boolean"
+            elif f_name.endswith("__date__"):
+                cast_type = "date"
+            elif f_name.endswith("__time__"):
+                cast_type = "time"
+            elif f_name.endswith(("__date_time__", "__datetime__")):
+                cast_type = "timestamp"
+            else:
+                # Default to text comparison if no type suffix is found
+                fc_arr.append(
+                    "(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))"
+                )
+                query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+                continue
+
+            # For numeric types, use the same comparison as numbers
+            if cast_type in ["integer", "bigint", "double precision"]:
+                fc_arr.append(
+                    f"(1.0 - ( abs ( (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / greatest( (instance1.json->>%s)::{cast_type}, (instance2.json->>%s)::{cast_type} )))"
+                )
+                query_params.extend([f_name, f_name, f_name, f_name])
+            # For boolean types, compare as 0/1
+            elif cast_type == "boolean":
+                fc_arr.append(
+                    f"(1.0 - abs( (instance1.json->>%s)::{cast_type}::integer - (instance2.json->>%s)::{cast_type}::integer ))"
+                )
+                query_params.extend([f_name, f_name])
+            # For date/time types, compare as timestamps
+            elif cast_type in ["date", "time", "timestamp"]:
+                fc_arr.append(
+                    f"(1.0 - abs( extract(epoch from (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / 86400.0 ))"
+                )
+                query_params.extend([f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
 
-    query_params.append(params.get("entity_type_id"))
-    query_params.append(params.get("entity_type_id"))
-    query_params.append(above_score_display)
+    query_params.extend([params.get("entity_type_id"), params.get("entity_type_id"), above_score_display])
 
     return (
         query_params,
@@ -84,7 +119,7 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         task.report_progress_and_stop_if_killed(
             progress_value=0,
             end_value=count,
-            progress_message=f"Started Levenshtein Algorithm",
+            progress_message="Started Levenshtein Algorithm",
         )
 
         cursor = connection.cursor()
@@ -107,7 +142,7 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         task.report_progress_and_stop_if_killed(
             progress_value=100,
             end_value=count,
-            progress_message=f"Ended Levenshtein Algorithm",
+            progress_message="Ended Levenshtein Algorithm",
         )
 
         finalize_from_task(task, potential_duplicates)

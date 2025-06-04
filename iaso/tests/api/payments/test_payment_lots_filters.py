@@ -1,6 +1,6 @@
+from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Payment, PaymentLot, SourceVersion
 from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
-from iaso.models import PaymentLot, Payment, OrgUnit, OrgUnitType, SourceVersion, Account, DataSource
 
 
 class TestPaymentLotsFilters(APITestCase):

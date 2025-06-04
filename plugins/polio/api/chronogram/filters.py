@@ -1,13 +1,12 @@
 import django_filters
-from dateutil.relativedelta import relativedelta
 
+from dateutil.relativedelta import relativedelta
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit
-
-from plugins.polio.models import Chronogram, ChronogramTask
+from plugins.polio.models import Campaign, Chronogram, ChronogramTask
 
 
 def countries(request) -> QuerySet[OrgUnit]:
@@ -19,6 +18,12 @@ def countries(request) -> QuerySet[OrgUnit]:
         .select_related("org_unit_type")
         .order_by("name")
     )
+
+
+def campaigns(request) -> QuerySet[Campaign]:
+    if request is None:
+        return Campaign.objects.none()
+    return Campaign.polio_objects.filter_for_user(request.user)
 
 
 def filter_for_power_bi(queryset: QuerySet) -> QuerySet:
@@ -39,6 +44,9 @@ def filter_for_power_bi(queryset: QuerySet) -> QuerySet:
 
 
 class ChronogramFilter(django_filters.rest_framework.FilterSet):
+    campaign = django_filters.ModelMultipleChoiceFilter(
+        field_name="round__campaign", queryset=campaigns, label=_("Campaigns")
+    )
     country = django_filters.ModelMultipleChoiceFilter(
         field_name="round__campaign__country", queryset=countries, label=_("Country")
     )

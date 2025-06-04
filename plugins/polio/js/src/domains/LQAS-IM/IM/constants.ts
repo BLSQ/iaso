@@ -1,5 +1,6 @@
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import { HASHED_MAP_PATTERN, IN_SCOPE } from '../shared/constants';
+import { MapColorConfig } from '../types';
 
 export const IM_COUNTRY_URL = '/api/polio/lqasimmap/country/';
 export const IM_OHH_SLUG = 'im_ohh';
@@ -12,7 +13,7 @@ export const IM_WARNING = '2imWarning';
 export const IM_FAIL = '3imFail';
 export const IM_ERROR = '4imError';
 
-export const imDistrictColors = {
+export const imDistrictColors: Record<string, MapColorConfig> = {
     [IM_PASS]: {
         color: '#5e5e5e',
         weight: '2',

@@ -63,29 +63,27 @@ export const LinksCompare: FunctionComponent<Props> = ({
             )}
             {isEqual(link, compareLink) && formatMessage(MESSAGES.noDifference)}
             {!isEqual(link, compareLink) && (
-                <>
-                    <Table className={classes.table}>
-                        <TableBody>
-                            {Object.keys(link).map(key => {
-                                const value = link[key];
-                                const isDifferent = !isEqual(
-                                    value,
-                                    compareLink[key],
-                                );
-                                return (
-                                    <LinksValue
-                                        key={key}
-                                        link={link}
-                                        linkKey={key}
-                                        value={value}
-                                        isDifferent={isDifferent}
-                                        validated={validated}
-                                    />
-                                );
-                            })}
-                        </TableBody>
-                    </Table>
-                </>
+                <Table className={classes.table}>
+                    <TableBody>
+                        {Object.keys(link).map(key => {
+                            const value = link[key];
+                            const isDifferent = !isEqual(
+                                value,
+                                compareLink[key],
+                            );
+                            return (
+                                <LinksValue
+                                    key={key}
+                                    link={link}
+                                    linkKey={key}
+                                    value={value}
+                                    isDifferent={isDifferent}
+                                    validated={validated}
+                                />
+                            );
+                        })}
+                    </TableBody>
+                </Table>
             )}
         </Paper>
     );

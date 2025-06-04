@@ -21,6 +21,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
     },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    dataSource: {
+        id: 'iaso.label.dataSources',
+        defaultMessage: 'Data source',
+    },
     create: {
         id: 'iaso.groups.create',
         defaultMessage: 'Create group',
@@ -72,6 +80,10 @@ const MESSAGES = defineMessages({
     deleteSuccess: {
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
+    },
+    groupSet: {
+        id: 'iaso.label.groupSet',
+        defaultMessage: 'Group Set',
     },
 });
 

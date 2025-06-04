@@ -1,16 +1,28 @@
-import {
-    displayDateFromTimestamp,
-    textPlaceholder,
-} from 'bluesquare-components';
-import moment from 'moment';
-
 import React, { ReactElement } from 'react';
+import { textPlaceholder } from 'bluesquare-components';
+import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 import { apiDateFormats } from '../../utils/dates';
+import { SubTable } from './SubTable';
+
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
-export const DateTimeCell = (cellInfo: { value?: number | null }): string =>
-    displayDateFromTimestamp(cellInfo?.value);
+export const DateTimeCell = (cellInfo: {
+    value?: number | null | undefined;
+}): string => {
+    if (!cellInfo?.value) return textPlaceholder;
+
+    // Get current locale
+    const currentLocale = moment.locale();
+
+    // Get format from language config or fallback to English
+    const format =
+        LANGUAGE_CONFIGS[currentLocale]?.dateFormats?.LTS ||
+        LANGUAGE_CONFIGS.en?.dateFormats?.LTS ||
+        'DD/MM/YYYY HH:mm';
+    return moment.unix(cellInfo.value).format(format);
+};
 
 export const convertToDateTimeRfc = (
     value: string | null | undefined,
@@ -49,11 +61,10 @@ export const MultiDateCell = (cellInfo: {
     const value = cellInfo?.value ?? '';
     const valueAsList = value.split(',');
     return (
-        <>
-            {valueAsList.map((lineData, index) => (
-                <div key={`${lineData}${index}`}>{convertToDate(lineData)}</div>
-            ))}
-        </>
+        <SubTable
+            values={valueAsList}
+            renderValue={lineData => convertToDate(lineData)}
+        />
     );
 };
 

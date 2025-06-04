@@ -57,7 +57,12 @@ ValueWithErrorBoundary.defaultProps = {
     value: undefined,
 };
 ValueWithErrorBoundary.propTypes = {
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    value: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.array,
+        PropTypes.bool,
+    ]),
     fieldKey: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,

@@ -66,7 +66,7 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     It also assumes that the forms in the follow-ups and changes exist.
     """
     entity_type_name = workflow_data["entity_type"]
-    entity_type = EntityType.objects.get(name=entity_type_name)
+    entity_type = EntityType.objects.get(name=entity_type_name, account=account)
 
     try:
         wf = Workflow.objects.get(uuid=workflow_data["uuid"])

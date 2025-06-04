@@ -1,25 +1,25 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
     AddButton,
-    useSafeIntl,
     Column,
+    commonStyles,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 
 import TopBar from '../../../components/nav/TopBarComponent';
-import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
 
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnitTypesParams } from '../types/orgunitTypes';
 import MESSAGES from './messages';
 
-import { useGetColumns } from './config/tableColumns';
-import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { Filters } from './components/Filters';
+import { useGetColumns } from './config/tableColumns';
+import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
 
 const baseUrl = baseUrls.orgUnitTypes;
 
@@ -28,11 +28,14 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const OrgUnitTypes: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as OrgUnitTypesParams;
+    const params = useParamsObject(baseUrl) as unknown as OrgUnitTypesParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const columns: Column[] = useGetColumns();
-    const { data, isFetching } = useGetOrgUnitTypes(params);
+    const { data, isFetching } = useGetOrgUnitTypes({
+        ...params,
+        with_units_count: true,
+    });
     return (
         <>
             <TopBar

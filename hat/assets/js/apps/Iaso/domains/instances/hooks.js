@@ -1,22 +1,6 @@
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { fetchOrgUnitsTypes } from '../../utils/requests';
-import { setOrgUnitTypes } from '../orgUnits/actions';
 import MESSAGES from './messages';
-
-import { useFetchOnMount } from '../../hooks/fetchOnMount';
-
-export const useInstancesFiltersData = (formId, setFetchingOrgUnitTypes) => {
-    const promisesArray = [
-        {
-            fetch: fetchOrgUnitsTypes,
-            setFetching: setFetchingOrgUnitTypes,
-            setData: setOrgUnitTypes,
-        },
-    ];
-
-    useFetchOnMount(promisesArray);
-};
 
 export const useGetForms = () => {
     const params = {

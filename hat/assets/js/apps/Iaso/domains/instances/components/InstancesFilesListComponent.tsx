@@ -11,9 +11,11 @@ import VideosList from '../../../components/files/VideosListComponent';
 import InstancePopover from './InstancePopoverComponent';
 
 import { SortedFiles, sortFilesType } from '../../../utils/filesUtils';
-import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
 import { Instance, ShortFile } from '../types/instance';
+import { getRequest } from '../../../libs/Api';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
+import { errorSnackBar } from '../../../constants/snackBars';
 
 const minTabHeight = 'calc(100vh - 500px)';
 
@@ -39,12 +41,19 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'white',
     },
 }));
+
+const fetchInstanceDetail = instanceId =>
+    getRequest(`/api/instances/${instanceId}/`)
+        .then(instance => instance)
+        .catch(error => {
+            openSnackBar(errorSnackBar('fetchInstanceError', null, error));
+            console.error('Error while fetching instance detail:', error);
+        });
+
 type Props = {
     instanceDetail?: Instance;
     files: ShortFile[];
-    // eslint-disable-next-line no-unused-vars
     onLightBoxToggled?: (value: boolean) => void;
-    // eslint-disable-next-line no-unused-vars
     fetchDetails?: boolean;
     fetchingFile?: boolean;
     fetching?: boolean;

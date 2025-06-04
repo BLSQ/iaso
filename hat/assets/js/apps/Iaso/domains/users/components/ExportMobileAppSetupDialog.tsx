@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useCallback,
@@ -19,12 +18,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
 import { getRequest } from 'Iaso/libs/Api';
 import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { Project, User } from 'Iaso/utils/usersUtils';
+import MESSAGES from '../messages';
+import { SxStyles } from '../../../types/general';
 
 const styles: SxStyles = {
     progressWrapper: {
@@ -120,7 +120,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
         onCreateExport({
             userId: selectedUser.user_id,
             projectId: selectedProject.id,
-            password: password,
+            password,
         })
             .then((task: TaskApiResponse<any>) => {
                 setIsExporting(true);

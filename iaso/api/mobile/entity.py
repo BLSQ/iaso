@@ -1,21 +1,14 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, serializers
+from rest_framework import filters, permissions, serializers
+from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
-from rest_framework import permissions
-from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
-from iaso.api.common import Paginator
 
-
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
-from iaso.api.query_params import LIMIT, PAGE
-from iaso.models import Entity, FormVersion, Instance, OrgUnit
-from iaso.models.entity import (
-    InvalidJsonContentError,
-    InvalidLimitDateError,
-    UserNotAuthError,
-    ProjectNotFoundError,
-)
 from hat.menupermissions import models as permission
+from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
+from iaso.api.query_params import LIMIT, PAGE
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
 
 
 def filter_for_mobile_entity(queryset, request):
@@ -32,18 +25,18 @@ def filter_for_mobile_entity(queryset, request):
     return queryset
 
 
-def get_queryset_for_app_id(user, app_id):
+def filter_on_app_id(queryset, user, app_id):
     try:
-        return Entity.objects.filter_for_app_id(user, app_id)
+        return queryset.filter_for_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
         raise AuthenticationFailed(e.message)
 
 
-def get_queryset_for_user_and_app_id(user, app_id):
+def filter_on_user_and_app_id(queryset, user, app_id):
     try:
-        return Entity.objects.filter_for_user_and_app_id(user, app_id)
+        return queryset.filter_for_user_and_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
@@ -182,13 +175,15 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = self.request.query_params.get("app_id")
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        if not app_id:
-            raise ParseError("app_id is required")
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
 
-        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
+        entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
 
+        queryset = Entity.objects.filter(entity_type__in=entity_types)
+
+        queryset = filter_on_user_and_app_id(queryset, user, app_id)
         queryset = filter_for_mobile_entity(queryset, self.request)
 
         queryset = queryset.select_related("entity_type").prefetch_related(
@@ -198,3 +193,59 @@ class MobileEntityViewSet(ModelViewSet):
             "attributes__form__form_versions",
         )
         return queryset.order_by("id")
+
+
+class DeletedMobileEntitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Entity
+        fields = ["id", "uuid", "deleted_at", "merged_to_uuid", "entity_type_id"]
+
+    deleted_at = TimestampField()
+    merged_to_uuid = serializers.SerializerMethodField()
+
+    def get_merged_to_uuid(self, entity):
+        if entity.merged_to:
+            return entity.merged_to.uuid
+
+
+class MobileEntityDeletedViewSet(ModelViewSet):
+    """Entity API for mobile
+
+    list: /api/mobile/entities/deleted
+
+    Returns the full list of (soft-) deleted entities.
+    No pagination at the moment to keep thing simple.
+    """
+
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(permission.ENTITIES),
+    ]  # type: ignore
+
+    def pagination_class(self):
+        return MobileEntitiesSetPagination(self.results_key)
+
+    def get_serializer_class(self):
+        return DeletedMobileEntitySerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+
+        queryset = Entity.objects_only_deleted
+        queryset = filter_on_user_and_app_id(queryset, user, app_id)
+
+        return (
+            queryset.prefetch_related("merged_to")
+            .only(
+                "id",
+                "uuid",
+                "deleted_at",
+                "merged_to_id",
+                "entity_type_id",
+            )
+            .order_by("id")
+        )

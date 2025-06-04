@@ -1,11 +1,10 @@
-import React, { FunctionComponent, useRef, useEffect, RefObject } from 'react';
-import { TileLayer, useMap } from 'react-leaflet';
 import { SxProps, Theme } from '@mui/material';
+import React, { FunctionComponent, RefObject, useEffect, useRef } from 'react';
+import { TileLayer, useMap } from 'react-leaflet';
 import { Tile, TilesSwitchControl } from './TilesSwitchControl';
 
 type Props = {
     currentTile: Tile;
-    // eslint-disable-next-line no-unused-vars
     setCurrentTile: (newTile: Tile) => void;
     styles?: SxProps<Theme>;
 };

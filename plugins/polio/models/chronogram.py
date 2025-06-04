@@ -1,5 +1,3 @@
-from translated_fields import TranslatedField
-
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import (
@@ -16,9 +14,10 @@ from django.db.models import (
     Value,
     When,
 )
-from django.db.models.functions import ExtractDay, Coalesce
-from django.utils.translation import gettext_lazy as _
+from django.db.models.functions import Coalesce, ExtractDay
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from translated_fields import TranslatedField
 
 from iaso.models import Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
@@ -145,9 +144,7 @@ class ChronogramTask(SoftDeletableModel):
     description = TranslatedField(models.TextField(max_length=300), {"fr": {"blank": True}})
     start_offset_in_days = models.IntegerField(default=0)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
-    user_in_charge = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="chronogram_tasks"
-    )
+    user_in_charge = models.CharField(max_length=255, blank=True)
     comment = models.TextField(max_length=300, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     created_by = models.ForeignKey(
@@ -173,7 +170,8 @@ class ChronogramTemplateQuerySet(models.QuerySet):
 
 
 class ChronogramTemplateTaskManager(models.Manager):
-    def create_chronogram(self, round: Round, created_by: User) -> Chronogram:
+    def create_chronogram(self, round: Round, created_by: User, account: Account = None) -> Chronogram:
+        account_id = account.id if account else created_by.iaso_profile.account_id
         chronogram = Chronogram.objects.create(round=round, created_by=created_by)
 
         tasks = [
@@ -185,7 +183,7 @@ class ChronogramTemplateTaskManager(models.Manager):
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )
-            for template in self.model.objects.valid().filter(account_id=created_by.iaso_profile.account_id)
+            for template in self.model.objects.valid().filter(account_id=account_id)
         ]
         if tasks:
             ChronogramTask.objects.bulk_create(tasks)

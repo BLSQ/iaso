@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment';
 import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';

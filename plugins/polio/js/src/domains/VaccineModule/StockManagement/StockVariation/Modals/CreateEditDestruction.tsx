@@ -1,4 +1,5 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
+import { Alert, Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,16 +8,21 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-import { Vaccine } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
+import { useDebounce } from 'use-debounce';
+import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import {
-    TextInput,
     DateInput,
     NumberInput,
+    TextInput,
 } from '../../../../../components/Inputs';
-import { useSaveDestruction } from '../../hooks/api';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { Vaccine } from '../../../../../constants/types';
+import {
+    useCheckDestructionDuplicate,
+    useSaveDestruction,
+} from '../../hooks/api';
+import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
 
 type Props = {
@@ -50,16 +56,36 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
+            document: destruction?.document,
+            comment: destruction?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
 
+    const [debouncedDate] = useDebounce(
+        formik.values.destruction_report_date,
+        500,
+    );
+    const [debouncedVials] = useDebounce(
+        formik.values.unusable_vials_destroyed,
+        500,
+    );
+
+    const { data: hasDuplicatesData } = useCheckDestructionDuplicate({
+        vaccineStockId,
+        destructionReportDate: debouncedDate,
+        unusableVialsDestroyed: debouncedVials,
+        destructionReportId: destruction?.id,
+    });
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.destructionReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
 
     return (
         <FormikProvider value={formik}>
@@ -80,7 +106,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             >
                 <Box mb={2} mt={2}>
                     <Field
-                        label={formatMessage(MESSAGES.action)}
+                        label={formatMessage(MESSAGES.title)}
                         name="action"
                         component={TextInput}
                         required
@@ -109,6 +135,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
                 {/* <Box>
                     <Field
                         label={formatMessage(MESSAGES.lot_numbers)}
@@ -117,6 +152,25 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         shrinkLabel={false}
                     />
                 </Box> */}
+                <Box mb={2}>
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
+                            }
+                        }}
+                        document={formik.values.document}
+                    />
+                </Box>
+                {hasDuplicatesData?.duplicate_exists && (
+                    <Box mb={2}>
+                        <Alert severity="warning">
+                            {formatMessage(MESSAGES.duplicate_destruction)}
+                        </Alert>
+                    </Box>
+                )}
             </ConfirmCancelModal>
         </FormikProvider>
     );

@@ -3,7 +3,11 @@ import { AddButton, useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import {
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_SUPPLY_CHAIN_READ_ONLY,
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from './messages';
@@ -24,7 +28,12 @@ export const VaccineSupplyChain: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <VaccineSupplyChainFilters params={params} />
-                <DisplayIfUserHasPerm permissions={[POLIO_SUPPLY_CHAIN_WRITE]}>
+                <DisplayIfUserHasPerm
+                    permissions={[
+                        POLIO_SUPPLY_CHAIN_WRITE,
+                        POLIO_SUPPLY_CHAIN_READ,
+                    ]}
+                >
                     <Grid container justifyContent="flex-end">
                         <Box mt={2}>
                             <AddButton

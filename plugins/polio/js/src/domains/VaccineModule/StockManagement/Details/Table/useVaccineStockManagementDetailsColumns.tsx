@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -92,6 +91,12 @@ export const useVaccineStockManagementDetailsColumnsUnusable = (): Column[] => {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
                 id: 'action',
+                Cell: settings => {
+                    const { action } = settings.row.original;
+                    return MESSAGES[action]
+                        ? formatMessage(MESSAGES[action])
+                        : action;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.vials_in),
@@ -120,3 +125,52 @@ export const useVaccineStockManagementDetailsColumnsUnusable = (): Column[] => {
         return columns;
     }, [formatMessage]);
 };
+export const useVaccineStockManagementDetailsColumnsEarmarked =
+    (): Column[] => {
+        const { formatMessage } = useSafeIntl();
+        return useMemo(() => {
+            const columns = [
+                {
+                    Header: formatMessage(MESSAGES.date),
+                    accessor: 'date',
+                    id: 'date',
+                    Cell: DateCell,
+                },
+                {
+                    Header: formatMessage(MESSAGES.action),
+                    accessor: 'action',
+                    id: 'action',
+                    Cell: settings => {
+                        const { action } = settings.row.original;
+                        return MESSAGES[action]
+                            ? formatMessage(MESSAGES[action])
+                            : action;
+                    },
+                },
+                {
+                    Header: formatMessage(MESSAGES.vials_in),
+                    accessor: 'vials_in',
+                    Cell: settings => {
+                        const { vials_in } = settings.row.original;
+                        if (!vials_in) {
+                            return <span>{textPlaceholder}</span>;
+                        }
+                        return <NumberCell value={vials_in} />;
+                    },
+                },
+                {
+                    Header: formatMessage(MESSAGES.vials_out),
+                    accessor: 'vials_out',
+                    Cell: settings => {
+                        const { vials_out } = settings.row.original;
+                        if (!vials_out) {
+                            return <span>{textPlaceholder}</span>;
+                        }
+
+                        return <NumberCell value={vials_out} />;
+                    },
+                },
+            ];
+            return columns;
+        }, [formatMessage]);
+    };

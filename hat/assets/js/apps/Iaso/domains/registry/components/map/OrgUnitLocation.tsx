@@ -17,15 +17,11 @@ type Props = {
     isOrgUnitActive: boolean;
     selectedChildrenId: string | undefined;
     handleFeatureEvents: (
-        // eslint-disable-next-line no-unused-vars
         ou: OrgUnit,
-        // eslint-disable-next-line no-unused-vars
     ) => (feature: any, layer: L.Layer) => void;
 
     handleSingleClick: (
-        // eslint-disable-next-line no-unused-vars
         ou: OrgUnit,
-        // eslint-disable-next-line no-unused-vars
         event: L.LeafletMouseEvent | undefined,
     ) => void;
 };

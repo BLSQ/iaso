@@ -17,7 +17,7 @@ To populate your Iaso database with Form and Org Unit, as well as sample submiss
 
 First Run:
 ```
-docker-compose  up
+docker compose  up
 
 docker exec -it iaso_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
 ```

@@ -1,6 +1,7 @@
-import { createContext } from 'react';
-import pluginsConfigs from '../../../../../../plugins';
-import { Plugin } from '../domains/app/types';
+import { textPlaceholder } from 'bluesquare-components';
+import { Entity, FileContent } from '../domains/entities/types/entity';
+import { FormDescriptor } from '../domains/forms/types/forms';
+import { formatLabel } from '../domains/instances/utils';
 
 export const getYears = (
     yearsCount: number,
@@ -45,24 +46,6 @@ export const userHasPermission = (
     return hasPermission;
 };
 
-export const getPlugins = (pluginsKeys: string[]): any[] => {
-    const plugins: Plugin[] = [];
-    pluginsKeys.forEach(pluginsKey => {
-        const pluginConfig: Plugin = pluginsConfigs[pluginsKey];
-        if (pluginConfig) {
-            plugins.push({
-                ...pluginConfig,
-                key: pluginsKey,
-            });
-        }
-    });
-    return plugins;
-};
-
-export const PluginsContext = createContext<{ plugins: Plugin[] }>({
-    plugins: [],
-});
-
 // create timeout to simulate async call
 // credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
 // Added it here because using the one from test/utils would cause compilation errors
@@ -87,4 +70,29 @@ export const findDescriptorInChildren = (field: any, descriptor: any): any => {
         if (child.children) return findDescriptorInChildren(field, child);
         return undefined;
     }, null);
+};
+
+export const getDescriptorValue = (
+    fieldKey: string,
+    fileContent: FileContent | Entity,
+    formDescriptors?: FormDescriptor[],
+): string => {
+    let value = textPlaceholder;
+    if (fileContent[fieldKey]) {
+        formDescriptors?.forEach(formDescriptor => {
+            const descriptor = findDescriptorInChildren(
+                fieldKey,
+                formDescriptor,
+            );
+            if (descriptor?.children) {
+                const descriptorValue = descriptor.children.find(
+                    child => fileContent[fieldKey] === child.name,
+                );
+                if (descriptorValue) {
+                    value = formatLabel(descriptorValue);
+                }
+            }
+        });
+    }
+    return value;
 };

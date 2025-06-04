@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import AddIcon from '@mui/icons-material/Add';
 import { Box, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import AddIcon from '@mui/icons-material/Add';
+import React, { FunctionComponent, useCallback } from 'react';
 
+import { legendColors } from './colors';
 import { LegendRange } from './LegendRange';
 import { RangeValue } from './types';
-import { legendColors } from './colors';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -36,9 +36,7 @@ const useStyles = makeStyles(theme => ({
 
 type LegendBuilderProps = {
     rangeValues: RangeValue[];
-    // eslint-disable-next-line no-unused-vars
     onChange: (newRangeValues: RangeValue[]) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldError: (keyValue: string, message: string) => void;
     errors?: string[];
 };

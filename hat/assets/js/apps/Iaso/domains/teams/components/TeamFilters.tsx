@@ -1,17 +1,17 @@
 import { Box, Grid } from '@mui/material';
-import React, { FunctionComponent, useCallback, useState } from "react";
-import { useSafeIntl } from "bluesquare-components";
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 import { TeamParams } from '../types/team';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { AsyncSelect } from "../../../components/forms/AsyncSelect";
-import { getUsersDropDown } from "../../instances/hooks/requests/getUsersDropDown";
-import { useGetProfilesDropdown } from "../../instances/hooks/useGetProfilesDropdown";
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from "../constants";
-import { useGetProjectsDropdownOptions } from "../../projects/hooks/requests";
+import { AsyncSelect } from '../../../components/forms/AsyncSelect';
+import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 
 type Props = {
     params: TeamParams;

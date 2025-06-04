@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { getRequest } from '../../../../libs/Api';

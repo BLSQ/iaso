@@ -34,6 +34,10 @@ const polioViruses = [
     },
     {
         value: 'PV1 & cVDPV2',
+        label: 'PV1 & cVDPV2',
+    },
+    {
+        value: 'cVDPV1 & cVDPV2',
         label: 'cVDPV1 & cVDPV2',
     },
 ];
@@ -42,7 +46,10 @@ export type PolioVaccine = {
     value: Vaccine | 'other';
     label: string;
     color: string;
+    legendColor?: string;
 };
+export const HASHED_MAP_PATTERN_N_OPV2_B_OPV = 'colorStripes-nOPV2&bOPV';
+
 const polioVaccines: PolioVaccine[] = [
     {
         value: 'nOPV2',
@@ -58,6 +65,12 @@ const polioVaccines: PolioVaccine[] = [
         value: 'bOPV',
         label: 'bOPV',
         color: '#ffff00',
+    },
+    {
+        value: 'nOPV2 & bOPV',
+        label: 'nOPV2 & bOPV',
+        color: `url(#${HASHED_MAP_PATTERN_N_OPV2_B_OPV})`,
+        legendColor: `repeating-linear-gradient(-45deg, #00b0f0, #00b0f0 5px, #ffff00 5px, #ffff00 10px)`,
     },
 ];
 

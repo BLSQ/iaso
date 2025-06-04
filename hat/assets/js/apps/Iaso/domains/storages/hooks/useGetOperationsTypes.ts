@@ -1,4 +1,4 @@
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../types/utils';
 
 import MESSAGES from '../messages';
@@ -38,7 +38,6 @@ export const useGetOperationsTypes = (): Array<DropdownOptions<string>> => {
 };
 
 export const useGetOperationsTypesLabel = (): ((
-    // eslint-disable-next-line no-unused-vars
     operationTypeKey: OperationType,
 ) => string) => {
     const operationTypes = useGetOperationsTypes();

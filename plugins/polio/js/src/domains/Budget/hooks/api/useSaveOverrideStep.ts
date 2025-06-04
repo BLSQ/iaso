@@ -1,9 +1,8 @@
-/* eslint-disable camelcase */
-import { BudgetStep, LinkWithAlias } from '../../types';
-import MESSAGES from '../../../../constants/messages';
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { PostArg } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../../constants/messages';
+import { BudgetStep, LinkWithAlias } from '../../types';
 
 type Payload = {
     new_state_key: string; // key
@@ -33,7 +32,7 @@ const postOverrideStep = (body: Payload): Promise<BudgetStep> => {
         data: filteredParams,
     };
     if (body.files) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
         const fileData = { files: body.files };
         requestBody.data = data;

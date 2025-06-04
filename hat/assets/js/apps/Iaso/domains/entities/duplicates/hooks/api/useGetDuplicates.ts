@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../../types/general';
@@ -83,7 +82,6 @@ export const useGetDuplicateDetails = ({
 > => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
-    console.log('QS', queryString);
     return useSnackQuery({
         queryKey: ['entityDuplicateDetails', params],
         queryFn: () => getDuplicatesDetails(queryString),

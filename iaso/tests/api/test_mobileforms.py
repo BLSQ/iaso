@@ -171,7 +171,7 @@ class MobileFormsAPITestCase(APITestCase):
         """GET /mobile/forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/mobile/forms/292003030/")
+        response = self.client.get("/api/mobile/forms/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_forms_retrieve_ok_1(self):
@@ -198,10 +198,12 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -220,7 +222,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "QUARTER",
@@ -246,14 +248,14 @@ class MobileFormsAPITestCase(APITestCase):
     def test_forms_create_without_auth(self):
         """POST /mobile/forms/ without auth: 401"""
 
-        response = self.client.post(f"/api/mobile/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_forms_create_wrong_permission(self):
         """POST /mobile/forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
-        response = self.client.post(f"/api/mobile/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_forms_create_invalid_1(self):
@@ -261,7 +263,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
+            "/api/mobile/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
         self.assertJSONResponse(response, 400)
 
@@ -276,7 +278,7 @@ class MobileFormsAPITestCase(APITestCase):
         """POST /mobile/forms/ specific check for allow_empty"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/mobile/forms/", data={"project_ids": []}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"project_ids": []}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
@@ -287,7 +289,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 2",
                 "period_type": None,
@@ -310,7 +312,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form",
                 "form_id": "test_001",
@@ -329,7 +331,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "another test form",
                 "form_id": "test_002",
@@ -354,6 +356,8 @@ class MobileFormsAPITestCase(APITestCase):
             data={
                 "name": "test form 2 (updated)",
                 "period_type": "QUARTER",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",

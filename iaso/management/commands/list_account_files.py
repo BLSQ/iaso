@@ -1,10 +1,8 @@
-import os
 import csv
-from pathlib import Path
-from django.core.paginator import Paginator
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
+from django.core.paginator import Paginator
 
 
 def fullname(o):
@@ -78,7 +76,7 @@ def model_and_fields_with_files(account_id_to_keep):
 # for the moment I kept the "copy_account_files" command since I'm not sharing the download script here
 # if the the next extract is working well, we should probably delete the copy_account_files_command
 #
-# exemple usage : docker-compose run --rm iaso manage list_account_files --account 17
+# exemple usage : docker compose run --rm iaso manage list_account_files --account 17
 
 
 class Command(BaseCommand):

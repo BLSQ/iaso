@@ -1,17 +1,31 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     LoadingSpinner,
     commonStyles,
     selectionInitialState,
     setTableSelection,
-    useSafeIntl,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
+import snackMessages from '../../components/snackBars/messages';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
+import { baseUrls } from '../../constants/urls.ts';
+import { useSnackQuery } from '../../libs/apiHooks.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import * as Permission from '../../utils/permissions.ts';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { createInstance } from './actions';
+import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
+import InstancesFiltersComponent from './components/InstancesFiltersComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
+import MESSAGES from './messages';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
@@ -23,21 +37,6 @@ import {
     useGetFilters,
     useSelectionActions,
 } from './utils/index.tsx';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
-import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
-import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
-import { baseUrls } from '../../constants/urls.ts';
-import snackMessages from '../../components/snackBars/messages';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { useSnackQuery } from '../../libs/apiHooks.ts';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
-import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
-import MESSAGES from './messages';
-import * as Permission from '../../utils/permissions.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -54,17 +53,15 @@ const Instances = () => {
     const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
-
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const [formIds, setFormIds] = useState(params.formIds?.split(','));
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
-
+    const showTable = tab === 'list' && tableColumns.length > 0;
     const { possibleFields, isLoading: isLoadingPossibleFields } =
         useGetPossibleFields(formId);
     const fieldsSearchApi = useMemo(() => {
@@ -102,12 +99,15 @@ const Instances = () => {
             select: result => result.instances,
         },
     );
-    const { data, isFetching: fetchingList } = useSnackQuery(
-        ['instances', apiParams],
-        () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
-        snackMessages.fetchInstanceDictError,
-        { keepPreviousData: true, enabled: !isLoadingPossibleFields },
-    );
+    const { data, isFetching: fetchingList } = useSnackQuery({
+        queryKey: ['instances', apiParams, showTable],
+        queryFn: () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
+        snackErrorMsg: snackMessages.fetchInstanceDictError,
+        options: {
+            keepPreviousData: true,
+            enabled: !isLoadingPossibleFields && showTable,
+        },
+    });
     // Move to delete when we port dialog to react-query
     const refetchInstances = () => queryClient.invalidateQueries(['instances']);
 
@@ -199,12 +199,7 @@ const Instances = () => {
                                             currentForm,
                                             payload,
                                         ) =>
-                                            dispatch(
-                                                createInstance(
-                                                    currentForm,
-                                                    payload,
-                                                ),
-                                            )
+                                            createInstance(currentForm, payload)
                                         }
                                     />
                                 </Box>
@@ -230,7 +225,7 @@ const Instances = () => {
                         </Box>
                     </Tooltip>
                 </Box>
-                {tab === 'list' && tableColumns.length > 0 && (
+                {showTable && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}
                         pages={data?.pages}

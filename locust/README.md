@@ -13,5 +13,5 @@ and allows a lot of flexibility.
 https://docs.locust.io/en/stable/running-in-docker.html
 
 ```shell
-docker-compose up --scale worker=4
+docker compose up --scale worker=4
 ```

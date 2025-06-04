@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Column } from 'bluesquare-components';
-import { useFormsTableColumns } from '../config';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { tableDefaults, useGetForms } from '../hooks/useGetForms';
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
+import { useFormsTableColumns } from '../config';
+import { tableDefaults, useGetForms } from '../hooks/useGetForms';
 
 type Props = {
     baseUrl: string;
@@ -29,7 +29,7 @@ export const FormsTable: FunctionComponent<Props> = ({
 
     const apiParams = usePrefixedParams(paramsPrefix, params);
 
-    const { data: forms, isLoading: isLoadingForms } = useGetForms(
+    const { data: forms, isFetching: isLoadingForms } = useGetForms(
         apiParams,
         tableDefaultsProp
             ? { ...tableDefaults, ...tableDefaultsProp }

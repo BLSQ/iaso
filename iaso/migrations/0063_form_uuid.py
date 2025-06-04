@@ -1,5 +1,6 @@
-from django.db import migrations, models
 import uuid
+
+from django.db import migrations, models
 
 
 def create_uuid(apps, schema_editor):

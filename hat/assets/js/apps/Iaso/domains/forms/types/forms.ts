@@ -1,6 +1,5 @@
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
-/* eslint-disable camelcase */
 type FeatureFlag = {
     id: number;
     name: string;
@@ -31,6 +30,8 @@ export type FieldType =
     | 'select_multiple'
     | 'select_one_from_file'
     | 'select_multiple_from_file'
+    | 'select all that apply'
+    | 'select_all_that_apply'
     | 'rank'
     | 'note'
     | 'geopoint'
@@ -50,13 +51,15 @@ export type FieldType =
     | 'calculate'
     | 'acknowledge'
     | 'hidden'
-    | 'xml-external';
+    | 'xml-external'
+    | 'boolean';
 
 export type PossibleField = {
     label: string;
     name: string;
     type: FieldType;
     fieldKey: string;
+    is_latest?: boolean;
 };
 export type ChildrenDescriptor = {
     label: string;
@@ -129,8 +132,10 @@ type PeriodType =
     | 'NO_PERIOD'
     | 'MONTH'
     | 'QUARTER'
+    | 'QUARTER_NOV'
     | 'SIX_MONTH'
     | 'YEAR'
+    | 'FINANCIAL_NOV'
     | null;
 
 type ChangeRequestModeType = 'CR_MODE_NONE' | 'CR_MODE_IF_REFERENCE_FORM';

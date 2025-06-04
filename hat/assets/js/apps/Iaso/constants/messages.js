@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.title',
     },
     entityTypesTitle: {
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
         id: 'iaso.entityTypes.title',
     },
     submissionsTitle: {
@@ -41,9 +41,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Links List',
         id: 'iaso.label.linksList',
     },
-    beneficiariesList: {
-        defaultMessage: 'Beneficiaries List',
-        id: 'iaso.label.beneficiariesList',
+    entitiesList: {
+        defaultMessage: 'Entities List',
+        id: 'iaso.label.entitiesList',
     },
     planningList: {
         defaultMessage: 'Planning List',
@@ -72,6 +72,10 @@ const MESSAGES = defineMessages({
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
+    },
+    groupSets: {
+        defaultMessage: 'Group Sets',
+        id: 'iaso.label.groupSets',
     },
     orgUnitType: {
         id: 'iaso.orgUnits.orgUnitsTypes',
@@ -157,9 +161,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent',
         id: 'iaso.assignment.map.parent',
     },
-    beneficiaries: {
-        defaultMessage: 'Beneficiaries',
-        id: 'iaso.label.beneficiaries',
+    entities: {
+        defaultMessage: 'Entities',
+        id: 'iaso.label.entities',
     },
     storages: {
         defaultMessage: 'External storage',
@@ -196,6 +200,30 @@ const MESSAGES = defineMessages({
     lots: {
         defaultMessage: 'Payments lots',
         id: 'iaso.payments.lots',
+    },
+    history: {
+        defaultMessage: 'History',
+        id: 'iaso.label.history',
+    },
+    management: {
+        defaultMessage: 'Management',
+        id: 'iaso.label.management',
+    },
+    configuration: {
+        defaultMessage: 'Configuration',
+        id: 'iaso.label.configuration',
+    },
+    changeRequestConfig: {
+        defaultMessage: 'Change Request',
+        id: 'iaso.label.changeRequestConfig',
+    },
+    stats: {
+        defaultMessage: 'Stats',
+        id: 'iaso.label.stats',
+    },
+    validation: {
+        defaultMessage: 'Validation',
+        id: 'iaso.label.validation',
     },
 });
 

@@ -1,17 +1,24 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { Grid, Typography } from '@mui/material';
-import { LoadingSpinner, useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
+import PropTypes from 'prop-types';
+import React, { useMemo, useCallback } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { baseUrls } from '../../../constants/urls';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent.tsx';
-import { postGeoPkg } from '../requests';
+import { baseUrls } from '../../../constants/urls.ts';
+import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import MESSAGES from '../messages';
+import { postGeoPkg } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
+import { userHasPermission } from '../../users/utils';
+import * as Permission from '../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const initialFormState = () => ({
     file: null,
@@ -26,10 +33,9 @@ const ImportGeoPkgDialog = ({
     versionNumber,
     projects,
 }) => {
-    // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, _, setFormState] = useFormState(
-        initialFormState(),
-    );
+    const currentUser = useCurrentUser();
+    const [form, setFormField, , setFormState] =
+        useFormState(initialFormState());
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
@@ -38,37 +44,52 @@ const ImportGeoPkgDialog = ({
         MESSAGES.importGpkgSuccess,
         MESSAGES.importGpkgError,
     );
-    const reset = () => {
+    const reset = useCallback(() => {
         setFormState(initialFormState());
-    };
+    }, [setFormState]);
 
-    const submit = async (closeDialogCallBack, redirect = false) => {
-        const body = {
-            file: form.file.value,
-            project: form.project.value,
-            data_source: sourceId,
-            version_number:
-                versionNumber !== null && versionNumber !== undefined
-                    ? versionNumber.toString()
-                    : '',
-            description: form.versionDescription.value || '',
-        };
-        await mutation.mutateAsync(body);
-        closeDialogCallBack();
+    const submit = useCallback(
+        async (closeDialogCallBack, redirect = false) => {
+            const body = {
+                file: form.file.value,
+                project: form.project.value,
+                data_source: sourceId,
+                version_number:
+                    versionNumber !== null && versionNumber !== undefined
+                        ? versionNumber.toString()
+                        : '',
+                description: form.versionDescription.value || '',
+            };
+            await mutation.mutateAsync(body);
+            closeDialogCallBack();
 
-        if (redirect) {
-            reset();
-            redirectTo(baseUrls.tasks);
-        }
-    };
+            if (redirect) {
+                reset();
+                redirectTo(baseUrls.tasks);
+            }
+        },
+        [
+            form.file.value,
+            form.project.value,
+            form.versionDescription.value,
+            mutation,
+            redirectTo,
+            reset,
+            sourceId,
+            versionNumber,
+        ],
+    );
 
     const onConfirm = async closeDialog => {
         await submit(closeDialog);
     };
 
-    const onRedirect = async closeDialog => {
-        await submit(closeDialog, true);
-    };
+    const onRedirect = useCallback(
+        async closeDialog => {
+            await submit(closeDialog, true);
+        },
+        [submit],
+    );
 
     const titleMessage = versionNumber ? (
         <FormattedMessage
@@ -83,6 +104,23 @@ const ImportGeoPkgDialog = ({
     const allowConfirm = Boolean(
         !mutation.isLoading && form.file.value && form.project.value,
     );
+
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
+    const additionalButtonProps = useMemo(
+        () =>
+            hasTaskPermission
+                ? {
+                      additionalButton: true,
+                      additionalMessage: MESSAGES.goToCurrentTask,
+                      onAdditionalButtonClick: onRedirect,
+                  }
+                : {},
+        [hasTaskPermission, onRedirect],
+    );
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
@@ -91,11 +129,9 @@ const ImportGeoPkgDialog = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
             onConfirm={onConfirm}
-            onAdditionalButtonClick={onRedirect}
             onClosed={reset}
+            {...additionalButtonProps}
         >
             {mutation.isLoading && <LoadingSpinner />}
             <Grid container spacing={4}>

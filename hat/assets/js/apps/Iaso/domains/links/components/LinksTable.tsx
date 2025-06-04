@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
 import { Column } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useLinksTableColumns } from '../config';
 import { useValidateLink } from '../hooks/useValidateLink';
@@ -13,7 +13,6 @@ type Props = {
     data?: any;
     loading: boolean;
     expanded?: Record<string, any>;
-    // eslint-disable-next-line no-unused-vars
     setExpanded: (value: React.SetStateAction<Record<any, any>>) => void;
 };
 

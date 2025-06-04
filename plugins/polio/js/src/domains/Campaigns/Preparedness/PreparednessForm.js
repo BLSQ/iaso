@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Tab, Box } from '@mui/material';
 import { useFormikContext } from 'formik';
 import React, { useState } from 'react';

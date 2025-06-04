@@ -1,6 +1,6 @@
+import { useRef } from 'react';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { isArray } from 'lodash';
-import { useRef } from 'react';
 import { defineMessages } from 'react-intl';
 import {
     MutationFunction,
@@ -72,9 +72,7 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
     ignoreErrorCodes?: number[];
     showSucessSnackBar?: boolean;
     successSnackBar?: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;
@@ -105,9 +103,7 @@ const useBaseSnackMutation = <
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;
@@ -186,9 +182,7 @@ export const useSnackMutation = <
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
-        // eslint-disable-next-line no-unused-vars
         msg: IntlMessage,
-        // eslint-disable-next-line no-unused-vars
         data: any,
     ) => {
         messageKey: string;
@@ -279,11 +273,12 @@ const useBaseSnackQuery = <
     options: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended> = {},
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError = true,
+    ignoreErrorCodes: number[] = [],
 ): UseQueryResult<Data, Error> => {
     const newOptions = {
         ...options,
         onError: error => {
-            if (dispatchOnError) {
+            if (dispatchOnError && !ignoreErrorCodes.includes(error.status)) {
                 openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
             if (options.onError) {
@@ -302,6 +297,7 @@ type SnackQueryDict<QueryFnData, Data, QueryKeyExtended extends QueryKey> = {
     options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>;
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError?: boolean;
+    ignoreErrorCodes?: number[];
 };
 
 export const useSnackQuery = <
@@ -316,12 +312,14 @@ export const useSnackQuery = <
     options?: UseQueryOptions<QueryFnData, Error, Data, QueryKeyExtended>,
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError?: boolean,
+    ignoreErrorCodes: number[] = [],
 ): UseQueryResult<Data, Error> => {
     let arg1;
     let arg2;
     let arg3;
     let arg4;
     let arg5;
+    let arg6;
     // QueryKey is either a string a readonly Array. In this case, we just pass all arguments in order
     if (typeof queryArg === 'string' || Array.isArray(queryArg)) {
         arg1 = queryArg;
@@ -329,6 +327,7 @@ export const useSnackQuery = <
         arg3 = snackErrorMsg;
         arg4 = options;
         arg5 = dispatchOnError;
+        arg6 = ignoreErrorCodes;
     } else {
         arg1 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
             .queryKey;
@@ -340,6 +339,8 @@ export const useSnackQuery = <
             .options;
         arg5 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
             .dispatchOnError;
+        arg6 = (queryArg as SnackQueryDict<QueryFnData, Data, QueryKeyExtended>)
+            .ignoreErrorCodes;
     }
     return useBaseSnackQuery<QueryFnData, Error, Data, QueryKeyExtended>(
         arg1,
@@ -347,6 +348,7 @@ export const useSnackQuery = <
         arg3,
         arg4,
         arg5,
+        arg6,
     );
 };
 
@@ -355,15 +357,15 @@ export const useSnackQuery = <
  * @param queries
  */
 
-export const useSnackQueries = <QueryFnData>(
+export const useSnackQueries = <TData extends readonly unknown[]>(
     queries: {
         queryKey: QueryKey;
-        queryFn: QueryFunction<QueryFnData>;
+        queryFn: QueryFunction<TData[number]>;
         snackErrorMsg?: IntlMessage;
         options: UseQueryOptions;
         dispatchOnError?: boolean;
     }[],
-): Array<UseQueryResult<unknown, unknown>> => {
+): { [K in keyof TData]: UseQueryResult<TData[K]> } => {
     const newQueries = queries.map(query => {
         const {
             options,
@@ -385,7 +387,9 @@ export const useSnackQueries = <QueryFnData>(
         };
         return { ...query, ...newOptions };
     });
-    return useQueries<Array<UseQueryResult<unknown, unknown>>>(newQueries);
+    return useQueries(newQueries) as {
+        [K in keyof TData]: UseQueryResult<TData[K]>;
+    };
 };
 
 export const useAbortController = ():

@@ -1,11 +1,11 @@
-import React, { FunctionComponent, ReactElement, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { LinksTable } from './LinksTable';
+import React, { FunctionComponent, ReactElement, useState } from 'react';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { tableDefaults, useGetLinks } from '../hooks/useGetLinks';
-import { makeQueryString } from '../../../routing/utils';
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
+import { makeQueryString } from '../../../routing/utils';
+import { tableDefaults, useGetLinks } from '../hooks/useGetLinks';
+import { LinksTable } from './LinksTable';
 
 const dwnldBaseUrl = '/api/links';
 
@@ -53,7 +53,7 @@ export const LinksTableWithDownloads: FunctionComponent<Props> = ({
     const displayDownloadButtons = paramsPrefix
         ? Boolean(data?.links?.length)
         : Boolean(params.searchActive);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { searchActive, tab, ...dnldParams } = apiParams;
     const csvUrl = `${dwnldBaseUrl}/?${makeQueryString(
         dnldParams,

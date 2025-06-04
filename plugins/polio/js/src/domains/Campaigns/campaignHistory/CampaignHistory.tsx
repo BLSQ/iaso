@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, {
     useState,
     useEffect,
@@ -47,7 +46,7 @@ const campaignUrl = baseUrls.campaigns;
 export const CampaignHistory: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const params = useParamsObject(baseUrl) as Params;
+    const params = useParamsObject(baseUrl) as unknown as Params;
     const goBack = useGoBack(campaignUrl);
     const redirectToReplace = useRedirectToReplace();
     const {

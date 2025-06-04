@@ -1,22 +1,26 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
-import MESSAGES from '../messages';
-import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
-import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
 import {
     formSuccessFullMessageKey,
     succesfullSnackBar,
-    // successfullSnackBarWithButtons,
 } from '../../../../constants/snackBars';
 import { baseUrls } from '../../../../constants/urls';
+import {
+    ENTITY_DUPLICATES_SOFT_DELETE,
+    hasFeatureFlag,
+} from '../../../../utils/featureFlags';
+import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
+import { useSoftDeleteEntity } from '../../hooks/requests';
+import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
+import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
+import MESSAGES from '../messages';
 import { DuplicateInfosTable } from './DuplicateInfosTable';
-import * as Permission from '../../../../utils/permissions';
 
 type Props = {
     isLoading: boolean;
@@ -63,8 +67,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const redirectTo = useRedirectTo();
 
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    const successSnackBar = (msg, data) => {
+    const successSnackBar = (msg, _data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
         // TODO uncomment when we figured out how to style the button
         // return successfullSnackBar({
@@ -84,6 +87,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         successSnackBar,
         onSuccess,
     );
+    const { mutate: softDeleteEntity } = useSoftDeleteEntity(onSuccess);
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
         <Box data-test="duplicate-infos">
@@ -130,23 +134,65 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.ignore)}
                             </Button>
                         </Box>
-                        <Box ml={2} mr={2}>
-                            <Button
-                                variant="contained"
-                                color="primary"
-                                data-test="merge-button"
-                                onClick={() => {
-                                    mergeEntities({
-                                        entity1_id: entityIds[0],
-                                        entity2_id: entityIds[1],
-                                        merge: query,
-                                    });
+                        {hasFeatureFlag(
+                            currentUser,
+                            ENTITY_DUPLICATES_SOFT_DELETE,
+                        ) && (
+                            <Box
+                                ml={2}
+                                mr={2}
+                                style={{
+                                    display: 'inline-flex',
                                 }}
-                                disabled={disableMerge}
                             >
-                                {formatMessage(MESSAGES.merge)}
-                            </Button>
-                        </Box>
+                                <Box>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        data-test="soft-delete-A-button"
+                                        onClick={() =>
+                                            softDeleteEntity(entityIds[0])
+                                        }
+                                    >
+                                        {formatMessage(MESSAGES.softDeleteA)}
+                                    </Button>
+                                </Box>
+                                <Box ml={2}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        data-test="soft-delete-B-button"
+                                        onClick={() =>
+                                            softDeleteEntity(entityIds[1])
+                                        }
+                                    >
+                                        {formatMessage(MESSAGES.softDeleteB)}
+                                    </Button>
+                                </Box>
+                            </Box>
+                        )}
+                        {!hasFeatureFlag(
+                            currentUser,
+                            ENTITY_DUPLICATES_SOFT_DELETE,
+                        ) && (
+                            <Box ml={2} mr={2}>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    data-test="merge-button"
+                                    onClick={() => {
+                                        mergeEntities({
+                                            entity1_id: entityIds[0],
+                                            entity2_id: entityIds[1],
+                                            merge: query,
+                                        });
+                                    }}
+                                    disabled={disableMerge}
+                                >
+                                    {formatMessage(MESSAGES.merge)}
+                                </Button>
+                            </Box>
+                        )}
                     </Grid>
                 )}
             </Grid>

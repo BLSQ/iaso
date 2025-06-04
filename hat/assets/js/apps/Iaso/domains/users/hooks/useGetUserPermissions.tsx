@@ -1,6 +1,5 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useCallback, useMemo } from 'react';
-import { Permission } from '../../userRoles/types/userRoles';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Row = {
@@ -41,6 +40,9 @@ export const useGetUserPermissions = (
                 row.permission = getPermissionLabel(p.codename);
                 row.userPermissions = userPermissions;
                 row.permissionCodeName = p.codename;
+                if (p.read_edit) {
+                    row.readEdit = p.read_edit;
+                }
 
                 data.push(row);
             });
@@ -50,8 +52,7 @@ export const useGetUserPermissions = (
 };
 
 type SortProps = {
-    allPermissions: Permission[];
-    // eslint-disable-next-line no-unused-vars
+    allPermissions: string[];
     getPermissionLabel: (codename: string) => string;
 };
 

@@ -1,4 +1,5 @@
 import json
+
 from unittest import mock
 
 from django.core.files import File
@@ -6,7 +7,6 @@ from django.core.files import File
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
-from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityTypeAPITestCase(APITestCase):
@@ -174,7 +174,7 @@ class EntityTypeAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            "/api/entitytypes/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+            f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -197,7 +197,7 @@ class EntityTypeAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            "/api/entitytypes/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+            f"/api/entitytypes/{EntityType.objects.last().pk}/", data=patch_payload, format="json"
         )
         self.assertEqual(response.status_code, 403)
 
@@ -234,19 +234,25 @@ class EntityTypeAPITestCase(APITestCase):
 
     def test_get_mobile_entity_types(self):
         self.client.force_authenticate(self.yoda)
-
+        account = self.yoda.iaso_profile.account
+        name = "beneficiary"
+        code = f"{name}_{account.id}"
         # same account as logged user
-        EntityType.objects.create(
-            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
-        )
+        EntityType.objects.create(name=name, reference_form=self.form_1, account=account, code=code)
 
         # different account
-        EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
+        EntityType.objects.create(
+            name=name,
+            reference_form=self.form_1,
+            account=self.the_gang,
+            code=f"{name}_{self.the_gang.id}",
+        )
 
         response = self.client.get(f"/api/mobile/entitytypes/?app_id={self.project.app_id}")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["count"], 1)
+        self.assertEqual(response.json()["results"][0]["code"], code)
 
     def test_get_entities_by_entity_type(self):
         self.client.force_authenticate(self.yoda)
@@ -405,6 +411,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.form_1.instances.add(instance_app_id)
         self.form_1.save()
+        self.form_1.projects.add(project)
 
         entity_with_data = Entity.objects.create(
             name="New Client",

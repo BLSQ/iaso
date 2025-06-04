@@ -10,17 +10,18 @@ type IconButtonProps = {
     dataTestId?: string;
 };
 
-export const NotificationImportDetailButton: FunctionComponent<IconButtonProps> =
-    ({
-        onClick,
-        dataTestId = 'open-polio-notifications-import-details-button',
-    }) => {
-        return (
-            <IconButton
-                dataTestId={dataTestId}
-                onClick={onClick}
-                overrideIcon={VisibilityIcon}
-                tooltipMessage={MESSAGES.polioNotificationImportDetails}
-            />
-        );
-    };
+export const NotificationImportDetailButton: FunctionComponent<
+    IconButtonProps
+> = ({
+    onClick,
+    dataTestId = 'open-polio-notifications-import-details-button',
+}) => {
+    return (
+        <IconButton
+            dataTestId={dataTestId}
+            onClick={onClick}
+            overrideIcon={VisibilityIcon}
+            tooltipMessage={MESSAGES.polioNotificationImportDetails}
+        />
+    );
+};

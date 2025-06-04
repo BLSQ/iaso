@@ -670,6 +670,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.downloadXLSandXML',
         defaultMessage: 'Download XLS/XML',
     },
+    validationErrorCount: {
+        id: 'iaso.form.validationErrorCount',
+        defaultMessage: '{count} validation error(s) found',
+    },
+    projectsInfo: {
+        id: 'iaso.forms.projectsInfo',
+        defaultMessage:
+            'You need to select at least one project to see the list of available org unit types',
+    },
 });
 
 export default MESSAGES;

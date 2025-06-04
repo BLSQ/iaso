@@ -4,9 +4,8 @@ import time_machine
 
 from iaso import models as m
 from iaso.test import TestCase
-
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
-from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
+from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
+from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
 
 
 TODAY = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -52,7 +51,7 @@ class ChronogramTaskTestCase(TestCase):
             description_en="Ordering markers",
             description_fr="Assurer la commande des marqueurs",
             start_offset_in_days=-20,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 1",
         )
         cls.chronogram_task_2 = ChronogramTask.objects.create(
@@ -61,7 +60,7 @@ class ChronogramTaskTestCase(TestCase):
             description_en="Daily supervision of logistics activities",
             description_fr="Supervision journalière des activités logistiques",
             start_offset_in_days=0,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 2",
         )
         cls.chronogram_task_3 = ChronogramTask.objects.create(
@@ -70,7 +69,7 @@ class ChronogramTaskTestCase(TestCase):
             description_en="Share waste destruction report",
             description_fr="Partager le rapport de destruction des déchets",
             start_offset_in_days=14,
-            user_in_charge=cls.user,
+            user_in_charge="John Doe",
             comment="Comment 2",
         )
 
@@ -137,14 +136,14 @@ class ChronogramTaskTestCase(TestCase):
                 status=ChronogramTask.Status.DONE,
                 chronogram=self.chronogram,
                 start_offset_in_days=i,
-                user_in_charge=self.user,
+                user_in_charge="John Doe",
             )
         ChronogramTask.objects.create(
             period=Period.DURING,
             status=ChronogramTask.Status.DONE,
             chronogram=self.chronogram,
             start_offset_in_days=0,
-            user_in_charge=self.user,
+            user_in_charge="John Doe",
         )
 
         with self.assertNumQueries(1):
@@ -181,7 +180,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
         cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(

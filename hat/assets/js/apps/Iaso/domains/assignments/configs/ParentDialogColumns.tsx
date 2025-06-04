@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 
-import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
+import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 
 import { SubTeam, User } from '../types/team';
 
@@ -11,7 +11,6 @@ import MESSAGES from '../messages';
 
 type Props = {
     orgUnitsToUpdate: Array<number>;
-    // eslint-disable-next-line no-unused-vars
     setOrgUnitsToUpdate: (ids: Array<number>) => void;
     selectedItem: SubTeam | User | undefined;
     mode: 'UNASSIGN' | 'ASSIGN';

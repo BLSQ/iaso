@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, Divider, Grid, Typography } from '@mui/material';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
@@ -17,11 +16,8 @@ type Props = {
     roundIndex: number;
     roundNumber: number;
     setParentFieldValue: (
-        // eslint-disable-next-line no-unused-vars
         field: string,
-        // eslint-disable-next-line no-unused-vars
         value: any,
-        // eslint-disable-next-line no-unused-vars
         shouldValidate?: boolean | undefined,
     ) => void;
     parentFieldValue: Round;
@@ -49,10 +45,7 @@ export const RoundDates: FunctionComponent<Props> = ({
             initialValues?.rounds?.find(round => round.number === roundNumber)
                 ?.ended_at,
     );
-    const save = (
-        { startDate, endDate, reason, reason_for_delay },
-        helpers,
-    ) => {
+    const save = ({ startDate, endDate, reason_for_delay }, helpers) => {
         setParentFieldValue(`rounds[${roundIndex}]`, {
             ...rounds[roundIndex],
             started_at: startDate,
@@ -60,7 +53,6 @@ export const RoundDates: FunctionComponent<Props> = ({
             datelogs: [
                 ...(parentFieldValue?.datelogs ?? []),
                 {
-                    reason,
                     reason_for_delay,
                     previous_started_at: currentStartDate,
                     previous_ended_at: currentEndDate,
@@ -78,7 +70,6 @@ export const RoundDates: FunctionComponent<Props> = ({
         initialValues: {
             startDate: currentStartDate,
             endDate: currentEndDate,
-            reason: null,
             reason_for_delay: null,
         },
         enableReinitialize: true,

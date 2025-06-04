@@ -1,9 +1,9 @@
+import React, { FunctionComponent } from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
-import { LIST, MAP } from '../constants';
 import MESSAGES from '../../../../constants/messages';
+import { LIST, MAP } from '../constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -21,7 +21,6 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     tab: 'map' | 'list';
-    // eslint-disable-next-line no-unused-vars
     handleChangeTab: (newTab: 'map' | 'list') => void;
 };
 

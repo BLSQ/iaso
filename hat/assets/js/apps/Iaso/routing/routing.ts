@@ -1,10 +1,10 @@
-import { useLocation } from 'react-router-dom';
 import { useCallback, useContext, useMemo } from 'react';
 import { convertObjectToUrlParams } from 'bluesquare-components';
+import { useLocation } from 'react-router-dom';
 import { baseUrls, paramsConfig } from '../constants/urls';
+import { PluginsContext } from '../plugins/context';
+import { Plugin } from '../plugins/types';
 import { useParamsObject } from './hooks/useParamsObject';
-import { PluginsContext } from '../utils';
-import { Plugin } from '../domains/app/types';
 
 export const useCurrentLocationWithParams = (
     newParams: Record<string, string | number | null | undefined>,
@@ -43,7 +43,6 @@ export const useBaseUrls = (): Record<string, string> => {
 };
 
 type GenUrlFunction = (
-    // eslint-disable-next-line no-unused-vars
     newParams: Record<string, string | number | null | undefined>,
 ) => string;
 

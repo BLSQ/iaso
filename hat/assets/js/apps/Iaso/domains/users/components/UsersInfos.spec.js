@@ -1,12 +1,11 @@
-import React from 'react';
-import { Select, PasswordInput } from 'bluesquare-components';
+import { PasswordInput, Select } from 'bluesquare-components';
 import { expect } from 'chai';
-import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
-import { renderWithIntl } from '../../../../../test/utils/intl';
-import UsersInfos from './UsersInfos';
-import MESSAGES from '../messages';
-import { renderWithStore } from '../../../../../test/utils/redux';
+import React from 'react';
 import { withQueryClientProvider } from '../../../../../test/utils';
+import { renderWithIntl } from '../../../../../test/utils/intl';
+import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
+import MESSAGES from '../messages';
+import UsersInfos from './UsersInfos';
 
 let component;
 let inputs;
@@ -23,9 +22,10 @@ const currentUser = {
     org_units: [],
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
-    home_page: '/settings/users',
+    home_page: '/settings/users/management',
     projects: [1],
     user_roles: [1],
+    has_multiple_accounts: { value: false },
 };
 
 const renderComponent = initialData => {
@@ -33,13 +33,11 @@ const renderComponent = initialData => {
         renderWithIntl(
             renderWithMuiTheme(
                 withQueryClientProvider(
-                    renderWithStore(
-                        <UsersInfos
-                            currentUser={currentUser}
-                            setFieldValue={setFieldValue}
-                            initialData={initialData}
-                        />,
-                    ),
+                    <UsersInfos
+                        currentUser={currentUser}
+                        setFieldValue={setFieldValue}
+                        initialData={initialData}
+                    />,
                 ),
             ),
         ),
@@ -64,7 +62,7 @@ describe('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(7);
+        expect(setFieldValue.getCalls().length).to.equal(8);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);

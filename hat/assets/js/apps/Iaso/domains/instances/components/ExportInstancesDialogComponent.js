@@ -1,19 +1,15 @@
-import React from 'react';
-import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+import React from 'react';
 
 import { injectIntl } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { createExportRequest as createExportRequestAction } from '../actions';
+import InputComponent from '../../../components/forms/InputComponent';
+import { createExportRequest } from '../actions';
 
 import MESSAGES from '../messages';
 
 const ExportInstancesDialogComponent = ({
-    isInstancesFilterUpdated,
     getFilters,
-    createExportRequest,
     renderTrigger,
     selection,
 }) => {
@@ -38,9 +34,7 @@ const ExportInstancesDialogComponent = ({
     }
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) =>
-                renderTrigger(openDialog, isInstancesFilterUpdated)
-            }
+            renderTrigger={({ openDialog }) => renderTrigger(openDialog)}
             titleMessage={title}
             onConfirm={onConfirm}
             confirmMessage={MESSAGES.export}
@@ -65,28 +59,9 @@ ExportInstancesDialogComponent.defaultProps = {
 };
 
 ExportInstancesDialogComponent.propTypes = {
-    isInstancesFilterUpdated: PropTypes.bool.isRequired,
     getFilters: PropTypes.func.isRequired,
-    createExportRequest: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     selection: PropTypes.object,
 };
 
-const MapStateToProps = state => ({
-    isInstancesFilterUpdated: state.instances.isInstancesFilterUpdated,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    ...bindActionCreators(
-        {
-            createExportRequest: createExportRequestAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    MapStateToProps,
-    MapDispatchToProps,
-)(injectIntl(ExportInstancesDialogComponent));
+export default injectIntl(ExportInstancesDialogComponent);

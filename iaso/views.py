@@ -1,11 +1,16 @@
+import json
+
+import clamav_client
+
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
+from django.db import models
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
-from bs4 import BeautifulSoup as Soup  # type: ignore
+
 from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
-from iaso.models import IFRAME, POWERBI, TEXT, Account, Page
+from iaso.models import IFRAME, POWERBI, SUPERSET, TEXT, Account, Page
 from iaso.utils.powerbi import get_powerbi_report_token
 
 
@@ -75,6 +80,23 @@ def page(request, page_slug):
             "iaso/pages/powerbi.html",
             content,
         )
+    elif page.type == SUPERSET:
+        content.update(
+            {
+                "config": {
+                    "superset_url": settings.SUPERSET_URL,
+                    "dashboard_id": page.superset_dashboard_id,
+                    "dashboard_ui_config": page.superset_dashboard_ui_config,
+                },
+                "title": page.name,
+                "page": page,
+            }
+        )
+        response = render(
+            request,
+            "iaso/pages/superset.html",
+            content,
+        )
     else:
         raw_html = page.content
         if analytics_script and raw_html is not None:
@@ -118,3 +140,92 @@ def health(request):
         res["error"] = "db_fail"
 
     return JsonResponse(res)
+
+
+def health_clamav(request):
+    """This is used to check whether ClamAV is active on this Iaso instance and if the ClamAV server is reachable"""
+
+    is_clamav_active = settings.CLAMAV_ACTIVE
+    if not is_clamav_active:
+        return JsonResponse({"active": False, "up": "?"})
+
+    ping_config = {
+        **settings.CLAMAV_CONFIGURATION,
+        "timeout": float(2),
+    }
+
+    scanner = clamav_client.get_scanner(config=ping_config)
+    res = {
+        "active": True,
+    }
+
+    try:
+        info = scanner.info()
+        res["up"] = True
+        res["version"] = info.version
+        res["virus_definitions"] = info.virus_definitions
+    except Exception:
+        res["up"] = False
+
+    return JsonResponse(res)
+
+
+def robots_txt(request):
+    content = """User-agent: *
+Disallow: /"""
+    return HttpResponse(content, content_type="text/plain")
+
+
+import json
+
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.db import models
+from django.shortcuts import render
+from django.views import View
+
+from iaso import models as iaso_models
+
+
+class ModelDataView(View):
+    def get(self, request, *args, **kwargs):
+        model_data = self.get_model_data()
+        return render(request, "iaso/model_diagram.html", {"model_data": json.dumps(model_data)})
+
+    def get_model_data(self):
+        nodes = []
+        links = []
+
+        all_models = [
+            getattr(iaso_models, name)
+            for name in dir(iaso_models)
+            if isinstance(getattr(iaso_models, name), type) and issubclass(getattr(iaso_models, name), models.Model)
+        ]
+
+        for model in all_models:
+            node = {"id": model.__name__, "type": "model", "app": "iaso", "fields": []}
+
+            for field in model._meta.get_fields():
+                field_type = self.get_field_type(field)
+                node["fields"].append({"name": field.name, "type": field_type})
+
+                if isinstance(field, (models.ForeignKey, models.OneToOneField, models.ManyToManyField)):
+                    related_model = field.related_model
+                    if related_model in all_models:
+                        links.append(
+                            {"source": model.__name__, "target": related_model.__name__, "type": type(field).__name__}
+                        )
+
+            nodes.append(node)
+
+        return {"nodes": nodes, "links": links}
+
+    def get_field_type(self, field):
+        if isinstance(field, models.ForeignKey):
+            return f"ForeignKey to {field.related_model.__name__}"
+        if isinstance(field, models.ManyToManyField):
+            return f"ManyToManyField to {field.related_model.__name__}"
+        if isinstance(field, models.OneToOneField):
+            return f"OneToOneField to {field.related_model.__name__}"
+        if isinstance(field, GenericForeignKey):
+            return "GenericForeignKey"
+        return field.__class__.__name__

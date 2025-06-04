@@ -8,7 +8,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useStartAnalyse } from '../hooks/api/analyzes';
 import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
-import { Analysis } from '../types';
+import { Analysis, Parameters } from '../types';
 import { AnalysisModal } from './AnalysisModal';
 
 type Props = {
@@ -31,7 +31,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
             algorithm: latestAnalysis?.algorithm,
             entity_type_id: latestAnalysis?.metadata.entity_type_id,
             fields: latestAnalysis?.metadata.fields,
-            parameters: latestAnalysis?.metadata.parameters,
+            parameters: Object.entries(
+                latestAnalysis?.metadata.parameters as unknown as Parameters,
+            ).map(([name, value]) => ({ name, value })),
         });
     }, [latestAnalysis, startAnalyse]);
     return (
@@ -39,8 +41,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
             {!latestAnalysis &&
                 !isFetchingLatestAnalysis &&
                 formatMessage(MESSAGES.noAnalysis)}
-            {latestAnalysis && (
-                <>
+
+            <>
+                {latestAnalysis && (
                     <Box mr="auto">
                         <Box display="flex" alignItems="center">
                             <Box display="inline-block" mr={1}>
@@ -67,7 +70,9 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                             </Tooltip>
                         </Box>
                     </Box>
-                    <Grid container spacing={1} justifyContent="flex-end">
+                )}
+                <Grid container spacing={1} justifyContent="flex-end">
+                    {latestAnalysis && (
                         <Grid item>
                             <Box mb={2} mt={2}>
                                 <Button
@@ -86,14 +91,14 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                                 </Button>
                             </Box>
                         </Grid>
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <AnalysisModal iconProps={{}} />
-                            </Box>
-                        </Grid>
+                    )}
+                    <Grid item>
+                        <Box mb={2} mt={2}>
+                            <AnalysisModal iconProps={{}} />
+                        </Box>
                     </Grid>
-                </>
-            )}
+                </Grid>
+            </>
         </Box>
     );
 };

@@ -12,15 +12,13 @@ const UsersLocations = ({ handleChange, currentUser }) => {
         handleChange(orgUnitsList);
     };
     return (
-        <>
-            <OrgUnitTreeviewModal
-                toggleOnLabelClick={false}
-                titleMessage={MESSAGES.chooseLocation}
-                onConfirm={onConfirm}
-                multiselect
-                initialSelection={currentUser.org_units.value}
-            />
-        </>
+        <OrgUnitTreeviewModal
+            toggleOnLabelClick={false}
+            titleMessage={MESSAGES.chooseLocation}
+            onConfirm={onConfirm}
+            multiselect
+            initialSelection={currentUser.org_units.value}
+        />
     );
 };
 

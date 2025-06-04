@@ -1,6 +1,7 @@
 import csv
 import datetime as dt
 import functools
+
 from collections import defaultdict
 from datetime import datetime, timedelta
 from logging import getLogger
@@ -18,16 +19,17 @@ from rest_framework import viewsets
 
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
+from iaso.models.json_config import Config
 from plugins.polio.api.common import (
     convert_dicts_to_table,
     find_campaign_on_day,
     find_orgunit_in_cache,
     get_url_content,
+    make_orgunits_cache,
 )
-from plugins.polio.api.common import make_orgunits_cache
 from plugins.polio.models import Campaign
-from iaso.models.json_config import Config
 from plugins.polio.vaccines_email import send_vaccines_notification_email
+
 
 logger = getLogger(__name__)
 
@@ -159,8 +161,7 @@ def handle_ona_request_with_key(request, key, country_id=None):
         for item in res:
             writer.writerow(item)
         return response
-    else:
-        return JsonResponse(res, safe=False)
+    return JsonResponse(res, safe=False)
 
 
 class VaccineStocksViewSet(viewsets.ViewSet):

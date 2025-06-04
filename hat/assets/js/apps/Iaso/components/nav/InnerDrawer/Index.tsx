@@ -1,7 +1,7 @@
-import React, { FunctionComponent, ReactNode, useState } from 'react';
-import { Box, Grid, Tabs, Tab } from '@mui/material';
+import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import MESSAGES from '../messages';
 import { innerDrawerStyles, menuHeight } from './styles';
 
@@ -53,7 +53,6 @@ type Props = {
     commentsDisabled?: boolean;
     defaultActiveOption?: 'settings' | 'filters' | 'edit' | 'comments';
     setCurrentOption?: (
-        // eslint-disable-next-line no-unused-vars
         option: 'settings' | 'filters' | 'edit' | 'comments',
     ) => void;
 };
@@ -69,7 +68,6 @@ export const InnerDrawer: FunctionComponent<Props> = ({
     withTopBorder = false,
     commentsDisabled = false,
     defaultActiveOption = 'settings',
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     setCurrentOption = _option => null,
     children = null,
 }) => {
@@ -198,13 +196,17 @@ export const InnerDrawer: FunctionComponent<Props> = ({
                                         {settingsOptionComponent}
                                     </Box>
                                 )}
-                            {footerComponent && activeOption === 'edit' && (
-                                <div
-                                    className={classes.innerDrawerFooterContent}
-                                >
-                                    {footerComponent}
-                                </div>
-                            )}
+                            {footerComponent &&
+                                (activeOption === 'edit' ||
+                                    activeOption === 'filters') && (
+                                    <div
+                                        className={
+                                            classes.innerDrawerFooterContent
+                                        }
+                                    >
+                                        {footerComponent}
+                                    </div>
+                                )}
                         </Box>
                     </Box>
                 </Grid>

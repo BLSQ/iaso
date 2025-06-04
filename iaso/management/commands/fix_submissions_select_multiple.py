@@ -1,6 +1,9 @@
-from django.core.management.base import BaseCommand
 from datetime import datetime
+
+from django.core.management.base import BaseCommand
+
 import iaso.models as m
+
 
 # This is one time command to "reparse" the xml to json
 # All submissions for forms with select_multiple has to be reparse
@@ -9,7 +12,7 @@ import iaso.models as m
 # testing on a small subset on your dev env
 #
 #    docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.4.1
-#    docker-compose run --rm iaso manage fix_submissions_select_multiple
+#    docker compose run --rm iaso manage fix_submissions_select_multiple
 
 
 class Command(BaseCommand):

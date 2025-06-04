@@ -5,12 +5,21 @@
         7
     ],
     "period_type": null,
+    "latest_form_version": {
+        "id": 39,
+        "version_id": "2024120501",
+        "file": "/media/forms/test_attachment_2024120501.xml",
+        "xls_file": "/media/forms/test_attachment_2024120501.xlsx",
+        "created_at": 1733390819.98435,
+        "updated_at": 1733390819.98444
+    },
     "label_keys": [
         "label_key_1",
         "label_key_2",
         "label_key_3"
     ],
-    "possible_fields": [{
+    "possible_fields": [
+        {
             "name": "date",
             "type": "date",
             "label": "Date"
@@ -29,6 +38,32 @@
             "name": "name",
             "type": "text",
             "label": "Nom"
+        }
+    ],
+    "possible_fields_with_latest_version": [
+        {
+            "name": "date",
+            "type": "date",
+            "label": "Date",
+            "is_latest": true
+        },
+        {
+            "name": "city",
+            "type": "text",
+            "label": "Ville",
+            "is_latest": true
+        },
+        {
+            "name": "firstname",
+            "type": "text",
+            "label": "Prénom",
+            "is_latest": true
+        },
+        {
+            "name": "name",
+            "type": "text",
+            "label": "Nom",
+            "is_latest": true
         }
     ]
 }

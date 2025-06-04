@@ -86,6 +86,27 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching user roles',
         id: 'iaso.snackBar.fetchUserRoles',
     },
+    orgUnitWriteTypesInfos: {
+        id: 'iaso.userRoles.orgUnitWriteTypesInfos',
+        defaultMessage: 'Select the org unit types the user role can edit',
+    },
+    selectAllHelperText: {
+        id: 'iaso.users.selectAllHelperText',
+        defaultMessage: 'Leave empty to select all',
+    },
+    orgUnitWriteTypes: {
+        id: 'iaso.users.orgUnitWriteTypes',
+        defaultMessage: 'Org unit write types',
+    },
+    OrgUnitTypeWriteDisableTooltip: {
+        id: 'iaso.users.orgUnitTypeWriteDisableTooltip',
+        defaultMessage:
+            'Enable the permission “Org Units management - Write” in order to be able to detail the Org Unit Write Type(s) for this {type}',
+    },
+    userRole: {
+        id: 'iaso.userRoles.label.userRole',
+        defaultMessage: 'User role',
+    },
 });
 
 export default MESSAGES;

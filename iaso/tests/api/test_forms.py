@@ -5,13 +5,15 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.models import Form, OrgUnit, Instance
-from iaso.test import APITestCase
-
+from iaso.api.query_params import APP_ID
 from iaso.models import (
-    Mapping,
     AGGREGATE,
+    Form,
+    Instance,
+    Mapping,
+    OrgUnit,
 )
+from iaso.test import APITestCase
 
 
 class FormsAPITestCase(APITestCase):
@@ -38,7 +40,10 @@ class FormsAPITestCase(APITestCase):
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
 
         cls.project_1 = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
+            needs_authentication=True,
         )
         cls.project_2 = m.Project.objects.create(
             name="New Land Speeder concept", app_id="stars.empire.agriculture.land_speeder", account=star_wars
@@ -87,6 +92,26 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
+
+    def test_forms_list_without_auth_for_project_requiring_auth(self):
+        """GET /forms/ without auth for project which requires it: 401"""
+
+        response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
+        self.assertJSONResponse(response, 401)
+
+    def test_forms_list_with_wrong_auth_for_project_requiring_auth(self):
+        """GET /forms/ with wrong auth for project which requires it: 401"""
+
+        self.client.force_authenticate(user=self.iron_man)
+        response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
+        self.assertJSONResponse(response, 401)
+
+    def test_forms_list_with_auth_for_project_requiring_auth(self):
+        """GET /forms/ with auth for project which requires it: 200"""
+
+        self.client.force_authenticate(user=self.yoda)
+        response = self.client.get("/api/forms/", {APP_ID: self.project_1.app_id})
+        self.assertJSONResponse(response, 200)
 
     def test_forms_list_empty_for_user(self):
         """GET /forms/ with a user that has no access to any form"""
@@ -160,7 +185,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ return only deleted forms"""
         self.client.force_authenticate(self.yoda)
         self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
@@ -171,7 +196,7 @@ class FormsAPITestCase(APITestCase):
         )
 
         self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "MONTH",
@@ -194,7 +219,7 @@ class FormsAPITestCase(APITestCase):
 
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
-
+        self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/?app_id={self.project_1.app_id}")
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
@@ -272,7 +297,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/forms/292003030/")
+        response = self.client.get("/api/forms/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_forms_retrieve_ok_1(self):
@@ -299,10 +324,12 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 1,
+                "periods_after_allowed": 0,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -316,12 +343,60 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
 
+    def test_forms_create_ok_without_period_type(self):
+        """POST /forms/ happy path without period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": None,
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+
+        response_data = response.json()
+        self.assertValidFormData(response_data)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(1, form.projects.count())
+        self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_not_ok_with_period_type_and_wrong_period_before_and_after(self):
+        """POST /forms/ with wrong period before and after"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/forms/",
+            data={
+                "name": "test form 1",
+                "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 0,
+                "project_ids": [self.project_1.id],
+                "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
+        self.assertEqual(
+            response_data["periods_allowed"][0],
+            "periods_before_allowed + periods_after_allowed should be greater than or equal to 1",
+        )
+
     def test_forms_create_ok_extended(self):
         """POST /forms/ happy path (more fields)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "QUARTER",
@@ -347,14 +422,14 @@ class FormsAPITestCase(APITestCase):
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 401"""
 
-        response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_forms_create_wrong_permission(self):
         """POST /forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
-        response = self.client.post(f"/api/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_forms_create_invalid_1(self):
@@ -362,7 +437,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
+            "/api/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
         self.assertJSONResponse(response, 400)
 
@@ -377,7 +452,7 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ specific check for allow_empty"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/forms/", data={"project_ids": []}, format="json")
+        response = self.client.post("/api/forms/", data={"project_ids": []}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
@@ -388,7 +463,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form 2",
                 "period_type": None,
@@ -411,7 +486,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "test form",
                 "form_id": "test_001",
@@ -430,7 +505,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/forms/",
+            "/api/forms/",
             data={
                 "name": "another test form",
                 "form_id": "test_002",
@@ -455,6 +530,8 @@ class FormsAPITestCase(APITestCase):
             data={
                 "name": "test form 1 (updated)",
                 "period_type": "QUARTER",
+                "pperiods_before_allowed": "0",
+                "periods_after_allowed": "1",
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",

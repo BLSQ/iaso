@@ -1,18 +1,17 @@
-import React, { FunctionComponent } from 'react';
-import moment from 'moment';
 import { Box, Button, Grid, Paper, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import React, { FunctionComponent } from 'react';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { SxStyles } from '../../../../types/general';
 import getDisplayName from '../../../../utils/usersUtils';
 import MESSAGES from '../../messages';
-import InputComponent from '../../../../components/forms/InputComponent';
 import { PaymentLot } from '../../types';
-import { SxStyles } from '../../../../types/general';
 
 type Props = {
     name: string;
     comment?: string | null;
     paymentLot: PaymentLot;
-    // eslint-disable-next-line no-unused-vars
     onChange: (keyValue: 'name' | 'comment', newValue: string) => void;
     onSave: () => void;
     allowSave: boolean;

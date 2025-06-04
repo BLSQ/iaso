@@ -1,25 +1,30 @@
-/* eslint-disable camelcase */
-import React, { ReactNode, FunctionComponent, useState } from 'react';
-import { useFormik, FormikProvider, FormikProps } from 'formik';
-import * as yup from 'yup';
+import { Box, Chip } from '@mui/material';
 import {
-    useSafeIntl,
+    IconButton,
     IntlFormatMessage,
     IntlMessage,
-    IconButton,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box } from '@mui/material';
+import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import * as yup from 'yup';
 
-import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
 import { EntityType } from '../types/entityType';
 
-import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
-import { useTranslatedErrors } from '../../../../libs/validation';
-import MESSAGES from '../messages';
-import { formatLabel } from '../../../instances/utils';
 import { baseUrls } from '../../../../constants/urls';
+import { useTranslatedErrors } from '../../../../libs/validation';
+import { formatLabel } from '../../../instances/utils';
+import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
+import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -29,13 +34,10 @@ type EmptyEntityType = Partial<EntityType>;
 
 type Props = {
     titleMessage: IntlMessage;
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData?: EntityType | EmptyEntityType;
     saveEntityType: (
-        // eslint-disable-next-line no-unused-vars
         e: EntityType | EmptyEntityType,
-        // eslint-disable-next-line no-unused-vars
         options: Record<string, () => void>,
     ) => void;
 };
@@ -133,6 +135,43 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         formId: values?.reference_form,
         enabled: isOpen,
     });
+
+    const renderTags = useCallback(
+        (tagValue, getTagProps) =>
+            tagValue
+                .sort((a, b) =>
+                    formatLabel(a).localeCompare(formatLabel(b), undefined, {
+                        sensitivity: 'accent',
+                    }),
+                )
+                .map((option, index) => {
+                    const field = possibleFields.find(
+                        f => f.name === option.value,
+                    );
+                    return (
+                        <Chip
+                            color={field?.is_latest ? 'primary' : 'secondary'}
+                            label={option.label}
+                            {...getTagProps({ index })}
+                        />
+                    );
+                }),
+        [possibleFields],
+    );
+
+    const possibleFieldsOptions = useMemo(
+        () =>
+            possibleFields.map(field => ({
+                value: field.name,
+                label: field.is_latest
+                    ? formatLabel(field)
+                    : `${formatLabel(field)} (${formatMessage(
+                          MESSAGES.deprecated,
+                      )})`,
+            })),
+        [formatMessage, possibleFields],
+    );
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -150,7 +189,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
-                maxWidth="xs"
+                maxWidth="md"
                 onOpen={() => {
                     resetForm();
                     setIsOpen(true);
@@ -170,6 +209,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                     icon="remove-red-eye"
                                     tooltipMessage={MESSAGES.viewForm}
                                     iconSize="small"
+                                    // @ts-ignore
                                     fontSize="small"
                                     dataTestId="see-form-button"
                                 />
@@ -215,10 +255,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         }
                         value={!isFetchingForm ? values.fields_list_view : []}
                         label={MESSAGES.fieldsListView}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        options={possibleFieldsOptions}
+                        renderTags={renderTags}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)
@@ -241,10 +279,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDetailInfoView}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        options={possibleFieldsOptions}
+                        renderTags={renderTags}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)
@@ -265,10 +301,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDuplicateSearch}
-                        options={possibleFields.map(field => ({
-                            value: field.name,
-                            label: formatLabel(field),
-                        }))}
+                        renderTags={renderTags}
+                        options={possibleFieldsOptions}
                         helperText={
                             isNew && !values.reference_form
                                 ? formatMessage(MESSAGES.selectReferenceForm)

@@ -12,8 +12,9 @@ from rest_framework.response import Response
 
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
-from iaso.models import OrgUnit, Instance, Form
 from hat.menupermissions import models as permission
+from iaso.models import Form, Instance, OrgUnit
+from iaso.models.base import Profile
 from iaso.models.org_unit import OrgUnitChangeRequest
 from iaso.models.payments import Payment, PaymentLot
 
@@ -41,6 +42,9 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
             created_by__iaso_profile__account=user.iaso_profile.account
         )
         return change_requests.filter(id=obj.id).exists()
+    if isinstance(obj, Profile):
+        profiles = Profile.objects.filter(account=user.iaso_profile.account)
+        return profiles.filter(id=obj.id).exists() and user.has_perm(permission.USERS_ADMIN)
     # FIXME Hotfix to prevent an error when loading the app without the polio plugins
     from plugins.polio.models import Campaign
 
@@ -144,8 +148,7 @@ class LogsViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response(map(lambda x: x.as_list(fields), queryset))
+        return Response(map(lambda x: x.as_list(fields), queryset))
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)

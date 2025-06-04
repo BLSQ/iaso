@@ -23,30 +23,30 @@ Once the script has run, you can log in to your server using the account name as
 
 1. Backup your DB
 
-        docker-compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump
+        docker compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump
 
 1. Use an empty DB
 
         # Find your Iaso DB.
-        docker-compose exec db psql -U postgres -l
+        docker compose exec db psql -U postgres -l
 
         # Delete your Iaso DB.
-        docker-compose exec db psql -U postgres -c "drop database if exists iaso"
+        docker compose exec db psql -U postgres -c "drop database if exists iaso"
 
         # Create your Iaso DB.
-        docker-compose exec db psql -U postgres -c "create database iaso"
+        docker compose exec db psql -U postgres -c "create database iaso"
 
 1. Run the Django server in a first terminal (this will run DB migrations)
 
-        docker-compose up iaso
+        docker compose up iaso
 
 1. Run a worker in a second terminal
 
-        docker-compose run iaso manage tasks_worker
+        docker compose run iaso manage tasks_worker
 
 1. Create a superuser
 
-        docker-compose exec iaso ./manage.py createsuperuser
+        docker compose exec iaso ./manage.py createsuperuser
 
 1. Prepare the setuper (it requires a local Python 3)
 
@@ -61,19 +61,31 @@ Once the script has run, you can log in to your server using the account name as
 
            pip install -r requirements.txt
 
-    - Update `credentials.py` because we need a user with API access (use your superuser credentials)
+    - Optional: update `credentials.py` because we need a user with API access (use your superuser credentials)
 
           cp data/sample-credentials.py credentials.py
 
 1. Run the setuper
 
-        python3 setuper.py
+         # If you did not update credentials.py:
+         python3 setuper.py -u <username> -p <password> -s <server_url>
 
-2. If you want to create additional projects like:
+         # If you updated credentials.py:
+         python3 setuper.py
+
+   There are some optional parameters you can pass to this command:
+
+   - If you want to create additional projects like:
       - Planning
       - Georegistry/Géoregistre
-      - Children vaccination/Vaccination des enfants
+      - Vaccination
 
-    You will need to add param `--additional_projects`:
+       You will need to add param `--additional_projects` or `-a`:
 
-        python3 setuper.py --additional_projects
+           python3 setuper.py --additional_projects
+
+   - If you want to choose the name that will be used for the account/project/user/... (max 147 characters, only a-z, A-Z, 0-9)
+
+       You will need to add param `-n <name>`:
+
+           python3 setuper.py -n ThisNameWasCarefullyChosen

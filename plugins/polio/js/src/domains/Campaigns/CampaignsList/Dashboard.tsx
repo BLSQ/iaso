@@ -1,10 +1,12 @@
-/* eslint-disable camelcase */
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useActiveParams } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useActiveParams';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
@@ -17,9 +19,6 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
-import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { baseUrls } from '../../../constants/urls';
-import { useActiveParams } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useActiveParams';
 
 const baseUrl = baseUrls.campaigns;
 
@@ -29,7 +28,7 @@ export const Dashboard: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const paramsToUse = useActiveParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
-
+    const [campaignType, setCampaignType] = useState(params.campaignType);
     const { data: rawCampaigns, isFetching } = useGetCampaigns(
         apiParams,
         undefined,
@@ -45,7 +44,7 @@ export const Dashboard: FunctionComponent = () => {
             campaigns: rawCampaigns.campaigns.map(campaign => ({
                 ...campaign,
                 grouped_campaigns:
-                    campaign.grouped_campaigns.length > 0
+                    (campaign.grouped_campaigns?.length ?? 0) > 0
                         ? campaign.grouped_campaigns
                         : null,
             })),
@@ -71,6 +70,7 @@ export const Dashboard: FunctionComponent = () => {
         handleClickRestoreRow: handleRestoreDialogConfirm,
         params,
     });
+
     return (
         <>
             <TopBar
@@ -78,7 +78,11 @@ export const Dashboard: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <CampaignsFilters params={params} />
+                <CampaignsFilters
+                    params={params}
+                    setCampaignType={setCampaignType}
+                    campaignType={campaignType}
+                />
                 <Box mb={2}>
                     <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>

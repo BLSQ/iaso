@@ -1,37 +1,26 @@
-/* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback } from 'react';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
-    useRedirectToReplace,
     useGoBack,
+    useRedirectToReplace,
 } from 'bluesquare-components';
-import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { FormikProvider, useFormik } from 'formik';
 import classnames from 'classnames';
-import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
+import { FormikProvider, useFormik } from 'formik';
+import React, { FunctionComponent, useCallback } from 'react';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
-import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
-import { PreAlerts } from './PreAlerts/PreAlerts';
-import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
-import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
-import { useGetVrfDetails } from '../hooks/api/vrf';
-import { useGetPreAlertDetails } from '../hooks/api/preAlerts';
-import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
-import {
-    PreAlert,
-    SupplyChainFormData,
-    TabValue,
-    VAR as VARType,
-    VRF as VrfType,
-} from '../types';
-import { PREALERT, VAR, VRF } from '../constants';
-import { useTopBarTitle } from '../hooks/useTopBarTitle';
-import { useSupplyChainFormValidator } from '../hooks/validation';
 import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
+import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { baseUrls } from '../../../../constants/urls';
+import { PREALERT, VAR, VRF } from '../constants';
+import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
+import { useGetPreAlertDetails } from '../hooks/api/preAlerts';
+import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
+import { useGetVrfDetails } from '../hooks/api/vrf';
+import { useTopBarTitle } from '../hooks/useTopBarTitle';
 import {
     useEnableSaveButtons,
     useHandleSubmit,
@@ -40,9 +29,19 @@ import {
     useInitializeVRFOnFetch,
     useWatchChangedTabs,
 } from '../hooks/utils';
+import { useSupplyChainFormValidator } from '../hooks/validation';
+import {
+    PreAlert,
+    SupplyChainFormData,
+    TabValue,
+    VAR as VARType,
+    VRF as VrfType,
+} from '../types';
+import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
+import { PreAlerts } from './PreAlerts/PreAlerts';
 import { SupplyChainTabs } from './SupplyChainTabs';
-import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { baseUrls } from '../../../../constants/urls';
+import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
+import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -94,7 +93,7 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
         initialValues,
         // required to enable data refresh after save
         enableReinitialize: true,
-        // bypassing formik's onSubmit so we can re-use a custom fucntion for save and save all
+        // bypassing formik's onSubmit so we can re-use a custom function for save and save all
         onSubmit: () => undefined,
         validationSchema,
     });
@@ -122,7 +121,6 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
         formik.resetForm();
     }, [formik]);
 
-    // eslint-disable-next-line no-unused-vars
     const handleSubmit: (saveAll?: boolean | undefined) => void =
         useHandleSubmit({
             formik,
@@ -156,13 +154,18 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
 
     // list changed tabs to avoid patching unchanged tabs
     useWatchChangedTabs({ initialValues, values, setFieldValue });
+
+    const isNew = !vrfDetails;
+    const isNormal = formik.values.vrf?.vrf_type === 'Normal';
+
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>
                 <SupplyChainTabs
                     tab={tab}
                     onChangeTab={onChangeTab}
-                    disabled={!vrfDetails}
+                    isNew={isNew}
+                    isNormal={isNormal}
                 />
             </TopBar>
             <Box className={classnames(classes.containerFullHeightPadded)}>

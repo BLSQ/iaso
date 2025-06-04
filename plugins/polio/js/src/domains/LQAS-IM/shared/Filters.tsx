@@ -4,28 +4,22 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Box, Grid } from '@mui/material';
 import {
     Select,
     useSafeIntl,
     IconButton,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { Box, Grid } from '@mui/material';
-
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
-import { makeCampaignsDropDown } from '../../../utils/index';
-import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
-import { RefreshLqasData } from './RefreshLqasData';
-import { baseUrls } from '../../../constants/urls';
 import { POLIO_ADMIN } from '../../../constants/permissions';
-
-export type Params = {
-    campaign: string | undefined;
-    country: string | undefined;
-    rounds: string | undefined;
-};
+import { baseUrls } from '../../../constants/urls';
+import { makeCampaignsDropDown } from '../../../utils/index';
+import { IMType, LqasImFilterParams } from '../types';
+import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
+import { RefreshLqasIMData } from './RefreshLqasIMData';
 
 type FiltersState = {
     campaign: string | undefined;
@@ -36,15 +30,15 @@ type Props = {
     isFetching: boolean;
     campaigns: any[];
     campaignsFetching: boolean;
-    params: Params;
-    imType?: 'imGlobal' | 'imHH' | 'imOHH';
+    params: LqasImFilterParams;
+    imType?: IMType;
 };
 
-const getCurrentUrl = (imType?: 'imGlobal' | 'imHH' | 'imOHH'): string => {
+const getCurrentUrl = (imType?: IMType | 'imHH'): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }
-    if (imType === 'imHH') {
+    if (imType === 'imHH' || imType === 'imIHH') {
         return baseUrls.imHH;
     }
     if (imType === 'imOHH') {
@@ -62,7 +56,6 @@ export const Filters: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
-    const isLqas = !imType;
     const currentUrl = getCurrentUrl(imType);
     const [filters, setFilters] = useState<FiltersState>({
         campaign: params?.campaign,
@@ -71,7 +64,7 @@ export const Filters: FunctionComponent<Props> = ({
     const { campaign, country } = params;
 
     const { data: countriesOptions, isFetching: countriesLoading } =
-        useGetLqasImCountriesOptions(isLqas);
+        useGetLqasImCountriesOptions();
 
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
@@ -142,17 +135,15 @@ export const Filters: FunctionComponent<Props> = ({
                         />
                     </Grid>
                 )}
-                {/* remove condition when IM pipeline is ready */}
-                {!imType && (
-                    <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
-                        <Grid item md={campaignLink ? 3 : 4}>
-                            <RefreshLqasData
-                                isLqas={isLqas}
-                                countryId={country}
-                            />
-                        </Grid>
-                    </DisplayIfUserHasPerm>
-                )}
+
+                <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
+                    <Grid item md={campaignLink ? 3 : 4}>
+                        <RefreshLqasIMData
+                            imType={imType}
+                            countryId={country}
+                        />
+                    </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
         </Box>
     );

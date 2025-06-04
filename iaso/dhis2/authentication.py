@@ -1,11 +1,12 @@
 import requests
+
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from requests.auth import HTTPBasicAuth
 
-from iaso.models import Profile, ExternalCredentials
+from iaso.models import ExternalCredentials, Profile
 
 
 def dhis2_callback(request, dhis2_slug):
@@ -21,7 +22,7 @@ def dhis2_callback(request, dhis2_slug):
         payload = {
             "code": code,
             "grant_type": "authorization_code",
-            "redirect_uri": REDIRECT_URI + "api/dhis2/{0}/login/".format(dhis2_slug),
+            "redirect_uri": REDIRECT_URI + f"api/dhis2/{dhis2_slug}/login/",
             "client_id": dhis2_slug,
         }
 
@@ -37,9 +38,7 @@ def dhis2_callback(request, dhis2_slug):
         if response.json()["access_token"]:
             access_token = response.json()["access_token"]
 
-            user_info = requests.get(
-                DHIS2_SERVER_URL + "api/me", headers={"Authorization": "Bearer {0}".format(access_token)}
-            )
+            user_info = requests.get(DHIS2_SERVER_URL + "api/me", headers={"Authorization": f"Bearer {access_token}"})
 
             user_dhis2_id = user_info.json()["id"]
 
@@ -55,6 +54,6 @@ def dhis2_callback(request, dhis2_slug):
                     )
                 )
         else:
-            return HttpResponse("Error: {0}".format(response.json()))
+            return HttpResponse(f"Error: {response.json()}")
 
     return HttpResponse("ok")

@@ -1,30 +1,31 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { Theme } from '@mui/material/styles';
+import L from 'leaflet';
+import React, { createRef, FunctionComponent, useCallback } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 
-import { Card, CardMedia, CardContent, Grid, Box } from '@mui/material';
+import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    useSafeIntl,
     commonStyles,
-    mapPopupStyles,
-    LoadingSpinner,
     LinkButton,
+    LoadingSpinner,
+    mapPopupStyles,
+    useSafeIntl,
 } from 'bluesquare-components';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';
-import InstanceDetailsField from '../InstanceDetailsField';
 
+import { baseUrls } from '../../../../constants/urls';
+import { usePopupState } from '../../../../utils/map/usePopupState';
+import { useGetInstance } from '../../../registry/hooks/useGetInstances';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import { baseUrls } from '../../../../constants/urls';
-import { getOrgUnitsTree } from '../../../orgUnits/utils';
+import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    ...mapPopupStyles(theme),
+const useStyles = makeStyles((theme: Theme) => ({
+    ...(commonStyles(theme) as Record<string, any>),
+    ...(mapPopupStyles(theme) as Record<string, any>),
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
@@ -37,78 +38,55 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     replaceLocation?: (instance: Instance) => void;
     displayUseLocation?: boolean;
+    instanceId: number;
 };
 
 export const InstancePopup: FunctionComponent<Props> = ({
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    replaceLocation = () => {},
+    replaceLocation = () => null,
     displayUseLocation = false,
+    instanceId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const popup: any = useRef();
+    const popup = createRef<L.Popup>();
+    const isOpen = usePopupState(popup);
     const map = useMap();
-    const currentInstance = useSelector(
-        (state: any) => state.instances.current,
+    const { data: currentInstance, isLoading } = useGetInstance(
+        isOpen ? instanceId : undefined,
     );
-
     const confirmDialog = useCallback(() => {
-        replaceLocation(currentInstance);
-        map.closePopup(popup.current);
-    }, [currentInstance, map, replaceLocation]);
+        if (currentInstance) {
+            replaceLocation(currentInstance);
+            map.closePopup(popup.current);
+        }
+    }, [currentInstance, map, popup, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
 
-    const orgUnitTree: any[] = useMemo(() => {
-        if (currentInstance?.org_unit) {
-            return getOrgUnitsTree(currentInstance.org_unit).reverse();
-        }
-        return [];
-    }, [currentInstance?.org_unit]);
-
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
-            {!currentInstance && <LoadingSpinner />}
+            {isLoading && <LoadingSpinner />}
             {currentInstance && (
                 <Card className={classes.popupCard}>
                     {hasHero && (
                         <CardMedia
                             // TS doesn't recognize the href prop, but MUI passes it down to the native (root) element
                             // @ts-ignore
-                            href={currentInstance.files[0]}
+                            href={currentInstance?.files.slice(-1)[0]}
                             className={classes.popupCardMedia}
-                            image={currentInstance.files[0]}
+                            image={currentInstance?.files.slice(-1)[0]}
                             component="div"
                         />
                     )}
                     <CardContent className={classes.popupCardContent}>
                         <InstanceDetailsInfos
+                            instance_metas_fields={INSTANCE_MAP_METAS_FIELDS}
                             currentInstance={currentInstance}
                             fieldsToHide={['device_id']}
                         />
-                        {currentInstance.org_unit && (
-                            <InstanceDetailsField
-                                label={formatMessage(MESSAGES.groups)}
-                                value={
-                                    currentInstance.org_unit.groups &&
-                                    currentInstance.org_unit.groups.length > 0
-                                        ? currentInstance.org_unit.groups
-                                              .map(g => g.name)
-                                              .join(', ')
-                                        : null
-                                }
-                            />
-                        )}
-                        {orgUnitTree.map(o => (
-                            <InstanceDetailsField
-                                key={o.id}
-                                label={o.org_unit_type_name}
-                                value={o ? o.name : null}
-                            />
-                        ))}
+
                         <Box className={classes.actionBox}>
                             <Grid
                                 container

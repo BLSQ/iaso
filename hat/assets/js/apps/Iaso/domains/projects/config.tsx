@@ -1,77 +1,92 @@
 import React, { ReactElement, useMemo } from 'react';
-import {
-    textPlaceholder,
-    IntlMessage,
-    Column,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { Box, Switch, Tooltip } from '@mui/material';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Box, Chip, Switch, Tooltip } from '@mui/material';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import Color from 'color';
+import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
-import { baseUrls } from '../../constants/urls';
-
+import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
-import { Project } from './types/project';
 import { FeatureFlag } from './types/featureFlag';
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-};
+import { Project } from './types/project';
 
 export const baseUrl = baseUrls.projects;
-export const columns = (
-    // eslint-disable-next-line no-unused-vars
-    formatMessage: (msg: IntlMessage) => string,
-    // eslint-disable-next-line no-unused-vars
-    params: Params,
-    // eslint-disable-next-line no-unused-vars
+export const useColumns = (
     saveProject: (s: Project) => Promise<any>,
-): Array<Column> => [
-    {
-        Header: formatMessage(MESSAGES.projectName),
-        accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.appId),
-        accessor: 'app_id',
-    },
-    {
-        Header: formatMessage(MESSAGES.featureFlags),
-        accessor: 'feature_flags',
-        sortable: false,
-        Cell: settings =>
-            settings.value
-                .map(fF =>
-                    MESSAGES[fF.code.toLowerCase()]
-                        ? formatMessage(MESSAGES[fF.code.toLowerCase()])
-                        : fF.name || fF.id,
-                )
-                .join(', ') || textPlaceholder,
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        Cell: (settings): ReactElement => (
-            <section>
-                <EditProjectDialog
-                    initialData={settings.row.original}
-                    saveProject={saveProject}
-                    dialogType="edit"
-                    iconProps={{}}
-                />
-            </section>
-        ),
-    },
-];
+): Array<Column> => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        return [
+            {
+                Header: formatMessage(MESSAGES.projectName),
+                accessor: 'name',
+                Cell: settings => {
+                    const textColor = Color(
+                        settings.row.original.color,
+                    ).isDark()
+                        ? 'white'
+                        : 'black';
+                    return (
+                        <Chip
+                            label={settings.row.original.name}
+                            sx={{
+                                backgroundColor: settings.row.original.color,
+                                color: textColor,
+                            }}
+                        />
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.appId),
+                accessor: 'app_id',
+                Cell: settings => {
+                    return settings.row.original.app_id;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.featureFlags),
+                accessor: 'feature_flags',
+                sortable: false,
+                Cell: settings =>
+                    settings.value
+                        .map(fF =>
+                            MESSAGES[fF.code.toLowerCase()]
+                                ? formatMessage(MESSAGES[fF.code.toLowerCase()])
+                                : fF.name || fF.id,
+                        )
+                        .join(', ') || textPlaceholder,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                Cell: (settings): ReactElement => (
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={1}
+                        justifyContent="center"
+                    >
+                        <EditProjectDialog
+                            initialData={settings.row.original}
+                            saveProject={saveProject}
+                            dialogType="edit"
+                            iconProps={{}}
+                        />
+                        {settings.row.original.qr_code && (
+                            <QrCode qrCode={settings.row.original.qr_code} />
+                        )}
+                    </Box>
+                ),
+            },
+        ];
+    }, [formatMessage, saveProject]);
+};
 
 export const useFeatureFlagColumns = (
-    // eslint-disable-next-line no-unused-vars
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
     featureFlagsValues: (string | number)[],
 ): Array<Column> => {

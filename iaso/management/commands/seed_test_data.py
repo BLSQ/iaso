@@ -1,18 +1,19 @@
 import csv
 import json
+
 from io import BytesIO
 from random import randint, random, sample
 from uuid import uuid4
 
 import requests
+
 from dhis2 import Api
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
 from django.contrib.sites.models import Site
 from django.core import management
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -22,19 +23,19 @@ from lxml import etree
 from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
-    User,
-    Instance,
-    OrgUnitType,
+    Account,
+    DataSource,
+    ExternalCredentials,
     Form,
-    Project,
     FormVersion,
+    Instance,
     Mapping,
     MappingVersion,
-    DataSource,
-    SourceVersion,
-    ExternalCredentials,
-    Account,
+    OrgUnitType,
     Profile,
+    Project,
+    SourceVersion,
+    User,
 )
 from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
@@ -42,6 +43,7 @@ from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning, Team
 from iaso.models.pages import Page
+
 
 """
 seed_test_data --mode=seed
@@ -406,7 +408,7 @@ class Command(BaseCommand):
         print("  now you need to start ngrok")
         print("     with : ngrok http 8081")
         print("     adapt .env and set the FILE_SERVER_URL to the ngrok https url in Forwarding section")
-        print("     restart iaso (so .env is reloaded) : docker-compose up")
+        print("     restart iaso (so .env is reloaded) : docker compose up")
         print("  install the generic iaso mobile app and launch the app")
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")
@@ -552,7 +554,7 @@ class Command(BaseCommand):
 
                 with_location = randint(1, 3) == 2
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)
-                for instance_count in range(0, instance_by_ou_periods):
+                for instance_count in range(instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.source_created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit

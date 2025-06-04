@@ -1,7 +1,7 @@
 import django_filters
 
-from rest_framework import filters
-from rest_framework import viewsets
+from django.db.models import Count, Prefetch, Q
+from rest_framework import filters, viewsets
 from rest_framework.mixins import ListModelMixin
 
 from iaso.api.org_unit_change_requests.filters import MobileOrgUnitChangeRequestListFilter
@@ -9,7 +9,7 @@ from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPag
 from iaso.api.org_unit_change_requests.permissions import HasOrgUnitsChangeRequestPermission
 from iaso.api.org_unit_change_requests.serializers import MobileOrgUnitChangeRequestListSerializer
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnit, OrgUnitChangeRequest
+from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest
 
 
 class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
@@ -25,11 +25,21 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
         org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
 
         return (
-            OrgUnitChangeRequest.objects.filter(org_unit__in=org_units)
-            .filter(created_by=self.request.user)
+            OrgUnitChangeRequest.objects.filter(
+                org_unit__in=org_units,
+                created_by=self.request.user,
+                # Change requests liked to a `data_source_synchronization` are limited to the web.
+                data_source_synchronization__isnull=True,
+            )
             .select_related("org_unit")
             .prefetch_related(
                 "new_groups",
-                "new_reference_instances",
+                Prefetch("new_reference_instances", queryset=Instance.non_deleted_objects.all()),
             )
+            .annotate(
+                annotated_new_reference_instances_count=Count(
+                    "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
+                )
+            )
+            .exclude_soft_deleted_new_reference_instances()
         )

@@ -1,0 +1,12 @@
+{
+    "id": 3,
+    "data_source": 2,
+    "number": 2,
+    "description": null,
+    "created_at": "2021-07-05T17:38:20.452454Z",
+    "updated_at": "2021-07-05T17:38:20.452479Z",
+    "data_source_name": "AFRO test",
+    "is_default": true,
+    "org_units_count": 79497,
+    "tree_config_status_fields": []
+}

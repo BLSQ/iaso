@@ -69,6 +69,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
         defaultMessage: 'Unlink reference submission from orgUnit',
     },
+    linkUnlinkReferenceSubmissionsToOrgUnits: {
+        defaultMessage:
+            'link or unlink reference submissions to/from org units',
+        id: 'iaso.label.linkUnlinkReferenceSubmissionsToOrgUnits',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -201,6 +206,90 @@ const MESSAGES = defineMessages({
     exportRequest: {
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
+    },
+    pushGpsToOrgUnits: {
+        defaultMessage: 'Push GPS from submissions to Org units',
+        id: 'iaso.label.pushGpsToOrgUnits',
+    },
+    pushGpsWarningMessage: {
+        defaultMessage:
+            'You are about to push the locations of {submissionCount} submission(s) to {orgUnitCount} Org unit(s)',
+        id: 'iaso.instance.pushGpsWarningMessage',
+    },
+    noGpsForSomeInstaces: {
+        defaultMessage:
+            "Some instances don't have locations. Nothing will be applied for those OrgUnits.",
+        id: 'iaso.instance.noGpsForSomeInstaces',
+    },
+    someOrgUnitsHasAlreadyGps: {
+        defaultMessage:
+            'Some OrgUnits already have GPS coordinates. Do you want to proceed and overwrite them?',
+        id: 'iaso.instance.someOrgUnitsHasAlreadyGps',
+    },
+    pushGpsTaskPlanned: {
+        defaultMessage:
+            'Push GPS from submissions to Org units was planned with success',
+        id: 'iaso.snackBar.pushGpsTaskPlanned',
+    },
+    pushGpsTaskError: {
+        defaultMessage:
+            'An error occurred while pushing GPS from submissions to Org units',
+        id: 'iaso.snackBar.pushGpsTaskError',
+    },
+    referenceInstanceLinkTaskPlanned: {
+        defaultMessage:
+            'Bulk reference submissions link or unlink to/from Org units was planned with success.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskPlanned',
+    },
+    referenceInstanceLinkTaskError: {
+        defaultMessage:
+            'An error occurred while linking or unlinking to/from Org units.',
+        id: 'iaso.snackBar.referenceInstanceLinkTaskError',
+    },
+    multipleInstancesOneOrgUnitWarningMessage: {
+        defaultMessage: 'Multiple submissions are using the same org unit',
+        id: 'iaso.instance.multipleInstancesOneOrgUnitWarningMessage',
+    },
+    multipleReferenceInstancesOneOrgUnitWarningMessage: {
+        defaultMessage:
+            'Multiple reference submissions are using the same org units and same forms',
+        id: 'iaso.instance.multipleReferenceInstancesOneOrgUnitWarningMessage',
+    },
+    noReferenceSubmissionsWarningMessage: {
+        defaultMessage:
+            '{selectedSubmissionsCount} selected submissions cannot become reference submissions (their form is not configured as a reference form for their respective org unit type)',
+        id: 'iaso.instance.noReferenceSubmissionsWarningMessage',
+    },
+    linkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'You selected {unLinkedCount} standard submissions. Please check this checkbox in order to link them to their respective org unit as a reference submission.',
+        id: 'iaso.instance.linkReferenceSubmissionsConfirmMessage',
+    },
+    unLinkReferenceSubmissionsConfirmMessage: {
+        defaultMessage:
+            'You selected {linkedCount} reference submissions. Please check this checkbox in order to unlink them from their respective org unit and make them become standard submissions.',
+        id: 'iaso.instance.unLinkReferenceSubmissionsConfirmMessage',
+    },
+    approveAllWarningsMessage: {
+        defaultMessage:
+            'All warnings must be approved before launching the locations push.',
+        id: 'iaso.instance.approveAllWarningsMessage',
+    },
+    seeAll: {
+        defaultMessage: 'See all',
+        id: 'iaso.label.seeAll',
+    },
+    approve: {
+        defaultMessage: 'Approve',
+        id: 'iaso.label.approve',
+    },
+    launch: {
+        id: 'iaso.label.launch',
+        defaultMessage: 'Launch',
+    },
+    goToCurrentTask: {
+        id: 'iaso.label.goToCurrentTask',
+        defaultMessage: 'Launch and show task',
     },
     compare: {
         defaultMessage: 'Compare',
@@ -611,9 +700,9 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Select one form to enable search using form submitted fields',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     projects: {
         id: 'iaso.label.projects',
@@ -622,6 +711,52 @@ const MESSAGES = defineMessages({
     project_name: {
         id: 'iaso.label.project',
         defaultMessage: 'Project',
+    },
+    org_unit_type_name: {
+        id: 'iaso.instance.org_unit_type_name',
+        defaultMessage: 'Org unit type',
+    },
+    org_unit_name: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org unit',
+    },
+    parent: {
+        id: 'iaso.label.parent',
+        defaultMessage: 'Parent',
+    },
+    changeRequests: {
+        defaultMessage: 'Change requests',
+        id: 'iaso.label.changeRequests',
+    },
+    new: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    rejected: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.forms.rejectedCap',
+    },
+    approved: {
+        defaultMessage: 'Approved',
+        id: 'iaso.label.approved',
+    },
+    disabledReason: {
+        defaultMessage:
+            'Change request is not available as submission is deleted',
+        id: 'iaso.instances.disabledReason',
+    },
+    close: {
+        defaultMessage: 'Close',
+        id: 'blsq.buttons.label.close',
+    },
+    searchParams: {
+        defaultMessage:
+            'Use prefix “ids:” for internal submissions ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “ids: 123456 654321”',
+        id: 'iaso.instances.searchParams',
+    },
+    orgunitreferenceinstance: {
+        id: 'iaso.label.orgunitreferenceinstance',
+        defaultMessage: 'Reference submission',
     },
 });
 

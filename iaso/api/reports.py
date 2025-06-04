@@ -1,12 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, permissions
-from rest_framework import serializers
+from rest_framework import filters, permissions, serializers
 from rest_framework.pagination import LimitOffsetPagination
 
-from iaso.api.common import ModelViewSet, HasPermission
-from iaso.models import Report
 from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet
+from iaso.models import Report
 
 
 class ReportSerializer(serializers.ModelSerializer):

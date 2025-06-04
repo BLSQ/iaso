@@ -2,11 +2,11 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers, status
 from rest_framework.response import Response
+from unidecode import unidecode
 
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Entity, EntityType
-from iaso.models.deduplication import ValidationStatus
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -20,6 +20,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
+            "code",
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",
@@ -88,6 +89,11 @@ class EntityTypeViewSet(ModelViewSet):
 
         if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
+        name = request.data.get("name", None)
+        account = request.data.get("account", None)
+        if name is not None and account is not None:
+            name_to_code = unidecode(name).lower().replace(" ", "_")
+            request.data["code"] = f"{name_to_code}_{account}"
         entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
         entity_type_serializer.is_valid(raise_exception=True)
         entity_type = entity_type_serializer.save()
@@ -102,8 +108,7 @@ class EntityTypeViewSet(ModelViewSet):
         if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        obj = get_object_or_404(pk=pk)
-
+        obj = get_object_or_404(EntityType, pk=pk)
         obj.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

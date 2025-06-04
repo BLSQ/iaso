@@ -1,13 +1,13 @@
 from django.contrib.auth.models import User
-
 from django.db import models
-
 from django.db.models import CASCADE
+
 
 IMPORT_TYPE = (
     ("orgUnit", "Org Unit"),
     ("instance", "Form instance"),
     ("bulk", "Bulk Org Units and Instances"),
+    ("storageLog", "Storage logs"),
 )
 
 
@@ -30,6 +30,7 @@ class APIImport(models.Model):
     headers = models.JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
+    file = models.FileField(upload_to="mobilebulkuploads", null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (
@@ -45,6 +46,7 @@ class APIImport(models.Model):
             "user": self.user.username,
             "created_at": self.created_at,
             "type": self.import_type,
+            "file": self.file.url if self.file else None,
         }
 
         if self.import_type == "trap":
@@ -53,4 +55,5 @@ class APIImport(models.Model):
             res["catch_count"] = self.catch_set.count()
         elif self.import_type == "target":
             res["target_count"] = self.target_set.count()
+
         return res

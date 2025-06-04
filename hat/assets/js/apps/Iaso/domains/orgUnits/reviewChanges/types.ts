@@ -1,8 +1,7 @@
-/* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { OrgunitType } from '../types/orgunitTypes';
 import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
@@ -20,7 +19,15 @@ export type ApproveOrgUnitParams = UrlParams & {
     paymentStatus?: 'pending' | 'sent' | 'rejected' | 'paid';
     paymentIds?: string; // comma separated ids
     potentialPaymentIds?: string; // comma separated ids
+    source_version_id?: string;
+    data_source_synchronization_id?: string;
+    ids?: string; // comma separated ids
 };
+
+export type OrgUnitChangeRequestDetailParams = UrlParams & {
+    changeRequestId: string;
+};
+
 export type Group = {
     id: number;
     name: string;
@@ -74,11 +81,15 @@ export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 
 export interface OrgUnitChangeRequestsPaginated extends Pagination {
     results: OrgUnitChangeRequest[];
+    select_all_count: number;
 }
+
+export type OrgUnitChangeRequestKind = 'org_unit_creation' | 'org_unit_change';
 
 export type OrgUnitChangeRequestDetails = {
     id: number;
     uuid: string;
+    kind: OrgUnitChangeRequestKind;
     status: ChangeRequestValidationStatus;
     created_by: NestedUser;
     created_at: number;

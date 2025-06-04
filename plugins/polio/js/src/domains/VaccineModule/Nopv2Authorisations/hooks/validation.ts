@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';

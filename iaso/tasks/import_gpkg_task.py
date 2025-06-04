@@ -1,7 +1,5 @@
 import tempfile
 
-from django.utils.timezone import now
-
 from beanstalk_worker import task_decorator
 from iaso.gpkg.import_gpkg import import_gpkg_file2
 from iaso.models import Task
@@ -29,6 +27,7 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             validation_status="NEW",
             user=user,
             description=ig.description,
+            task=task,
         )
 
         task.report_success(message=f"Imported {total} OrgUnits")

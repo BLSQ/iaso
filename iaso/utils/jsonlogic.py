@@ -1,11 +1,11 @@
 """JsonLogic(https://jsonlogic.com/)-related utilities."""
 
 import operator
-from functools import reduce
-from typing import Dict, Any
 
-from django.db.models import Q, Transform
-from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
+from typing import Any, Callable, Dict
+
+from django.db.models import Exists, OuterRef, Q, Transform
+from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 
 
 # This is used to cast a json value from string into a float.
@@ -36,28 +36,34 @@ class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
 JSONField.register_lookup(ExtractForceFloat)
 
 
-def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
+def jsonlogic_to_q(
+    jsonlogic: Dict[str, Any],
+    field_prefix: str = "",
+    recursion_func: Callable = None,
+) -> Q:
     """Converts a JsonLogic query to a Django Q object.
 
     :param jsonlogic: The JsonLogic query to convert, stored in a Python dict. Example: {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}
     :param field_prefix: A prefix to add to all fields in the generated query. Useful to follow a relationship or to dig in a JSONField
+    :param recursion_func: Optionally specify a function to call for recursion, allowing this method to be "wrapped". By default, when no function is specified, it calls itself.
 
     :return: A Django Q object.
     """
 
-    if "and" in jsonlogic:
-        return reduce(
-            operator.and_,
-            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["and"]),
-        )
-    elif "or" in jsonlogic:
-        return reduce(
-            operator.or_,
-            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["or"]),
-        )
+    func = jsonlogic_to_q if recursion_func is None else recursion_func
 
-    elif "!" in jsonlogic:
-        return ~jsonlogic_to_q(jsonlogic["!"], field_prefix)
+    if "and" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(sub_query, func(lookup, field_prefix))
+        return sub_query
+    if "or" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(sub_query, func(lookup, field_prefix))
+        return sub_query
+    if "!" in jsonlogic:
+        return ~func(jsonlogic["!"], field_prefix)
 
     if not jsonlogic.keys():
         return Q()
@@ -99,9 +105,70 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
         extract = "__forcefloat"
 
     lookup = lookups[op]
+
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
+
     if op == "!=":
         # invert the filter
         q = ~q
     return q
+
+
+def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
+    """This enhances the jsonlogic_to_q() method to allow filtering entities on
+    the submitted values of their instances.
+    It also converts a JsonLogic query to a Django Q object.
+
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict. Example:
+    {
+        "and": [
+            {
+                "some": [
+                    { "var": "form_1_id" },
+                    {
+                        "and": [
+                            { "==": [{"var": "gender"}, "female"] },
+                            { "==": [{"var": "serie_id"}, "2"] }
+                        ]
+                    }
+                ]
+            },
+            {
+                "some": [
+                    { "var": "form_2_id" },
+                    { "==": [{"var": "result"}, "negative"] }
+                ]
+            }
+        ]
+    }
+
+    :return: A Django Q object.
+    """
+    from iaso.models import Instance
+
+    if "some" in jsonlogic or "all" in jsonlogic or "none" in jsonlogic:
+        operator = list(jsonlogic.keys())[0]  # there's only 1 key
+        form_var, conditions = jsonlogic[operator]
+        form_id = form_var["var"]
+
+        form_id_filter = Q(entity_id=OuterRef("id")) & Q(form__form_id=form_id)
+
+        if operator == "some":
+            return Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
+        if operator == "all":
+            # In case of "all", we do a double filter:
+            # - EXIST on the form without conditions to exclude entities that don't have the form
+            # - NOT EXIST on the form with inverted conditions, so only get forms that only have
+            #   the desired conditions
+            return Exists(Instance.objects.filter(form_id_filter)) & ~Exists(
+                Instance.objects.filter(form_id_filter & ~entities_jsonlogic_to_q(conditions, field_prefix))
+            )
+        if operator == "none":
+            return ~Exists(Instance.objects.filter(form_id_filter & entities_jsonlogic_to_q(conditions, field_prefix)))
+    else:
+        return jsonlogic_to_q(
+            jsonlogic,
+            field_prefix="json__",
+            recursion_func=entities_jsonlogic_to_q,
+        )

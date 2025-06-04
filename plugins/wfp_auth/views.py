@@ -1,7 +1,9 @@
 import typing
+
 from logging import getLogger
 
 import requests
+
 from allauth.account.utils import perform_login
 from allauth.socialaccount import app_settings
 from allauth.socialaccount.helpers import render_authentication_error
@@ -17,15 +19,19 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
+from django.shortcuts import get_object_or_404
 from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
-from requests import RequestException, HTTPError
+from requests import HTTPError, RequestException
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
-from iaso.models import Account, Profile
+from iaso.api.query_params import APP_ID
+from iaso.models import Account, Profile, Project
+
 from .provider import WFPProvider
+
 
 logger = getLogger(__name__)
 
@@ -62,9 +68,9 @@ class WFP2Adapter(Auth0OAuth2Adapter):
     settings = app_settings.PROVIDERS.get(provider_id, {})
     provider_base_url = settings.get("AUTH0_URL")
 
-    access_token_url = "{0}/token".format(provider_base_url)
-    authorize_url = "{0}/authorize".format(provider_base_url)
-    profile_url = "{0}/userinfo".format(provider_base_url)
+    access_token_url = f"{provider_base_url}/token"
+    authorize_url = f"{provider_base_url}/authorize"
+    profile_url = f"{provider_base_url}/userinfo"
 
     def send_new_account_email(self, request: HttpRequest, user):
         to_email = self.settings.get("EMAIL_RECIPIENTS_NEW_ACCOUNT")
@@ -76,7 +82,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         site_name = current_site.name
         domain = current_site.domain
         profile_url = request.build_absolute_uri(
-            f"/dashboard/settings/users/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
+            f"/dashboard/settings/users/management/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
         )
         context = {
             "new_user": user,
@@ -111,7 +117,17 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             email = extra_data["sub"].lower().strip()
         # the sub is the email, wfp verify it so let's trust this
         uid = extra_data["sub"].lower().strip()
-        account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
+        # We cannot use `AppIdSerializer` because we are in a method **before** `dispatch` and therefore
+        # `self.request.query_params` is not set yet. Using `request.query_params` results in:
+        # `'WSGIRequest' object has no attribute 'query_params'`
+        app_id = request.GET.get(APP_ID, None)
+
+        if app_id:
+            account = get_object_or_404(Project, app_id=app_id).account
+            if app_id != self.settings["IASO_ACCOUNT_NAME"]:
+                uid = f"{app_id}_{uid}"
+        else:
+            account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 
         try:
             # user is required, can't use get_or_create
@@ -167,7 +183,7 @@ class WFPCallbackView(OAuth2View):
                 request,
                 social_account.user,
                 email_verification=False,
-                redirect_url=request.GET.get("next", "/dashboard/"),
+                redirect_url=request.GET.get("next", "/"),
             )
         except (
             PermissionDenied,

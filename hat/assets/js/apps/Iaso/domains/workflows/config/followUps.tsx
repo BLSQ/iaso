@@ -1,21 +1,20 @@
-/* eslint-disable camelcase */
-import React, { ReactNode } from 'react';
-import {
-    useSafeIntl,
-    QueryBuilderFields,
-    IntlFormatMessage,
-    Column,
-} from 'bluesquare-components';
 import { Box } from '@mui/material';
+import {
+    Column,
+    IntlFormatMessage,
+    QueryBuilderFields,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, { ReactNode } from 'react';
 
-import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
-import { LinkToForm } from '../../forms/components/LinkToForm';
 import { getLocaleDateFormat } from '../../../utils/dates';
+import { LinkToForm } from '../../forms/components/LinkToForm';
+import MESSAGES from '../messages';
 
+import { Field } from '../../forms/fields/constants';
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
 import { WorkflowVersionDetail } from '../types';
-import { Field } from '../../forms/fields/constants';
 
 interface FollowUpsColumns extends Column {
     accessor: string;
@@ -60,6 +59,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
             preferWidgets: ['number'],
         },
@@ -73,6 +74,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
             preferWidgets: ['number'],
         },
@@ -100,6 +103,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
         },
     },
@@ -112,6 +117,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
         },
     },
@@ -139,6 +146,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
             fieldSettings: {
                 timeFormat: getLocaleDateFormat('LT'),
@@ -218,6 +227,8 @@ export const iasoFields: Field[] = [
                 'not_equal',
                 'greater_or_equal',
                 'less_or_equal',
+                'is_null',
+                'is_not_null',
             ],
         },
     },
@@ -237,7 +248,6 @@ export const iasoFields: Field[] = [
 
 export const useGetFollowUpsColumns = (
     getHumanReadableJsonLogic: (
-        // eslint-disable-next-line no-unused-vars
         logic: Record<string, string>,
     ) => string | ReactNode,
     versionId: string,

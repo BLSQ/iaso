@@ -1,17 +1,15 @@
 import operator
-from datetime import datetime
+
 from functools import reduce
 from itertools import combinations
 
 from django.db.models import Q, TextField
-from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
-from django.utils import timezone
 from rest_framework import filters
 
 from iaso.models import OrgUnit
 from iaso.models.deduplication import ValidationStatus
-from rest_framework.filters import OrderingFilter
+from iaso.utils.date_and_time import date_string_to_end_of_day, date_string_to_start_of_day
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -112,7 +110,7 @@ class EntityTypeFilterBackend(filters.BaseFilterBackend):
 
         if entity_type_id is None:
             return queryset
-        elif "," in entity_type_id:
+        if "," in entity_type_id:
             entity_type_ids = entity_type_id.split(",")
         else:
             entity_type_ids = [int(entity_type_id)]
@@ -166,23 +164,15 @@ class StartEndDateFilterBackend(filters.BaseFilterBackend):
         start_date = request.query_params.get("start_date")
         end_date = request.query_params.get("end_date")
 
-        date_format = "%d-%m-%Y"
-
         if start_date:
             try:
-                start_date_dt = datetime.strptime(start_date, date_format)
-                start_date_dt = timezone.make_aware(start_date_dt, timezone.get_default_timezone())
-                start_date_dt = start_date_dt.replace(hour=0, minute=0, second=0)
-                queryset = queryset.filter(analyze__created_at__gte=start_date_dt)
+                queryset = queryset.filter(analyze__created_at__gte=date_string_to_start_of_day(start_date))
             except ValueError:
                 pass
 
         if end_date:
             try:
-                end_date_dt = datetime.strptime(end_date, date_format)
-                end_date_dt = timezone.make_aware(end_date_dt, timezone.get_default_timezone())
-                end_date_dt = end_date_dt.replace(hour=23, minute=59, second=59)
-                queryset = queryset.filter(analyze__created_at__lte=end_date_dt)
+                queryset = queryset.filter(analyze__created_at__lte=date_string_to_end_of_day(end_date))
             except ValueError:
                 pass
 
@@ -230,7 +220,7 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class CustomOrderingFilter(OrderingFilter):
+class CustomOrderingFilter(filters.OrderingFilter):
     def get_ordering(self, request, queryset, view):
         ordering = super().get_ordering(request, queryset, view)
         if ordering:

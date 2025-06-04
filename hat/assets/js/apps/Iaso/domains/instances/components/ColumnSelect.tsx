@@ -1,8 +1,3 @@
-import {
-    Column,
-    useRedirectToReplace,
-    useSafeIntl,
-} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     ReactElement,
@@ -10,6 +5,11 @@ import React, {
     useEffect,
     useMemo,
 } from 'react';
+import {
+    Column,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { Form } from '../../forms/types/forms';
@@ -31,16 +31,13 @@ export type InstanceMetasField = {
     active?: boolean;
     sortable?: boolean;
     tableOrder?: number;
-    // eslint-disable-next-line no-unused-vars
     renderValue?: (form: Instance) => ReactNode;
-    // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement;
 };
 
 type Props = {
     params: Params;
     periodType?: string;
-    // eslint-disable-next-line no-unused-vars
     setTableColumns: (newTableColumns: Column[]) => void;
     baseUrl: string;
     labelKeys: string[];
@@ -49,7 +46,6 @@ type Props = {
     disabled: boolean;
     instanceMetasFields?: InstanceMetasField[];
     appId?: string;
-    // eslint-disable-next-line no-unused-vars
     getActionCell?: (settings: any) => ReactElement;
 };
 

@@ -1,20 +1,20 @@
 import importlib
 import typing
+
 from unittest import mock
 
-from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
-
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
-from django.http import StreamingHttpResponse, HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
-from hat.menupermissions.models import CustomPermissionSupport
 from hat.api_import.models import APIImport
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 
 
@@ -106,6 +106,45 @@ class IasoTestCaseMixin:
         for urlconf in urlconfs:
             importlib.reload(importlib.import_module(urlconf))
         clear_url_caches()
+
+    @staticmethod
+    def create_base_users(account, permissions):
+        # anonymous user and user without needed permissions
+        anon = AnonymousUser()
+        user_no_perms = IasoTestCaseMixin.create_user_with_profile(
+            username="user_no_perm", account=account, permissions=[]
+        )
+
+        user = IasoTestCaseMixin.create_user_with_profile(username="user", account=account, permissions=permissions)
+        return [user, anon, user_no_perms]
+
+    @staticmethod
+    def create_account_datasource_version_project(source_name, account_name, project_name):
+        """Create a project and all related data: account, data source, source version"""
+        data_source = m.DataSource.objects.create(name=source_name)
+        source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        account = m.Account.objects.create(name=account_name, default_version=source_version)
+        project = m.Project.objects.create(name=project_name, app_id=f"{project_name}.app", account=account)
+        data_source.projects.set([project])
+
+        return [account, data_source, source_version, project]
+
+    @staticmethod
+    def create_org_unit_type(name, projects, category=None):
+        type_category = category if category else name
+        org_unit_type = m.OrgUnitType.objects.create(name=name, category=type_category)
+        org_unit_type.projects.set(projects)
+        org_unit_type.save()
+        return org_unit_type
+
+    @staticmethod
+    def create_valid_org_unit(name, type, version):
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=type,
+            version=version,
+            name=name,
+        )
+        return org_unit
 
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
@@ -242,3 +281,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(task.name, name)
 
         return task
+
+    def assertValidSimpleSchema(self, data: typing.Mapping, schema: typing.Mapping):
+        for field, expected_type in schema.items():
+            self.assertIn(field, data)
+            if isinstance(expected_type, list):
+                self.assertTrue(any(isinstance(data[field], t) for t in expected_type))
+            else:
+                self.assertIsInstance(data[field], expected_type)

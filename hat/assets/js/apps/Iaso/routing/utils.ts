@@ -1,6 +1,6 @@
 import { createUrl } from 'bluesquare-components';
-import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
+import { baseUrls } from '../constants/urls';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { cleanupParams } from '../utils/requests';
 
@@ -57,8 +57,7 @@ export const extractPrefixedParams = (
     Object.keys(params)
         .filter(paramKey => paramKey.includes(prefix))
         .forEach(prefixedKey => {
-            // eslint-disable-next-line no-unused-vars
-            const [_, upperCaseKey] = prefixedKey.split(prefix);
+            const [, upperCaseKey] = prefixedKey.split(prefix);
             const formattedKey = decapitalize(upperCaseKey);
             newParams[formattedKey] = newParams[prefixedKey];
             delete newParams[prefixedKey];

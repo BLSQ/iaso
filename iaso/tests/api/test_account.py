@@ -1,3 +1,5 @@
+from django.contrib import auth
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -24,35 +26,35 @@ class AccountAPITestCase(APITestCase):
         cls.wha_version = m.SourceVersion.objects.create(data_source=wha_datasource, number=1)
 
     def test_account_list_without_auth(self):
-        """GET /projects/ without auth should result in a 403 (before the method not authorized?)"""
+        """GET /account/ without auth should result in a 403 (before the method not authorized?)"""
         self.client.force_authenticate(self.jim)
 
         response = self.client.get("/api/accounts/")
         self.assertJSONResponse(response, 403)
 
     def test_account_list_with_auth(self):
-        """GET /projects/ with auth should result in a 405 as method is not allowed"""
+        """GET /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_delete_forbidden(self):
-        """DELETE /projects/ with auth should result in a 405 as method is not allowed"""
+        """DELETE /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.delete("/api/accounts/")
         self.assertJSONResponse(response, 405)
 
     def test_account_post_forbidden(self):
-        """POST /projects/ with auth should result in a 405 as method is not allowed"""
+        """POST /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.post("/api/accounts/", {"default_version": self.ghi_version})
         self.assertJSONResponse(response, 405)
 
     def test_account_detail_forbidden(self):
-        """POST /projects/ with auth should result in a 405 as method is not allowed"""
+        """POST /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
         response = self.client.get(f"/api/accounts/{self.ghi.pk}/")
@@ -111,3 +113,21 @@ class AccountAPITestCase(APITestCase):
         response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.wha_version.pk})
         j = self.assertJSONResponse(response, 400)
         self.assertEqual(j, {"Error": "Account not allowed to access this default_source"})
+
+    def test_switch_account(self):
+        # Create a main user without profile
+        main_user = m.User.objects.create(username="main_user")
+        main_user.save()
+
+        # And 2 account users with profile
+        account_user_ghi = self.create_user_with_profile(username="User_A", account=self.ghi)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_ghi)
+        account_user_wha = self.create_user_with_profile(username="User_B", account=self.wha)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_wha)
+
+        self.client.force_authenticate(account_user_ghi)
+        response = self.client.patch("/api/accounts/switch/", {"account_id": self.wha.pk})
+
+        self.assertJSONResponse(response, 200)
+        logged_in_user = auth.get_user(self.client)
+        self.assertEqual(logged_in_user.iaso_profile.account.name, "Worldwide Health Aid")

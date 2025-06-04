@@ -72,16 +72,13 @@
     creation_email_send_at: null
     group: null
     onset_at: null
-    cvdpv_notified_at: null
     cvdpv2_notified_at: null
     pv_notified_at: null
     pv2_notified_at: null
     virus: PV3
-    vacine: null
     detection_status: PENDING
     detection_responsible: null
     detection_first_draft_submitted_at: null
-    detection_rrt_oprtt_approval_at: null
     risk_assessment_status: SUBMITTED
     risk_assessment_responsible: null
     investigation_at: null
@@ -90,27 +87,17 @@
     ag_nopv_group_met_at: null
     dg_authorized_at: null
     verification_score: null
-    doses_requested: null
-    preperadness_spreadsheet_url: null
-    preperadness_sync_status: FINISHED
     budget_status: null
-    budget_responsible: null
     is_test: false
-    last_budget_event: null
     who_disbursed_to_co_at: null
     who_disbursed_to_moh_at: null
     unicef_disbursed_to_co_at: null
     unicef_disbursed_to_moh_at: null
-    eomg: null
     no_regret_fund_amount: null
     payment_mode: null
-    round_one: null
-    round_two: null
     created_at: 2022-09-13 14:30:52.327848+00:00
     updated_at: 2022-09-13 14:33:50.871497+00:00
     district_count: null
-    budget_rrt_oprtt_approval_at: null
-    budget_submitted_at: null
     is_preventive: false
     enable_send_weekly_email: false
     account_id: 4

@@ -1,5 +1,5 @@
-import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 
@@ -9,14 +9,14 @@ import { useStyles } from '../../../styles/theme';
 
 import { baseUrls } from '../../../constants/urls';
 
-import MESSAGES from './messages';
+import { useOptionChronogramTask } from '../api/useOptionChronogram';
 import { ChronogramParams } from '../Chronogram/types';
-import { ChronogramTaskMetaData } from '../types';
-import { ChronogramTemplateTaskParams } from './types';
-import { ChronogramTemplateTaskTable } from './Table/ChronogramTemplateTaskTable';
-import { CreateChronogramTemplateTaskModal } from './Modals/ChronogramTemplateTaskCreateEditModal';
 import { defaultParams } from '../constants';
-import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
+import { ChronogramTaskMetaData } from '../types';
+import MESSAGES from './messages';
+import { CreateChronogramTemplateTaskModal } from './Modals/ChronogramTemplateTaskCreateEditModal';
+import { ChronogramTemplateTaskTable } from './Table/ChronogramTemplateTaskTable';
+import { ChronogramTemplateTaskParams } from './types';
 
 export const ChronogramTemplateTask: FunctionComponent = () => {
     const params = useParamsObject(
@@ -36,7 +36,7 @@ export const ChronogramTemplateTask: FunctionComponent = () => {
         <>
             <TopBar
                 title={formatMessage(MESSAGES.chronogramTemplateTaskTitle)}
-                displayBackButton={true}
+                displayBackButton
                 goBack={() => goBack()}
             />
             {isFetchingMetaData && <LoadingSpinner />}

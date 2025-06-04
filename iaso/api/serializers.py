@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
-from iaso.models import OrgUnit, OrgUnitType, Group
+from iaso.models import Group, OrgUnit, OrgUnitType
 
 
 class TimestampSerializerMixin:
@@ -191,8 +191,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
         # in some case instances_count is prefilled by an annotation
         if hasattr(org_unit, "instances_count"):
             return org_unit.instances_count
-        else:
-            return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
+        return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
 
     class Meta:
         model = OrgUnit
@@ -223,6 +222,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "groups",
             "creator",
             "projects",
+            "default_image",
         ]
 
 

@@ -1,4 +1,4 @@
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
 
 def convert_2d_point_to_3d(point: Point) -> Point:

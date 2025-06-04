@@ -1,22 +1,22 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { useQueryClient } from 'react-query';
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
-import { Box } from '@mui/material';
-import { useOrgUnitsLogsColumns } from '../config';
-import { LogsDetails } from './LogsDetails';
+import { useQueryClient } from 'react-query';
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { LOGS_PREFIX } from '../../../constants/urls';
 import { useGetLogs } from '../../../hooks/useGetLogs';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
+import { useOrgUnitsLogsColumns } from '../config';
+import { LogsDetails } from './LogsDetails';
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     goToRevision: (revision: any, callback?: () => void) => void;
     logObjectId: number;
     baseUrl: string;
     params: Record<string, string>;
     defaultPageSize?: number;
+    showButtons?: boolean;
 };
 
 const useStyles = makeStyles(theme => {
@@ -32,6 +32,7 @@ export const Logs: FunctionComponent<Props> = ({
     baseUrl,
     params,
     defaultPageSize = 10,
+    showButtons = false,
 }) => {
     const classes = useStyles();
     const queryClient = useQueryClient();
@@ -72,6 +73,7 @@ export const Logs: FunctionComponent<Props> = ({
                             <LogsDetails
                                 logId={log.id}
                                 goToRevision={handleRevision}
+                                showButtons={showButtons}
                             />
                         ) : null,
                 }}

@@ -32,8 +32,9 @@ def setup_orgunits(iaso_client):
     iaso_client.wait_task_completion(task)
 
 
-def update_org_unit_sub_type(iaso_client, project_id, org_unit_types):
-    print("-- Updating org unit sub type")
+def update_org_unit_sub_type(iaso_client, project_id, org_unit_types, verbose: bool = True):
+    if verbose:
+        print("-- Updating org unit sub type")
     updated_with_sub_types = []
     for org_unit_type in org_unit_types:
         org_unit_type_level = org_unit_type["depth"]

@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useState } from 'react';
 
 import {
     IconButton,
@@ -19,11 +18,15 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../constants/urls';
 import { getRequest } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import {
+    ParamsWithAccountId,
+    useParamsObject,
+} from '../../routing/hooks/useParamsObject';
 import { ClassNames } from '../../types/utils';
-import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
-import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
+import { EntityBaseInfo } from '../entities/components/EntityBaseInfo';
+import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
 import { useGetInstance } from './compare/hooks/useGetInstance';
+import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
@@ -31,6 +34,11 @@ import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistor
 import InstanceFileContent from './components/InstanceFileContent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import SpeedDialInstance from './components/SpeedDialInstance';
+import { INSTANCE_METAS_FIELDS } from './constants';
+import {
+    ReassignInstancePayload,
+    useReassignInstance,
+} from './hooks/useReassignInstance';
 import MESSAGES from './messages';
 import { getInstancesFilesList } from './utils';
 
@@ -73,27 +81,35 @@ export const useGetInstanceLogs = (
 
 const InstanceDetails: FunctionComponent = () => {
     const [showDial, setShowDial] = useState(true);
+
+    const { mutateAsync: reassignInstance, isLoading: isReassigning } =
+        useReassignInstance<ReassignInstancePayload>();
+
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
     const goBack = useGoBack(baseUrls.instances);
 
-    const params = useParamsObject(baseUrls.instanceDetail) as {
+    const params = useParamsObject(
+        baseUrls.instanceDetail,
+    ) as ParamsWithAccountId & {
         instanceId: string;
     };
     const { instanceId } = params;
     const { data: currentInstance, isLoading: isLoadingInstance } =
         useGetInstance(instanceId);
-    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
-        useGetBeneficiaryFields(currentInstance && currentInstance.entity);
+    const { isLoading: isLoadingEntityFields, fields: entityFields } =
+        useGetEntityFields(currentInstance?.entity);
 
     const isLoading =
+        isReassigning ||
         isLoadingInstance ||
-        (currentInstance?.entity && isLoadingBeneficiaryFields);
+        (currentInstance?.entity && isLoadingEntityFields);
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
     const { data: instanceLogsDetails } = useGetInstanceLogs(instanceId);
     const showHistoryLink = (instanceLogsDetails?.list?.length || 0) > 1;
+
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -114,6 +130,7 @@ const InstanceDetails: FunctionComponent = () => {
                         <SpeedDialInstance
                             currentInstance={currentInstance}
                             params={params}
+                            reassignInstance={reassignInstance}
                         />
                     )}
                     <Grid container spacing={4}>
@@ -136,10 +153,10 @@ const InstanceDetails: FunctionComponent = () => {
                                 </Alert>
                             )}
                             {currentInstance && currentInstance.entity && (
-                                <BeneficiaryBaseInfo
-                                    beneficiary={currentInstance.entity}
-                                    fields={beneficiaryFields}
-                                    withLinkToBeneficiary
+                                <EntityBaseInfo
+                                    entity={currentInstance.entity}
+                                    fields={entityFields}
+                                    withLinkToEntity
                                 />
                             )}
                             <WidgetPaper
@@ -148,6 +165,9 @@ const InstanceDetails: FunctionComponent = () => {
                                 id="infos"
                             >
                                 <InstanceDetailsInfos
+                                    instance_metas_fields={
+                                        INSTANCE_METAS_FIELDS
+                                    }
                                     currentInstance={currentInstance}
                                 />
 
@@ -203,6 +223,19 @@ const InstanceDetails: FunctionComponent = () => {
                                     currentInstance={currentInstance}
                                 />
                             </WidgetPaper>
+                            {currentInstance.change_requests.length > 0 && (
+                                <WidgetPaper
+                                    title={formatMessage(
+                                        MESSAGES.changeRequests,
+                                    )}
+                                    id="change-request"
+                                >
+                                    <InstanceDetailsChangeRequests
+                                        currentInstance={currentInstance}
+                                        disabled={currentInstance.deleted}
+                                    />
+                                </WidgetPaper>
+                            )}
                             <InstanceDetailsExportRequests
                                 currentInstance={currentInstance}
                                 classes={classes}

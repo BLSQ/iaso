@@ -1,14 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import get from 'lodash/get';
-import { InitialUserData, UserDialogData } from '../types';
-import { UserRole } from '../../userRoles/types/userRoles';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { UserRole } from '../../userRoles/types/userRoles';
+import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
-    // eslint-disable-next-line no-unused-vars
     setFieldErrors: (fieldName, fieldError) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (fieldName, fieldError) => void;
 };
 
@@ -48,6 +46,10 @@ export const useInitialUser = (
                 value: get(initialData, 'home_page', ''),
                 errors: [],
             },
+            organization: {
+                value: get(initialData, 'organization', undefined),
+                errors: [],
+            },
             dhis2_id: {
                 value: get(initialData, 'dhis2_id', ''),
                 errors: [],
@@ -80,6 +82,22 @@ export const useInitialUser = (
             },
             country_code: {
                 value: get(initialData, 'country_code', ''),
+                errors: [],
+            },
+            editable_org_unit_type_ids: {
+                value: get(initialData, 'editable_org_unit_type_ids', []),
+                errors: [],
+            },
+            user_roles_editable_org_unit_type_ids: {
+                value: get(
+                    initialData,
+                    'user_roles_editable_org_unit_type_ids',
+                    [],
+                ),
+                errors: [],
+            },
+            has_multiple_accounts: {
+                value: get(initialData, 'other_accounts', []).length > 0,
                 errors: [],
             },
         };
@@ -122,19 +140,29 @@ export const useInitialUser = (
             }
 
             if (fieldName === 'user_roles') {
+                let user_roles_editable_org_unit_type_ids: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
                     .map(userRole => {
+                        user_roles_editable_org_unit_type_ids = [
+                            ...new Set([
+                                ...user_roles_editable_org_unit_type_ids,
+                                ...(userRole.original
+                                    ?.editable_org_unit_type_ids ?? []),
+                            ]),
+                        ];
                         const role = {
                             ...(userRole.original as UserRole),
-                            permissions: userRole.original?.permissions.map(
-                                perm => perm.codename,
-                            ),
+                            permissions: userRole.original?.permissions,
                         };
                         return role;
                     });
                 newUser.user_roles_permissions = {
                     value: userRolesPermissions,
+                    errors: [],
+                };
+                newUser.user_roles_editable_org_unit_type_ids = {
+                    value: user_roles_editable_org_unit_type_ids,
                     errors: [],
                 };
             }

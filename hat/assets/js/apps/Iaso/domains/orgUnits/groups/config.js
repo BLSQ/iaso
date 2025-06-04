@@ -1,18 +1,28 @@
 import React from 'react';
+import { Chip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     formatThousand,
     IconButton,
     textPlaceholder,
     LinkWithLocation,
 } from 'bluesquare-components';
-import GroupsDialog from './components/GroupsDialog';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from './messages';
+import { useNavigate } from 'react-router-dom';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { baseUrls } from '../../../constants/urls';
 import { filterOrgUnitsByGroupUrl } from '../utils';
+import GroupsDialog from './components/GroupsDialog';
+import MESSAGES from './messages';
+
+const useStyles = makeStyles(() => ({
+    groupSetChip: {
+        margin: '2px !important',
+    },
+}));
 
 export const baseUrl = baseUrls.groups;
+const groupSetUrl = baseUrls.groupSetDetail;
 
 const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
@@ -31,7 +41,6 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: formatMessage(MESSAGES.sourceVersion),
         accessor: 'source_version',
-        sortable: false,
         Cell: settings =>
             settings.value !== null
                 ? `${settings.value.data_source.name} - ${settings.value.number}`
@@ -40,6 +49,29 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
     {
         Header: formatMessage(MESSAGES.sourceRef),
         accessor: 'source_ref',
+    },
+    {
+        Header: formatMessage(MESSAGES.groupSet),
+        accessor: 'group_sets',
+        Cell: settings => {
+            const classes = useStyles();
+            const navigate = useNavigate();
+            return (
+                <span>
+                    {settings.row.original.group_sets.map(g => (
+                        <Chip
+                            className={classes.groupSetChip}
+                            label={g.name}
+                            color="primary"
+                            key={g.id}
+                            onClick={() => {
+                                navigate(`/${groupSetUrl}/groupSetId/${g.id}`);
+                            }}
+                        />
+                    ))}
+                </span>
+            );
+        },
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),

@@ -1,14 +1,27 @@
 require('dotenv').config();
-const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-
 const path = require('path');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ModuleFederationPlugin } = require('webpack').container;
+
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
+
+const {
+    oldBrowsersConfig,
+    newBrowsersConfig,
+} = require('./assets/js/apps/Iaso/bundle/browserConfigs.js');
+
+const {
+    generateCombinedTranslations,
+    generateCombinedConfig,
+    generatePluginKeysFile,
+    generateLanguageConfigs,
+} = require('./assets/js/apps/Iaso/bundle/generators.js');
+
 // Switch here for French. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
 const LOCALE = 'fr';
-
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
@@ -19,119 +32,17 @@ const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
-const oldBrowsersConfig = [
-    {
-        test: /\.(ts|tsx)?$/,
-        exclude: /node_modules/,
-        use: [
-            {
-                loader: 'babel-loader',
-                options: {
-                    cacheDirectory: true,
-                    presets: [
-                        [
-                            '@babel/preset-env',
-                            {
-                                targets: {
-                                    node: '12',
-                                    chrome: '55',
-                                    ie: '11',
-                                },
-                                include: [
-                                    '@babel/plugin-transform-optional-chaining',
-                                    '@babel/plugin-transform-nullish-coalescing-operator',
-                                    '@babel/plugin-transform-numeric-separator',
-                                    '@babel/plugin-transform-logical-assignment-operators',
-                                    '@babel/plugin-transform-destructuring',
-                                ],
-                            },
-                        ],
-                        '@babel/preset-react',
-                        [
-                            '@babel/preset-typescript',
-                            { isTSX: true, allExtensions: true },
-                        ],
-                    ],
-                    plugins: ['@babel/transform-runtime', 'formatjs'],
-                },
-            },
-        ],
-    },
-    {
-        test: /\.js?$/,
-        include: [
-            path.resolve(__dirname, '../node_modules/react-leaflet'),
-            path.resolve(__dirname, '../node_modules/@react-leaflet'),
-            path.resolve(__dirname, '../node_modules/@dnd-kit'),
-            path.resolve(__dirname, '../plugins'),
-            path.resolve(__dirname, 'assets'),
-        ],
-        use: [
-            {
-                loader: 'babel-loader',
-                options: {
-                    presets: [
-                        [
-                            '@babel/preset-env',
-                            {
-                                targets: {
-                                    node: '12',
-                                    chrome: '55',
-                                    ie: '11',
-                                },
-                                include: [
-                                    '@babel/plugin-transform-optional-chaining',
-                                    '@babel/plugin-transform-nullish-coalescing-operator',
-                                    '@babel/plugin-transform-numeric-separator',
-                                    '@babel/plugin-transform-logical-assignment-operators',
-                                    '@babel/plugin-transform-destructuring',
-                                ],
-                            },
-                        ],
-                        '@babel/preset-react',
-                    ],
-                    plugins: ['@babel/transform-runtime', 'formatjs'],
-                },
-            },
-        ],
-    },
-];
-const newBrowsersConfig = [
-    {
-        test: /\.(ts|tsx)?$/,
-        exclude: /node_modules/,
-        use: [
-            {
-                loader: 'babel-loader',
-                options: {
-                    // cacheDirectory: true,
-                    presets: [
-                        ['@babel/preset-env', { targets: { node: '14' } }],
-                        '@babel/preset-react',
-                        [
-                            '@babel/preset-typescript',
-                            { isTSX: true, allExtensions: true },
-                        ],
-                    ],
-                    plugins: ['@babel/transform-runtime', 'formatjs'],
-                },
-            },
-        ],
-    },
-    {
-        test: /\.js?$/,
-        exclude: /node_modules/,
-        use: [
-            {
-                loader: 'babel-loader',
-                options: {
-                    presets: ['@babel/preset-env', '@babel/preset-react'],
-                    plugins: ['@babel/transform-runtime', 'formatjs'],
-                },
-            },
-        ],
-    },
-];
+// Generate the combined translations file
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
+
+// Generate the combined config file
+const combinedConfigPath = generateCombinedConfig(__dirname);
+
+// Generate the plugin keys file
+const pluginKeysPath = generatePluginKeysFile(__dirname);
+
+// Generate the language configs file
+const languageConfigsPath = generateLanguageConfigs(__dirname);
 
 module.exports = {
     context: __dirname,
@@ -153,7 +64,6 @@ module.exports = {
             'moment',
             'leaflet',
             'leaflet-draw',
-            'react-redux',
             'prop-types',
             'typescript',
             'video.js',
@@ -163,14 +73,19 @@ module.exports = {
             dependOn: 'common',
             import: './assets/js/apps/Iaso/index',
         },
+        superset: {
+            import: './assets/js/supersetSDK',
+        },
     },
 
     output: {
         path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
-        publicPath: ``, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
+        scriptType: 'text/javascript',
+        compareBeforeEmit: true,
     },
     devtool: 'source-map',
 
@@ -182,22 +97,29 @@ module.exports = {
         },
         host: '0.0.0.0',
         port: 3000,
-
+        hot: true,
         devMiddleware: {
             writeToDisk: true,
+        },
+        static: {
+            directory: path.join(__dirname, 'assets'),
+            publicPath: '/',
+        },
+        client: {
+            overlay: true,
+            progress: true,
+        },
+        watchFiles: {
+            paths: ['src/**/*', 'assets/**/*', '../plugins/**/*'],
+            options: {
+                usePolling: true,
+            },
         },
     },
 
     plugins: [
+        new webpack.HotModuleReplacementPlugin(),
         new CleanWebpackPlugin(),
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/en$/,
-            '../translations/en.json',
-        ),
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/fr$/,
-            '../translations/fr.json',
-        ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
             filename: `${WEBPACK_PATH}/webpack-stats.json`,
@@ -209,6 +131,44 @@ module.exports = {
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.IgnorePlugin({
             resourceRegExp: /^perf_hooks$/,
+        }),
+        new ModuleFederationPlugin({
+            name: 'IasoModules',
+            filename: 'remoteEntry.js',
+            library: { type: 'self', name: 'IasoModules' },
+            exposes: {
+                './plugins/configs': combinedConfigPath,
+                './plugins/keys': pluginKeysPath,
+                './translations/configs': combinedTranslationsPath,
+                './language/configs': languageConfigsPath,
+            },
+            shared: {
+                react: {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-dom': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-intl': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                '@mui/material': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'bluesquare-components': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+            },
         }),
     ],
 
@@ -266,6 +226,11 @@ module.exports = {
                     filename: 'videos/[name].[hash][ext]',
                 },
             },
+            {
+                test: /\.mjs$/,
+                type: 'javascript/auto',
+                use: 'babel-loader',
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
@@ -273,7 +238,12 @@ module.exports = {
 
     resolve: {
         alias: {
-            // see LIVE_COMPONENTS feature in doc
+            'react/jsx-runtime': 'react/jsx-runtime.js',
+            // Add alias for the combined config
+            'IasoModules/plugins/configs': combinedConfigPath,
+            'IasoModules/plugins/keys': pluginKeysPath,
+            'IasoModules/translations/configs': combinedTranslationsPath,
+            'IasoModules/language/configs': languageConfigsPath,
             ...(process.env.LIVE_COMPONENTS === 'true' && {
                 'bluesquare-components': path.resolve(
                     __dirname,
@@ -284,17 +254,15 @@ module.exports = {
         fallback: {
             fs: false,
         },
-        modules:
-            process.env.LIVE_COMPONENTS === 'true'
-                ? [
-                      'node_modules',
-                      '../../bluesquare-components/node_modules/',
-                      path.resolve(__dirname, 'assets/js/apps/'),
-                  ]
-                : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
-                  ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-
-        extensions: ['.js', '.tsx', '.ts'],
+        modules: [
+            'node_modules',
+            path.resolve(__dirname, '../plugins'),
+            path.resolve(__dirname, 'assets/js/apps/'),
+            ...(process.env.LIVE_COMPONENTS === 'true'
+                ? ['../../bluesquare-components/node_modules/']
+                : []),
+        ],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
     stats: {
         errorDetails: true,

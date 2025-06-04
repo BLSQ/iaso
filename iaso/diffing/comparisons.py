@@ -80,6 +80,28 @@ class GroupSetFieldType(FieldType):
         return val == other_val
 
 
+class GroupFieldType(FieldType):
+    def __init__(self, field_name):
+        super().__init__(field_name)
+        self.group_ref = field_name.split(":")[1]
+        self.group_name = field_name.split(":")[2]
+
+    def access(self, org_unit):
+        if org_unit is None:
+            return None
+        groups = []
+        for group in org_unit.groups.all():
+            if group.source_ref == self.group_ref:
+                groups.append({"id": group.source_ref, "name": group.name, "iaso_id": group.pk})
+
+        return groups
+
+    def is_same(self, value, other_value):
+        val = sorted(map(lambda g: g["id"], value or []))
+        other_val = sorted(map(lambda g: g["id"], other_value or []))
+        return val == other_val
+
+
 class OpeningDateFieldType(FieldType):
     def access(self, org_unit):
         if org_unit is None:
@@ -105,6 +127,8 @@ def as_field_types(field_names):
             field_types.append(ParentFieldType(field_name))
         elif field_name.startswith("groupset:"):
             field_types.append(GroupSetFieldType(field_name))
+        elif field_name.startswith("group:"):
+            field_types.append(GroupFieldType(field_name))
         elif field_name == "opening_date":
             field_types.append(OpeningDateFieldType(field_name))
         elif field_name == "closed_date":

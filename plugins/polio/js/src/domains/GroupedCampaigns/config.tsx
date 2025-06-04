@@ -1,18 +1,17 @@
-import React, { ReactElement, ReactNode, useMemo } from 'react';
 import {
-    IconButton,
     Column,
-    useSafeIntl,
+    IconButton,
     LinkWithLocation,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import MESSAGES from '../../constants/messages';
 import DeleteDialog from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { GroupedCampaignDialog } from './GroupedCampaignDialog';
+import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
+import { GroupedCampaignDialog } from './GroupedCampaignDialog';
 
 export const useGroupedCampaignsColumns = (
-    // eslint-disable-next-line no-unused-vars
     deleteGroupedCampaign: (id: string) => void,
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();

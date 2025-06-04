@@ -1,4 +1,6 @@
 import json
+import logging
+
 from copy import deepcopy
 from datetime import datetime
 from time import gmtime, strftime
@@ -23,17 +25,19 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
+logger = logging.getLogger(__name__)
+
 # noinspection PyMethodMayBeStatic
 
 
-class HasCreateOrUnitPermission(permissions.BasePermission):
+class HasCreateOrgUnitPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
             return False
@@ -99,22 +103,69 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list(self, request):
         """Power the almighty Search function, and export
 
-        which all the power should be really specified.
+        This endpoint supports various parameters for filtering and searching org units:
 
-        Can serve these formats, depending on the combination of GET Parameters:
-         * Simple JSON (default) -> as_dict_for_mobile
-         * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
-         * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
-         * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
-         * GeoPackage format (if `gpkg` is passed)
-         * Excel XLSX  (if `xslx` is passed)
-         * CSV (if `csv` is passed)
+        Search Parameters:
+        - search: Text search in name and aliases
+        - searches: JSON array of search objects for multiple searches
+        - validation_status: Filter by validation status (comma-separated list or "all")
+        - hasInstances: Filter by presence of instances ("true", "false", "duplicates")
+        - dateFrom: Filter instances created after this date
+        - dateTo: Filter instances created before this date
+        - orgUnitTypeId: Filter by org unit type ID (comma-separated list)
+        - sourceId: Filter by source ID
+        - withShape: Filter by presence of shape ("true", "false")
+        - withLocation: Filter by presence of location ("true", "false")
+        - geography: Filter by geography type ("location", "shape", "none", "any")
+        - parent_id: Filter by parent ID (use "0" for root org units)
+        - source: Filter by source
+        - project: Filter by project
+        - group: Filter by group (comma-separated list)
+        - version: Filter by version
+        - defaultVersion: Use default version of the user account("true")
+        - onlyDirectChildren: Filter direct children only ("true", "false")
+        - orgUnitParentId: Filter by parent ID in hierarchy
+        - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - linkedTo: Filter by linked org unit
+        - linkValidated: Filter by link validation status
+        - linkSource: Filter by link source
+        - linkVersion: Filter by link version
+        - rootsForUser: Filter roots for user ("true")
+        - ignoreEmptyNames: Ignore empty names ("true")
+        - orgUnitTypeCategory: Filter by org unit type category
+        - depth: Filter by path depth
+        - opening_date: Filter by opening date (format: DD-MM-YYYY)
+        - closed_date: Filter by closing date (format: DD-MM-YYYY)
 
-         These parameter can totally conflict and the result is undocumented
+        Output Format Parameters:
+        - limit: Number of results per page
+        - page: Page number
+        - order: Order by field(s) (comma-separated)
+        - withShapes: Include shapes in output
+        - asLocation: Return as location format
+        - smallSearch: Return simplified output
+        - csv: Export as CSV
+        - xlsx: Export as Excel
+        - gpkg: Export as GeoPackage
+
+        Special Search Formats:
+        - ids:search: Search by IDs (e.g. "ids:1,2,3")
+        - refs:search: Search by references (e.g. "refs:ref1,ref2")
+
+        Example Response Formats:
+        * Simple JSON (default) -> as_dict_for_mobile
+        * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
+        * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
+        * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
+        * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
+        * GeoPackage format (if `gpkg` is passed)
+        * Excel XLSX  (if `xslx` is passed)
+        * CSV (if `csv` is passed)
         """
         queryset = self.get_queryset().defer("geom").select_related("parent__org_unit_type")
-        forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+        forms = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        ).distinct()
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
@@ -188,7 +239,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 }
 
                 return Response(res)
-            elif with_shapes:
+            if with_shapes:
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -198,7 +249,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
-            elif as_location:
+            if as_location:
                 limit = int(limit)
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
@@ -223,141 +274,139 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_units.append(temp_org_unit)
 
                 return Response(org_units)
-            else:
-                queryset = queryset.select_related("org_unit_type")
-                return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
-        elif gpkg_format:
+            queryset = queryset.select_related("org_unit_type")
+            return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
+        if gpkg_format:
             user_account_name = profile.account.name if profile else ""
             environment = settings.ENVIRONMENT
             filename = "org_units"
             filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
             return self.list_to_gpkg(queryset, filename)
-        else:
-            # When filtering the org units by group, the values_list will return the groups also filtered.
-            #  In order to get the all groups independently of filters, we should get the groups
-            # based on the org_unit FK.
+        # When filtering the org units by group, the values_list will return the groups also filtered.
+        #  In order to get the all groups independently of filters, we should get the groups
+        # based on the org_unit FK.
 
-            org_ids = queryset.order_by("pk").values_list("pk", flat=True)
-            groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
+        org_ids = queryset.order_by("pk").values_list("pk", flat=True)
+        groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
 
-            columns = [
-                {"title": "ID", "width": 10},
-                {"title": "Nom", "width": 25},
-                {"title": "Type", "width": 15},
-                {"title": "Latitude", "width": 15},
-                {"title": "Longitude", "width": 15},
-                {"title": "Date d'ouverture", "width": 20},
-                {"title": "Date de fermeture", "width": 20},
-                {"title": "Date de création", "width": 20},
-                {"title": "Date de modification", "width": 20},
-                {"title": "Créé par", "width": 20},
-                {"title": "Source", "width": 20},
-                {"title": "Validé", "width": 15},
-                {"title": "Référence externe", "width": 17},
-                {"title": "parent 1", "width": 20},
-                {"title": "parent 2", "width": 20},
-                {"title": "parent 3", "width": 20},
-                {"title": "parent 4", "width": 20},
-                {"title": "Ref Ext parent 1", "width": 20},
-                {"title": "Ref Ext parent 2", "width": 20},
-                {"title": "Ref Ext parent 3", "width": 20},
-                {"title": "Ref Ext parent 4", "width": 20},
-            ]
-            counts_by_forms = []
-            for frm in forms:
-                columns.append({"title": "Total d'instances " + frm.name, "width": 15})
-                counts_by_forms.append("form_" + str(frm.id) + "_instances")
-            columns.append({"title": "Total d'instances", "width": 15})
+        columns = [
+            {"title": "ID", "width": 10},
+            {"title": "Nom", "width": 25},
+            {"title": "Type", "width": 15},
+            {"title": "Latitude", "width": 15},
+            {"title": "Longitude", "width": 15},
+            {"title": "Date d'ouverture", "width": 20},
+            {"title": "Date de fermeture", "width": 20},
+            {"title": "Date de création", "width": 20},
+            {"title": "Date de modification", "width": 20},
+            {"title": "Créé par", "width": 20},
+            {"title": "Source", "width": 20},
+            {"title": "Validé", "width": 15},
+            {"title": "Référence externe", "width": 17},
+            {"title": "parent 1", "width": 20},
+            {"title": "parent 2", "width": 20},
+            {"title": "parent 3", "width": 20},
+            {"title": "parent 4", "width": 20},
+            {"title": "Ref Ext parent 1", "width": 20},
+            {"title": "Ref Ext parent 2", "width": 20},
+            {"title": "Ref Ext parent 3", "width": 20},
+            {"title": "Ref Ext parent 4", "width": 20},
+        ]
+        counts_by_forms = []
+        for frm in forms:
+            columns.append({"title": "Total de soumissions " + frm.name, "width": 15})
+            counts_by_forms.append("form_" + str(frm.id) + "_instances")
+        columns.append({"title": "Total de soumissions", "width": 15})
 
-            for group in groups:
-                group.org_units__ids = list(group.org_units.values_list("id", flat=True))
-                columns.append({"title": group.name, "width": 20})
+        for group in groups:
+            group.org_units__ids = list(group.org_units.values_list("id", flat=True))
+            columns.append({"title": group.name, "width": 20})
 
-            parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
-            parent_source_ref_name = ["parent__" * i + "source_ref" for i in range(1, 5)]
-            parent_field_ids = ["parent__" * i + "id" for i in range(1, 5)]
+        parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
+        parent_source_ref_name = ["parent__" * i + "source_ref" for i in range(1, 5)]
+        parent_field_ids = ["parent__" * i + "id" for i in range(1, 5)]
 
-            queryset = queryset.values(
-                "id",
-                "name",
-                "org_unit_type__name",
-                "version__data_source__name",
-                "validation_status",
-                "source_ref",
-                "created_at",
-                "updated_at",
-                "creator__username",
-                "creator__first_name",
-                "creator__last_name",
-                "location",
-                *parent_field_names,
-                *parent_source_ref_name,
-                *parent_field_ids,
-                *counts_by_forms,
-                "instances_count",
-                "opening_date",
-                "closed_date",
+        queryset = queryset.values(
+            "id",
+            "name",
+            "org_unit_type__name",
+            "version__data_source__name",
+            "validation_status",
+            "source_ref",
+            "created_at",
+            "updated_at",
+            "creator__username",
+            "creator__first_name",
+            "creator__last_name",
+            "location",
+            *parent_field_names,
+            *parent_source_ref_name,
+            *parent_field_ids,
+            *counts_by_forms,
+            "instances_count",
+            "opening_date",
+            "closed_date",
+        )
+
+        user_account_name = profile.account.name if profile else ""
+        environment = settings.ENVIRONMENT
+        filename = "org_units"
+        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+
+        def get_row(org_unit, **kwargs):
+            location = org_unit.get("location", None)
+            creator = get_creator_name(
+                None,
+                org_unit.get("creator__username", None),
+                org_unit.get("creator__first_name", None),
+                org_unit.get("creator__last_name", None),
             )
+            source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso:{org_unit.get('id')}"
 
-            user_account_name = profile.account.name if profile else ""
-            environment = settings.ENVIRONMENT
-            filename = "org_units"
-            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            parents_source_ref = [
+                get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)
+                for field_name in parent_source_ref_name
+            ]
 
-            def get_row(org_unit, **kwargs):
-                location = org_unit.get("location", None)
-                creator = get_creator_name(
-                    None,
-                    org_unit.get("creator__username", None),
-                    org_unit.get("creator__first_name", None),
-                    org_unit.get("creator__last_name", None),
-                )
-                source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+            org_unit_values = [
+                org_unit.get("id"),
+                org_unit.get("name"),
+                org_unit.get("org_unit_type__name"),
+                location.y if location else None,
+                location.x if location else None,
+                (
+                    org_unit.get("opening_date").strftime("%Y-%m-%d")
+                    if org_unit.get("opening_date") is not None
+                    else None
+                ),
+                org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
+                org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
+                org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
+                creator,
+                org_unit.get("version__data_source__name"),
+                org_unit.get("validation_status"),
+                source_ref,
+                *[org_unit.get(field_name) for field_name in parent_field_names],
+                *parents_source_ref,
+                *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
+                org_unit.get("instances_count"),
+                *[int(org_unit.get("id") in group.org_units__ids) for group in groups],
+            ]
+            return org_unit_values
 
-                parents_source_ref = [
-                    get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)
-                    for field_name in parent_source_ref_name
-                ]
-
-                org_unit_values = [
-                    org_unit.get("id"),
-                    org_unit.get("name"),
-                    org_unit.get("org_unit_type__name"),
-                    location.y if location else None,
-                    location.x if location else None,
-                    (
-                        org_unit.get("opening_date").strftime("%Y-%m-%d")
-                        if org_unit.get("opening_date") is not None
-                        else None
-                    ),
-                    org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
-                    org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
-                    org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
-                    creator,
-                    org_unit.get("version__data_source__name"),
-                    org_unit.get("validation_status"),
-                    source_ref,
-                    *[org_unit.get(field_name) for field_name in parent_field_names],
-                    *parents_source_ref,
-                    *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
-                    org_unit.get("instances_count"),
-                    *[int(org_unit.get("id") in group.org_units__ids) for group in groups],
-                ]
-                return org_unit_values
-
-            if xlsx_format:
-                filename = filename + ".xlsx"
-                response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type=CONTENT_TYPE_XLSX,
-                )
-            if csv_format:
-                response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-                )
-                filename = filename + ".csv"
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
+        if xlsx_format:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Forms", columns, queryset, get_row),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        if csv_format:
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+            filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
 
     def list_to_gpkg(self, queryset, filename):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
@@ -424,8 +473,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
+        profile = request.user.iaso_profile
 
         self.check_object_permissions(request, org_unit)
+
+        if org_unit.org_unit_type and not profile.has_org_unit_write_permission(org_unit.org_unit_type.pk):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         original_copy = deepcopy(org_unit)
 
@@ -453,17 +511,27 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     }
                 )
 
-        if "geo_json" in request.data:
-            geo_json = request.data["geo_json"]
-            geometry = geo_json["features"][0]["geometry"] if geo_json else None
-            coordinates = geometry["coordinates"] if geometry else None
-            if coordinates:
-                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
-                org_unit.simplified_geom = simplify_geom(multi_polygon)
+        if "geom" in request.data:
+            geom = request.data["geom"]
+            if geom:
+                try:
+                    # Keep geom and simplified geom consistent.
+                    org_unit.geom = GEOSGeometry(geom)
+                    org_unit.simplified_geom = simplify_geom(org_unit.geom)
+                except Exception:
+                    errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
             else:
+                # Keep geom and simplified geom consistent.
                 org_unit.simplified_geom = None
+                org_unit.geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
+
+        if "geo_json" in request.data and request.data["geo_json"]:
+            logger.warning(
+                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
+                extra={"request_data": request.data},
+            )
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -526,7 +594,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.parent = parent_org_unit
                 else:
                     # User that are restricted to parts of the hierarchy cannot create root orgunit
-                    profile = request.user.iaso_profile
                     if profile.org_units.all():
                         errors.append(
                             {
@@ -551,11 +618,24 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
-        opening_date = request.data.get("opening_date", None)
-        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
+        if "default_image_id" in request.data:
+            default_image_id = request.data["default_image_id"]
+            if default_image_id is not None:
+                try:
+                    default_image = InstanceFile.objects.get(id=default_image_id)
+                    org_unit.default_image = default_image
+                except InstanceFile.DoesNotExist:
+                    errors.append(
+                        {
+                            "errorKey": "default_image",
+                            "errorMessage": _("InstanceFile with id {} does not exist").format(default_image_id),
+                        }
+                    )
+            else:
+                org_unit.default_image = None
 
-        closed_date = request.data.get("closed_date", None)
-        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
+        org_unit.opening_date = self.get_date(request.data.get("opening_date"))
+        org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
         if not errors:
             org_unit.save()
@@ -576,19 +656,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
             res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
             return Response(res)
-        else:
-            return Response(errors, status=400)
+        return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
-        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y", "%Y-%m-%d", "%Y/%m/%d"]
         for date_input_format in date_input_formats:
             try:
                 return datetime.strptime(date, date_input_format).date()
-            except ValueError:
+            except (ValueError, TypeError):
                 pass
         return None
 
-    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrUnitPermission])
+    @action(
+        detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasCreateOrgUnitPermission]
+    )
     def create_org_unit(self, request):
         """This endpoint is used by the React frontend"""
         errors = []
@@ -656,8 +737,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.validation_status = validation_status
 
-        org_unit_type_id = request.data.get("org_unit_type_id", None)
-
         reference_instance_id = request.data.get("reference_instance_id", None)
 
         parent_id = request.data.get("parent_id", None)
@@ -679,8 +758,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if latitude and longitude:
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+
         if not org_unit_type_id:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if not profile.has_org_unit_write_permission(org_unit_type_id):
+            errors.append(
+                {
+                    "errorKey": "org_unit_type_id",
+                    "errorMessage": _("You cannot create or edit an Org unit of this type"),
+                }
+            )
 
         if parent_id:
             parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
@@ -728,7 +817,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit: OrgUnit = get_object_or_404(self.get_queryset().prefetch_related("reference_instances"), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(
+            self.get_queryset().prefetch_related("reference_instances"),
+            pk=pk,
+        )
+        # Get instances count for the Org unit and its descendants
+        instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
+        org_unit.instances_count = instances_count
+
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None

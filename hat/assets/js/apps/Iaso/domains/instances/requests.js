@@ -4,7 +4,9 @@ import { getFileUrl } from './utils';
 import snackMessages from '../../components/snackBars/messages';
 
 export const fetchFormDetailsForInstance = formId =>
-    getRequest(`/api/forms/${formId}/?fields=name,period_type,label_keys,id,org_unit_type_ids`);
+    getRequest(
+        `/api/forms/${formId}/?fields=name,period_type,label_keys,id,org_unit_type_ids`,
+    );
 
 export const fetchInstancesAsDict = url => getRequest(url);
 

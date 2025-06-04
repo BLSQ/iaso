@@ -1,31 +1,30 @@
 /* eslint-disable react/require-default-props */
 import React, {
     FunctionComponent,
-    useCallback,
-    useState,
-    useMemo,
     ReactNode,
+    useCallback,
+    useMemo,
+    useState,
 } from 'react';
 import { Box, Divider, Grid } from '@mui/material';
 // @ts-ignore
-import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../../constants/messages';
+import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
+import { commaSeparatedIdsToStringArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import MESSAGES from '../../constants/messages';
 import { makeCampaignsDropDownWithUUID } from '../../utils';
+import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
 import {
     GroupedCampaignQuery,
     useSaveGroupedCampaign,
 } from './hooks/useSaveGroupedCampaign';
-import { commaSeparatedIdsToStringArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 type Props = {
     name?: string;
     campaigns?: string[];
     type: 'create' | 'edit';
     id?: string;
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: (openDialog: { openDialog: () => void }) => ReactNode;
 };
 
@@ -47,7 +46,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
     const [campaignsToLink, setCampaignsToLink] = useState<string[]>(campaigns);
     // TODO refactor this hook to make more flexible
     const { data: allCampaigns, isFetching: isFetchingCamaigns } =
-        useGetCampaigns();
+        useGetCampaigns({ show_test: false });
     const allCampaignsDropdown = useMemo(
         () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],

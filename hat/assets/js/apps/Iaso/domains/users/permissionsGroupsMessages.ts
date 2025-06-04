@@ -6,43 +6,55 @@ import { defineMessages } from 'react-intl';
 const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
     forms: {
         id: 'iaso.permissions.group.forms',
-        defaultMessage: 'Forms :',
+        defaultMessage: 'Forms:',
     },
     org_units: {
         id: 'iaso.permissions.group.org_units',
-        defaultMessage: 'Org units :',
+        defaultMessage: 'Org units:',
     },
     entities: {
         id: 'iaso.permissions.group.entities',
-        defaultMessage: 'Beneficiaries :',
+        defaultMessage: 'Entities:',
     },
     payments: {
         id: 'iaso.permissions.group.payments',
-        defaultMessage: 'Payments :',
+        defaultMessage: 'Payments:',
     },
     dhis2_mapping: {
         id: 'iaso.permissions.group.dhis2_mapping',
-        defaultMessage: 'Dhis2 mapping :',
+        defaultMessage: 'Dhis2 mapping:',
     },
     external_storage: {
         id: 'iaso.permissions.group.external_storage',
-        defaultMessage: 'External storage :',
+        defaultMessage: 'External storage:',
     },
     planning: {
         id: 'iaso.permissions.group.planning',
-        defaultMessage: 'Planning :',
+        defaultMessage: 'Planning:',
     },
     embedded_links: {
         id: 'iaso.permissions.group.embedded_links',
-        defaultMessage: 'Embedded links :',
+        defaultMessage: 'Embedded links:',
     },
     polio: {
         id: 'iaso.permissions.group.polio',
-        defaultMessage: 'Polio :',
+        defaultMessage: 'Polio:',
+    },
+    trypelim: {
+        id: 'iaso.permissions.group.trypelim',
+        defaultMessage: 'Trypelim:',
     },
     admin: {
         id: 'iaso.permissions.group.admin',
-        defaultMessage: 'Admin :',
+        defaultMessage: 'Admin:',
+    },
+    data_validation: {
+        id: 'iaso.permissions.group.data_validation',
+        defaultMessage: 'Validation',
+    },
+    registry: {
+        id: 'iaso.permissions.group.registry',
+        defaultMessage: 'Registry:',
     },
 });
 

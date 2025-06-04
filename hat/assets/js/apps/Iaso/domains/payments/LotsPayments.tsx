@@ -14,10 +14,7 @@ import { RefreshButton } from '../../components/Buttons/RefreshButton';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const getRowProps = row => {
-    if (
-        row.original.task?.status === 'QUEUED' ||
-        row.original.task?.status === 'RUNNING'
-    ) {
+    if (row.original.task) {
         return {
             'data-test': 'paymentLotRow',
             sx: {

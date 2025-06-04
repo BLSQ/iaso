@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { useRedirectToReplace } from 'bluesquare-components';
-import { MAP } from '../constants';
 import { Side, Sides } from '../../../../constants/types';
+import { MAP } from '../constants';
 
 type TabValue = 'map' | 'list';
 
@@ -15,7 +15,6 @@ export const useLqasImTabState = ({
     baseUrl,
     params,
     side,
-    // eslint-disable-next-line no-unused-vars
 }: Args): { tab: TabValue; handleChangeTab: (newTab: TabValue) => void } => {
     const redirectToReplace = useRedirectToReplace();
     const paramTab =

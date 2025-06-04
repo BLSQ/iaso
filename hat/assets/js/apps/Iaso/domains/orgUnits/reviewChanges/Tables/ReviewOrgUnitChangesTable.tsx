@@ -1,40 +1,45 @@
 import React, {
     FunctionComponent,
     ReactElement,
-    useState,
-    Dispatch,
-    SetStateAction,
     useMemo,
+    useState,
 } from 'react';
-import Color from 'color';
-import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+
+import Color from 'color';
+import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
+import { UserCell } from '../../../../components/Cells/UserCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
-import {
-    OrgUnitChangeRequestsPaginated,
-    ApproveOrgUnitParams,
-    OrgUnitChangeRequest,
-    ChangeRequestValidationStatus,
-} from '../types';
-import MESSAGES from '../messages';
-import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import {
-    ReviewOrgUnitChangesDialog,
-    IconButton,
-} from '../Dialogs/ReviewOrgUnitChangesDialog';
-import { UserCell } from '../../../../components/Cells/UserCell';
-import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
 import { ColumnCell } from '../../../../types/general';
-import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
+import { useTableSelection } from '../../../../utils/table';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
+import { MultiActionsDialog } from '../Components/MultiActionsDialog';
+import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
+import { PAYMENTS_MODULE } from '../constants';
+import { IconButton } from '../details';
+import MESSAGES from '../messages';
+import {
+    ApproveOrgUnitParams,
+    ChangeRequestValidationStatus,
+    OrgUnitChangeRequest,
+    OrgUnitChangeRequestsPaginated,
+} from '../types';
 
-const useColumns = (
-    setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
-): Column[] => {
+const getIsSelectionDisabled = (ou: OrgUnitChangeRequest) =>
+    ou.status !== 'new';
+
+const useColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(
-        () => [
+    const currentUser = useCurrentUser();
+    const { modules } = currentUser.account;
+
+    return useMemo(() => {
+        const columns = [
             {
                 Header: 'id',
                 id: 'id',
@@ -154,21 +159,25 @@ const useColumns = (
                 accessor: 'actions',
                 sortable: false,
                 Cell: ({
-                    row: { original: changeRequest, index },
+                    row: { original: changeRequest },
                 }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
                     return (
                         <IconButton
                             changeRequestId={changeRequest.id}
                             status={changeRequest.status}
-                            index={index}
-                            setSelectedChangeRequest={setSelectedChangeRequest}
                         />
                     );
                 },
             },
-        ],
-        [formatMessage, setSelectedChangeRequest],
-    );
+        ];
+
+        // Remove payment status column when the current account has no payments module
+        if (!modules.includes(PAYMENTS_MODULE)) {
+            return columns.filter(column => column.id !== 'payment_status');
+        }
+
+        return columns;
+    }, [formatMessage, modules]);
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
@@ -205,24 +214,42 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     isFetching,
     params,
 }) => {
-    const [selectedChangeRequest, setSelectedChangeRequest] = useState<
-        SelectedChangeRequest | undefined
-    >();
-    const columns = useColumns(setSelectedChangeRequest);
-    const handleCloseDialog = () => {
-        setSelectedChangeRequest(undefined);
-    };
+    const columns = useColumns();
+    const { selection, handleTableSelection, handleUnselectAll } =
+        useTableSelection<OrgUnitChangeRequest>(data?.select_all_count ?? 0);
 
+    const [multiActionPopupOpen, setMultiActionPopupOpen] =
+        useState<boolean>(false);
+    const { formatMessage } = useSafeIntl();
+
+    const selectionActions = useMemo(
+        () => [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => setMultiActionPopupOpen(true),
+                disabled:
+                    multiActionPopupOpen ||
+                    (selection.selectedItems.length === 0 &&
+                        !selection.selectAll),
+            },
+        ],
+        [
+            formatMessage,
+            multiActionPopupOpen,
+            selection.selectAll,
+            selection.selectedItems.length,
+        ],
+    );
     return (
         <>
-            {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
-            {selectedChangeRequest && (
-                <ReviewOrgUnitChangesDialog
-                    isOpen
-                    selectedChangeRequest={selectedChangeRequest}
-                    closeDialog={handleCloseDialog}
-                />
-            )}
+            <MultiActionsDialog
+                open={multiActionPopupOpen}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                resetSelection={handleUnselectAll}
+                params={params}
+            />
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}
@@ -234,7 +261,21 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 countOnTop
                 params={params}
                 rowProps={getRowProps}
-                extraProps={{ loading: isFetching, selectedChangeRequest }}
+                extraProps={{ loading: isFetching }}
+                multiSelect={Boolean(
+                    data?.select_all_count && data?.select_all_count > 0,
+                )}
+                selection={selection}
+                selectionActions={selectionActions}
+                selectAllCount={data?.select_all_count ?? 0}
+                getIsSelectionDisabled={getIsSelectionDisabled}
+                setTableSelection={(selectionType, items) =>
+                    handleTableSelection(
+                        selectionType,
+                        items,
+                        data?.select_all_count,
+                    )
+                }
             />
         </>
     );

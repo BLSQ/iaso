@@ -1,11 +1,33 @@
 const path = require('path');
-const webpack = require('webpack');
-const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const webpack = require('webpack');
+const { ModuleFederationPlugin } = require('webpack').container;
+const BundleTracker = require('webpack-bundle-tracker');
+
+const {
+    generateCombinedTranslations,
+    generateCombinedConfig,
+    generatePluginKeysFile,
+    generateLanguageConfigs,
+} = require('./assets/js/apps/Iaso/bundle/generators.js');
+
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
+
+// Generate the combined config file
+const combinedConfigPath = generateCombinedConfig(__dirname);
+
+// Generate the plugin keys file
+const pluginKeysPath = generatePluginKeysFile(__dirname);
+
+// Generate the combined translations file
+const combinedTranslationsPath = generateCombinedTranslations(__dirname);
+
+// Generate the language configs file
+const languageConfigsPath = generateLanguageConfigs(__dirname);
+
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
@@ -15,6 +37,7 @@ module.exports = {
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
         iaso: './assets/js/apps/Iaso/index',
+        superset: './assets/js/supersetSDK',
     },
 
     stats: {
@@ -29,14 +52,6 @@ module.exports = {
     devtool: 'source-map',
 
     plugins: [
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/en$/,
-            '../translations/en.json',
-        ),
-        new webpack.NormalModuleReplacementPlugin(
-            /^__intl\/messages\/fr$/,
-            '../translations/fr.json',
-        ),
         new BundleTracker({
             filename: path.resolve(
                 __dirname,
@@ -57,6 +72,45 @@ module.exports = {
         new webpack.LoaderOptionsPlugin({ minimize: true }),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
+        }),
+        // Module Federation for plugins
+        new ModuleFederationPlugin({
+            name: 'IasoModules',
+            filename: 'remoteEntry.js',
+            library: { type: 'self', name: 'IasoModules' },
+            exposes: {
+                './plugins/configs': combinedConfigPath,
+                './plugins/keys': pluginKeysPath,
+                './translations/configs': combinedTranslationsPath,
+                './language/configs': languageConfigsPath,
+            },
+            shared: {
+                react: {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-dom': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'react-intl': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                '@mui/material': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+                'bluesquare-components': {
+                    singleton: true,
+                    eager: true,
+                    requiredVersion: false,
+                },
+            },
         }),
     ],
 
@@ -215,6 +269,11 @@ module.exports = {
                     filename: 'videos/[name].[hash][ext]',
                 },
             },
+            {
+                test: /\.mjs$/,
+                type: 'javascript/auto',
+                use: 'babel-loader',
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },
@@ -224,11 +283,25 @@ module.exports = {
     externals: [{ './cptable': 'var cptable' }],
 
     resolve: {
+        alias: {
+            'react/jsx-runtime': 'react/jsx-runtime.js',
+            // Add alias for the combined config
+            'IasoModules/plugins/configs': combinedConfigPath,
+            'IasoModules/plugins/keys': pluginKeysPath,
+            'IasoModules/translations/configs': combinedTranslationsPath,
+            'IasoModules/language/configs': languageConfigsPath,
+            ...(process.env.LIVE_COMPONENTS === 'true' && {
+                'bluesquare-components': path.resolve(
+                    __dirname,
+                    '../../bluesquare-components/src/',
+                ),
+            }),
+        },
         fallback: {
             fs: false,
         },
         /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
         modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
-        extensions: ['.js', '.tsx', '.ts'],
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
     },
 };

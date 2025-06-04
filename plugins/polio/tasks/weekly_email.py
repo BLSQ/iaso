@@ -8,6 +8,7 @@ from beanstalk_worker import task_decorator
 from plugins.polio.models import Campaign, CountryUsersGroup, Round
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
 
+
 logger = getLogger(__name__)
 
 
@@ -46,7 +47,7 @@ def send_notification_email(campaign):
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         if preparedness and preparedness.get("indicators", {}).get("status_score"):
             prep_summary = preparedness["indicators"]["status_score"]
-            format = lambda x: "{:.2f}%".format(x * 10) if isinstance(x, (int, float)) else "N/A"
+            format = lambda x: f"{x * 10:.2f}%" if isinstance(x, (int, float)) else "N/A"
             prep_national = format(prep_summary.get("national"))
             prep_regional = format(prep_summary.get("regions"))
             prep_district = format(prep_summary.get("districts"))
@@ -88,7 +89,7 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 
 * Date de notification              : {c.cvdpv2_notified_at}
 * Date du prochain round (Round {next_round_number})          : {next_round_date if campaign.rounds else None}
-* Type de vaccin                    : {c.vaccines}
+* Type de vaccin                    : {c.vaccines_extended}
 * Population cible                  : {target_population} 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
@@ -112,7 +113,7 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 
 * Data de notificação: {c.cvdpv2_notified_at}
 * Proxima ronda (Round {next_round_number}) data: {next_round_date if campaign.rounds else None}
-* Tipo de vacina: {c.vaccines}
+* Tipo de vacina: {c.vaccines_extended}
 * População-alvo: {target_population}
 * RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
 * Data de envio do orçamento:  {c.submitted_to_rrt_at_WFEDITABLE}
@@ -136,7 +137,7 @@ If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
 * Next round (Round {next_round_number}) date: {next_round_date if campaign.rounds else None}
-* Vaccine Type                   : {c.vaccines}
+* Vaccine Type                   : {c.vaccines_extended}
 * Target population              : {target_population} 
 * RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
@@ -153,7 +154,7 @@ Timeline tracker Automated message.
     logger.info(f"Sending to {len(emails)} recipients")
 
     send_mail(
-        "Update on Campaign {}".format(campaign.obr_name),
+        f"Update on Campaign {campaign.obr_name}",
         email_text,
         from_email,
         emails,
@@ -182,7 +183,7 @@ def send_email(task=None):
         logger.info(f"Email for {campaign.obr_name}")
         status = send_notification_email(campaign)
         if not status:
-            logger.info(f"... skipped")
+            logger.info("... skipped")
         else:
             email_sent += 1
 

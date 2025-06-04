@@ -1,6 +1,5 @@
-/* eslint-disable camelcase */
-import { UseMutationResult, UseQueryResult } from 'react-query';
 import { Paginated } from 'bluesquare-components';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     deleteRequest,
     getRequest,
@@ -13,14 +12,13 @@ import {
 import { BudgetStep } from '../../types';
 
 const getBudgetDetails = (params: any) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { accountId, pageSize, ...otherParams } = params;
     const urlParams = {
         ...otherParams,
         limit: pageSize ?? '10',
     };
     const filteredParams = Object.entries(urlParams).filter(
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         ([_key, value]) => value !== undefined,
     );
     const queryString = new URLSearchParams(

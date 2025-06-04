@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UseMutationResult, useQueryClient } from 'react-query';
 import { useSnackMutation } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
@@ -14,25 +13,23 @@ import { handleVrfPromiseErrors, saveVrf } from './vrf';
 
 const saveSupplyChainForm = async (supplyChainData: SupplyChainFormData) => {
     if (supplyChainData.saveAll === true && supplyChainData?.vrf?.id) {
-        const promises: Promise<PromiseSettledResult<any>[]>[] = [];
+        const promises: Promise<any>[][] = [];
 
         // update all tabs
         if (supplyChainData.changedTabs.includes(VRF)) {
-            promises.push(Promise.allSettled(saveVrf(supplyChainData.vrf)));
+            promises.push(saveVrf(supplyChainData.vrf));
         }
         if (supplyChainData.changedTabs.includes(PREALERT)) {
-            promises.push(
-                Promise.allSettled(saveTab(PREALERT, supplyChainData)),
-            );
+            promises.push(saveTab(PREALERT, supplyChainData));
         }
         if (supplyChainData.changedTabs.includes(VAR)) {
-            promises.push(Promise.allSettled(saveTab(VAR, supplyChainData)));
+            promises.push(saveTab(VAR, supplyChainData));
         }
 
         const allUpdates = (await Promise.allSettled(
-            promises,
+            promises.flat(),
             // The first level of nesting will only contain fulfilled promised. The rejected ones will be at least 1 level deep
-        )) as PromiseFulfilledResult<PromiseSettledResult<any>[]>[];
+        )) as PromiseFulfilledResult<any>[];
         return parsePromiseResults(allUpdates);
     }
     // We can't save prealerts or var if there's no preexisting vrf

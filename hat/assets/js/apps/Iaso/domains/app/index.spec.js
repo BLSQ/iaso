@@ -1,16 +1,15 @@
 import React from 'react';
 
+import { renderWithIntl } from '../../../../test/utils/intl';
+import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 import App from './index.tsx';
-import { renderWithStore } from '../../../../test/utils/redux';
 
 describe('App', () => {
     it('render properly', () => {
         const wrapper = shallow(
-            renderWithStore(<App plugins={[]} history={{}} />, {
-                subscribe: () => null,
-                dispatch: () => null,
-                getState: () => null,
-            }),
+            renderWithMuiTheme(
+                renderWithIntl(<App plugins={[]} history={{}} />),
+            ),
         );
         expect(wrapper.exists()).to.be.true;
     });

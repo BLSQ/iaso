@@ -105,6 +105,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.startDateAfterRoundEnd',
         defaultMessage: "Start date can't be after round end date",
     },
+    im_started_at: {
+        id: 'iaso.polio.form.label.imStart',
+        defaultMessage: 'IM Start',
+    },
+    im_ended_at: {
+        id: 'iaso.polio.form.label.imEnd',
+        defaultMessage: 'IM End',
+    },
+    lqas_started_at: {
+        id: 'iaso.polio.form.label.lqasStart',
+        defaultMessage: 'LQAS Start',
+    },
+    lqas_ended_at: {
+        id: 'iaso.polio.form.label.lqasEnd',
+        defaultMessage: 'LQAS End',
+    },
+    mustBeAfterSubActivityEndDate: {
+        id: 'iaso.polio.form.label.mustBeAfterSubActivityEndDate',
+        defaultMessage: 'Must be after sub-activity end date',
+    },
+    mustBeAfterRoundStartDate: {
+        id: 'iaso.polio.form.label.mustBeAfterRoundStartDate',
+        defaultMessage: 'Must be after round start date',
+    },
 });
 
 export default MESSAGES;

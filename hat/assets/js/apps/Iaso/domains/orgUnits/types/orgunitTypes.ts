@@ -1,7 +1,6 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { Form } from '../../forms/types/forms';
 import { OrgUnit } from './orgUnit';
-/* eslint-disable camelcase */
 
 type FeatureFlag = {
     id: number;
@@ -51,4 +50,5 @@ export interface PaginatedOrgUnitTypes extends Pagination {
 export type OrgUnitTypesParams = UrlParams & {
     accountId?: string;
     search?: string;
+    with_units_count?: boolean;
 };

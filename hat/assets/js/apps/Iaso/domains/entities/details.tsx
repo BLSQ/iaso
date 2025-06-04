@@ -1,31 +1,30 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    useGoBack,
-    LoadingSpinner,
-    LinkButton,
-} from 'bluesquare-components';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { baseUrls } from '../../constants/urls';
-import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
-import { useGetBeneficiaryFields } from './hooks/useGetBeneficiaryFields';
-import { Beneficiary } from './types/beneficiary';
-import { useBeneficiariesDetailsColumns } from './config';
+import {
+    commonStyles,
+    LoadingSpinner,
+    useGoBack,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import { XlsxButton } from '../../components/Buttons/XslxButton';
-import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
+import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { EntityBaseInfo } from './components/EntityBaseInfo';
+import { useEntitiesDetailsColumns } from './config';
+import { useGetEntity, useGetSubmissions } from './hooks/requests';
+import { useGetEntityFields } from './hooks/useGetEntityFields';
+import MESSAGES from './messages';
+import { Entity } from './types/entity';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
-    fullWidth: { width: '100%' },
+    fullWidth: { width: '100%', height: 'auto' },
 }));
 
 export const Details: FunctionComponent = () => {
@@ -36,14 +35,14 @@ export const Details: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
 
     const {
-        data: beneficiary,
+        data: entity,
     }: {
-        data?: Beneficiary;
-    } = useGetBeneficiary(entityId as string);
-    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
-        useGetBeneficiaryFields(beneficiary);
+        data?: Entity;
+    } = useGetEntity(entityId as string);
+    const { isLoading: isLoadingEntityFields, fields: entityFields } =
+        useGetEntityFields(entity);
 
-    const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
+    const columns = useEntitiesDetailsColumns(entity?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,
@@ -51,99 +50,76 @@ export const Details: FunctionComponent = () => {
     );
 
     const duplicates = useMemo(() => {
-        return beneficiary?.duplicates ?? [];
-    }, [beneficiary]);
+        return entity?.duplicates ?? [];
+    }, [entity]);
 
     const duplicateUrl =
         duplicates.length === 1
             ? `/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
             : `/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
-    const isLoading =
-        !beneficiary || isLoadingBeneficiaryFields || isLoadingSubmissions;
+    const isLoading = !entity || isLoadingEntityFields || isLoadingSubmissions;
 
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.beneficiary)}
+                title={formatMessage(MESSAGES.entity)}
                 displayBackButton
                 goBack={goBack}
             />
             {isLoading && <LoadingSpinner />}
             {!isLoading && (
                 <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                    <Grid container spacing={2}>
-                        <Grid container item xs={4}>
-                            <BeneficiaryBaseInfo
-                                beneficiary={beneficiary}
-                                fields={beneficiaryFields}
+                    <Grid container spacing={2} alignItems="flex-start">
+                        <Grid item xs={12} md={4}>
+                            <EntityBaseInfo
+                                entity={entity}
+                                fields={entityFields}
+                                hasDuplicates={duplicates.length > 0}
+                                duplicateUrl={duplicateUrl}
                             />
                         </Grid>
-                        {duplicates.length > 0 && (
-                            <Grid
-                                container
-                                item
-                                xs={8}
-                                justifyContent="flex-end"
+
+                        <Grid item xs={12} md={8}>
+                            <WidgetPaper
+                                className={classes.fullWidth}
+                                title={formatMessage(MESSAGES.submissions)}
                             >
-                                <Box>
-                                    <LinkButton to={duplicateUrl}>
-                                        {formatMessage(MESSAGES.seeDuplicates)}
-                                    </LinkButton>
-                                </Box>
-                            </Grid>
-                        )}
-                        {/* TODO uncomment when edition is possible */}
-                        {/* <Grid container item xs={1}>
-                        <Box ml={2}>
-                            <EditIcon
-                                onClick={() => {
-                                    console.log(
-                                        'Edit Beneficiary',
-                                        beneficiary?.name,
-                                        entityId,
-                                    );
-                                    // eslint-disable-next-line no-alert
-                                    alert('Entity edition');
-                                }}
-                                color="action"
-                            />
-                        </Box>
-                    </Grid> */}
-                    </Grid>
-                    <Box mt={2}>
-                        <WidgetPaper
-                            className={classes.fullWidth}
-                            title={formatMessage(MESSAGES.submissions)}
-                        >
-                            <TableWithDeepLink
-                                marginTop={false}
-                                countOnTop={false}
-                                elevation={0}
-                                baseUrl={baseUrls.entityDetails}
-                                data={data?.instances ?? []}
-                                pages={data?.pages}
-                                defaultSorted={[{ id: 'id', desc: false }]}
-                                columns={columns}
-                                count={data?.count}
-                                params={params}
-                                extraProps={{
-                                    loading: isLoadingSubmissions,
-                                }}
-                            />
-                            <Divider />
-                            <Box display="flex" py={2}>
-                                <Box mr={1} ml={2}>
-                                    <CsvButton
-                                        csvUrl={`/api/entities/?csv=true&id=${entityId}`}
+                                <Divider />
+                                <TableWithDeepLink
+                                    marginTop={false}
+                                    marginBottom={false}
+                                    countOnTop={false}
+                                    elevation={0}
+                                    baseUrl={baseUrls.entityDetails}
+                                    data={data?.instances ?? []}
+                                    pages={data?.pages}
+                                    defaultSorted={[{ id: 'id', desc: false }]}
+                                    columns={columns}
+                                    count={data?.count}
+                                    params={params}
+                                    extraProps={{
+                                        loading: isLoadingSubmissions,
+                                    }}
+                                />
+                                <Divider />
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    p={2}
+                                >
+                                    <Box mr={1} ml={2}>
+                                        <CsvButton
+                                            csvUrl={`/api/entities/?csv=true&id=${entityId}`}
+                                        />
+                                    </Box>
+                                    <XlsxButton
+                                        xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
                                     />
                                 </Box>
-                                <XlsxButton
-                                    xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
-                                />
-                            </Box>
-                        </WidgetPaper>
-                    </Box>
+                            </WidgetPaper>
+                        </Grid>
+                    </Grid>
                 </Box>
             )}
         </>

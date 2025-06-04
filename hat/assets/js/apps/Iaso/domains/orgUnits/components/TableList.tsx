@@ -1,62 +1,52 @@
 import React, {
     FunctionComponent,
+    useCallback,
     useMemo,
     useState,
-    useCallback,
 } from 'react';
-import { Box } from '@mui/material';
 import EditIcon from '@mui/icons-material/Settings';
+import { Box } from '@mui/material';
 import {
-    useSafeIntl,
     selectionInitialState,
     setTableSelection,
-    useSkipEffectOnMount,
+    useSafeIntl,
 } from 'bluesquare-components';
 
-// COMPONENTS
 import { UseMutateAsyncFunction } from 'react-query';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
-// COMPONENTS
 
-// TYPES
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
+
+import { useQueryUpdateListener } from '../../../hooks/useQueryUpdateListener';
+import { ORG_UNITS } from '../../../utils/permissions';
+import {
+    useCheckUserHasWriteTypePermission,
+    useCurrentUser,
+} from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { Result as OrgUnitResult } from '../hooks/requests/useGetOrgUnits';
+import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
+import MESSAGES from '../messages';
 import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
 import { Selection } from '../types/selection';
-import { Result as OrgUnitResult } from '../hooks/requests/useGetOrgUnits';
-// TYPES
-
-// UTILS
 import { decodeSearch } from '../utils';
-// UTILS
-
-// CONSTANTS
-import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
-// CONSTANTS
-
-// HOOKS
-import { useGetOrgUnitsTableColumns } from '../hooks/useGetOrgUnitsTableColumns';
-import { userHasPermission } from '../../users/utils';
-import { ORG_UNITS } from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-// HOOKS
+import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
 
 type Props = {
     params: OrgUnitParams;
-    resetPageToOne: string;
-    orgUnitsData: OrgUnitResult;
+    orgUnitsData?: OrgUnitResult;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
 };
 
 const baseUrl = baseUrls.orgUnits;
 export const TableList: FunctionComponent<Props> = ({
     params,
-    resetPageToOne,
     orgUnitsData,
     saveMulti,
 }) => {
     const { formatMessage } = useSafeIntl();
+
     const currentUser = useCurrentUser();
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -98,10 +88,21 @@ export const TableList: FunctionComponent<Props> = ({
         ],
         [formatMessage, multiEditDisabled, setMultiActionPopupOpen],
     );
+    const checkUserHasWriteTypePermission =
+        useCheckUserHasWriteTypePermission();
 
-    useSkipEffectOnMount(() => {
-        handleTableSelection('reset');
-    }, [resetPageToOne]);
+    const getIsSelectionDisabled = useCallback(
+        (ou: OrgUnit) => !checkUserHasWriteTypePermission(ou.org_unit_type_id),
+        [checkUserHasWriteTypePermission],
+    );
+
+    useQueryUpdateListener({
+        queryKey: 'orgunits',
+        onUpdate: () => {
+            handleTableSelection('reset');
+        },
+    });
+
     return (
         <>
             <OrgUnitsMultiActionsDialog
@@ -111,9 +112,8 @@ export const TableList: FunctionComponent<Props> = ({
                 selection={selection}
                 saveMulti={saveMulti}
             />
-            <Box mt={-4}>
+            <Box mt={-4} pb={2}>
                 <TableWithDeepLink
-                    resetPageToOne={resetPageToOne}
                     data={orgUnitsData?.orgunits || []}
                     count={orgUnitsData?.count}
                     pages={orgUnitsData?.pages}
@@ -123,6 +123,8 @@ export const TableList: FunctionComponent<Props> = ({
                     marginTop={false}
                     extraProps={{
                         columns,
+                        data: orgUnitsData?.orgunits || [],
+                        count: orgUnitsData?.count,
                     }}
                     multiSelect
                     selection={selection}
@@ -130,6 +132,7 @@ export const TableList: FunctionComponent<Props> = ({
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
+                    getIsSelectionDisabled={getIsSelectionDisabled}
                 />
             </Box>
         </>

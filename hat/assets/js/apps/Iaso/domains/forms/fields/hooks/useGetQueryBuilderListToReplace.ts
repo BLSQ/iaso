@@ -1,5 +1,5 @@
 import { QueryBuilderListToReplace } from 'bluesquare-components';
-import { purple, blue } from '@mui/material/colors';
+import { blue, purple, green, red } from '@mui/material/colors';
 
 export const useGetQueryBuilderListToReplace =
     (): QueryBuilderListToReplace[] => {
@@ -7,6 +7,14 @@ export const useGetQueryBuilderListToReplace =
             {
                 color: purple[700],
                 items: ['AND', 'OR'],
+            },
+            {
+                color: green[700],
+                items: ['SOME OF', 'ALL OF', 'HAVE'],
+            },
+            {
+                color: red[700],
+                items: ['NONE OF'],
             },
             {
                 color: blue[700],

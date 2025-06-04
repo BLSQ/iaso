@@ -10,8 +10,6 @@ def move_preparedness_to_round(apps, schema_editor):
             round = Round()
         else:
             round = c.round_one
-        if round.preparedness_spreadsheet_url:
-            print(f"{c} - {round}, already has a spreadsheet, skipping")
         round.preparedness_spreadsheet_url = c.preperadness_spreadsheet_url
 
         round.save()

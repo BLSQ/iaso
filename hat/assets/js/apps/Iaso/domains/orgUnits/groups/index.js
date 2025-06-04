@@ -6,10 +6,11 @@ import {
     commonStyles,
     Table,
     AddButton,
-    useSafeIntl,useRedirectTo
+    useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
-import Filters from './components/Filters';
+import { Filters } from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 import tableColumns from './config';
 import MESSAGES from './messages';

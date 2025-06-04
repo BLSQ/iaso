@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export type SubTeam = {
     id: number;
     name: string;

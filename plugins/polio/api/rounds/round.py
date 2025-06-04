@@ -6,13 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
+from iaso.api.common import HasPermission, ModelViewSet
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
-    RoundDateHistoryEntrySerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
-from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope, Campaign
+from plugins.polio.models import Campaign, ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -35,6 +34,10 @@ class RoundSerializer(serializers.ModelSerializer):
 
     # Vaccines from real scopes, from property, separated by ,
     vaccine_names = serializers.CharField(read_only=True)
+    vaccine_names_extended = serializers.SerializerMethodField(read_only=True)
+
+    def get_vaccine_names_extended(self, obj):
+        return obj.vaccine_names_extended
 
     @atomic
     def create(self, validated_data):
@@ -46,10 +49,11 @@ class RoundSerializer(serializers.ModelSerializer):
         if datelogs:
             raise serializers.ValidationError({"datelogs": "Cannot have modification history for new round"})
         round = Round.objects.create(**validated_data)
+        round.add_chronogram()
         if started_at is not None or ended_at is not None:
             reason_for_delay = ReasonForDelay.objects.filter(key_name="INITIAL_DATA").first()
             datelog = RoundDateHistoryEntry.objects.create(
-                round=round, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+                round=round, reason_for_delay=reason_for_delay, modified_by=user
             )
             if started_at is not None:
                 datelog.started_at = started_at
@@ -91,7 +95,7 @@ class RoundSerializer(serializers.ModelSerializer):
                     # Fallback on first reason available for account
                     reason_for_delay = ReasonForDelay.filter(account=account).first()
                 datelog = RoundDateHistoryEntry.objects.create(
-                    round=instance, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+                    round=instance, reason_for_delay=reason_for_delay, modified_by=user
                 )
             if datelog is not None:
                 # Replace instance with key_name to avoid validation error
@@ -144,7 +148,6 @@ class RoundViewSet(ModelViewSet):
         """Don't PATCH this way, it will not do anything
         Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
         """
-        pass
 
     # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
     @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)

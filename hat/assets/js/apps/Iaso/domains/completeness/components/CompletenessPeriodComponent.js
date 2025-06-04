@@ -8,7 +8,7 @@ import {
     LoadingSpinner,
     Table,
     useSafeIntl,
-    useRedirectTo
+    useRedirectTo,
 } from 'bluesquare-components';
 import { postRequest } from 'Iaso/libs/Api.ts';
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';

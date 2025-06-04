@@ -86,9 +86,15 @@ L.Control.Zoom = L.Control.Zoom.extend({
         return container;
     },
 
-    onRemove(map) {
-        map.off('zoomend zoomlevelschange', this._updateDisabled, this);
-        // .off('zoomend zoomlevelschange', this._updateInfoValue, this)
+    onRemove() {
+        if (this._map) {
+            this._map.off(
+                'zoomend zoomlevelschange',
+                this._updateDisabled,
+                this,
+            );
+            // .off('zoomend zoomlevelschange', this._updateInfoValue, this)
+        }
     },
 
     /** ***************************************************************************
@@ -129,15 +135,16 @@ L.Control.Zoom = L.Control.Zoom.extend({
     },
     _zoomBoxStateOff() {
         this._zoomBoxActive = false;
-        this._map.off('mousedown', this._zoomBoxHandleMouseDown, this);
-        this._map.dragging.enable();
-        this._map.boxZoom.removeHooks();
-
-        L.DomUtil.removeClass(this._zoomBoxButton, 'active');
-        L.DomUtil.removeClass(
-            this._map._container,
-            'leaflet-control-boxzoom-active',
-        );
+        if (this._map) {
+            this._map.off('mousedown', this._zoomBoxHandleMouseDown, this);
+            this._map.dragging.enable();
+            this._map.boxZoom.removeHooks();
+            L.DomUtil.removeClass(this._zoomBoxButton, 'active');
+            L.DomUtil.removeClass(
+                this._map._container,
+                'leaflet-control-boxzoom-active',
+            );
+        }
     },
     _zoomBoxHandleMouseDown(event) {
         L.DomEvent.stopPropagation(event);

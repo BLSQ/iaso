@@ -51,13 +51,13 @@ class AppsAPITestCase(APITestCase):
     def test_apps_retrieve_current_not_found(self):
         """GET /apps/current/?app_id= with wrong app id"""
 
-        response = self.client.get(f"/api/apps/current/?app_id=notanappid")
+        response = self.client.get("/api/apps/current/?app_id=notanappid")
         self.assertJSONResponse(response, 404)
 
     def test_apps_retrieve_current_no_app_id(self):
         """GET /apps/current/?app_id= without app id"""
 
-        response = self.client.get(f"/api/apps/current/")
+        response = self.client.get("/api/apps/current/")
         self.assertJSONResponse(response, 404)
 
     def test_apps_retrieve_current_ok_1(self):
@@ -114,7 +114,7 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": False,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -128,7 +128,7 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": False,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -136,7 +136,7 @@ class AppsAPITestCase(APITestCase):
 
         candidated_app_2 = {"name": "This is a new app 2", "app_id": "com.this.is.new.app", "feature_flags": []}
         response = self.client.post(
-            f"/api/apps/", candidated_app_2, format="json"
+            "/api/apps/", candidated_app_2, format="json"
         )  # "can't create two apps with the same id"
         self.assertJSONResponse(response, 400)
 
@@ -148,7 +148,7 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": False,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
 
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
@@ -159,7 +159,7 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": True,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
@@ -171,7 +171,7 @@ class AppsAPITestCase(APITestCase):
             "feature_flags": [{"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code}],
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidAppData(response_data)
@@ -186,7 +186,7 @@ class AppsAPITestCase(APITestCase):
             "needs_authentication": False,
         }
 
-        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        response = self.client.post("/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_app_update_and_commit_require_auth_ok_with_auth(self):

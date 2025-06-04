@@ -1,6 +1,10 @@
 from typing import Tuple
 
 from lxml import etree  # type: ignore
+from lxml.etree import XMLParser
+
+from iaso.utils.emoji import fix_emoji
+
 
 ENKETO_FORM_ID_SEPARATOR = "-"
 
@@ -80,10 +84,12 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> Tupl
     """ "Inject the attribute in different place in the xml
     Return the uuid found in the xml
     """
+    # use custom parser to match the recover flag as in beautifulsoup while flattening
+    lxml_parser = XMLParser(huge_tree=True, recover=True)
     xml_str = instance_xml.decode("utf-8")
     #  Get the instanceID (uuid) from the //meta/instanceID
     #  We have an uuid on instance. but it seems not always filled?
-    root = etree.fromstring(xml_str)
+    root = etree.fromstring(fix_emoji(xml_str), parser=lxml_parser)
     instance_id_tag = root.find(".//meta/instanceID")
     instance_uuid = instance_id_tag.text.replace("uuid:", "")  # type: ignore
 

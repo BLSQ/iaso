@@ -1,8 +1,8 @@
-/* eslint-disable camelcase */
 import { Pagination } from 'bluesquare-components';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { User } from '../../../utils/usersUtils';
-import { Beneficiary } from '../../entities/types/beneficiary';
+import { Entity } from '../../entities/types/entity';
+import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Lock = {
     id: number;
@@ -16,7 +16,17 @@ export type ShortFile = {
     itemId: number;
     createdAt: number;
     path: string;
+    file_type?: MimeType;
 };
+
+export type File = {
+    id: number;
+    instance_id: number;
+    file: string;
+    created_at: number;
+    file_type: MimeType;
+};
+
 export type Instance = {
     uuid: string;
     id: number;
@@ -46,7 +56,9 @@ export type Instance = {
     is_locked: boolean;
     is_instance_of_reference_form: boolean;
     is_reference_instance: boolean;
-    entity: Beneficiary;
+    entity: Entity;
+    source_created_at: number;
+    change_requests: Array<OrgUnitChangeRequest>;
 };
 
 export type InstanceLogDetail = {
@@ -73,6 +85,8 @@ export type InstanceLogData = {
     new_value: NewValue[];
     source: string;
     user: User;
+    possible_fields: Record<string, any>[];
+    files: string[];
 };
 
 type FormVersions = {
@@ -85,7 +99,67 @@ export type FormDescriptor = {
 export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
+    logAFiles: string[];
+    logBFiles: string[];
+    fields: Record<string, any>[];
 };
 export interface PaginatedInstances extends Pagination {
     instances: Instance[];
 }
+
+export type CheckBulkGpsPushResult = {
+    result: string;
+    warning_no_location?: number[];
+    warning_overwrite?: number[];
+    error_ids?: number[];
+};
+
+export type CheckReferenceSubmissionLinkResult = {
+    result: string;
+    linked?: number[];
+    not_linked?: number[];
+    warning?: number[];
+};
+export type MimeType =
+    // Text
+    | 'text/plain'
+    | 'text/html'
+    | 'text/css'
+    | 'text/javascript'
+    // Image
+    | 'image/jpeg'
+    | 'image/png'
+    | 'image/gif'
+    | 'image/svg+xml'
+    | 'image/webp'
+    // Audio
+    | 'audio/mpeg'
+    | 'audio/ogg'
+    | 'audio/wav'
+    // Video
+    | 'video/mp4'
+    | 'video/mpeg'
+    | 'video/webm'
+    | 'video/ogg'
+    // Application
+    | 'application/json'
+    | 'application/xml'
+    | 'application/zip'
+    | 'application/pdf'
+    | 'application/sql'
+    | 'application/graphql'
+    | 'application/ld+json'
+    | 'application/msword'
+    | 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    | 'application/vnd.ms-excel'
+    | 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    | 'application/vnd.ms-powerpoint'
+    | 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+    // Font
+    | 'font/ttf'
+    | 'font/woff'
+    | 'font/woff2'
+    // Other
+    | 'application/octet-stream'
+    | 'multipart/form-data'
+    | 'application/x-www-form-urlencoded';

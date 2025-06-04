@@ -1,9 +1,10 @@
-import React from 'react';
+import { Box } from '@mui/material';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
-import { Box } from '@mui/material';
+import React from 'react';
+import { renderWithIntl } from '../../../../test/utils/intl';
+import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 import { Checkboxes } from './Checkboxes';
-import { renderWithStore } from '../../../../test/utils/redux';
 import InputComponent from './InputComponent';
 
 let component;
@@ -40,8 +41,13 @@ const checkboxesProp = () => {
 };
 const renderComponent = props => {
     component = mount(
-        renderWithStore(
-            <Checkboxes inline={props.inline} checkboxes={props.checkboxes} />,
+        renderWithMuiTheme(
+            renderWithIntl(
+                <Checkboxes
+                    inline={props.inline}
+                    checkboxes={props.checkboxes}
+                />,
+            ),
         ),
     );
 };

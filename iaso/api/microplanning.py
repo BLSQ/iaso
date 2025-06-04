@@ -1,26 +1,26 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import serializers, filters
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from hat.audit.audit_mixin import AuditMixin
-from iaso.permissions import ReadOnly
 
+from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
+from hat.menupermissions import models as permission
 from iaso.api.common import (
-    ModelViewSet,
+    DateTimestampField,
     DeletionFilterBackend,
+    ModelViewSet,
     ReadOnlyOrHasPermission,
     TimestampField,
-    DateTimestampField,
 )
-from iaso.models import Project, OrgUnit, Form, OrgUnitType
-from iaso.models.microplanning import Team, TeamType, Planning, Assignment
+from iaso.models import Form, OrgUnit, OrgUnitType, Project
+from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
-from hat.menupermissions import models as permission
+from iaso.permissions import ReadOnly
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -72,6 +72,7 @@ class TeamSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "project",
+            "project_details",
             "name",
             "description",
             "created_at",
@@ -88,6 +89,7 @@ class TeamSerializer(serializers.ModelSerializer):
 
     users_details = NestedUserSerializer(many=True, read_only=True, source="users")
     sub_teams_details = NestedTeamSerializer(many=True, read_only=True, source="sub_teams")
+    project_details = NestedProjectSerializer(many=False, read_only=True, source="project")
 
     def validate_parent(self, value: Team):
         if value is not None and value.type not in (None, TeamType.TEAM_OF_TEAMS):
@@ -239,7 +241,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
     permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
-    ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
+    ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
     filterset_fields = {
         "id": ["in"],
         "name": ["icontains"],
@@ -307,13 +309,13 @@ class PlanningSerializer(serializers.ModelSerializer):
 
         forms = validated_data.get("forms", self.instance.forms if self.instance else None)
         for form in forms:
-            if not form in project.forms.all():
+            if form not in project.forms.all():
                 validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:
             org_unit_projects = org_unit.org_unit_type.projects.all()
-            if not project in org_unit_projects:
+            if project not in org_unit_projects:
                 validation_errors["org_unit"] = "planningAndOrgUnit"
         if validation_errors:
             raise serializers.ValidationError(validation_errors)
@@ -532,7 +534,7 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
 
     def save(self):
         # ensure that we can't save from here
-        raise NotImplemented
+        raise NotImplementedError
 
     class Meta:
         model = Planning
@@ -560,9 +562,9 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
         for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
             out_set = set(out.form_set.values_list("id", flat=True))
             intersection = out_set.intersection(planning_form_set)
-            forms_per_ou_type[
-                out.id
-            ] = intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
+            forms_per_ou_type[out.id] = (
+                intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
+            )
 
         for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
             # TODO: investigate type error on next line

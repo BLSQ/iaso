@@ -1,17 +1,14 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Box } from '@mui/material';
+import { Box, Paper } from '@mui/material';
 
 import { Table } from 'bluesquare-components';
 
-import { AssignmentsApi } from '../types/assigment';
-import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
-
-import { Profile } from '../../../utils/usersUtils';
-
-import { useColumns } from '../configs/AssignmentsMapTabColumns';
-
-import { AssignmentUnit } from '../types/locations';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { Profile } from '../../../utils/usersUtils';
+import { useColumns } from '../configs/AssignmentsMapTabColumns';
+import { AssignmentsApi } from '../types/assigment';
+import { AssignmentUnit } from '../types/locations';
+import { DropdownTeamsOptions, SubTeam, Team, User } from '../types/team';
 
 type Props = {
     data: SubTeam[] | User[];
@@ -19,10 +16,8 @@ type Props = {
     currentTeam: Team | undefined;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
-    // eslint-disable-next-line no-unused-vars
     setItemColor: (color: string, teamId: number) => void;
     selectedItem: SubTeam | User | undefined;
-    // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
     orgUnits: Array<AssignmentUnit>;
     isLoadingAssignments: boolean;
@@ -73,6 +68,7 @@ export const Sidebar: FunctionComponent<Props> = ({
                         assignments,
                         loading: !currentTeam,
                         orgUnits,
+                        isLoadingAssignments,
                     }}
                 />
             </Box>

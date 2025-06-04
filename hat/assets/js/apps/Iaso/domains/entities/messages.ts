@@ -1,13 +1,13 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    beneficiaries: {
-        id: 'iaso.label.beneficiaries',
-        defaultMessage: 'Beneficiaries',
+    entities: {
+        id: 'iaso.label.entities',
+        defaultMessage: 'Entities',
     },
-    beneficiary: {
-        id: 'iaso.label.beneficiary',
-        defaultMessage: 'Beneficiary',
+    entity: {
+        id: 'iaso.label.entity',
+        defaultMessage: 'Entity',
     },
     lastVisit: {
         id: 'iaso.entities.lastVisit',
@@ -125,9 +125,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Details',
         id: 'iaso.entities.label.details',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     uuid: {
         defaultMessage: 'Uuid',
@@ -252,6 +252,10 @@ const MESSAGES = defineMessages({
     groups: {
         defaultMessage: 'Group',
         id: 'iaso.label.group',
+    },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
     },
 });
 

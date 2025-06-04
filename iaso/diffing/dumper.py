@@ -2,6 +2,8 @@ import csv
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
+from django.core.serializers.json import DjangoJSONEncoder
+from django.forms import model_to_dict
 
 from iaso.management.commands.command_logger import CommandLogger
 
@@ -18,14 +20,19 @@ def color(status):
     return CommandLogger.END
 
 
-class ShapelyJsonEncoder(json.JSONEncoder):
-    def __init__(self, **kwargs):
-        super(ShapelyJsonEncoder, self).__init__(**kwargs)
-
+class DiffJSONEncoder(DjangoJSONEncoder):
     def default(self, obj):
-        if hasattr(obj, "as_dict"):
+        if obj.__class__.__name__ in ["Diff", "Comparison"]:
             return obj.as_dict()
-        return obj.wkt
+        if obj.__class__.__name__ == "OrgUnit":
+            return model_to_dict(obj)
+        if obj.__class__.__name__ == "PathValue":
+            # See django_ltree.fields
+            # https://github.com/mariocesar/django-ltree/blob/154c7e/django_ltree/fields.py#L27-L28
+            return str(obj)
+        if obj.__class__.__name__ == "MultiPolygon":
+            return obj.wkt
+        return super().default(obj)
 
 
 class Dumper:
@@ -36,7 +43,7 @@ class Dumper:
         stats_ou = {}
 
         for diff in diffs:
-            if not diff.status in stats_ou:
+            if diff.status not in stats_ou:
                 stats_ou[diff.status] = 1
             else:
                 stats_ou[diff.status] += 1
@@ -45,12 +52,12 @@ class Dumper:
 
         for diff in diffs:
             for comp in diff.comparisons:
-                if not comp.field in stats_comparison_by_field:
+                if comp.field not in stats_comparison_by_field:
                     stats_comparison_by_field[comp.field] = {}
                 comp_stats = stats_comparison_by_field[comp.field]
-                if not comp.status in comp_stats:
+                if comp.status not in comp_stats:
                     comp_stats[comp.status] = {}
-                if not "count" in comp_stats[comp.status]:
+                if "count" not in comp_stats[comp.status]:
                     comp_stats[comp.status]["count"] = 1
                 else:
                     comp_stats[comp.status]["count"] += 1
@@ -60,8 +67,11 @@ class Dumper:
         self.iaso_logger.info(json.dumps(stats, indent=4))
         return stats
 
+    def as_json(self, diffs):
+        return json.dumps(diffs, indent=4, cls=DiffJSONEncoder)
+
     def dump_as_json(self, diffs):
-        self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
+        self.iaso_logger.info(self.as_json(diffs))
 
     def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):
         res = []
@@ -70,7 +80,7 @@ class Dumper:
 
         diffable_fields = []
         for field in fields:
-            if field.startswith("groupset:"):
+            if field.startswith(("groupset:", "group:")):
                 diffable_fields.append(field.split(":")[2])
             else:
                 diffable_fields.append(field)
@@ -105,9 +115,7 @@ class Dumper:
                     if "POINT Z" in str(comparison.before) and comparison.after:
                         if str(comparison.before)[:40] != str(comparison.after)[:40]:
                             results.append(
-                                "{:.3f}".format(
-                                    GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100
-                                )
+                                f"{GEOSGeometry(comparison.before).distance(GEOSGeometry(str(comparison.after))) * 100:.3f}"
                             )
                         else:
                             results.append(0)

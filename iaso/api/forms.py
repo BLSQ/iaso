@@ -1,30 +1,33 @@
 import typing
+
 from copy import copy
 from datetime import timedelta
 from xml.sax.saxutils import escape
 
-from django.db.models import Max, Q, Count
-from django.http import StreamingHttpResponse, HttpResponse
+from django.db.models import BooleanField, Case, Count, Max, Q, When
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions, status
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
-from django.db.models import Count, BooleanField, Case, When
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from hat.audit.models import log_modification, FORM_API
+from hat.audit.models import FORM_API, log_modification
 from hat.menupermissions import models as permission
-from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
-from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.utils.date_and_time import timestamp_to_datetime
+
+from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 
 
-class HasFormPermission(permissions.BasePermission):
+class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
-            return True
+            return super().has_permission(request, view)
 
         return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 
@@ -107,6 +110,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "legend_threshold",
             "change_request_mode",
             "has_mappings",
+            "possible_fields_with_latest_version",
         ]
         read_only_fields = [
             "id",
@@ -142,10 +146,11 @@ class FormSerializer(DynamicFieldsModelSerializer):
     has_attachments = serializers.SerializerMethodField()
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
+    possible_fields_with_latest_version = serializers.SerializerMethodField()
 
     @staticmethod
     def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version is not None else None
+        return obj.latest_version.as_dict() if obj.latest_version else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):
@@ -158,6 +163,18 @@ class FormSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def get_has_attachments(obj: Form):
         return len(obj.attachments.all()) > 0
+
+    @staticmethod
+    def get_possible_fields_with_latest_version(obj: Form):
+        latest_version = obj.latest_version
+        if not latest_version:
+            return obj.possible_fields
+
+        # Get the field names from the latest version
+        latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
+
+        # Add a flag to each possible field indicating if it's part of the latest version
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
@@ -172,15 +189,22 @@ class FormSerializer(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
-        if "period_type" in data and data["period_type"] is None:
+        if "period_type" in data:
             tracker_errors = {}
-            if data["periods_before_allowed"] != 0:
-                tracker_errors["periods_before_allowed"] = "Should be 0"
-            if data["periods_after_allowed"] != 0:
-                tracker_errors["periods_after_allowed"] = "Should be 0"
+            if data["period_type"] is None:
+                if data["periods_before_allowed"] != 0:
+                    tracker_errors["periods_before_allowed"] = "Should be 0 when period type is not specified"
+                if data["periods_after_allowed"] != 0:
+                    tracker_errors["periods_after_allowed"] = "Should be 0 when period type is not specified"
+            else:
+                before = data.get("periods_before_allowed", 0)
+                after = data.get("periods_after_allowed", 0)
+                if before + after < 1:
+                    tracker_errors["periods_allowed"] = (
+                        "periods_before_allowed + periods_after_allowed should be greater than or equal to 1"
+                    )
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
-
         return data
 
     def update(self, form, validated_data):
@@ -233,7 +257,9 @@ class FormsViewSet(ModelViewSet):
         if show_deleted == "true":
             form_objects = Form.objects_only_deleted
 
-        queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+        queryset = form_objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        ).filter_on_user_projects(self.request.user)
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
@@ -313,6 +339,21 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
+        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+        queryset = queryset.prefetch_related(
+            "form_versions",
+            "projects",
+            "projects__feature_flags",
+            "reference_of_org_unit_types",
+            "org_unit_types",
+            "org_unit_types__reference_forms",
+            "org_unit_types__sub_unit_types",
+            "org_unit_types__allow_creating_sub_unit_types",
+        )
+
+        # optimize latest version loading to not trigger a select n+1 on form_version
+        queryset = queryset.with_latest_version()
+
         # TODO: allow this only from a predefined list for security purposes
         order = self.request.query_params.get("order", "instance_updated_at").split(",")
         queryset = queryset.order_by(*order)
@@ -328,7 +369,7 @@ class FormsViewSet(ModelViewSet):
 
         if csv_format:
             return self.list_to_csv()
-        elif xlsx_format:
+        if xlsx_format:
             return self.list_to_xlsx()
 
         return super().list(request, *args, **kwargs)

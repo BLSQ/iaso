@@ -1,17 +1,18 @@
 import tempfile
 import typing
+
 from unittest import mock
 
+from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
-from django.contrib.auth.models import AnonymousUser
-
 
 from iaso import models as m
 from iaso.models.org_unit import OrgUnitType
 from iaso.models.project import Project
 from iaso.test import APITestCase
+
 
 BASE_URL = "/api/formversions/"
 
@@ -27,7 +28,7 @@ def create_add_form(f_name: str, o_unit_type: OrgUnitType, add_to_project: Proje
 
     form_1_file_mock = mock.MagicMock(spec=File)
     form_1_file_mock.name = "test.xml"
-    with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
+    with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
         the_form.form_versions.create(file=form_1_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401")
 
     the_form.save()

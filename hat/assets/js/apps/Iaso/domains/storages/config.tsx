@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React from 'react';
 import {
     useSafeIntl,
@@ -41,7 +40,7 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             width: 80,
             Cell: settings => {
                 const { storage_id } = settings.row.original;
-                return <>{storage_id || '--'}</>;
+                return <span>{storage_id || '--'}</span>;
             },
         },
         {
@@ -92,7 +91,7 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             id: 'type',
             Cell: settings => {
                 const { storage_type } = settings.row.original;
-                return <>{storage_type || '--'}</>;
+                return <span>{storage_type || '--'}</span>;
             },
         });
     }

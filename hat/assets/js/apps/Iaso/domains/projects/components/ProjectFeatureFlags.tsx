@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
 
 import { FeatureFlag } from '../types/featureFlag';
@@ -10,7 +9,6 @@ export type Form = {
 };
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: string) => void;
     projectFeatureFlagsValues: (string | number)[];
     featureFlags?: FeatureFlag[];

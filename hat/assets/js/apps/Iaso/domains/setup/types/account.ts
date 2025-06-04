@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export type SaveAccountQuery = {
     account_name: string;
     user_username: string;

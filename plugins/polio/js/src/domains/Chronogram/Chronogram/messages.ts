@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.campaign_obr_name',
         defaultMessage: 'Campaign',
     },
+    filterLabelCampaign: {
+        id: 'iaso.polio.chronogram.filter.label.campaign',
+        defaultMessage: 'Campaign',
+    },
     filterLabelCountry: {
         id: 'iaso.polio.chronogram.filter.label.country',
         defaultMessage: 'Country',
@@ -116,6 +120,10 @@ const MESSAGES = defineMessages({
     requiredUuid: {
         id: 'iaso.forms.error.requiredUuid',
         defaultMessage: 'Please use an UUID',
+    },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
     },
 });
 

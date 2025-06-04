@@ -1,31 +1,28 @@
-/* eslint-disable camelcase */
-import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { FieldProps, useField } from 'formik';
-import cloneDeep from 'lodash/cloneDeep';
 import React, {
     FunctionComponent,
     ReactNode,
     useCallback,
     useState,
 } from 'react';
+import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { FieldProps, useField } from 'formik';
+import cloneDeep from 'lodash/cloneDeep';
 
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import MESSAGES from '../../../constants/messages';
 
+import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
+import { PolioVaccine } from '../../../constants/virus';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { DistrictScopeTable } from './Scopes/DistrictScopeTable';
 import { MapScope } from './Scopes/MapScope';
-
-import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
-import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { FilteredDistricts } from './Scopes/types';
-import { PolioVaccine } from '../../../constants/virus';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
-    // eslint-disable-next-line no-unused-vars
     searchScope: boolean;
     onChangeSearchScope: () => void;
     isFetchingDistricts: boolean;
@@ -34,7 +31,6 @@ type ExtraProps = {
     regionShapes?: OrgUnit[];
     searchComponent: ReactNode;
     page: number;
-    // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     campaign: CampaignFormValues; // Passing the campaign i.o getting it from formik context so we can re-use the component for subactivities
     availableVaccines?: PolioVaccine[];
@@ -75,9 +71,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
 
     const toggleRegion = useCallback(
         (selectOrgUnit: FilteredDistricts) => {
-            const orgUnitsIdInSameRegion: number[] = (districtShapes || [])
-                .filter(s => s.parent_id === selectOrgUnit.parent_id)
-                .map(s => s.id);
+            const orgUnitsInSameRegion: OrgUnit[] = (
+                districtShapes || []
+            ).filter(s => s.parent_id === selectOrgUnit.parent_id);
+
+            const validOrgUnitIdsInSameRegion: number[] = orgUnitsInSameRegion
+                .filter(orgUnit => orgUnit.validation_status === 'VALID')
+                .map(orgUnit => orgUnit.id);
+
             const newScopes: Scope[] = cloneDeep(scopes);
             let scope: Scope | undefined;
             if (!isPolio) {
@@ -100,18 +101,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
             // if all the orgunits from this region are already in this vaccine scope, remove them
             // @ts-ignore
             if (
-                orgUnitsIdInSameRegion.every(OrgUnitId =>
+                validOrgUnitIdsInSameRegion.every(OrgUnitId =>
                     // @ts-ignore
                     scope.group.org_units.includes(OrgUnitId),
                 )
             ) {
                 const orgUnits: Array<number> = [];
 
-                scope.group.org_units.forEach(OrgUnitId => {
-                    if (!orgUnitsIdInSameRegion.includes(OrgUnitId)) {
-                        orgUnits.push(OrgUnitId);
-                    }
-                });
                 scope.group.org_units = orgUnits;
             } else {
                 // Remove the OrgUnits from all the scopes
@@ -119,14 +115,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     const newScope = { ...s };
                     newScope.group.org_units = s.group.org_units.filter(
                         OrgUnitId =>
-                            !orgUnitsIdInSameRegion.includes(OrgUnitId),
+                            !validOrgUnitIdsInSameRegion.includes(OrgUnitId),
                     );
                 });
 
                 // Add the OrgUnit in the scope for selected vaccine
                 scope.group.org_units = [
                     ...scope.group.org_units,
-                    ...orgUnitsIdInSameRegion,
+                    ...validOrgUnitIdsInSameRegion,
                 ];
             }
             setScopes(newScopes);

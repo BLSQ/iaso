@@ -16,15 +16,7 @@ export const useUserRoleValidation = (
     const schema = useMemo(() => {
         return object().shape({
             name: string().nullable().required('requiredField'),
-            permissions: array()
-                .of(
-                    object({
-                        id: number(),
-                        name: string(),
-                        codename: string(),
-                    }),
-                )
-                .test(apiValidator('permissions')),
+            permissions: array().of(string()).test(apiValidator('permissions')),
         });
     }, [apiValidator]);
     return schema;

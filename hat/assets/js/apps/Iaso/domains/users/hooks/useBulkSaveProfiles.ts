@@ -24,10 +24,13 @@ export type BulkSaveQuery = {
     search?: string;
     permissions?: string;
     location?: string;
+    organization?: string;
     orgUnitTypes?: string;
     ouParent?: string;
     ouChildren?: string;
     projectsIds?: string;
+    teamsIds?: string;
+    userRoles?: string;
 };
 
 const bulkSaveProfiles = (data: BulkSaveQuery) => {
@@ -46,10 +49,13 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         search,
         permissions,
         location,
+        organization,
         orgUnitTypes,
         ouParent,
         ouChildren,
         projectsIds,
+        teamsIds,
+        userRoles,
     } = data;
     return postRequest(url, {
         roles_id_added: addRoles.map(roleId => parseInt(roleId, 10)),
@@ -71,9 +77,12 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         search,
         permissions,
         location,
+        organization,
         orgUnitTypes,
         ouParent,
         ouChildren,
+        teams: teamsIds,
+        user_roles: userRoles,
         projects: projectsIds,
     });
 };

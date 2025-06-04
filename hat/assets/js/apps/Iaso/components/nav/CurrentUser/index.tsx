@@ -1,12 +1,12 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { Popover, Typography } from '@mui/material';
+import { Box, Popover, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import classnames from 'classnames';
 import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../../../domains/app/components/messages';
 import { getDefaultSourceVersion } from '../../../domains/dataSources/utils';
 import { User } from '../../../utils/usersUtils';
-import MESSAGES from '../../../domains/app/components/messages';
+import { AccountSwitch } from '../AccountSwitch';
 
 type Props = {
     currentUser: User;
@@ -23,9 +23,11 @@ const useStyles = makeStyles(theme => ({
     currentUserInfos: {
         display: 'block',
         textAlign: 'right',
-    },
-    account: {
-        fontSize: 9,
+        cursor: 'pointer',
+        fontSize: 16,
+        '&:hover': {
+            color: theme.palette.secondary.main,
+        },
     },
     popOverInfos: {
         display: 'block',
@@ -58,27 +60,21 @@ export const CurrentUserInfos: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Typography
+            <Box
+                className={classes.currentUserInfos}
                 aria-owns={open ? 'mouse-over-popover' : undefined}
                 aria-haspopup="true"
                 onMouseEnter={handlePopoverOpen}
                 onMouseLeave={handlePopoverClose}
-                variant="body2"
             >
-                <span className={classes.currentUserInfos}>
-                    {currentUser?.user_name}
-                </span>
-
-                <span
-                    className={classnames(
-                        classes.currentUserInfos,
-                        classes.account,
-                    )}
-                >
-                    {currentUser?.account?.name}
-                </span>
-            </Typography>
-
+                {currentUser?.user_name}
+            </Box>
+            {currentUser.account && (
+                <>
+                    <Box sx={{ mx: 1 }}>-</Box>
+                    <AccountSwitch />
+                </>
+            )}
             <Popover
                 id="mouse-over-popover"
                 className={classes.popover}

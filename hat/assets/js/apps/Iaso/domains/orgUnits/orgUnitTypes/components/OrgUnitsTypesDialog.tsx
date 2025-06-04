@@ -1,46 +1,55 @@
 import React, {
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-    useMemo,
     FunctionComponent,
     ReactNode,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
 } from 'react';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { Stack, Typography } from '@mui/material';
 import {
+    ConfirmCancelModal,
+    IntlMessage,
     useSafeIntl,
     useSkipEffectOnMount,
-    IntlMessage,
+    InputWithInfos,
 } from 'bluesquare-components';
+import { isUndefined, mapValues } from 'lodash';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
-import { isUndefined, mapValues } from 'lodash';
 
-import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
-import {
-    userHasOneOfPermissions,
-    userHasPermission,
-} from '../../../users/utils';
 import { useFormState } from '../../../../hooks/form';
+import { DropdownOptions } from '../../../../types/utils';
 import {
     commaSeparatedIdsToArray,
     isFieldValid,
     isFormValid,
 } from '../../../../utils/forms';
-import { requiredFields } from '../config/requiredFields';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { Form } from '../../../forms/types/forms';
+import { useGetFormsByProjects } from '../../../instances/hooks';
 import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import {
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../../users/utils';
+import { OrgunitType } from '../../types/orgunitTypes';
+import { requiredFields } from '../config/requiredFields';
 import { useGetOrgUnitTypesDropdownOptions } from '../hooks/useGetOrgUnitTypesDropdownOptions';
 import { useSaveOrgUnitType } from '../hooks/useSaveOrgUnitType';
-import { useCurrentUser } from '../../../../utils/usersUtils';
-import { OrgunitType } from '../../types/orgunitTypes';
-import { DropdownOptions } from '../../../../types/utils';
-import { Form } from '../../../forms/types/forms';
-import * as Permission from '../../../../utils/permissions';
-import { InputWithInfos } from '../../../../components/InputWithInfos';
+import MESSAGES from '../messages';
 
+const styles = {
+    warningMessage: theme => ({
+        padding: '5px',
+        color: theme.palette.warning.main,
+    }),
+};
 const mapOrgUnitType = orgUnitType => {
     return {
         id: orgUnitType.id,
@@ -58,7 +67,6 @@ const mapOrgUnitType = orgUnitType => {
 type Props = {
     orgUnitType?: OrgunitType;
     titleMessage: IntlMessage;
-    // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
 };
 
@@ -91,6 +99,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const formStateUpdated = useRef(null);
     const projectsEmptyUpdated = useRef(null);
+    const prevProjectIds = useRef(formState.project_ids.value);
+
     const { formatMessage } = useSafeIntl();
 
     const [referenceFormsMessage, setReferenceFormsMessage] = useState(
@@ -102,10 +112,13 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const [projectsEmpty, setProjectsEmpty] = useState(
         !!isEmpty(formState.project_ids.value),
     );
+    const [selectedProjectIds, setSelectedProjectIds] = useState(null);
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+        useGetOrgUnitTypesDropdownOptions({
+            onlyWriteAccess: true,
+        });
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
@@ -168,6 +181,30 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
     const currentUser = useCurrentUser();
 
+    const handleOpenConfirmModal = useCallback(
+        newProjectIds => {
+            prevProjectIds.current = formState.project_ids.value;
+            setSelectedProjectIds(newProjectIds);
+            setConfirmCancelDialogOpen(true);
+        },
+        [formState.project_ids.value],
+    );
+
+    const handleDialogConfirm = useCallback(() => {
+        if (selectedProjectIds) {
+            setAllForms(getFormPerProjects(selectedProjectIds));
+            setFieldValue('project_ids', selectedProjectIds);
+        }
+        setSelectedProjectIds(null);
+        setConfirmCancelDialogOpen(false);
+    }, [getFormPerProjects, selectedProjectIds, setFieldValue]);
+
+    const handleDialogCancel = useCallback(() => {
+        setFieldValue('project_ids', prevProjectIds.current);
+        setSelectedProjectIds(null);
+        setConfirmCancelDialogOpen(false);
+    }, [setFieldValue]);
+
     const onChange = useCallback(
         (keyValue, value) => {
             if (
@@ -180,8 +217,12 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 if (keyValue === 'project_ids') {
                     const projectIds = value
                         ?.split(',')
-                        .map((val: string) => parseInt(val, 10));
-                    setAllForms(getFormPerProjects(projectIds));
+                        .map(val => parseInt(val, 10));
+                    if (formState.reference_forms_ids.value.length > 0) {
+                        handleOpenConfirmModal(projectIds);
+                    } else {
+                        setAllForms(getFormPerProjects(projectIds));
+                    }
                 }
             } else {
                 setFieldValue(keyValue, value);
@@ -193,7 +234,14 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 ]);
             }
         },
-        [setFieldValue, setFieldErrors, formatMessage, getFormPerProjects],
+        [
+            setFieldValue,
+            formState.reference_forms_ids.value.length,
+            handleOpenConfirmModal,
+            getFormPerProjects,
+            setFieldErrors,
+            formatMessage,
+        ],
     );
 
     const onConfirm = useCallback(
@@ -258,115 +306,154 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
         return allProjects?.concat(orgUnitypeProjects) ?? [];
     }, [allProjects, orgUnitType.projects]);
+    const [confirmCancelDialogOpen, setConfirmCancelDialogOpen] =
+        useState(false);
+
     return (
         //  @ts-ignore
-        <ConfirmCancelDialogComponent
-            id="OuTypes-modal"
-            titleMessage={titleMessage}
-            onConfirm={closeDialog => onConfirm(closeDialog)}
-            onCancel={closeDialog => {
-                closeDialog();
-                resetForm();
-            }}
-            cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
-            allowConfirm={isFormValid(requiredFields, formState)}
-            maxWidth="sm"
-            renderTrigger={renderTrigger}
-            dataTestId="OuTypes-modal"
-        >
-            <InputComponent
-                keyValue="name"
-                onChange={onChange}
-                value={formState.name.value}
-                errors={formState.name.errors}
-                type="text"
-                label={MESSAGES.name}
-                required
-            />
-
-            <InputComponent
-                keyValue="short_name"
-                onChange={onChange}
-                value={formState.short_name.value}
-                errors={formState.short_name.errors}
-                type="text"
-                label={MESSAGES.shortName}
-                required
-            />
-
-            <InputComponent
-                multi
-                clearable
-                keyValue="project_ids"
-                onChange={onChange}
-                value={formState.project_ids.value}
-                errors={formState.project_ids.errors}
-                type="select"
-                options={allProjectWithInvalids}
-                label={MESSAGES.projects}
-                required
-            />
-
-            <InputComponent
-                keyValue="depth"
-                onChange={onChange}
-                value={formState.depth.value}
-                errors={formState.depth.errors}
-                type="number"
-                label={MESSAGES.depth}
-            />
-            <InputComponent
-                multi
-                clearable
-                keyValue="sub_unit_type_ids"
-                onChange={onChange}
-                loading={isLoadingOrgUitTypes}
-                value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
-                errors={formState.sub_unit_type_ids.errors}
-                type="select"
-                options={subUnitTypes}
-                label={MESSAGES.subUnitTypes}
-            />
-            <InputWithInfos
-                infos={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+        <>
+            <ConfirmCancelDialogComponent
+                id="OuTypes-modal"
+                titleMessage={titleMessage}
+                onConfirm={closeDialog => onConfirm(closeDialog)}
+                onCancel={closeDialog => {
+                    closeDialog();
+                    resetForm();
+                }}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                allowConfirm={isFormValid(requiredFields, formState)}
+                maxWidth="sm"
+                renderTrigger={renderTrigger}
+                dataTestId="OuTypes-modal"
+                additionalButton={undefined}
+                additionalMessage={undefined}
+                onAdditionalButtonClick={undefined}
+                allowConfimAdditionalButton={undefined}
             >
                 <InputComponent
-                    multi
-                    clearable
-                    keyValue="allow_creating_sub_unit_type_ids"
+                    keyValue="name"
                     onChange={onChange}
-                    loading={isLoadingOrgUitTypes}
-                    value={
-                        allOrgUnitTypes &&
-                        formState.allow_creating_sub_unit_type_ids.value
-                    }
-                    errors={formState.allow_creating_sub_unit_type_ids.errors}
-                    type="select"
-                    options={subUnitTypes}
-                    label={MESSAGES.createSubUnitTypes}
+                    value={formState.name.value}
+                    errors={formState.name.errors}
+                    type="text"
+                    label={MESSAGES.name}
+                    required
                 />
-            </InputWithInfos>
-            {hasPermission && (
+
+                <InputComponent
+                    keyValue="short_name"
+                    onChange={onChange}
+                    value={formState.short_name.value}
+                    errors={formState.short_name.errors}
+                    type="text"
+                    label={MESSAGES.shortName}
+                    required
+                />
+
                 <InputComponent
                     multi
                     clearable
-                    keyValue="reference_forms_ids"
+                    keyValue="project_ids"
                     onChange={onChange}
-                    value={formState.reference_forms_ids.value}
-                    errors={formState.reference_forms_ids.errors}
+                    value={formState.project_ids.value}
+                    errors={formState.project_ids.errors}
                     type="select"
-                    disabled={projectsEmpty}
-                    options={
-                        allForms &&
-                        allForms.map(form => ({
-                            value: form.id,
-                            label: form.name,
-                        }))
-                    }
-                    label={referenceFormsMessage}
+                    options={allProjectWithInvalids}
+                    label={MESSAGES.projects}
+                    required
                 />
-            )}
-        </ConfirmCancelDialogComponent>
+
+                <InputComponent
+                    keyValue="depth"
+                    onChange={onChange}
+                    value={formState.depth.value}
+                    errors={formState.depth.errors}
+                    type="number"
+                    label={MESSAGES.depth}
+                />
+                <InputComponent
+                    multi
+                    clearable
+                    keyValue="sub_unit_type_ids"
+                    onChange={onChange}
+                    loading={isLoadingOrgUitTypes}
+                    value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
+                    errors={formState.sub_unit_type_ids.errors}
+                    type="select"
+                    options={subUnitTypes}
+                    label={MESSAGES.subUnitTypes}
+                />
+                <InputWithInfos
+                    infos={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+                >
+                    <InputComponent
+                        multi
+                        clearable
+                        keyValue="allow_creating_sub_unit_type_ids"
+                        onChange={onChange}
+                        loading={isLoadingOrgUitTypes}
+                        value={
+                            allOrgUnitTypes &&
+                            formState.allow_creating_sub_unit_type_ids.value
+                        }
+                        errors={
+                            formState.allow_creating_sub_unit_type_ids.errors
+                        }
+                        type="select"
+                        options={subUnitTypes}
+                        label={MESSAGES.createSubUnitTypes}
+                    />
+                </InputWithInfos>
+                {hasPermission && (
+                    <InputComponent
+                        multi
+                        clearable
+                        keyValue="reference_forms_ids"
+                        onChange={onChange}
+                        value={formState.reference_forms_ids.value}
+                        errors={formState.reference_forms_ids.errors}
+                        type="select"
+                        disabled={projectsEmpty}
+                        options={
+                            allForms &&
+                            allForms.map(form => ({
+                                value: form.id,
+                                label: form.name,
+                            }))
+                        }
+                        label={referenceFormsMessage}
+                    />
+                )}
+            </ConfirmCancelDialogComponent>
+
+            {/* @ts-ignore */}
+            <ConfirmCancelModal
+                onConfirm={() => handleDialogConfirm()}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.confirm}
+                maxWidth="md"
+                open={confirmCancelDialogOpen}
+                closeDialog={() => null}
+                onClose={() => handleDialogCancel()}
+                onCancel={() => {
+                    handleDialogCancel();
+                }}
+                id="confirm-cancel-dialog"
+                dataTestId="confirm-cancel-dialog"
+            >
+                <Stack
+                    direction="row"
+                    spacing={1}
+                    alignItems="center"
+                    sx={styles.warningMessage}
+                >
+                    <WarningAmberIcon />
+                    <Typography>
+                        {formatMessage(MESSAGES.eraseReferenceFormsWarning)}
+                    </Typography>
+                </Stack>
+            </ConfirmCancelModal>
+        </>
     );
 };

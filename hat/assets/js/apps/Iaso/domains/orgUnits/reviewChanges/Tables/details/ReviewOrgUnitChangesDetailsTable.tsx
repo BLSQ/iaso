@@ -1,16 +1,14 @@
-/* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import { Table, TableContainer } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import { TableContainer, Table } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
-import { ReviewOrgUnitChangesDetailsTableHead } from './ReviewOrgUnitChangesDetailsTableHead';
-import { ReviewOrgUnitChangesDetailsTableBody } from './ReviewOrgUnitChangesDetailsTableBody';
 import { OrgUnitChangeRequestDetails } from '../../types';
+import { ReviewOrgUnitChangesDetailsTableBody } from './ReviewOrgUnitChangesDetailsTableBody';
+import { ReviewOrgUnitChangesDetailsTableHead } from './ReviewOrgUnitChangesDetailsTableHead';
 
 type Props = {
     isSaving: boolean;
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     changeRequest?: OrgUnitChangeRequestDetails;
     isFetchingChangeRequest: boolean;
@@ -28,7 +26,7 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
     return (
-        <TableContainer sx={{ maxHeight: '75vh', minHeight: 300, mb: -2 }}>
+        <TableContainer>
             {(isFetchingChangeRequest || isSaving) && (
                 <LoadingSpinner absolute />
             )}

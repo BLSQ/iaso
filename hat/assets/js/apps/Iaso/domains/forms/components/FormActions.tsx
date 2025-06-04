@@ -1,18 +1,17 @@
-import React, { FunctionComponent, useState } from 'react';
-import { IconButton } from 'bluesquare-components';
-import { Menu, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
-import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import { useDispatch } from 'react-redux';
 import { Download } from '@mui/icons-material';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
-import * as Permission from '../../../utils/permissions';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from 'bluesquare-components';
+import React, { FunctionComponent, useState } from 'react';
+import { Link } from 'react-router-dom';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from '../messages';
-import { useRestoreForm } from '../hooks/useRestoreForm';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import * as Permission from '../../../utils/permissions';
 import { createInstance } from '../../instances/actions';
 import { useDeleteForm } from '../hooks/useDeleteForm';
+import { useRestoreForm } from '../hooks/useRestoreForm';
+import MESSAGES from '../messages';
+import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
 
 type Props = {
     settings: any;
@@ -27,7 +26,6 @@ export const FormActions: FunctionComponent<Props> = ({
     baseUrls,
     showDeleted,
 }) => {
-    const dispatch = useDispatch();
     // XLS and XML download states and functions
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -91,14 +89,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     onCreateOrReAssign={(
                                         currentForm,
                                         payload,
-                                    ) =>
-                                        dispatch(
-                                            createInstance(
-                                                currentForm,
-                                                payload,
-                                            ),
-                                        )
-                                    }
+                                    ) => createInstance(currentForm, payload)}
                                     orgUnitTypes={
                                         settings.row.original.org_unit_type_ids
                                     }
@@ -123,8 +114,12 @@ export const FormActions: FunctionComponent<Props> = ({
                                     url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                                     icon="dhis"
                                     tooltipMessage={MESSAGES.dhis2Mappings}
-                                    color={settings.row.original.has_mappings ? "primary": undefined}
-                                />                                
+                                    color={
+                                        settings.row.original.has_mappings
+                                            ? 'primary'
+                                            : undefined
+                                    }
+                                />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.FORMS]}

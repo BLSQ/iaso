@@ -8,7 +8,7 @@ from iaso.models import DataSource, SourceVersion
 
 from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
-from .tasks import TaskSerializer
+from .tasks.serializers import TaskSerializer
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -65,6 +65,17 @@ class SourceVersionSerializer(serializers.ModelSerializer):
         return source_version.orgunit_set.count()
 
 
+class SourceVersionsDropdownSerializer(serializers.ModelSerializer):
+    data_source_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
+        source="data_source", slug_field="name", read_only=True
+    )
+
+    class Meta:
+        model = SourceVersion
+        fields = ["id", "data_source", "number", "data_source_name"]
+        read_only_fields = ["id", "data_source", "number", "data_source_name"]
+
+
 class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
@@ -89,9 +100,10 @@ class SourceVersionViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS),  # type: ignore
+        HasPermission(
+            permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES
+        ),  # type: ignore
     ]
-
     serializer_class = SourceVersionSerializer
     results_key = "versions"
     queryset = DataSource.objects.all()
@@ -164,3 +176,14 @@ class SourceVersionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         task = serializer.launch_export(user=request.user)
         return Response({"task": TaskSerializer(instance=task).data})
+
+    @action(methods=["GET"], detail=False, serializer_class=SourceVersionsDropdownSerializer)
+    def dropdown(self, request, *args):
+        """To be used in dropdowns (filters)
+
+        * Read only
+        """
+
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)

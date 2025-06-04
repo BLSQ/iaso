@@ -1,17 +1,17 @@
-import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { ModuleParams } from './types/modules';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { ModulesFilters } from './components/ModulesFilters';
 import { useModulesColumns } from './config';
 import { useGetModules } from './hooks/requests/useGetModules';
-import { ModulesFilters } from './components/ModulesFilters';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import MESSAGES from './messages';
+import { ModuleParams } from './types/modules';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -50,7 +50,8 @@ export const Modules: FunctionComponent = () => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    extraProps={{ loading: isFetching }}
+                    extraProps={{ loading: isFetching, defaultPageSize: 100 }}
+                    showPagination={false}
                     columnSelectorEnabled={false}
                 />
             </Box>

@@ -118,6 +118,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.rawHtml',
         defaultMessage: 'Raw html',
     },
+    superset: {
+        id: 'iaso.pages.superset',
+        defaultMessage: 'Superset',
+    },
+    superset_dashboard_id: {
+        id: 'iaso.pages.superset_dashboard_id',
+        defaultMessage: 'Dashboard ID',
+    },
     needsAuthentication: {
         id: 'iaso.label.needsAuthentication',
         defaultMessage: 'Authentification required',
@@ -125,6 +133,10 @@ const MESSAGES = defineMessages({
     users: {
         defaultMessage: 'Users',
         id: 'iaso.label.users',
+    },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
     },
 });
 

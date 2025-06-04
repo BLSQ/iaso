@@ -56,66 +56,64 @@ export const PaymentLotsFilters: FunctionComponent<Props> = ({ params }) => {
     );
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={3}>
-                    <Box mt={2}>
-                        <AsyncSelect
-                            keyValue="users"
-                            label={MESSAGES.user}
-                            value={selectedUsers ?? ''}
-                            onChange={handleChangeUsers}
-                            debounceTime={500}
-                            multi
-                            fetchOptions={input => getUsersDropDown(input)}
-                        />
-                    </Box>
-                    <InputComponent
-                        type="select"
+        <Grid container spacing={2}>
+            <Grid item xs={12} md={4} lg={3}>
+                <Box mt={2}>
+                    <AsyncSelect
+                        keyValue="users"
+                        label={MESSAGES.user}
+                        value={selectedUsers ?? ''}
+                        onChange={handleChangeUsers}
+                        debounceTime={500}
                         multi
-                        clearable
-                        keyValue="status"
-                        value={filters.status}
-                        onChange={handleChange}
-                        options={statusOptions}
-                        labelString={formatMessage(MESSAGES.status)}
+                        fetchOptions={input => getUsersDropDown(input)}
                     />
-                </Grid>
-                <Grid item xs={12} md={4} lg={3}>
-                    <DatesRange
-                        xs={12}
-                        sm={12}
-                        md={12}
-                        lg={12}
-                        keyDateFrom="created_at_after"
-                        keyDateTo="created_at_before"
-                        onChangeDate={handleChange}
-                        dateFrom={filters.created_at_after}
-                        dateTo={filters.created_at_before}
-                        labelFrom={MESSAGES.createdDateFrom}
-                        labelTo={MESSAGES.createdDateTo}
-                    />
-                </Grid>
-
-                <Grid item xs={12} md={4} lg={3}>
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.parent}
-                        onConfirm={orgUnit => {
-                            handleChange('parent_id', orgUnit?.id);
-                        }}
-                        initialSelection={initialOrgUnit}
-                    />
-                </Grid>
-                <Grid item xs={12} md={4} lg={3}>
-                    <Box mt={2} display="flex" justifyContent="flex-end">
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
-                </Grid>
+                </Box>
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="status"
+                    value={filters.status}
+                    onChange={handleChange}
+                    options={statusOptions}
+                    labelString={formatMessage(MESSAGES.status)}
+                />
             </Grid>
-        </>
+            <Grid item xs={12} md={4} lg={3}>
+                <DatesRange
+                    xs={12}
+                    sm={12}
+                    md={12}
+                    lg={12}
+                    keyDateFrom="created_at_after"
+                    keyDateTo="created_at_before"
+                    onChangeDate={handleChange}
+                    dateFrom={filters.created_at_after}
+                    dateTo={filters.created_at_before}
+                    labelFrom={MESSAGES.createdDateFrom}
+                    labelTo={MESSAGES.createdDateTo}
+                />
+            </Grid>
+
+            <Grid item xs={12} md={4} lg={3}>
+                <OrgUnitTreeviewModal
+                    toggleOnLabelClick={false}
+                    titleMessage={MESSAGES.parent}
+                    onConfirm={orgUnit => {
+                        handleChange('parent_id', orgUnit?.id);
+                    }}
+                    initialSelection={initialOrgUnit}
+                />
+            </Grid>
+            <Grid item xs={12} md={4} lg={3}>
+                <Box mt={2} display="flex" justifyContent="flex-end">
+                    <FilterButton
+                        disabled={!filtersUpdated}
+                        onFilter={handleSearch}
+                    />
+                </Box>
+            </Grid>
+        </Grid>
     );
 };

@@ -1,16 +1,15 @@
-/* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
 import { Pagination } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
+import { DropdownOptions } from '../../../../types/utils';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../utils/dates';
 import { endpoint } from '../../constants';
 import { PlanningParams } from '../../types';
-import { DropdownOptions } from '../../../../types/utils';
 
 export type OrgUnitDetails = {
     id: number;
@@ -42,7 +41,7 @@ type PlanningList = Pagination & {
 
 const getPlannings = async (options: PlanningParams): Promise<PlanningList> => {
     // assigning the variables allows us to have a params object without the unwanted keys
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { publishingStatus, dateTo, dateFrom, pageSize, ...params } =
         options as Record<string, any>;
     params.limit = options?.pageSize;

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import {
     Nullable,
     Optional,
@@ -189,6 +188,7 @@ export type OptionsRounds = {
     label: string;
     campaign_id: number;
     target_population?: number;
+    on_hold?: boolean;
 };
 
 export type DropdownOptions = {

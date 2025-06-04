@@ -1,0 +1,16 @@
+[
+    {
+        "id": "9dcb6991-c72c-416d-ba38-4556c62b400f",
+        "accuracy": 12.884,
+        "altitude": 128.3000030517578,
+        "latitude": 50.6429494,
+        "longitude": 4.6004297,
+        "name": "New Org Unit",
+        "validation_status": "",
+        "org_unit_type_id": "5",
+        "parent_id": "4",
+        "time": 1712326428477,
+        "created_at": 1.712326429884e9,
+        "updated_at": 1.712326429884e9
+    }
+]

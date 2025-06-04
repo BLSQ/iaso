@@ -27,7 +27,7 @@ import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useSavePage } from '../hooks/useSavePage';
 
 import MESSAGES from '../messages';
-import { PAGES_TYPES, IFRAME, TEXT, RAW } from '../constants';
+import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -233,13 +233,25 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                         />
                                     </Grid>
                                     <Grid xs={12} md={12} item>
-                                        <Field
-                                            label={contentLabel}
-                                            name="content"
-                                            multiline={type === RAW}
-                                            component={contentComponent}
-                                            className={classes.input}
-                                        />
+                                        {type === SUPERSET && (
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES.superset_dashboard_id,
+                                                )}
+                                                name="superset_dashboard_id"
+                                                component={TextInput}
+                                                className={classes.input}
+                                            />
+                                        )}
+                                        {type !== SUPERSET && (
+                                            <Field
+                                                label={contentLabel}
+                                                name="content"
+                                                multiline={type === RAW}
+                                                component={contentComponent}
+                                                className={classes.input}
+                                            />
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Grid>

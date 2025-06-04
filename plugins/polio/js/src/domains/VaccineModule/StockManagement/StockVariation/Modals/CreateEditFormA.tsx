@@ -1,4 +1,5 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     ConfirmCancelModal,
@@ -7,13 +8,19 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box } from '@mui/material';
-import { Vaccine } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
-import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import { DateInput, NumberInput } from '../../../../../components/Inputs';
-import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
+import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import {
+    DateInput,
+    NumberInput,
+    TextInput,
+} from '../../../../../components/Inputs';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
+import { Vaccine } from '../../../../../constants/types';
+import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
+import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
+import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
 
 type Props = {
@@ -41,24 +48,39 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         initialValues: {
             id: formA?.id,
             campaign: formA?.campaign,
+            round: formA?.round,
             // lot_numbers: formA?.lot_numbers ?? '',
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
             // unusable_vials: formA?.unusable_vials,
-            missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
+            document: formA?.document,
+            comment: formA?.comment ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
-    const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName, formik.values.campaign);
+    const { setFieldValue } = formik;
+
+    const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
+        countryName,
+        formik.values.campaign,
+    );
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
+    const documentErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.document);
+    }, [formik.errors.document]);
+
+    const resetOnCampaignChange = useCallback(() => {
+        setFieldValue('round', undefined);
+    }, [setFieldValue]);
+
+    useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
 
     return (
         <FormikProvider value={formik}>
@@ -85,8 +107,20 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         required
                         options={campaignOptions}
                         withMarginTop
-                        isLoading={isFetchingCampaigns}
+                        isLoading={isFetching}
                         disabled={!countryName}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.round)}
+                        name="round"
+                        component={SingleSelect}
+                        required
+                        options={roundOptions}
+                        withMarginTop
+                        isLoading={isFetching}
+                        disabled={!formik.values.campaign}
                     />
                 </Box>
                 <Field
@@ -103,18 +137,31 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 />
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.forma_vials_missing)}
-                        name="missing_vials"
+                        label={formatMessage(MESSAGES.forma_vials_used)}
+                        name="usable_vials_used"
                         component={NumberInput}
                         required
                     />
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.forma_vials_used)}
-                        name="usable_vials_used"
-                        component={NumberInput}
-                        required
+                        label={formatMessage(MESSAGES.comment)}
+                        name="comment"
+                        multiline
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <DocumentUploadWithPreview
+                        errors={documentErrors}
+                        onFilesSelect={files => {
+                            if (files.length) {
+                                formik.setFieldTouched('document', true);
+                                formik.setFieldValue('document', files);
+                            }
+                        }}
+                        document={formik.values.document}
                     />
                 </Box>
             </ConfirmCancelModal>

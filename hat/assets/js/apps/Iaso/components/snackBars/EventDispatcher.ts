@@ -1,5 +1,4 @@
 class EventDispatcher {
-    // eslint-disable-next-line no-unused-vars
     private listeners: { [key: string]: ((data: any) => void)[] };
 
     constructor() {

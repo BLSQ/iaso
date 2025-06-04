@@ -12,7 +12,6 @@ import { RegistryParams } from '../types';
 
 type FetchOrgUnitsListResult = {
     isFetching: boolean;
-    // eslint-disable-next-line no-unused-vars
     fetchOrgUnit: (orgUnit: OrgUnit) => Promise<OrgUnit | Error>;
 };
 
@@ -24,7 +23,7 @@ export const useFetchOrgUnits = (appId?: string): FetchOrgUnitsListResult => {
         async (orgUnit: OrgUnit): Promise<OrgUnit | Error> => {
             setIsFetching(true);
             try {
-                let url = `/api/orgunits/${orgUnit.id}/`
+                let url = `/api/orgunits/${orgUnit.id}/`;
                 if (appId) {
                     url += `?app_id=${appId}`;
                 }

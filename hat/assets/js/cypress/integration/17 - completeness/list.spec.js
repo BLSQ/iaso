@@ -6,7 +6,7 @@ import { testTopBar } from '../../support/testTopBar';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/completeness`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/stats/completeness`;
 
 describe('Completeness', () => {
     beforeEach(() => {

@@ -1,29 +1,29 @@
 import React, {
-    ReactElement,
-    useMemo,
-    useState,
     FunctionComponent,
+    ReactElement,
     useCallback,
     useEffect,
+    useMemo,
+    useState,
 } from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
-import orderBy from 'lodash/orderBy';
 import { Box } from '@mui/material';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import orderBy from 'lodash/orderBy';
+import moment from 'moment';
+import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
+import { BooleanValue, PlaceholderValue } from '../../../../libs/utils';
+import { Nullable, Optional } from '../../../../types/utils';
+import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
+import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
+import { ShortOrgUnit } from '../../types/orgUnit';
+import MESSAGES from '../messages';
 import {
     InstanceForChangeRequest,
     NestedGroup,
-    NestedOrgUnitType,
     NestedLocation,
+    NestedOrgUnitType,
     OrgUnitChangeRequestDetails,
 } from '../types';
-import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
-import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import MESSAGES from '../messages';
-import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
-import { ShortOrgUnit } from '../../types/orgUnit';
-import { Nullable, Optional } from '../../../../types/utils';
-import { BooleanValue, PlaceholderValue } from '../../../../libs/utils';
 
 export type NewOrgUnitField = {
     key: string;
@@ -40,9 +40,7 @@ type FieldDefinition = {
     order: number;
     fieldType: string;
     formatValue: (
-        // eslint-disable-next-line no-unused-vars
         val: any,
-        // eslint-disable-next-line no-unused-vars
         isOld: boolean,
     ) => ReactElement | Optional<Nullable<string>>;
 };
@@ -51,7 +49,6 @@ type FieldDefinitions = Record<string, FieldDefinition>;
 
 type UseNewFields = {
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
 };
 
@@ -71,6 +68,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                         instanceId={`${instance.id}`}
                         height="150px"
                         titleVariant="subtitle2"
+                        titleColor="inherit"
                     />
                 </Box>
             ))}
@@ -185,21 +183,27 @@ export const useNewFields = (
                         <></>
                     ),
             },
+            new_location_accuracy: {
+                label: formatMessage(MESSAGES.accuracy),
+                order: 6,
+                fieldType: '',
+                formatValue: val => <span>{val.toString()}</span>,
+            },
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
-                order: 6,
+                order: 7,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
-                order: 7,
+                order: 8,
                 fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
-                order: 8,
+                order: 9,
                 fieldType: '',
                 formatValue: val => (
                     <ReferenceInstances

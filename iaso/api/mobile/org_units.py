@@ -1,6 +1,6 @@
+from typing import Any, Dict, Optional
+
 import django_filters
-from typing import Dict, Any
-from typing import Optional
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
@@ -11,18 +11,21 @@ from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
-from rest_framework import permissions
+from rest_framework import serializers
+from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
-from iaso.api.query_params import APP_ID, LIMIT, PAGE, IDS
-from iaso.api.serializers import AppIdSerializer
-from iaso.models import Instance, OrgUnit, Project, FeatureFlag
 from hat.menupermissions import models as permission
+from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import FeatureFlag, Instance, OrgUnit, Project
+from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+
+
+SHAPE_RESULTS_MAX = 1000
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -32,6 +35,14 @@ class MobileOrgUnitsSetPagination(Paginator):
 
     def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
+
+    def get_page_size(self, request):
+        page_size = super().get_page_size(request)
+        if request.query_params.get("shapes", "false").lower() == "true":
+            if page_size and page_size > SHAPE_RESULTS_MAX:
+                return SHAPE_RESULTS_MAX
+
+        return super().get_page_size(request)
 
 
 class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
@@ -122,7 +133,7 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
 
-class HasOrgUnitPermission(permissions.BasePermission):
+class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_object_permission(self, request, view, obj):
         if not (
             request.user.is_authenticated
@@ -218,6 +229,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
             queryset = queryset.annotate(geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom))::json", []))
+
         return queryset
 
     def get_serializer_context(self) -> Dict[str, Any]:
@@ -311,7 +323,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances.all()
+        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
@@ -389,7 +401,7 @@ def import_data(org_units, user, app_id):
                 org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
             else:
                 org_unit_db.updated_at = org_unit.get("created_at", None)
-            if not user.is_anonymous:
+            if user and not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"
             if org_unit_location:

@@ -13,9 +13,7 @@ type Props = {
     clearable?: boolean;
     required?: boolean;
     disabled?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onChange?: (_keyValue: string, value: any) => void;
-    // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     returnFullObject?: boolean;
 };

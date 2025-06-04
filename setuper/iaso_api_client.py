@@ -1,8 +1,12 @@
-import requests
 import time
+
+import requests
 
 
 class IasoClient:
+    ASYNC_TASK_TIMEOUT = 120
+    ASYNC_TASK_WAIT_STEP = 5
+
     def __init__(self, server_url):
         self.debug = False
         self.server_url = server_url
@@ -74,15 +78,20 @@ class IasoClient:
         print(f"\tWaiting for async task '{task_to_wait['task']['name']}'")
         count = 0
         imported = False
-        while not imported and count < 120:
+        while not imported and count < self.ASYNC_TASK_TIMEOUT:
             task = self.get(f"/api/tasks/{task_to_wait['task']['id']}")
             imported = task["status"] == "SUCCESS"
 
             if task["status"] == "ERRORED":
                 raise Exception(f"Task failed {task}")
-            time.sleep(2)
-            count += 5
+            time.sleep(self.ASYNC_TASK_WAIT_STEP)
+            count += self.ASYNC_TASK_WAIT_STEP
             print("\t\tWaiting:", count, "s elapsed", task.get("progress_message"))
+
+        if not imported:
+            raise Exception(
+                f"Couldn't find an available worker after {self.ASYNC_TASK_TIMEOUT} seconds. Please make sure a worker is running."
+            )
 
     def log(self, arg1, arg2=None):
         if self.debug:

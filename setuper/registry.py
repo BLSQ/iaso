@@ -1,9 +1,8 @@
-from datetime import datetime
 import uuid
 
-from fake import fake_person
+from datetime import datetime
+
 from submissions import submission2xml
-from random import randint
 
 
 def setup_registry(account_name, iaso_client):
@@ -23,8 +22,8 @@ def setup_registry(account_name, iaso_client):
         "org_unit_type_ids": [health_area_type_id],
         "project_ids": [project_id],
         "single_per_period": False,
-        "periods_before_allowed": 1,
-        "periods_after_allowed": 1,
+        "periods_before_allowed": 0,
+        "periods_after_allowed": 0,
         "device_field": "deviceid",
         "location_field": "gps",
         "label_keys": [],

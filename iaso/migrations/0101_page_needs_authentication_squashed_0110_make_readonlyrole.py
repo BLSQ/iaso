@@ -2,6 +2,7 @@
 
 from django.db import migrations, models
 
+
 # Functions from the following migrations need manual copying.
 # Move them and any dependencies into this file, then update the
 # RunPython operations to refer to the local versions:
@@ -126,6 +127,8 @@ class Migration(migrations.Migration):
     ]
 
     dependencies = [
+        ("django_comments", "0004_add_object_pk_is_removed_index"),
+        ("audit", "0001_squashed_0002_auto_20210611_0951"),
         ("iaso", "0100_auto_20210702_0835"),
     ]
 

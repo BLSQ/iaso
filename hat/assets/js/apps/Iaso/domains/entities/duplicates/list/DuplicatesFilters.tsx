@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { FilterButton } from '../../../../components/FilterButton';
@@ -20,7 +19,7 @@ import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
 import { PaginationParams } from '../../../../types/general';
 import {
-    useGetBeneficiaryTypesDropdown,
+    useGetEntityTypesDropdown,
     useGetUsersDropDown,
 } from '../../hooks/requests';
 import { ALGORITHM_DROPDOWN } from '../../constants';
@@ -79,7 +78,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetUsersDropDown();
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
         useGetFormsOptions(['possible_fields']);

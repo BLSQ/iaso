@@ -8,8 +8,8 @@ from iaso.api.mobile.entity import (
     LargeResultsSetPagination,
     MobileEntitySerializer,
     filter_for_mobile_entity,
-    get_queryset_for_app_id,
-    get_queryset_for_user_and_app_id,
+    filter_on_app_id,
+    filter_on_user_and_app_id,
 )
 from iaso.models import Entity, EntityType, FormVersion, Project
 
@@ -25,6 +25,7 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
             "reference_form",
             "entities_count",
             "account",
+            "code",
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",
@@ -95,7 +96,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         user = self.request.user
 
         if not user or not user.is_authenticated:
-            raise AuthenticationFailed(f"User not authenticated")
+            raise AuthenticationFailed("User not authenticated")
 
         queryset = EntityType.objects.filter(account=user.iaso_profile.account)
 
@@ -108,7 +109,8 @@ class MobileEntityTypesViewSet(ModelViewSet):
             if project.account is None:
                 raise NotFound(f"Project Account is None for app_id {app_id}")
 
-            queryset = queryset.filter(account=project.account)
+            # queryset = queryset.filter(account=project.account)
+            queryset = queryset.filter(reference_form__projects=project)
 
         except Project.DoesNotExist:
             raise NotFound(f"Project Not Found for app_id {app_id} and User")
@@ -127,15 +129,15 @@ class MobileEntityTypesViewSet(ModelViewSet):
         if not type_pk:
             raise ParseError("type_pk is required")
 
-        queryset = None
+        queryset = Entity.objects
         # If there's an "Online search" from the mobile app, we want to be
         # able to search without location restrictions.
         # The entities for the user's location should already be on the mobile
         # device.
         if self.request.query_params.get("json_content"):
-            queryset = get_queryset_for_app_id(user, app_id)
+            queryset = filter_on_app_id(queryset, user, app_id)
         else:
-            queryset = get_queryset_for_user_and_app_id(user, app_id)
+            queryset = filter_on_user_and_app_id(queryset, user, app_id)
 
         if queryset:
             queryset = queryset.filter(entity_type__pk=type_pk)

@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export type Search = {
     search?: string;
     source?: string;

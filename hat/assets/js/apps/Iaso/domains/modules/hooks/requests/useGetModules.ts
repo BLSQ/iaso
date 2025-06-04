@@ -1,10 +1,9 @@
-/* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
 import { Pagination } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
-import { ModuleParams, ModulesFilterParams, Module } from '../../types/modules';
+import { Module, ModuleParams, ModulesFilterParams } from '../../types/modules';
 
 type ModulesList = Pagination & {
     results: Module[];
@@ -15,13 +14,13 @@ const getModules = async (
 ): Promise<ModulesList> => {
     const { pageSize, order, page, ...params } = options as Record<string, any>;
 
-    params.limit = pageSize || 20;
+    params.limit = pageSize || 100;
     params.order = order || 'name';
     params.page = page || 1;
     if (params.select) {
         delete params.select;
     }
-    const url = makeUrlWithParams('/api/modules', params);
+    const url = makeUrlWithParams('/api/modules/', params);
     return getRequest(url) as Promise<ModulesList>;
 };
 

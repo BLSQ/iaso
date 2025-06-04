@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Box, FormControl, List, ListItem } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
@@ -14,7 +13,6 @@ import { Scope, Vaccine } from '../../../../constants/types';
 type Props = {
     field: FieldInputProps<Scope[]>;
     selectedVaccine: string;
-    // eslint-disable-next-line no-unused-vars
     setSelectedVaccine: (selected: Vaccine) => void;
     availableVaccines?: PolioVaccine[];
 };
@@ -38,11 +36,10 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
             ),
         [scopes],
     );
-
     return (
         <MapLegend
             titleMessage={MESSAGES.vaccine}
-            width={175}
+            width={190}
             content={
                 <FormControl id="vaccine">
                     <List>
@@ -57,9 +54,17 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                             >
                                 <Box className={classes.vaccinesSelect}>
                                     <span
-                                        style={{
-                                            backgroundColor: vaccine.color,
-                                        }}
+                                        style={
+                                            vaccine.legendColor
+                                                ? {
+                                                      background:
+                                                          vaccine.legendColor,
+                                                  }
+                                                : {
+                                                      backgroundColor:
+                                                          vaccine.color,
+                                                  }
+                                        }
                                         className={classes.roundColor}
                                     >
                                         {selectedVaccine === vaccine.value && (
@@ -74,7 +79,7 @@ export const ScopeMapLegend: FunctionComponent<Props> = ({
                                         {vaccine.value}
                                     </span>
 
-                                    <span>
+                                    <span className={classes.vaccineCount}>
                                         {`: ${
                                             vaccineCount[vaccine.value] ?? 0
                                         } ${formatMessage(MESSAGES.districts)}`}

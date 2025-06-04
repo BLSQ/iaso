@@ -1,84 +1,67 @@
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
+import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 // @ts-ignore
-import { getRequest } from 'Iaso/libs/Api';
-import { DropdownOptions } from '../../../../types/utils';
+import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
-import MESSAGES from '../../messages';
 import { staleTime } from '../../config';
+import MESSAGES from '../../messages';
 
-type Props = {
-    dataSourceId?: number;
-    sourceVersionId?: number;
-    blockOfCountries?: string;
-};
-
-const makeGroupsQueryParams = ({
-    dataSourceId,
-    sourceVersionId,
-    blockOfCountries,
-}) => {
-    if (sourceVersionId) return `?version=${sourceVersionId}`;
-    if (dataSourceId) return `?dataSource=${dataSourceId}`;
-    if (blockOfCountries) return `?blockOfCountries=${blockOfCountries}`;
-    return '';
-};
-
-export const useGetGroups = ({
-    dataSourceId,
-    sourceVersionId,
-    blockOfCountries,
-}: Props): UseQueryResult<DropdownOptions<string>[], Error> => {
-    const groupsQueryParams = makeGroupsQueryParams({
-        dataSourceId,
-        sourceVersionId,
-        blockOfCountries,
-    });
-
-    return useSnackQuery({
-        queryKey: ['groups', dataSourceId, groupsQueryParams],
-        queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),
-        snackErrorMsg: MESSAGES.fetchGroupsError,
-        options: {
-            staleTime,
-            select: data => {
-                if (!data) return [];
-                return data.groups.map(group => {
-                    return {
-                        value: group.id,
-                        label: group.name,
-                        original: group,
-                    };
-                });
-            },
-        },
-    });
-};
+// TODO CODE REVIEW
+// don't know why but useGetGroupDropdown endpoint
+// version vs sourceVersionId
 
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
     ['dataSourceId', 'dataSource'],
-    ['sourceVersionId', 'sourceVersionId'],
+    ['sourceVersionId', 'version'],
     ['blockOfCountries', 'blockOfCountries'],
     ['appId', 'app_id'],
+    ['projectIds', 'projectIds'],
+    ['defaultVersion', 'defaultVersion'],
 ]);
 
+type ApiParams = {
+    dataSource?: number;
+    version?: number;
+    blockOfCountries?: string;
+    app_id?: string;
+    defaultVersion?: string;
+    projectIds?: string;
+};
 type Params = {
     dataSourceId?: number;
     sourceVersionId?: number;
-    blockOfCountries?: string;
+    blockOfCountries?: string | boolean;
     appId?: string;
+    defaultVersion?: string;
+    projectIds?: string;
 };
 export const useGetGroupDropdown = (
     params: Params,
-): UseQueryResult<DropdownOptions<string>[], Error> => {
-    const queryParams = {};
+): UseQueryResult<
+    DropdownOptionsWithOriginal<
+        number,
+        { id: number; label: string; name: string }
+    >[],
+    Error
+> => {
+    const queryParams: ApiParams = {};
     queryParamsMap.forEach((keyInApi, keyInJS) => {
         if (params[keyInJS]) {
             queryParams[keyInApi] = params[keyInJS];
         }
     });
+    if (
+        !queryParams.version &&
+        !queryParams.dataSource &&
+        !queryParams.defaultVersion
+    ) {
+        queryParams.defaultVersion = 'true';
+    }
+    // TS is unhappy with ids as numbers for URLSearchParams, but it works just fine
+    // @ts-ignore
     const urlSearchParams = new URLSearchParams(queryParams);
     const queryString = urlSearchParams.toString();
     return useSnackQuery({
@@ -92,7 +75,7 @@ export const useGetGroupDropdown = (
                 return data.map(group => {
                     return {
                         value: group.id,
-                        label: group.name,
+                        label: group.label,
                         original: group,
                     };
                 });

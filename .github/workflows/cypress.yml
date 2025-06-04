@@ -1,216 +1,213 @@
 name: Iaso Cypress manual testing
 # This workflow allows to launch cypress tests manually
 on:
-  issue_comment:
-    types: [created]
-  workflow_dispatch:
-    inputs:
-      ref:
-        type: string
-        description: 'Branch to test'
-        required: true  
-  
+    issue_comment:
+        types: [created]
+    workflow_dispatch:
+        inputs:
+            ref:
+                type: string
+                description: 'Branch to test'
+                required: true
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
+    group: ${{ github.head_ref || github.run_id }}
+    cancel-in-progress: true
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-image:
-    if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
-    permissions:
-      issues: write
-      contents: read
-      packages: write
-      pull-requests: write
+    build-image:
+        if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
+        permissions:
+            issues: write
+            contents: read
+            packages: write
+            pull-requests: write
 
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout repository (dispatch)
-        uses: actions/checkout@v3
-        if: github.event_name == 'workflow_dispatch'
-        with:
-          ref: ${{ github.event.inputs.ref }}
+        runs-on: ubuntu-24.04
+        steps:
+            - name: Checkout repository (dispatch)
+              uses: actions/checkout@v4
+              if: github.event_name == 'workflow_dispatch'
+              with:
+                  ref: ${{ github.event.inputs.ref }}
 
-      - id: 'get-branch'
-        name: Get branch name from PR when triggered by comment
-        if: github.event_name != 'workflow_dispatch'
-        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
-        env:
-          REPO: ${{ github.repository }}
-          PR_NO: ${{ github.event.issue.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Checkout repository (comment)
-        uses: actions/checkout@v3
-        if: github.event_name != 'workflow_dispatch'
-        with:
-          ref: ${{ steps.get-branch.outputs.branch }}
+            - id: 'get-branch'
+              name: Get branch name from PR when triggered by comment
+              if: github.event_name != 'workflow_dispatch'
+              run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+              env:
+                  REPO: ${{ github.repository }}
+                  PR_NO: ${{ github.event.issue.number }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+            - name: Checkout repository (comment)
+              uses: actions/checkout@v4
+              if: github.event_name != 'workflow_dispatch'
+              with:
+                  ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: Mark comment as seen
-        if: github.event_name != 'workflow_dispatch'
-        uses: dkershner6/reaction-action@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          reaction: 'eyes'
+            - name: Mark comment as seen
+              if: github.event_name != 'workflow_dispatch'
+              uses: dkershner6/reaction-action@v2
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  reaction: 'eyes'
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-      - name: Log in to the Container registry
-        uses: docker/login-action@v2
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+            - name: Log in to the Container registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v3
-        with:
-          push: true
-          tags: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
-          target: dev
-          file: docker/bundle/Dockerfile
-          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
-          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v6
+              with:
+                  push: true
+                  tags: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
+                  target: dev
+                  file: docker/bundle/Dockerfile
+                  cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+                  cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
 
-      - name: Comment PR with failure
-        uses: actions/github-script@v6
-        if: ((failure()) && (github.event_name != 'workflow_dispatch'))
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.rest.issues.createComment({
-              issue_number,
-              owner,
-              repo,
-              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-            });
+            - name: Comment PR with failure
+              uses: actions/github-script@v7
+              if: ((failure()) && (github.event_name != 'workflow_dispatch'))
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+                      github.rest.issues.createComment({
+                        issue_number,
+                        owner,
+                        repo,
+                        body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+                      });
 
-  test_cypress:
-    if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
-    timeout-minutes: 60
-    runs-on: ubuntu-20.04
-    needs: build-image
-    permissions:
-      contents: read
-      packages: write
-      pull-requests: write
-      issues: write
-    services:
-      postgres:
-        image: postgis/postgis:12-3.3
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: github_actions
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a health check
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-      iaso:
-        image: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
-        env:
-          TEST_PROD: true
-          IASO_ENVIRONMENT: development
-          RDS_DB_NAME: github_actions
-          SECRET_KEY: secret
-          DEBUG: true
-          DJANGO_SETTINGS_MODULE: hat.settings
-          RDS_PASSWORD: postgres
-          RDS_HOSTNAME: postgres
-          RDS_PORT: 5432
-          RDS_USERNAME: postgres
-          CACHE: false
-          DEV_SERVER: true
-          PLUGINS: polio
-        ports:
-          - 8081:8081
-    steps:
-      - name: Checkout repository (dispatch)
-        uses: actions/checkout@v3
-        if: github.event_name == 'workflow_dispatch'
-        with:
-          ref: ${{ github.event.inputs.ref }}
-      
-      - id: 'get-branch'
-        name: Get branch name from PR when triggered by comment
-        if: github.event_name != 'workflow_dispatch'
-        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
-        env:
-          REPO: ${{ github.repository }}
-          PR_NO: ${{ github.event.issue.number }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Checkout repository (comment)
-        uses: actions/checkout@v3
-        if: github.event_name != 'workflow_dispatch'
-        with:
-          ref: ${{ steps.get-branch.outputs.branch }}
+    test_cypress:
+        if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
+        timeout-minutes: 60
+        runs-on: ubuntu-24.04
+        needs: build-image
+        permissions:
+            contents: read
+            packages: write
+            pull-requests: write
+            issues: write
+        services:
+            postgres:
+                image: postgis/postgis:12-3.3
+                env:
+                    POSTGRES_USER: postgres
+                    POSTGRES_PASSWORD: postgres
+                    POSTGRES_DB: github_actions
+                ports:
+                    - 5432:5432
+                # needed because the postgres container does not provide a health check
+                options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+            iaso:
+                image: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
+                env:
+                    TEST_PROD: true
+                    IASO_ENVIRONMENT: development
+                    RDS_DB_NAME: github_actions
+                    SECRET_KEY: secret
+                    DEBUG: true
+                    DJANGO_SETTINGS_MODULE: hat.settings
+                    RDS_PASSWORD: postgres
+                    RDS_HOSTNAME: postgres
+                    RDS_PORT: 5432
+                    RDS_USERNAME: postgres
+                    CACHE: false
+                    DEV_SERVER: true
+                    PLUGINS: polio
+                ports:
+                    - 8081:8081
+        steps:
+            - name: Checkout repository (dispatch)
+              uses: actions/checkout@v4
+              if: github.event_name == 'workflow_dispatch'
+              with:
+                  ref: ${{ github.event.inputs.ref }}
 
-      - name: Use node.js 20.13.1
-        uses: actions/setup-node@v2
-        with:
-          node-version: '20.13.1'
-          cache: npm
+            - id: 'get-branch'
+              name: Get branch name from PR when triggered by comment
+              if: github.event_name != 'workflow_dispatch'
+              run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+              env:
+                  REPO: ${{ github.repository }}
+                  PR_NO: ${{ github.event.issue.number }}
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: ./node_modules
-          key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
+            - name: Checkout repository (comment)
+              uses: actions/checkout@v4
+              if: github.event_name != 'workflow_dispatch'
+              with:
+                  ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: upgrade npm
-        run: |
-          npm install --global npm@10.5.2
+            - name: Use node.js 20.13.1
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.13.1'
+                  cache: npm
 
-      - run: npm ci
-        if: steps.cache.outputs.cache-hit != 'true'
+            - name: Cache dependencies
+              id: cache
+              uses: actions/cache@v4
+              with:
+                  path: ./node_modules
+                  key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
 
-      - name: Run Cypress tests
-        run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'
-        env:
-          CYPRESS_USERNAME: "test"
-          CYPRESS_PASSWORD: "test"
-          CYPRESS_BASE_URL: "http://localhost:8081"
+            - name: upgrade npm
+              run: |
+                  npm install --global npm@10.5.2
 
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
+            - run: npm ci
+              if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Mark comment as success
-        uses: dkershner6/reaction-action@v1
-        if: ((success()) && (github.event_name != 'workflow_dispatch'))
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          reaction: 'hooray'
+            - name: Run Cypress tests
+              run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'
+              env:
+                  CYPRESS_USERNAME: 'test'
+                  CYPRESS_PASSWORD: 'test'
+                  CYPRESS_BASE_URL: 'http://localhost:8081'
 
-      - name: Comment PR with failure
-        uses: actions/github-script@v6
-        if: ((failure()) && (github.event_name != 'workflow_dispatch'))
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
-            github.rest.issues.createComment({
-              issue_number,
-              owner,
-              repo,
-              body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
-            });
+            - uses: actions/upload-artifact@v4
+              if: failure()
+              with:
+                  name: cypress-screenshots
+                  path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
+            # Test run video was always captured, so this action uses "always()" condition
+            - uses: actions/upload-artifact@v4
+              if: always()
+              with:
+                  name: cypress-videos
+                  path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
 
+            - name: Mark comment as success
+              uses: dkershner6/reaction-action@v2
+              if: ((success()) && (github.event_name != 'workflow_dispatch'))
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  reaction: 'hooray'
+
+            - name: Comment PR with failure
+              uses: actions/github-script@v7
+              if: ((failure()) && (github.event_name != 'workflow_dispatch'))
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const { issue: { number: issue_number }, repo: { owner, repo }  } = context;
+                      github.rest.issues.createComment({
+                        issue_number,
+                        owner,
+                        repo,
+                        body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
+                      });

@@ -1,55 +1,44 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
-import MarkerClusterGroup from 'react-leaflet-markercluster';
-import {
-    MapContainer,
-    GeoJSON,
-    Pane,
-    Tooltip,
-    ScaleControl,
-} from 'react-leaflet';
-import { Grid, Box } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
     commonStyles,
     IntlFormatMessage,
+    useSafeIntl,
 } from 'bluesquare-components';
-
-// COMPONENTS
-
-import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
-import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
-// COMPONENTS
-
-// UTILS
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
+    GeoJSON,
+    MapContainer,
+    Pane,
+    ScaleControl,
+    Tooltip,
+} from 'react-leaflet';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import OrgUnitPopupComponent from './OrgUnitPopupComponent';
+
+import {
+    Bounds,
+    circleColorMarkerOptions,
+    colorClusterCustomMarker,
     getLatLngBounds,
     getShapesBounds,
-    colorClusterCustomMarker,
-    circleColorMarkerOptions,
-    Bounds,
 } from '../../../utils/map/mapUtils';
-// UTILS
 
-// TYPES
-import { OrgUnit } from '../types/orgUnit';
 import { DropdownOptions } from '../../../types/utils';
-// TYPES
+import { OrgUnit } from '../types/orgUnit';
 
-// HOOKS
-import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
-// HOOKS
-import MESSAGES from '../messages';
-import tiles from '../../../constants/mapTiles';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import { InnerDrawer } from '../../../components/nav/InnerDrawer/Index';
+import tiles from '../../../constants/mapTiles';
+import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitComments/OrgUnitsMapComments';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -60,25 +49,9 @@ export type Locations = {
     shapes: OrgUnitWithSearchIndex[];
 };
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     getSearchColor: (index: number) => string;
     orgUnits: Locations;
 };
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    ...innerDrawerStyles(theme),
-    innerDrawerToolbar: {
-        ...innerDrawerStyles(theme).innerDrawerToolbar,
-        '& section': {
-            width: '100%',
-        },
-    },
-    commentContainer: {
-        height: '60vh',
-        overflowY: 'auto',
-    },
-}));
 
 const getFullOrgUnits = orgUnits => {
     let fullOrUnits = [];
@@ -88,6 +61,14 @@ const getFullOrgUnits = orgUnits => {
     });
     return fullOrUnits;
 };
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    commentContainer: {
+        height: '60vh',
+        overflowY: 'auto',
+    },
+}));
 
 const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
     const orgUnitsLocations = getFullOrgUnits(orgUnits.locations);
@@ -108,25 +89,30 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
     }
     return undefined;
 };
+
+const computeTriggerFitToBoundsId = (bounds: Bounds | undefined): string => {
+    return bounds
+        ? `${bounds._northEast.lat},${bounds._northEast.lng},${bounds._southWest.lat},${bounds._southWest.lng}`
+        : '';
+};
+
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
 }) => {
-    const classes: Record<string, string> = useStyles();
-    const { data: orgUnitTypes } = useGetOrgUnitTypes();
+    const classes = useStyles();
+    const { data: orgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
-    const [currentOrgUnitId, setCurrentOrgUnitId] = useState<
-        number | undefined
-    >();
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(currentOrgUnitId);
 
+    const [selectedOrgUnit, setSelectedOrgUnit] = useState<
+        OrgUnit | undefined
+    >();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-
     const bounds: Bounds | undefined = getOrgUnitsBounds(orgUnits);
+    const triggerFitToBoundsId: string = computeTriggerFitToBoundsId(bounds);
     const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
-
     const locations = useMemo(() => {
         if (isClusterActive) {
             return orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
@@ -152,9 +138,8 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                     ...circleColorMarkerOptions(color),
                                 })}
                                 items={orgUnitsBySearch}
-                                onMarkerClick={o => setCurrentOrgUnitId(o.id)}
-                                popupProps={() => ({
-                                    currentOrgUnit,
+                                popupProps={instance => ({
+                                    orgUnitId: instance.id,
                                 })}
                                 PopupComponent={OrgUnitPopupComponent}
                                 tooltipProps={e => ({
@@ -162,6 +147,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                 })}
                                 TooltipComponent={Tooltip}
                                 isCircle
+                                onMarkerClick={o => setSelectedOrgUnit(o)}
                             />
                         </Pane>
                     </MarkerClusterGroup>
@@ -182,9 +168,8 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         ),
                     })}
                     items={orgUnitsBySearch}
-                    onMarkerClick={o => setCurrentOrgUnitId(o.id)}
-                    popupProps={() => ({
-                        currentOrgUnit,
+                    popupProps={instance => ({
+                        orgUnitId: instance.id,
                     })}
                     PopupComponent={OrgUnitPopupComponent}
                     tooltipProps={e => ({
@@ -192,10 +177,11 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     })}
                     TooltipComponent={Tooltip}
                     isCircle
+                    onMarkerClick={o => setSelectedOrgUnit(o)}
                 />
             </Pane>
         ));
-    }, [currentOrgUnit, getSearchColor, isClusterActive, orgUnits.locations]);
+    }, [getSearchColor, isClusterActive, orgUnits.locations]);
 
     if (!bounds && orgUnitsTotal.length > 0) {
         return (
@@ -223,7 +209,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     <OrgUnitsMapComments
                         className={classes.commentContainer}
                         maxPages={4}
-                        orgUnit={currentOrgUnit}
+                        orgUnit={selectedOrgUnit}
                     />
                 }
             >
@@ -254,6 +240,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                             bounds={bounds}
                             boundsOptions={boundsOptions}
                             fitOnLoad
+                            triggerFitToBoundsId={triggerFitToBoundsId}
                         />
                         {orgUnits.shapes
                             .filter(o => !o.org_unit_type_id)
@@ -267,13 +254,10 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             ),
                                         }}
                                         data={o.geo_json}
-                                        eventHandlers={{
-                                            click: () =>
-                                                setCurrentOrgUnitId(o.id),
-                                        }}
+                                        onClick={() => setSelectedOrgUnit(o)}
                                     >
                                         <OrgUnitPopupComponent
-                                            currentOrgUnit={currentOrgUnit}
+                                            orgUnitId={o.id}
                                         />
                                         <Tooltip pane="popupPane">
                                             {o.name}
@@ -306,13 +290,12 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                                 ),
                                             }}
                                             data={o.geo_json}
-                                            eventHandlers={{
-                                                click: () =>
-                                                    setCurrentOrgUnitId(o.id),
-                                            }}
+                                            onClick={() =>
+                                                setSelectedOrgUnit(o)
+                                            }
                                         >
                                             <OrgUnitPopupComponent
-                                                currentOrgUnit={currentOrgUnit}
+                                                orgUnitId={o.id}
                                             />
                                             <Tooltip pane="popupPane">
                                                 {o.name}

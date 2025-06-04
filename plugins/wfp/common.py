@@ -1,28 +1,46 @@
-from .models import *
-from iaso.models import *
-from datetime import datetime, timedelta, date
+import logging
+
+from datetime import date, datetime, timedelta
+from itertools import groupby
+from operator import itemgetter
+
 from dateutil.relativedelta import *
+from django.db.models import CharField, Value
+from django.db.models.functions import Concat, Extract
+
+from iaso.models import *
+from iaso.models.base import Instance
+from plugins.wfp.aggregate_journeys import AggregatedJourney
+
+from .models import *
+
+
+logger = logging.getLogger(__name__)
 
 
 class ETL:
-    def __init__(self, type=None):
-        self.type = type
+    def __init__(self, types=None):
+        self.types = types
 
     def delete_beneficiaries(self):
         beneficiary = Beneficiary.objects.all().delete()
+        MonthlyStatistics.objects.all().delete()
 
         print("EXISTING BENEFICIARY DELETED", beneficiary[1]["wfp.Beneficiary"])
         print("EXISTING STEPS DELETED", beneficiary[1]["wfp.Step"])
         print("EXISTING VISITS DELETED", beneficiary[1]["wfp.Visit"])
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
+    def account_related_to_entity_type(self):
+        entity_type = EntityType.objects.filter(code__in=self.types)
+        account = Account.objects.get(id=entity_type[0].account_id)
+        return account
+
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
         updated_at = date(2023, 7, 10)
         beneficiaries = (
-            Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330, 196, 226, 254,315, 424, 430, 431, 408, 19, 230, 359])
-            # .filter(entity__id__in=[230, 359, 254])
+            Instance.objects.filter(entity__entity_type__code__in=self.types)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -92,6 +110,8 @@ class ETL:
                         program = visit.get("program")
                     else:
                         program = ""
+                else:
+                    program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
@@ -181,11 +201,11 @@ class ETL:
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
             exit_type = "non_respondent"
-        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
-            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
+        elif (
+            (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes")
+            or (visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1")
+            or (visit.get("_number_of_green_visits") is not None and int(visit.get("_number_of_green_visits")) > 1)
         ):
-            exit_type = "cured"
-        elif visit.get("_number_of_green_visits") is not None and int(visit.get("_number_of_green_visits")) > 1:
             exit_type = "cured"
         elif visit.get("_defaulter") is not None and visit.get("_defaulter") == "1":
             exit_type = "defaulter"
@@ -199,26 +219,22 @@ class ETL:
             return "dismissed_due_to_cheating"
         if exit_type == "dismissal":
             return "dismissed_due_to_cheating"
-        elif exit_type == "transferredout":
+        if exit_type == "transferredout":
             return "transferred_out"
-        elif exit_type == "voluntarywithdrawal":
+        if exit_type == "voluntarywithdrawal":
             return "voluntary_withdrawal"
-        else:
-            return exit_type
+        return exit_type
 
     def admission_type_converter(self, admission_type):
         if admission_type == "referred_from_other_otp":
             return "referred_from_otp_sam"
-        elif admission_type == "referred_from_tsfp":
+        if admission_type == "referred_from_tsfp":
             return "referred_from_tsfp_mam"
-        elif admission_type == "referred_from_sc_itp":
+        if admission_type in ["referred_from_sc_itp", "returned_from_sc"]:
             return "referred_from_sc"
-        elif admission_type == "returned_from_sc":
-            return "referred_from_sc"
-        elif admission_type == "returnee":
+        if admission_type == "returnee":
             return "returned_referral"
-        else:
-            return admission_type
+        return admission_type
 
     def get_admission_steps(self, steps):
         step_visits = []
@@ -245,10 +261,13 @@ class ETL:
         nextSecondVisitDate = ""
         missed_followup_visit = 0
         if visit["form_id"] in [
+            "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
             "child_assistance_admission",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
+            "assistance_admission_otp",
+            "assistance_admission_2nd_visit_otp",
         ]:
             if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
@@ -291,18 +310,32 @@ class ETL:
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
-                    days=int(next_visit_days) + 1
+                    days=int(next_visit_days)
                 )
             missed_followup_visit = self.missed_followup_visit(
-                visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
+                visits,
+                anthropometric_visit_forms,
+                next_visit_date[:10],
+                nextSecondVisitDate,
+                next_visit_days,
             )
-        if missed_followup_visit > 0 and next_visit_date != "" and nextSecondVisitDate != "":
+        if missed_followup_visit > 1 and next_visit_date != "" and nextSecondVisitDate != "":
             exit = {"exit_type": "defaulter", "end_date": nextSecondVisitDate}
         return exit
 
-    def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey, visits, index):
+    def journey_Formatter(
+        self,
+        visit,
+        anthropometric_visit_form,
+        followup_forms,
+        current_journey,
+        visits,
+        index,
+    ):
         default_anthropometric_followup_forms = followup_forms
-        if visit["form_id"] == anthropometric_visit_form:
+        default_admission_form = None
+        if visit["form_id"] in anthropometric_visit_form:
+            default_admission_form = visit["form_id"]
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
             current_journey["initial_weight"] = visit.get("initial_weight", None)
@@ -316,10 +349,12 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        followup_forms.append(anthropometric_visit_form)
+        followup_forms.append(default_admission_form)
         exit = None
 
         if visit["form_id"] in followup_forms:
+            if visit["form_id"] != default_admission_form:
+                current_journey["visits"].append(visit)
             end_date = visit.get("end_date", visit.get("source_created_at", ""))
             current_journey["end_date"] = (
                 end_date if end_date is not None else visit.get("source_created_at", None).strftime("%Y-%m-%d")
@@ -369,7 +404,6 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
-
         if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
             step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
         ):
@@ -390,22 +424,42 @@ class ETL:
             assistance = {"type": step.get("medicine_given"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication", None) is not None and step.get("medication", None) != "":
+        if step.get("medication") is not None and step.get("medication") != "":
             given_medication = self.split_given_medication(step.get("medication"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("medicine_given_2") is not None:
+        if step.get("medicine_given_2") is not None and step.get("medicine_given_2") != "":
             assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication_2", None) is not None and step.get("medication_2", None) != "":
+        if step.get("medication_2") is not None and step.get("medication_2") != "":
             given_medication = self.split_given_medication(step.get("medication_2"), quantity)
             given_assistance = given_assistance + given_medication
+
+        if step.get("vitamins_given") == "1":
+            assistance = {"type": "Vitamin", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("ab_given") == "1":
+            assistance = {"type": "albendazole", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("measles_vacc") == "1":
+            assistance = {"type": "Measles vaccination", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("art_given") == "1":
+            assistance = {"type": "ART", "quantity": quantity}
+            given_assistance.append(assistance)
+
+        if step.get("anti_helminth_given") is not None and step.get("anti_helminth_given") != "":
+            assistance = {"type": step.get("anti_helminth_given"), "quantity": quantity}
+            given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
             ration_type = ""
-            if step.get("_total_number_of_sachets") is not None:
+            if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
@@ -435,6 +489,20 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
+        elif step.get("ration_type") is not None and step.get("ration_type") != "":
+            if step.get("ration_type") in ["csb", "csb1", "csb2"]:
+                quantity = step.get("_csb_packets", 0)
+            elif step.get("ration_type") == "lndf":
+                quantity = step.get("_lndf_kgs", 0)
+            else:
+                if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
+                    quantity = 0
+            assistance = {
+                "type": step.get("ration_type"),
+                "quantity": quantity,
+            }
+            given_assistance.append(assistance)
+
         return list(
             filter(
                 lambda assistance: (assistance.get("type") and assistance.get("type") != ""),
@@ -536,3 +604,138 @@ class ETL:
             elif age_entry == "months":
                 calculated_date = registered_at - relativedelta(months=beneficiary_age)
         return calculated_date
+
+    def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
+        journey = []
+        for index, visit in enumerate(visits):
+            if visit:
+                current_journey["weight_gain"] = visit.get("weight_gain", None)
+                current_journey["weight_loss"] = visit.get("weight_loss", None)
+                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                    current_journey["duration"] = visit.get("duration")
+
+                current_journey = ETL().journey_Formatter(
+                    visit,
+                    admission_form,
+                    anthropometric_visit_forms,
+                    current_journey,
+                    visits,
+                    index,
+                )
+            current_journey["steps"].append(visit)
+        journey.append(current_journey)
+        return journey
+
+    def compute_gained_weight(self, initial_weight, current_weight, duration):
+        weight_gain = 0
+        weight_loss = 0
+
+        weight_difference = 0
+        if initial_weight is not None and current_weight is not None and current_weight != "":
+            initial_weight = float(initial_weight)
+            current_weight = float(current_weight)
+            weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
+            if weight_difference >= 0:
+                if duration == 0:
+                    weight_gain = 0
+                elif duration > 0 and current_weight > 0 and initial_weight > 0:
+                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
+            elif weight_difference < 0:
+                weight_loss = abs(weight_difference)
+        return {
+            "initial_weight": (float(initial_weight) if initial_weight is not None else initial_weight),
+            "discharge_weight": (
+                float(current_weight) if current_weight is not None and current_weight != "" else current_weight
+            ),
+            "weight_difference": weight_difference,
+            "weight_gain": weight_gain,
+            "weight_loss": weight_loss / 1000,
+        }
+
+    def save_entity_journey(self, journey, beneficiary, record, entity_type):
+        journey.beneficiary = beneficiary
+        journey.programme_type = entity_type
+        journey.admission_criteria = record.get("admission_criteria")
+        journey.admission_type = record.get("admission_type", None)
+        journey.nutrition_programme = record.get("nutrition_programme")
+        journey.exit_type = record.get("exit_type", None)
+        journey.instance_id = record.get("instance_id", None)
+        journey.start_date = record.get("start_date", None)
+        journey.end_date = record.get("end_date", None)
+        journey.duration = record.get("duration", None)
+
+        journey.save()
+
+        return journey
+
+    def save_monthly_journey(self, monthly_journey, account):
+        monthly_Statistic = MonthlyStatistics()
+        orgUnit = OrgUnit.objects.get(id=monthly_journey.get("org_unit"))
+
+        monthly_Statistic.org_unit = orgUnit
+        monthly_Statistic.gender = monthly_journey.get("gender")
+        monthly_Statistic.month = monthly_journey.get("month")
+        monthly_Statistic.year = monthly_journey.get("year")
+        monthly_Statistic.number_visits = monthly_journey.get("number_visits")
+        monthly_Statistic.programme_type = monthly_journey.get("programme_type")
+        monthly_Statistic.nutrition_programme = monthly_journey.get("nutrition_programme")
+        monthly_Statistic.admission_type = monthly_journey.get("admission_type")
+        monthly_Statistic.admission_criteria = monthly_journey.get("admission_criteria")
+        monthly_Statistic.given_sachet_rusf = monthly_journey.get("given_sachet_rusf")
+        monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
+        monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
+        monthly_Statistic.exit_type = monthly_journey.get("exit_type")
+        monthly_Statistic.account = account
+
+        monthly_Statistic.save()
+
+    def journey_with_visit_and_steps_per_visit(self, account, programme):
+        aggregated_journeys = []
+        journeys = (
+            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
+            .filter(
+                visit__journey__programme_type=programme,
+                visit__journey__beneficiary__account=account,
+            )
+            .values(
+                "visit__journey__admission_type",
+                "assistance_type",
+                "instance_id",
+                "quantity_given",
+                "visit",
+                "visit__id",
+                "visit__date",
+                "visit__journey",
+                "visit__org_unit_id",
+                "visit__journey__admission_criteria",
+                "visit__journey__nutrition_programme",
+                "visit__journey__programme_type",
+                "visit__journey__end_date",
+                "visit__journey__exit_type",
+                "visit__journey__beneficiary__gender",
+                "visit__journey__beneficiary__account",
+                year=Extract("visit__date", "year"),
+                month=Extract("visit__date", "month"),
+                period=Concat(
+                    Extract("visit__date", "year"),
+                    Value("/"),
+                    Extract("visit__date", "month"),
+                    output_field=CharField(),
+                ),
+            )
+            .order_by("visit__id")
+        )
+        data_by_journey = groupby(list(journeys), key=itemgetter("visit__org_unit_id"))
+
+        for org_unit, journeys in data_by_journey:
+            visits_by_period = groupby(journeys, key=itemgetter("period"))
+            assistance = {"rutf_quantity": 0, "rusf_quantity": 0, "csb_quantity": 0}
+            aggregated_journeys = AggregatedJourney().group_by_period(
+                visits_by_period, org_unit, aggregated_journeys, assistance
+            )
+
+        for index, journey in enumerate(aggregated_journeys):
+            logger.info(
+                f"---------------------------------------- Journey N° {(index + 1)} -----------------------------------"
+            )
+            self.save_monthly_journey(journey, account)

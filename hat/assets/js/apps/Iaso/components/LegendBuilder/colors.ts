@@ -1,5 +1,7 @@
 import { green, orange, deepOrange, red } from '@mui/material/colors';
 
+export const defaultProjectColor = '#1976D2';
+
 export const legendColors = [
     green[300],
     green[600],

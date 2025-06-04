@@ -8,20 +8,17 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
+    InputWithInfos,
 } from 'bluesquare-components';
 
 import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
-import { useGetProfilesDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetProfilesDropdown';
-
 import MESSAGES from '../messages';
-import { ChronogramTask } from '../../Chronogram/types';
+import { ChronogramTask, Chronogram } from '../../Chronogram/types';
 import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
-import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
 import { useChronogramTaskSchema } from '../hooks/validation';
 import { useCreateEditChronogramTask } from '../api/useCreateEditChronogramTask';
@@ -45,9 +42,6 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
 
-    const { data: profilesDropdown, isFetching: isFetchingProfiles } =
-        useGetProfilesDropdown();
-
     const { mutate: confirm } = useCreateEditChronogramTask();
     const schema = useChronogramTaskSchema();
     const formik = useFormik({
@@ -59,7 +53,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
             description_fr: chronogramTask?.description_fr,
             start_offset_in_days: chronogramTask?.start_offset_in_days,
             status: chronogramTask?.status,
-            user_in_charge: chronogramTask?.user_in_charge.id,
+            user_in_charge: chronogramTask?.user_in_charge,
             comment: chronogramTask?.comment,
         },
         enableReinitialize: true,
@@ -76,6 +70,10 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     const userHasReadAndWritePerm = userHasPermission(
         Permission.POLIO_CHRONOGRAM,
+        currentUser,
+    );
+    const userHasRestrictedWritePerm = userHasPermission(
+        Permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE,
         currentUser,
     );
 
@@ -158,10 +156,11 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.labelUserInCharge)}
                         name="user_in_charge"
-                        component={SingleSelect}
-                        options={profilesDropdown}
-                        isLoading={isFetchingProfiles}
-                        disabled={!userHasReadAndWritePerm}
+                        component={TextInput}
+                        disabled={
+                            !userHasReadAndWritePerm &&
+                            !userHasRestrictedWritePerm
+                        }
                     />
                 </Box>
                 <Box mb={2}>

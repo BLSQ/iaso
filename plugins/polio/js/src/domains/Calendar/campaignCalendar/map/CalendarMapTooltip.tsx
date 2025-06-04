@@ -1,8 +1,7 @@
 /* eslint-disable react/require-default-props */
-/* eslint-disable react/jsx-props-no-spreading */
+import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { Tooltip } from 'react-leaflet';
-import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 
 type Props = {

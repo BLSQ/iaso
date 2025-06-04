@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton, Grid, Typography, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import RemoveIcon from '@mui/icons-material/Remove';
+import { Box, Grid, IconButton, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { ColorPicker } from '../forms/ColorPicker';
 import InputComponent from '../forms/InputComponent';
-import { RangeValue } from './types';
 import { legendColors } from './colors';
+import { RangeValue } from './types';
 
 const useStyles = makeStyles(theme => ({
     legendItem: {
@@ -23,13 +23,9 @@ type LegendRowProps = {
     rangeItem: RangeValue;
     index: number;
     rangeValues: RangeValue[];
-    // eslint-disable-next-line no-unused-vars
     handleColorChange: (index: number) => void;
-    // eslint-disable-next-line no-unused-vars
     handleNumberChange: (index: number, newNumber?: number) => void;
-    // eslint-disable-next-line no-unused-vars
     removeRangeValue: (index: number) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldError: (keyValue: string, message: string) => void;
     errors?: string[];
 };

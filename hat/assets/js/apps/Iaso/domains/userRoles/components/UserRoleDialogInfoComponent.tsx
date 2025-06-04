@@ -1,12 +1,11 @@
-import React, { FunctionComponent } from 'react';
-import { SimpleModal, useSafeIntl } from 'bluesquare-components';
 import { Typography } from '@mui/material';
+import { SimpleModal, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import MESSAGES from '../messages';
 import DialogInfoButton from './DialogInfoButton';
 
 type Props = {
     infoOpen: boolean;
-    // eslint-disable-next-line no-unused-vars
     setInfoOpen: (open: boolean) => void;
     closeDialog: () => void;
 };

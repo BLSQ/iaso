@@ -2,7 +2,11 @@ import React, { FunctionComponent } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Grid, IconButton, Paper, Popper } from '@mui/material';
-import { getTableUrl, useSafeIntl } from 'bluesquare-components';
+import {
+    getTableUrl,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -46,7 +50,6 @@ type Props = {
     handleClose: () => void;
     open: boolean;
     anchorEl: HTMLElement | undefined;
-    // eslint-disable-next-line no-unused-vars
     setDialogOpen: (open: boolean) => void;
     round: CalendarRound;
 };
@@ -102,7 +105,9 @@ export const RoundPopper: FunctionComponent<Props> = ({
                             {formatMessage(MESSAGES.targetPopulation)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {formatNumber(round.target_population)}
+                            {round.target_population
+                                ? formatNumber(round.target_population)
+                                : textPlaceholder}
                         </Grid>
 
                         <Grid item sm={6} container justifyContent="flex-end">

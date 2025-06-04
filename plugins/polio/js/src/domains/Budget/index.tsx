@@ -1,20 +1,24 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
 import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
+    useRedirectToReplace,
     useSafeIntl,
     useSkipEffectOnMount,
-    useRedirectToReplace,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../constants/messages';
+import { baseUrls } from '../../constants/urls';
+import { useStyles } from '../../styles/theme';
 import { BudgetButtons } from './BudgetButtons';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
@@ -25,24 +29,17 @@ import {
 } from './hooks/api/useGetBudget';
 import { useBudgetColumns } from './hooks/config';
 import { Budget } from './types';
-import { useStyles } from '../../styles/theme';
-import MESSAGES from '../../constants/messages';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 
 const getCsvParams = (apiParams: Record<string, any>): string => {
     const {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         pageSize,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         page,
         ...paramsForCsv
     } = apiParams;
     const filteredParams: Record<string, any> = Object.fromEntries(
-        Object.entries(paramsForCsv).filter(
-            // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-            ([_key, value]) => value !== undefined,
-        ),
+        Object.entries(paramsForCsv).filter(([, value]) => value !== undefined),
     );
     return new URLSearchParams(filteredParams).toString();
 };

@@ -1,0 +1,54 @@
+name: deploy_doc
+
+on:
+  workflow_dispatch:
+    inputs:
+      slack_channel:
+        description: Slack Channel for notification (iasops by default)
+        required: false
+        default: iasops
+  push:
+    # On push to main deploy doc to GH pages
+    branches:
+      - main
+
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Set configs
+        id: config
+        env:
+            DEFAULT_GIT_REFERENCE: main
+        run: |
+            echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.config.outputs.GIT_REFERENCE }}
+          fetch-depth: 0
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.9
+      - name: Install mkDocs and dependencies
+        uses: actions/cache@v4
+        id: cache-venv
+        with:
+            path: ./venv/
+            # The cache key depends on /docs/requirements.txt
+            key: ${{ runner.os }}-venv-${{ hashFiles('**/docs/requirements*.txt') }}
+            restore-keys: |
+                ${{ runner.os }}-venv-
+            # Build a virtualenv, but only if it doesn't already exist
+      - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
+            pip install -r docs/requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+      - name: Environment info
+        run: |
+            . ./venv/bin/activate  # Activate the venv here
+            pip list
+      - name: Deploy on Github pages
+        run: |
+          . ./venv/bin/activate 
+          mkdocs gh-deploy --config-file mkdocs.yml

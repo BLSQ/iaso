@@ -22,8 +22,14 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         cls.user = cls.create_user_with_profile(
             username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
         )
+        cls.geo_limited_user = cls.create_user_with_profile(
+            username="other_user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+        )
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account
+        )
+        cls.payment_beneficiary2 = cls.create_user_with_profile(
+            username="payment_beneficiary2", first_name="Jim", last_name="Doe", account=account
         )
         org_unit_type = m.OrgUnitType.objects.create(name="Stable", short_name="Cnc")
         cls.org_unit = m.OrgUnit.objects.create(
@@ -32,6 +38,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             version=version,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
+        cls.other_org_unit = m.OrgUnit.objects.create(
+            name="Some other place",
+            org_unit_type=org_unit_type,
+            version=version,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        cls.geo_limited_user.iaso_profile.org_units.set([cls.other_org_unit])
         cls.payment_lot = m.PaymentLot.objects.create(name="Test Payment Lot", created_by=cls.user, updated_by=cls.user)
         cls.payment = m.Payment.objects.create(
             user=cls.payment_beneficiary,
@@ -58,6 +71,11 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             payment=cls.second_payment,
         )
         cls.potential_payment = m.PotentialPayment.objects.create(user=cls.payment_beneficiary)
+        running_task = m.Task.objects.create(launcher=cls.user, account=cls.user.iaso_profile.account, status="SUCCESS")
+        cls.potential_payment_with_task = m.PotentialPayment.objects.create(
+            user=cls.payment_beneficiary2, task=running_task
+        )
+
         cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=cls.org_unit,
             new_name="Wetlands",
@@ -83,7 +101,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         self.assertJSONResponse(response, 201)
         data = response.json()
-        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payments_from_payment_lot")
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
 
         # Run the task
@@ -110,8 +128,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.assertIsNone(self.third_change_request.potential_payment)
         self.assertFalse(m.PotentialPayment.objects.filter(id=self.potential_payment.pk).exists())
 
-        # Changes have been logged: 1 for Payment lot at creation, 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
-        self.assertEqual(4, am.Modification.objects.count())
+        # Changes have been logged: 1 for payment, 1 for change request, 1 for Payment lot after all payments have been created
+        self.assertEqual(3, am.Modification.objects.count())
 
     def test_update_payment_lot_mark_payments_as_sent(self):
         self.client.force_authenticate(self.user)
@@ -254,3 +272,62 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 },
             },
         )
+
+    def test_payment_lot_not_created_if_potential_payment_has_task(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/payments/lots/",
+            {
+                "name": "New Payment Lot",
+                "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk],
+            },
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "ERRORED")
+        # No new payment lot created, we find only the one from setup
+        self.assertEqual(m.PaymentLot.objects.count(), 1)
+
+    def test_payment_lot_not_created_if_potential_payment_not_found(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            "/api/payments/lots/",
+            {
+                "name": "New Payment Lot",
+                "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk + 100],
+            },
+        )
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "ERRORED")
+        # No new payment lot created, we find only the one from setup
+        self.assertEqual(m.PaymentLot.objects.count(), 1)
+
+    def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
+        self.client.force_authenticate(self.geo_limited_user)
+        response = self.client.get("/api/payments/lots/")
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        results = data["results"]
+        result = results[0]
+        self.assertEqual(len(results), 1)
+        self.assertFalse(result["can_see_change_requests"])
+        self.assertEqual(len(result["payments"]), 2)
+        change_requests = result["payments"][0]["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        for change_request in change_requests:
+            self.assertFalse(change_request["can_see_change_request"])
+        change_requests = result["payments"][1]["change_requests"]
+        self.assertEqual(len(change_requests), 1)
+        for change_request in change_requests:
+            self.assertFalse(change_request["can_see_change_request"])

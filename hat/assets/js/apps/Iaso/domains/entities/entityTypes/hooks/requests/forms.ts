@@ -1,11 +1,10 @@
 import { UseQueryResult } from 'react-query';
 
-import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { getRequest } from '../../../../../libs/Api';
+import { useSnackQuery } from '../../../../../libs/apiHooks';
 
-import { Form, PossibleField } from '../../../../forms/types/forms';
 import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
-
+import { Form, PossibleField } from '../../../../forms/types/forms';
 
 export const useGetForm = (
     formId: number | undefined,
@@ -35,11 +34,14 @@ export const useGetForm = (
 
 export const useGetForms = (
     enabled: boolean,
+    fields?: string[] | undefined,
 ): UseQueryResult<Form[], Error> => {
+    const apiUrl = '/api/forms/?fields=id,name,latest_form_version';
+    const url = fields ? `${apiUrl},${fields.join(',')}` : apiUrl;
+
     return useSnackQuery({
         queryKey: ['forms'],
-        queryFn: () =>
-            getRequest('/api/forms/?fields=id,name,latest_form_version'),
+        queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
             enabled,
@@ -65,10 +67,14 @@ export const useGetFormForEntityType = ({
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         enabled && Boolean(formId),
-        'possible_fields,name',
+        'possible_fields_with_latest_version,name,latest_form_version',
     );
     return {
-        ...usePossibleFields(isFetchingForm, currentForm),
+        ...usePossibleFields(
+            isFetchingForm,
+            currentForm,
+            'possible_fields_with_latest_version',
+        ),
         name: currentForm?.name,
     };
 };

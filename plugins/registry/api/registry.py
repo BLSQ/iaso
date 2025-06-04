@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import Paginator
-from iaso.api.instances import InstanceSerializer
+from iaso.api.instances.instances import InstanceSerializer
 from iaso.models import Instance
 from plugins.registry.models import PublicRegistryConfig
 
@@ -93,8 +93,7 @@ class InstanceSerializer(serializers.ModelSerializer):
                 "last_name": obj.created_by.last_name,
             }
 
-        else:
-            return None
+        return None
 
     def get_file_content(self, obj):
         return obj.get_and_save_json_of_xml()

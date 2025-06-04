@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
@@ -8,7 +7,6 @@ import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
     field: NewOrgUnitField;
-    // eslint-disable-next-line no-unused-vars
     isNew: boolean;
     isNewOrgUnit: boolean;
     isFetchingChangeRequest: boolean;
@@ -20,7 +18,6 @@ const useStyles = makeStyles(theme => ({
         color: 'inherit',
     },
     cellRejected: {
-        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.error.main} !important`,
         },
@@ -38,7 +35,6 @@ const useStyles = makeStyles(theme => ({
         },
     },
     cellApproved: {
-        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.success.main} !important`,
         },
@@ -92,11 +88,15 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     return (
         <>
             {!isNewOrgUnit && (
-                <TableCell className={classes.verticalTop}>
+                <TableCell
+                    className={classes.verticalTop}
+                    sx={{ width: '40vw' }}
+                >
                     {field.oldValue}
                 </TableCell>
             )}
             <TableCell
+                sx={{ width: '40vw' }}
                 className={classNames(
                     !isNewOrgUnit &&
                         !isFetchingChangeRequest &&

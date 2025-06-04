@@ -1,48 +1,80 @@
 {
-    "id": 2,
-    "first_name": "Bruce",
-    "user_name": "oneFistPunch",
-    "last_name": "Lee",
-    "email": "",
     "account": {
-        "name": "RDC",
-        "id": 1,
         "created_at": 1565543892.6493,
-        "updated_at": 1629976748.994371,
         "default_version": {
+            "created_at": 1571141555.136647,
             "data_source": {
-                "name": "reference",
+                "created_at": 1570547349.403788,
                 "description": "",
                 "id": 1,
-                "url": "",
-                "created_at": 1570547349.403788,
+                "name": "reference",
                 "updated_at": 1620406206.140532,
+                "url": "",
                 "versions": [
                     {
-                        "number": 1,
+                        "created_at": 1571141555.136647,
                         "description": null,
                         "id": 3,
-                        "created_at": 1571141555.136647,
-                        "updated_at": 1571141555.136676,
-                        "org_units_count": 27573
+                        "number": 1,
+                        "org_units_count": 27573,
+                        "updated_at": 1571141555.136676
                     }
                 ]
             },
-            "number": 1,
             "description": null,
             "id": 3,
-            "created_at": 1571141555.136647,
+            "number": 1,
             "updated_at": 1571141555.136676
         },
         "feature_flags": [
             "ALLOW_CATCHMENT_EDITION",
             "ALLOW_SHAPE_EDITION",
             "SHOW_PAGES"
-        ]
+        ],
+        "modules": [
+            "DATA_COLLECTION_FORMS",
+            "DEFAULT",
+            "DHIS2_MAPPING",
+            "EMBEDDED_LINKS",
+            "ENTITIES",
+            "EXTERNAL_STORAGE",
+            "PLANNING",
+            "POLIO_PROJECT",
+            "REGISTRY",
+            "COMPLETENESS_PER_PERIOD",
+            "TRYPELIM_PROJECT",
+            "PAYMENTS"
+        ],
+        "id": 1,
+        "name": "RDC",
+        "updated_at": 1629976748.994371
     },
-    "permissions": [],
+    "country_code": null,
+    "dhis2_id": null,
+    "editable_org_unit_type_ids": [],
+    "email": "",
+    "first_name": "Bruce",
+    "home_page": null,
+    "id": 2,
     "is_superuser": true,
-    "org_units": [],
     "language": "en",
-    "user_id": 5
+    "last_name": "Lee",
+    "org_units": [],
+    "organization": null,
+    "other_accounts": [],
+    "permissions": [],
+    "phone_number": null,
+    "projects": [
+        {
+            "app_id": "app_id_2",
+            "id": 1,
+            "name": "Test2.35.3"
+        }
+    ],
+    "user_id": 5,
+    "user_name": "oneFistPunch",
+    "user_permissions": [],
+    "user_roles": [],
+    "user_roles_editable_org_unit_type_ids": [],
+    "user_roles_permissions": []
 }

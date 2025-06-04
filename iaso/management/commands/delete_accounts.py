@@ -1,33 +1,50 @@
-import traceback
 import datetime
+import traceback
+
 from collections import defaultdict
 
 import django
+
 from django.contrib.auth.models import User
-from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sessions.models import Session
 from django.core.management.base import BaseCommand
 from django.db import connection
-from django.db.models import Count
-from django.db.models import Q
-from django.db.models import TextField
+from django.db.models import Count, Q, TextField
 from django.db.models.functions import Cast
+from django_sql_dashboard.models import Dashboard
 
 from hat.audit.models import Modification
-from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
-from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog, ExportRequest
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
-from iaso.models.base import Task, QUEUED, KILLED
+from iaso.models import (
+    Account,
+    BulkCreateUserCsvFile,
+    CommentIaso,
+    ExportLog,
+    OrgUnitType,
+    StorageDevice,
+    StorageLogEntry,
+    StoragePassword,
+    TenantUser,
+)
+from iaso.models.base import (
+    KILLED,
+    QUEUED,
+    DataSource,
+    ExternalCredentials,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    Mapping,
+    Profile,
+    Task,
+)
+from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
-from iaso.models.microplanning import Assignment, Team, Planning
+from iaso.models.microplanning import Assignment, Planning, Team
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page
 from iaso.models.project import Project
-from iaso.models.device import Device
-
-from django_sql_dashboard.models import Dashboard
 
 
 def flatten(l):
@@ -119,6 +136,11 @@ class Command(BaseCommand):
                 forms = Form.objects_include_deleted.filter(projects__in=[project])
 
                 print(
+                    "OrgUnitChangeRequestConfiguration delete",
+                    project.orgunitchangerequestconfiguration_set.all().delete(),
+                )
+
+                print(
                     "OrgUnit remove reference_instance",
                     OrgUnitReferenceInstance.objects.filter(
                         instance__in=Instance.objects.filter(project=project)
@@ -149,7 +171,8 @@ class Command(BaseCommand):
                         )
 
                 for entity in Entity.objects_include_deleted.filter(account=account):
-                    print("Entity attributes", entity.attributes.delete())
+                    if entity and entity.attributes:
+                        print("Entity attributes", entity.attributes.delete())
 
                 print("Entity", Entity.objects_include_deleted.filter(account=account).delete())
 
@@ -260,6 +283,12 @@ class Command(BaseCommand):
             StorageLogEntry.objects.filter(device__in=StorageDevice.objects.filter(account=account)).delete(),
         )
         print("StorageDevice", StorageDevice.objects.filter(account=account).delete())
+
+        user_ids = profiles.values_list("user_id")
+        print(
+            "TenantUser delete",
+            TenantUser.objects.filter(Q(main_user_id__in=user_ids) | Q(account_user_id__in=user_ids)).delete(),
+        )
 
         print("Users", User.objects.filter(iaso_profile__account=account).delete())
 
@@ -481,6 +510,9 @@ class Command(BaseCommand):
         dump_diffs(counts_before, counts_after)
         print("******* Review external credentials left")
         for ext_cred in ExternalCredentials.objects.all():
-            print(ext_cred.url, ext_cred.login, ext_cred.name)
+            print(ext_cred.id, ext_cred.url, ext_cred.login, ext_cred.name)
 
+        print(
+            "\ncredential ids used in datasource\n", list(DataSource.objects.values_list("credentials_id", flat=True))
+        )
         print("Done !")

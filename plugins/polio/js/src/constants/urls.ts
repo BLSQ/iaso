@@ -1,12 +1,14 @@
-import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
     RouteConfig,
     extractParams,
     extractParamsConfig,
     extractUrls,
+    paginationPathParamsWithPrefix,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/urls';
+import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 import {
     DESTRUCTION,
+    EARMARKED,
     FORM_A,
     INCIDENT,
     UNUSABLE_VIALS,
@@ -17,6 +19,9 @@ export const DASHBOARD_BASE_URL = 'polio/list';
 export const CAMPAIGN_HISTORY_URL = 'polio/campaignHistory';
 export const CALENDAR_BASE_URL = 'polio/calendar';
 export const EMBEDDED_CALENDAR_URL = 'polio/embeddedCalendar';
+export const EMBEDDED_VACCINE_REPOSITORY_URL =
+    'polio/embeddedVaccineRepository';
+export const EMBEDDED_VACCINE_STOCK_URL = 'polio/embeddedVaccineStock';
 export const CONFIG_BASE_URL = 'polio/config';
 export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
@@ -31,13 +36,14 @@ export const BUDGET_DETAILS = 'polio/budget/details';
 export const VACCINE_MODULE = 'polio/vaccinemodule';
 export const NOPV2_AUTH = `${VACCINE_MODULE}/nopv2authorisation`;
 export const NOPV2_AUTH_DETAILS = `${NOPV2_AUTH}/details`;
+export const VACCINE_REPOSITORY_BASE_URL = `${VACCINE_MODULE}/repository`;
 export const VACCINE_SUPPLY_CHAIN = `${VACCINE_MODULE}/supplychain`;
 export const VACCINE_SUPPLY_CHAIN_DETAILS = `${VACCINE_SUPPLY_CHAIN}/details`;
 export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
-export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
+export const CHRONOGRAM_BASE_URL = `${VACCINE_MODULE}/chronogram`;
 export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
 export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 
@@ -51,8 +57,8 @@ export const campaignParams = [
     'campaignCategory',
     'campaignGroups',
     'show_test',
+    'on_hold',
     'filterLaunched',
-    'notShowTest',
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {
@@ -84,6 +90,25 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'periodType',
         ],
     },
+    vaccineRepository: {
+        url: VACCINE_REPOSITORY_BASE_URL,
+        params: [
+            ...paginationPathParams,
+            ...paginationPathParamsWithPrefix('report'),
+            'countries',
+            'campaignType',
+            'file_type',
+            'country_block',
+            'vaccine_name',
+            'campaignStatus',
+            'tab',
+            'accountId',
+            'reportCountries',
+            'reportCountryBlock',
+            'reportFileType',
+            'reportVaccineName',
+        ],
+    },
     embeddedCalendar: {
         url: EMBEDDED_CALENDAR_URL,
         params: [
@@ -92,6 +117,35 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...campaignParams,
             'orgUnitGroups',
             'periodType',
+        ],
+    },
+    embeddedVaccineRepository: {
+        url: EMBEDDED_VACCINE_REPOSITORY_URL,
+        params: [
+            ...paginationPathParams,
+            ...paginationPathParamsWithPrefix('report'),
+            'countries',
+            'campaignType',
+            'file_type',
+            'country_block',
+            'vaccine_name',
+            'campaignStatus',
+            'tab',
+            'reportCountries',
+            'reportCountryBlock',
+            'reportFileType',
+            'reportVaccineName',
+        ],
+    },
+    embeddedVaccineStock: {
+        url: EMBEDDED_VACCINE_STOCK_URL,
+        params: [
+            ...paginationPathParams,
+            'country',
+            'action_type',
+            'country_block',
+            'vaccine',
+            'tab',
         ],
     },
     lqasCountry: {
@@ -198,6 +252,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${UNUSABLE_VIALS}Order`,
             `${UNUSABLE_VIALS}PageSize`,
             `${UNUSABLE_VIALS}Page`,
+            `${EARMARKED}Order`,
+            `${EARMARKED}PageSize`,
+            `${EARMARKED}Page`,
         ],
     },
     stockVariation: {
@@ -215,6 +272,9 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             `${INCIDENT}Order`,
             `${INCIDENT}PageSize`,
             `${INCIDENT}Page`,
+            `${EARMARKED}Order`,
+            `${EARMARKED}PageSize`,
+            `${EARMARKED}Page`,
         ],
     },
     countryConfig: {
@@ -242,6 +302,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
             'limit',
             'search',
+            'campaign',
             'country',
             'on_time',
         ],
@@ -267,6 +328,7 @@ export type PolioBaseUrls = {
     campaignHistory: string;
     groupedCampaigns: string;
     calendar: string;
+    vaccineRepository: string;
     lqasCountry: string;
     lqasAfro: string;
     imGlobal: string;
@@ -284,6 +346,8 @@ export type PolioBaseUrls = {
     countryConfig: string;
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
+    embeddedVaccineRepository: string;
+    embeddedVaccineStock: string;
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;

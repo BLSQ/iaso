@@ -1,5 +1,4 @@
 import gspread.utils  # type: ignore
-from translated_fields import TranslatedFieldAdmin
 
 from django import forms
 from django.contrib import admin, messages
@@ -8,20 +7,23 @@ from django.db import models
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
+from translated_fields import TranslatedFieldAdmin
 
 from iaso.admin import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
+from plugins.polio.models.base import VaccineStockHistory
 
 from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
-    CampaignType,
     CampaignGroup,
+    CampaignType,
     Chronogram,
     ChronogramTask,
     ChronogramTemplateTask,
     CountryUsersGroup,
     DestructionReport,
+    EarmarkedStock,
     IncidentReport,
     Notification,
     NotificationImport,
@@ -82,7 +84,7 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         html = ""
 
         for sheet in obj.content["sheets"]:
-            html += f'<details open><summary><b>{sheet["title"]}</b></summary><table>'
+            html += f"<details open><summary><b>{sheet['title']}</b></summary><table>"
             try:
                 if not sheet["values"]:
                     html += "Empty</table></details>"
@@ -105,7 +107,7 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
             except Exception as e:
                 print(e)
                 html += f"<error>render error: {e}</error>"
-                html += f'<pre>{sheet["values"]}</pre>'
+                html += f"<pre>{sheet['values']}</pre>"
             html += "</table></details>"
 
         # print(html)
@@ -210,6 +212,11 @@ class IncidentReport(admin.ModelAdmin):
     model = IncidentReport
 
 
+@admin.register(EarmarkedStock)
+class EarmarkedStockAdmin(admin.ModelAdmin):
+    model = EarmarkedStock
+
+
 @admin.register(Round)
 class RoundAdmin(admin.ModelAdmin):
     model = Round
@@ -272,6 +279,39 @@ class NotificationAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("org_unit")
 
 
+@admin.register(VaccineStockHistory)
+class VaccineStockHistoryAdmin(admin.ModelAdmin):
+    list_display = ("get_campaign_name", "get_round_number", "round", "get_vaccine_name", "get_country")
+    # list_filter = ("get_country", "get_vaccine_name","get_campaign_name")
+
+    @admin.display(description="Campaign name")
+    def get_campaign_name(self, obj):
+        if obj.round:
+            return obj.round.campaign.obr_name
+        return None
+
+    @admin.display(description="Round number")
+    def get_round_number(self, obj):
+        if obj.round:
+            return obj.round.number
+        return None
+
+    @admin.display(description="Vaccine")
+    def get_vaccine_name(self, obj):
+        if obj.round:
+            return obj.vaccine_stock.vaccine
+        return None
+
+    @admin.display(description="Country")
+    def get_country(self, obj):
+        if obj.round:
+            return obj.vaccine_stock.country.name
+        return None
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("round", "vaccine_stock", "vaccine_stock__country")
+
+
 class RoundAdminInline(admin.TabularInline):
     model = Round
     extra = 0
@@ -332,7 +372,7 @@ class SubActivityAdmin(admin.ModelAdmin):
 class ChronogramTaskAdminInline(admin.StackedInline):
     model = ChronogramTask
     extra = 0
-    raw_id_fields = ("user_in_charge", "created_by", "updated_by")
+    raw_id_fields = ("created_by", "updated_by")
     readonly_fields = (
         "created_at",
         "created_by",
@@ -342,12 +382,7 @@ class ChronogramTaskAdminInline(admin.StackedInline):
     )
 
     def get_queryset(self, request):
-        return (
-            super()
-            .get_queryset(request)
-            .valid()
-            .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
-        )
+        return super().get_queryset(request).valid().select_related("chronogram__round", "created_by", "updated_by")
 
 
 @admin.register(Chronogram)

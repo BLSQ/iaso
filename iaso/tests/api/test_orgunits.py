@@ -1,14 +1,33 @@
+import csv
+import datetime
+import io
+import json
 import typing
 
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
+from django.test import SimpleTestCase
+from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import OrgUnitType, OrgUnit
+from iaso.api.org_units import OrgUnitViewSet
+from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
-import csv
-import io
+from iaso.utils.gis import simplify_geom
+
+
+class OrgUnitAPIUtilsTestCase(SimpleTestCase):
+    def test_get_date(self):
+        """
+        Test OrgUnitViewSet.get_date()
+        """
+        self.assertEqual(OrgUnitViewSet().get_date(None), None)
+        self.assertEqual(OrgUnitViewSet().get_date(""), None)
+        self.assertEqual(OrgUnitViewSet().get_date("03-04-2025"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("03/04/2025"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("2025-04-03"), datetime.date(2025, 4, 3))
+        self.assertEqual(OrgUnitViewSet().get_date("2025/04/03"), datetime.date(2025, 4, 3))
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -17,7 +36,9 @@ class OrgUnitAPITestCase(APITestCase):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="MCU")
         cls.project = project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
         )
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(project)
@@ -65,11 +86,17 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         cls.instance_related_to_reference_form = cls.create_form_instance(
-            form=reference_form, period="202003", org_unit=jedi_council_corruscant, project=project
+            form=reference_form,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
         )
 
         cls.instance_not_related_to_reference_form = cls.create_form_instance(
-            form=not_a_reference_form, period="202003", org_unit=jedi_council_corruscant, project=project
+            form=not_a_reference_form,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
         )
 
         jedi_council_corruscant.groups.set([elite_group])
@@ -129,10 +156,15 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
         cls.user_read_permission = cls.create_user_with_profile(
-            username="user_read_permission", account=star_wars, permissions=["iaso_org_units_read"]
+            username="user_read_permission",
+            account=star_wars,
+            permissions=["iaso_org_units_read"],
         )
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[jedi_council_endor]
+            username="luke",
+            account=star_wars,
+            permissions=["iaso_org_units"],
+            org_units=[jedi_council_endor],
         )
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
 
@@ -140,11 +172,26 @@ class OrgUnitAPITestCase(APITestCase):
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
 
-        cls.create_form_instance(form=form_1, period="202001", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202001",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
-        cls.create_form_instance(form=form_1, period="202001", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202001",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
-        cls.create_form_instance(form=form_1, period="202003", org_unit=jedi_council_corruscant, project=project)
+        cls.create_form_instance(
+            form=form_1,
+            period="202003",
+            org_unit=jedi_council_corruscant,
+            project=project,
+        )
 
     def test_org_unit_search_with_ids(self):
         """GET /orgunits/ with a search based on refs"""
@@ -214,6 +261,40 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
+    def test_org_unit_search_with_external_refs(self):
+        """GET /orgunits/ with a search based on refs - real external & fake external (internal)"""
+        # First, let's set a source ref on this orgunit, because there is none in the setup
+        jedi_counsil_endor_source_ref = "sOuRcErEf"
+        self.jedi_council_endor.source_ref = jedi_counsil_endor_source_ref
+        self.jedi_council_endor.save()
+        self.jedi_council_endor.refresh_from_db()
+
+        invalid_external_ref = "iTsAMeMario"
+        invalid_iaso_id = 12345678987654321
+
+        # Let's add a mix of existing and non-existing refs, both external and fake external
+        search_criteria = {
+            "validation_status": "all",
+            "version": self.sw_version_1.id,
+            "search": f"refs: {self.jedi_council_corruscant.source_ref} iaso:{invalid_iaso_id} {self.jedi_council_endor.source_ref} iaso:{self.jedi_squad_endor.id} {invalid_external_ref}",
+        }
+        search_criteria_str = json.dumps(search_criteria)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
+        self.assertJSONResponse(response, 200)
+
+        response_json = response.json()
+        self.assertEqual(response_json["count"], 3)
+        org_units = response_json["orgunits"]
+        self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[0]["source_ref"], self.jedi_council_corruscant.source_ref)
+        self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
+        self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
+        self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
+
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
 
@@ -272,7 +353,10 @@ class OrgUnitAPITestCase(APITestCase):
         # council and Endor Jedi council are kept
         self.assertEqual(json_response["count"], 2)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
-        self.assertEqual(returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id})
+        self.assertEqual(
+            returned_ou_ids,
+            {self.jedi_council_corruscant.id, self.jedi_council_endor.id},
+        )
 
     def test_org_unit_search_geography_location(self):
         """GET /orgunits/ filtered so only OUs with a point location are returned"""
@@ -331,7 +415,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(json_response["count"], 3)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
         self.assertEqual(
-            returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_corruscant.id, self.jedi_council_endor.id}
+            returned_ou_ids,
+            {
+                self.jedi_squad_endor.id,
+                self.jedi_council_corruscant.id,
+                self.jedi_council_endor.id,
+            },
         )
 
     def test_org_unit_search_geography_with_location_true(self):
@@ -361,7 +450,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(json_response["count"], 3)
         returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
         self.assertEqual(
-            returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
+            returned_ou_ids,
+            {
+                self.jedi_council_corruscant.id,
+                self.jedi_council_endor.id,
+                self.jedi_squad_endor_2.id,
+            },
         )
 
     def test_org_units_tree_super_user(self):
@@ -373,7 +467,10 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         super_user = self.create_user_with_profile(
-            username="superUser", is_superuser=True, account=self.star_wars, permissions=["iaso_org_units"]
+            username="superUser",
+            is_superuser=True,
+            account=self.star_wars,
+            permissions=["iaso_org_units"],
         )
         super_user.iaso_profile.org_units.set([org_unit_country])
         super_user.save()
@@ -395,7 +492,9 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         user_manager = self.create_user_with_profile(
-            username="userManager", account=self.star_wars, permissions=["iaso_org_units"]
+            username="userManager",
+            account=self.star_wars,
+            permissions=["iaso_org_units"],
         )
         user_manager.iaso_profile.org_units.set([org_unit_country])
         user_manager.save()
@@ -437,7 +536,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_org_unit_list_without_auth_or_app_id(self):
         """GET /api/orgunits/ with no auth or app id -> 200 with 0 org unit"""
 
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -447,7 +546,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -457,7 +556,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/ happy path"""
 
         self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/")
+        response = self.client.get("/api/orgunits/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -467,7 +566,7 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/?rootsForUser=true"""
 
         self.client.force_authenticate(self.luke)
-        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        response = self.client.get("/api/orgunits/?rootsForUser=true")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -478,13 +577,31 @@ class OrgUnitAPITestCase(APITestCase):
         """GET /api/orgunits/?rootsForUser=true"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/orgunits/?rootsForUser=true")
+        response = self.client.get("/api/orgunits/?rootsForUser=true")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
         for orgunit in response_data["orgUnits"]:
             self.assertEqual(orgunit["parent_id"], None)
+
+    def test_org_unit_list_with_as_location_with_group(self):
+        """
+        Test that `build_org_units_queryset()` which sets `.distinct()` clauses
+        when the `group` param is used doesn't cause `Paginator` to fail.
+        """
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?asLocation=true&limit=1&group=1")
+        self.assertJSONResponse(response, 200)
+
+    def test_org_unit_list_without_as_location_with_group(self):
+        """
+        Test that `build_org_units_queryset()` which sets `.distinct()` clauses
+        when the `group` param is used doesn't cause `Paginator` to fail.
+        """
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=1&group=1")
+        self.assertJSONResponse(response, 200)
 
     def test_org_unit_retrieve_without_auth_or_app_id(self):
         """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
@@ -517,10 +634,56 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_with_instances_count(self):
+        self.client.force_authenticate(self.yoda)
+
+        parent_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Parent",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        descendant_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Descendant",
+            parent=parent_org_unit,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=descendant_org_unit,
+            project=self.project,
+            json={"name": "a", "age": 18, "gender": "M"},
+        )
+
+        self.create_form_instance(
+            form=self.form_1,
+            period="202001",
+            org_unit=parent_org_unit,
+            project=self.project,
+            json={"name": "b", "age": 19, "gender": "F"},
+        )
+        # Test the descendant instances count
+        response_descendant = self.client.get(f"/api/orgunits/{descendant_org_unit.id}/")
+        self.assertJSONResponse(response_descendant, 200)
+        descendant_instances_count = response_descendant.json()["instances_count"]
+        self.assertEqual(descendant_instances_count, 1)
+
+        # Test the parent instances count
+        response_parent = self.client.get(f"/api/orgunits/{parent_org_unit.id}/")
+        self.assertJSONResponse(response_parent, 200)
+        parent_instances_count = response_parent.json()["instances_count"]
+        self.assertEqual(parent_instances_count, 2)
+
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv", headers={"Content-Type": "text/csv"}
+            f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv",
+            headers={"Content-Type": "text/csv"},
         )
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
@@ -537,7 +700,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get(f"/api/orgunits/?csv=true")
+        response = self.client.get("/api/orgunits/?csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -583,7 +746,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     def set_up_org_unit_creation(self):
         return self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -607,6 +770,25 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.set_up_org_unit_creation()
         self.assertJSONResponse(response, 403)
 
+    def test_create_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
+        """
+        Check that we cannot create an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.set_up_org_unit_creation()
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(
+            json_response[0]["errorMessage"],
+            "You cannot create or edit an Org unit of this type",
+        )
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
+
     def test_create_org_unit(self):
         """Check that we can create org unit with only org units management permission"""
         self.client.force_authenticate(self.yoda)
@@ -623,7 +805,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -646,9 +828,13 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_minimal(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "opening_date": "01-01-2024"},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "opening_date": "01-01-2024",
+            },
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -667,7 +853,7 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -683,9 +869,13 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [34]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [34],
+            },
         )
         self.assertJSONResponse(response, 404)
         # we didn't create any new orgunit
@@ -695,7 +885,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -714,7 +904,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -734,7 +924,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_2 = m.Group.objects.create(name="bla2", source_version=self.star_wars.default_version)
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "name": "Test ou",
@@ -752,16 +942,15 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"),
-            ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"],
-            transform=repr,
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(len(ou_groups), 2)
+        self.assertEqual(ou_groups[0].name, group_1.name)
+        self.assertEqual(ou_groups[1].name, group_2.name)
 
     def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -787,7 +976,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/orgunits/create_org_unit/",
+            "/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
@@ -831,9 +1020,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(ou_groups.count(), 1)
+        self.assertEqual(ou_groups.first().name, self.elite_group.name)
+        self.assertEqual(ou_groups.first().source_version, self.sw_version_1)
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -929,7 +1119,10 @@ class OrgUnitAPITestCase(APITestCase):
         old_ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertEqual(old_modification_date, old_ou.updated_at)
-        self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
+        self.assertNotIn(
+            self.instance_not_related_to_reference_form,
+            old_ou.reference_instances.all(),
+        )
 
     def set_up_org_unit_partial_update(self):
         ou = m.OrgUnit(version=self.sw_version_1)
@@ -947,23 +1140,167 @@ class OrgUnitAPITestCase(APITestCase):
         return ou, group_a, group_b, old_modification_date, data
 
     def test_edit_org_unit_partial_update(self):
-        """Check that we can only modify a part of the file with org units management permission"""
-        ou, group_a, group_b, old_modification_date, data = self.set_up_org_unit_partial_update()
+        """Test that partial updates correctly modify only the specified fields while preserving others"""
+
+        # Setup initial org unit with some data
+        org_unit, group_a, group_b, old_modification_date, initial_data = self.set_up_org_unit_partial_update()
+
+        # Create a new group for testing group assignment
+        new_group = m.Group.objects.create(name="New test group", source_version=self.sw_version_1)
+
+        # Create test location data
+        test_location = {"latitude": 4.4, "longitude": 5.5, "altitude": 100}
+
+        # Create test geojson data
+        geom = str(MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])))
+
+        # Store initial values for comparison
+        initial_name = org_unit.name
+        initial_source_ref = org_unit.source_ref
+        initial_groups = list(org_unit.groups.all())
+
+        # Prepare update data
+        update_data = {
+            "name": "Updated Name",
+            "source_ref": "NEW_REF_123",
+            "validation_status": "VALID",
+            "latitude": test_location["latitude"],
+            "longitude": test_location["longitude"],
+            "altitude": test_location["altitude"],
+            "geom": geom,
+            "aliases": ["alias1", "alias2"],
+            "groups": [new_group.id],
+            "opening_date": "01-01-2023",
+            "closed_date": "31-12-2023",
+        }
+
         self.client.force_authenticate(self.yoda)
+
+        # Perform partial update
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=update_data, format="json")
+
+        # Verify response
+        self.assertEqual(response.status_code, 200)
+
+        # Refresh org unit from database
+        org_unit.refresh_from_db()
+
+        # Verify basic field updates
+        self.assertEqual(org_unit.name, "Updated Name")
+        self.assertEqual(org_unit.source_ref, "NEW_REF_123")
+        self.assertEqual(org_unit.validation_status, "VALID")
+
+        # Verify location update
+        self.assertIsNotNone(org_unit.location)
+        self.assertEqual(org_unit.location.y, test_location["latitude"])
+        self.assertEqual(org_unit.location.x, test_location["longitude"])
+        self.assertEqual(org_unit.location.z, test_location["altitude"])
+
+        # Verify geometry update.
+        # `geom` and `simplified_geom` should have the same value here, because geom is too small to be simplified.
+        expected_geom = "SRID=4326;MULTIPOLYGON (((0 0, 0 1, 1 1, 0 0)))"
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
+
+        # Verify aliases update
+        self.assertEqual(set(org_unit.aliases), {"alias1", "alias2"})
+
+        # Verify groups update
+        self.assertEqual(list(org_unit.groups.all()), [new_group])
+
+        # Verify dates update
+        self.assertEqual(org_unit.opening_date.strftime("%d-%m-%Y"), "01-01-2023")
+        self.assertEqual(org_unit.closed_date.strftime("%d-%m-%Y"), "31-12-2023")
+
+        # Verify modification date was updated
+        self.assertGreater(org_unit.updated_at, old_modification_date)
+
+        # Test partial update with minimal data
+        minimal_update = {"name": "Minimal Update"}
+
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=minimal_update, format="json")
+
+        # Verify minimal update
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.name, "Minimal Update")
+        # Verify other fields remain unchanged from previous update
+        self.assertEqual(org_unit.source_ref, "NEW_REF_123")
+        self.assertEqual(org_unit.validation_status, "VALID")
+
+    def test_edit_org_unit_partial_update_for_opening_and_closed_dates(self):
+        """
+        Test the various date formats used by API clients.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.opening_date = None
+        ou.closed_date = None
+        ou.save()
+
+        data = {"opening_date": "01-01-2024", "closed_date": "01-01-2025"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+
+        data = {"opening_date": "10/02/2024", "closed_date": "12/12/2025"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 2, 10))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 12, 12))
+
+        data = {"opening_date": "2024-06-22", "closed_date": "2025-10-30"}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, datetime.date(2024, 6, 22))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 10, 30))
+
+        data = {"opening_date": None, "closed_date": ""}
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, 200)
+        ou.refresh_from_db()
+        self.assertEqual(ou.opening_date, None)
+        self.assertEqual(ou.closed_date, None)
+
+    def test_edit_org_unit_partial_update_remove_geojson_geom_simplified_geom_should_be_consistent(
+        self,
+    ):
+        """
+        Check that if we remove the `geom`, both `simplified_geom` and `geom` are empty.
+        """
+        polygon = Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])
+
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.geom = MultiPolygon(polygon)
+        ou.simplified_geom = simplify_geom(MultiPolygon(polygon))
+        ou.save()
+
+        old_modification_date = ou.updated_at
+
+        self.client.force_authenticate(self.yoda)
+
+        data = {"geom": None}
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
             data=data,
         )
         self.assertJSONResponse(response, 200)
+
         ou.refresh_from_db()
-        # check the orgunit has not beee modified
         self.assertGreater(ou.updated_at, old_modification_date)
         self.assertEqual(ou.name, "test ou")
-        self.assertEqual(ou.source_ref, "new source ref")
-        self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
-        self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
-        self.assertEqual(response.data["reference_instances"], [])
+        self.assertIsNone(ou.geom)
+        self.assertIsNone(ou.simplified_geom)
 
     def test_edit_org_unit_partial_update_read_permission(self):
         """Check that we can only modify a part of the file with org units read only permission"""
@@ -975,6 +1312,34 @@ class OrgUnitAPITestCase(APITestCase):
             data=data,
         )
         self.assertJSONResponse(response, 403)
+
+    def test_edit_org_unit_should_fail_with_restricted_editable_org_unit_types(self):
+        """
+        Check that we cannot edit an org unit if writing rights are limited
+        by a set of org unit types that we are allowed to modify.
+        """
+        org_unit = m.OrgUnit.objects.create(
+            name="Foo",
+            org_unit_type=self.jedi_council,
+            version=self.star_wars.default_version,
+        )
+        self.yoda.iaso_profile.editable_org_unit_types.set(
+            # Only org units of this type are now writable.
+            [self.jedi_squad]
+        )
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data={"name": "New name"},
+        )
+        json_response = self.assertJSONResponse(response, 400)
+        self.assertEqual(json_response[0]["errorKey"], "org_unit_type_id")
+        self.assertEqual(
+            json_response[0]["errorMessage"],
+            "You cannot create or edit an Org unit of this type",
+        )
+        self.yoda.iaso_profile.editable_org_unit_types.clear()
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group
@@ -1009,10 +1374,16 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
+
         # Verify group was not modified but the rest was modified
-        self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"], transform=repr
-        )
+        ou_groups = ou.groups.all().order_by("name")
+        self.assertEqual(ou_groups.count(), 2)
+        self.assertEqual(ou_groups[0].name, "")
+        self.assertEqual(ou_groups[0].source_version.data_source.name, "Evil Empire")
+        self.assertEqual(ou_groups[0].source_version.number, 1)
+        self.assertEqual(ou_groups[1].name, "bad")
+        self.assertEqual(ou_groups[1].source_version, None)
+
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, "new name")
         self.assertEqual(ou.parent, old_ou.parent)
@@ -1045,7 +1416,6 @@ class OrgUnitAPITestCase(APITestCase):
         )
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
-        self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.as_dict()["latitude"], form_latitude)
         self.assertEqual(ou.as_dict()["longitude"], form_longitude)
@@ -1179,7 +1549,9 @@ class OrgUnitAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=data, format="json"
+            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=data,
+            format="json",
         )
         orgunits = OrgUnit.objects.all().count()
 
@@ -1215,7 +1587,11 @@ class OrgUnitAPITestCase(APITestCase):
         ids_in_response = [ou["id"] for ou in org_units]
 
         # list of all the indirect children of the jedi_council_endor OU
-        ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk, jedi_squad_endor_2_children.pk]
+        ou_ids_list = [
+            self.jedi_squad_endor.pk,
+            self.jedi_squad_endor_2.pk,
+            jedi_squad_endor_2_children.pk,
+        ]
 
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
 
@@ -1253,3 +1629,84 @@ class OrgUnitAPITestCase(APITestCase):
         # list of all direct children of the jedi_council_endor OU
         ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
+
+    def test_edit_org_unit_add_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        self.client.force_authenticate(self.yoda)
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image_id": image.id},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.default_image.id, image.id)
+
+    def test_edit_org_unit_remove_default_image(self):
+        old_ou = self.jedi_council_corruscant
+        image = m.InstanceFile.objects.create(file="path/to/image.jpg")
+        old_ou.default_image = image
+        old_ou.save()
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{old_ou.id}/",
+            format="json",
+            data={"default_image_id": None},
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertIsNone(ou.default_image)
+
+    def test_update_org_unit_with_default_image(self):
+        """
+        Test that OrgUnits with a default image can be updated without 500 error - IA-4111
+        """
+        default_image = m.InstanceFile.objects.create(file="path/to/image.jpg", name="default_image")
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        ou.opening_date = None
+        ou.closed_date = None
+        ou.default_image = default_image
+        ou.save()
+
+        data = {
+            "opening_date": "01-01-2024",
+            "closed_date": "01-01-2025",
+            "default_image_id": default_image.id,
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/orgunits/{ou.id}/", format="json", data=data)
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        ou.refresh_from_db()
+
+        # Just checking that the update was successful, we don't care which fields were updated
+        self.assertEqual(ou.opening_date, datetime.date(2024, 1, 1))
+        self.assertEqual(ou.closed_date, datetime.date(2025, 1, 1))
+
+    def test_search_org_unit_based_on_group_and_type(self):
+        self.client.force_authenticate(self.yoda)
+        self.jedi_council_corruscant.groups.set([self.elite_group, self.unofficial_group, self.another_group])
+        self.jedi_council_corruscant.save()
+
+        response = self.client.get(
+            f'/api/orgunits/?limit=20&order=id&page=1&searches=[{{"validation_status":"all","group":"{self.elite_group.pk},{self.unofficial_group.pk},{self.another_group.pk}","orgUnitTypeId":"{self.jedi_council.pk}"}}]'
+        )
+        org_units = self.assertJSONResponse(response, 200)
+        self.assertEqual(org_units["count"], 1)
+        self.assertEqual(org_units["page"], 1)
+        first_org_unit = org_units["orgunits"][0]
+        self.assertEqual(first_org_unit["id"], self.jedi_council_corruscant.pk)
+
+    def test_descending_order_without_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1")
+        self.assertEqual(response.status_code, 200)
+
+    def test_descending_order_with_as_location(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
+        self.assertEqual(response.status_code, 200)

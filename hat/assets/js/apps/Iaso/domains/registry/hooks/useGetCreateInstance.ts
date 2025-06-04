@@ -10,7 +10,6 @@ type Result = {
 export const useGetCreateInstance = (
     returnUrl: string,
     formId?: string,
-    // eslint-disable-next-line no-unused-vars
 ): ((orgUnitId: number) => void) => {
     const createInstance = (orgUnitId: number) => {
         if (formId) {

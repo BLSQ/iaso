@@ -13,7 +13,7 @@ from django_xlsform_validator.validation import NamedBytesIO, XLSFormValidator
 from hat.sync.views import process_instance_file
 from iaso.api.instances.instances import import_data
 from iaso.models import Form, FormVersion, Instance
-from plugins.active_list.models import Patient, Record
+from plugins.active_list.models import TREATMENT_1STLINE, TREATMENT_2NDLINE, TREATMENT_3RDLINE, Patient, Record
 
 
 logger = getLogger(__name__)
@@ -23,6 +23,8 @@ HIV_MAPPING = {
     "HIV1": "1",
     "HIV2": "2",
 }
+
+LINE_MAPPING = {TREATMENT_1STLINE: "1", TREATMENT_2NDLINE: "2", TREATMENT_3RDLINE: "3"}
 
 REGISTRY_FORM_ID = os.environ.get("REGISTRY_FORM_ID", 1)
 REGISTRY_FORM_VERSION = os.environ.get("REGISTRY_FORM_VERSION", "2025050304")
@@ -132,51 +134,58 @@ class Command(BaseCommand):
         validator.parse_xlsform(named_buffer)
 
         for patient in patients:
-            if not patient.entity:
-                create_registration(patient)
-                patient.refresh_from_db()
-                print("patient should have an entity now", patient.entity)
-            non_converted_records = patient.records.filter(instance__isnull=True)
-            for record in non_converted_records:
-                d = model_to_dict(record)
-                print("d", d)
-                d_converted = convert_to_xml_schema(d)
-                print("d_converted", d_converted)
-                d_converted["identifier_code"] = patient.identifier_code
+            try:
+                if not patient.entity:
+                    create_registration(patient)
+                    patient.refresh_from_db()
+                    print("patient should have an entity now", patient.entity)
+                non_converted_records = patient.records.filter(instance__isnull=True)
+                for record in non_converted_records:
+                    d = model_to_dict(record)
+                    print("d", d)
 
-                xml_result = validator.generate_xml_from_dict(d_converted)
-                ######## TO DELETE ##########
-                xml_result = xml_result.replace("1.0", form_version.version_id)
-                xml_result = xml_result.replace("None", "data")
-                xml_result = xml_result.replace("{'instanceID': None}", "")
-                ######## TO DELETE ##########
-                print(xml_result)
-                the_uuid = str(uuid.uuid4())
-                file_name = "xls_import_from_xls%s.xml" % the_uuid
-                instance_file = ContentFile(xml_result, name=file_name)
+                    d_converted = convert_to_xml_schema(d)
+                    print("d_converted", d_converted)
+                    d_converted["identifier_code"] = patient.identifier_code
 
-                timestamp = int(patient.last_record.import_source.creation_date.timestamp() * 1000)
-                instance_body = [
-                    {
-                        "id": the_uuid,
-                        "latitude": None,
-                        "longitude": None,
-                        "created_at": timestamp,
-                        "updated_at": timestamp,
-                        "orgUnitId": record.org_unit_id,
-                        "formId": 4,
-                        "accuracy": 0,
-                        "altitude": 0,
-                        "file": file_name,
-                        "name": "Excel import",
-                        "entityUuid": patient.entity.uuid,
-                        "entityTypeId": ENTITY_TYPE_ID,
-                    }
-                ]
-                print(instance_body)
-                import_data(instance_body, record.import_source.user, "fileactive")
-                instance = Instance.objects.get(uuid=the_uuid)
-                process_instance_file(instance, instance_file, record.import_source.user)
+                    xml_result = validator.generate_xml_from_dict(d_converted)
+                    ######## TO DELETE after doing it more cleanly ##########
+                    xml_result = xml_result.replace("1.0", form_version.version_id)
+                    xml_result = xml_result.replace("{'instanceID': None}", "")
+                    xml_result = xml_result.replace("None", "data")
+                    ######## TO DELETE ##########
+                    print(xml_result)
+                    the_uuid = str(uuid.uuid4())
+                    file_name = "xls_import_from_xls%s.xml" % the_uuid
+                    instance_file = ContentFile(xml_result, name=file_name)
+
+                    timestamp = int(record.import_source.creation_date.timestamp() * 1000)
+                    instance_body = [
+                        {
+                            "id": the_uuid,
+                            "latitude": None,
+                            "longitude": None,
+                            "created_at": timestamp,
+                            "updated_at": timestamp,
+                            "orgUnitId": record.org_unit_id,
+                            "formId": 4,
+                            "accuracy": 0,
+                            "altitude": 0,
+                            "file": file_name,
+                            "name": "Excel import",
+                            "entityUuid": patient.entity.uuid,
+                            "entityTypeId": ENTITY_TYPE_ID,
+                        }
+                    ]
+                    print(instance_body)
+                    import_data(instance_body, record.import_source.user, "fileactive")
+                    instance = Instance.objects.get(uuid=the_uuid)
+                    process_instance_file(instance, instance_file, record.import_source.user)
+                    record.instance = instance
+                    record.save()
+            except:
+                logger.exception("Error processing patient %s", patient.identifier_code)
+                continue
 
 
 def create_registration(patient):
@@ -298,6 +307,27 @@ def convert_to_xml_schema(original_dict):
         """Converts HIV type string to a standardized code."""
         return HIV_MAPPING.get(hiv_type, "1")
 
+    def convert_treatment_line(treatment_line):
+        """Converts treatment line string to a standardized code."""
+        treatment_line = LINE_MAPPING.get(treatment_line, "1")  # FIXME there should probably not be a default here
+        return treatment_line
+
+    def convert_month_format(date_string):
+        """Converts a YYYY-MM date string to Mon-YY format.
+
+        Args:
+          date_string: The date string in YYYY-MM format (e.g., "2025-05").
+
+        Returns:
+          The date string in Mon-YY format (e.g., "May-25").
+        """
+        try:
+            dt_object = datetime.datetime.strptime(date_string[:7], "%Y-%m")
+
+        except ValueError:
+            return date_string
+        return dt_object.strftime("%b-%y")
+
     # Mappings: (new_xml_key, old_dict_key, optional_transform_function)
     key_mappings = [
         ("n", "patient", None),
@@ -305,7 +335,7 @@ def convert_to_xml_schema(original_dict):
         ("district", "district", None),
         ("code_ets", "code_ets", None),
         ("sites", "facility_name", None),
-        ("period", "period", None),
+        ("period", "period", convert_month_format),
         ("sexe", "sex", format_sex_code),
         ("age", "age", None),
         ("weight", "weight", lambda x: float(x) if x is not None else None),
@@ -314,7 +344,11 @@ def convert_to_xml_schema(original_dict):
         ("back_to_care", "return_to_care", to_int_bool),
         ("tb_vih", "tb_hiv", to_int_bool),
         ("type_vih", "hiv_type", convert_hiv_type),  # XML example: '1', source: 'HIV2'. Using source value.
-        ("treatment_line", "treatment_line", None),  # XML example: '1', source: 'nan'. Using source value.
+        (
+            "treatment_line",
+            "treatment_line",
+            convert_treatment_line,
+        ),  # XML example: '1', source: 'nan'. Using source value.
         ("last_dispensiation_date", "last_dispensation_date", format_date_to_str),  # Note XML spelling
         ("number_of_days_given", "days_dispensed", None),
         ("regimen", "regimen", None),

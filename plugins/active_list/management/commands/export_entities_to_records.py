@@ -27,6 +27,8 @@ from plugins.active_list.models import (
 )
 
 
+LINE_MAPPING = {"1": TREATMENT_1STLINE, "2": TREATMENT_2NDLINE, "3": TREATMENT_3RDLINE}
+
 logger = getLogger(__name__)
 
 
@@ -184,8 +186,6 @@ def create_patient_and_first_record(instance, import_source):
                 region_name = district.parent.name if district.parent else "N/A"
             else:
                 region_name = "N/A"
-
-            LINE_MAPPING = {"1": TREATMENT_1STLINE, "2": TREATMENT_2NDLINE, "3": TREATMENT_3RDLINE}
 
             treatment_line = LINE_MAPPING.get(file_content.get("adm_ligne_thera"), TREATMENT_LINE_UNKNOWN)
 

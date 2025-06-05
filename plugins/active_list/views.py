@@ -1,5 +1,4 @@
 import calendar
-import copy
 import datetime
 import hashlib
 import math
@@ -15,6 +14,8 @@ import pytz
 
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldDoesNotExist
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import models
 from django.db.models import Max
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
@@ -42,8 +43,6 @@ from .models import (
     Validation,
 )
 
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
 
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 4)
@@ -186,30 +185,18 @@ def upload(request):
             elif file and allowed_file(file.name):
                 filename = smart_str(file.name)
                 result, annotated_file = handle_upload(filename, file, org_unit_id, period, bypass, request.user)
-                if result == FILE_DATA_PROBLEM:
-                    validation_id = str(uuid.uuid4())
-
-                    file_path = f"validation_files/validation_{validation_id}.xlsx"
-
-                    annotated_file.seek(0)
-                    stored_path = default_storage.save(file_path, ContentFile(annotated_file.read()))
-
-                    request.session[f"validation_{validation_id}"] = {"file_path": stored_path}
             else:
                 result = ERROR_UNKNOWN
         answer = RESPONSES[result]
         if result == FILE_DATA_PROBLEM:
             validation_id = str(uuid.uuid4())
 
-            # Save BytesIO to temporary file
-            temp_dir = tempfile.gettempdir()
-            file_path = os.path.join(temp_dir, f"validation_{validation_id}.xlsx")
+            # Save to shared storage for multi-server compatibility
+            file_path = f"validation_files/validation_{validation_id}.xlsx"
+            annotated_file.seek(0)
+            stored_path = default_storage.save(file_path, ContentFile(annotated_file.read()))
 
-            with open(file_path, 'wb') as f:
-                annotated_file.seek(0)  # Reset pointer to beginning
-                f.write(annotated_file.read())
-
-            request.session[f"validation_{validation_id}"] = {"file_path": file_path}
+            request.session[f"validation_{validation_id}"] = {"file_path": stored_path}
         print("answer", answer)
         return JsonResponse(answer, status=RESPONSES[result]["status"])
 
@@ -225,23 +212,23 @@ def upload(request):
 
 @login_required
 def download(request):
-      validation_id = request.GET.get("id")
-      if not validation_id:
-          raise Http404("Download ID not provided")
+    validation_id = request.GET.get("id")
+    if not validation_id:
+        raise Http404("Download ID not provided")
 
-      session_key = f"validation_{validation_id}"
-      validation_data = request.session.get(session_key)
+    session_key = f"validation_{validation_id}"
+    validation_data = request.session.get(session_key)
 
-      if not validation_data or not default_storage.exists(validation_data["file_path"]):
-          raise Http404("File not found or expired")
+    if not validation_data or not default_storage.exists(validation_data["file_path"]):
+        raise Http404("File not found or expired")
 
-      file_obj = default_storage.open(validation_data["file_path"], 'rb')
-      response = FileResponse(
-          file_obj,
-          as_attachment=True,
-          filename="highlighted_spreadsheet.xlsx",
-      )
-      return response
+    file_obj = default_storage.open(validation_data["file_path"], "rb")
+    response = FileResponse(
+        file_obj,
+        as_attachment=True,
+        filename="highlighted_spreadsheet.xlsx",
+    )
+    return response
 
 
 @login_required
@@ -634,11 +621,17 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
 
     form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
 
-    os.makedirs('/tmp/forms/', exist_ok=True) #this has been needed as a temporary fix at some point, leaving it here for now. Feels a bad idea to have a tmp directory when running on multiple web servers though
-    validator.parse_xlsform(form_version.xls_file)
+    # Reset file pointer to beginning and validate file
+    form_version.xls_file.seek(0)
+
+    # Use temporary directory for multi-server compatibility
+    with tempfile.TemporaryDirectory() as temp_dir:
+        forms_dir = os.path.join(temp_dir, "forms")
+        os.makedirs(forms_dir, exist_ok=True)
+        validator.parse_xlsform(form_version.xls_file)
 
     result = validator.validate_spreadsheet(file)
-
+    print("validation result", result)
     if not result["is_valid"]:
         error_file = validator.create_highlighted_excel(file, result["errors"])
         return FILE_DATA_PROBLEM, error_file

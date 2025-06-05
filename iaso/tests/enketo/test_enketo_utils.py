@@ -1,20 +1,20 @@
 import datetime
-from urllib.parse import urlparse, parse_qs
+
+from urllib.parse import parse_qs, urlparse
 
 import time_machine
+
 from django.core.signing import TimestampSigner
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from iaso.api.query_params import APP_ID, ENKETO_SIGNED, ENKETO_EXPIRES
+from iaso.api.query_params import APP_ID, ENKETO_EXPIRES, ENKETO_SIGNED
 from iaso.enketo.enketo_url import generate_signed_url, verify_signed_url
 from iaso.test import TestCase
 
 
 class EnketoUtilsTests(TestCase):
-
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
-
 
     @classmethod
     def setUpTestData(cls):
@@ -107,7 +107,7 @@ class EnketoUtilsTests(TestCase):
     def test_verify_signed_url_missing_signed_param(self):
         # Generate valid params and remove ENKETO_SIGNED
         request_params = {
-            ENKETO_EXPIRES:  int(self.DT.timestamp()),
+            ENKETO_EXPIRES: int(self.DT.timestamp()),
             # ENKETO_SIGNED is intentionally missing
         }
         request = self._generate_request_with_params(self.path, request_params)
@@ -157,8 +157,5 @@ class EnketoUtilsTests(TestCase):
         """
         Wrapping the APIRequestFactory to generate a DRF Request that has query_params.
         """
-        request = Request(self.factory.get(
-            path,
-            params
-        ))
+        request = Request(self.factory.get(path, params))
         return request

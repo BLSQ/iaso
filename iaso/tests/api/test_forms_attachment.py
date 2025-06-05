@@ -3,7 +3,6 @@ import typing
 
 from unittest import mock
 from unittest.mock import MagicMock, patch
-from xml.sax.saxutils import escape
 
 import time_machine
 
@@ -369,7 +368,6 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_anonymous_app_id(self):
         f"""GET {BASE_URL} via app id"""
-        from urllib.parse import urlparse, parse_qs
 
         url = self._build_signed_manifest_url(self.form_1.id, {"app_id": self.project_1.app_id})
         response = self.client.get(
@@ -382,6 +380,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         """Build a signed URL for the manifest endpoint."""
         path = MANIFEST_URL.format(form_id=form_id)
         return generate_signed_url(path, None, extra_params=extra_params)
+
 
 class MockResults:
     def __init__(self, state, details, passed):

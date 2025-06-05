@@ -13,6 +13,7 @@ from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 
 from iaso.api.query_params import ENKETO_EXPIRES, ENKETO_SIGNED
 
+
 logger = logging.getLogger(__name__)
 
 # See iaso/enketo/readme.md

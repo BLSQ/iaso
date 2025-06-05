@@ -504,6 +504,8 @@ class TaskAdmin(admin.ModelAdmin):
     readonly_fields = ("stacktrace", "created_at", "result")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ("name",)
+    autocomplete_fields = ("account", "created_by", "launcher")
+    date_hierarchy = "created_at"
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")

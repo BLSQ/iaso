@@ -1,7 +1,7 @@
 from typing import Any, Protocol
 
 from django import forms as django_forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin import SimpleListFilter, widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
@@ -12,6 +12,7 @@ from django.urls import reverse
 from django.utils.html import format_html, format_html_join
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
+from lazy_services import LazyService
 
 from hat.audit.models import DJANGO_ADMIN
 from iaso.models.json_config import Config  # type: ignore
@@ -22,6 +23,8 @@ from iaso.utils.admin.custom_filters import (
 )
 
 from ..models import (
+    ERRORED,
+    QUEUED,
     Account,
     AccountFeatureFlag,
     AlgorithmRun,
@@ -81,6 +84,9 @@ from ..models import (
 from ..models.data_store import JsonDataStore
 from ..models.microplanning import Assignment, Planning, Team
 from ..utils.gis import convert_2d_point_to_3d
+
+
+task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 
 class EntityAutocompleteFilter(SimpleListFilter):
@@ -496,6 +502,26 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         ) or mark_safe("<span>no logs available.</span>")
 
 
+@admin.action(description="Relaunch selected tasks")
+def relaunch_task(_, request, queryset) -> None:
+    task_to_relaunch = queryset.filter(status=ERRORED)
+
+    for task in task_to_relaunch:
+        task.status = QUEUED
+        task.launcher = request.user
+        task.save()
+        task.queue_answer = task_service.enqueue(
+            module_name=task.params["module"],
+            method_name=task.params["method"],
+            args=task.params["args"],
+            kwargs=task.params["kwargs"],
+            task_id=task.id,
+        )
+        task.save()
+
+    messages.success(request, f"{task_to_relaunch.count()} task successfully relaunched.")
+
+
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
@@ -506,6 +532,7 @@ class TaskAdmin(admin.ModelAdmin):
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
     date_hierarchy = "created_at"
+    actions = (relaunch_task,)
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")

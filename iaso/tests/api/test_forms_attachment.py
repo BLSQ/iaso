@@ -14,6 +14,7 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from iaso import models as m
+from iaso.enketo.enketo_url import generate_signed_url
 from iaso.test import APITestCase
 from iaso.utils.models.virus_scan import VirusScanStatus
 
@@ -27,6 +28,8 @@ EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+    PATH_TO_FIXTURES = "iaso/tests/fixtures/form_attachments/"
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -280,54 +283,56 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
-
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        url = self._build_signed_manifest_url(self.form_2.id)
+        response = self.client.get(url)
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_not_found(self):
         f"""GET {MANIFEST_URL} with wrong id: 404"""
-
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=100))
+        url = self._build_signed_manifest_url(100)
+        response = self.client.get(url)
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_found_but_empty_attachments(self):
         f"""GET {MANIFEST_URL} with no attachments: 200"""
-
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        url = self._build_signed_manifest_url(self.form_1.id)
+        response = self.client.get(url)
         content = self.assertXMLResponse(response, 200)
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as f:
+            expected_content = f.read()
         self.assertEqual(
-            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n\n</manifest>',
+            expected_content,
             content,
         )
 
     def test_manifest_form_found_with_attachments(self):
         f"""GET {MANIFEST_URL} with attachments: 200"""
-
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        url = self._build_signed_manifest_url(self.form_2.id)
+        response = self.client.get(url)
         content = self.assertXMLResponse(response, 200)
-        self.assertEqual(
-            str(
-                b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-                b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
-                b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
-                b"<downloadUrl>http://testserver"
-                + self.attachment1.file.url.encode("ascii")
-                + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
-                b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
-                b"<downloadUrl>http://testserver"
-                + self.attachment2.file.url.encode("ascii")
-                + b"</downloadUrl>\n</mediaFile>\n</manifest>"
-            ),
-            str(content),
+        content_str = content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_1_hash": self.attachment1.md5,
+            "attachment_2_hash": self.attachment2.md5,
+            "attachment_1_name": self.attachment1.name,
+            "attachment_2_name": self.attachment2.name,
+            "attachment_1_url": self.attachment1.file.url,
+            "attachment_2_url": self.attachment2.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
         )
+        self.assertEqual(expected_xml, content_str)
 
     def test_form_attachments_with_invalid_character(self):
         f"""POST {BASE_URL}: allowed to update"""
-
         file = mock.MagicMock(spec=File)
         file.name = "<&>.png"
         attachment = self.form_1.attachments.create(
@@ -337,17 +342,20 @@ class FormAttachmentsAPITestCase(APITestCase):
         )
         self.form_1.save()
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        url = self._build_signed_manifest_url(self.form_1.id)
+        response = self.client.get(url)
         content = self.assertXMLResponse(response, 200)
-        self.assertEqual(
-            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>&lt;&amp;&gt;.png'
-            b"</filename>\n    <hash>md5:test1</hash>\n    "
-            b"<downloadUrl>http://testserver"
-            + escape(attachment.file.url).encode("ascii")
-            + b"</downloadUrl>\n</mediaFile>\n</manifest>",
-            content,
+        content_str = content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_url": attachment.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_invalid_character.xml", context=context
         )
+        self.assertEqual(expected_xml, content_str)
 
     def assertXMLResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, HttpResponse)
@@ -361,14 +369,19 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_anonymous_app_id(self):
         f"""GET {BASE_URL} via app id"""
+        from urllib.parse import urlparse, parse_qs
 
+        url = self._build_signed_manifest_url(self.form_1.id, {"app_id": self.project_1.app_id})
         response = self.client.get(
-            MANIFEST_URL.format(form_id=self.form_2.id),
+            url,
             headers={"Content-Type": "application/json"},
-            data={"app_id": self.project_1.app_id},
         )
         self.assertXMLResponse(response, 200)
 
+    def _build_signed_manifest_url(self, form_id: int, extra_params: dict = {}) -> str:
+        """Build a signed URL for the manifest endpoint."""
+        path = MANIFEST_URL.format(form_id=form_id)
+        return generate_signed_url(path, None, extra_params=extra_params)
 
 class MockResults:
     def __init__(self, state, details, passed):

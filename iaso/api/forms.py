@@ -18,6 +18,8 @@ from hat.menupermissions import models as permission
 from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
+from ..enketo import enketo_settings
+from ..enketo.enketo_url import verify_signed_url
 from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
@@ -426,34 +428,40 @@ class FormsViewSet(ModelViewSet):
         This is used for the mobile app and Enketo to fetch the list of file attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
-        form = self.get_object()
-        attachments = form.attachments.all()
-        media_files = []
-        for attachment in attachments:
-            attachment_file_url: str = attachment.file.url
-            if not attachment_file_url.startswith("http"):
-                # Needed for local dev
-                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        if verify_signed_url(request, enketo_secret):
+            form = self.get_object()
+            attachments = form.attachments.all()
+            media_files = []
+            for attachment in attachments:
+                attachment_file_url: str = attachment.file.url
+                if not attachment_file_url.startswith("http"):
+                    # Needed for local dev
+                    attachment_file_url = public_url_for_enketo(request, attachment_file_url)
 
-            media_files.append(
-                f"""<mediaFile>
-    <filename>{escape(attachment.name)}</filename>
-    <hash>md5:{attachment.md5}</hash>
-    <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-</mediaFile>"""
+                media_files.append(
+                    f"""<mediaFile>
+                        <filename>{escape(attachment.name)}</filename>
+                        <hash>md5:{attachment.md5}</hash>
+                        <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
+                        </mediaFile>"""
+                )
+
+            nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+            return HttpResponse(
+                status=status.HTTP_200_OK,
+                content_type="text/xml",
+                headers={
+                    "X-OpenRosa-Version": "1.0",
+                },
+                content=f"""<?xml version="1.0" encoding="UTF-8"?>
+                            <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+                            {nl.join(media_files)}
+                            </manifest>""",
             )
-
-        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
         return HttpResponse(
-            status=status.HTTP_200_OK,
-            content_type="text/xml",
-            headers={
-                "X-OpenRosa-Version": "1.0",
-            },
-            content=f"""<?xml version="1.0" encoding="UTF-8"?>
-<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-{nl.join(media_files)}
-</manifest>""",
+            status=status.HTTP_401_UNAUTHORIZED,
+            content="Invalid Enketo signature",
         )
 
 

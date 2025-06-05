@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase
 
+from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
@@ -262,6 +263,30 @@ class ProcessMobileBulkUploadTest(TestCase):
         # image from Disasi's CATT was duplicated to this test
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+
+    def test_success_when_user_is_none_and_task_is_not_immediate(self):
+        self.api_import.user = None
+        self.api_import.save()
+
+        self.task.delete()
+
+        self._create_zip_file()
+
+        task = process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            _immediate=False,
+        )
+
+        self.assertEqual(m.Task.objects.filter(status="QUEUED").count(), 1)
+        task_service = TestTaskService()
+        task_service.run_all()
+        self.assertEqual(m.Task.objects.filter(status="QUEUED").count(), 0)
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+        self.assertEqual(task.created_by, None)
+        self.assertEqual(task.account, self.account)
 
     def test_fail_in_the_middle_of_import(self):
         # Org unit doesn't exist. The job will fail, then verify that

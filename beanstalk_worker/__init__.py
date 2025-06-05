@@ -21,7 +21,7 @@ def task_decorator(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import ERRORED, RUNNING, KilledException, Task
+            from iaso.models.base import ERRORED, RUNNING, KilledException, Project, Task
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:
@@ -57,11 +57,12 @@ def task_decorator(task_name=""):
                 return the_task
             # enqueue the task
             task = Task()
-            user = kwargs.pop("user")
+            user = kwargs.pop("user", None)
             if user:
-                task.account = user.iaso_profile.account
+                task.account_id = user.iaso_profile.account_id
             else:
-                task.account_id = kwargs.pop("account_id")
+                project = Project.objects.get(id=kwargs["project_id"])
+                task.account_id = project.account_id
             task.created_by = user
             task.launcher = user
             task.name = task_name

@@ -621,22 +621,48 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
 
     form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
 
-    # Reset file pointer to beginning and validate file
+    # Create a copy of the form file content to avoid pyxform closing the original file
     form_version.xls_file.seek(0)
+    form_file_content = form_version.xls_file.read()
+    
+    # Create a fresh file object for pyxform validation
+    from django.core.files.uploadedfile import SimpleUploadedFile
+    validation_file = SimpleUploadedFile(
+        "validation_form.xlsx",
+        form_file_content,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
 
     # Use temporary directory for multi-server compatibility
     with tempfile.TemporaryDirectory() as temp_dir:
         forms_dir = os.path.join(temp_dir, "forms")
         os.makedirs(forms_dir, exist_ok=True)
-        validator.parse_xlsform(form_version.xls_file)
+        validator.parse_xlsform(validation_file)
 
-    result = validator.validate_spreadsheet(file)
+    # Create a copy of the upload file content to avoid pyxform closing the original file
+    file.seek(0)
+    upload_file_content = file.read()
+    
+    # Create a fresh file object for validation
+    validation_upload_file = SimpleUploadedFile(
+        file_name,
+        upload_file_content,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    
+    result = validator.validate_spreadsheet(validation_upload_file)
     print("validation result", result)
     if not result["is_valid"]:
-        error_file = validator.create_highlighted_excel(file, result["errors"])
+        # Create another fresh file object for error highlighting
+        error_file_obj = SimpleUploadedFile(
+            file_name,
+            upload_file_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        error_file = validator.create_highlighted_excel(error_file_obj, result["errors"])
         return FILE_DATA_PROBLEM, error_file
 
-    content = file.read()
+    content = upload_file_content
     h = hash_blob(content)
     result = check_presence(h, org_unit_id, month)
     # TODO store all the errors of the file and not only one of the error results
@@ -648,6 +674,13 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     if bypass:
         result = OK
     if result == OK:
+        # Create a fresh file object for Import model to avoid closed file issues
+        import_file = SimpleUploadedFile(
+            file_name,
+            upload_file_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        
         i = Import(
             hash_key=h,
             file_name=file_name,
@@ -655,11 +688,13 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
             month=month,
             file_check=file_check,
             source=SOURCE_EXCEL,
-            file=file,
+            file=import_file,
             user=user,
         )
         i.save()
-        import_data(content, i)
+        # Pass the content as BytesIO for pandas to read
+        from io import BytesIO
+        import_data(BytesIO(content), i)
     return result, None
 
 

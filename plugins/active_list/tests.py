@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Project, SourceVersion, Profile
 
 from .views import handle_upload
 
@@ -33,8 +33,9 @@ class ActiveListUploadTestCase(TestCase):
 
         # Create user with profile
         cls.user = User.objects.create_user(username="test_user", password="testpass123")
-        cls.user.iaso_profile.account = cls.account
-        cls.user.iaso_profile.save()
+        p = Profile(user= cls.user, account=cls.account)
+        p.save()
+
 
         # Create org unit types (hierarchy: Region -> District -> Health Facility)
         cls.region_type = OrgUnitType.objects.create(name="Region", short_name="REG")
@@ -54,7 +55,6 @@ class ActiveListUploadTestCase(TestCase):
             name="Test Health Facility", org_unit_type=cls.hf_type, parent=cls.district, version=cls.source_version
         )
 
-        # Create project
         cls.project = Project.objects.create(
             name="Active List Test Project", app_id="active.list.test", account=cls.account
         )
@@ -71,17 +71,19 @@ class ActiveListUploadTestCase(TestCase):
         # Delete any existing corrupted form versions
         cls.validation_form.form_versions.all().delete()
 
-        # Load the validation Excel file
+        # Load the validation Excel file and store content for reuse
         with open("plugins/active_list/data/file_active_import_checker.xlsx", "rb") as xls_file:
-            xls_content = xls_file.read()
-            cls.validation_form_version = cls.validation_form.form_versions.create(
-                xls_file=SimpleUploadedFile(
-                    "file_active_import_checker.xlsx",
-                    xls_content,
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ),
-                version_id="test_1.0",
-            )
+            cls.validation_file_content = xls_file.read()
+        
+        # Create FormVersion with a fresh file object
+        cls.validation_form_version = cls.validation_form.form_versions.create(
+            xls_file=SimpleUploadedFile(
+                "file_active_import_checker.xlsx",
+                cls.validation_file_content,
+                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            ),
+            version_id="test_1.0",
+        )
 
     def setUp(self):
         """Set up logging capture for each test"""
@@ -100,11 +102,13 @@ class ActiveListUploadTestCase(TestCase):
         # Load the test import file
         with open("plugins/active_list/data/testimport.xlsx", "rb") as test_file:
             file_content = test_file.read()
-            uploaded_file = SimpleUploadedFile(
-                "testimport.xlsx",
-                file_content,
-                content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            )
+        
+        # Create a fresh file object that won't be affected by pyxform's file handling
+        uploaded_file = SimpleUploadedFile(
+            "testimport.xlsx",
+            file_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
         # Attempt the upload
         result, annotated_file = handle_upload(
@@ -147,17 +151,12 @@ class ActiveListUploadTestCase(TestCase):
         self.assertIsNotNone(self.validation_form_version)
         self.assertIsNotNone(self.validation_form_version.xls_file)
 
-        # Try to read the file to ensure it's valid
-        self.validation_form_version.xls_file.seek(0)
-        content = self.validation_form_version.xls_file.read()
+        # Use the stored file content to check validity
+        content = self.validation_file_content
         self.assertGreater(len(content), 0, "XLS file should not be empty")
 
-        # Reset file pointer
-        self.validation_form_version.xls_file.seek(0)
-
         # Check that the file starts with ZIP signature (Excel files are ZIP archives)
-        first_bytes = self.validation_form_version.xls_file.read(4)
-        self.validation_form_version.xls_file.seek(0)
+        first_bytes = content[:4]
 
         self.assertEqual(
             first_bytes[:2], b"PK", f"Excel file should start with ZIP signature 'PK', but got: {first_bytes.hex()}"
@@ -170,11 +169,15 @@ class ActiveListUploadTestCase(TestCase):
         # Test the form version file directly
         validator = XLSFormValidator()
 
-        # Reset file pointer and attempt validation
-        self.validation_form_version.xls_file.seek(0)
+        # Create a fresh file object for validation to avoid closed file issues
+        validation_file = SimpleUploadedFile(
+            "file_active_import_checker.xlsx",
+            self.validation_file_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
 
         try:
-            validator.parse_xlsform(self.validation_form_version.xls_file)
+            validator.parse_xlsform(validation_file)
             print("✓ XLSForm validation successful")
         except Exception as e:
             self.fail(f"XLSForm validation failed: {e}")

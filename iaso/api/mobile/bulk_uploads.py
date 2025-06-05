@@ -93,7 +93,6 @@ class MobileBulkUploadsViewSet(ViewSet):
                 api_import_id=api_import.id,
                 project_id=project.id,
                 user=current_user,
-                account_id=project.account.id,
             )
 
             return Response(status=status.HTTP_204_NO_CONTENT)

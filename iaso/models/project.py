@@ -58,7 +58,15 @@ class Project(models.Model):
     name = models.TextField(null=False, blank=False)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
-    app_id = models.TextField(null=True, blank=True)
+    app_id = models.TextField(
+        blank=True,
+        # Empty values are stored as NULL if both `null=True` and `unique=True` are set.
+        # This avoids unique constraint violations when saving multiple objects with blank values.
+        null=True,
+        unique=True,
+    )
+    # The `needs_authentication` boolean field existed before the feature flags.
+    # Use feature flags instead.
     needs_authentication = models.BooleanField(default=False)
     feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

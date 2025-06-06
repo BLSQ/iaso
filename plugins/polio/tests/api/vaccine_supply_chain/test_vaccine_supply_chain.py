@@ -6,10 +6,11 @@ from django.utils import timezone
 from iaso.utils.models.virus_scan import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
+from plugins.polio.tests.api.test import PolioTestCaseMixin
 from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
 
 
-class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase):
+class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTestCaseMixin):
     def test_anonymous_user_cannot_see_list(self):
         self.client.force_authenticate(user=self.anon)
         response = self.client.get(self.BASE_URL)
@@ -425,13 +426,13 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase):
         # Get the first request form
         request_form = pm.VaccineRequestForm.objects.first()
 
-        arrival_report = pm.VaccineArrivalReport.objects.create(
+        pm.VaccineArrivalReport.objects.create(
             request_form=request_form,
             arrival_report_date="2022-01-01",
             doses_received=2000,
         )
 
-        pre_alert = pm.VaccinePreAlert.objects.create(
+        pm.VaccinePreAlert.objects.create(
             request_form=request_form,
             date_pre_alert_reception="2021-01-01",
             estimated_arrival_time="2021-01-02",
@@ -631,3 +632,155 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase):
         # Check that the document name and size are the same as before
         self.assertEqual(updated_pre_alert.document.name, original_document_name)
         self.assertEqual(updated_pre_alert.document.size, original_document_size)
+
+    def test_vrf_cannot_be_created_for_round_without_scope(self):
+        campaign, rnd1, _, _, _, _ = self.create_campaign(
+            "NO_SCOPE_CAMPAIGN",
+            self.account,
+            self.source_version_1,
+            self.org_unit_type_country,
+            self.org_unit_type_district,
+        )
+        campaign.separate_scopes_per_round = True
+        campaign.save()
+        self.client.force_authenticate(user=self.user_rw_perm)
+        response = self.client.post(
+            self.BASE_URL,
+            data={
+                "campaign": campaign.id,
+                "rounds": [rnd1.id],
+                "vaccine_type": pm.VACCINES[0][0],
+                "date_vrf_reception": self.now - datetime.timedelta(days=1),
+                "date_vrf_signature": self.now,
+                "date_dg_approval": self.now,
+                "quantities_ordered_in_doses": 1000000,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+        campaign.separate_scopes_per_round = False
+        campaign.scopes.set([])
+        campaign.save()
+
+        response = self.client.post(
+            self.BASE_URL,
+            data={
+                "campaign": campaign.id,
+                "rounds": [rnd1.id],
+                "vaccine_type": pm.VACCINES[0][0],
+                "date_vrf_reception": self.now - datetime.timedelta(days=1),
+                "date_vrf_signature": self.now,
+                "date_dg_approval": self.now,
+                "quantities_ordered_in_doses": 1000000,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+
+    def test_round_id_filter(self):
+        """Test that filtering by round_id returns only vaccine request forms associated with that round"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get a round ID from one of our test vaccine request forms
+        test_round = self.vaccine_request_form_rdc_1.rounds.first()
+
+        response = self.client.get(f"{self.BASE_URL}?round_id={test_round.id}")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        # Verify each returned form includes the specified round
+        for form in results:
+            round_ids = [r["id"] for r in form["rounds"]]
+            self.assertIn(test_round.id, round_ids)
+
+        # Verify we don't get forms that don't include this round
+        forms_without_round = pm.VaccineRequestForm.objects.exclude(rounds=test_round)
+        for form in forms_without_round:
+            form_ids = [f["id"] for f in results]
+            self.assertNotIn(form.id, form_ids)
+
+    def test_multiple_filters(self):
+        """Test that multiple filters can be combined"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        test_form = self.vaccine_request_form_rdc_1
+        test_country = test_form.campaign.country
+
+        test_start_date = test_form.rounds.filter(number=1).first().started_at
+
+        # Apply multiple filters
+        response = self.client.get(
+            f"{self.BASE_URL}?campaign__country={test_country.id}&rounds__started_at={test_start_date}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        results = response.data["results"]
+
+        # Verify results match all filter criteria
+        for form in results:
+            self.assertEqual(form["country"]["id"], test_country.id)
+            # The form's start_date should match our test date since we filtered on rounds__started_at
+            self.assertEqual(str(test_start_date), str(form["start_date"]))
+
+    def test_response_shape(self):
+        """Test that the response data has the expected structure"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        response = self.client.get(f"{self.BASE_URL}")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        self.assertTrue(len(results) > 0, "Response should contain at least one result")
+
+        # Test shape of first result
+        result = results[0]
+
+        # Required fields
+        self.assertIn("id", result)
+        self.assertIsInstance(result["id"], int)
+
+        self.assertIn("country", result)
+        self.assertIsInstance(result["country"], dict)
+        self.assertIn("name", result["country"])
+        self.assertIn("id", result["country"])
+
+        self.assertIn("vaccine_type", result)
+        self.assertIsInstance(result["vaccine_type"], str)
+
+        self.assertIn("obr_name", result)
+        self.assertIsInstance(result["obr_name"], str)
+
+        self.assertIn("rounds", result)
+        self.assertIsInstance(result["rounds"], list)
+        if result["rounds"]:
+            round_data = result["rounds"][0]
+            self.assertIn("number", round_data)
+            self.assertIn("id", round_data)
+
+        self.assertIn("quantities_ordered_in_doses", result)
+        self.assertIsInstance(result["quantities_ordered_in_doses"], (int, type(None)))
+
+        self.assertIn("start_date", result)
+        self.assertIn("end_date", result)
+
+        self.assertIn("doses_shipped", result)
+        self.assertIsInstance(result["doses_shipped"], int)
+
+        self.assertIn("doses_received", result)
+        self.assertIsInstance(result["doses_received"], int)
+
+        self.assertIn("eta", result)
+        self.assertIsInstance(result["eta"], str)
+
+        self.assertIn("var", result)
+        self.assertIsInstance(result["var"], str)
+
+        self.assertIn("created_at", result)
+        self.assertIn("updated_at", result)
+
+        self.assertIn("vrf_type", result)
+        self.assertIsInstance(result["vrf_type"], str)
+
+        self.assertIn("can_edit", result)
+        self.assertIsInstance(result["can_edit"], bool)

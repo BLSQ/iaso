@@ -3,6 +3,7 @@ import time_machine
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
 
+from iaso.api.mobile.org_units import SHAPE_RESULTS_MAX
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.models import (
     Account,
@@ -133,6 +134,16 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(BASE_URL, {APP_ID: self.project.app_id})
         self.assertJSONResponse(response, 200)
+
+    def test_org_unit_with_shapes_limited(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "shapes": True, "limit": 25000, "page": 1})
+        self.assertEqual(response.json()["limit"], SHAPE_RESULTS_MAX)
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "limit": 25000, "page": 1})
+
+        self.assertEqual(response.json()["limit"], 25000)
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)

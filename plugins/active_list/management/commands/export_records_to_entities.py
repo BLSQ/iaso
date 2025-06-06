@@ -168,7 +168,7 @@ class Command(BaseCommand):
                             "created_at": timestamp,
                             "updated_at": timestamp,
                             "orgUnitId": record.org_unit_id,
-                            "formId": 4,
+                            "formId": form.id,
                             "accuracy": 0,
                             "altitude": 0,
                             "file": file_name,

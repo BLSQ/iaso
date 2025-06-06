@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("iaso", "0325_merge_0324_auto_20250514_1244_0324_project_color"),
+        ("iaso", "0313_page_superset_dashboard_id_and_more"),
     ]
 
     operations = [

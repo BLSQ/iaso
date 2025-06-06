@@ -103,6 +103,10 @@ class GPKGImport(TestCase):
         self.assertEqual(ou2.groups.first().name, "Previous name of group B")
         self.assertEqual(ou2.groups.first().source_version, version)
 
+        # Store the version's updated_at before import
+        version.refresh_from_db()
+        updated_at_before = version.updated_at
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
             project_id=self.project.id,
@@ -111,6 +115,10 @@ class GPKGImport(TestCase):
             validation_status="new",
             description="",
         )
+
+        # Verify that updated_at has been updated
+        version.refresh_from_db()
+        self.assertGreater(version.updated_at, updated_at_before)
 
         self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)

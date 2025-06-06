@@ -103,7 +103,7 @@ class DataSourceVersionsSynchronizer:
 
     def _create_missing_org_units_and_prepare_missing_groups(self) -> None:
         """
-        Create missing `OrgUnit`s and groups prepare the list of missing `Group`s.
+        Create missing `OrgUnit`s and prepare the list of missing `Group`s.
 
         Because of the tree structure of the `OrgUnit` model, it's hard to bulk create them.
         So we sacrifice performance for the sake of simplicity by creating the missing `OrgUnit`s in a loop.
@@ -273,7 +273,12 @@ class DataSourceVersionsSynchronizer:
                             extra={"new_group": new_group, "data_source_sync": self.data_source_sync},
                         )
 
-        matching = self.org_units_matching[org_unit["source_ref"]]
+        try:
+            matching = self.org_units_matching[org_unit["source_ref"]]
+        except KeyError:
+            # This happens for org units skipped in `_create_missing_org_units_and_prepare_missing_groups`
+            # when they have no `source_ref` attribute.
+            return None, None
 
         org_unit_change_request = OrgUnitChangeRequest(
             # Data.

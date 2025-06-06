@@ -1,6 +1,7 @@
 // @ts-ignore
 import _ from 'lodash';
 import { UseQueryResult } from 'react-query';
+import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { getRequest } from 'Iaso/libs/Api';
 // @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
@@ -20,7 +21,7 @@ export const useGetGeoJson = (
     topParentId: number | undefined,
     orgUnitCategory: string,
     validationStatus: string | undefined = 'all',
-): UseQueryResult<any> => {
+): UseQueryResult<OrgUnit[]> => {
     const params: Params = {
         validation_status: validationStatus,
         withShapes: 'true',

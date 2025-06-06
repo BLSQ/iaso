@@ -60,7 +60,7 @@ from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances import InstancesViewSet
+from .api.instances.instances import InstancesViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet

@@ -29,12 +29,16 @@ type Props = {
     selection: Selection<Instance>;
     isOpen: boolean;
     closeDialog: () => void;
+    resetSelection: () => void;
+    filters: Record<string, string>;
 };
 
 const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
     selection,
     isOpen,
     closeDialog,
+    resetSelection,
+    filters,
 }) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -55,6 +59,7 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
         selected_ids: selected_ids.map(item => item.id).join(','),
         select_all,
         unselected_ids: unselected_ids.map(item => item.id).join(','),
+        ...filters,
     });
     const { mutateAsync: bulkLinkReferenceInstances } =
         useReferenceInstanceBulkLink();
@@ -65,13 +70,17 @@ const LinkReferenceInstancesComponent: FunctionComponent<Props> = ({
             select_all,
             selected_ids: selected_ids.map(item => item.id),
             unselected_ids: unselected_ids.map(item => item.id),
+            filters,
         });
+        resetSelection();
     }, [
         actions,
         bulkLinkReferenceInstances,
+        resetSelection,
         select_all,
         selected_ids,
         unselected_ids,
+        filters,
     ]);
 
     const onConfirm = useCallback(async () => {

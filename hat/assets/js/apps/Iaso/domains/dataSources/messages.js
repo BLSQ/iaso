@@ -469,6 +469,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.syncNameInfos',
         defaultMessage: 'Used to find linked changed requests',
     },
+    pleaseSelectVersionFirst: {
+        id: 'iaso.datasources.pleaseSelectVersionFirst',
+        defaultMessage: 'Please select a data source version first',
+    },
 });
 
 export default MESSAGES;

@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { LoadingSpinner } from 'bluesquare-components';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import ProductFruitsComponent from './components/ProductFruits';
@@ -14,21 +13,13 @@ type Props = {
 const dashboardBasename = '/dashboard';
 
 const App: FunctionComponent<Props> = ({ userHomePage }) => {
-    const {
-        nonDashboardRoutes,
-        routes,
-        isLoadingRoutes,
-        isCurrentRouteAnonymous,
-    } = useRoutes(
+    const { nonDashboardRoutes, routes, isCurrentRouteAnonymous } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
     useSnackBars();
 
     const isDashboardPath =
         window.location.pathname.includes(dashboardBasename);
-    if (isLoadingRoutes) {
-        return <LoadingSpinner />;
-    }
     return (
         <SentryProvider isCurrentRouteAnonymous={isCurrentRouteAnonymous}>
             <BrowserRouter

@@ -85,6 +85,7 @@ module.exports = {
         publicPath: ``, // replace here with `${WEBPACK_URL}/` to use another url for webpack
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
         scriptType: 'text/javascript',
+        compareBeforeEmit: true,
     },
     devtool: 'source-map',
 

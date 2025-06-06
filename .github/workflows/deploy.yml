@@ -5,7 +5,7 @@ on:
     inputs:
       # Branch is chosen by default in github manual actions
       environment:
-        description: playground, staging or prod for worker and web or exact Env name like iaso-stg-worker
+        description: playground, staging, demo or prod for worker and web or exact Env name like iaso-stg-worker
         required: true
       slack_channel:
         description: Slack Channel for notification (iasops by default)

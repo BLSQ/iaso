@@ -65,7 +65,11 @@ const IasoApp: React.FC<{
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
                             <LocaleProvider>
-                                <LocalizedAppComponent>
+                                <LocalizedAppComponent
+                                    userHomePage={
+                                        pluginHomePage || userHomePage
+                                    }
+                                >
                                     <SnackbarProvider
                                         maxSnack={3}
                                         autoHideDuration={4000}

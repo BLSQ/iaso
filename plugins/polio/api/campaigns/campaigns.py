@@ -1438,7 +1438,7 @@ Timeline tracker Automated message
         return Response({"message": "email sent"})
 
     # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
-    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    # But Patching the campaign directly is very much error prone, so we disable it indirectly
     # Updates are done in the CampaignSerializer
     def partial_update(self):
         """Don't PATCH this way, it won't do anything

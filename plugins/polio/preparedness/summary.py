@@ -74,11 +74,35 @@ DAYS_EVOLUTION = [
 ]
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
+def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
     day = ref_date - timedelta(days=n_day)
-    try:
-        ssi = ssi_for_campaign.filter(created_at__date=day).last()
-    except SpreadSheetImport.DoesNotExist:
+    ssi = ssi_for_campaign.filter(created_at__date=day).last()
+
+    if ssi is None:
+        previous_ssi = ssi_for_campaign.filter(created_at__date__lt=day).order_by("created_at").last()
+        # Only use next snapshot if it's max 2 days away to avoid using data of the next preparedness milestone
+        next_ssi = (
+            ssi_for_campaign.filter(created_at__date__gt=day, created_at__date__lte=day + timedelta(days=2))
+            .order_by("created_at")
+            .first()
+        )
+        previous_ssi_date = previous_ssi.created_at.date() if previous_ssi else None
+        next_ssi_date = next_ssi.created_at.date() if next_ssi else None
+        if previous_ssi and next_ssi:
+            ssi = next_ssi if next_ssi_date - day < day - previous_ssi_date else previous_ssi
+        elif next_ssi:
+            ssi = next_ssi
+        elif previous_ssi:
+            ssi = previous_ssi
+        else:
+            logger.error(f"No spreadsheet snapshot found for {obr_name} round {round_number} {ref_date}")
+    return ssi
+
+
+def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
+    day = ref_date - timedelta(days=n_day)
+    ssi = find_snapshot_for_date(ssi_for_campaign, ref_date, n_day, obr_name, round_number)
+    if ssi is None:
         return None, day, None
     try:
         preparedness = get_preparedness(ssi.cached_spreadsheet)
@@ -89,13 +113,13 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
     return ssi.created_at, day, score
 
 
-def history_for_campaign(ssi_qs, round: Round):
+def history_for_campaign(ssi_qs, round: Round, campaign: Campaign):
     ref_date = round.started_at
     if not ref_date:
         return {"error": f"Please configure a start date for the round {round}"}
     r = []
     for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day)
+        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day, campaign.obr_name, round.number)
         r.append(
             {
                 "days_before": n_day,
@@ -139,7 +163,7 @@ def _make_prep(c: Campaign, round: Round):
         if round.number != last_p["national"]["round"]:
             logger.info(f"Round mismatch on {c} {round}")
 
-        campaign_prep["history"] = history_for_campaign(ssi_qs, round)
+        campaign_prep["history"] = history_for_campaign(ssi_qs, round, c)
     except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)

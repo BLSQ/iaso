@@ -1,6 +1,6 @@
+import React, { FunctionComponent, useMemo } from 'react';
 import { Breadcrumbs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useMemo } from 'react';
 import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
@@ -59,6 +59,7 @@ type Props = {
     showRegistry?: boolean;
     color?: string;
     params?: Record<string, string>;
+    replace?: boolean;
 };
 
 export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
@@ -68,6 +69,7 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     showRegistry = false,
     color = 'inherit',
     params = {},
+    replace = true,
 }) => {
     const { link } = useStyles();
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
@@ -90,7 +92,7 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
                         orgUnit={ou}
                         key={ou.id}
                         className={link}
-                        replace
+                        replace={replace}
                         params={params}
                     />
                 ) : (
@@ -98,7 +100,7 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
                         orgUnit={ou}
                         key={ou.id}
                         className={link}
-                        replace
+                        replace={replace}
                     />
                 );
             })}

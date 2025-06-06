@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Filters = ({ baseUrl, params }) => {
+const Filters = ({ baseUrl, params, canBypassProjectRestrictions }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const classes = useStyles();
@@ -53,7 +53,7 @@ const Filters = ({ baseUrl, params }) => {
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
-        useGetProjectsDropdownOptions();
+        useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);
     const { data: teamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown();
 

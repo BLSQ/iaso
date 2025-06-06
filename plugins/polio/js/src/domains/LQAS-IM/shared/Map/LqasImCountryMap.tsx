@@ -1,11 +1,12 @@
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
 import { LegendItem, defaultShapeStyle } from '../../../../utils/index';
 import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
 import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
 import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
+import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
 import { HASHED_MAP_PATTERN } from '../constants';
 import { makePopup } from './LqasImPopUp';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
@@ -13,13 +14,13 @@ import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer';
 const getBackgroundLayerStyle = () => defaultShapeStyle;
 
 type Props = {
-    round: number;
+    round: number | undefined;
     campaigns?: any[];
     selectedCampaign?: string;
     countryId?: number;
-    data?: any;
+    data: Record<string, ConvertedLqasImData>;
     isFetchingGeoJson?: boolean;
-    mainLayer: any;
+    mainLayer: LqasImMapLayer[];
     isFetching?: boolean;
     disclaimerData?: Record<string, unknown> | null | undefined;
     regionShapes: any;

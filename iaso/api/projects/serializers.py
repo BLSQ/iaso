@@ -1,3 +1,7 @@
+import base64
+
+from qr_code.qrcode.maker import make_qr_code_image
+from qr_code.qrcode.utils import QRCodeOptions
 from rest_framework import serializers
 
 from iaso.models import FeatureFlag, Project
@@ -26,7 +30,17 @@ class FeatureFlagSerializer(serializers.Serializer):
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ["id", "name", "app_id", "feature_flags", "created_at", "updated_at", "needs_authentication"]
+        fields = [
+            "id",
+            "name",
+            "app_id",
+            "feature_flags",
+            "created_at",
+            "updated_at",
+            "needs_authentication",
+            "qr_code",
+            "color",
+        ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate_app_id(self, data):
@@ -42,3 +56,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     feature_flags = FeatureFlagSerializer(many=True, required=True, allow_empty=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+    qr_code = serializers.SerializerMethodField()
+
+    def get_qr_code(self, instance):
+        request = self.context.get("request")
+        if not request or not instance.app_id:
+            return None
+
+        qr_image = make_qr_code_image(
+            data='{"url": "' + request.build_absolute_uri("/") + '", "app_id": "' + instance.app_id + '"}',
+            qr_code_options=QRCodeOptions(size="S", image_format="png", error_correction="L"),
+        )
+        return f"data:image/png;base64,{base64.b64encode(qr_image).decode('utf-8')}"

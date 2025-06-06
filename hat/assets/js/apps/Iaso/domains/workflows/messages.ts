@@ -235,6 +235,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.latest',
         defaultMessage: 'latest',
     },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    currentDate: {
+        id: 'iaso.workflows.queryBuilder.currentDate',
+        defaultMessage: 'Current date - constant',
+    },
+    currentDateTime: {
+        id: 'iaso.workflows.queryBuilder.currentDateTime',
+        defaultMessage: 'Current date time - constant',
+    },
 });
 
 export default MESSAGES;

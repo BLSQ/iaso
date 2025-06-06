@@ -55,6 +55,10 @@ const goToPage = (
 
 const openDialogForIndex = index => {
     table = cy.get('table');
+    cy.intercept('GET', '/api/projects/1/qr_code/', {
+        statusCode: 200,
+        body: 'mock-qr-code-data',
+    }).as('getQRCode');
     row = table.find('tbody').find('tr').eq(index);
     const actionCol = row.find('td').last();
     const editButton = actionCol.find('button');

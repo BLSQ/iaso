@@ -245,7 +245,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
         defaultMessage:
-            'Manage entity types and workflows associated. Entity types can be "Beneficiaries", "Mosquito nets", "Medicines" etc.',
+            'Manage entity types and workflows associated. Entity types can be"Mosquito nets", "Medicines" etc.',
     },
     iaso_dhis2_link: {
         id: 'iaso.permissions.iaso_dhis2_link',
@@ -646,6 +646,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
     no_admin: {
         id: 'iaso.permissions.readEdit.no_admin',
         defaultMessage: 'Non-admin',
+    },
+    read_only: {
+        id: 'iaso.permissions.readEdit.read_only',
+        defaultMessage: 'Read only',
     },
     all: {
         id: 'iaso.permissions.readEdit.all',

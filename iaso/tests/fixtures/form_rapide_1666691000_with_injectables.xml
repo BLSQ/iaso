@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>Very quick form for test</h:title>
+    <model odk:xforms-version="1.0.0">
+      <submission orx:auto-send="default" orx:auto-delete="default"/>
+      <itext>
+        <translation lang="English">
+          <text id="/data/mon_champ:label">
+            <value>A value</value>
+          </text>
+        </translation>
+        <translation lang="French">
+          <text id="/data/mon_champ:label">
+            <value>Une valeur</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="Form-rapide" version="1666691000">
+          <mon_champ>Valeur par default</mon_champ>
+          <current_ou_name/>
+          <current_ou_type_name/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind nodeset="/data/mon_champ" type="string"/>
+      <bind nodeset="/data/current_ou_name" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/current_ou_type_name" type="string" calculate="&quot;&quot;"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/mon_champ">
+      <label ref="jr:itext('/data/mon_champ:label')"/>
+    </input>
+  </h:body>
+</h:html>

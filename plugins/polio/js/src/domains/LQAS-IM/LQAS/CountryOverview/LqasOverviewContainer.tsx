@@ -2,7 +2,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 
 import { Divider, Paper } from '@mui/material';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { ConvertedLqasImData, Side } from '../../../../constants/types';
+import { Campaign, MapShapes, Side } from '../../../../constants/types';
 import { baseUrls } from '../../../../constants/urls';
 import { getLqasImMapLayer } from '../../IM/utils';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
@@ -11,15 +11,16 @@ import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderDat
 import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
 import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
 import { LqasCountryListOverview } from './LqasCountryListOverview';
 import { LqasCountryMap } from './LqasCountryMap';
 import { LqasSummary } from './LqasSummary';
 
 type Props = {
-    round: number;
-    campaign: string;
-    campaigns: Array<unknown>;
-    country: string;
+    round: number | undefined | string;
+    campaign?: string;
+    campaigns: Array<Campaign>;
+    countryId?: number;
     data: Record<string, ConvertedLqasImData>;
     isFetching: boolean;
     debugData: Record<string, unknown> | null | undefined;
@@ -33,10 +34,10 @@ type Props = {
 const baseUrl = baseUrls.lqasCountry;
 
 export const LqasOverviewContainer: FunctionComponent<Props> = ({
-    round,
+    round: roundProp,
     campaign,
     campaigns,
-    country,
+    countryId,
     data,
     isFetching,
     debugData,
@@ -46,16 +47,21 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     side,
     params,
 }) => {
+    const round =
+        typeof roundProp === 'string' ? parseInt(roundProp, 10) : roundProp;
     const { tab, handleChangeTab } = useLqasImTabState({
         baseUrl,
         params,
         side,
     });
-    const countryId = parseInt(country, 10);
-    const { shapes, isFetchingGeoJson, regionShapes, isFetchingRegions } =
-        useMapShapes(countryId);
+    const {
+        shapes,
+        isFetchingGeoJson,
+        regionShapes,
+        isFetchingRegions,
+    }: MapShapes = useMapShapes(countryId);
 
-    const mainLayer = useMemo(() => {
+    const mainLayer: LqasImMapLayer[] = useMemo(() => {
         return getLqasImMapLayer({
             data,
             selectedCampaign: campaign,

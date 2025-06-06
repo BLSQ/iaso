@@ -123,9 +123,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         user_created_count = 0
 
         has_geo_limit = False
-        user_editable_org_unit_type_ids = set()
         if self.has_only_user_managed_permission(request):
-            user_editable_org_unit_type_ids = request.user.iaso_profile.get_editable_org_unit_type_ids()
             has_geo_limit = True
 
         user_has_project_restrictions = hasattr(request.user, "iaso_profile") and bool(
@@ -227,13 +225,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         if ou.isdigit():
                             try:
                                 ou = OrgUnit.objects.select_related("org_unit_type").get(id=int(ou))
-                                if has_geo_limit and ou not in importer_access_ou:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
-                                            "has to create users with OrgUnits that are in the its controlled pyramid"
-                                        }
-                                    )
                                 if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
@@ -290,28 +281,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             org_units_list.add(org_unit[0])
 
                     profile = Profile.objects.create(account=importer_account, user=user)
-
-                    if org_units_list and user_editable_org_unit_type_ids:
-                        invalid_ids = [
-                            org_unit.org_unit_type_id
-                            for org_unit in org_units_list
-                            if org_unit.org_unit_type_id
-                            and not profile.has_org_unit_write_permission(
-                                org_unit.org_unit_type_id, user_editable_org_unit_type_ids
-                            )
-                        ]
-                        if invalid_ids:
-                            invalid_names = ", ".join(
-                                name
-                                for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list(
-                                    "name", flat=True
-                                )
-                            )
-                            raise serializers.ValidationError(
-                                {
-                                    "error": f"Operation aborted. You don't have rights on the following org unit types: {invalid_names}"
-                                }
-                            )
 
                     # Using try except for dhis2_id in case users are being created with an older version of the template
                     try:
@@ -372,7 +341,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         projects = None
                     if projects:
                         project_names = [name.strip() for name in projects.split(value_splitter) if name]
-                        if user_has_project_restrictions:
+                        if user_has_project_restrictions and has_geo_limit:
                             projects_instance_list = Project.objects.filter(
                                 name__in=project_names,
                                 account=importer_account,
@@ -434,26 +403,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             projects__account=importer_account, id__in=editable_org_unit_types_ids
                         )
                         if new_editable_org_unit_types:
-                            if user_editable_org_unit_type_ids:
-                                invalid_ids = [
-                                    out.pk
-                                    for out in new_editable_org_unit_types
-                                    if not profile.has_org_unit_write_permission(
-                                        out.pk, user_editable_org_unit_type_ids
-                                    )
-                                ]
-                                if invalid_ids:
-                                    invalid_names = ", ".join(
-                                        name
-                                        for name in OrgUnitType.objects.filter(pk__in=invalid_ids).values_list(
-                                            "name", flat=True
-                                        )
-                                    )
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": f"Operation aborted. You don't have rights on the following org unit types: {invalid_names}"
-                                        }
-                                    )
                             profile.editable_org_unit_types.set(new_editable_org_unit_types)
 
                     profile.org_units.set(org_units_list)

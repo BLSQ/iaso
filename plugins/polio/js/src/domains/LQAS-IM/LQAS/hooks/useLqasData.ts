@@ -1,6 +1,4 @@
 import { useMemo } from 'react';
-
-import { LqasImData } from '../../../../constants/types';
 import { useConvertedLqasImData } from '../../shared/hooks/useConvertedLqasImData';
 import { useDebugData } from '../../shared/hooks/useDebugData';
 import { useNfmTitle } from '../../shared/hooks/useNfmTitle';
@@ -8,55 +6,76 @@ import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
 import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
+import {
+    BarChartData,
+    ChartData,
+    ConvertedLqasImData,
+    LqasImData,
+    LqasImDebugData,
+} from '../../types';
 
 type UseLQASDataParams = {
-    campaign: string;
-    country: string;
-    selectedRounds: [number, number];
+    campaign?: string;
+    country?: string;
+    selectedRounds: [number | undefined, number | undefined];
     LQASData?: LqasImData;
+};
+
+export type UseLQASData = {
+    convertedData: Record<string, ConvertedLqasImData>;
+    debugData: LqasImDebugData;
+    hasScope: boolean;
+    chartData: ChartData;
 };
 
 export const useLqasData = ({
     campaign,
     selectedRounds = [1, 2],
     LQASData,
-}: UseLQASDataParams): Record<string, unknown> => {
-    const convertedData = useConvertedLqasImData(LQASData);
+}: UseLQASDataParams): UseLQASData => {
+    const convertedData: Record<string, ConvertedLqasImData> =
+        useConvertedLqasImData(LQASData);
 
-    const debugData = useDebugData(LQASData, campaign);
+    const debugData: Record<
+        string,
+        { hasScope: boolean; districtsNotFound: string[] }
+    > = useDebugData(LQASData, campaign);
 
-    const hasScope = debugData[campaign]?.hasScope;
+    const hasScope = campaign ? Boolean(debugData[campaign]?.hasScope) : false;
 
-    const [nfmLeft, nfmRight] = useVerticalChartData({
-        data: LQASData?.stats,
-        campaign,
-        formatter: formatForNfmChart,
-        type: 'lqas',
-        selectedRounds,
-    });
+    const [nfmLeft, nfmRight]: [BarChartData[], BarChartData[]] =
+        useVerticalChartData({
+            data: LQASData?.stats,
+            campaign,
+            formatter: formatForNfmChart,
+            type: 'lqas',
+            selectedRounds,
+        });
 
-    const [nfmTitleLeft, nfmTitleRight] = useNfmTitle({
-        data: LQASData?.stats,
-        campaign,
-        type: 'lqas',
-        selectedRounds,
-    });
-
-    const [rfaLeft, rfaRight] = useVerticalChartData({
-        data: LQASData?.stats,
-        campaign,
-        formatter: formatForRfaChart,
-        type: 'lqas',
-        selectedRounds,
-    });
-
-    const [rfaTitle1, rfaTitle2] = useRfaTitle({
+    const [nfmTitleLeft, nfmTitleRight]: [string, string] = useNfmTitle({
         data: LQASData?.stats,
         campaign,
         type: 'lqas',
         selectedRounds,
     });
-    const chartData = useMemo(
+
+    const [rfaLeft, rfaRight]: [BarChartData[], BarChartData[]] =
+        useVerticalChartData({
+            data: LQASData?.stats,
+            campaign,
+            formatter: formatForRfaChart,
+            type: 'lqas',
+            selectedRounds,
+        });
+
+    const [rfaTitle1, rfaTitle2]: [string, string] = useRfaTitle({
+        data: LQASData?.stats,
+        campaign,
+        type: 'lqas',
+        selectedRounds,
+    });
+
+    const chartData: ChartData = useMemo(
         () => ({
             nfm: [
                 {

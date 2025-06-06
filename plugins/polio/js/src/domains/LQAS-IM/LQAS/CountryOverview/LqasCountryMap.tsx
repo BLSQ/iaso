@@ -1,23 +1,28 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import { makeLqasMapLegendItems } from '../utils';
-import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
-import { lqasDistrictColors } from '../constants';
 import { Side } from '../../../../constants/types';
+import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
+import {
+    ConvertedLqasImData,
+    LqasImMapLayer,
+    MapColorConfig,
+} from '../../types';
+import { lqasDistrictColors } from '../constants';
+import { makeLqasMapLegendItems } from '../utils';
 
-const getMainLayerStyles = shape => {
+const getMainLayerStyles = (shape: LqasImMapLayer): MapColorConfig => {
     return lqasDistrictColors[shape.status];
 };
 
 type Props = {
-    round: number;
+    round: number | undefined;
     campaigns?: any[];
     selectedCampaign?: string;
     countryId?: number;
-    data?: any;
+    data: Record<string, ConvertedLqasImData>;
     isFetchingGeoJson?: boolean;
-    mainLayer: any;
+    mainLayer: LqasImMapLayer[];
     isFetching?: boolean;
     disclaimerData?: Record<string, unknown> | null | undefined;
     regionShapes: any;

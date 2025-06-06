@@ -1,26 +1,27 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React, {
     FunctionComponent,
     useEffect,
     useCallback,
     useContext,
 } from 'react';
-import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner, useRedirectToReplace } from 'bluesquare-components';
-import { COUNTRY, DISTRICT } from '../../../shared/constants';
+import { useMapEvents } from 'react-leaflet';
+import { baseUrls } from '../../../../../constants/urls';
+import { defaultShapeStyle } from '../../../../../utils';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
+import { COUNTRY, DISTRICT } from '../../../shared/constants';
+import { lqasDistrictColors } from '../../constants';
+import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import {
     useAfroMapShapes,
     useGetZoomedInBackgroundShapes,
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
-import { defaultShapeStyle } from '../../../../../utils';
 import { AfroMapParams, Side } from '../types';
-import { LqasAfroTooltip } from './LqasAfroTooltip';
-import { LqasAfroPopup } from './LqasAfroPopUp';
 import { getRound } from '../utils';
-import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
-import { lqasDistrictColors } from '../../constants';
-import { baseUrls } from '../../../../../constants/urls';
+import { LqasAfroPopup } from './LqasAfroPopUp';
+import { LqasAfroTooltip } from './LqasAfroTooltip';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -140,6 +141,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     mainLayer={mapShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
+                    // @ts-ignore
                     makePopup={shape => {
                         return <LqasAfroPopup shape={shape} view={COUNTRY} />;
                     }}

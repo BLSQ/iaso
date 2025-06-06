@@ -21,33 +21,16 @@ import {
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
 // @ts-ignore
-import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
-// @ts-ignore
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
-import InputComponent from '../../../components/forms/InputComponent';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
-
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import {
-    useGetBeneficiariesApiParams,
-    useGetBeneficiaryTypesDropdown,
-    useGetUsersDropDown,
-} from '../hooks/requests';
-import { useFiltersParams } from '../hooks/useFiltersParams';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { Filters as FilterType, Params } from '../types/filters';
 
 import { Popper } from '../../forms/fields/components/Popper';
 import { useGetAllFormDescriptors } from '../../forms/fields/hooks/useGetFormDescriptor';
@@ -55,6 +38,19 @@ import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGet
 import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { parseJson } from '../../instances/utils/jsonLogicParse';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { baseUrl } from '../config';
+import {
+    useGetEntitiesApiParams,
+    useGetEntityTypesDropdown,
+    useGetUsersDropDown,
+} from '../hooks/requests';
+import { useFiltersParams } from '../hooks/useFiltersParams';
+import MESSAGES from '../messages';
+import { Filters as FilterType, Params } from '../types/filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -105,7 +101,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const { data: types, isFetching: isFetchingTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
     const selectedTeam = useMemo(() => {
         return teamOptions?.find(
@@ -179,7 +175,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
+    const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
         <Box mb={1}>
             <UserOrgUnitRestriction />

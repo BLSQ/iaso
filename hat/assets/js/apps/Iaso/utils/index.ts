@@ -1,8 +1,5 @@
 import { textPlaceholder } from 'bluesquare-components';
-import {
-    Beneficiary,
-    FileContent,
-} from '../domains/entities/types/beneficiary';
+import { Entity, FileContent } from '../domains/entities/types/entity';
 import { FormDescriptor } from '../domains/forms/types/forms';
 import { formatLabel } from '../domains/instances/utils';
 
@@ -77,7 +74,7 @@ export const findDescriptorInChildren = (field: any, descriptor: any): any => {
 
 export const getDescriptorValue = (
     fieldKey: string,
-    fileContent: FileContent | Beneficiary,
+    fileContent: FileContent | Entity,
     formDescriptors?: FormDescriptor[],
 ): string => {
     let value = textPlaceholder;

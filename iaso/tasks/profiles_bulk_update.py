@@ -53,9 +53,6 @@ def update_single_profile_from_bulk(
 
     user_has_project_restrictions = hasattr(user, "iaso_profile") and bool(user.iaso_profile.projects_ids)
     user_has_perm_users_admin = user.has_perm(permission.USERS_ADMIN)
-    editable_org_unit_type_ids = (
-        user.iaso_profile.get_editable_org_unit_type_ids() if not user_has_perm_users_admin else set()
-    )
 
     if teams_id_added and not user.has_perm(permission.TEAMS):
         raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
@@ -111,18 +108,6 @@ def update_single_profile_from_bulk(
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not user_has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_added.append(org_unit)
 
     if location_ids_removed:
@@ -133,18 +118,6 @@ def update_single_profile_from_bulk(
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
-            if (
-                not user_has_perm_users_admin
-                and org_unit.org_unit_type_id
-                and editable_org_unit_type_ids
-                and not user.iaso_profile.has_org_unit_write_permission(
-                    org_unit.org_unit_type_id, editable_org_unit_type_ids
-                )
-            ):
-                raise PermissionDenied(
-                    f"User with permission {permission.USERS_MANAGED} cannot change the org unit {org_unit.name} "
-                    f"because he does not have rights on the following org unit type: {org_unit.org_unit_type.name}"
-                )
             org_units_to_be_removed.append(org_unit)
 
     # Update

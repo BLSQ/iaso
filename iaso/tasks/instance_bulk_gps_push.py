@@ -5,9 +5,11 @@ from typing import List, Optional
 
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.http import QueryDict
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
+from iaso.api.instances.instance_filters import parse_instance_filters
 from iaso.models import Instance, Task
 from iaso.utils.gis import convert_2d_point_to_3d
 from iaso.utils.models.common import check_instance_bulk_gps_push
@@ -35,6 +37,7 @@ def instance_bulk_gps_push(
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],
+    filters: dict,
     task: Task,
 ):
     """
@@ -45,8 +48,16 @@ def instance_bulk_gps_push(
 
     user = task.launcher
 
-    queryset = Instance.non_deleted_objects.get_queryset().filter_for_user(user)
+    # The QueryDict had to be serialized to be passed to this task, so let's rebuild it
+    query_dict = QueryDict("", mutable=True)
+    query_dict.update(filters)
+    parsed_filters = parse_instance_filters(query_dict)
+
+    # Doing the same operations as in InstancesViewSet.list() because results should be identical
+    queryset = Instance.objects.get_queryset().filter_for_user(user).filter_on_user_projects(user=user)
+    queryset = queryset.exclude(file="").exclude(device__test_device=True)
     queryset = queryset.select_related("org_unit")
+    queryset = queryset.for_filters(**parsed_filters)
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)

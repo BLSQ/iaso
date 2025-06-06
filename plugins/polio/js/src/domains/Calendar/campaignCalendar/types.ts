@@ -21,7 +21,7 @@ export type CalendarRound = {
     end?: Moment;
     number: number;
     start?: Moment;
-    id?: number;
+    id: number;
     started_at?: string;
     ended_at?: string;
     daysCount?: number;

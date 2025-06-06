@@ -495,13 +495,15 @@ export const useSelectionActions = (
 
     return useMemo(() => {
         const assignReferenceSubmissions: SelectionAction = {
-            icon: newSelection => {
+            icon: (newSelection, resetSelection) => {
                 return (
                     <LinkReferenceInstancesModalComponent
                         selection={newSelection}
                         iconProps={{
                             iconDisabled: newSelection.selectCount === 0,
                         }}
+                        resetSelection={resetSelection}
+                        filters={filters}
                     />
                 );
             },
@@ -516,6 +518,7 @@ export const useSelectionActions = (
                 <PushGpsModalComponent
                     selection={newSelection}
                     iconProps={{ iconDisabled: newSelection.selectCount === 0 }}
+                    filters={filters}
                 />
             ),
             label: formatMessage(MESSAGES.pushGpsToOrgUnits),
@@ -587,9 +590,11 @@ export const useSelectionActions = (
             actions.push(
                 exportAction,
                 deleteAction,
-                pushGpsAction,
                 assignReferenceSubmissions,
             );
+            if (userHasPermission(Permission.ORG_UNITS, currentUser)) {
+                actions.push(pushGpsAction);
+            }
         }
         return actions;
     }, [

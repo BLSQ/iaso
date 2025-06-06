@@ -1,7 +1,9 @@
 import { useMemo } from 'react';
 import { QueryKey, UseQueryResult } from 'react-query';
+import { PaginatedResponse } from 'Iaso/domains/app/types';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { Campaign } from '../../../../constants/types';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
@@ -114,7 +116,7 @@ export const useGetCampaigns = (
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
-): UseQueryResult<any, any> => {
+): UseQueryResult<PaginatedResponse<Campaign> | Campaign[], Error> => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {
@@ -129,7 +131,8 @@ export const useGetCampaigns = (
     }, [params, queryKey, queryOptions]);
     return useSnackQuery({
         queryKey: effectiveQueryKey,
-        queryFn: () => getRequest(getURL(params, url)),
+        queryFn: (): Promise<Campaign[] | PaginatedResponse<Campaign>> =>
+            getRequest(getURL(params, url)),
         options: {
             cacheTime: Infinity,
             staleTime: 1000 * 60 * 15,

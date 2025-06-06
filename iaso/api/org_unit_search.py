@@ -90,7 +90,7 @@ def build_org_units_queryset(queryset, params, profile):
             group_ids = [group]
         else:
             group_ids = group
-        queryset = queryset.filter(groups__in=group_ids).distinct("id")
+        queryset = queryset.filter(groups__in=group_ids).distinct()
 
     if source:
         source = DataSource.objects.get(id=source)
@@ -115,7 +115,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(instance__created_at__lte=date_to)
 
     if date_from is not None and date_to is not None:
-        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct("id")
+        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct()
 
     if has_instances is not None:
         if has_instances == "true":

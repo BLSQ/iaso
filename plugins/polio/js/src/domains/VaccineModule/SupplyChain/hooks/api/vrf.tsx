@@ -54,7 +54,9 @@ const defaults = {
     pageSize: 20,
     page: 1,
 };
-const getVrfList = (params: FormattedApiParams): Promise<VRF[]> => {
+const getVrfList = (
+    params: FormattedApiParams,
+): Promise<{ results: VRF[] }> => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${apiUrl}?${queryString}`);
 };
@@ -81,6 +83,26 @@ export const useGetVrfList = (
             keepPreviousData: true,
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+        },
+    });
+};
+
+export const useGetVrfListByRound = (
+    roundId: string,
+): UseQueryResult<any, any> => {
+    const apiParams = useApiParams({ round_id: roundId });
+    return useSnackQuery({
+        queryKey: ['getVrfListByRound', roundId],
+        queryFn: () => getVrfList(apiParams),
+        options: {
+            select: data => {
+                if (!data) return [];
+                return data.results;
+            },
+            keepPreviousData: false,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            enabled: Boolean(roundId),
         },
     });
 };

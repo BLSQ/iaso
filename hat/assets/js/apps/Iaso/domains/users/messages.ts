@@ -510,10 +510,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.selectAllHelperText',
         defaultMessage: 'Leave empty to select all',
     },
-    userAdminOnly: {
-        id: 'iaso.users.userAdminOnly',
-        defaultMessage: 'Can only be edited by user admin',
-    },
     OrgUnitTypeWriteDisableTooltip: {
         id: 'iaso.users.orgUnitTypeWriteDisableTooltip',
         defaultMessage:

@@ -30,19 +30,6 @@ def urljoin(arg1, arg2):
     return u
 
 
-def enketo_url_for_creation(uuid, server_url, return_url=None):
-    """Return Enketo webform URL."""
-    settings = enketo_settings()
-    url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
-    url = urljoin(url, "/single")
-    data = {"server_url": server_url, "form_id": uuid}
-
-    if return_url:
-        data["return_url"] = "%s" % return_url
-
-    return get_url_from_enketo(url, data)
-
-
 def enketo_url_for_edition(form_url, form_id_string, instance_xml=None, instance_id=None, return_url=None, **kwargs):
     """Return Enketo webform URL."""
 

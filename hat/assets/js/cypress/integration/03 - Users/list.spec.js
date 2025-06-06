@@ -71,7 +71,7 @@ const goToPage = (
 const openDialogForUserIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').eq(6);
+    const actionCol = row.find('td').eq(7);
     const editButton = actionCol.find('button').first();
     editButton.click();
     cy.get('#user-profile-dialog').should('be.visible');
@@ -149,7 +149,7 @@ describe('Users', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.profiles.length);
-                rows.eq(0).find('td').should('have.length', 8);
+                rows.eq(0).find('td').should('have.length', 9);
             });
         });
 
@@ -158,11 +158,11 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
-                const actionCol = row.find('td').eq(6);
+                const actionCol = row.find('td').eq(7);
                 actionCol.find('button').should('have.length', 3);
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const actionColCurrentUser = row.find('td').eq(6);
+                const actionColCurrentUser = row.find('td').eq(7);
                 actionColCurrentUser.find('button').should('have.length', 2);
             });
         });

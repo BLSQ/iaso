@@ -1,7 +1,7 @@
+import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useState } from 'react';
 
 import {
     IconButton,
@@ -23,8 +23,8 @@ import {
     useParamsObject,
 } from '../../routing/hooks/useParamsObject';
 import { ClassNames } from '../../types/utils';
-import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
-import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
+import { EntityBaseInfo } from '../entities/components/EntityBaseInfo';
+import { useGetEntityFields } from '../entities/hooks/useGetEntityFields';
 import { useGetInstance } from './compare/hooks/useGetInstance';
 import InstanceDetailsChangeRequests from './components/InstanceDetailsChangeRequests';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
@@ -97,13 +97,13 @@ const InstanceDetails: FunctionComponent = () => {
     const { instanceId } = params;
     const { data: currentInstance, isLoading: isLoadingInstance } =
         useGetInstance(instanceId);
-    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
-        useGetBeneficiaryFields(currentInstance?.entity);
+    const { isLoading: isLoadingEntityFields, fields: entityFields } =
+        useGetEntityFields(currentInstance?.entity);
 
     const isLoading =
         isReassigning ||
         isLoadingInstance ||
-        (currentInstance?.entity && isLoadingBeneficiaryFields);
+        (currentInstance?.entity && isLoadingEntityFields);
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
@@ -153,10 +153,10 @@ const InstanceDetails: FunctionComponent = () => {
                                 </Alert>
                             )}
                             {currentInstance && currentInstance.entity && (
-                                <BeneficiaryBaseInfo
-                                    beneficiary={currentInstance.entity}
-                                    fields={beneficiaryFields}
-                                    withLinkToBeneficiary
+                                <EntityBaseInfo
+                                    entity={currentInstance.entity}
+                                    fields={entityFields}
+                                    withLinkToEntity
                                 />
                             )}
                             <WidgetPaper

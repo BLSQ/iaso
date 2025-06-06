@@ -678,6 +678,48 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
+    def test_list_entities_mobile_with_multi_projects(self):
+        """
+        Ensure entities are filtered by projects.
+        """
+        other_project = m.Project.objects.create(
+            name="Distribution of mosquito nets",
+            app_id="mos.quito",
+            account=self.account,
+        )
+        form = m.Form.objects.create(name="Identification", period_type=m.MONTH, single_per_period=True)
+        form.projects.add(other_project)
+
+        instance_1 = Instance.objects.create(org_unit=self.ou_country, form=form)
+        instance_2 = Instance.objects.create(org_unit=self.ou_country, form=form)
+        entity_type_civilian = EntityType.objects.create(
+            name="Civilian",
+            reference_form=form,
+            account=self.account,
+        )
+        Entity.objects.create(entity_type=entity_type_civilian, account=self.account, attributes=instance_1)
+        Entity.objects.create(entity_type=entity_type_civilian, account=self.account, attributes=instance_2)
+
+        self.client.force_authenticate(self.yoda)
+
+        # The list should be restricted to the first project.
+        entity_in_first_project = Entity.objects.filter(
+            entity_type__reference_form__projects__app_id=self.project.app_id
+        )
+        self.assertEqual(0, entity_in_first_project.count())
+        response = self.client.get(f"/api/mobile/entities/?app_id={self.project.app_id}")
+        self.assertEqual(0, response.data["count"])
+
+        # The list should be restricted to the other project.
+        entity_in_other_project = Entity.objects.filter(
+            entity_type__reference_form__projects__app_id=other_project.app_id
+        )
+        self.assertEqual(2, entity_in_other_project.count())
+        response = self.client.get(f"/api/mobile/entities/?app_id={other_project.app_id}")
+        self.assertEqual(2, response.data["count"])
+        for item in response.data["results"]:
+            self.assertEqual(item["entity_type_id"], str(entity_type_civilian.pk))
+
     def test_entity_mobile_user(self):
         self.client.force_authenticate(self.yoda)
 

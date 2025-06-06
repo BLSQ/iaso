@@ -7,7 +7,7 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
-from hat.menupermissions import models as permission
+from hat.menupermissions import models as permission_models
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
@@ -514,40 +514,66 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_create_user_with_project_restrictions(self):
         self.source.projects.set([self.project, self.project2])
 
-        # The user is restricted to `project2`.
-        self.yoda.iaso_profile.projects.set([self.project2.id])
-
-        self.client.force_authenticate(self.yoda)
-
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             csv_reader = list(csv.reader(csv_users))
 
             csv_line_1 = csv_reader[1]
             csv_line_2 = csv_reader[2]
+            csv_line_3 = csv_reader[3]
 
             username_index = 0
             projects_index = 12
 
             username_1 = csv_line_1[username_index]
             username_2 = csv_line_2[username_index]
+            username_3 = csv_line_3[username_index]
 
             # Ensure the CSV tries to set `project` as an authorized project.
             self.assertEqual(csv_line_1[projects_index], self.project.name)
             self.assertEqual(csv_line_2[projects_index], self.project.name)
 
-        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+        self.user_managed_geo_limit.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
+        self.assertTrue(self.user_managed_geo_limit.has_perm(permission_models.USERS_MANAGED))
+        self.assertFalse(self.user_managed_geo_limit.has_perm(permission_models.USERS_ADMIN))
+
+        self.client.force_authenticate(self.user_managed_geo_limit)
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+            self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(response.status_code, 200)
-
-        # Because `user` is restricted to `project2`, `project` should've been skipped
-        # and new profiles should end up having the same restrictions.
+        # The current project restrictions of a `user` without the admin perm should be applied.
+        # That means that projects in the CSV should've been skipped and new profiles should
+        # end up having the same restriction as `user`.
         profile_1 = Profile.objects.get(user__username=username_1)
         self.assertEqual(1, profile_1.projects.count())
         self.assertEqual(profile_1.projects.first(), self.project2)
         profile_2 = Profile.objects.get(user__username=username_2)
         self.assertEqual(1, profile_2.projects.count())
         self.assertEqual(profile_2.projects.first(), self.project2)
+
+        self.client.logout()
+        User.objects.filter(username__in=[username_1, username_2, username_3]).delete()
+
+        self.yoda.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
+        self.yoda.iaso_profile.org_units.set([self.org_unit_child])
+        self.assertFalse(self.yoda.has_perm(permission_models.USERS_MANAGED))
+        self.assertTrue(self.yoda.has_perm(permission_models.USERS_ADMIN))
+
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+            self.assertEqual(response.status_code, 200)
+
+        # A `user` with the admin perm should be able to bypass project restrictions.
+        # Here, the CSV content should be applied.
+        profile_1 = Profile.objects.get(user__username=username_1)
+        self.assertEqual(1, profile_1.projects.count())
+        self.assertEqual(profile_1.projects.first(), self.project)
+        profile_2 = Profile.objects.get(user__username=username_2)
+        self.assertEqual(1, profile_2.projects.count())
+        self.assertEqual(profile_2.projects.first(), self.project)
+        profile_3 = Profile.objects.get(user__username=username_3)
+        self.assertEqual(0, profile_3.projects.count())
 
     def test_should_create_user_with_the_correct_org_unit_from_source_ref(self):
         """
@@ -597,124 +623,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user.iaso_profile.org_units.count(), 1)
         self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
         self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)
-
-    def test_bulk_create_should_fail_with_restricted_editable_org_unit_types(self):
-        self.source.projects.set([self.project])
-        org_unit = self.org_unit_child
-        org_unit.org_unit_type = self.org_unit_type_country
-        org_unit.save()
-
-        user = self.yoda
-
-        user.iaso_profile.org_units.add(org_unit)
-        user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.org_unit_type_region]
-        )
-
-        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_MANAGED))
-        user.user_permissions.remove(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
-
-        self.client.force_authenticate(user)
-
-        csv_str = io.StringIO()
-        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
-        writer.writeheader()
-        writer.writerow(
-            {
-                "username": "john",
-                "password": "yodnj!30dln",
-                "email": "john@foo.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "orgunit": f"{org_unit.id}",
-                "orgunit__source_ref": "",
-                "profile_language": "fr",
-                "dhis2_id": "",
-                "permissions": "",
-                "user_roles": "",
-                "projects": "",
-                "phone_number": "",
-                "organization": "",
-                "editable_org_unit_types": "",
-            }
-        )
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {"error": "Operation aborted. You don't have rights on the following org unit types: Country"},
-        )
-
-    def test_bulk_create_user_with_editable_org_unit_types(self):
-        self.source.projects.set([self.project])
-        org_unit = self.org_unit_child
-        org_unit.org_unit_type = self.org_unit_type_country
-        org_unit.save()
-
-        non_admin_user = self.obi
-        non_admin_user.iaso_profile.org_units.add(org_unit)
-        non_admin_user.iaso_profile.editable_org_unit_types.set(
-            # Only org units of this type is now writable.
-            [self.org_unit_type_region]
-        )
-        non_admin_user.user_permissions.add(Permission.objects.get(codename=permission._USERS_MANAGED))
-        non_admin_user.user_permissions.remove(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(non_admin_user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(non_admin_user.has_perm(permission.USERS_ADMIN))
-
-        csv_str = io.StringIO()
-        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
-        writer.writeheader()
-        writer.writerow(
-            {
-                "username": "john",
-                "password": "yodnj!30dln",
-                "email": "john@foo.com",
-                "first_name": "John",
-                "last_name": "Doe",
-                "orgunit": f"{org_unit.id}",
-                "orgunit__source_ref": "",
-                "profile_language": "fr",
-                "dhis2_id": "",
-                "organization": "",
-                "permissions": "",
-                "user_roles": "",
-                "projects": "",
-                "phone_number": "",
-                "editable_org_unit_types": f"{self.org_unit_type_region.pk},{self.org_unit_type_country.pk}",
-            }
-        )
-
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-        self.client.force_authenticate(non_admin_user)
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.data,
-            {"error": "Operation aborted. You don't have rights on the following org unit types: Country"},
-        )
-
-        admin_user = self.yoda
-        admin_user.iaso_profile.org_units.add(org_unit)
-        admin_user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
-        self.assertTrue(admin_user.has_perm(permission.USERS_ADMIN))
-
-        csv_bytes = csv_str.getvalue().encode()
-        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
-        self.client.force_authenticate(admin_user)
-        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
-        self.assertEqual(response.status_code, 200)
-        new_user = User.objects.get(email="john@foo.com")
-        self.assertEqual(new_user.iaso_profile.editable_org_unit_types.count(), 2)
-        self.assertIn(self.org_unit_type_region, new_user.iaso_profile.editable_org_unit_types.all())
-        self.assertIn(self.org_unit_type_country, new_user.iaso_profile.editable_org_unit_types.all())
 
     def test_valid_phone_number(self):
         phone_number = "+12345678912"

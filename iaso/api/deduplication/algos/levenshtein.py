@@ -31,22 +31,56 @@ def _build_query(params):
             fc_arr.append(
                 "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
             )
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(f_name)
+            query_params.extend([f_name, f_name, f_name, f_name])
         elif f_type == "text":
             fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
-            query_params.append(f_name)
-            query_params.append(f_name)
-            query_params.append(levenshtein_max_distance)
-            query_params.append(levenshtein_max_distance)
+            query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+        elif f_type == "calculate":
+            # Handle type casting based on field name suffix
+            if f_name.endswith(("__int__", "__integer__")):
+                cast_type = "integer"
+            elif f_name.endswith("__long__"):
+                cast_type = "bigint"
+            elif f_name.endswith(("__decimal__", "__double__")):
+                cast_type = "double precision"
+            elif f_name.endswith(("__bool__", "__boolean__")):
+                cast_type = "boolean"
+            elif f_name.endswith("__date__"):
+                cast_type = "date"
+            elif f_name.endswith("__time__"):
+                cast_type = "time"
+            elif f_name.endswith(("__date_time__", "__datetime__")):
+                cast_type = "timestamp"
+            else:
+                # Default to text comparison if no type suffix is found
+                fc_arr.append(
+                    "(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))"
+                )
+                query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+                continue
+
+            # For numeric types, use the same comparison as numbers
+            if cast_type in ["integer", "bigint", "double precision"]:
+                fc_arr.append(
+                    f"(1.0 - ( abs ( (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / greatest( (instance1.json->>%s)::{cast_type}, (instance2.json->>%s)::{cast_type} )))"
+                )
+                query_params.extend([f_name, f_name, f_name, f_name])
+            # For boolean types, compare as 0/1
+            elif cast_type == "boolean":
+                fc_arr.append(
+                    f"(1.0 - abs( (instance1.json->>%s)::{cast_type}::integer - (instance2.json->>%s)::{cast_type}::integer ))"
+                )
+                query_params.extend([f_name, f_name])
+            # For date/time types, compare as timestamps
+            elif cast_type in ["date", "time", "timestamp"]:
+                fc_arr.append(
+                    f"(1.0 - abs( extract(epoch from (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / 86400.0 ))"
+                )
+                query_params.extend([f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
 
-    query_params.append(params.get("entity_type_id"))
-    query_params.append(params.get("entity_type_id"))
-    query_params.append(above_score_display)
+    query_params.extend([params.get("entity_type_id"), params.get("entity_type_id"), above_score_display])
 
     return (
         query_params,

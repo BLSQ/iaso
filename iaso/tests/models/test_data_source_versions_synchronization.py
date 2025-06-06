@@ -93,7 +93,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         )
         cls.angola_region_to_update.calculate_paths()
 
-        # Angola pyramid to compare with (3 org units).
+        # Angola pyramid to compare with (5 org units).
 
         cls.angola_country_to_compare_with = m.OrgUnit.objects.create(
             parent=None,
@@ -143,6 +143,19 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             name="Facility",
             org_unit_type=cls.org_unit_type_facility,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            opening_date=datetime.date(2024, 11, 28),
+            closed_date=datetime.date(2026, 11, 28),
+            geom=cls.multi_polygon,
+            simplified_geom=cls.multi_polygon,
+        )
+
+        cls.angola_facility_without_source_ref_to_compare_with = m.OrgUnit.objects.create(
+            parent=cls.angola_district_to_compare_with,
+            version=cls.source_version_to_compare_with,
+            source_ref="",  # Org units without `source_ref` should be ignored.
+            name="Facility without source ref",
+            org_unit_type=cls.org_unit_type_facility,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
             opening_date=datetime.date(2024, 11, 28),
             closed_date=datetime.date(2026, 11, 28),
             geom=cls.multi_polygon,
@@ -277,9 +290,7 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
 
     def test_create_change_requests(self):
         """
-        Test that `create_change_requests()` produces 3 change requests:
-        - 2 change requests to modify existing org units
-        - 1 change request to create a new org unit
+        Test that `create_change_requests()` produces the right number of change requests.
         """
         # Changes at the country level.
         self.angola_country_to_compare_with.name = "Angola new"
@@ -466,3 +477,11 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
         self.assertEqual(new_angola_facility_org_unit.source_ref, "id-4")
         self.assertEqual(new_angola_facility_org_unit.geom, self.multi_polygon)
         self.assertEqual(new_angola_facility_org_unit.simplified_geom, self.multi_polygon)
+
+        # No change request should have been generated for org units without `source_ref`.
+        self.assertEqual(
+            0,
+            m.OrgUnitChangeRequest.objects.filter(
+                org_unit=self.angola_facility_without_source_ref_to_compare_with
+            ).count(),
+        )

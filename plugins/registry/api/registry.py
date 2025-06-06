@@ -7,7 +7,7 @@ from rest_framework.request import Request
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import Paginator
-from iaso.api.instances import InstanceSerializer
+from iaso.api.instances.instances import InstanceSerializer
 from iaso.models import Instance
 from plugins.registry.models import PublicRegistryConfig
 

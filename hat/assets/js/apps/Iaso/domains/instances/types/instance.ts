@@ -1,6 +1,6 @@
 import { Pagination } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { Beneficiary } from '../../entities/types/beneficiary';
+import { Entity } from '../../entities/types/entity';
 import { OrgUnitChangeRequest } from '../../orgUnits/reviewChanges/types';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
@@ -56,7 +56,7 @@ export type Instance = {
     is_locked: boolean;
     is_instance_of_reference_form: boolean;
     is_reference_instance: boolean;
-    entity: Beneficiary;
+    entity: Entity;
     source_created_at: number;
     change_requests: Array<OrgUnitChangeRequest>;
 };

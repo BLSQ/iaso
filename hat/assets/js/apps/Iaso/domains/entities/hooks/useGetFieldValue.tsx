@@ -1,21 +1,20 @@
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import React from 'react';
 
 import { Box } from '@mui/material';
-import { Beneficiary, FileContent } from '../types/beneficiary';
-
-import { FieldType, FormDescriptor } from '../../forms/types/forms';
-
-import { findDescriptorInChildren, getDescriptorValue } from '../../../utils';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
 
 import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
+import { findDescriptorInChildren, getDescriptorValue } from '../../../utils';
+
+import { FieldType, FormDescriptor } from '../../forms/types/forms';
 import { formatLabel } from '../../instances/utils';
 import MESSAGES from '../messages';
+import { Entity, FileContent } from '../types/entity';
 
 const getDescriptorListValues = (
     fieldKey: string,
-    fileContent: FileContent | Beneficiary,
+    fileContent: FileContent | Entity,
     formDescriptors?: FormDescriptor[],
 ): string[] => {
     const fieldsKeys = fileContent[fieldKey]?.split(' ') || [];
@@ -36,7 +35,7 @@ export const useGetFieldValue = (
     formDescriptors?: FormDescriptor[],
 ): ((
     fieldKey: string,
-    fileContent: FileContent | Beneficiary,
+    fileContent: FileContent | Entity,
     type: FieldType,
 ) => string | number | React.ReactNode) => {
     const { formatMessage } = useSafeIntl();

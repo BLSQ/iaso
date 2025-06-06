@@ -7,6 +7,7 @@ import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json'
 import orgUnits from '../../../fixtures/orgunits/list.json';
 import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
+import projects from '../../../fixtures/projects/list.json';
 import sourceversion from '../../../fixtures/sourceversions/sourceversion.json';
 import userRoles from '../../../fixtures/userRoles/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
@@ -129,6 +130,7 @@ const goToPage = (
         dataSources,
     );
     cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes);
+    cy.intercept('GET', '/api/projects/', projects);
 
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',

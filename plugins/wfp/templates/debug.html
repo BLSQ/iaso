@@ -25,11 +25,13 @@
         </tr>
         <tr>
             <th>First Name</th>
-            <td>{{ entity.attributes.json.first_name}}</td>
+            <td>{{ info.first_name }}</td>
         </tr>
         <tr>
             <th>Last Name</th>
-            <td>{{ entity.attributes.json.last_name}}</td>
+            <td>{{ info.last_name }} {{ info.fathers_name }}
+                {{ info.grand_fathers_name }} {{ info.husband_father_name }}
+                {{ info.grandfather_name }}</td>
         </tr>
         <tr>
             <th>Gender</th>

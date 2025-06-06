@@ -16,9 +16,10 @@ from .models import Beneficiary
 def debug(request, id):
     entity = get_object_or_404(Entity, id=id)
     beneficiary = Beneficiary.objects.filter(entity_id=entity.id).first()
+    beneficiary_info = entity.attributes.json
 
     template = loader.get_template("debug.html")
-    context = {"entity": entity, "beneficiary": beneficiary}
+    context = {"entity": entity, "beneficiary": beneficiary, "info": beneficiary_info}
     return HttpResponse(template.render(context, request))
 
 

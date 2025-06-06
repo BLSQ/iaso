@@ -263,19 +263,26 @@ class ETL:
         if visit["form_id"] in [
             "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
-            "child_assistance_admission",
-            "wfp_coda_pbwg_assistance",
-            "wfp_coda_pbwg_assistance_followup",
             "assistance_admission_otp",
             "assistance_admission_2nd_visit_otp",
+            "child_assistance_admission",
+            "ethiopia_child_assistance_follow_up",
+            "wfp_coda_pbwg_assistance",
+            "wfp_coda_pbwg_assistance_followup",
         ]:
-            if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
+            if visit.get("next_visit__date__") is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
             elif (
                 visit.get("new_next_visit__date__", None) is not None
                 and visit.get("new_next_visit__date__", None) != ""
             ):
                 next_visit_date = visit.get("new_next_visit__date__", None)
+
+            elif (
+                visit.get("next_visit_date__date__", None) is not None
+                and visit.get("next_visit_date__date__", None) != ""
+            ):
+                next_visit_date = visit.get("next_visit_date__date__", None)
 
             if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
                 next_visit_days = visit.get("next_visit_days", None)
@@ -307,6 +314,12 @@ class ETL:
                 and visit.get("otp_next_visit") != "--"
             ):
                 next_visit_days = visit.get("otp_next_visit", None)
+            elif (
+                visit.get("number_of_days__int__") is not None
+                and visit.get("number_of_days__int__") != ""
+                and visit.get("number_of_days__int__") != "--"
+            ):
+                next_visit_days = visit.get("number_of_days__int__", None)
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
@@ -349,7 +362,8 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        followup_forms.append(default_admission_form)
+        if default_admission_form is not None:
+            followup_forms.append(default_admission_form)
         exit = None
 
         if visit["form_id"] in followup_forms:
@@ -367,6 +381,7 @@ class ETL:
         admission form(previous form) and next visit date in the antropometric followup visit form.
         When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
         Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+
         if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
             exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
@@ -375,13 +390,17 @@ class ETL:
 
         if (
             exit is not None
-            and current_journey.get("exit_type", None) is None
+            and exit.get("exit_type") is not None
+            and current_journey.get("exit_type") is None
             and current_journey.get("start_date") is not None
         ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
-                datetime.strptime(datetime.strftime(exit["end_date"], "%Y-%m-%d"), "%Y-%m-%d")
+                datetime.strptime(
+                    datetime.strftime(exit["end_date"], "%Y-%m-%d"),
+                    "%Y-%m-%d",
+                )
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
@@ -611,7 +630,7 @@ class ETL:
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
                 current_journey["weight_loss"] = visit.get("weight_loss", None)
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
                 current_journey = ETL().journey_Formatter(
@@ -643,7 +662,9 @@ class ETL:
             elif weight_difference < 0:
                 weight_loss = abs(weight_difference)
         return {
-            "initial_weight": (float(initial_weight) if initial_weight is not None else initial_weight),
+            "initial_weight": (
+                float(initial_weight) if initial_weight is not None and initial_weight != "" else initial_weight
+            ),
             "discharge_weight": (
                 float(current_weight) if current_weight is not None and current_weight != "" else current_weight
             ),

@@ -1,3 +1,4 @@
+import React, { useCallback, FunctionComponent } from 'react';
 import {
     Button,
     CircularProgress,
@@ -8,14 +9,12 @@ import {
     Typography,
 } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
-import React, { useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import PropTypes from 'prop-types';
 
 import { TextInput } from '../../../components/Inputs';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useStyles } from '../../../styles/theme';
 import {
@@ -25,11 +24,21 @@ import {
 } from './hooks/useGetPreparednessData';
 import MESSAGES from '../../../constants/messages';
 import { PreparednessSummary } from './PreparednessSummary';
+import { ObrName, PolioCampaignValues } from '../../../constants/types';
 
-export const PreparednessConfig = ({ roundNumber, campaignName }) => {
+type Props = {
+    roundNumber: number;
+    campaignName?: ObrName;
+};
+
+export const PreparednessConfig: FunctionComponent<Props> = ({
+    roundNumber,
+    campaignName,
+}) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, setFieldValue, dirty } = useFormikContext();
+    const { values, setFieldValue, dirty } =
+        useFormikContext<PolioCampaignValues>();
     const { rounds = [], id: campaignId } = values;
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
@@ -53,22 +62,21 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id, onGenerateSheetSuccess);
-    const {
-        preparedness_spreadsheet_url,
-        last_preparedness: preparednessForm,
-    } = currentRound;
+    const { preparedness_spreadsheet_url } = currentRound ?? {
+        preparedness_spreadsheet_url: undefined,
+    };
     const { data: lastPreparedness, isLoading } = useGetPreparednessData(
         campaignId,
         roundNumber,
     );
 
-    const preparednessData = preparednessForm ?? lastPreparedness;
+    const preparednessData = lastPreparedness;
 
     const previewMutation = useFetchPreparedness();
 
     const refreshData = () => {
         previewMutation.mutate(
-            { googleSheetURL: preparedness_spreadsheet_url, campaignName },
+            { googleSheetUrl: preparedness_spreadsheet_url, campaignName },
             {
                 onSuccess: data => {
                     setFieldValue(lastKey, data);
@@ -109,12 +117,12 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
                             className={classes.input}
                         />
                     </Grid>
-                    {preparedness_spreadsheet_url?.trim().length > 0 && (
+                    {(preparedness_spreadsheet_url?.trim().length ?? 0) > 0 && (
                         <>
                             <Grid item md={1}>
                                 <IconButton
                                     target="_blank"
-                                    href={preparedness_spreadsheet_url}
+                                    href={preparedness_spreadsheet_url ?? ''}
                                     color="primary"
                                 >
                                     <OpenInNewIcon />
@@ -175,7 +183,7 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
                         </Grid>
                     )}
                     {/* the padding bottom is a horrible quick fix to remove */}
-                    <Grid xd={12} item style={{ paddingBottom: 20 }}>
+                    <Grid xs={12} item style={{ paddingBottom: 20 }}>
                         {isLoading ||
                         previewMutation.isLoading ||
                         isGeneratingSpreadsheet ? (
@@ -204,13 +212,4 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
             </Grid>
         </Box>
     );
-};
-
-PreparednessConfig.defaultProps = {
-    campaignName: undefined,
-};
-
-PreparednessConfig.propTypes = {
-    roundNumber: PropTypes.number.isRequired,
-    campaignName: PropTypes.string,
 };

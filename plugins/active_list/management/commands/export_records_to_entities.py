@@ -177,7 +177,7 @@ class Command(BaseCommand):
                             "entityTypeId": ENTITY_TYPE_ID,
                         }
                     ]
-                    print(instance_body)
+
                     import_data(instance_body, record.import_source.user, "fileactive")
                     instance = Instance.objects.get(uuid=the_uuid)
                     process_instance_file(instance, instance_file, record.import_source.user)
@@ -185,7 +185,6 @@ class Command(BaseCommand):
                     record.save()
             except:
                 logger.exception("Error processing patient %s", patient.identifier_code)
-                continue
 
 
 def create_registration(patient):
@@ -265,7 +264,7 @@ def create_registration(patient):
             "entityTypeId": ENTITY_TYPE_ID,
         }
     ]
-    print(instance_body)
+
     import_data(instance_body, patient.last_record.import_source.user, "fileactive")
     instance = Instance.objects.get(uuid=the_uuid)
     process_instance_file(instance, instance_file, patient.last_record.import_source.user)

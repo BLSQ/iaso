@@ -48,6 +48,7 @@ services:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
+            ENKETO_SIGNING_SECRET: supersecret
             ENKETO_URL: http://enketo:8005/
             FAVICON_PATH:
             GOOGLE_API_KEY_BASE64:

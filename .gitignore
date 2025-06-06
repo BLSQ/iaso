@@ -199,3 +199,5 @@ plugins/snt-malaria
 .direnv
 CACHEDIR.TAG
 iaso_3_9_18
+
+iaso-enketo/

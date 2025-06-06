@@ -115,6 +115,7 @@ ENKETO = {
     "ENKETO_DEV": os.getenv("ENKETO_DEV"),
     "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
     "ENKETO_URL": os.getenv("ENKETO_URL"),
+    "ENKETO_SIGNING_SECRET": os.getenv("ENKETO_SIGNING_SECRET", os.getenv("SECRET_KEY")),
     "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }

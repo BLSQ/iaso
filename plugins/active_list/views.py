@@ -197,6 +197,7 @@ def upload(request):
             stored_path = default_storage.save(file_path, ContentFile(annotated_file.read()))
 
             request.session[f"validation_{validation_id}"] = {"file_path": stored_path}
+            answer["download_id"] = validation_id
         print("answer", answer)
         return JsonResponse(answer, status=RESPONSES[result]["status"])
 

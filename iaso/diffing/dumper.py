@@ -77,9 +77,10 @@ class Dumper:
         res = []
 
         header = ["externalId", "diff status", "type"]
+        sorted_fields = sorted(fields)
 
         diffable_fields = []
-        for field in fields:
+        for field in sorted_fields:
             if field.startswith(("groupset:", "group:")):
                 diffable_fields.append(field.split(":")[2])
             else:
@@ -98,7 +99,7 @@ class Dumper:
                 diff.status,
                 diff.org_unit.org_unit_type.name if diff.org_unit and diff.org_unit.org_unit_type else "",
             ]
-            for field in fields:
+            for field in sorted_fields:
                 comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                 results.append(comparison.status)
                 if field != "geometry":

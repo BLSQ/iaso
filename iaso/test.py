@@ -1,4 +1,6 @@
+import csv
 import importlib
+import io
 import typing
 
 from unittest import mock
@@ -11,6 +13,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -146,6 +149,12 @@ class IasoTestCaseMixin:
         )
         return org_unit
 
+    def load_fixture_with_jinja_template(self, path_to_fixtures: str, fixture_name: str, context: dict = {}) -> str:
+        # Loads a fixture with Jinja2 templating support - context contains all variables
+        env = Environment(loader=FileSystemLoader(path_to_fixtures))
+        template = env.get_template(fixture_name)
+        return template.render(context)
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
@@ -185,12 +194,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         expected_attachment_filename: str = None,
         streaming: bool = False,
     ):
-        if streaming:
-            self.assertIsInstance(response, StreamingHttpResponse)
-            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
-            self.assertIsInstance(list(response.streaming_content), list)
-        else:
-            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response["Content-Type"])
 
@@ -198,6 +201,41 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+        content = response.getvalue()
+
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
+        return content
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        decoded_response = content.decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
 
     def assertValidListData(
         self,

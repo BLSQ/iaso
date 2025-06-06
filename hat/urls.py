@@ -71,6 +71,7 @@ else:
         urlpatterns += [path("accounts/", include(provider_urlpatterns))]
 
     urlpatterns += [
+        path("", RedirectView.as_view(pattern_name="homepage", permanent=False), name="index"),
         path("robots.txt", robots_txt),
         path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
         path("_health/", health),

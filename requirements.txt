@@ -101,6 +101,8 @@ django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/
 # ------------------------------------------------------------------------------
 https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
+git+https://github.com/madewulf/spreadsheet-xlsform-validator#egg=django-xlsform-validator
+
 # ODK-specific libraries.
 # ------------------------------------------------------------------------------
 # pyxform depends on:
@@ -117,7 +119,7 @@ https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e
 # Since pyxform is used 2 times in Iaso for `create_survey_from_xls`, we should
 # get rid of it to upgrade to newer versions of Python and Pandas.
 # ------------------------------------------------------------------------------
-pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
+pyxform==2.0.3  # https://github.com/XLSForm/pyxform/tags
 
 # Bug fix for: "App Engine" was removed from `requests_toolbelt`.
 # ------------------------------------------------------------------------------
@@ -142,3 +144,6 @@ django-ses==2.6.1
 gpxpy==1.4.0
 snaql==0.4.2
 tsp-solver2==0.4.1
+
+# active_list plugin
+openhexa.sdk==0.3.1

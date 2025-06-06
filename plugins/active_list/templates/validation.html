@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <script>
+    var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+    var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+    </script>
+<h2>Validation File Active - Niveau District</h2>
+<div class="selectBox">
+    <label for="monthSelect">Période de rapportage</label>
+    <select id="monthSelect"></select>
+</div>
+    <div>
+        <label>Choisissez votre établissement:</label>
+        <div id="orgUnitContainer">
+            </div>
+    </div>
+
+
+    <div id="validation_form">
+        <h2>Validation</h2>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button id="validate_submit" type="submit">Submit</button>
+        </form>
+    </div>
+    <div class="overlay"></div>
+<div id="dataContainer">
+    <p>Complétude: <span id="completeness">-</span></p>
+    <div id="table-container"></div>
+</div>
+    <script src="{% static 'validation.js' %}">Œ
+    </script>
+{% endblock %}

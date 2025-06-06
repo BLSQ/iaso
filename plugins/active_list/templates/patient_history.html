@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+{%  load i18n %}
+{% block content %}
+<h2>Historique d'un patient: {{ patient.identifier_code }}</h2>
+<h3>Actif: {% if patient.active %}oui ✅{% else %}non ❌{% endif %}</h3>
+
+
+<div id="dataContainer">
+    <div id="table-container">
+        {% include "partials/patient_table.html"  %}
+    </div>
+</div>
+<script>
+$('#generatedTable').tablesorter()
+</script>
+{% endblock %}

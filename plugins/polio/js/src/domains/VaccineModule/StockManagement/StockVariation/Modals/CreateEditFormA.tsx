@@ -104,7 +104,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.campaign)}
                         name="campaign"
                         component={SingleSelect}
-                        required
                         options={campaignOptions}
                         withMarginTop
                         isLoading={isFetching}
@@ -116,7 +115,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.round)}
                         name="round"
                         component={SingleSelect}
-                        required
                         options={roundOptions}
                         withMarginTop
                         isLoading={isFetching}

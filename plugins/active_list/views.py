@@ -624,9 +624,10 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     # Create a copy of the form file content to avoid pyxform closing the original file
     form_version.xls_file.seek(0)
     form_file_content = form_version.xls_file.read()
-    
+
     # Create a fresh file object for pyxform validation
     from django.core.files.uploadedfile import SimpleUploadedFile
+
     validation_file = SimpleUploadedFile(
         "validation_form.xlsx",
         form_file_content,
@@ -642,14 +643,14 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     # Create a copy of the upload file content to avoid pyxform closing the original file
     file.seek(0)
     upload_file_content = file.read()
-    
+
     # Create a fresh file object for validation
     validation_upload_file = SimpleUploadedFile(
         file_name,
         upload_file_content,
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     )
-    
+
     result = validator.validate_spreadsheet(validation_upload_file)
     print("validation result", result)
     if not result["is_valid"]:
@@ -680,7 +681,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
             upload_file_content,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        
+
         i = Import(
             hash_key=h,
             file_name=file_name,
@@ -694,6 +695,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
         i.save()
         # Pass the content as BytesIO for pandas to read
         from io import BytesIO
+
         import_data(BytesIO(content), i)
     return result, None
 

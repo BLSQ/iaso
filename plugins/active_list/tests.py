@@ -5,7 +5,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
-from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Project, SourceVersion, Profile
+from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
 
 from .views import handle_upload
 
@@ -33,9 +33,8 @@ class ActiveListUploadTestCase(TestCase):
 
         # Create user with profile
         cls.user = User.objects.create_user(username="test_user", password="testpass123")
-        p = Profile(user= cls.user, account=cls.account)
+        p = Profile(user=cls.user, account=cls.account)
         p.save()
-
 
         # Create org unit types (hierarchy: Region -> District -> Health Facility)
         cls.region_type = OrgUnitType.objects.create(name="Region", short_name="REG")
@@ -74,7 +73,7 @@ class ActiveListUploadTestCase(TestCase):
         # Load the validation Excel file and store content for reuse
         with open("plugins/active_list/data/file_active_import_checker.xlsx", "rb") as xls_file:
             cls.validation_file_content = xls_file.read()
-        
+
         # Create FormVersion with a fresh file object
         cls.validation_form_version = cls.validation_form.form_versions.create(
             xls_file=SimpleUploadedFile(
@@ -102,7 +101,7 @@ class ActiveListUploadTestCase(TestCase):
         # Load the test import file
         with open("plugins/active_list/data/testimport.xlsx", "rb") as test_file:
             file_content = test_file.read()
-        
+
         # Create a fresh file object that won't be affected by pyxform's file handling
         uploaded_file = SimpleUploadedFile(
             "testimport.xlsx",

@@ -35,6 +35,10 @@ from .models import (
     PATIENT_HISTORY_DISPLAY_FIELDS,
     PATIENT_LIST_DISPLAY_FIELDS,
     SOURCE_EXCEL,
+    TREATMENT_1STLINE,
+    TREATMENT_2NDLINE,
+    TREATMENT_3RDLINE,
+    TREATMENT_LINE_UNKNOWN,
     VALIDATION_STATUS_CHOICES,
     Import,
     Patient,
@@ -662,6 +666,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         error_file = validator.create_highlighted_excel(error_file_obj, result["errors"])
+        print(FILE_DATA_PROBLEM, error_file)
         return FILE_DATA_PROBLEM, error_file
 
     content = upload_file_content
@@ -798,18 +803,19 @@ def import_data(file, the_import):
     df["sex"] = df["sex"].replace({"F": "FEMALE", "M": "MALE"})
     df["treatment_line"] = df["treatment_line"].replace(
         {
-            "1er Ligne": "1STLINE",
-            "2e Ligne": "2NDLINE",
-            "3e Ligne": "3RDLINE",
-            "1": "1STLINE",
-            "2": "2NDLINE",
-            "3": "3RDLINE",
-            1: "1STLINE",
-            2: "2NDLINE",
-            3: "3RDLINE",
+            "Ligne 1": TREATMENT_1STLINE,
+            "Ligne 2": TREATMENT_2NDLINE,
+            "Ligne 3": TREATMENT_3RDLINE,
+            "1": TREATMENT_1STLINE,
+            "2": TREATMENT_2NDLINE,
+            "3": TREATMENT_3RDLINE,
+            1: TREATMENT_1STLINE,
+            2: TREATMENT_2NDLINE,
+            3: TREATMENT_3RDLINE,
+            math.nan: TREATMENT_LINE_UNKNOWN,
         }
     )
-
+    print('df["treatment_line"] ', df["treatment_line"])
     df["REGIME"] = df["REGIME"].replace(
         {
             "TDF 3TC DTG": "TDF/3TC/DTG",
@@ -857,7 +863,7 @@ def import_data(file, the_import):
                 "code_ets": row["code_ets"],
                 "facility_name": row.get("facility_name") if row.get("facility_name") else "",
                 "period": row["period"],
-                "identifier_code": row["identifier_code"],
+                "identifier_code": row["identifier_code"].lower(),
                 "sex": row["sex"],
                 "age": row["AGE"],
                 "weight": row["weight"] if not math.isnan(row["weight"]) else None,

@@ -13,7 +13,13 @@ from django_xlsform_validator.validation import NamedBytesIO, XLSFormValidator
 from hat.sync.views import process_instance_file
 from iaso.api.instances.instances import import_data
 from iaso.models import Form, FormVersion, Instance
-from plugins.active_list.models import TREATMENT_1STLINE, TREATMENT_2NDLINE, TREATMENT_3RDLINE, Patient, Record
+from plugins.active_list.models import (
+    TREATMENT_1STLINE,
+    TREATMENT_2NDLINE,
+    TREATMENT_3RDLINE,
+    TREATMENT_LINE_UNKNOWN,
+    Patient,
+)
 
 
 logger = getLogger(__name__)
@@ -24,7 +30,12 @@ HIV_MAPPING = {
     "HIV2": "2",
 }
 
-LINE_MAPPING = {TREATMENT_1STLINE: "1", TREATMENT_2NDLINE: "2", TREATMENT_3RDLINE: "3"}
+TREATMENT_LINE_MAPPING = {
+    TREATMENT_1STLINE: "1",
+    TREATMENT_2NDLINE: "2",
+    TREATMENT_3RDLINE: "3",
+    TREATMENT_LINE_UNKNOWN: "4",
+}
 
 REGISTRY_FORM_ID = os.environ.get("REGISTRY_FORM_ID", 1)
 REGISTRY_FORM_VERSION = os.environ.get("REGISTRY_FORM_VERSION", "2025050304")
@@ -119,13 +130,13 @@ class Command(BaseCommand):
         parser.add_argument("--name", type=str, required=False, help="Campaign obr name")
 
     def handle(self, name=None, *args, **options):
-        records = Record.objects.filter(instance__isnull=True)
-        patients = Patient.objects.filter(last_record__in=records).distinct()
-
+        patients = Patient.objects.filter(records__instance__isnull=True).distinct()
         form = Form.objects.get(form_id="file_active_excel_validation")
 
         form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
 
+        registration_form = Form.objects.get(form_id="file_active_admission")
+        registration_form_version = FormVersion.objects.filter(form=registration_form).order_by("created_at").last()
         validator = XLSFormValidator()
         with open("plugins/active_list/data/file_active_import_checker.xlsx", "rb") as f:
             content = f.read()
@@ -136,9 +147,9 @@ class Command(BaseCommand):
         for patient in patients:
             try:
                 if not patient.entity:
-                    create_registration(patient)
+                    create_registration(patient, registration_form_version.version_id)
                     patient.refresh_from_db()
-                    print("patient should have an entity now", patient.entity)
+                    print("Entity created", patient.entity)
                 non_converted_records = patient.records.filter(instance__isnull=True)
                 for record in non_converted_records:
                     d = model_to_dict(record)
@@ -148,9 +159,8 @@ class Command(BaseCommand):
                     print("d_converted", d_converted)
                     d_converted["identifier_code"] = patient.identifier_code
 
-                    xml_result = validator.generate_xml_from_dict(d_converted)
-                    ######## TO DELETE after doing it more cleanly ##########
-                    xml_result = xml_result.replace("1.0", form_version.version_id)
+                    xml_result = validator.generate_xml_from_dict(d_converted, version=form_version.version_id)
+                    ######## TODO: TO DELETE after doing it more cleanly ##########
                     xml_result = xml_result.replace("{'instanceID': None}", "")
                     xml_result = xml_result.replace("None", "data")
                     ######## TO DELETE ##########
@@ -187,7 +197,7 @@ class Command(BaseCommand):
                 logger.exception("Error processing patient %s", patient.identifier_code)
 
 
-def create_registration(patient):
+def create_registration(patient, version):  # to refactor to work as the excel import using generate_xml_from_dict
     xml = xml_template
     # f.close()
     the_uuid = str(uuid.uuid4())
@@ -208,7 +218,7 @@ def create_registration(patient):
     hiv_type = HIV_MAPPING.get(patient.last_record.hiv_type, "1")  ###### shouldn't have a 1 as default
 
     variables = {
-        "REGISTRY_FORM_VERSION": REGISTRY_FORM_VERSION,
+        "REGISTRY_FORM_VERSION": version,
         "adm_statut_patient": "nv",
         "statut_patient": "nv",
         "code_patient": identifier_code,
@@ -233,7 +243,7 @@ def create_registration(patient):
         "tb_vih": tb_vih,
         "adm_type_vih": hiv_type,
         "type_vih": hiv_type,
-        "adm_ligne_thera": "1" if patient.last_record.treatment_line == "" else 2,  # à corriger
+        "adm_ligne_thera": TREATMENT_LINE_MAPPING.get(patient.last_record.treatment_line, "4"),  # 4 is unknown
         "adm_resp_ex": patient.last_record.import_source.user.username
         if patient.last_record.import_source.user
         else "",
@@ -311,7 +321,9 @@ def convert_to_xml_schema(original_dict):
 
     def convert_treatment_line(treatment_line):
         """Converts treatment line string to a standardized code."""
-        treatment_line = LINE_MAPPING.get(treatment_line, "1")  # FIXME there should probably not be a default here
+        treatment_line = TREATMENT_LINE_MAPPING.get(
+            treatment_line, "4"
+        )  # FIXME there should probably not be a default here
         return treatment_line
 
     def convert_month_format(date_string):

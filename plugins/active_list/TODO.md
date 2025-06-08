@@ -6,12 +6,16 @@ TODO list for Active List Plugin
 - bi-directional data exchange with IASO entities
   - Record to xlsforms
     - Registration ✅
-    - Suivi
+    - Suivi ✅
   - submissions to IASO
     - Registration ✅
     - Suivi 
 - Check permissions per person based on org units
+- Validate ETS code at record upload (should be matching the org unit)
+- Handle correctly status when uploading records via excel (nv, etc .... )
+- Think of what to do with records that are created twice (prevent reentry of the exact same record? )
 - Ensure that period in excel imports are the same as the one declared in the web ui
 - Adding indicators on the validation screen
 - Update superset dashboards
 - Test all import examples that we got
+- Excel import should update the reference form of entities !!!!

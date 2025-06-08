@@ -113,7 +113,7 @@ fields_to_include = [
 
 
 class Command(BaseCommand):
-    help = """Finds all records without an entity and creates a registration for them."""
+    help = """Finds all records without a submission and creates it."""
 
     def add_arguments(self, parser: ArgumentParser):
         parser.add_argument("--name", type=str, required=False, help="Campaign obr name")
@@ -270,6 +270,9 @@ def create_registration(patient):
     process_instance_file(instance, instance_file, patient.last_record.import_source.user)
     patient.entity = instance.entity
     patient.save()
+
+    patient.last_record.instance = instance
+    patient.last_record.save()
 
 
 def convert_to_xml_schema(original_dict):

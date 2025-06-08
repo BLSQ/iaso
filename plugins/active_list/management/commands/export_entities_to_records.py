@@ -77,10 +77,6 @@ def create_patient_and_first_record(instance, import_source):
     """
     Processes the file_content of a submission (assumed to be an Import instance)
     to create a Patient and their first Record if the patient doesn't exist.
-
-    Args:
-        instance: An instance of the Import model (or whatever model
-                                   Record.import_source points to).
     """
     file_content = instance.json
     org_unit = instance.org_unit
@@ -97,8 +93,6 @@ def create_patient_and_first_record(instance, import_source):
 
     # --- 2. Fetch Related OrgUnit ---
     code_ets = file_content.get("code_ets")
-    if not code_ets:
-        raise DataImportError("Facility code ('code_ets') is missing from file_content.")
 
     try:
         with transaction.atomic():
@@ -108,7 +102,6 @@ def create_patient_and_first_record(instance, import_source):
                 identifier_code=patient_identifier_code,
                 defaults={
                     "active": True,
-                    # Set entity if OrgUnit has a link to it, otherwise it remains null
                     "entity": instance.entity,
                 },
             )
@@ -148,8 +141,9 @@ def create_patient_and_first_record(instance, import_source):
             # Patient status mapping for boolean fields
             statut_patient = file_content.get("adm_statut_patient", "").lower()  # Use adm_statut_patient
             new_inclusion = statut_patient == "nv"
-            transfer_in = statut_patient == "tin"  # Make sure 'tin' is your code for transfer in
-            return_to_care = statut_patient == "rc"  # Make sure 'rc' is your code for return to care
+            transferred_elsewhere = statut_patient == "sa"
+            transfer_in = statut_patient == "ti"
+            return_to_care = False
 
             # Integer conversions with checks
             try:
@@ -217,7 +211,7 @@ def create_patient_and_first_record(instance, import_source):
                 transfer_out=False,
                 death=False,
                 art_stoppage=False,
-                served_elsewhere=False,
+                served_elsewhere=transferred_elsewhere,  # not sure it's the right field, but it seems to fit
                 instance=instance,
             )
             print(f"Record {record.id} created for patient '{patient.identifier_code}'.")

@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { QueryBuilderFields, useSafeIntl } from 'bluesquare-components';
 
 import { findDescriptorInChildren } from '../../../../utils';
@@ -71,12 +72,12 @@ const calculateMapping: { suffix: CalculateFieldSuffix; type: FieldType }[] = [
     },
 ];
 
-export const useGetQueryBuildersFields = (
+export const getQueryBuildersFields = (
+    formatMessage: (msg: any) => string,
     formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
     configFields: Field[] = iasoFields,
 ): QueryBuilderFields => {
-    const { formatMessage } = useSafeIntl();
     if (!possibleFields || !formDescriptors) return {};
     // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
     const fields: QueryBuilderFields = {};
@@ -143,29 +144,49 @@ export const useGetQueryBuildersFields = (
     );
 };
 
+export const useGetQueryBuildersFields = (
+    formDescriptors?: FormDescriptor[],
+    possibleFields?: PossibleField[],
+    configFields: Field[] = iasoFields,
+): QueryBuilderFields => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () =>
+            getQueryBuildersFields(
+                formatMessage,
+                formDescriptors,
+                possibleFields,
+                configFields,
+            ),
+        [formatMessage, formDescriptors, possibleFields, configFields],
+    );
+};
+
 export const useGetQueryBuilderFieldsForAllForms = (
     formDescriptors?: FormDescriptor[],
     allPossibleFields?: PossibleFieldsForForm[],
 ): QueryBuilderFields => {
+    const { formatMessage } = useSafeIntl();
     if (!allPossibleFields || !formDescriptors) return {};
-    const fields: QueryBuilderFields = {};
-
-    for (const { form_id, name, possibleFields } of allPossibleFields) {
-        const subfields = useGetQueryBuildersFields(
-            formDescriptors,
-            possibleFields,
-        );
-
-        fields[form_id] = {
-            label: name,
-            type: '!group',
-            mode: 'array',
-            conjunctions: ['AND', 'OR'],
-            operators: ['some', 'all', 'none'],
-            defaultOperator: 'some',
-            subfields,
-        };
-    }
-
-    return fields;
+    const reducedFields: QueryBuilderFields = {};
+    return allPossibleFields.reduce(
+        (fields, { form_id, name, possibleFields }) => ({
+            ...fields,
+            [form_id]: {
+                label: name,
+                type: '!group',
+                mode: 'array',
+                conjunctions: ['AND', 'OR'],
+                operators: ['some', 'all', 'none'],
+                defaultOperator: 'some',
+                subfields: getQueryBuildersFields(
+                    formatMessage,
+                    formDescriptors,
+                    possibleFields,
+                    iasoFields,
+                ),
+            },
+        }),
+        reducedFields,
+    );
 };

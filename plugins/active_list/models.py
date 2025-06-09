@@ -129,7 +129,7 @@ class Patient(models.Model):
             "last_record:",
             self.last_record,
         )
-        if self.active and self.last_record and self.last_record.next_dispensation_date:
+        if self.last_record and self.last_record.next_dispensation_date:
             print(
                 "Last record next_dispensation_date:",
                 self.last_record.next_dispensation_date,
@@ -149,7 +149,12 @@ class Patient(models.Model):
                     )
                     event.save()
                     print("Patient inactive event saved:", event)
-                    self.save()
+            else:
+                self.active = True
+                self.loss_date = None
+            if save:
+                self.save()
+                print("Patient status saved. Active:", self.active, "Loss date:", self.loss_date)
 
         return self.active
 

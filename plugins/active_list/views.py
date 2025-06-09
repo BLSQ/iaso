@@ -557,6 +557,41 @@ def patient_list_api(request, org_unit_id, month):
 
 
 @login_required
+def patient_list_upload_format_api(request, org_unit_id, month):
+    """API endpoint to export patient data in upload-compatible Excel format"""
+    mode = request.GET.get("mode", "default")
+    last_import = None
+
+    # Same data retrieval logic as patient_list_api
+    if mode == "default":
+        last_import = Import.objects.filter(org_unit=org_unit_id)
+        last_import = last_import.filter(month=month).order_by("-creation_date").first()
+        records = Record.objects.filter(import_source=last_import).order_by("number")
+    elif mode == "expected":
+        records = Record.objects.filter(org_unit_id=org_unit_id)
+        records = filter_expected_patients_for_the_month(records, month).order_by("next_dispensation_date")
+    elif mode == "active":
+        record_ids = (
+            Patient.objects.filter(active=True)
+            .filter(last_record__org_unit_id=org_unit_id)
+            .values_list("last_record__id", flat=True)
+        )
+        records = Record.objects.filter(id__in=record_ids).order_by("number")
+    elif mode == "lost":
+        first_day, last_day = get_first_and_last_day(month)
+        inactive_events = (
+            PatientInactiveEvent.objects.filter(org_unit_id=org_unit_id)
+            .filter(date__gte=first_day)
+            .filter(date__lte=last_day)
+        )
+        records = [event.last_patient_record_at_time_of_loss for event in inactive_events]
+
+    # Always export in upload-compatible Excel format
+    org_unit = OrgUnit.objects.get(pk=org_unit_id)
+    return export_active_patients_upload_format(records, org_unit.name, month)
+
+
+@login_required
 def patient_search_api(request):
     """
     View to handle search functionality for patients.
@@ -587,6 +622,7 @@ def patient_search_api(request):
 
 
 def export_active_patients_excel(active_patients, name, period):
+    """Export patients in current display format (original functionality)"""
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
 
@@ -601,6 +637,142 @@ def export_active_patients_excel(active_patients, name, period):
 
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = 'attachment; filename="active_patients-%s-%s.xlsx"' % (name, period)
+    workbook.save(response)
+    return response
+
+
+def export_active_patients_upload_format(active_patients, name, period):
+    """Export patients in upload-compatible format"""
+    workbook = openpyxl.Workbook()
+    worksheet = workbook.active
+
+    # Define upload-compatible headers (matching the upload format)
+    upload_headers = [
+        "N°",
+        "CODE ETS",
+        "SITES",
+        "Periode",
+        "REGION",
+        "DISTRICT",
+        "CODE IDENTIFIANT",
+        "SEXE",
+        "AGE",
+        "POIDS",
+        "Nouvelle inclusion",
+        "Transfert-In",
+        "Retour dans les soins",
+        "TB / VIH",
+        "Type de VIH",
+        "Ligne thérapeutique",
+        "Date de la dernière dispensation",
+        "Nombre de jours dispensés",
+        "REGIME",
+        "STABLE",
+        "Transfert Out",
+        "Décès",
+        "Arrêt TARV",
+        "Servi ailleurs",
+    ]
+
+    # Add headers to worksheet
+    for col_num, header in enumerate(upload_headers, 1):
+        worksheet.cell(row=1, column=col_num).value = header
+
+    # Helper function to convert YYYY-MM period to Mon-YY format
+    def convert_yyyymm_to_file_format(yyyymm_period):
+        """Convert YYYY-MM format to Mon-YY format (e.g., 2024-06 -> Jun-24)"""
+        try:
+            from datetime import datetime
+
+            # Parse the YYYY-MM format
+            dt = datetime.strptime(yyyymm_period, "%Y-%m")
+            # Format as Mon-YY (e.g., Jun-24)
+            return dt.strftime("%b-%y")
+        except ValueError:
+            return yyyymm_period  # Return original if parsing fails
+
+    # Convert period to upload format
+    file_period = convert_yyyymm_to_file_format(period)
+
+    # Add data rows
+    for row_num, patient in enumerate(active_patients, 2):
+        # N°
+        worksheet.cell(row=row_num, column=1).value = getattr(patient, "number", row_num - 1)
+
+        # CODE ETS
+        worksheet.cell(row=row_num, column=2).value = getattr(patient, "code_ets", "")
+
+        # NOM ETABLISSEMENT
+        worksheet.cell(row=row_num, column=3).value = getattr(patient, "facility_name", "")
+
+        # MOIS DE RAPPORTAGE (in Mon-YY format)
+        worksheet.cell(row=row_num, column=4).value = file_period
+
+        # REGION
+        worksheet.cell(row=row_num, column=5).value = getattr(patient, "region", "")
+
+        # DISTRICT
+        worksheet.cell(row=row_num, column=6).value = getattr(patient, "district", "")
+
+        # CODE IDENTIFIANT
+        worksheet.cell(row=row_num, column=7).value = (
+            getattr(patient.patient, "identifier_code", "") if hasattr(patient, "patient") else ""
+        )
+
+        # SEXE
+        worksheet.cell(row=row_num, column=8).value = get_human_readable_value(patient, "sex")
+
+        # AGE
+        worksheet.cell(row=row_num, column=9).value = get_human_readable_value(patient, "age")
+
+        # POIDS
+        worksheet.cell(row=row_num, column=10).value = get_human_readable_value(patient, "weight")
+
+        # Nouvelle inclusion (convert boolean to 0/1)
+        worksheet.cell(row=row_num, column=11).value = 1 if getattr(patient, "new_inclusion", False) else 0
+
+        # Transfert-In
+        worksheet.cell(row=row_num, column=12).value = 1 if getattr(patient, "transfer_in", False) else 0
+
+        # Retour dans les soins
+        worksheet.cell(row=row_num, column=13).value = 1 if getattr(patient, "return_to_care", False) else 0
+
+        # TB / VIH
+        worksheet.cell(row=row_num, column=14).value = 1 if getattr(patient, "tb_hiv", False) else 0
+
+        # Type de VIH
+        worksheet.cell(row=row_num, column=15).value = get_human_readable_value(patient, "hiv_type")
+
+        # Ligne thérapeutique
+        worksheet.cell(row=row_num, column=16).value = get_human_readable_value(patient, "treatment_line")
+
+        # Date de la dernière dispensation
+        worksheet.cell(row=row_num, column=17).value = get_human_readable_value(patient, "last_dispensation_date")
+
+        # Nombre de jours dispensés
+        worksheet.cell(row=row_num, column=18).value = get_human_readable_value(patient, "days_dispensed")
+
+        # REGIME
+        worksheet.cell(row=row_num, column=19).value = getattr(patient, "regimen", "")
+
+        # STABLE (convert boolean to Oui/Non)
+        stable_val = getattr(patient, "stable", False)
+        worksheet.cell(row=row_num, column=20).value = "Oui" if stable_val else "Non"
+
+        # Transfert Out
+        worksheet.cell(row=row_num, column=21).value = 1 if getattr(patient, "transfer_out", False) else 0
+
+        # Décès
+        worksheet.cell(row=row_num, column=22).value = 1 if getattr(patient, "death", False) else 0
+
+        # Arrêt TARV
+        worksheet.cell(row=row_num, column=23).value = 1 if getattr(patient, "art_stoppage", False) else 0
+
+        # Servi ailleurs
+        worksheet.cell(row=row_num, column=24).value = 1 if getattr(patient, "served_elsewhere", False) else 0
+
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = 'attachment; filename="upload_format-%s-%s.xlsx"' % (name, period)
     workbook.save(response)
     return response
 
@@ -818,6 +990,7 @@ def import_data(file, the_import):
             "CODE ETS": "code_ets",
             "CODE": "code_ets",
             "NOM ETABLISSEMENT": "facility_name",
+            "SITES": "facility_name",
             "Periode": "period",
             "MOIS DE RAPPORTAGE": "period",
             "CODE IDENTIFIANT": "identifier_code",

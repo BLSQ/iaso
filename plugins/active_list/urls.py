@@ -23,6 +23,11 @@ urlpatterns = [
     path("homepage/", views.homepage, name="homepage"),
     path("patient_list/", views.patient_list, name="patient_list"),
     path("patient_list_api/<int:org_unit_id>/<str:month>/", views.patient_list_api, name="patient_list_api"),
+    path(
+        "patient_list_upload_format/<int:org_unit_id>/<str:month>/",
+        views.patient_list_upload_format_api,
+        name="patient_list_upload_format_api",
+    ),
     path("upload/", views.upload, name="upload"),
     path("download/", views.download, name="download"),
     path("validation_api/<int:org_unit_id>/<str:month>/", views.validation_api, name="validation_api"),

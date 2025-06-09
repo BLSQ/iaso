@@ -265,8 +265,8 @@ class CodeETSValidationTestCase(TestCase):
         data = {
             "N°": [1],
             "CODE ETS": [code_ets_value],
-            "NOM ETABLISSEMENT": ["Test Hospital"],
-            "MOIS DE RAPPORTAGE": [period],
+            "SITES": ["Test Hospital"],
+            "Periode": [period],
             "CODE IDENTIFIANT": ["PAT001"],
             "SEXE": ["M"],
             "AGE": [30],
@@ -473,8 +473,8 @@ class CodeETSValidationTestCase(TestCase):
         data = {
             "N°": [1, 2],
             "CODE ETS": ["CODE001", "CODE001"],
-            "NOM ETABLISSEMENT": ["Test Hospital", "Test Hospital"],
-            "MOIS DE RAPPORTAGE": ["May-24", "Jul-24"],  # Different periods
+            "SITES": ["Test Hospital", "Test Hospital"],
+            "Periode": ["May-24", "Jul-24"],  # Different periods
             "CODE IDENTIFIANT": ["PAT001", "PAT002"],
             "SEXE": ["M", "F"],
             "AGE": [30, 25],

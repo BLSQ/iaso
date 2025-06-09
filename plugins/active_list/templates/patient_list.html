@@ -1,47 +1,121 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-    <script>
-      var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
-      var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
-    </script>
-    <h2>Listing des patients</h2>
+{% block title %}Listing des patients - SNGD-FILE ACTIVE{% endblock %}
 
-    <br/>
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'homepage' %}"><i class="fas fa-home"></i> Accueil</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>Listing des patients</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<script>
+  var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+  var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+</script>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-users"></i>
+            Listing des patients
+        </h2>
+        <p class="mb-0 text-secondary">Consulter et gérer la liste des patients par établissement et période</p>
+    </div>
+    
     <div class="controls-container">
-        <select id="modeSelect">
-            <option value="default" selected=>Dernier import pour le mois</option>
-            <option value="expected">Patients attendus durant le mois</option>
-            <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
-            <option value="active">File active</option>
-        </select>
-        <br/><br/>
-        <div>
-            <label for="monthSelect">Période de rapportage:</label>
-            <select id="monthSelect">
+        <div class="form-group">
+            <label for="modeSelect">Mode d'affichage:</label>
+            <select id="modeSelect" class="form-control">
+                <option value="default" selected>Dernier import pour le mois</option>
+                <option value="expected">Patients attendus durant le mois</option>
+                <option value="lost">Patients perdus (date de rupture dépassée aujourd'hui)</option>
+                <option value="active">File active</option>
             </select>
         </div>
 
-        <div>
-            <label>Choisissez votre établissement:</label>
+        <div class="form-group">
+            <label for="monthSelect">Période de rapportage:</label>
+            <select id="monthSelect" class="form-control">
+                <!-- Options populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Établissement:</label>
             <div id="orgUnitContainer">
+                <!-- Org unit selects populated by JavaScript -->
             </div>
         </div>
+    </div>
+</div>
 
-        <div>
+<div class="card" id="dataContainer">
+    <div class="card-header">
+        <div class="flex items-center justify-between">
+            <h3 class="card-title mb-0">Résultats</h3>
+            <div class="table-actions">
+                <a href="" id="excel_link" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-file-excel"></i>
+                    Télécharger Excel
+                </a>
+            </div>
         </div>
     </div>
-    <div id="dataContainer">
-        <a href="" id="excel_link">Télécharger en Excel</a>
-        <div id="nodata"><strong>Pas de données pour cette sélection</strong></div>
-        <div id="table-container"></div>
+    
+    <div id="nodata" class="alert alert-info" style="display: none; margin: 1.5rem;">
+        <i class="fas fa-info-circle"></i>
+        <strong>Aucune donnée disponible pour cette sélection</strong>
+        <p class="mb-0">Veuillez ajuster vos critères de recherche ou vérifier qu'il y a des données pour la période sélectionnée.</p>
     </div>
-    <script>
-      // It's often better to get URLs via a dedicated API endpoint
-      // But for simplicity, we can define them here or pass from Django context
+    
+    <div id="table-container" class="table-responsive">
+        <!-- Table populated by JavaScript -->
+    </div>
+    
+    <div id="loading" class="text-center" style="display: none; padding: 2rem;">
+        <div class="loader"></div>
+        <p class="text-secondary mt-2">Chargement des données...</p>
+    </div>
+</div>
+{% endblock %}
 
-    </script>
-    <script src="{% static 'utils.js' %}"></script>
-    <script src="{% static 'patient_list_dynamic.js' %}"></script>
+{% block extra_js %}
+<script src="{% static 'utils.js' %}"></script>
+<script src="{% static 'patient_list_dynamic.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-control {
+    width: 100%;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-responsive table {
+    min-width: 800px;
+}
+
+#dataContainer.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert i {
+    margin-top: 0.125rem;
+    font-size: 1.125rem;
+}
+</style>
 {% endblock %}

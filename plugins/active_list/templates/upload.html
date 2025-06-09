@@ -1,37 +1,186 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-    <script>
-      var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
-      var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
-    </script>
-    <h2>Envoi des rapports de la file active</h2>
+{% block title %}Charger les données - SNGD-FILE ACTIVE{% endblock %}
 
-    <br/>
-    <div>
-        <div>Période de rapportage</div>
-        <select id="monthSelect"></select><br/><br/>
-        <div><label>Choisissez votre établissement:</label>
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'homepage' %}"><i class="fas fa-home"></i> Accueil</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>Charger les données</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<script>
+  var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+  var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+</script>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-upload"></i>
+            Envoi des rapports de la file active
+        </h2>
+        <p class="mb-0 text-secondary">Importez vos rapports Excel de la file active dans le système</p>
+    </div>
+    
+    <!-- Configuration Section -->
+    <div class="controls-container">
+        <div class="form-group">
+            <label for="monthSelect">Période de rapportage:</label>
+            <select id="monthSelect" class="form-control">
+                <!-- Options populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Établissement:</label>
             <div id="orgUnitContainer">
+                <!-- Org unit selects populated by JavaScript -->
             </div>
         </div>
-        <span id="link">
-        Sélectionnez un fichier excel à envoyer:
-          <form action="/" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="file" name="file"/>
-                <input type="hidden" name="org_unit_id" id="org_unit_id"/>
-                <input type="hidden" name="bypass" id="bypass"/>
-                <input type="hidden" name="period" id="period"/>
-                <input type="submit" value="Envoyer"/>
-          </form>
-    </span>
-        <div id="loader-container">
-            <div class="loader" id="loader"></div>
-        </div>
     </div>
+</div>
 
-    <script src="{% static 'upload.js' %}">
-    </script>
+<!-- Upload Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-file-excel"></i>
+            Sélectionner le fichier
+        </h3>
+    </div>
+    
+    <div id="uploadSection">
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <div>
+                <strong>Instructions:</strong>
+                <ul class="mb-0 mt-1">
+                    <li>Sélectionnez d'abord la période et l'établissement</li>
+                    <li>Choisissez un fichier Excel (.xlsx) contenant les données de la file active</li>
+                    <li>Assurez-vous que le format du fichier correspond au modèle standard</li>
+                </ul>
+            </div>
+        </div>
+        
+        <form action="/" method="post" enctype="multipart/form-data" class="form-container">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="file">Fichier Excel à envoyer:</label>
+                <input type="file" 
+                       name="file" 
+                       id="file"
+                       accept=".xlsx,.xls" 
+                       class="form-control"
+                       required>
+                <small class="text-secondary">Formats acceptés: .xlsx, .xls</small>
+            </div>
+            
+            <input type="hidden" name="org_unit_id" id="org_unit_id"/>
+            <input type="hidden" name="bypass" id="bypass"/>
+            <input type="hidden" name="period" id="period"/>
+            
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <i class="fas fa-upload"></i>
+                    Envoyer le fichier
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Loading State -->
+    <div id="loadingSection" class="text-center" style="display: none; padding: 2rem;">
+        <div class="loader"></div>
+        <p class="text-secondary mt-2">Traitement du fichier en cours...</p>
+        <p class="text-secondary">Veuillez patienter, cette opération peut prendre quelques minutes.</p>
+    </div>
+    
+    <!-- Success/Error Messages -->
+    <div id="messageContainer"></div>
+</div>
+
+<!-- Help Section -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-question-circle"></i>
+            Aide et support
+        </h3>
+    </div>
+    
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        <div>
+            <h4><i class="fas fa-download text-primary"></i> Modèle de fichier</h4>
+            <p class="text-secondary">Téléchargez le modèle Excel standard pour vous assurer que votre fichier est au bon format.</p>
+            <a href="{% static 'exemple_fichier_valide.xlsx' %}" class="btn btn-outline">
+                <i class="fas fa-download"></i>
+                Télécharger le modèle
+            </a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'upload.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-container {
+    padding: 0;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+#uploadSection {
+    transition: opacity 0.3s ease;
+}
+
+#uploadSection.loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.grid h4 {
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert ul {
+    padding-left: 1.5rem;
+}
+
+.alert li {
+    margin-bottom: 0.25rem;
+}
+
+input[type="file"] {
+    border: 2px dashed var(--border-color);
+    background-color: var(--background);
+    padding: 1.5rem;
+    text-align: center;
+    border-radius: var(--border-radius);
+    transition: border-color 0.2s ease;
+}
+
+input[type="file"]:hover {
+    border-color: var(--primary-color);
+}
+
+input[type="file"]:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1);
+}
+</style>
 {% endblock %}

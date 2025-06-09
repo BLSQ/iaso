@@ -1,29 +1,117 @@
 {% load static %}
-<html>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-    <link rel="icon" href="{%  static 'FA-logo.png' %}" type="image/png"/>
-
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SNGD-FILE ACTIVE{% endblock %}</title>
+    
+    <link rel="icon" href="{% static 'FA-logo.png' %}" type="image/png"/>
+    
+    <!-- External CDN for better performance -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Local assets -->
     <script src="{% static 'jquery-3.6.4.min.js' %}"></script>
     <link rel="stylesheet" href="{% static 'theme.default.min.css' %}">
-
     <script type="text/javascript" src="{% static 'jquery.tablesorter.min.js' %}"></script>
     <script src="{% static 'utils.js' %}"></script>
     <link rel="stylesheet" type="text/css" href="{% static 'active_list.css' %}"/>
+    
+    <!-- Additional block for page-specific styles -->
+    {% block extra_css %}{% endblock %}
 </head>
 <body>
-<div id="header">
-        <div id="logout"><a href="/dashboard/">Admin</a> - Utilisateur: {{ request.user }} - <a href="{% url 'logout-iaso' %}">Déconnexion</a></div>
-    <div> <img src="{% static 'logos.png' %}" alt="Logo" height="70px" ></div>
-    <div><a href="{% url 'homepage' %}">Page d'accueil</a></div>
-</div>
-<div id="container">
+    <!-- Navigation Header -->
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <img src="{% static 'logos.png' %}" alt="Logo" class="navbar-logo">
+                <a href="{% url 'homepage' %}" class="navbar-title">
+                    <i class="fas fa-home"></i>
 
-    {% block content %}
+                </a>
+            </div>
+            
+            <!-- Mobile menu button -->
+            <button class="navbar-toggle" id="navbar-toggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <div class="navbar-menu" id="navbar-menu">
+                <div class="navbar-nav">
+                    <a href="{% url 'patient_list' %}" class="nav-link">
+                        <i class="fas fa-users"></i> Patients
+                    </a>
+                    <a href="{% url 'validation' %}" class="nav-link">
+                        <i class="fas fa-check-circle"></i> Validation
+                    </a>
+                    <a href="{% url 'upload' %}" class="nav-link">
+                        <i class="fas fa-upload"></i> Charger
+                    </a>
+                    <a href="{% url 'patient_search' %}" class="nav-link">
+                        <i class="fas fa-search"></i> Rechercher
+                    </a>
+                </div>
+                
+                <div class="navbar-user">
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span>{{ request.user }}</span>
+                    </div>
+                    <div class="user-actions">
+                        <a href="/dashboard/" class="nav-link">
+                            <i class="fas fa-cog"></i> Admin
+                        </a>
+                        <a href="{% url 'logout-iaso' %}" class="nav-link logout">
+                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
 
-    {% endblock %}
-</div>
-    <div id="footer"> <img src="{% static 'footer-logos.png' %}" alt="Logo" height="70px" ></div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Breadcrumb navigation -->
+            {% block breadcrumb %}{% endblock %}
+            
+            <!-- Page content -->
+            {% block content %}{% endblock %}
+        </div>
+    </main>
 
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <img src="{% static 'footer-logos.png' %}" alt="Footer Logo" class="footer-logo">
+            <div class="footer-text">
+                <p>&copy; {% now "Y" %} SNGD-FILE ACTIVE. Tous droits réservés.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mobile menu script -->
+    <script>
+        document.getElementById('navbar-toggle').addEventListener('click', function() {
+            document.getElementById('navbar-menu').classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const navbar = document.getElementById('navbar-menu');
+            const toggle = document.getElementById('navbar-toggle');
+            
+            if (!navbar.contains(event.target) && !toggle.contains(event.target)) {
+                navbar.classList.remove('active');
+            }
+        });
+    </script>
+    
+    <!-- Additional block for page-specific scripts -->
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

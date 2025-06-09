@@ -11,7 +11,7 @@ from django.test import TestCase, override_settings
 
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
 
-from .views import ERROR_WRONG_CODE, handle_upload, import_data
+from .views import ERROR_WRONG_CODE, ERROR_WRONG_PERIOD, handle_upload, import_data
 
 
 User = get_user_model()
@@ -259,14 +259,14 @@ class CodeETSValidationTestCase(TestCase):
         )
         cls.project.unit_types.add(cls.hf_type)
 
-    def create_test_excel_file(self, code_ets_value):
-        """Helper method to create a test Excel file with specific CODE ETS value"""
+    def create_test_excel_file(self, code_ets_value, period="Jun-24"):
+        """Helper method to create a test Excel file with specific CODE ETS value and period"""
         # Create test data
         data = {
             "N°": [1],
             "CODE ETS": [code_ets_value],
             "NOM ETABLISSEMENT": ["Test Hospital"],
-            "MOIS DE RAPPORTAGE": ["2024-06"],
+            "MOIS DE RAPPORTAGE": [period],
             "CODE IDENTIFIANT": ["PAT001"],
             "SEXE": ["M"],
             "AGE": [30],
@@ -297,7 +297,7 @@ class CodeETSValidationTestCase(TestCase):
         excel_buffer.seek(0)
         return excel_buffer.getvalue()
 
-    def create_mock_import(self, org_unit):
+    def create_mock_import(self, org_unit, month="2024-06"):
         """Helper method to create a mock Import object"""
         from .models import SOURCE_EXCEL, Import
 
@@ -305,7 +305,7 @@ class CodeETSValidationTestCase(TestCase):
             hash_key="test_hash",
             file_name="test.xlsx",
             org_unit=org_unit,
-            month="2024-06",
+            month=month,
             file_check="OK",
             source=SOURCE_EXCEL,
             user=self.user,
@@ -433,6 +433,146 @@ class CodeETSValidationTestCase(TestCase):
         # Should return error since case doesn't match
         self.assertIsInstance(result, dict, "Should return error for case mismatch")
         self.assertEqual(result["error"], ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE for case mismatch")
+
+    def test_period_validation_success(self):
+        """Test that validation passes when period in file matches selected period"""
+        # Create Excel file with matching period (Jun-24 corresponds to 2024-06)
+        excel_content = self.create_test_excel_file("CODE001", period="Jun-24")
+        
+        # Create mock import with corresponding YYYY-MM period
+        mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
+        
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+        
+        # Should not return an error (function returns None on success)
+        self.assertIsNone(result, "Period validation should pass when periods match")
+
+    def test_period_validation_failure(self):
+        """Test that validation fails when period in file doesn't match selected period"""
+        # Create Excel file with different period (May-24 instead of Jun-24)
+        excel_content = self.create_test_excel_file("CODE001", period="May-24")
+        
+        # Create mock import with different period (2024-06 = Jun-24)
+        mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
+        
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+        
+        # Should return detailed error information
+        self.assertIsInstance(result, dict, "Should return error details as dictionary")
+        self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD")
+        self.assertIn("May-24", result["file_periods"], "Should include the file period")
+        self.assertEqual(result["selected_period_yyyymm"], "2024-06", "Should include selected period in YYYY-MM")
+        self.assertEqual(result["expected_file_period"], "Jun-24", "Should include expected file period")
+        self.assertEqual(result["org_unit_name"], "Hospital with Aliases", "Should include org unit name")
+
+    def test_period_validation_multiple_periods_in_file(self):
+        """Test that validation fails when file contains multiple different periods"""
+        # Create test data with multiple periods
+        data = {
+            "N°": [1, 2],
+            "CODE ETS": ["CODE001", "CODE001"],
+            "NOM ETABLISSEMENT": ["Test Hospital", "Test Hospital"],
+            "MOIS DE RAPPORTAGE": ["May-24", "Jul-24"],  # Different periods
+            "CODE IDENTIFIANT": ["PAT001", "PAT002"],
+            "SEXE": ["M", "F"],
+            "AGE": [30, 25],
+            "POIDS": [70, 60],
+            "Nouvelle inclusion": [0, 0],
+            "Transfert-In": [0, 0],
+            "Retour dans les soins": [0, 0],
+            "TB / VIH": [0, 0],
+            "Type de VIH": [1, 1],
+            "Ligne thérapeutique": [1, 1],
+            "Date de la dernière dispensation": ["2024-06-15", "2024-06-16"],
+            "Nombre de jours dispensés": [30, 30],
+            "STABLE": ["Oui", "Oui"],
+            "Transfert Out": [0, 0],
+            "Décès": [0, 0],
+            "Arrêt TARV": [0, 0],
+            "Servi ailleurs": [0, 0],
+            "REGION": ["Test Region", "Test Region"],
+            "DISTRICT": ["Test District", "Test District"],
+            "REGIME": ["TDF/3TC/DTG", "TDF/3TC/DTG"]
+        }
+        
+        df = pd.DataFrame(data)
+        excel_buffer = BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        excel_buffer.seek(0)
+        excel_content = excel_buffer.getvalue()
+        
+        # Create mock import
+        mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
+        
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+        
+        # Should return error since file contains periods that don't match
+        self.assertIsInstance(result, dict, "Should return error details as dictionary")
+        self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD")
+        self.assertEqual(len(result["file_periods"]), 2, "Should detect both periods in file")
+        self.assertEqual(result["selected_period_yyyymm"], "2024-06", "Should include selected period")
+        self.assertEqual(result["expected_file_period"], "Jun-24", "Should include expected file period")
+
+    def test_period_validation_with_different_year_format(self):
+        """Test period validation with different year formats (2-digit vs 4-digit)"""
+        # Test that both "Jun-24" and "Jun-2024" work (though file format should be "Jun-24")
+        # For now, let's test case sensitivity with correct format
+        excel_content = self.create_test_excel_file("CODE001", period="jun-24")  # lowercase
+        
+        # Create mock import
+        mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
+        
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+        
+        # Should return error since case doesn't match (Jun-24 vs jun-24)
+        self.assertIsInstance(result, dict, "Should return error for case mismatch in period")
+        self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD for case mismatch")
+
+    def test_handle_upload_with_period_validation_failure(self):
+        """Test that handle_upload properly handles period validation failure"""
+        # Create Excel file with wrong period
+        excel_content = self.create_test_excel_file("CODE001", period="May-24")
+        
+        # Create uploaded file
+        uploaded_file = SimpleUploadedFile(
+            "test_upload.xlsx",
+            excel_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        
+        # Mock the form validation to pass
+        from .views import RESPONSES
+        original_responses = RESPONSES.copy()
+        
+        try:
+            # Attempt upload (bypass file validation to test period validation)
+            result, annotated_file = handle_upload(
+                file_name="test_upload.xlsx",
+                file=uploaded_file,
+                org_unit_id=self.org_unit_with_aliases.id,
+                month="2024-06",  # Corresponds to Jun-24, different from file period May-24
+                bypass=True,  # Bypass file validation to test period validation
+                user=self.user,
+            )
+            
+            # Should return ERROR_WRONG_PERIOD
+            self.assertEqual(result, ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD for invalid period")
+            
+            # Check that error message was updated with specific details
+            error_message = RESPONSES[ERROR_WRONG_PERIOD]["message"]
+            self.assertIn("May-24", error_message, "Error message should include file period")
+            self.assertIn("Jun-24", error_message, "Error message should include expected file period")
+            self.assertIn("2024-06", error_message, "Error message should include selected period")
+            self.assertIn("Hospital with Aliases", error_message, "Error message should include org unit name")
+            
+        finally:
+            # Restore original responses
+            RESPONSES.clear()
+            RESPONSES.update(original_responses)
 
 
 class LogCapture(logging.Handler):

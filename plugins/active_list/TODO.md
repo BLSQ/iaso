@@ -21,12 +21,12 @@ TODO list for Active List Plugin
 
 ### Excel Upload Validation
 - Give an easy to understand validation message ✅
-- Validate ETS code at record upload (should be matching the org unit)
+- Validate ETS code at record upload (should be matching the org unit) ✅
 - Handle correctly status when uploading records via excel (nv, etc .... )
 - Think of what to do with records that are created twice (prevent reentry of the exact same record? )
 - Test all import examples that we got
 - Excel import should update the reference form of entities !!!!
-- Ensure that period in excel imports are the same as the one declared in the web ui
+- Ensure that period in excel imports are the same as the one declared in the web ui  ✅
 
 ### Data Validation
 - validation per region

@@ -29,6 +29,11 @@ from plugins.active_list.models import (
 
 LINE_MAPPING = {"1": TREATMENT_1STLINE, "2": TREATMENT_2NDLINE, "3": TREATMENT_3RDLINE}
 GENDER_MAPPING = {"m": SEX_MALE, "f": SEX_FEMALE}
+HIV_TYPE_MAPPING = {
+    "1": HIV_HIV1,
+    "2": HIV_HIV2,
+    "12": HIV_HIV1_AND_2,
+}
 
 logger = getLogger(__name__)
 
@@ -191,12 +196,7 @@ def create_patient_and_first_record(instance, import_source):
             # This function assumes it's for encoding the *first* or *a new* record.
             month = last_dispensation_date.strftime("%Y-%m")
 
-            HIV_TYPE_MAPPING = {
-                "1": HIV_HIV1,
-                "2": HIV_HIV2,
-                "12": HIV_HIV1_AND_2,
-            }
-            hiv_type = HIV_TYPE_MAPPING.get(file_content.get("rep_type_vih"), HIV_UNKNOWN)
+            hiv_type = HIV_TYPE_MAPPING.get(file_content.get("type_vih"), HIV_UNKNOWN)
 
             gender = GENDER_MAPPING.get(file_content.get("adm_genre_patient", "").lower())
 
@@ -357,11 +357,7 @@ def create_followup_record(instance, import_source):
 
             # HIV type for follow-up
             hiv_type_str = file_content.get("rep_type_vih")
-            HIV_TYPE_MAPPING = {
-                "1": HIV_HIV1,
-                "2": HIV_HIV2,
-                "12": HIV_HIV1_AND_2,
-            }
+
             hiv_type = HIV_TYPE_MAPPING.get(hiv_type_str, HIV_UNKNOWN)
 
             # TB/HIV co-infection status

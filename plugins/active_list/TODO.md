@@ -1,15 +1,15 @@
 TODO list for Active List Plugin
 --------------------------------
 
-- validation per region
-- Send emails on validation issues 
-- bi-directional data exchange with IASO entities
-  - Record to xlsforms
+- bi-directional data exchange with IASO entities ✅
+  - Record to xlsforms ✅
     - Registration ✅
     - Suivi ✅
-  - submissions to IASO
+  - submissions to IASO ✅
     - Registration ✅
-    - Suivi 
+    - Suivi ✅
+- validation per region
+- Send emails on validation issues
 - Check permissions per person based on org units
 - Validate ETS code at record upload (should be matching the org unit)
 - Handle correctly status when uploading records via excel (nv, etc .... )

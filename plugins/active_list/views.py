@@ -359,7 +359,7 @@ def get_previous_period(period):
     """
 
     # Convert the period string to a datetime object
-    current_date = datetime.datetime.strptime(period, "%Y-%m")
+    current_date = datetime.strptime(period, "%Y-%m")
 
     # Subtract one month using timedelta
     first_of_current_month = current_date.replace(day=1)

@@ -16,6 +16,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import FieldDoesNotExist
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models
 from django.db.models import Max
 from django.http import FileResponse, Http404, HttpResponse, JsonResponse
@@ -59,6 +60,7 @@ ERROR_FILE_ALREADY_UPLOADED = "ERROR_FILE_ALREADY_UPLOADED"
 ERROR_PERIOD_ALREADY_UPLOADED = "ERROR_PERIOD_ALREADY_UPLOADED"
 ERROR_NO_FILE = "ERROR_NO_FILE"
 ERROR_WRONG_FILE_FORMAT = "ERROR_WRONG_FILE_FORMAT"
+ERROR_WRONG_CODE = "ERROR_WRONG_CODE"
 ERROR_UNKNOWN = "ERROR_UNKNOWN"
 
 RESPONSES = {
@@ -75,6 +77,11 @@ RESPONSES = {
     },
     ERROR_NO_FILE: {"message": "Vous n'avez pas ajouté de fichier", "status": 400, "bypassable": False},
     ERROR_WRONG_FILE_FORMAT: {"message": "Ce fichier n'est pas un fichier excel", "status": 400, "bypassable": True},
+    ERROR_WRONG_CODE: {
+        "message": "Le CODE ETS dans le fichier ne correspond pas à l'établissement sélectionné. Veuillez vérifier que vous avez sélectionné le bon établissement ou que le CODE ETS dans le fichier est correct.",
+        "status": 400,
+        "bypassable": False,
+    },
     ERROR_UNKNOWN: {"message": "Erreur", "status": 400, "bypassable": False},
     FILE_DATA_PROBLEM: {
         "message": "Erreur dans les données du fichier, regardez la version annotée du fichier pour trouver les problèmes",
@@ -631,7 +638,6 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     form_file_content = form_version.xls_file.read()
 
     # Create a fresh file object for pyxform validation
-    from django.core.files.uploadedfile import SimpleUploadedFile
 
     validation_file = SimpleUploadedFile(
         "validation_form.xlsx",
@@ -702,7 +708,29 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
         # Pass the content as BytesIO for pandas to read
         from io import BytesIO
 
-        import_data(BytesIO(content), i)
+        validation_result = import_data(BytesIO(content), i)
+        # Check if validation failed during import
+        if isinstance(validation_result, dict) and validation_result.get("error") == ERROR_WRONG_CODE:
+            # Delete the import since validation failed
+            i.delete()
+            result = ERROR_WRONG_CODE
+
+            # Create dynamic error message with available aliases
+            invalid_codes = validation_result.get("invalid_codes", [])
+            invalid_codes = [str(code) for code in invalid_codes if code]  # Filter out empty codes
+            available_aliases = validation_result.get("available_aliases", [])
+            org_unit_name = validation_result.get("org_unit_name", "")
+
+            # Update the error message to include specific information
+            aliases_text = ", ".join(available_aliases) if available_aliases else "aucun alias défini"
+            codes_text = ", ".join(invalid_codes)
+
+            RESPONSES[ERROR_WRONG_CODE]["message"] = (
+                f"Le(s) CODE ETS '{codes_text}' dans le fichier ne correspond(ent) pas à l'établissement "
+                f"sélectionné '{org_unit_name}'. Les codes autorisés sont: {aliases_text}. "
+                f"Veuillez vérifier que vous avez sélectionné le bon établissement ou que le CODE ETS "
+                f"dans le fichier est correct."
+            )
     return result, None
 
 
@@ -753,6 +781,9 @@ def import_data(file, the_import):
     # Read the CSV file into a DataFrame
     df = pd.read_excel(file, sheet_name=0)
     df = df.applymap(lambda x: x.strip() if isinstance(x, str) else x)  # trimming all white spaces
+
+    # Get the org unit for alias validation
+    org_unit = the_import.org_unit
     # Rename columns
     df = df.rename(
         columns={
@@ -883,6 +914,27 @@ def import_data(file, the_import):
                 "served_elsewhere": row["served_elsewhere"],
             }
         )
+
+    # Validate CODE ETS against org unit aliases
+    if data:  # Only validate if there's data
+        # Get all unique CODE ETS values from the data
+        code_ets_values = {row["code_ets"] for row in data if row["code_ets"]}
+
+        # Get org unit aliases (empty list if None)
+        org_unit_aliases = org_unit.aliases or []
+        print(org_unit_aliases)
+        # Check if any CODE ETS doesn't match org unit aliases
+        for code_ets in code_ets_values:
+            if str(code_ets) not in org_unit_aliases:
+                print(f"CODE ETS validation failed: '{code_ets}' not found in org unit aliases: {org_unit_aliases}")
+                # Return detailed error information
+                return {
+                    "error": ERROR_WRONG_CODE,
+                    "invalid_codes": list(code_ets_values),
+                    "available_aliases": org_unit_aliases,
+                    "org_unit_name": org_unit.name,
+                }
+
     # this will need to be updated to use batched queries
     for row in data:
         active = not (

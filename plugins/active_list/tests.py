@@ -1,13 +1,17 @@
 import logging
 import tempfile
 
+from io import BytesIO
+
+import pandas as pd
+
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
 
-from .views import handle_upload
+from .views import ERROR_WRONG_CODE, handle_upload, import_data
 
 
 User = get_user_model()
@@ -209,6 +213,226 @@ class ActiveListUploadTestCase(TestCase):
                 log_entry for log_entry in self.log_capture if "Error parsing XLSForm with pyxform" in log_entry
             ]
             self.assertEqual(len(xlsform_errors), 0, f"Found XLSForm parsing errors on upload {i}: {xlsform_errors}")
+
+
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
+class CodeETSValidationTestCase(TestCase):
+    """Test case to verify CODE ETS validation against org unit aliases"""
+
+    @classmethod
+    def setUpTestData(cls):
+        # Create account and basic setup
+        cls.account = Account.objects.create(name="Test Health System")
+
+        # Create data source and version
+        cls.data_source = DataSource.objects.create(name="Test Data Source")
+        cls.source_version = SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account.default_version = cls.source_version
+        cls.account.save()
+
+        # Create user with profile
+        cls.user = User.objects.create_user(username="test_user", password="testpass123")
+        p = Profile(user=cls.user, account=cls.account)
+        p.save()
+
+        # Create org unit type
+        cls.hf_type = OrgUnitType.objects.create(name="Health Facility", short_name="HF")
+
+        # Create org units with different alias configurations
+        cls.org_unit_with_aliases = OrgUnit.objects.create(
+            name="Hospital with Aliases",
+            org_unit_type=cls.hf_type,
+            version=cls.source_version,
+            aliases=["CODE001", "CODE002", "HOSP_A"],
+        )
+
+        cls.org_unit_no_aliases = OrgUnit.objects.create(
+            name="Hospital without Aliases", org_unit_type=cls.hf_type, version=cls.source_version, aliases=None
+        )
+
+        cls.org_unit_empty_aliases = OrgUnit.objects.create(
+            name="Hospital with Empty Aliases", org_unit_type=cls.hf_type, version=cls.source_version, aliases=[]
+        )
+
+        cls.project = Project.objects.create(
+            name="Active List Test Project", app_id="active.list.test", account=cls.account
+        )
+        cls.project.unit_types.add(cls.hf_type)
+
+    def create_test_excel_file(self, code_ets_value):
+        """Helper method to create a test Excel file with specific CODE ETS value"""
+        # Create test data
+        data = {
+            "N°": [1],
+            "CODE ETS": [code_ets_value],
+            "NOM ETABLISSEMENT": ["Test Hospital"],
+            "MOIS DE RAPPORTAGE": ["2024-06"],
+            "CODE IDENTIFIANT": ["PAT001"],
+            "SEXE": ["M"],
+            "AGE": [30],
+            "POIDS": [70],
+            "Nouvelle inclusion": [0],
+            "Transfert-In": [0],
+            "Retour dans les soins": [0],
+            "TB / VIH": [0],
+            "Type de VIH": [1],
+            "Ligne thérapeutique": [1],
+            "Date de la dernière dispensation": ["2024-06-15"],
+            "Nombre de jours dispensés": [30],
+            "STABLE": ["Oui"],
+            "Transfert Out": [0],
+            "Décès": [0],
+            "Arrêt TARV": [0],
+            "Servi ailleurs": [0],
+            "REGION": ["Test Region"],
+            "DISTRICT": ["Test District"],
+            "REGIME": ["TDF/3TC/DTG"],
+        }
+
+        df = pd.DataFrame(data)
+
+        # Save to BytesIO to simulate Excel file
+        excel_buffer = BytesIO()
+        df.to_excel(excel_buffer, index=False)
+        excel_buffer.seek(0)
+        return excel_buffer.getvalue()
+
+    def create_mock_import(self, org_unit):
+        """Helper method to create a mock Import object"""
+        from .models import SOURCE_EXCEL, Import
+
+        return Import(
+            hash_key="test_hash",
+            file_name="test.xlsx",
+            org_unit=org_unit,
+            month="2024-06",
+            file_check="OK",
+            source=SOURCE_EXCEL,
+            user=self.user,
+        )
+
+    def test_code_ets_validation_success(self):
+        """Test that validation passes when CODE ETS matches org unit aliases"""
+        # Create Excel file with CODE ETS that matches org unit aliases
+        excel_content = self.create_test_excel_file("CODE001")
+
+        # Create mock import
+        mock_import = self.create_mock_import(self.org_unit_with_aliases)
+
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+
+        # Should not return an error (function returns None on success)
+        self.assertIsNone(result, "CODE ETS validation should pass when code matches aliases")
+
+    def test_code_ets_validation_failure(self):
+        """Test that validation fails when CODE ETS doesn't match org unit aliases"""
+        # Create Excel file with CODE ETS that doesn't match org unit aliases
+        excel_content = self.create_test_excel_file("INVALID_CODE")
+
+        # Create mock import
+        mock_import = self.create_mock_import(self.org_unit_with_aliases)
+
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+
+        # Should return detailed error information
+        self.assertIsInstance(result, dict, "Should return error details as dictionary")
+        self.assertEqual(result["error"], ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE")
+        self.assertIn("INVALID_CODE", result["invalid_codes"], "Should include the invalid code")
+        self.assertEqual(
+            result["available_aliases"], ["CODE001", "CODE002", "HOSP_A"], "Should include available aliases"
+        )
+        self.assertEqual(result["org_unit_name"], "Hospital with Aliases", "Should include org unit name")
+
+    def test_code_ets_validation_no_aliases(self):
+        """Test that validation fails when org unit has no aliases"""
+        # Create Excel file with any CODE ETS
+        excel_content = self.create_test_excel_file("ANY_CODE")
+
+        # Create mock import with org unit that has no aliases
+        mock_import = self.create_mock_import(self.org_unit_no_aliases)
+
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+
+        # Should return error since no aliases are defined
+        self.assertIsInstance(result, dict, "Should return error details as dictionary")
+        self.assertEqual(result["error"], ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE")
+        self.assertEqual(result["available_aliases"], [], "Should show empty aliases list")
+
+    def test_code_ets_validation_empty_aliases(self):
+        """Test that validation fails when org unit has empty aliases list"""
+        # Create Excel file with any CODE ETS
+        excel_content = self.create_test_excel_file("ANY_CODE")
+
+        # Create mock import with org unit that has empty aliases
+        mock_import = self.create_mock_import(self.org_unit_empty_aliases)
+
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+
+        # Should return error since aliases list is empty
+        self.assertIsInstance(result, dict, "Should return error details as dictionary")
+        self.assertEqual(result["error"], ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE")
+        self.assertEqual(result["available_aliases"], [], "Should show empty aliases list")
+
+    def test_handle_upload_with_code_ets_validation_failure(self):
+        """Test that handle_upload properly handles CODE ETS validation failure"""
+        # Create Excel file with invalid CODE ETS
+        excel_content = self.create_test_excel_file("INVALID_CODE")
+
+        # Create uploaded file
+        uploaded_file = SimpleUploadedFile(
+            "test_upload.xlsx",
+            excel_content,
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+
+        # Mock the form validation to pass
+        from .views import RESPONSES
+
+        original_responses = RESPONSES.copy()
+
+        try:
+            # Attempt upload (this will fail during XLS validation, but we'll bypass that)
+            result, annotated_file = handle_upload(
+                file_name="test_upload.xlsx",
+                file=uploaded_file,
+                org_unit_id=self.org_unit_with_aliases.id,
+                month="2024-06",
+                bypass=True,  # Bypass file validation to test CODE ETS validation
+                user=self.user,
+            )
+
+            # Should return ERROR_WRONG_CODE
+            self.assertEqual(result, ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE for invalid CODE ETS")
+
+            # Check that error message was updated with specific details
+            error_message = RESPONSES[ERROR_WRONG_CODE]["message"]
+            self.assertIn("INVALID_CODE", error_message, "Error message should include invalid code")
+            self.assertIn("Hospital with Aliases", error_message, "Error message should include org unit name")
+            self.assertIn("CODE001, CODE002, HOSP_A", error_message, "Error message should include available aliases")
+
+        finally:
+            # Restore original responses
+            RESPONSES.clear()
+            RESPONSES.update(original_responses)
+
+    def test_code_ets_case_sensitivity(self):
+        """Test that CODE ETS validation is case sensitive"""
+        # Create Excel file with lowercase version of a valid alias
+        excel_content = self.create_test_excel_file("code001")  # lowercase
+
+        # Create mock import
+        mock_import = self.create_mock_import(self.org_unit_with_aliases)
+
+        # Test import_data function directly
+        result = import_data(BytesIO(excel_content), mock_import)
+
+        # Should return error since case doesn't match
+        self.assertIsInstance(result, dict, "Should return error for case mismatch")
+        self.assertEqual(result["error"], ERROR_WRONG_CODE, "Should return ERROR_WRONG_CODE for case mismatch")
 
 
 class LogCapture(logging.Handler):

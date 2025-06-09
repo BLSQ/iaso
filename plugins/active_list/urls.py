@@ -1,9 +1,25 @@
-from django.urls import path, re_path
+from django.urls import include, path, re_path
+from rest_framework.routers import DefaultRouter
 
 from . import views
+from .tasks.api.launch_export_entities_to_records import ExportEntitiesToRecordsViewSet
+from .tasks.api.launch_export_records_to_entities import ExportRecordsToEntitiesViewSet
+
+
+# Create router for API endpoints
+router = DefaultRouter()
+router.register(
+    r"tasks/export_records_to_entities", ExportRecordsToEntitiesViewSet, basename="export_records_to_entities"
+)
+router.register(
+    r"tasks/export_entities_to_records", ExportEntitiesToRecordsViewSet, basename="export_entities_to_records"
+)
 
 
 urlpatterns = [
+    # Include API endpoints from router
+    path("api/", include(router.urls)),
+    # Existing views
     path("homepage/", views.homepage, name="homepage"),
     path("patient_list/", views.patient_list, name="patient_list"),
     path("patient_list_api/<int:org_unit_id>/<str:month>/", views.patient_list_api, name="patient_list_api"),

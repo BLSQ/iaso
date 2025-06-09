@@ -19,8 +19,9 @@ cron:
    url: "/tasks/launch_task/plugins.polio.tasks.archive_vaccine_stock_for_rounds.archive_vaccine_stock_for_rounds/polio_cron_task_user/"
    schedule: "0 2 * * *"
  - name: "export_entities_to_records"
-   url: "/tasks/launch_task/plugins.active_list.management.commands.export_entities_to_records.Command/active_list_cron_user/"
-   schedule: "* * * * *"
+   url: "/tasks/launch_task/plugins.active_list.tasks.export_entities_to_records.export_entities_to_records/demo/"
+   schedule: "*/4 * * * *"
  - name: "export_records_to_entities"
-   url: "/tasks/launch_task/plugins.active_list.management.commands.export_records_to_entities.Command/active_list_cron_user/"
-   schedule: "* * * * *"
+   url: "/tasks/launch_task/plugins.active_list.tasks.export_records_to_entities.export_records_to_entities/demo/"
+   schedule: "*/4 * * * *"
+

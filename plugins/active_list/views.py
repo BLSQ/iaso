@@ -719,9 +719,9 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
         if isinstance(validation_result, dict):
             # Delete the import since validation failed
             i.delete()
-            
+
             error_type = validation_result.get("error")
-            
+
             if error_type == ERROR_WRONG_CODE:
                 result = ERROR_WRONG_CODE
                 # Create dynamic error message with available aliases
@@ -740,7 +740,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
                     f"Veuillez vérifier que vous avez sélectionné le bon établissement ou que le CODE ETS "
                     f"dans le fichier est correct."
                 )
-            
+
             elif error_type == ERROR_WRONG_PERIOD:
                 result = ERROR_WRONG_PERIOD
                 # Create dynamic error message with period details
@@ -961,35 +961,38 @@ def import_data(file, the_import):
                     "available_aliases": org_unit_aliases,
                     "org_unit_name": org_unit.name,
                 }
-    
+
     # Validate period against selected period
     if data:  # Only validate if there's data
         # Get all unique period values from the data
         file_periods = {row["period"] for row in data if row["period"]}
-        
+
         # Get the selected period from the import (format: YYYY-MM)
         selected_period_yyyymm = the_import.month
-        
+
         # Convert selected period to "Mon-YY" format for comparison
         def convert_yyyymm_to_file_format(yyyymm_period):
             """Convert YYYY-MM format to Mon-YY format (e.g., 2024-06 -> Jun-24)"""
             try:
                 from datetime import datetime
+
                 # Parse the YYYY-MM format
                 dt = datetime.strptime(yyyymm_period, "%Y-%m")
                 # Format as Mon-YY (e.g., Jun-24)
                 return dt.strftime("%b-%y")
             except ValueError:
                 return yyyymm_period  # Return original if parsing fails
-        
+
         expected_file_period = convert_yyyymm_to_file_format(selected_period_yyyymm)
-        
+
         # Check if any period in the file doesn't match the expected period
         for file_period in file_periods:
             file_period_str = str(file_period).strip()
-            
+
             if file_period_str != expected_file_period:
-                print(f"Period validation failed: '{file_period}' in file doesn't match expected period: '{expected_file_period}'")
+                print(
+                    f"Period validation failed: '{file_period}' in file doesn't match expected period: '{expected_file_period}'"
+                )
                 # Return detailed error information
                 return {
                     "error": ERROR_WRONG_PERIOD,

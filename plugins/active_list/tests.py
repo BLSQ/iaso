@@ -438,13 +438,13 @@ class CodeETSValidationTestCase(TestCase):
         """Test that validation passes when period in file matches selected period"""
         # Create Excel file with matching period (Jun-24 corresponds to 2024-06)
         excel_content = self.create_test_excel_file("CODE001", period="Jun-24")
-        
+
         # Create mock import with corresponding YYYY-MM period
         mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
-        
+
         # Test import_data function directly
         result = import_data(BytesIO(excel_content), mock_import)
-        
+
         # Should not return an error (function returns None on success)
         self.assertIsNone(result, "Period validation should pass when periods match")
 
@@ -452,13 +452,13 @@ class CodeETSValidationTestCase(TestCase):
         """Test that validation fails when period in file doesn't match selected period"""
         # Create Excel file with different period (May-24 instead of Jun-24)
         excel_content = self.create_test_excel_file("CODE001", period="May-24")
-        
+
         # Create mock import with different period (2024-06 = Jun-24)
         mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
-        
+
         # Test import_data function directly
         result = import_data(BytesIO(excel_content), mock_import)
-        
+
         # Should return detailed error information
         self.assertIsInstance(result, dict, "Should return error details as dictionary")
         self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD")
@@ -494,21 +494,21 @@ class CodeETSValidationTestCase(TestCase):
             "Servi ailleurs": [0, 0],
             "REGION": ["Test Region", "Test Region"],
             "DISTRICT": ["Test District", "Test District"],
-            "REGIME": ["TDF/3TC/DTG", "TDF/3TC/DTG"]
+            "REGIME": ["TDF/3TC/DTG", "TDF/3TC/DTG"],
         }
-        
+
         df = pd.DataFrame(data)
         excel_buffer = BytesIO()
         df.to_excel(excel_buffer, index=False)
         excel_buffer.seek(0)
         excel_content = excel_buffer.getvalue()
-        
+
         # Create mock import
         mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
-        
+
         # Test import_data function directly
         result = import_data(BytesIO(excel_content), mock_import)
-        
+
         # Should return error since file contains periods that don't match
         self.assertIsInstance(result, dict, "Should return error details as dictionary")
         self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD")
@@ -521,13 +521,13 @@ class CodeETSValidationTestCase(TestCase):
         # Test that both "Jun-24" and "Jun-2024" work (though file format should be "Jun-24")
         # For now, let's test case sensitivity with correct format
         excel_content = self.create_test_excel_file("CODE001", period="jun-24")  # lowercase
-        
+
         # Create mock import
         mock_import = self.create_mock_import(self.org_unit_with_aliases, month="2024-06")
-        
+
         # Test import_data function directly
         result = import_data(BytesIO(excel_content), mock_import)
-        
+
         # Should return error since case doesn't match (Jun-24 vs jun-24)
         self.assertIsInstance(result, dict, "Should return error for case mismatch in period")
         self.assertEqual(result["error"], ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD for case mismatch")
@@ -536,18 +536,19 @@ class CodeETSValidationTestCase(TestCase):
         """Test that handle_upload properly handles period validation failure"""
         # Create Excel file with wrong period
         excel_content = self.create_test_excel_file("CODE001", period="May-24")
-        
+
         # Create uploaded file
         uploaded_file = SimpleUploadedFile(
             "test_upload.xlsx",
             excel_content,
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        
+
         # Mock the form validation to pass
         from .views import RESPONSES
+
         original_responses = RESPONSES.copy()
-        
+
         try:
             # Attempt upload (bypass file validation to test period validation)
             result, annotated_file = handle_upload(
@@ -558,17 +559,17 @@ class CodeETSValidationTestCase(TestCase):
                 bypass=True,  # Bypass file validation to test period validation
                 user=self.user,
             )
-            
+
             # Should return ERROR_WRONG_PERIOD
             self.assertEqual(result, ERROR_WRONG_PERIOD, "Should return ERROR_WRONG_PERIOD for invalid period")
-            
+
             # Check that error message was updated with specific details
             error_message = RESPONSES[ERROR_WRONG_PERIOD]["message"]
             self.assertIn("May-24", error_message, "Error message should include file period")
             self.assertIn("Jun-24", error_message, "Error message should include expected file period")
             self.assertIn("2024-06", error_message, "Error message should include selected period")
             self.assertIn("Hospital with Aliases", error_message, "Error message should include org unit name")
-            
+
         finally:
             # Restore original responses
             RESPONSES.clear()

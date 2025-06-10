@@ -23,7 +23,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     source_version_id?: string;
     data_source_synchronization_id?: string;
     ids?: string; // comma separated ids
-    is_soft_deleted?: boolean;
+    is_soft_deleted?: string;
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

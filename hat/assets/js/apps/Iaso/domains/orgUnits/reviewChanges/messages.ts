@@ -307,12 +307,20 @@ const MESSAGES = defineMessages({
             'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
     bulkDeleteAction: {
-        id: 'iaso.changeRequest.multiDeleteAction',
-        defaultMessage: 'Delete selected change requests',
+        id: 'iaso.changeRequest.bulkDeleteAction',
+        defaultMessage: 'Delete selected change requests?',
+    },
+    bulkRestoreAction: {
+        id: 'iaso.changeRequest.bulkRestoreAction',
+        defaultMessage: 'Restore selected change requests?',
     },
     bulkDeleteOrgUnitChangesCount: {
         id: 'iaso.changeRequest.deleteOrgUnitChangesCount',
         defaultMessage: 'Delete {count} change request(s)',
+    },
+    bulkRestoreOrgUnitChangesCount: {
+        id: 'iaso.changeRequest.restoreOrgUnitChangesCount',
+        defaultMessage: 'Restore {count} change request(s)',
     },
     bulkDeleteSuccess: {
         id: 'iaso.changeRequest.bulkDeleteSuccess',

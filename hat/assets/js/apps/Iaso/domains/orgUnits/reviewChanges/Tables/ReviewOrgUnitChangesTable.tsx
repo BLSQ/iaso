@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import EditIcon from '@mui/icons-material/Settings';
 import DeleteIcon from '@mui/icons-material/Delete';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
@@ -216,6 +217,8 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     const columns = useColumns();
     const { formatMessage } = useSafeIntl();
 
+    const isRestoreAction = params.is_soft_deleted === 'true';
+
     const { selection, handleTableSelection, handleUnselectAll } =
         useTableSelection<OrgUnitChangeRequest>(data?.results?.length ?? 0);
 
@@ -237,8 +240,16 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                         selection.selectedItems.length === 0),
             },
             {
-                icon: <DeleteIcon />,
-                label: formatMessage(MESSAGES.bulkDeleteAction),
+                icon: isRestoreAction ? (
+                    <RestoreFromTrashIcon />
+                ) : (
+                    <DeleteIcon />
+                ),
+                label: formatMessage(
+                    isRestoreAction
+                        ? MESSAGES.bulkRestoreAction
+                        : MESSAGES.bulkDeleteAction,
+                ),
                 onClick: () => setBulkDeletePopupIsOpen(true),
                 disabled:
                     bulkDeletePopupOpen ||
@@ -246,7 +257,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                         selection.selectedItems.length === 0),
             },
         ],
-        [formatMessage, selection],
+        [formatMessage, selection, isRestoreAction],
     );
 
     return (

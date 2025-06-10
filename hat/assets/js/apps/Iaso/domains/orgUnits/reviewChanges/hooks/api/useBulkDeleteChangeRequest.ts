@@ -27,6 +27,7 @@ const bulkDeleteChangeRequests = async (
         selected_ids: body.selectedItems?.map(item => item.id),
         unselected_ids: body.unSelectedItems?.map(item => item.id),
         select_all: body.selectAll,
+        restore: apiParams.is_soft_deleted === 'true',
     };
     return postRequest(url, formattedBody);
 };

@@ -25,6 +25,8 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { selectCount } = selection;
 
+    const isRestoreAction = params.is_soft_deleted === 'true';
+
     const { mutate: bulkDeleteChangeRequests } =
         useBulkDeleteChangeRequests(params);
 
@@ -43,7 +45,9 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
             id="BulkDeleteOrgUnitChangesDialog"
             dataTestId="BulkDeleteOrgUnitChangesDialog"
             titleMessage={formatMessage(
-                MESSAGES.bulkDeleteOrgUnitChangesCount,
+                isRestoreAction
+                    ? MESSAGES.bulkRestoreOrgUnitChangesCount
+                    : MESSAGES.bulkDeleteOrgUnitChangesCount,
                 {
                     count: selectCount,
                 },
@@ -55,7 +59,13 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.no}
             closeOnConfirm
         >
-            <p>{formatMessage(MESSAGES.bulkDeleteAction)}</p>
+            <p>
+                {formatMessage(
+                    isRestoreAction
+                        ? MESSAGES.bulkRestoreAction
+                        : MESSAGES.bulkDeleteAction,
+                )}
+            </p>
         </ConfirmCancelModal>
     );
 };

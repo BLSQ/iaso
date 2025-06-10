@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0322_alter_orgunit_org_unit_type_and_more'),
-        ('iaso', '0326_merge_20250416_1317'),
+        ("iaso", "0322_alter_orgunit_org_unit_type_and_more"),
+        ("iaso", "0326_merge_20250416_1317"),
     ]
 
     operations = [

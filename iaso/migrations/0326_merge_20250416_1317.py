@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0321_formattachment_file_last_scan_and_more'),
-        ('iaso', '0325_alter_metrictype_options'),
+        ("iaso", "0321_formattachment_file_last_scan_and_more"),
+        ("iaso", "0325_alter_metrictype_options"),
     ]
 
     operations = [

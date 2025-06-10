@@ -11,7 +11,7 @@ import pytz
 import xlsxwriter  # type: ignore
 
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models import Count, Exists, Max, OuterRef, Prefetch, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -33,7 +33,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
-from iaso.models.deduplication import ValidationStatus
+from iaso.models.deduplication import EntityDuplicate, ValidationStatus
 from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
@@ -86,8 +86,19 @@ class EntitySerializer(serializers.ModelSerializer):
         return _get_duplicates(entity)
 
     def get_nfc_cards(self, entity: Entity):
-        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
-        return nfc_count
+        """
+        Optimized version that uses annotation or prefetched NFC devices to avoid N+1 queries.
+        Priority: 1) annotation (nfc_count), 2) prefetched list (nfc_devices), 3) fallback query
+        """
+        if hasattr(entity, 'nfc_count'):
+            # Use annotation if available (most efficient)
+            return entity.nfc_count
+        elif hasattr(entity, 'nfc_devices'):
+            # Use prefetched list as fallback
+            return len(entity.nfc_devices)
+        else:
+            # Fallback to original query if neither prefetch nor annotation available
+            return StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -95,13 +106,46 @@ class EntitySerializer(serializers.ModelSerializer):
 
 
 def _get_duplicates(entity):
+    """
+    Optimized version that uses prefetched data to avoid N+1 queries.
+    Uses pending_duplicates1 and pending_duplicates2 attributes if available.
+    """
     results = []
-    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
-    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
-    if e1qs.count() > 0:
-        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
-    elif e2qs.count() > 0:
-        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
+    
+    # Use prefetched data if available (set by Prefetch with to_attr)
+    if hasattr(entity, 'pending_duplicates1'):
+        duplicates1 = entity.pending_duplicates1
+    else:
+        # Fallback to original query if prefetch not available
+        duplicates1 = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
+    
+    if hasattr(entity, 'pending_duplicates2'):
+        duplicates2 = entity.pending_duplicates2
+    else:
+        # Fallback to original query if prefetch not available
+        duplicates2 = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
+    
+    # Check if we have duplicates1 results
+    if hasattr(entity, 'pending_duplicates1'):
+        # Use prefetched list
+        if duplicates1:
+            results.extend([dup.entity2.id for dup in duplicates1])
+    else:
+        # Use queryset
+        if duplicates1.exists():
+            results.extend([dup.entity2.id for dup in duplicates1])
+    
+    # Check if we have duplicates2 results (only if no duplicates1)
+    if not results:
+        if hasattr(entity, 'pending_duplicates2'):
+            # Use prefetched list
+            if duplicates2:
+                results.extend([dup.entity1.id for dup in duplicates2])
+        else:
+            # Use queryset
+            if duplicates2.exists():
+                results.extend([dup.entity1.id for dup in duplicates2])
+    
     return results
 
 
@@ -152,14 +196,42 @@ class EntityViewSet(ModelViewSet):
 
         queryset = Entity.objects.filter_for_user(self.request.user)
 
-        queryset = queryset.prefetch_related(
-            "attributes__created_by__teams",
+        # Optimize queries with select_related and prefetch_related
+        queryset = queryset.select_related(
+            "entity_type",
+            "attributes__created_by",
             "attributes__form",
-            "attributes__org_unit__groups",
+            "attributes__org_unit",
             "attributes__org_unit__org_unit_type",
             "attributes__org_unit__parent",
             "attributes__org_unit__version__data_source",
-            "entity_type",
+        ).prefetch_related(
+            "attributes__created_by__teams",
+            "attributes__org_unit__groups",
+            # Prefetch duplicates to avoid N+1 queries
+            Prefetch(
+                "duplicates1",
+                queryset=EntityDuplicate.objects.select_related("entity2").filter(
+                    validation_status=ValidationStatus.PENDING
+                ),
+                to_attr="pending_duplicates1"
+            ),
+            Prefetch(
+                "duplicates2", 
+                queryset=EntityDuplicate.objects.select_related("entity1").filter(
+                    validation_status=ValidationStatus.PENDING
+                ),
+                to_attr="pending_duplicates2"
+            ),
+            # Prefetch NFC storage devices
+            Prefetch(
+                "storagedevice_set",
+                queryset=StorageDevice.objects.filter(type=StorageDevice.NFC),
+                to_attr="nfc_devices"
+            ),
+        ).annotate(
+            # Annotate with NFC count to avoid separate queries
+            nfc_count=Count("storagedevice", filter=Q(storagedevice__type=StorageDevice.NFC))
         )
 
         if form_name:

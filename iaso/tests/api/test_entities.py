@@ -980,3 +980,372 @@ class EntityAPITestCase(APITestCase):
             inst.refresh_from_db()
             self.assertTrue(inst.deleted)
         self.assertEqual(m.EntityDuplicate.objects.count(), 1)  # only pending removed
+
+    def test_duplicates_field_empty_when_no_duplicates(self):
+        """Test that duplicates field returns empty list when entity has no duplicates"""
+        self.client.force_authenticate(self.yoda)
+        
+        instance = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity = Entity.objects.create(
+            name="Unique Entity",
+            entity_type=self.entity_type,
+            attributes=instance,
+            account=self.account,
+        )
+        
+        response = self.client.get(f"/api/entities/{entity.id}/")
+        self.assertEqual(response.status_code, 200)
+        
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertEqual(data["duplicates"], [])
+
+    def test_duplicates_field_returns_pending_duplicate_ids(self):
+        """Test that duplicates field returns IDs of pending duplicate entities"""
+        self.client.force_authenticate(self.yoda)
+        
+        # Create two entities
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2", 
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        # Create pending duplicate relationship
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        
+        # Test entity1 response includes entity2's ID
+        response = self.client.get(f"/api/entities/{entity1.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertEqual(data["duplicates"], [entity2.id])
+        
+        # Test entity2 response includes entity1's ID (bidirectional)
+        response = self.client.get(f"/api/entities/{entity2.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertEqual(data["duplicates"], [entity1.id])
+
+    def test_duplicates_field_excludes_validated_duplicates(self):
+        """Test that duplicates field excludes VALIDATED duplicates, only returns PENDING"""
+        self.client.force_authenticate(self.yoda)
+        
+        # Create entities
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        instance3 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.account,
+        )
+        
+        # Create duplicates with different statuses
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity3,
+            validation_status=ValidationStatus.VALIDATED
+        )
+        
+        # Should only return pending duplicate (entity2), not validated (entity3)
+        response = self.client.get(f"/api/entities/{entity1.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertEqual(data["duplicates"], [entity2.id])
+        self.assertNotIn(entity3.id, data["duplicates"])
+
+    def test_duplicates_field_excludes_ignored_duplicates(self):
+        """Test that duplicates field excludes IGNORED duplicates, only returns PENDING"""
+        self.client.force_authenticate(self.yoda)
+        
+        # Create entities
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        instance3 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.account,
+        )
+        
+        # Create duplicates with different statuses
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity3,
+            validation_status=ValidationStatus.IGNORED
+        )
+        
+        # Should only return pending duplicate (entity2), not ignored (entity3)
+        response = self.client.get(f"/api/entities/{entity1.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertEqual(data["duplicates"], [entity2.id])
+        self.assertNotIn(entity3.id, data["duplicates"])
+
+    def test_duplicates_field_multiple_pending_duplicates(self):
+        """Test that duplicates field returns all pending duplicate IDs"""
+        self.client.force_authenticate(self.yoda)
+        
+        # Create entities
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        instance3 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.account,
+        )
+        
+        # Create multiple pending duplicates
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity3,
+            validation_status=ValidationStatus.PENDING
+        )
+        
+        # Should return both pending duplicates
+        response = self.client.get(f"/api/entities/{entity1.id}/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("duplicates", data)
+        self.assertCountEqual(data["duplicates"], [entity2.id, entity3.id])
+
+    def test_duplicates_field_in_list_response(self):
+        """Test that duplicates field is present in entity list responses"""
+        self.client.force_authenticate(self.yoda)
+        
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        # Create pending duplicate
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        
+        # Test list endpoint includes duplicates field
+        response = self.client.get("/api/entities/")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Find our entities in the results
+        entity1_data = next((e for e in data["result"] if e["id"] == entity1.id), None)
+        entity2_data = next((e for e in data["result"] if e["id"] == entity2.id), None)
+        
+        self.assertIsNotNone(entity1_data)
+        self.assertIsNotNone(entity2_data)
+        
+        # Check duplicates field is present and correct
+        self.assertIn("duplicates", entity1_data)
+        self.assertIn("duplicates", entity2_data)
+        self.assertEqual(entity1_data["duplicates"], [entity2.id])
+        self.assertEqual(entity2_data["duplicates"], [entity1.id])
+
+    def test_duplicates_field_bidirectional_relationship(self):
+        """Test that duplicates field works correctly for bidirectional relationships"""
+        self.client.force_authenticate(self.yoda)
+        
+        # Create entities
+        instance1 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        
+        instance2 = Instance.objects.create(org_unit=self.ou_country, form=self.form_1)
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        
+        # Create duplicate with entity1 as entity1 and entity2 as entity2
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        
+        # Test that both entities see each other as duplicates
+        response1 = self.client.get(f"/api/entities/{entity1.id}/")
+        response2 = self.client.get(f"/api/entities/{entity2.id}/")
+        
+        self.assertEqual(response1.status_code, 200)
+        self.assertEqual(response2.status_code, 200)
+        
+        data1 = response1.json()
+        data2 = response2.json()
+        
+        self.assertEqual(data1["duplicates"], [entity2.id])
+        self.assertEqual(data2["duplicates"], [entity1.id])
+
+    def test_duplicates_field_with_mobile_api(self):
+        """Test that mobile API does not include duplicates field (different serializer)"""
+        self.client.force_authenticate(self.yoda)
+        
+        self.yoda.iaso_profile.org_units.set([self.ou_country])
+        
+        self.form_1.form_id = "MOBILE_FORM_ID"
+        self.form_1.json = {"_version": "MOBILE_FORM_ID"}
+        self.form_1.projects.add(self.project)
+        self.form_1.save()
+        
+        FormVersion.objects.create(form=self.form_1, version_id="MOBILE_FORM_ID")
+        
+        # Create entities
+        instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            project=self.project,
+            uuid="mobile-entity-1-uuid",
+        )
+        entity1 = Entity.objects.create(
+            name="Mobile Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.account,
+        )
+        instance1.entity = entity1
+        instance1.save()
+        
+        instance2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            project=self.project,
+            uuid="mobile-entity-2-uuid",
+        )
+        entity2 = Entity.objects.create(
+            name="Mobile Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.account,
+        )
+        instance2.entity = entity2
+        instance2.save()
+        
+        # Create pending duplicate
+        from iaso.models.deduplication import EntityDuplicate
+        EntityDuplicate.objects.create(
+            entity1=entity1,
+            entity2=entity2,
+            validation_status=ValidationStatus.PENDING
+        )
+        
+        # Test mobile list endpoint does NOT include duplicates field (uses different serializer)
+        response = self.client.get(f"/api/mobile/entities/?app_id={self.project.app_id}")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        
+        # Find our entities in the results  
+        entity1_data = next((e for e in data["results"] if e["id"] == str(entity1.uuid)), None)
+        
+        self.assertIsNotNone(entity1_data)
+        
+        # Mobile API uses MobileEntitySerializer which doesn't include duplicates field
+        self.assertNotIn("duplicates", entity1_data)
+        
+        # Verify the fields that are included in mobile API
+        expected_fields = ["id", "created_at", "updated_at", "defining_instance_id", "entity_type_id", "instances"]
+        for field in expected_fields:
+            self.assertIn(field, entity1_data)

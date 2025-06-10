@@ -612,6 +612,65 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         self.assertEqual(new_values["deleted_at"], self.DT.strftime("%Y-%m-%dT%H:%M:%SZ"))
         self.assertEqual(new_values["updated_by"], self.user_with_review_perm.pk)
 
+    @time_machine.travel(DT, tick=False)
+    def test_bulk_restore(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_name="foo",
+            deleted_at=self.DT,
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            status=m.OrgUnitChangeRequest.Statuses.NEW,
+            org_unit=self.org_unit,
+            created_by=self.user,
+            new_name="bar",
+            deleted_at=self.DT,
+        )
+
+        data = {
+            "select_all": 1,
+            "selected_ids": [],
+            "unselected_ids": [],
+            "restore": 1,
+        }
+        response = self.client.post("/api/orgunits/changes/bulk_delete/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        data = response.json()
+        self.assertEqual(data, {"result": "success"})
+
+        change_request_1.refresh_from_db()
+        self.assertEqual(change_request_1.deleted_at, None)
+        self.assertEqual(change_request_1.updated_by, self.user_with_review_perm)
+
+        change_request_2.refresh_from_db()
+        self.assertEqual(change_request_2.deleted_at, None)
+        self.assertEqual(change_request_2.updated_by, self.user_with_review_perm)
+
+        modification_log_1 = audit_models.Modification.objects.get(object_id=change_request_1.pk)
+        self.assertEqual(modification_log_1.source, audit_models.ORG_UNIT_CHANGE_REQUEST_API)
+        self.assertEqual(modification_log_1.user, self.user_with_review_perm)
+        past_values = modification_log_1.past_value[0]["fields"]
+        self.assertEqual(past_values["deleted_at"], self.DT.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(past_values["updated_by"], None)
+        new_values = modification_log_1.new_value[0]["fields"]
+        self.assertEqual(new_values["deleted_at"], None)
+        self.assertEqual(new_values["updated_by"], self.user_with_review_perm.pk)
+
+        modification_log_2 = audit_models.Modification.objects.get(object_id=change_request_2.pk)
+        self.assertEqual(modification_log_2.source, audit_models.ORG_UNIT_CHANGE_REQUEST_API)
+        self.assertEqual(modification_log_2.user, self.user_with_review_perm)
+        past_values = modification_log_2.past_value[0]["fields"]
+        self.assertEqual(past_values["deleted_at"], self.DT.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        self.assertEqual(past_values["updated_by"], None)
+        new_values = modification_log_2.new_value[0]["fields"]
+        self.assertEqual(new_values["deleted_at"], None)
+        self.assertEqual(new_values["updated_by"], self.user_with_review_perm.pk)
+
     def test_export_to_csv(self):
         """
         It tests the CSV export for the org change requests list.

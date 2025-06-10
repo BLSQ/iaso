@@ -237,6 +237,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         select_all = serializer.validated_data["select_all"]
         selected_ids = serializer.validated_data["selected_ids"]
         unselected_ids = serializer.validated_data["unselected_ids"]
+        restore = serializer.validated_data["restore"]
 
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -245,11 +246,15 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         else:
             queryset = queryset.filter(pk__in=selected_ids)
 
+        if restore:
+            queryset = queryset.filter(deleted_at__isnull=False)
+        else:
+            queryset = queryset.filter(deleted_at__isnull=True)
+
         now = timezone.now()
         for change_request in queryset:
             original_change_request = audit_models.serialize_instance(change_request)
-            # Soft delete.
-            change_request.deleted_at = now
+            change_request.deleted_at = None if restore else now
             change_request.updated_by = request.user
             change_request.save()
             # Log changes.

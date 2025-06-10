@@ -838,7 +838,7 @@ class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
 
 class OrgUnitChangeRequestBulkDeleteSerializerTestCase(TestCase):
     """
-    Test bulk delete serializer.
+    Test bulk delete/restore serializer.
     """
 
     @classmethod
@@ -857,6 +857,17 @@ class OrgUnitChangeRequestBulkDeleteSerializerTestCase(TestCase):
         self.assertEqual(serializer.validated_data["select_all"], False)
         self.assertEqual(serializer.validated_data["selected_ids"], [1, 2, 3])
         self.assertEqual(serializer.validated_data["unselected_ids"], [])
+        self.assertEqual(serializer.validated_data["restore"], False)
+
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 3],
+            "unselected_ids": [],
+            "restore": "true",
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["restore"], True)
 
     def test_validate_selection(self):
         data = {

@@ -46,11 +46,14 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
 
         with_lqas_end_date = Q(lqas_ended_at__isnull=False, lqas_ended_at__gte=first_day, lqas_ended_at__lte=last_day)
-        # When no lqas end date we use round date +10
+        # When no lqas end date we use round date +10 as fallback option (same convention used in Openhexa pipeline)
         without_lqas_end_date = Q(
             lqas_ended_at__isnull=True,
-            ended_at__gte=first_day - timedelta(days=10),
-            ended_at__lte=last_day - timedelta(days=10),
+            ended_at__gte=first_day
+            - timedelta(
+                days=10
+            ),  # since we can't use ended_at +10 >= first_day, we compare ended_at with first_day -10
+            ended_at__lte=last_day - timedelta(days=10),  # same logic as above
         )
         countries_with_lqas = (
             Round.objects.filter(campaign__country__in=queryset)
@@ -96,11 +99,14 @@ class LqasImCampaignOptionsFilter(django_filters.rest_framework.FilterSet):
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
 
         with_lqas_end_date = Q(lqas_ended_at__isnull=False, lqas_ended_at__gte=first_day, lqas_ended_at__lte=last_day)
-        # When no lqas end date we use round date +10
+        # When no lqas end date we use round date +10 as fallback (same convention as OpenHexa pipeline)
         without_lqas_end_date = Q(
             lqas_ended_at__isnull=True,
-            ended_at__gte=first_day - timedelta(days=10),
-            ended_at__lte=last_day - timedelta(days=10),
+            ended_at__gte=first_day
+            - timedelta(
+                days=10
+            ),  # since we can't use ended_at +10 >= first_day, we compare ended_at with first_day -10
+            ended_at__lte=last_day - timedelta(days=10),  # same logic a s above
         )
 
         rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date)

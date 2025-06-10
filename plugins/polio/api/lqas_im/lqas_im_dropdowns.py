@@ -68,7 +68,7 @@ class LqasImCountriesOptionsViewset(PolioOrgunitViewSet):
     remove_results_key_if_paginated = False
     results_key = "results"
 
-    # We need to override this method to override the serializer defined by the pareht viewset
+    # We need to override this method to override the serializer defined by the parent viewset
     def get_serializer_class(self):
         return OrgUnitDropdownSerializer
 

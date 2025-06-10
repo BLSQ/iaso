@@ -232,6 +232,7 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
@@ -251,7 +252,16 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "round",
             "round_number",
             "can_edit",
+            "alternative_campaign",
         ]
+
+    def validate(self, data):
+        validated_data = super().validate(data)
+        if validated_data.get("campaign", None) is None and validated_data.get("alternative_campaign", None) is None:
+            raise serializers.ValidationError(
+                {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}
+            )
+        return validated_data
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None

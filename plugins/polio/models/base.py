@@ -294,6 +294,10 @@ class RoundQuerySet(models.QuerySet):
             )
         )
 
+    def filter_for_user(self: QuerySet, user: Union[User, AnonymousUser]):
+        campaigns_for_user = Campaign.objects.filter_for_user(user)
+        return self.filter(campaign__in=campaigns_for_user)
+
 
 def make_group_subactivity_scope():
     return Group.objects.create(name="hidden subactivityScope")

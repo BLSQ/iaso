@@ -22,8 +22,8 @@ export const useGetLatestSubActivityDate = ({
         queryFn: () => getRequest(url),
         options: {
             select: data =>
-                data
-                    ?.map((subActivity: SubActivityFormValues) =>
+                data?.results
+                    .map((subActivity: SubActivityFormValues) =>
                         moment(subActivity.start_date, 'YYYY-MM-DD', 'day'),
                     )
                     .sort((a: moment.Moment, b: moment.Moment) =>

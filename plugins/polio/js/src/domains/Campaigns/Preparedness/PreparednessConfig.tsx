@@ -25,7 +25,6 @@ import {
 import MESSAGES from '../../../constants/messages';
 import { PreparednessSummary } from './PreparednessSummary';
 import { ObrName, PolioCampaignValues, Round } from '../../../constants/types';
-import { useGetSubActivities } from '../SubActivities/hooks/api/useGetSubActivities';
 import { useGetLatestSubActivityDate } from './hooks/useGetSubactivitiesDates';
 
 type Props = {
@@ -43,6 +42,7 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
     const { values, setFieldValue, dirty } =
         useFormikContext<PolioCampaignValues>();
     const { rounds = [], id: campaignId } = values;
+
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const currentRound = rounds.find(r => r.number === roundNumber);
@@ -55,8 +55,9 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
         'YYYY-MM-DD',
         'day',
     );
+
     const referenceDate = latestSubactivity ?? roundStartDate;
-    const isLockedForEdition = roundStartDate
+    const isLockedForEdition = referenceDate
         ? moment().isAfter(referenceDate)
         : false;
 
@@ -74,6 +75,7 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id, onGenerateSheetSuccess);
+
     const { preparedness_spreadsheet_url } = currentRound ?? {
         preparedness_spreadsheet_url: undefined,
     };

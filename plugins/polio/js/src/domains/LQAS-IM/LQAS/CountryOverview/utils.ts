@@ -124,8 +124,7 @@ export const findScopeIdsForRound = ({
     if (fullRound) {
         return fullRound.scopes
             ?.filter(scope => scope.group)
-            .map(scope => scope.group!.org_units)
-            .flat();
+            .flatMap(scope => scope.group!.org_units);
     }
     return [];
 };
@@ -148,12 +147,7 @@ export const getLqasMapLayer = ({
         campaign,
         roundNumber,
     });
-    if (roundNumber === 1) {
-        console.log('SCOPE IDS', scopeIds);
-    }
-    if (scopeIds.length === 0) {
-        console.log('CAMPAIGN', campaign, typeof roundNumber, roundNumber);
-    }
+
     const hasScope = scopeIds.length > 0;
     const shapesInScope = hasScope
         ? shapes.filter(shape => scopeIds.includes(shape.id))

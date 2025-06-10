@@ -9,6 +9,20 @@ from iaso.tests.diffing.utils import PyramidBaseTest
 
 
 class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
+    """
+    These tests are linked to the CSV preview tests
+    (check the fixtures in iaso/tests/fixtures/pyramid_diff_csv to see what could be exported).
+
+    Overview of the DHIS2 API calls made by the exporter:
+        1- create missing org units in DHIS2
+            1 POST per org unit
+        2- update org units in DHIS2
+             1 GET + POST per group of 4 org units, provided that they are modified (not at the group level)
+        3- update groups in DHIS2
+            1 GET per group
+            1 PUT per modified group
+    """
+
     DHIS2_ENDPOINT_GROUPS = "organisationUnitGroups"
     DHIS2_ENDPOINT_ORGUNITS = "organisationUnits"
     DHIS2_ENDPOINT_ORGUNITS_METADATA = "metadata"
@@ -55,15 +69,6 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
 
         self.maxDiff = None
 
-    # DHIS2 mock responses to plan
-    # 1- create missing org units in DHIS2
-    #     1 POST per org unit
-    # 2- update org units in DHIS2
-    #      1 GET + POST per group of 4 org units, provided that they are modified (not at the group level)
-    # 3- update groups in DHIS2
-    #     1 GET per group
-    #     1 PUT per modified group
-
     @patch("dhis2.api.Api.get")
     @patch("dhis2.api.Api.post")
     @patch("dhis2.api.Api.put")
@@ -88,6 +93,13 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
         new_region_opening_date = datetime.date(2025, 6, 10)
         self.angola_region_to_compare_with.opening_date = new_region_opening_date
         self.angola_region_to_compare_with.save()
+
+        # this group should not be exported because it's not assigned to any org unit in the pyramid
+        new_group = m.Group.objects.create(
+            name="New Group",
+            source_version=self.source_version_to_compare_with,
+            source_ref="new-group-source-ref",
+        )
 
         # Mocking the DHIS2 API calls, in the order that they are expected to be made
         payloads_create_missings_post = {  # call #1
@@ -258,11 +270,219 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
         ]
         self.assertEqualCallLists(expected_calls_put, mock_api_put.call_args_list)
 
-    def test_export_to_dhis2_with_group_filtering(self):
-        pass
+    @patch("dhis2.api.Api.get")
+    @patch("dhis2.api.Api.post")
+    @patch("dhis2.api.Api.put")
+    def test_export_to_dhis2_with_group_filtering(self, mock_api_put, mock_api_post, mock_api_get):
+        # Preparing some extra changes to trigger various DHIS2 API calls
+        new_country_name = "Angola Updated"  # This change will trigger a DHIS2 API call
+        self.angola_country_to_compare_with.name = new_country_name
+        self.angola_country_to_compare_with.save()
 
-    def test_export_to_dhis2_with_group_filtering_and_group_mismatches(self):
-        pass
+        # The below changes should not trigger any DHIS2 API calls, since the pyramid will be filtered by group
+        # the region and district are not assigned to the group we are filtering on
+        new_region_opening_date = datetime.date(2025, 6, 10)
+        self.angola_region_to_compare_with.opening_date = new_region_opening_date
+        self.angola_region_to_compare_with.save()
+
+        new_district_closed_date = datetime.date(2025, 6, 10)
+        self.angola_district_to_compare_with.closed_date = new_district_closed_date
+        self.angola_district_to_compare_with.save()
+
+        # Mocking the DHIS2 API calls, in the order that they are expected to be made
+        payloads_update_orgunits_get = {  # call #1
+            "call": call(
+                f"{self.DHIS2_ENDPOINT_ORGUNITS}?",
+                params={
+                    "filter": f"id:in:[{self.angola_country_to_update.source_ref}]",
+                    "fields": ":all",
+                },
+            ),
+            "result": self._generate_mock_dhis2_api_call_result(
+                {
+                    "organisationUnits": [
+                        {
+                            "id": self.angola_country_to_update.source_ref,
+                            "name": self.angola_country_to_update.name,
+                        }
+                    ]
+                }
+            ),
+        }
+        payloads_update_orgunits_post = {  # call #2
+            "call": call(
+                self.DHIS2_ENDPOINT_ORGUNITS_METADATA,
+                {
+                    "organisationUnits": [
+                        {
+                            "id": self.angola_country_to_update.source_ref,
+                            "name": new_country_name,
+                        }
+                    ]
+                },
+            ),
+            "result": self._generate_mock_dhis2_api_call_result(
+                {
+                    "status": "OK",
+                }
+            ),
+        }
+        mock_api_get.side_effect = [
+            payloads_update_orgunits_get["result"],
+        ]
+        mock_api_post.side_effect = [
+            payloads_update_orgunits_post["result"],
+        ]
+        mock_api_put.side_effect = []
+
+        dhis2_ou_exporter(
+            ref_version_id=self.source_version_to_compare_with.id,
+            version_id=self.source_version_to_update.id,
+            ignore_groups=True,  # Difference from happy path here
+            show_deleted_org_units=True,
+            validation_status=None,
+            ref_validation_status=None,
+            top_org_unit_id=None,
+            top_org_unit_ref_id=None,
+            org_unit_types_ids=None,
+            org_unit_types_ref_ids=None,
+            org_unit_group_id=self.group_a1.id,  # Difference from happy path here
+            org_unit_group_ref_id=self.group_a2.id,  # Difference from happy path here
+            field_names=["name", "opening_date", "closed_date"],  # Difference from happy path here
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        expected_calls_get = [
+            payloads_update_orgunits_get["call"],
+        ]
+        self.assertEqualCallLists(expected_calls_get, mock_api_get.call_args_list)
+
+        expected_calls_post = [
+            payloads_update_orgunits_post["call"],
+        ]
+        self.assertEqualCallLists(expected_calls_post, mock_api_post.call_args_list)
+
+        expected_calls_put = []
+        self.assertEqualCallLists(expected_calls_put, mock_api_put.call_args_list)
+
+    @patch("dhis2.api.Api.get")
+    @patch("dhis2.api.Api.post")
+    @patch("dhis2.api.Api.put")
+    def test_export_to_dhis2_with_group_filtering_and_group_mismatches(self, mock_api_put, mock_api_post, mock_api_get):
+        # Preparing some extra changes to trigger various DHIS2 API calls
+        new_country_name = "Angola Updated"  # This change will be exported to DHIS2
+        self.angola_country_to_compare_with.name = new_country_name
+        self.angola_country_to_compare_with.save()
+        new_region_opening_date = datetime.date(2025, 6, 10)  # This change will be exported to DHIS2
+        self.angola_region_to_compare_with.opening_date = new_region_opening_date
+        self.angola_region_to_compare_with.save()
+
+        # This change should not trigger any DHIS2 API calls, since the pyramid will be filtered by group
+        # the district is not assigned to the group we are filtering on
+        new_district_closed_date = datetime.date(2025, 6, 10)
+        self.angola_district_to_compare_with.closed_date = new_district_closed_date
+        self.angola_district_to_compare_with.save()
+
+        # Adding another OrgUnit to the Group C -> 2 OrgUnits will be compared to 1 OrgUnit
+        self.angola_region_to_compare_with.groups.set([self.group_c])
+        self.angola_region_to_compare_with.save()
+
+        # Mocking the DHIS2 API calls, in the order that they are expected to be made
+        payloads_create_missings_post = {  # call #1; this is considered a new orgunit even though it's in the other pyramid
+            "call": call(
+                self.DHIS2_ENDPOINT_ORGUNITS,
+                {
+                    "id": self.angola_region_to_compare_with.source_ref,
+                    "name": self.angola_region_to_compare_with.name,
+                    "shortName": self.angola_region_to_compare_with.name,
+                    "openingDate": new_region_opening_date.strftime("%Y-%m-%d") + "T00:00:00.000",
+                    "parent": {"id": self.angola_country_to_update.source_ref},
+                },
+            ),
+            "result": self._generate_mock_dhis2_api_call_result(),
+        }
+        payloads_update_orgunits_get = {  # call #2
+            "call": call(
+                f"{self.DHIS2_ENDPOINT_ORGUNITS}?",
+                params={
+                    "filter": f"id:in:[{self.angola_country_to_update.source_ref}]",
+                    "fields": ":all",
+                },
+            ),
+            "result": self._generate_mock_dhis2_api_call_result(
+                {
+                    "organisationUnits": [
+                        {
+                            "id": self.angola_country_to_update.source_ref,
+                            "name": self.angola_country_to_update.name,
+                        }
+                    ]
+                }
+            ),
+        }
+        payloads_update_orgunits_post = {  # call #3
+            "call": call(
+                self.DHIS2_ENDPOINT_ORGUNITS_METADATA,
+                {
+                    "organisationUnits": [
+                        {
+                            "id": self.angola_country_to_update.source_ref,
+                            "name": new_country_name,
+                        }
+                    ]
+                },
+            ),
+            "result": self._generate_mock_dhis2_api_call_result(
+                {
+                    "status": "OK",
+                }
+            ),
+        }
+        mock_api_get.side_effect = [
+            payloads_update_orgunits_get["result"],
+        ]
+        mock_api_post.side_effect = [
+            payloads_create_missings_post["result"],
+            payloads_update_orgunits_post["result"],
+        ]
+        mock_api_put.side_effect = []
+
+        dhis2_ou_exporter(
+            ref_version_id=self.source_version_to_compare_with.id,
+            version_id=self.source_version_to_update.id,
+            ignore_groups=True,  # Difference from happy path here
+            show_deleted_org_units=True,
+            validation_status=None,
+            ref_validation_status=None,
+            top_org_unit_id=None,
+            top_org_unit_ref_id=None,
+            org_unit_types_ids=None,
+            org_unit_types_ref_ids=None,
+            org_unit_group_id=self.group_b.id,  # Difference from happy path here
+            org_unit_group_ref_id=self.group_c.id,  # Difference from happy path here
+            field_names=["name", "opening_date", "closed_date"],  # Difference from happy path here
+            task=self.task,
+            _immediate=True,
+        )
+
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        expected_calls_get = [
+            payloads_update_orgunits_get["call"],
+        ]
+        self.assertEqualCallLists(expected_calls_get, mock_api_get.call_args_list)
+
+        expected_calls_post = [
+            payloads_create_missings_post["call"],
+            payloads_update_orgunits_post["call"],
+        ]
+        self.assertEqualCallLists(expected_calls_post, mock_api_post.call_args_list)
+
+        expected_calls_put = []
+        self.assertEqualCallLists(expected_calls_put, mock_api_put.call_args_list)
 
     def _generate_mock_dhis2_api_call_result(self, returned_values: dict = {}, status_code: int = 200):
         mock_dhis2_call = MagicMock()

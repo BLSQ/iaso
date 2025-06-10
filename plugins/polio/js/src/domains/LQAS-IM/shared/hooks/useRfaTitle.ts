@@ -23,7 +23,7 @@ type CalcParams = {
     accessor: string;
 };
 
-const calculateChildrenAbsent = ({
+export const calculateChildrenAbsent = ({
     data,
     campaign,
     round,

@@ -49,7 +49,7 @@ export const PreparednessForm: FunctionComponent = () => {
                         className={classes.tabPanel}
                     >
                         <PreparednessConfig
-                            roundNumber={round.number}
+                            round={round}
                             campaignName={values.obr_name}
                         />
                     </TabPanel>

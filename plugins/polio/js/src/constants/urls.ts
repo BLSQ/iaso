@@ -150,7 +150,20 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     lqasCountry: {
         url: LQAS_BASE_URL,
-        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
+        params: [
+            'leftCountry',
+            'leftCampaign',
+            'leftRound',
+            'leftMonth',
+            'leftYear',
+            'leftTab',
+            'rightCampaign',
+            'rightCountry',
+            'rightRound',
+            'rightMonth',
+            'rightYear',
+            'rightTab',
+        ],
     },
     lqasAfro: {
         url: LQAS_AFRO_MAP_URL,

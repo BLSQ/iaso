@@ -1,4 +1,3 @@
-/* eslint-disable react/require-default-props */
 import React, {
     FunctionComponent,
     useCallback,

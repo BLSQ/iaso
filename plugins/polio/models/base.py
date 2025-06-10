@@ -1604,7 +1604,7 @@ class OutgoingStockMovement(models.Model):
             models.Index(fields=["report_date"]),  # Used in filtering/ordering
         ]
 
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, null=True, blank=True)
     round = models.ForeignKey(Round, on_delete=models.CASCADE, null=True, blank=True)
     vaccine_stock = models.ForeignKey(
         VaccineStock, on_delete=models.CASCADE

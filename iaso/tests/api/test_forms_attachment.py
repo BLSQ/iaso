@@ -13,6 +13,7 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.test import APITestCase
 from iaso.utils.models.virus_scan import VirusScanStatus
@@ -282,22 +283,19 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
-        url = self._build_signed_manifest_url(self.form_2.id)
-        response = self.client.get(url)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_not_found(self):
         f"""GET {MANIFEST_URL} with wrong id: 404"""
         self.client.force_authenticate(self.yoda)
-        url = self._build_signed_manifest_url(100)
-        response = self.client.get(url)
+        response = self.client.get(MANIFEST_URL.format(form_id=100))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_found_but_empty_attachments(self):
         f"""GET {MANIFEST_URL} with no attachments: 200"""
         self.client.force_authenticate(self.yoda)
-        url = self._build_signed_manifest_url(self.form_1.id)
-        response = self.client.get(url)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
         # be careful when you edit the xml file, because any difference in spacing will break the test!
         with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as f:
@@ -310,8 +308,7 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_manifest_form_found_with_attachments(self):
         f"""GET {MANIFEST_URL} with attachments: 200"""
         self.client.force_authenticate(self.yoda)
-        url = self._build_signed_manifest_url(self.form_2.id)
-        response = self.client.get(url)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
         content = self.assertXMLResponse(response, 200)
         content_str = content.decode("utf-8")
 
@@ -341,8 +338,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         )
         self.form_1.save()
         self.client.force_authenticate(self.yoda)
-        url = self._build_signed_manifest_url(self.form_1.id)
-        response = self.client.get(url)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
         content_str = content.decode("utf-8")
 
@@ -369,17 +365,50 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_manifest_anonymous_app_id(self):
         f"""GET {BASE_URL} via app id"""
 
-        url = self._build_signed_manifest_url(self.form_1.id, {"app_id": self.project_1.app_id})
         response = self.client.get(
-            url,
+            MANIFEST_URL.format(form_id=self.form_2.id),
             headers={"Content-Type": "application/json"},
+            data={"app_id": self.project_1.app_id},
         )
         self.assertXMLResponse(response, 200)
 
-    def _build_signed_manifest_url(self, form_id: int, extra_params: dict = {}) -> str:
-        """Build a signed URL for the manifest endpoint."""
-        path = MANIFEST_URL.format(form_id=form_id)
-        return generate_signed_url(path, None, extra_params=extra_params)
+    def test_manifest_anonymous_app_id_project_with_authentication(self):
+        f"""GET {BASE_URL} via app id"""
+
+        self.project_1.needs_authentication = True
+        self.project_1.save()
+
+        response = self.client.get(
+            MANIFEST_URL.format(form_id=self.form_2.id),
+            headers={"Content-Type": "application/json"},
+            data={"app_id": self.project_1.app_id},
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_manifest_anonymous_with_signed_url(self):
+        """Test that signed anonymous URLs can be used to fetch manifests (enketo use case)"""
+        path = MANIFEST_URL.format(form_id=self.form_2.id)
+        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+
+        response = self.client.get(signed_url)
+        self.assertXMLResponse(response, status.HTTP_200_OK)
+
+        content_str = response.content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_1_hash": self.attachment1.md5,
+            "attachment_2_hash": self.attachment2.md5,
+            "attachment_1_name": self.attachment1.name,
+            "attachment_2_name": self.attachment2.name,
+            "attachment_1_url": self.attachment1.file.url,
+            "attachment_2_url": self.attachment2.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
+        )
+        self.assertEqual(expected_xml, content_str)
 
 
 class MockResults:

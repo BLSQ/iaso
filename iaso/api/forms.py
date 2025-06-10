@@ -43,6 +43,15 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         )
 
 
+class HasFormPermissionOrSignedURL(HasFormPermission):
+    def has_permission(self, request, view):
+        if super().has_permission(request, view):
+            return True
+
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        return verify_signed_url(request, enketo_secret)
+
+
 class FormPredefinedFilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = FormPredefinedFilter
@@ -421,47 +430,41 @@ class FormsViewSet(ModelViewSet):
 
     FORM_PK = "form_pk"
 
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
         This is used for the mobile app and Enketo to fetch the list of file attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
-        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
-        if verify_signed_url(request, enketo_secret):
-            form = self.get_object()
-            attachments = form.attachments.all()
-            media_files = []
-            for attachment in attachments:
-                attachment_file_url: str = attachment.file.url
-                if not attachment_file_url.startswith("http"):
-                    # Needed for local dev
-                    attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        form = self.get_object()
+        attachments = form.attachments.all()
+        media_files = []
+        for attachment in attachments:
+            attachment_file_url: str = attachment.file.url
+            if not attachment_file_url.startswith("http"):
+                # Needed for local dev
+                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
 
-                media_files.append(
-                    f"""<mediaFile>
+            media_files.append(
+                f"""<mediaFile>
                         <filename>{escape(attachment.name)}</filename>
                         <hash>md5:{attachment.md5}</hash>
                         <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-                        </mediaFile>"""
-                )
-
-            nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
-            return HttpResponse(
-                status=status.HTTP_200_OK,
-                content_type="text/xml",
-                headers={
-                    "X-OpenRosa-Version": "1.0",
-                },
-                content=f"""<?xml version="1.0" encoding="UTF-8"?>
-                            <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-                            {nl.join(media_files)}
-                            </manifest>""",
+                    </mediaFile>"""
             )
+
+        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
         return HttpResponse(
-            status=status.HTTP_401_UNAUTHORIZED,
-            content="Invalid Enketo signature",
+            status=status.HTTP_200_OK,
+            content_type="text/xml",
+            headers={
+                "X-OpenRosa-Version": "1.0",
+            },
+            content=f"""<?xml version="1.0" encoding="UTF-8"?>
+                        <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+                            {nl.join(media_files)}
+                        </manifest>""",
         )
 
 

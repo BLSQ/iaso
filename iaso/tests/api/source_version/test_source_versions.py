@@ -319,7 +319,9 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
-        self.assertContains(response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED)
+        self.assertContains(
+            response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     def test_diff_csv_without_perms(self):
         self.client.force_authenticate(self.user)
@@ -335,7 +337,9 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
-        self.assertContains(response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN)
+        self.assertContains(
+            response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN
+        )
 
     def test_export_to_dhis2_happy_path(self):
         # Adding missing credentials to the data source
@@ -406,7 +410,9 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
-        self.assertContains(response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED)
+        self.assertContains(
+            response, "Authentication credentials were not provided.", status_code=status.HTTP_401_UNAUTHORIZED
+        )
 
     def test_export_to_dhis2_without_perms(self):
         self.client.force_authenticate(self.user)
@@ -422,4 +428,6 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
-        self.assertContains(response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN)
+        self.assertContains(
+            response, "You do not have permission to perform this action.", status_code=status.HTTP_403_FORBIDDEN
+        )

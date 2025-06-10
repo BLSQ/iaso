@@ -24,30 +24,43 @@ import {
 } from './hooks/useGetPreparednessData';
 import MESSAGES from '../../../constants/messages';
 import { PreparednessSummary } from './PreparednessSummary';
-import { ObrName, PolioCampaignValues } from '../../../constants/types';
+import { ObrName, PolioCampaignValues, Round } from '../../../constants/types';
+import { useGetLatestSubActivityDate } from './hooks/useGetSubactivitiesDates';
 
 type Props = {
-    roundNumber: number;
+    round: Round;
     campaignName?: ObrName;
 };
 
 export const PreparednessConfig: FunctionComponent<Props> = ({
-    roundNumber,
+    round,
     campaignName,
 }) => {
+    const roundNumber = round.number;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } =
         useFormikContext<PolioCampaignValues>();
     const { rounds = [], id: campaignId } = values;
+
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const currentRound = rounds.find(r => r.number === roundNumber);
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
-    const roundStartDate = currentRound?.started_at;
-    const isLockedForEdition = roundStartDate
-        ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
+    const { data: latestSubactivity } = useGetLatestSubActivityDate({
+        round,
+    });
+    const roundStartDate = moment(
+        currentRound?.started_at,
+        'YYYY-MM-DD',
+        'day',
+    );
+
+    const referenceDate = latestSubactivity ?? roundStartDate;
+    const isLockedForEdition = referenceDate
+        ? moment().isAfter(referenceDate)
         : false;
+
     const key = `rounds[${roundIndex}].preparedness_spreadsheet_url`;
     const lastKey = `rounds[${roundIndex}].last_preparedness`;
 
@@ -62,6 +75,7 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
     } = useGeneratePreparednessSheet(values.id, onGenerateSheetSuccess);
+
     const { preparedness_spreadsheet_url } = currentRound ?? {
         preparedness_spreadsheet_url: undefined,
     };

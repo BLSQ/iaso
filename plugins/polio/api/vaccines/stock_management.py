@@ -231,7 +231,7 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
 
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
-    campaign = serializers.CharField(source="campaign.obr_name")
+    campaign = serializers.CharField(source="campaign.obr_name", required=False)
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
@@ -327,7 +327,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # When Form A is created, find if there is a matching earmarked stock
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
-            movement = OutgoingStockMovement.objects.get(id=response.data["id"])
+            movement = OutgoingStockMovement.objects.filter(id=response.data["id"]).first()
             if movement and movement.round and movement.vaccine_stock:
                 total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
 

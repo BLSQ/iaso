@@ -51,7 +51,8 @@ export type FieldType =
     | 'calculate'
     | 'acknowledge'
     | 'hidden'
-    | 'xml-external';
+    | 'xml-external'
+    | 'boolean';
 
 export type PossibleField = {
     label: string;

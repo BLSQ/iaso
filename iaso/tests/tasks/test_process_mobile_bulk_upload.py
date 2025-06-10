@@ -12,6 +12,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase
 
+from beanstalk_worker.services import TestTaskService
 from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
@@ -127,7 +128,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             id=1, name="Participant", reference_form=self.form_registration
         )
 
-    def test_success(self):
+    def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
         # to return the filepath to this zip.
@@ -135,6 +136,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
         save_file_to_api_import(self.api_import, zip_path)
+
+    def test_success(self):
+        self._create_zip_file()
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -194,6 +198,96 @@ class ProcessMobileBulkUploadTest(TestCase):
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
 
+    def test_success_when_user_is_none(self):
+        self.api_import.user = None
+        self.api_import.save()
+        self.task.launcher = None
+        self.task.save()
+
+        self._create_zip_file()
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+        self.assertEqual(m.InstanceFile.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # Org unit was created
+        ou = m.OrgUnit.objects.get(name="New Org Unit")
+        self.assertIsNotNone(ou)
+        self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+
+        # Instances (Submissions) + Entity were created
+        self.assertEqual(m.Entity.objects.count(), 2)
+        ent_disasi = m.Entity.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        entity_patrice = m.Entity.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
+        self.assertEqual(m.Instance.objects.count(), 4)
+        self.assertEqual(m.InstanceFile.objects.count(), 2)
+
+        # Entity 1: Disasi Makulo
+        reg_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_REGISTRATION)
+        self.assertEqual(reg_instance.json.get("_full_name"), "Disasi Makulo")
+        self.assertEqual(reg_instance.entity, ent_disasi)
+        self.assertEqual(reg_instance.instancefile_set.count(), 0)
+
+        catt_instance = m.Instance.objects.get(uuid=DISASI_MAKULO_CATT)
+        self.assertEqual(catt_instance.json.get("result"), "positive")
+        self.assertEqual(catt_instance.entity, ent_disasi)
+        self.assertEqual(catt_instance.instancefile_set.count(), 1)
+        image = catt_instance.instancefile_set.first()
+        self.assertEqual(image.name, "1712326156339.webp")
+
+        # Entity 2: Patrice Akambu
+        reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)
+        self.assertEqual(reg_instance.json.get("_full_name"), "Patrice Akambu")
+        self.assertEqual(reg_instance.entity, entity_patrice)
+        self.assertEqual(reg_instance.instancefile_set.count(), 0)
+
+        catt_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_CATT)
+        self.assertEqual(catt_instance.json.get("result"), "positive")
+        self.assertEqual(catt_instance.entity, entity_patrice)
+        self.assertEqual(catt_instance.instancefile_set.count(), 1)
+        # image from Disasi's CATT was duplicated to this test
+        image = catt_instance.instancefile_set.first()
+        self.assertEqual(image.name, "1712326156339.webp")
+
+    def test_success_when_user_is_none_and_task_is_not_immediate(self):
+        self.api_import.user = None
+        self.api_import.save()
+
+        self.task.delete()
+
+        self._create_zip_file()
+
+        task = process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            _immediate=False,
+        )
+
+        self.assertEqual(m.Task.objects.filter(status="QUEUED").count(), 1)
+        task_service = TestTaskService()
+        task_service.run_all()
+        self.assertEqual(m.Task.objects.filter(status="QUEUED").count(), 0)
+
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+        self.assertEqual(task.created_by, None)
+        self.assertEqual(task.account, self.account)
+
     def test_fail_in_the_middle_of_import(self):
         # Org unit doesn't exist. The job will fail, then verify that
         # nothing was created.
@@ -235,10 +329,8 @@ class ProcessMobileBulkUploadTest(TestCase):
     # on the already created instance)
     def test_reference_form_update(self):
         # Do an import with the CATT tablet first to already create Disasi Makulo
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+
+        self._create_zip_file()
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -322,10 +414,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         )
         reg_disasi = ent_disasi.attributes
 
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        self._create_zip_file()
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.exclude(deleted=True).count(), 0)

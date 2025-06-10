@@ -495,7 +495,7 @@ export const useSelectionActions = (
 
     return useMemo(() => {
         const assignReferenceSubmissions: SelectionAction = {
-            icon: (newSelection,resetSelection) => {
+            icon: (newSelection, resetSelection) => {
                 return (
                     <LinkReferenceInstancesModalComponent
                         selection={newSelection}
@@ -590,9 +590,11 @@ export const useSelectionActions = (
             actions.push(
                 exportAction,
                 deleteAction,
-                pushGpsAction,
                 assignReferenceSubmissions,
             );
+            if (userHasPermission(Permission.ORG_UNITS, currentUser)) {
+                actions.push(pushGpsAction);
+            }
         }
         return actions;
     }, [

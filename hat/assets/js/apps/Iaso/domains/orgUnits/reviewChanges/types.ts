@@ -4,6 +4,7 @@ import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
+
 export type ApproveOrgUnitParams = UrlParams & {
     parent_id?: string;
     groups?: string;
@@ -22,6 +23,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     source_version_id?: string;
     data_source_synchronization_id?: string;
     ids?: string; // comma separated ids
+    is_soft_deleted?: boolean;
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

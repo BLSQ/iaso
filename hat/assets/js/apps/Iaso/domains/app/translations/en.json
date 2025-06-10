@@ -62,6 +62,7 @@
     "iaso.changeRequest.confirmOrgUnitCreationChangeRequest": "You are about to create a new Org unit through a change request.",
     "iaso.changeRequest.confirmOrgUnitCreationMessage": "Do you confirm the creation?",
     "iaso.changeRequest.deleteOrgUnitChangesCount": "Delete {count} change request(s)",
+    "iaso.changeRequest.isSoftDeleted": "Show only deleted",
     "iaso.changeRequest.multiDeleteAction": "Delete selected change requests",
     "iaso.changeRequest.multiSelectionAction": "Edit selected change requests",
     "iaso.changeRequest.newValue": "Modified version",

@@ -318,6 +318,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.bulkDeleteSuccess',
         defaultMessage: 'Deleted successfully',
     },
+    isSoftDeleted: {
+        id: 'iaso.changeRequest.isSoftDeleted',
+        defaultMessage: 'Show only deleted',
+    },
 });
 
 export default MESSAGES;

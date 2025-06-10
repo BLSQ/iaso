@@ -62,6 +62,7 @@
     "iaso.changeRequest.confirmOrgUnitCreationChangeRequest": "Vous allez créer une nouvelle unité d'org. via une demande de changement.",
     "iaso.changeRequest.confirmOrgUnitCreationMessage": "Confirmez-vous la création?",
     "iaso.changeRequest.deleteOrgUnitChangesCount": "Supprimer {count} demande(s) de changement",
+    "iaso.changeRequest.isSoftDeleted": "Afficher uniquement les données supprimées",
     "iaso.changeRequest.multiDeleteAction": "Supprimer les demandes de changement",
     "iaso.changeRequest.multiSelectionAction": "Editer le(s) changement(s) sélectionné(s)",
     "iaso.changeRequest.newValue": "Version modifiée",

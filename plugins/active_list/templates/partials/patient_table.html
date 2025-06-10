@@ -1,10 +1,14 @@
 <div>
 <div>
 {% if last_import %}
-  <a href="{{ last_import.file.url }}">Fichier uploadé</a> (par {{ last_import.user.username }})
+  {% if last_import.file %}
+    <a href="{{ last_import.file.url }}">Fichier uploadé</a> (par {{ last_import.user.username }})
+  {% else %}
+    Import sans fichier (par {{ last_import.user.username }})
+  {% endif %}
 
-  {% if last_import.date %}
-    le {{ last_import.date|date:"d/m/Y H:i" }}
+  {% if last_import.creation_date %}
+    le {{ last_import.creation_date|date:"d/m/Y H:i" }}
   {% endif %}
 {% endif %}
 

@@ -642,7 +642,9 @@ def export_active_patients_excel(active_patients, name, period):
 
 
 def export_active_patients_upload_format(active_patients, name, period):
-    """Export patients in upload-compatible format"""
+    """Export patients in upload-compatible format with styling"""
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+
     workbook = openpyxl.Workbook()
     worksheet = workbook.active
 
@@ -674,9 +676,31 @@ def export_active_patients_upload_format(active_patients, name, period):
         "Servi ailleurs",
     ]
 
-    # Add headers to worksheet
+    # Define styles
+    header_font = Font(bold=True, color="FFFFFF")
+    header_fill = PatternFill(start_color="4472C4", end_color="4472C4", fill_type="solid")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+
+    # Light border style
+    thin_border = Border(
+        left=Side(style="thin", color="D1D1D1"),
+        right=Side(style="thin", color="D1D1D1"),
+        top=Side(style="thin", color="D1D1D1"),
+        bottom=Side(style="thin", color="D1D1D1"),
+    )
+
+    # Data alignment styles
+    center_alignment = Alignment(horizontal="center", vertical="center")
+    left_alignment = Alignment(horizontal="left", vertical="center")
+
+    # Add headers to worksheet with styling
     for col_num, header in enumerate(upload_headers, 1):
-        worksheet.cell(row=1, column=col_num).value = header
+        cell = worksheet.cell(row=1, column=col_num)
+        cell.value = header
+        cell.font = header_font
+        cell.fill = header_fill
+        cell.alignment = header_alignment
+        cell.border = thin_border
 
     # Helper function to convert YYYY-MM period to Mon-YY format
     def convert_yyyymm_to_file_format(yyyymm_period):
@@ -694,82 +718,169 @@ def export_active_patients_upload_format(active_patients, name, period):
     # Convert period to upload format
     file_period = convert_yyyymm_to_file_format(period)
 
-    # Add data rows
+    # Helper function to style data cells
+    def style_data_cell(cell, use_center=False):
+        cell.border = thin_border
+        cell.alignment = center_alignment if use_center else left_alignment
+
+    # Add data rows with styling
     for row_num, patient in enumerate(active_patients, 2):
-        # N°
-        worksheet.cell(row=row_num, column=1).value = getattr(patient, "number", row_num - 1)
+        # N° (centered)
+        cell = worksheet.cell(row=row_num, column=1)
+        cell.value = getattr(patient, "number", row_num - 1)
+        style_data_cell(cell, use_center=True)
 
-        # CODE ETS
-        worksheet.cell(row=row_num, column=2).value = getattr(patient, "code_ets", "")
+        # CODE ETS (centered)
+        cell = worksheet.cell(row=row_num, column=2)
+        cell.value = getattr(patient, "code_ets", "")
+        style_data_cell(cell, use_center=True)
 
-        # NOM ETABLISSEMENT
-        worksheet.cell(row=row_num, column=3).value = getattr(patient, "facility_name", "")
+        # SITES (left aligned) - use org_unit.name
+        cell = worksheet.cell(row=row_num, column=3)
+        try:
+            sites_name = patient.org_unit.name if patient.org_unit else ""
+        except AttributeError:
+            sites_name = getattr(patient, "facility_name", "")
+        cell.value = sites_name
+        style_data_cell(cell)
 
-        # MOIS DE RAPPORTAGE (in Mon-YY format)
-        worksheet.cell(row=row_num, column=4).value = file_period
+        # Periode (centered)
+        cell = worksheet.cell(row=row_num, column=4)
+        cell.value = file_period
+        style_data_cell(cell, use_center=True)
 
-        # REGION
-        worksheet.cell(row=row_num, column=5).value = getattr(patient, "region", "")
+        # REGION (left aligned) - use org_unit.parent.parent.name
+        cell = worksheet.cell(row=row_num, column=5)
+        try:
+            region_name = ""
+            if patient.org_unit and patient.org_unit.parent and patient.org_unit.parent.parent:
+                region_name = patient.org_unit.parent.parent.name
+        except AttributeError:
+            region_name = getattr(patient, "region", "")
+        cell.value = region_name
+        style_data_cell(cell)
 
-        # DISTRICT
-        worksheet.cell(row=row_num, column=6).value = getattr(patient, "district", "")
+        # DISTRICT (left aligned) - use org_unit.parent.name
+        cell = worksheet.cell(row=row_num, column=6)
+        try:
+            district_name = ""
+            if patient.org_unit and patient.org_unit.parent:
+                district_name = patient.org_unit.parent.name
+        except AttributeError:
+            district_name = getattr(patient, "district", "")
+        cell.value = district_name
+        style_data_cell(cell)
 
-        # CODE IDENTIFIANT
-        worksheet.cell(row=row_num, column=7).value = (
-            getattr(patient.patient, "identifier_code", "") if hasattr(patient, "patient") else ""
-        )
+        # CODE IDENTIFIANT (centered)
+        cell = worksheet.cell(row=row_num, column=7)
+        cell.value = getattr(patient.patient, "identifier_code", "") if hasattr(patient, "patient") else ""
+        style_data_cell(cell, use_center=True)
 
-        # SEXE
-        worksheet.cell(row=row_num, column=8).value = get_human_readable_value(patient, "sex")
+        # SEXE (centered)
+        cell = worksheet.cell(row=row_num, column=8)
+        cell.value = get_human_readable_value(patient, "sex")
+        style_data_cell(cell, use_center=True)
 
-        # AGE
-        worksheet.cell(row=row_num, column=9).value = get_human_readable_value(patient, "age")
+        # AGE (centered)
+        cell = worksheet.cell(row=row_num, column=9)
+        cell.value = get_human_readable_value(patient, "age")
+        style_data_cell(cell, use_center=True)
 
-        # POIDS
-        worksheet.cell(row=row_num, column=10).value = get_human_readable_value(patient, "weight")
+        # POIDS (centered)
+        cell = worksheet.cell(row=row_num, column=10)
+        cell.value = get_human_readable_value(patient, "weight")
+        style_data_cell(cell, use_center=True)
 
-        # Nouvelle inclusion (convert boolean to 0/1)
-        worksheet.cell(row=row_num, column=11).value = 1 if getattr(patient, "new_inclusion", False) else 0
+        # Nouvelle inclusion (centered)
+        cell = worksheet.cell(row=row_num, column=11)
+        cell.value = 1 if getattr(patient, "new_inclusion", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Transfert-In
-        worksheet.cell(row=row_num, column=12).value = 1 if getattr(patient, "transfer_in", False) else 0
+        # Transfert-In (centered)
+        cell = worksheet.cell(row=row_num, column=12)
+        cell.value = 1 if getattr(patient, "transfer_in", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Retour dans les soins
-        worksheet.cell(row=row_num, column=13).value = 1 if getattr(patient, "return_to_care", False) else 0
+        # Retour dans les soins (centered)
+        cell = worksheet.cell(row=row_num, column=13)
+        cell.value = 1 if getattr(patient, "return_to_care", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # TB / VIH
-        worksheet.cell(row=row_num, column=14).value = 1 if getattr(patient, "tb_hiv", False) else 0
+        # TB / VIH (centered)
+        cell = worksheet.cell(row=row_num, column=14)
+        cell.value = 1 if getattr(patient, "tb_hiv", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Type de VIH
-        worksheet.cell(row=row_num, column=15).value = get_human_readable_value(patient, "hiv_type")
+        # Type de VIH (centered)
+        cell = worksheet.cell(row=row_num, column=15)
+        cell.value = get_human_readable_value(patient, "hiv_type")
+        style_data_cell(cell, use_center=True)
 
-        # Ligne thérapeutique
-        worksheet.cell(row=row_num, column=16).value = get_human_readable_value(patient, "treatment_line")
+        # Ligne thérapeutique (centered)
+        cell = worksheet.cell(row=row_num, column=16)
+        cell.value = get_human_readable_value(patient, "treatment_line")
+        style_data_cell(cell, use_center=True)
 
-        # Date de la dernière dispensation
-        worksheet.cell(row=row_num, column=17).value = get_human_readable_value(patient, "last_dispensation_date")
+        # Date de la dernière dispensation (centered)
+        cell = worksheet.cell(row=row_num, column=17)
+        cell.value = get_human_readable_value(patient, "last_dispensation_date")
+        style_data_cell(cell, use_center=True)
 
-        # Nombre de jours dispensés
-        worksheet.cell(row=row_num, column=18).value = get_human_readable_value(patient, "days_dispensed")
+        # Nombre de jours dispensés (centered)
+        cell = worksheet.cell(row=row_num, column=18)
+        cell.value = get_human_readable_value(patient, "days_dispensed")
+        style_data_cell(cell, use_center=True)
 
-        # REGIME
-        worksheet.cell(row=row_num, column=19).value = getattr(patient, "regimen", "")
+        # REGIME (left aligned)
+        cell = worksheet.cell(row=row_num, column=19)
+        cell.value = getattr(patient, "regimen", "")
+        style_data_cell(cell)
 
-        # STABLE (convert boolean to Oui/Non)
+        # STABLE (centered)
+        cell = worksheet.cell(row=row_num, column=20)
         stable_val = getattr(patient, "stable", False)
-        worksheet.cell(row=row_num, column=20).value = "Oui" if stable_val else "Non"
+        cell.value = "Oui" if stable_val else "Non"
+        style_data_cell(cell, use_center=True)
 
-        # Transfert Out
-        worksheet.cell(row=row_num, column=21).value = 1 if getattr(patient, "transfer_out", False) else 0
+        # Transfert Out (centered)
+        cell = worksheet.cell(row=row_num, column=21)
+        cell.value = 1 if getattr(patient, "transfer_out", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Décès
-        worksheet.cell(row=row_num, column=22).value = 1 if getattr(patient, "death", False) else 0
+        # Décès (centered)
+        cell = worksheet.cell(row=row_num, column=22)
+        cell.value = 1 if getattr(patient, "death", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Arrêt TARV
-        worksheet.cell(row=row_num, column=23).value = 1 if getattr(patient, "art_stoppage", False) else 0
+        # Arrêt TARV (centered)
+        cell = worksheet.cell(row=row_num, column=23)
+        cell.value = 1 if getattr(patient, "art_stoppage", False) else 0
+        style_data_cell(cell, use_center=True)
 
-        # Servi ailleurs
-        worksheet.cell(row=row_num, column=24).value = 1 if getattr(patient, "served_elsewhere", False) else 0
+        # Servi ailleurs (centered)
+        cell = worksheet.cell(row=row_num, column=24)
+        cell.value = 1 if getattr(patient, "served_elsewhere", False) else 0
+        style_data_cell(cell, use_center=True)
+
+    # Auto-adjust column widths for better readability
+    for column in worksheet.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        # Set a reasonable width (between 10 and 20 characters)
+        adjusted_width = min(max(max_length + 2, 10), 20)
+        worksheet.column_dimensions[column_letter].width = adjusted_width
+
+    # Freeze the header row for easier navigation
+    worksheet.freeze_panes = "A2"
+
+    # Set worksheet tab name
+    worksheet.title = f"Patients {period}"
 
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = 'attachment; filename="upload_format-%s-%s.xlsx"' % (name, period)

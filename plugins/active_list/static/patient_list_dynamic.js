@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const dataUrl = `/active_list/patient_list_api/${selectedOrgUnit}/${selectedMonth}/?mode=${selectedMode}`
-    const excelUrl = dataUrl + '&format=xls' // Assuming separate excel endpoint
+    const excelUrl = `/active_list/patient_list_upload_format/${selectedOrgUnit}/${selectedMonth}/?mode=${selectedMode}` + '&format=xls' // Assuming separate excel endpoint
     const htmlUrl = dataUrl + '&format=html'
     console.log(`fetching patient data from: ${dataUrl}`)
 

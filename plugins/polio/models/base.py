@@ -1611,7 +1611,11 @@ class OutgoingStockMovement(models.Model):
             models.CheckConstraint(
                 check=Q(campaign__isnull=False) | Q(non_obr_name__isnull=False),
                 name="campaign_or_pseudo_campaign_not_null",
-            )
+            ),
+            models.CheckConstraint(
+                check=~Q(campaign__isnull=False, non_obr_name__isnull=False),
+                name="campaign_and_pseudo_campaign_cannot_both_have_value",
+            ),
         ]
 
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE, null=True, blank=True)

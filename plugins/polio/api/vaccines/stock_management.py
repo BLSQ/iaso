@@ -255,6 +255,14 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "alternative_campaign",
         ]
 
+    def validate(self, data):
+        # The request receives "alternative_campaign", but by the time it's passed to this method
+        # the param name has been changed to the model field name : non_obr_name
+        if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
+            raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+        validated_data = super().validate(data)
+        return validated_data
+
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
 
@@ -303,6 +311,11 @@ class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
         return validated_data
 
 
+class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name", required=False, allow_null=True)
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False, allow_blank=True)
+
+
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
@@ -322,7 +335,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
     def get_serializer_class(self):
         if self.action == "partial_update":
-            return OutgoingStockMovementSerializer
+            return OutgoingStockMovementPatchSerializer
         return OutgoingStockMovementStrictSerializer
 
     def get_queryset(self):

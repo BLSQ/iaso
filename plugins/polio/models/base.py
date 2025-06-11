@@ -1609,7 +1609,7 @@ class OutgoingStockMovement(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=Q(campaign__isnull=False) | Q(non_obr_name=""),
+                check=Q(campaign__isnull=False) | ~Q(non_obr_name=""),
                 name="campaign_or_pseudo_campaign_not_null",
             ),
             models.CheckConstraint(

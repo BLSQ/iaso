@@ -96,19 +96,19 @@ def _build_query(params):
                     )
                 elif cast_type == "time":
                     fc_arr.append(
-                        "(1.0 - abs( (instance1.json->>%s)::"
+                        "(1.0 - abs( justify_interval((instance1.json->>%s)::"
                         + cast_type
                         + " - (instance2.json->>%s)::"
                         + cast_type
-                        + " )::integer / 86400 )"
+                        + " )::interval / interval '1 day' ))"
                     )
                 else:  # timestamp
                     fc_arr.append(
-                        "(1.0 - abs( (instance1.json->>%s)::"
+                        "(1.0 - abs( justify_interval((instance1.json->>%s)::"
                         + cast_type
                         + " - (instance2.json->>%s)::"
                         + cast_type
-                        + " )::integer / 31536000 )"
+                        + " )::interval / interval '1 year' ))"
                     )
                 query_params.extend([f_name, f_name])
 
@@ -160,6 +160,18 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         potential_duplicates = []
         try:
             the_params, the_query = _build_query(params)
+
+            # Log the generated query and parameters just before execution
+            task.report_progress_and_stop_if_killed(
+                progress_value=10,
+                end_value=count,
+                progress_message="=== SQL Query ===\n"
+                + the_query
+                + "\n=== Parameters ===\n"
+                + str(the_params)
+                + "\n=== End Query ===",
+            )
+
             cursor.execute(the_query, the_params)
 
             while True:

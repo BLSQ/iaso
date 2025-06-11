@@ -344,7 +344,10 @@ class Task(models.Model):
         if progress_value:
             self.progress_value = progress_value
         if progress_message:
-            self.progress_message = progress_message
+            if self.progress_message:
+                self.progress_message += "\n" + progress_message
+            else:
+                self.progress_message = progress_message
         if end_value:
             self.end_value = end_value
         self.save()

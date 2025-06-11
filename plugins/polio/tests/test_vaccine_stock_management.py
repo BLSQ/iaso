@@ -1362,11 +1362,11 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertTrue(forma[0]["action"] == "Form A - Vials Used")
 
     def test_create_outgoiing_stock_cannot_have_both_campaign_and_alt_campaign(self):
-        FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"
-        ALT_CAMPAIGN_NAME = "Alternative campaign"
+        forma_url = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        alt_campaign_name = "Alternative campaign"
 
         self.client.force_authenticate(user=self.user_rw_perms)
-        # Cannot have bot campaign and alternate_campaign --> expect 400
+        # Cannot have both campaign and alternate_campaign --> expect 400
         data = {
             "vaccine_stock": self.vaccine_stock.id,
             "report_date": "2023-01-01",
@@ -1374,11 +1374,11 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "usable_vials_used": 1000,
             "lot_numbers": ["123", "456"],
             "comment": "Test without campaign",
-            "alternative_campaign": ALT_CAMPAIGN_NAME,
+            "alternative_campaign": alt_campaign_name,
             "campaign": self.campaign.obr_name,
         }
 
-        response = self.client.post(f"{FORMA_URL}", data=data)
+        response = self.client.post(f"{forma_url}", data=data)
 
         res = self.assertJSONResponse(response, 400)
         self.assertEqual(res["error"][0], "campaign and alternative campaign cannot both be defined")

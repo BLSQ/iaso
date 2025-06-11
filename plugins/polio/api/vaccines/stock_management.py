@@ -232,6 +232,7 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
+    # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
@@ -260,6 +261,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         # the param name has been changed to the model field name : non_obr_name
         if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+        print("data", data)
         validated_data = super().validate(data)
         return validated_data
 

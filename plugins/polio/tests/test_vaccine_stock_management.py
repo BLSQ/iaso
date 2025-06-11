@@ -256,6 +256,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             update_data,
             format="json",
         )
+
         self.assertEqual(response.status_code, 200)
 
         # Simulate passage of 8 days
@@ -1314,8 +1315,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
         """Test that an OutgoingStockMovement can be created without a campaign"""
         FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"
         VIALS_COUNT = 1831  # using a remarkable number to avoid ambiguity in test result
+        ALT_CAMPAIGN_NAME = "Alternative campaign"
         self.client.force_authenticate(user=self.user_rw_perms)
 
+        # no campaign and no alternative campaign - Expect 400
         data = {
             "vaccine_stock": self.vaccine_stock.id,
             "report_date": "2023-01-01",
@@ -1326,6 +1329,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
         }
 
         response = self.client.post(f"{FORMA_URL}", data=data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": VIALS_COUNT,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+            "alternative_campaign": ALT_CAMPAIGN_NAME,
+        }
+
+        response = self.client.post(f"{FORMA_URL}", data=data)
+
         self.assertEqual(response.status_code, 201)
 
         # Verify the movement was created
@@ -1333,6 +1350,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsNone(movement.campaign)
         self.assertIsNone(movement.round)
         self.assertEqual(movement.usable_vials_used, VIALS_COUNT)
+        self.assertEqual(movement.non_obr_name, ALT_CAMPAIGN_NAME)
 
         # Verify it appears in usable vials list
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
@@ -1341,6 +1359,26 @@ class VaccineStockManagementAPITestCase(APITestCase):
         results = data["results"]
         forma = [result for result in results if result["vials_out"] == VIALS_COUNT]
         self.assertTrue(len(forma) == 1)  # There's only the one we created
-        self.assertTrue(
-            forma[0]["action"] == "Form A - Vials Used", "Movement without campaign should appear in usable vials list"
-        )
+        self.assertTrue(forma[0]["action"] == "Form A - Vials Used")
+
+    def test_create_outgoiing_stock_cannot_have_both_campaign_and_alt_campaign(self):
+        forma_url = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        alt_campaign_name = "Alternative campaign"
+
+        self.client.force_authenticate(user=self.user_rw_perms)
+        # Cannot have both campaign and alternate_campaign --> expect 400
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": 1000,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+            "alternative_campaign": alt_campaign_name,
+            "campaign": self.campaign.obr_name,
+        }
+
+        response = self.client.post(f"{forma_url}", data=data)
+
+        res = self.assertJSONResponse(response, 400)
+        self.assertEqual(res["error"][0], "campaign and alternative campaign cannot both be defined")

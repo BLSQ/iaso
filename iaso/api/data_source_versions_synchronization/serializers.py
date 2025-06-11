@@ -5,6 +5,7 @@ from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models import (
     Account,
     DataSourceVersionsSynchronization,
+    Group,
     OrgUnit,
     OrgUnitType,
     SourceVersion,
@@ -118,6 +119,9 @@ class CreateJsonDiffParametersSerializer(serializers.Serializer):
     source_version_to_update_org_unit_types = serializers.PrimaryKeyRelatedField(
         queryset=OrgUnitType.objects.all(), many=True, required=False, default=None
     )
+    source_version_to_update_org_unit_group = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(), required=False, default=None
+    )
     # Version to compare with.
     source_version_to_compare_with_validation_status = serializers.ChoiceField(
         choices=OrgUnit.VALIDATION_STATUS_CHOICES, required=False, default=None
@@ -127,6 +131,9 @@ class CreateJsonDiffParametersSerializer(serializers.Serializer):
     )
     source_version_to_compare_with_org_unit_types = serializers.PrimaryKeyRelatedField(
         queryset=OrgUnitType.objects.all(), many=True, required=False, default=None
+    )
+    source_version_to_compare_with_org_unit_group = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.all(), required=False, default=None
     )
     # Options.
     ignore_groups = serializers.BooleanField(required=False, default=False)
@@ -144,11 +151,27 @@ class CreateJsonDiffParametersSerializer(serializers.Serializer):
                 )
         return top_org_unit
 
+    def validate_source_version_to_update_org_unit_group(self, group: Group) -> Group:
+        if group:
+            source_version = self.context["data_source_versions_synchronization"].source_version_to_update
+            if group.source_version != source_version:
+                raise serializers.ValidationError("The version of this group is different from the version to update.")
+        return group
+
     def validate_source_version_to_compare_with_top_org_unit(self, top_org_unit: OrgUnit) -> OrgUnit:
         if top_org_unit:
             source_version = self.context["data_source_versions_synchronization"].source_version_to_compare_with
             if top_org_unit.version != source_version:
                 raise serializers.ValidationError(
-                    "The version of this org unit is different from the version to update."
+                    "The version of this org unit is different from the version to compare with."
                 )
         return top_org_unit
+
+    def validate_source_version_to_compare_with_org_unit_group(self, group: Group) -> Group:
+        if group:
+            source_version = self.context["data_source_versions_synchronization"].source_version_to_compare_with
+            if group.source_version != source_version:
+                raise serializers.ValidationError(
+                    "The version of this group is different from the version to compare with."
+                )
+        return group

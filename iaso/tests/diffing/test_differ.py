@@ -342,3 +342,38 @@ class DifferTestCase(PyramidBaseTest):
         """
         Test that we can filter out OrgUnits from the differ based on their Groups.
         """
+        # First, let's make some changes that will not be detected by the differ - these orgunits will be filtered out
+        self.angola_region_to_compare_with.name = "new name"
+        self.angola_region_to_compare_with.save()
+        self.angola_district_to_compare_with.name = "new name"
+        self.angola_district_to_compare_with.save()
+
+        # Then, let's update the country name so have some changes to detect
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
+
+        diffs, fields = Differ(test_logger).diff(
+            # Version to update.
+            version=self.source_version_to_update,
+            validation_status=None,
+            top_org_unit=None,
+            org_unit_types=None,
+            org_unit_group=self.group_a1,  # Select only orgunits that are in Group a1.
+            # Version to compare with.
+            version_ref=self.source_version_to_compare_with,
+            validation_status_ref=None,
+            top_org_unit_ref=None,
+            org_unit_types_ref=None,
+            org_unit_group_ref=self.group_a2,  # Select only orgunits that are in Group a2.
+            # Options.
+            ignore_groups=True,
+            show_deleted_org_units=False,
+            field_names=["name"],
+        )
+
+        self.assertEqual(len(diffs), 1)  # only the country should be returned
+        country_diff = diffs[0]
+
+        self.assertEqual(country_diff.status, "modified")
+        self.assertEqual(country_diff.orgunit_ref.id, self.angola_country_to_compare_with.id)
+        self.assertEqual(country_diff.orgunit_dhis2.id, self.angola_country_to_update.id)

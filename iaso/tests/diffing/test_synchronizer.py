@@ -153,11 +153,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
+            org_unit_group=None,
             # Version to compare with.
             version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
+            org_unit_group_ref=None,
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
@@ -237,11 +239,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
             validation_status=None,
             top_org_unit=None,
             org_unit_types=[self.org_unit_type_country],
+            org_unit_group=None,
             # Version to compare with.
             version_ref=self.source_version_to_compare_with,
             validation_status_ref=None,
             top_org_unit_ref=None,
             org_unit_types_ref=[self.org_unit_type_country],
+            org_unit_group_ref=None,
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
@@ -255,10 +259,10 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                 "org_unit": {
                     "id": self.angola_country_to_compare_with.pk,
                     "version": self.source_version_to_compare_with.pk,
+                    "source_ref": "id-1",
                     "path": str(self.angola_country_to_compare_with.path),
                     "location": None,
                     "org_unit_type": self.org_unit_type_country.pk,
-                    "source_ref": "id-1",
                     "name": "Angola",
                     "parent": None,
                     "opening_date": "2022-11-28",

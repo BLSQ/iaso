@@ -9,8 +9,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 if typing.TYPE_CHECKING:
-    from iaso.models import OrgUnit, OrgUnitType
-
+    from iaso.models import Group, OrgUnit, OrgUnitType
 
 logger = logging.getLogger(__name__)
 
@@ -279,9 +278,11 @@ class DataSourceVersionsSynchronization(models.Model):
         source_version_to_update_validation_status: str = None,
         source_version_to_update_top_org_unit: "OrgUnit" = None,
         source_version_to_update_org_unit_types: list["OrgUnitType"] = None,
+        source_version_to_update_org_unit_group: "Group" = None,
         source_version_to_compare_with_validation_status: str = None,
         source_version_to_compare_with_top_org_unit: "OrgUnit" = None,
         source_version_to_compare_with_org_unit_types: list["OrgUnitType"] = None,
+        source_version_to_compare_with_org_unit_group: "Group" = None,
         ignore_groups: bool = False,
         show_deleted_org_units: bool = False,
         field_names: list[str] = None,
@@ -298,11 +299,13 @@ class DataSourceVersionsSynchronization(models.Model):
             "validation_status": source_version_to_update_validation_status,
             "top_org_unit": source_version_to_update_top_org_unit,
             "org_unit_types": source_version_to_update_org_unit_types,
+            "org_unit_group": source_version_to_update_org_unit_group,
             # Version to compare with.
             "version_ref": self.source_version_to_compare_with,
             "validation_status_ref": source_version_to_compare_with_validation_status,
             "top_org_unit_ref": source_version_to_compare_with_top_org_unit,
             "org_unit_types_ref": source_version_to_compare_with_org_unit_types,
+            "org_unit_group_ref": source_version_to_compare_with_org_unit_group,
             # Options.
             "ignore_groups": ignore_groups,
             "show_deleted_org_units": show_deleted_org_units,
@@ -330,6 +333,9 @@ class DataSourceVersionsSynchronization(models.Model):
             "org_unit_types": [out.pk for out in source_version_to_update_org_unit_types]
             if source_version_to_update_org_unit_types
             else None,
+            "org_unit_group": source_version_to_update_org_unit_group.pk
+            if source_version_to_update_org_unit_group
+            else None,
             # Version to compare with.
             "version_ref": self.source_version_to_compare_with.pk,
             "validation_status_ref": source_version_to_compare_with_validation_status,
@@ -338,6 +344,9 @@ class DataSourceVersionsSynchronization(models.Model):
             else None,
             "org_unit_types_ref": [out.pk for out in source_version_to_compare_with_org_unit_types]
             if source_version_to_compare_with_org_unit_types
+            else None,
+            "org_unit_group_ref": source_version_to_compare_with_org_unit_group.pk
+            if source_version_to_compare_with_org_unit_group
             else None,
             # Options.
             "ignore_groups": ignore_groups,

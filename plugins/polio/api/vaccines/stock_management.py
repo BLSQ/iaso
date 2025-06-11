@@ -302,8 +302,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
 
 class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
     def validate(self, data):
-        # The request receives "alternative_campaign", but by the time it's passed to this method
-        # the param name has been changed to the model field name : non_obr_name
+        # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
         if data.get("campaign", None) is None and data.get("non_obr_name", None) is None:
             raise serializers.ValidationError(
                 {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}

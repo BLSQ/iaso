@@ -87,11 +87,11 @@ def _build_query(params):
             # For date/time types, compare as timestamps
             elif cast_type in ["date", "time", "timestamp"]:
                 fc_arr.append(
-                    "(1.0 - abs( extract(epoch from (instance1.json->>%s)::"
+                    "(1.0 - abs( (instance1.json->>%s)::"
                     + cast_type
                     + " - (instance2.json->>%s)::"
                     + cast_type
-                    + " ) / 86400.0 ))"
+                    + " ) / interval '1 day')"
                 )
                 query_params.extend([f_name, f_name])
 

@@ -344,21 +344,14 @@ class Task(models.Model):
         if progress_value:
             self.progress_value = progress_value
         if progress_message:
-            if self.progress_message:
-                self.progress_message += "\n" + progress_message
-            else:
-                self.progress_message = progress_message
+            self.progress_message = progress_message
         if end_value:
             self.end_value = end_value
         self.save()
 
     def report_success_with_result(self, message=None, result_data=None):
         logger.info(f"Task {self} reported success with message {message}")
-        if message:
-            if self.progress_message:
-                self.progress_message += "\n" + message
-            else:
-                self.progress_message = message
+        self.progress_message = message
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "data": result_data}
@@ -366,11 +359,7 @@ class Task(models.Model):
 
     def report_success(self, message=None):
         logger.info(f"Task {self} reported success with message {message}")
-        if message:
-            if self.progress_message:
-                self.progress_message += "\n" + message
-            else:
-                self.progress_message = message
+        self.progress_message = message
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}

@@ -330,6 +330,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
+        print("Response data:", response.data)
         self.assertEqual(response.status_code, 201)
         assert "analyze_id" in response.data
 
@@ -776,3 +777,70 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         merged = entity1.merged_to
         self.assertEqual(merged.instances.count(), 2)  # reference form + emoji form
         self.assertEqual(merged.instances.last().json["prevous_muac_color"], "🟡Yellow")
+
+    def test_analyzes_with_various_field_types(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        # Create two entities with various field types
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        orgunit = self.default_orgunit
+
+        # Instance 1
+        instance_json_1 = {
+            "age__int__": "25",
+            "height_cm__decimal__": "175.5",
+            "weight_kgs__double__": "70.0",
+            "transfer_from_tsfp__bool__": "true",
+            "birth_date__date__": "1990-01-01",
+            "appointment_time__time__": "14:30:00",
+            "last_update__datetime__": "2024-06-11T14:30:00",
+        }
+        create_instance_and_entity(
+            self, "entity_type_test_1", instance_json_1, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 2 (slightly different values)
+        instance_json_2 = {
+            "age__int__": "26",
+            "height_cm__decimal__": "175.0",
+            "weight_kgs__double__": "70.5",
+            "transfer_from_tsfp__bool__": "false",
+            "birth_date__date__": "1990-01-02",
+            "appointment_time__time__": "14:31:00",
+            "last_update__datetime__": "2024-06-11T14:31:00",
+        }
+        create_instance_and_entity(
+            self, "entity_type_test_2", instance_json_2, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": [
+                    "age__int__",
+                    "height_cm__decimal__",
+                    "weight_kgs__double__",
+                    "transfer_from_tsfp__bool__",
+                    "birth_date__date__",
+                    "appointment_time__time__",
+                    "last_update__datetime__",
+                ],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+        print("Response data:", response.data)
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        # Run the task service to process the analyze
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+        # Optionally: check that results exist
+        # (You can add more detailed assertions if needed)

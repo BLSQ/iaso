@@ -34,11 +34,15 @@ const bulkDeleteChangeRequests = async (
 
 export const useBulkDeleteChangeRequests = (
     params: ApproveOrgUnitParams,
+    onSuccess: () => void = () => undefined,
 ): UseMutationResult<any, any, BulkDeleteBody, any> => {
     const apiParams = useGetApprovalProposalsParams(params);
     return useSnackMutation({
         mutationFn: body => bulkDeleteChangeRequests(body, apiParams),
         invalidateQueryKey: ['getApprovalProposals'],
         snackSuccessMessage: MESSAGES.bulkDeleteSuccess,
+        options: {
+            onSuccess,
+        },
     });
 };

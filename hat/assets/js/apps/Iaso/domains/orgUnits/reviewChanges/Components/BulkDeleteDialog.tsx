@@ -27,8 +27,10 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
 
     const isRestoreAction = params.is_soft_deleted === 'true';
 
-    const { mutate: bulkDeleteChangeRequests } =
-        useBulkDeleteChangeRequests(params);
+    const { mutate: bulkDeleteChangeRequests } = useBulkDeleteChangeRequests(
+        params,
+        resetSelection,
+    );
 
     const onDelete = useCallback(
         () => bulkDeleteChangeRequests({ ...selection }),

@@ -149,7 +149,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             usable_vials=0,
         )
 
-    def test_outgoing_stock_movement_model_constraint(self):
+    def test_campaign_and_non_obr_name_cannot_both_be_null(self):
         """Test that the model constraint requiring either campaign or non_obr_name is enforced"""
 
         new_movement_with_campaign, created = pm.OutgoingStockMovement.objects.get_or_create(
@@ -178,4 +178,16 @@ class OutgoingStockMovementModelTestCase(TestCase):
                 usable_vials_used=10,
                 campaign=None,
                 non_obr_name=None,
+            )
+
+    def test_campaign_and_non_obr_name_cannot_both_have_value(self):
+        # This should raise an IntegrityError since campaign nor non_obr_name can't both have value
+        with self.assertRaises(IntegrityError):
+            pm.OutgoingStockMovement.objects.create(
+                vaccine_stock=self.vaccine_stock,
+                report_date=datetime.date(2025, 2, 1),
+                form_a_reception_date=datetime.date(2025, 2, 1),
+                usable_vials_used=10,
+                campaign=self.campaign,
+                non_obr_name="Another alt campaign",
             )

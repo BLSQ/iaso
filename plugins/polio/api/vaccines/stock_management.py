@@ -255,14 +255,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "alternative_campaign",
         ]
 
-    def validate(self, data):
-        validated_data = super().validate(data)
-        if validated_data.get("campaign", None) is None and validated_data.get("alternative_campaign", None) is None:
-            raise serializers.ValidationError(
-                {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}
-            )
-        return validated_data
-
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
 
@@ -299,8 +291,19 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
+    def validate(self, data):
+        # The request receives "alternative_campaign", but by the time it's passed to this method
+        # the param name has been changed to the model field name : non_obr_name
+        if data.get("campaign", None) is None and data.get("non_obr_name", None) is None:
+            raise serializers.ValidationError(
+                {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}
+            )
+        validated_data = super().validate(data)
+        return validated_data
+
+
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
-    serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
     permission_classes = [
         lambda: VaccineStockPermission(
@@ -316,6 +319,11 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         "report_date",
         "form_a_reception_date",
     ]
+
+    def get_serializer_class(self):
+        if self.action == "partial_update":
+            return OutgoingStockMovementSerializer
+        return OutgoingStockMovementStrictSerializer
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")

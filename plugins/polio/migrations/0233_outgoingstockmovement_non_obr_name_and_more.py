@@ -4,19 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0232_alter_outgoingstockmovement_campaign'),
+        ("polio", "0232_alter_outgoingstockmovement_campaign"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='outgoingstockmovement',
-            name='non_obr_name',
+            model_name="outgoingstockmovement",
+            name="non_obr_name",
             field=models.CharField(null=True),
         ),
         migrations.AddConstraint(
-            model_name='outgoingstockmovement',
-            constraint=models.CheckConstraint(check=models.Q(('campaign__isnull', False), ('non_obr_name__isnull', False), _connector='OR'), name='campaign_or_pseudo_campaign_not_null'),
+            model_name="outgoingstockmovement",
+            constraint=models.CheckConstraint(
+                check=models.Q(("campaign__isnull", False), ("non_obr_name__isnull", False), _connector="OR"),
+                name="campaign_or_pseudo_campaign_not_null",
+            ),
         ),
     ]

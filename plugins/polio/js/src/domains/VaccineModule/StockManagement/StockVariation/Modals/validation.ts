@@ -38,6 +38,7 @@ export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
         campaign: yup.string().nullable(),
+        alternative_campaign: yup.string().nullable(),
         round: yup.number().nullable(),
         lot_numbers: yup
             .mixed()

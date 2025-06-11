@@ -246,10 +246,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         else:
             queryset = queryset.filter(pk__in=selected_ids)
 
-        if restore:
-            queryset = queryset.filter(deleted_at__isnull=False)
-        else:
-            queryset = queryset.filter(deleted_at__isnull=True)
+        queryset = queryset.filter(deleted_at__isnull=False if restore else True)
 
         now = timezone.now()
         for change_request in queryset:

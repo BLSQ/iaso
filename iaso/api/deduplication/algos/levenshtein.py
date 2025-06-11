@@ -86,13 +86,30 @@ def _build_query(params):
                 query_params.extend([f_name, f_name])
             # For date/time types, compare as timestamps
             elif cast_type in ["date", "time", "timestamp"]:
-                fc_arr.append(
-                    "(1.0 - abs( (instance1.json->>%s)::"
-                    + cast_type
-                    + " - (instance2.json->>%s)::"
-                    + cast_type
-                    + " ) / interval '1 day')"
-                )
+                if cast_type == "date":
+                    fc_arr.append(
+                        "(1.0 - abs( (instance1.json->>%s)::"
+                        + cast_type
+                        + " - (instance2.json->>%s)::"
+                        + cast_type
+                        + " )::integer / 365 )"
+                    )
+                elif cast_type == "time":
+                    fc_arr.append(
+                        "(1.0 - abs( (instance1.json->>%s)::"
+                        + cast_type
+                        + " - (instance2.json->>%s)::"
+                        + cast_type
+                        + " )::integer / 86400 )"
+                    )
+                else:  # timestamp
+                    fc_arr.append(
+                        "(1.0 - abs( (instance1.json->>%s)::"
+                        + cast_type
+                        + " - (instance2.json->>%s)::"
+                        + cast_type
+                        + " )::integer / 31536000 )"
+                    )
                 query_params.extend([f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)

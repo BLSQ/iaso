@@ -1609,11 +1609,11 @@ class OutgoingStockMovement(models.Model):
         ]
         constraints = [
             models.CheckConstraint(
-                check=Q(campaign__isnull=False) | Q(non_obr_name__isnull=False),
+                check=Q(campaign__isnull=False) | Q(non_obr_name=""),
                 name="campaign_or_pseudo_campaign_not_null",
             ),
             models.CheckConstraint(
-                check=~Q(campaign__isnull=False, non_obr_name__isnull=False),
+                check=~Q(Q(campaign__isnull=False) & ~Q(non_obr_name="")),
                 name="campaign_and_pseudo_campaign_cannot_both_have_value",
             ),
         ]
@@ -1628,7 +1628,7 @@ class OutgoingStockMovement(models.Model):
     usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
-    non_obr_name = models.CharField(blank=False, null=True)
+    non_obr_name = models.CharField(blank=True)
 
     document = models.FileField(
         storage=CustomPublicStorage(),

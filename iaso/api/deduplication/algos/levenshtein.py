@@ -25,6 +25,7 @@ def _build_query(params):
     for field in the_fields:
         f_name = field.get("name")
         f_type = field.get("type")
+        print(f"Processing field: {f_name} with type: {f_type}")  # Debug log
         if f_type == "number" or f_type == "integer" or f_type == "decimal":
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
@@ -32,7 +33,7 @@ def _build_query(params):
                 "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
             )
             query_params.extend([f_name, f_name, f_name, f_name])
-        elif f_type == "text":
+        elif f_type == "text" or f_type is None:  # Handle both text and undefined types as text
             fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
             query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
         elif f_type == "calculate":

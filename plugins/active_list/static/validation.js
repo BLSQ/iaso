@@ -44,7 +44,7 @@ $(document).ready(function () {
 
 $(document).ready(function () {
   // Open the popup
-  $('#container').on('click', '.validate_link', function (event) {
+  $('#dataContainer').on('click', '.validate_link', function (event) {
     event.preventDefault()
     var org_unit_id = $(this).attr('href')
     $('#id_org_unit').val(org_unit_id)

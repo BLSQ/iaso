@@ -1157,7 +1157,7 @@ def import_data(file, the_import):
             math.nan: TREATMENT_LINE_UNKNOWN,
         }
     )
-    print('df["treatment_line"] ', df["treatment_line"])
+
     df["REGIME"] = df["REGIME"].replace(
         {
             "TDF 3TC DTG": "TDF/3TC/DTG",

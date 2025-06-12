@@ -18,19 +18,23 @@
     </div>
 
 
-    <!--<div id="validation_form">
-        <h2>Validation</h2>
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button id="validate_submit" type="submit">Submit</button>
-        </form>
-    </div>-->
-    <div class="overlay"></div>
+    <div id="validation_form" class="validation-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Validation</h2>
+                <button type="button" id="closePopup" class="close-btn">&times;</button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button id="validate_submit" type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+    <div class="overlay" style="display: none;"></div>
 <div id="dataContainer">
     <p>Complétude: <span id="completeness">-</span></p>
     <div id="table-container"></div>
 </div>
-    <script src="{% static 'validation.js' %}">Œ
-    </script>
+    <script src="{% static 'validation.js' %}"></script>
 {% endblock %}

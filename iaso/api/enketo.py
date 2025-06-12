@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
+from iaso.api.query_params import APP_ID
 from iaso.dhis2.datavalue_exporter import InstanceExportError
 from iaso.enketo import (
     EnketoError,
@@ -24,6 +25,7 @@ from iaso.enketo import (
     inject_instance_id_in_form,
     to_xforms_xml,
 )
+from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
 
@@ -304,7 +306,10 @@ def enketo_form_list(request):
         # pass the app_id so it can be accessed anonymously from Enketo
         project = i.form.projects.first()
         app_id = project.app_id if project else ""
-        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/?app_id={app_id}")
+        url = f"/api/forms/{i.form_id}/manifest/"
+        secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        url_with_secret = generate_signed_url(path=url, secret=secret, extra_params={APP_ID: app_id})
+        manifest_url = public_url_for_enketo(request, url_with_secret)
     else:
         manifest_url = None
 

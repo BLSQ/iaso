@@ -196,9 +196,10 @@ plugins/trypelim
 plugins/snt_malaria
 
 plugins/snt-malaria
+
 # some local env config to be ignored
 .direnv
 CACHEDIR.TAG
 iaso_3_9_18
 .cursor
-
+iaso-enketo/

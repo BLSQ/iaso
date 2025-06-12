@@ -17,6 +17,8 @@ The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
 
+from importlib import import_module
+
 from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -284,13 +286,11 @@ class CustomPermissionSupport(models.Model):
             (_REPORTS, _("Reports")),
             (_TEAMS, _("Equipes")),
             (_ASSIGNMENTS, _("Attributions")),
-            (_POLIO_BUDGET, _("Budget Polio")),
             (_ENTITIES, _("Entities")),
             (_ENTITY_TYPE_WRITE, _("Write entity type")),
             (_STORAGE, _("Storages")),
             (_COMPLETENESS_STATS, _("Completeness stats")),
             (_WORKFLOW, _("Workflows")),
-            (_POLIO_BUDGET_ADMIN, _("Budget Polio Admin")),
             (_ENTITIES_DUPLICATE_READ, _("Read Entity duplicates")),
             (_ENTITIES_DUPLICATE_WRITE, _("Write Entity duplicates")),
             (_USERS_ROLES, _("Manage user roles")),
@@ -395,20 +395,23 @@ class CustomPermissionSupport(models.Model):
 
     @staticmethod
     def filter_permissions(permissions, modules_permissions, settings: LazySettings):
-        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
+        content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+
+        for plugin in settings.PLUGINS:
+            try:
+                permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
+                content_types.append(ContentType.objects.get_for_model(permission_model))
+            except ImportError:
+                print(f"{plugin} plugin has no permission support")
+
         permissions = (
-            permissions.filter(content_type=content_type)
+            permissions.filter(content_type__in=content_types)
             .filter(codename__startswith="iaso_")
             .filter(codename__in=modules_permissions)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")
         )
-        #  in future filter this on a feature flags, so we can disable it by account
-        if "polio" not in settings.PLUGINS:
-            permissions = permissions.exclude(codename__startswith="iaso_polio")
-        if "trypelim" not in settings.PLUGINS:
-            permissions = permissions.exclude(codename__startswith="iaso_trypelim")
 
         return permissions
 

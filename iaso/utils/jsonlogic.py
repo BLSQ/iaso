@@ -41,17 +41,11 @@ def jsonlogic_to_q(
     field_prefix: str = "",
     recursion_func: Callable = None,
 ) -> Q:
-    """Converts a JsonLogic query to a Django Q object.
-
-    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict. Example: {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}
-    :param field_prefix: A prefix to add to all fields in the generated query. Useful to follow a relationship or to dig in a JSONField
-    :param recursion_func: Optionally specify a function to call for recursion, allowing this method to be "wrapped". By default, when no function is specified, it calls itself.
-
-    :return: A Django Q object.
-    """
+    """Converts a JsonLogic query to a Django Q object."""
 
     func = jsonlogic_to_q if recursion_func is None else recursion_func
 
+    # Handle group operators first
     if "and" in jsonlogic:
         sub_query = Q()
         for lookup in jsonlogic["and"]:
@@ -65,14 +59,48 @@ def jsonlogic_to_q(
     if "!" in jsonlogic:
         return ~func(jsonlogic["!"], field_prefix)
 
+    # Handle array field logic: "some", "all"
+    if "some" in jsonlogic or "all" in jsonlogic:
+        operator_key = "some" if "some" in jsonlogic else "all"
+        var, condition = jsonlogic[operator_key]
+        field = var["var"]
+        # Only support: { "in": [ { "var": "" }, [array] ] }
+        if "in" in condition:
+            in_params = condition["in"]
+            if (
+                isinstance(in_params, list)
+                and len(in_params) == 2
+                and isinstance(in_params[0], dict)
+                and in_params[0].get("var") == ""
+            ):
+                value_list = in_params[1]
+                if operator_key == "some":
+                    return Q(**{f"{field_prefix}{field}__overlap": value_list})
+                if operator_key == "all":
+                    return Q(**{f"{field_prefix}{field}__contained_by": value_list})
+        # Fallback: not supported
+        raise ValueError(f"Unsupported JsonLogic for '{operator_key}': {jsonlogic}")
+
+    # Handle binary operators
     if not jsonlogic.keys():
         return Q()
 
-    # Binary operators
     op = list(jsonlogic.keys())[0]
     params = jsonlogic[op]
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
+
+    # True "in" operator (field in array)
+    if op == "in":
+        field, value = params[0], params[1]
+        if "var" in field and isinstance(value, list):
+            field_name = field["var"]
+            return Q(**{f"{field_prefix}{field_name}__in": value})
+        # Fallback to string containment
+        if "var" in field and isinstance(value, str):
+            field_name = field["var"]
+            return Q(**{f"{field_prefix}{field_name}__icontains": value})
+        raise ValueError(f"Unsupported 'in' usage: {jsonlogic}")
 
     lookups = {
         "==": "exact",
@@ -81,36 +109,28 @@ def jsonlogic_to_q(
         ">=": "gte",
         "<": "lt",
         "<=": "lte",
-        "in": "icontains",
     }
 
     if op not in lookups.keys():
         raise ValueError(
-            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: {list(lookups.keys()) + ['in', 'some', 'all']}"
         )
 
-    field_position = 1 if op == "in" else 0
-    field = params[field_position]
+    field = params[0]
+    value = params[1]
     if "var" not in field:
-        raise ValueError(
-            f"Unsupported JsonLogic. Argument[{field_position}] must contain a variable for given "
-            f"operator : {jsonlogic}"
-        )
+        raise ValueError(f"Unsupported JsonLogic. Argument[0] must contain a variable for given operator : {jsonlogic}")
     field_name = field["var"]
-    value = params[0] if op == "in" else params[1]
 
     extract = ""
     if isinstance(value, (int, float)) and field_prefix:
-        # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
     lookup = lookups[op]
-
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
 
     if op == "!=":
-        # invert the filter
         q = ~q
     return q
 

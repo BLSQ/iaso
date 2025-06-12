@@ -258,6 +258,7 @@ class FormsViewSet(ModelViewSet):
     )
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
+    FORM_PK = "form_pk"
 
     def get_queryset(self, mobile=False):
         form_objects = Form.objects
@@ -429,8 +430,6 @@ class FormsViewSet(ModelViewSet):
         destroyed_form = Form.objects_only_deleted.get(pk=original.id)
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
-
-    FORM_PK = "form_pk"
 
     @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
     def manifest(self, request, *args, **kwargs):

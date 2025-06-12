@@ -25,7 +25,6 @@ def _build_query(params):
     for field in the_fields:
         f_name = field.get("name")
         f_type = field.get("type")
-        print(f"Processing field: {f_name} with type: {f_type}")  # Debug log
         if f_type == "number" or f_type == "integer" or f_type == "decimal":
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))

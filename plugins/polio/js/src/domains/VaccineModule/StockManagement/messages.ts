@@ -406,6 +406,14 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'A destruction report with the same date and unusable vials destroyed already exists',
     },
+    customObrName: {
+        id: 'iaso.polio.label.customObrName',
+        defaultMessage: 'Custom campaign name',
+    },
+    useCustomObrName: {
+        id: 'iaso.polio.label.useCustomObrName',
+        defaultMessage: 'Use custom campaign name',
+    },
 });
 
 export default MESSAGES;

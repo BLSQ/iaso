@@ -78,6 +78,7 @@ from .api.org_unit_change_request_configurations.views import OrgUnitChangeReque
 from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
+from .api.org_unit_shapes.views import OrgUnitShapeViewSet
 from .api.org_unit_tree.views import OrgUnitTreeViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
@@ -123,10 +124,11 @@ router.register(
 )
 router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
 router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
-router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
+router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunits_tree")
+router.register(r"orgunits/shape", OrgUnitShapeViewSet, basename="orgunits_shape")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
-router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
-router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
+router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunits_types")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunits_types_v2")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")

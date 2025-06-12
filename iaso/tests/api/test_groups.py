@@ -32,7 +32,7 @@ class GroupsAPITestCase(APITestCase):
             name="New Land Speeder concept", app_id="stars.empire.agriculture.land_speeder", account=star_wars
         )
 
-        cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version_1)
+        cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version_1, is_internal=True)
         cls.group_2 = m.Group.objects.create(name="Assemblies", source_version=cls.source_version_2)
         cls.group_3 = m.Group.objects.create(name="Hidden", source_version=cls.source_version_1, domain="POLIO")
 
@@ -81,6 +81,34 @@ class GroupsAPITestCase(APITestCase):
         self.assertEqual(response_data["pages"], 2)
         self.assertEqual(response_data["limit"], 1)
         self.assertEqual(response_data["count"], 2)
+
+    def test_groups_list_filter_is_internal(self):
+        """GET /groups/ filtered by is_internal"""
+
+        # no filter -> get all groups
+        self.client.force_authenticate(self.yoda)
+        response_all = self.client.get("/api/groups/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response_all, 200)
+        response_data_all = response_all.json()
+        self.assertValidGroupListData(response_data_all, 2, False)
+        response_ids = [group["id"] for group in response_data_all["groups"]]
+        self.assertCountEqual(response_ids, [self.group_1.id, self.group_2.id])
+
+        # filter by is_internal = True
+        response_true = self.client.get("/api/groups/?is_internal=true", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response_true, 200)
+
+        response_data_true = response_true.json()
+        self.assertValidGroupListData(response_data_true, 1, False)
+        self.assertEqual(response_data_true["groups"][0]["id"], self.group_1.id)
+
+        # filter by is_internal = False
+        response_false = self.client.get("/api/groups/?is_internal=false", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response_false, 200)
+
+        response_data_false = response_false.json()
+        self.assertValidGroupListData(response_data_false, 1, False)
+        self.assertEqual(response_data_false["groups"][0]["id"], self.group_2.id)
 
     def test_groups_retrieve_without_auth(self):
         """GET /groups/<group_id> without auth should result in a 401"""
@@ -135,6 +163,10 @@ class GroupsAPITestCase(APITestCase):
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
         self.assertEqual(self.yoda.iaso_profile.account.default_version_id, response_data["source_version"]["id"])
 
+        # When is_internal is not passed, False is the default value
+        new_group = m.Group.objects.get(id=response_data["id"])
+        self.assertFalse(new_group.is_internal)
+
     def test_groups_create_invalid(self):
         """POST /groups/ with missing data"""
 
@@ -168,7 +200,9 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.patch(
-            f"/api/groups/{self.group_1.id}/", data={"name": "test group (updated)"}, format="json"
+            f"/api/groups/{self.group_1.id}/",
+            data={"name": "test group (updated)", "is_internal": False},
+            format="json",
         )
         self.assertJSONResponse(response, 200)
 
@@ -178,6 +212,7 @@ class GroupsAPITestCase(APITestCase):
         self.group_1.refresh_from_db()
         self.assertEqual("test group (updated)", self.group_1.name)
         self.assertEqual(1, self.group_1.source_version.number)
+        self.assertFalse(self.group_1.is_internal)
 
     def test_groups_update_not_implemented(self):
         """PUT /groups/<group_id>: 405"""
@@ -223,6 +258,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertHasField(group_data, "name", str)
         self.assertHasField(group_data, "source_version", dict, optional=True)
         self.assertHasField(group_data, "source_ref", str, optional=True)
+        self.assertHasField(group_data, "is_internal", bool)
         # org_unit_count is a read-only field, it won't be present when creating an instance
         if "org_unit_count" not in skip:
             self.assertHasField(group_data, "org_unit_count", int)

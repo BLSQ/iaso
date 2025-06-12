@@ -49,6 +49,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "block_of_countries",  # It's used to mark a group containing only countries
+            "is_internal",  # iaso-only groups that are not exported to DHIS2
         ]
         read_only_fields = ["id", "source_version", "group_sets", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
@@ -156,6 +157,13 @@ class GroupsViewSet(ModelViewSet):
         block_of_countries = self.request.GET.get("blockOfCountries", None) == "true"
         if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
+
+        is_internal = self.request.GET.get("is_internal", None)
+        is_internal = is_internal.lower() if is_internal else None
+        if is_internal in ["true", "1", True]:
+            queryset = queryset.filter(is_internal=True)
+        elif is_internal in ["false", "0", False]:
+            queryset = queryset.filter(is_internal=False)
 
         search = self.request.query_params.get("search", None)
         if search:

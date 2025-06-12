@@ -41,6 +41,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Block of countries',
         id: 'iaso.groups.blockOfCountries',
     },
+    isInternal: {
+        id: 'iaso.groups.isInternal',
+        defaultMessage: 'is internal (ignored in DHIS2 synchronization)',
+    },
+    isInternalFilter: {
+        id: 'iaso.groups.isInternalFilter',
+        defaultMessage: 'Is internal?',
+    },
+    isInternalTrue: {
+        id: 'iaso.groups.isInternalTrue',
+        defaultMessage: 'Yes',
+    },
+    isInternalFalse: {
+        id: 'iaso.groups.isInternalFalse',
+        defaultMessage: 'No',
+    },
     sourceRef: {
         defaultMessage: 'Source ref',
         id: 'iaso.orgUnits.sourceRef',

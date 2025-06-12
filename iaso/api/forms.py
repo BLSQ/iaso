@@ -258,8 +258,9 @@ class FormsViewSet(ModelViewSet):
     )
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
+    FORM_PK = "form_pk"
 
-    def get_queryset(self):
+    def get_queryset(self, mobile=False):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
@@ -302,31 +303,33 @@ class FormsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
         else:
             profile = False
-
-        if profile and profile.org_units.exists():
-            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="")
-                        & ~Q(instances__device__test_device=True)
-                        & ~Q(instances__deleted=True)
-                        & Q(instances__org_unit__in=orgunits)
-                    ),
-                    distinct=True,
+        if not mobile:
+            if profile and profile.org_units.exists():
+                orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                            & Q(instances__org_unit__in=orgunits)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
-        else:
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
-                    ),
-                    distinct=True,
+            else:
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
@@ -428,8 +431,6 @@ class FormsViewSet(ModelViewSet):
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
 
-    FORM_PK = "form_pk"
-
     @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
@@ -471,4 +472,4 @@ class FormsViewSet(ModelViewSet):
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset().exclude(form_versions=None)
+        return super().get_queryset(mobile=True).exclude(form_versions=None)

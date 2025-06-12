@@ -191,7 +191,6 @@ class MobileFormsAPITestCase(APITestCase):
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
-        self.assertEqual(1, form_data["instances_count"])
 
     def test_forms_create_ok(self):
         """POST /mobile/forms/ happy path"""
@@ -456,14 +455,19 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertValidFormData(form_data)
 
         self.assertHasField(form_data, "device_field", str)
-        self.assertHasField(form_data, "location_field", str)
         self.assertHasField(form_data, "form_id", str)
-        self.assertHasField(form_data, "period_type", str)
-        self.assertHasField(form_data, "single_per_period", bool)
-        self.assertHasField(form_data, "org_unit_types", list)
-        self.assertHasField(form_data, "projects", list)
-        self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "latest_form_version", dict)
+        self.assertHasField(form_data, "location_field", str)
+        self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "period_type", str)
+        self.assertHasField(form_data, "projects", list)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data["latest_form_version"], "created_at", float)
+        self.assertHasField(form_data["latest_form_version"], "file", str)
+        self.assertHasField(form_data["latest_form_version"], "id", int)
+        self.assertHasField(form_data["latest_form_version"], "updated_at", float)
+        self.assertHasField(form_data["latest_form_version"], "version_id", str)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
@@ -476,12 +480,3 @@ class MobileFormsAPITestCase(APITestCase):
         for project_data in form_data["projects"]:
             self.assertIsInstance(project_data, dict)
             self.assertHasField(project_data, "id", int)
-
-        self.assertHasField(form_data, "instance_updated_at", float)
-        self.assertHasField(form_data, "instances_count", int)
-        self.assertHasField(form_data, "latest_form_version", dict)
-        self.assertHasField(form_data["latest_form_version"], "id", int)
-        self.assertHasField(form_data["latest_form_version"], "version_id", str)
-        self.assertHasField(form_data["latest_form_version"], "file", str)
-        self.assertHasField(form_data["latest_form_version"], "created_at", float)
-        self.assertHasField(form_data["latest_form_version"], "updated_at", float)

@@ -1,0 +1,45 @@
+<?xml version='1.0' ?>
+<data id="file_active_suivi" version="2025050101" xmlns:h="http://www.w3.org/1999/xhtml"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa"
+      xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+      xmlns:odk="http://www.opendatakit.org/xforms">
+    <main_title>
+        <statut>
+            <sv_statut_patient>an</sv_statut_patient>
+        </statut>
+        <group_entete>
+            <date_rapportage>2025-05-02</date_rapportage>
+            <resp_ex/>
+        </group_entete>
+        <group_identifiant>
+            <date_der_disp>2025-05-02</date_der_disp>
+            <code_patient>//2025/</code_patient>
+            <generated_note_name_16/>
+        </group_identifiant>
+        <group_suivi_patient>
+            <genre_patient>f</genre_patient>
+            <generated_note_name_21/>
+            <age_patient>12</age_patient>
+            <cons_age_patient>1</cons_age_patient>
+            <poids_patient>45</poids_patient>
+            <cons_poids_patient>1</cons_poids_patient>
+            <jours_disp>180</jours_disp>
+            <regime>ab3a</regime>
+            <stable>0</stable>
+            <cons_stable>1</cons_stable>
+            <tb_vih>1</tb_vih>
+            <cons_tb_vih>1</cons_tb_vih>
+            <type_vih>12</type_vih>
+            <cons_type_vih>1</cons_type_vih>
+            <ligne_thera>1</ligne_thera>
+        </group_suivi_patient>
+    </main_title>
+    <rep_statut_patient>an</rep_statut_patient>
+    <rep_age_patient>12</rep_age_patient>
+    <rep_poids_patient>45</rep_poids_patient>
+    <rep_stable>0</rep_stable>
+    <rep_tb_vih>1</rep_tb_vih>
+    <rep_type_vih>12</rep_type_vih>
+    <meta>
+    <instanceID>uuid:157d27ee-f555-493a-8ec3-e9dcbe65f697</instanceID>
+    </meta></data>

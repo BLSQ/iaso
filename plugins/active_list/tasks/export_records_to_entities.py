@@ -147,7 +147,7 @@ def export_records_to_entities(task=None):
                 xml_result = validator.generate_xml_from_dict(d_converted)
 
                 # Clean up XML result
-                xml_result = xml_result.replace(form_version.version_id, form_version.version_id)
+                xml_result = xml_result.replace("1.0", form_version.version_id)
                 xml_result = xml_result.replace("{'instanceID': None}", "")
                 xml_result = xml_result.replace("None", "data")
 
@@ -220,8 +220,11 @@ def create_registration(patient):
     tb_vih = 1 if patient.last_record.tb_hiv else 0
     hiv_type = HIV_MAPPING.get(patient.last_record.hiv_type, "1")
 
+    form = Form.objects.get(form_id="file_active_admission")
+    form_version = FormVersion.objects.filter(form=form).order_by("created_at").last()
+
     variables = {
-        "REGISTRY_FORM_VERSION": REGISTRY_FORM_VERSION,
+        "REGISTRY_FORM_VERSION": form_version.version_id,
         "adm_statut_patient": "nv",
         "statut_patient": "nv",
         "code_patient": identifier_code,

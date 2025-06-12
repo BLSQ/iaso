@@ -627,61 +627,61 @@ class ValidationModalTestCase(TestCase):
     def test_validation_page_loads_correctly(self):
         """Test that the validation page loads and contains the necessary elements"""
         self.client.login(username="test_user", password="testpass123")
-        
+
         response = self.client.get("/active_list/validation/")
         self.assertEqual(response.status_code, 200)
-        
+
         # Check that validation form is hidden by default
         self.assertContains(response, 'id="validation_form"')
         self.assertContains(response, 'style="display: none;"')
-        
+
         # Check that overlay is present and hidden
         self.assertContains(response, 'class="overlay"')
         self.assertContains(response, 'style="display: none;"')
-        
+
         # Check that close button is present
         self.assertContains(response, 'id="closePopup"')
-        
+
         # Check that validation.js is loaded
-        self.assertContains(response, 'validation.js')
+        self.assertContains(response, "validation.js")
 
     def test_validation_modal_html_structure(self):
         """Test that the validation modal has the correct HTML structure"""
         self.client.login(username="test_user", password="testpass123")
-        
+
         response = self.client.get("/active_list/validation/")
         content = response.content.decode()
-        
+
         # Check modal structure
         self.assertIn('class="validation-modal"', content)
         self.assertIn('class="modal-content"', content)
         self.assertIn('class="modal-header"', content)
         self.assertIn('class="close-btn"', content)
-        
+
         # Check that form elements are present
-        self.assertIn('csrf_token', content)
+        self.assertIn("csrf_token", content)
         self.assertIn('type="submit"', content)
 
     def test_validation_api_endpoint(self):
         """Test that the validation API endpoint works correctly"""
         self.client.login(username="test_user", password="testpass123")
-        
+
         # Test with valid org_unit_id and month
         response = self.client.get(f"/active_list/validation_api/{self.region.id}/2024-06/")
         self.assertEqual(response.status_code, 200)
-        
+
         # Check JSON response structure
         data = response.json()
         self.assertIn("table_content", data)
         self.assertIn("completeness", data)
-        
+
         # Check that table_content is a list
         self.assertIsInstance(data["table_content"], list)
 
     def test_validation_form_submission(self):
         """Test that validation form can be submitted via AJAX"""
         self.client.login(username="test_user", password="testpass123")
-        
+
         # Prepare form data
         form_data = {
             "org_unit": self.district.id,
@@ -689,10 +689,10 @@ class ValidationModalTestCase(TestCase):
             "comment": "Test validation comment",
             "validation_status": "OK",
         }
-        
+
         # Submit form to validation endpoint
         response = self.client.post("/active_list/validation/", form_data)
-        
+
         # Should redirect or return success response
         self.assertIn(response.status_code, [200, 302])
 
@@ -700,16 +700,16 @@ class ValidationModalTestCase(TestCase):
         """Test that CSS styles for overlay and modal exist"""
         # Read the CSS file
         css_path = "/Users/madewulf/Projects/bluesquare/iaso/plugins/active_list/static/active_list.css"
-        
-        with open(css_path, "r") as f:
+
+        with open(css_path) as f:
             css_content = f.read()
-        
+
         # Check that overlay styles are present
         self.assertIn(".overlay {", css_content)
         self.assertIn("position: fixed;", css_content)
         self.assertIn("background-color: rgba(0, 0, 0, 0.5);", css_content)
         self.assertIn("z-index: 1000;", css_content)
-        
+
         # Check that modal styles are present
         self.assertIn(".validation-modal {", css_content)
         self.assertIn(".modal-content {", css_content)
@@ -719,10 +719,10 @@ class ValidationModalTestCase(TestCase):
     def test_javascript_file_exists_and_valid(self):
         """Test that validation.js file exists and contains expected functionality"""
         js_path = "/Users/madewulf/Projects/bluesquare/iaso/plugins/active_list/static/validation.js"
-        
-        with open(js_path, "r") as f:
+
+        with open(js_path) as f:
             js_content = f.read()
-        
+
         # Check that essential JavaScript functions are present
         self.assertIn("$('#dataContainer').on('click', '.validate_link'", js_content)
         self.assertIn("$('#validation_form').show()", js_content)
@@ -735,17 +735,17 @@ class ValidationModalTestCase(TestCase):
     def test_validation_template_no_malformed_script_tag(self):
         """Test that the validation template doesn't have malformed script tags"""
         template_path = "/Users/madewulf/Projects/bluesquare/iaso/plugins/active_list/templates/validation.html"
-        
-        with open(template_path, "r") as f:
+
+        with open(template_path) as f:
             template_content = f.read()
-        
+
         # Check that script tag is properly formed
-        self.assertIn('src="{% static \'validation.js\' %}"', template_content)
-        
+        self.assertIn("src=\"{% static 'validation.js' %}\"", template_content)
+
         # Check that there are no strange characters in script tag
-        self.assertNotIn('Œ', template_content)  # Check for the specific character that was problematic
-        
+        self.assertNotIn("Œ", template_content)  # Check for the specific character that was problematic
+
         # Count opening and closing script tags
-        open_script_tags = template_content.count('<script')
-        close_script_tags = template_content.count('</script>')
+        open_script_tags = template_content.count("<script")
+        close_script_tags = template_content.count("</script>")
         self.assertEqual(open_script_tags, close_script_tags, "Script tags should be properly closed")

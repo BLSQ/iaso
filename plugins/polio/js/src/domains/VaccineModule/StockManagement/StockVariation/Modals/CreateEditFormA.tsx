@@ -124,7 +124,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         formik.values.campaign,
         formik.values.alternative_campaign,
     ]);
-    console.log('VALUES', formik.values);
     useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
 
     return (

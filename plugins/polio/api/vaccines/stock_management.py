@@ -261,7 +261,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         # the param name has been changed to the model field name : non_obr_name
         if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
-        print("data", data)
         validated_data = super().validate(data)
         return validated_data
 

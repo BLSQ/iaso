@@ -1,3 +1,3 @@
 #!/bin/bash
 set -xe
-dnf install -y git
+yum install -y git

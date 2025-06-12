@@ -330,7 +330,6 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        print("Response data:", response.data)
         self.assertEqual(response.status_code, 201)
         assert "analyze_id" in response.data
 

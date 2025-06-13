@@ -49,11 +49,13 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
 
 class HasFormPermissionOrSignedURL(HasFormPermission):
     def has_permission(self, request, view):
+        logger.info("HasformPermissionOrSignedURL: new request")
         if super().has_permission(request, view):
             return True
 
         logger.info("HasformPermissionOrSignedURL: no permission - checking for signed URL")
         enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        logger.info("HasformPermissionOrSignedURL: secret fetched")
         return verify_signed_url(request, enketo_secret)
 
 

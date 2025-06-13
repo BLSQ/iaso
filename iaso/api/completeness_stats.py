@@ -288,6 +288,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             form_qs = form_qs.filter(projects__in=projects).distinct("id")
 
         profile = request.user.iaso_profile  # type: ignore
+        account = profile.account
+        # Get version id to filter org_units
+        version_id = account.default_version_id
 
         org_units: OrgUnitQuerySet
         org_units = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
@@ -298,7 +301,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #  if user asked for a parent ou we filter on this
         #   if user asked for a org unit type we "group" by this otherwise take the top.
 
-        # so basically 4 case:
+        # so basically 4 cases:
         #  a. no params. Take the roots for the default source (or for the users)
         #  b. parent ou but no org unit type: take the child of that parent
         #  c. org unit type with parent: From the descendant of that parent, take orgunit of this type
@@ -310,8 +313,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         if parent_ou:
             org_units = org_units.hierarchy(parent_ou)
         else:
-            account = profile.account
-            version_id = account.default_version_id
             org_units = org_units.filter(version_id=version_id)
             # we want everything in the source, but we will filter for what the user has access too.
             if profile.org_units.all():

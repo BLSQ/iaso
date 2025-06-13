@@ -18,6 +18,12 @@ def index_pyramid(orgunits):
 
 
 class Differ:
+    STATUS_NEW = "new"
+    STATUS_MODIFIED = "modified"
+    STATUS_SAME = "same"
+    STATUS_NOT_IN_ORIGIN = "not in origin - ignored"
+    STATUS_NEVER_SEEN = "never_seen"
+
     def __init__(self, logger):
         self.iaso_logger = logger
 
@@ -120,11 +126,11 @@ class Differ:
                 self.iaso_logger.info(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
 
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, field_types)
-            all_same = all(map(lambda comp: comp.status == "same", comparisons))
-            if status != "new" and not all_same:
-                status = "modified"
-            elif status != "new" and all_same:
-                status = "same"
+            all_same = all(map(lambda comp: comp.status == self.STATUS_SAME, comparisons))
+            if status != self.STATUS_NEW and not all_same:
+                status = self.STATUS_MODIFIED
+            elif status != self.STATUS_NEW and all_same:
+                status = self.STATUS_SAME
 
             diff = Diff(orgunit_ref=orgunit_ref, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
             diffs.append(diff)
@@ -141,12 +147,12 @@ class Differ:
                         before=field.access(orgunit_dhis2),
                         after=None,
                         field=field.field_name,
-                        status="deleted",
+                        status=self.STATUS_NOT_IN_ORIGIN,
                         distance=100,
                     )
                     comparisons.append(comparison)
                 used_to_exist = OrgUnit.objects.filter(source_ref=deleted_id, version=version).count() > 0
-                status = "deleted" if used_to_exist else "never_seen"
+                status = self.STATUS_NOT_IN_ORIGIN if used_to_exist else self.STATUS_NEVER_SEEN
                 diff = Diff(orgunit_ref=None, orgunit_dhis2=orgunit_dhis2, status=status, comparisons=comparisons)
                 diffs.append(diff)
 
@@ -161,14 +167,14 @@ class Differ:
 
             same = field.is_same(dhis2_value, ref_value)
             if same:
-                status = "same"
+                status = self.STATUS_SAME
             else:
-                status = "modified"
+                status = self.STATUS_MODIFIED
 
             if not dhis2_value and ref_value:
-                status = "new"
+                status = self.STATUS_NEW
             if not same and dhis2_value is not None and (ref_value is None or ref_value == []):
-                status = "deleted"
+                status = self.STATUS_NOT_IN_ORIGIN
 
             comparisons.append(
                 Comparison(

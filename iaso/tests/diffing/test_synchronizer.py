@@ -64,7 +64,7 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         ]
@@ -77,14 +77,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-a:Group A",
                 "before": [{"id": "group-a", "name": "Group A", "iaso_id": 1260}],
                 "after": [{"id": "group-a", "name": "Group A", "iaso_id": 1262}],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         ]
@@ -97,14 +97,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-b:Group B",
                 "before": [{"id": "group-b", "name": "Group B", "iaso_id": 1261}],
                 "after": [],
-                "status": "deleted",
+                "status": Differ.STATUS_NOT_IN_ORIGIN,
                 "distance": None,
             },
         ]
@@ -117,14 +117,14 @@ class DataSourceVersionsSynchronizerTestCase(TestCase):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
             {
                 "field": "group:group-c:Group C",
                 "before": [],
                 "after": [{"id": "group-c", "name": "Group C", "iaso_id": 1263}],
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "distance": None,
             },
         ]
@@ -209,13 +209,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "closed_date": "2025-11-28",
                     "groups": [self.group_a1.pk, self.group_b.pk],
                 },
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": "Angola",
                         "after": "Angola new",
-                        "status": "modified",
+                        "status": Differ.STATUS_MODIFIED,
                         "distance": None,
                     }
                 ],
@@ -283,13 +283,13 @@ class DiffsToJsonTestCase(PyramidBaseTest):
                     "groups": [self.group_a2.pk, self.group_c.pk],
                 },
                 "orgunit_dhis2": None,
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": None,
                         "after": "Angola",
-                        "status": "new",
+                        "status": Differ.STATUS_NEW,
                         "distance": None,
                     }
                 ],

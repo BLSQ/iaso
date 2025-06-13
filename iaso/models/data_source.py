@@ -314,11 +314,11 @@ class DataSourceVersionsSynchronization(models.Model):
         diffs, _ = Differ(logger_to_use or logger).diff(**differ_params)
 
         # Reduce the size of the diff that will be stored in the DB.
-        diffs = [diff for diff in diffs if diff.status != "same"]
+        diffs = [diff for diff in diffs if diff.status != Differ.STATUS_SAME]
 
         count_status = {
-            "new": 0,
-            "modified": 0,
+            Differ.STATUS_NEW: 0,
+            Differ.STATUS_MODIFIED: 0,
         }
         for diff in diffs:
             if diff.status in count_status:
@@ -354,8 +354,8 @@ class DataSourceVersionsSynchronization(models.Model):
             "field_names": field_names,
         }
 
-        self.count_create = count_status["new"]
-        self.count_update = count_status["modified"]
+        self.count_create = count_status[Differ.STATUS_NEW]
+        self.count_update = count_status[Differ.STATUS_MODIFIED]
         self.json_diff = diffs_to_json(diffs)
         self.diff_config = str(differ_config)
         self.save()

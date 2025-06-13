@@ -7,6 +7,7 @@ import dhis2.exceptions
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
 
+from iaso.diffing import Differ
 from iaso.models import generate_id_for_dhis_2
 
 from .comparisons import Comparison, Diff, as_field_types
@@ -191,7 +192,9 @@ class Exporter:
                     )
                 diff = diff[0]
                 for comparison in diff.comparisons:  # type: ignore
-                    if comparison.status != "same" and not comparison.field.startswith(("group:", "groupset:")):
+                    if comparison.status != Differ.STATUS_SAME and not comparison.field.startswith(
+                        ("group:", "groupset:")
+                    ):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])
@@ -278,7 +281,7 @@ class Exporter:
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(
-                lambda x: (x.status == "modified" or x.status == "new")
+                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
                 and x.are_fields_modified(support_by_update_fields),
                 diffs,
             )
@@ -306,7 +309,7 @@ class Exporter:
                 modified = False
                 for diff in to_update_diffs:
                     comparison = diff.comparison(groupset_field_type.field_name)
-                    if comparison.status == "new" or comparison.status == "modified":
+                    if comparison.status == Differ.STATUS_NEW or comparison.status == Differ.STATUS_MODIFIED:
                         tokeep = [group["id"] for group in comparison.after if group["id"] == dhis2_group["id"]]
                         if len(tokeep) > 0:
                             if not dhis2_group_contains(dhis2_group, diff.org_unit):
@@ -323,7 +326,7 @@ class Exporter:
                                 )
                                 modified = True
                                 self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
-                    if comparison.status == "deleted":
+                    if comparison.status == Differ.STATUS_NOT_IN_ORIGIN:
                         if dhis2_group_contains(dhis2_group, diff.org_unit):
                             dhis2_group["organisationUnits"] = list(
                                 filter(
@@ -344,7 +347,7 @@ class Exporter:
         support_by_update_fields = [field for field in fields if field.startswith("group:")]
         to_update_diffs = list(
             filter(
-                lambda x: (x.status == "modified" or x.status == "new")
+                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
                 and x.are_fields_modified(support_by_update_fields),
                 diffs,
             )
@@ -372,7 +375,7 @@ class Exporter:
                 modified = False
                 for diff in to_update_diffs:
                     comparison = diff.comparison(group_field_type.field_name)
-                    if comparison.status == "new" or comparison.status == "modified":
+                    if comparison.status == Differ.STATUS_NEW or comparison.status == Differ.STATUS_MODIFIED:
                         tokeep = [group["id"] for group in comparison.after if group["id"] == dhis2_group["id"]]
                         if len(tokeep) > 0:
                             if not dhis2_group_contains(dhis2_group, diff.org_unit):
@@ -387,7 +390,7 @@ class Exporter:
                                     )
                                 )
                                 modified = True
-                    if comparison.status == "deleted":
+                    if comparison.status == Differ.STATUS_NOT_IN_ORIGIN:
                         if dhis2_group_contains(dhis2_group, diff.org_unit):
                             dhis2_group["organisationUnits"] = list(
                                 filter(

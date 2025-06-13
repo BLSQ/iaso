@@ -1,3 +1,3 @@
 externalId,diff status,type,parent 1 name before,parent 1 name after,parent 2 name before,parent 2 name after,parent 3 name before,parent 3 name after,parent 4 name before,parent 4 name after,parent 5 name before,parent 5 name after
 id-1,same,Country,,,,,,,,,,
-id-2,deleted,Region,Angola,,,,,,,,,
+id-2,not in origin - ignored,Region,Angola,,,,,,,,,

@@ -67,7 +67,7 @@ class DifferTestCase(PyramidBaseTest):
         self.assertEqual(len(diffs), 3)
 
         country_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_country), None)
-        self.assertEqual(country_diff.status, "modified")
+        self.assertEqual(country_diff.status, Differ.STATUS_MODIFIED)
         country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
         self.assertEqual(8, len(country_diff_comparisons))
         self.assertDictEqual(
@@ -76,7 +76,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "name",
                 "before": "Angola",
                 "after": "Angola new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -86,7 +86,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "parent",
                 "before": None,
                 "after": None,
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -96,7 +96,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "geometry",
                 "before": self.multi_polygon,
                 "after": new_multi_polygon,
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -106,7 +106,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "opening_date",
                 "before": datetime.date(2022, 11, 28),
                 "after": datetime.date(2022, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -116,7 +116,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "closed_date",
                 "before": datetime.date(2025, 11, 28),
                 "after": datetime.date(2025, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -126,7 +126,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-a:Group A",
                 "before": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a1.pk}],
                 "after": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a2.pk}],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -136,7 +136,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-b:Group B",
                 "before": [{"id": "group-b", "name": "Group B", "iaso_id": self.group_b.pk}],
                 "after": [],
-                "status": "deleted",
+                "status": Differ.STATUS_NOT_IN_ORIGIN,
                 "distance": None,
             },
         )
@@ -146,13 +146,13 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-c:Group C",
                 "before": [],
                 "after": [{"id": "group-c", "name": "Group C", "iaso_id": self.group_c.pk}],
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "distance": None,
             },
         )
 
         region_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_region), None)
-        self.assertEqual(region_diff.status, "modified")
+        self.assertEqual(region_diff.status, Differ.STATUS_MODIFIED)
         region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
         self.assertEqual(8, len(region_diff_comparisons))
         self.assertDictEqual(
@@ -161,7 +161,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "name",
                 "before": "Huila",
                 "after": "Huila new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -171,7 +171,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "parent",
                 "before": "id-1",
                 "after": "id-1",
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -181,7 +181,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "geometry",
                 "before": self.multi_polygon,
                 "after": new_multi_polygon,
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -191,7 +191,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "opening_date",
                 "before": datetime.date(2022, 11, 28),
                 "after": datetime.date(2022, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -201,7 +201,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "closed_date",
                 "before": datetime.date(2025, 11, 28),
                 "after": datetime.date(2025, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -211,7 +211,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -221,7 +221,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-b:Group B",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -231,7 +231,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-c:Group C",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -239,7 +239,7 @@ class DifferTestCase(PyramidBaseTest):
         district_diff = next(
             (diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_district), None
         )
-        self.assertEqual(district_diff.status, "modified")
+        self.assertEqual(district_diff.status, Differ.STATUS_MODIFIED)
         district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
         self.assertEqual(8, len(district_diff_comparisons))
         self.assertDictEqual(
@@ -248,7 +248,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "name",
                 "before": "Cuvango",
                 "after": "Cuvango new",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -258,7 +258,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "parent",
                 "before": "id-2",
                 "after": "id-1",
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -268,7 +268,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "geometry",
                 "before": self.multi_polygon,
                 "after": new_multi_polygon,
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -278,7 +278,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "opening_date",
                 "before": datetime.date(2022, 11, 28),
                 "after": datetime.date(2022, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -288,7 +288,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "closed_date",
                 "before": datetime.date(2025, 11, 28),
                 "after": datetime.date(2025, 12, 28),
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "distance": None,
             },
         )
@@ -298,7 +298,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -308,7 +308,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-b:Group B",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -318,7 +318,7 @@ class DifferTestCase(PyramidBaseTest):
                 "field": "group:group-c:Group C",
                 "before": [],
                 "after": [],
-                "status": "same",
+                "status": Differ.STATUS_SAME,
                 "distance": 0,
             },
         )
@@ -374,6 +374,6 @@ class DifferTestCase(PyramidBaseTest):
         self.assertEqual(len(diffs), 1)  # only the country should be returned
         country_diff = diffs[0]
 
-        self.assertEqual(country_diff.status, "modified")
+        self.assertEqual(country_diff.status, Differ.STATUS_MODIFIED)
         self.assertEqual(country_diff.orgunit_ref.id, self.angola_country_to_compare_with.id)
         self.assertEqual(country_diff.orgunit_dhis2.id, self.angola_country_to_update.id)

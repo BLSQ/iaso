@@ -5,17 +5,18 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers.json import DjangoJSONEncoder
 from django.forms import model_to_dict
 
+from iaso.diffing import Differ
 from iaso.management.commands.command_logger import CommandLogger
 
 
 def color(status):
-    if status == "modified":
+    if status == Differ.STATUS_MODIFIED:
         return CommandLogger.YELLOW
-    if status == "same":
+    if status == Differ.STATUS_SAME:
         return CommandLogger.END
-    if status == "new":
+    if status == Differ.STATUS_NEW:
         return CommandLogger.GREEN
-    if status == "deleted":
+    if status == Differ.STATUS_NOT_IN_ORIGIN:
         return CommandLogger.RED
     return CommandLogger.END
 
@@ -146,8 +147,8 @@ class Dumper:
         header = ["externalId", "name", "ou status"]
         fields = list(
             set(
-                list(filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields))
-                + list(filter(lambda f: "new" in stats["orgUnitsByField"][f], fields))
+                list(filter(lambda f: Differ.STATUS_MODIFIED in stats["orgUnitsByField"][f], fields))
+                + list(filter(lambda f: Differ.STATUS_NEW in stats["orgUnitsByField"][f], fields))
             )
         )
         for field in fields:
@@ -158,13 +159,13 @@ class Dumper:
 
         display.append(header)
         for diff in diffs:
-            if diff.status != "same":
+            if diff.status != Differ.STATUS_SAME:
                 results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
 
                 for field in fields:
                     comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
-                    if comparison.status == "same":
-                        results.append("same")
+                    if comparison.status == Differ.STATUS_SAME:
+                        results.append(Differ.STATUS_SAME)
                     else:
                         results.append(
                             self.iaso_logger.colorize(
@@ -178,9 +179,9 @@ class Dumper:
 
         for d in display:
             message = "\t".join(map(lambda s: self.iaso_logger.colorize(str(s).ljust(20, " "), color(s)), d))
-            if d[2] == "new":
+            if d[2] == Differ.STATUS_NEW:
                 self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.GREEN))
-            elif d[2] == "modified":
+            elif d[2] == Differ.STATUS_MODIFIED:
                 self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.RED))
             else:
                 self.iaso_logger.info(message)

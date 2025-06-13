@@ -10,6 +10,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
@@ -50,12 +51,14 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
 class HasFormPermissionOrSignedURL(HasFormPermission):
     def has_permission(self, request, view):
         logger.info("HasformPermissionOrSignedURL: new request")
-        if super().has_permission(request, view):
-            return True
+        try:
+            if super().has_permission(request, view):
+                return True
+        except NotAuthenticated:
+            logger.info("HasformPermissionOrSignedURL: project requires authentication")
 
         logger.info("HasformPermissionOrSignedURL: no permission - checking for signed URL")
         enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
-        logger.info("HasformPermissionOrSignedURL: secret fetched")
         return verify_signed_url(request, enketo_secret)
 
 

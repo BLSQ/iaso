@@ -105,23 +105,31 @@ def generate_signed_url(path: str, secret: str, expiry_seconds=300, extra_params
     signed_path = signer.sign(path)
     expires = int(time.time()) + expiry_seconds
     params = urlencode({**extra_params, "expires": expires, "signed": signed_path})
-    return f"{path}?{params}"
+    signed_url = f"{path}?{params}"
+    logger.info(f"Signed URL generated: {signed_url}")
+    return signed_url
 
 
 def verify_signed_url(request, secret: str) -> bool:
     path = request.path
     signed = request.query_params.get(ENKETO_SIGNED, None)
     expires = request.query_params.get(ENKETO_EXPIRES, None)
+    logger.info("Verifying signed URL")
 
     if not signed or not expires:
+        logger.error(f"Signed URL - missing parameter: signed={signed}, expires={expires}")
         return False
 
     if int(expires) < int(time.time()):
+        logger.error("Signed URL - expired signature")
         return False
 
     signer = TimestampSigner(secret)
     try:
         original = signer.unsign(signed)
-        return original == path
+        result = original == path
+        logger.error(f"Signed URL - result = {result}, original = {original}, path = {path}")
+        return result
     except (BadSignature, SignatureExpired):
+        logger.error("Signed URL - bad signature exception")
         return False

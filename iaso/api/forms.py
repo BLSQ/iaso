@@ -1,3 +1,4 @@
+import logging
 import typing
 
 from copy import copy
@@ -26,6 +27,9 @@ from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 
 
+logger = logging.getLogger(__name__)
+
+
 class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
@@ -48,6 +52,7 @@ class HasFormPermissionOrSignedURL(HasFormPermission):
         if super().has_permission(request, view):
             return True
 
+        logger.info("HasformPermissionOrSignedURL: no permission - checking for signed URL")
         enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
         return verify_signed_url(request, enketo_secret)
 

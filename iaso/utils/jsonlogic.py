@@ -42,9 +42,88 @@ def jsonlogic_to_q(
     field_prefix: str = "",
     recursion_func: Callable = None,
 ) -> Q:
-    """Converts a JsonLogic query to a Django Q object."""
+    """Converts a JsonLogic query to a Django Q object.
+
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict. Example: {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}
+    :param field_prefix: A prefix to add to all fields in the generated query. Useful to follow a relationship or to dig in a JSONField
+    :param recursion_func: Optionally specify a function to call for recursion, allowing this method to be "wrapped". By default, when no function is specified, it calls itself.
+
+    :return: A Django Q object.
+    """
 
     func = jsonlogic_to_q if recursion_func is None else recursion_func
+
+    if "and" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(sub_query, func(lookup, field_prefix))
+        return sub_query
+    if "or" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(sub_query, func(lookup, field_prefix))
+        return sub_query
+    if "!" in jsonlogic:
+        return ~func(jsonlogic["!"], field_prefix)
+
+    if not jsonlogic.keys():
+        return Q()
+
+    # Binary operators
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
+    if len(params) != 2:
+        raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
+
+    lookups = {
+        "==": "exact",
+        "!=": "exact",
+        ">": "gt",
+        ">=": "gte",
+        "<": "lt",
+        "<=": "lte",
+        "in": "icontains",
+    }
+
+    if op not in lookups.keys():
+        raise ValueError(
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+        )
+
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    if "var" not in field:
+        raise ValueError(
+            f"Unsupported JsonLogic. Argument[{field_position}] must contain a variable for given "
+            f"operator : {jsonlogic}"
+        )
+    field_name = field["var"]
+    value = params[0] if op == "in" else params[1]
+
+    extract = ""
+    if isinstance(value, (int, float)) and field_prefix:
+        # Since inside the json everything is cast as string we cast back as int
+        extract = "__forcefloat"
+
+    lookup = lookups[op]
+
+    f = f"{field_prefix}{field_name}{extract}__{lookup}"
+    q = Q(**{f: value})
+
+    if op == "!=":
+        # invert the filter
+        q = ~q
+    return q
+
+
+def instance_jsonlogic_to_q(
+    jsonlogic: Dict[str, Any],
+    field_prefix: str = "",
+    recursion_func: Callable = None,
+) -> Q:
+    """Converts a JsonLogic query to a Django Q object."""
+
+    func = instance_jsonlogic_to_q if recursion_func is None else recursion_func
 
     # Handle group operators first
     if "and" in jsonlogic:

@@ -1,5 +1,5 @@
 from iaso.test import TestCase
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_q
 
 
 class JsonLogicTests(TestCase):
@@ -62,35 +62,35 @@ class JsonLogicTests(TestCase):
 class JsonLogicSomeAllStringFieldTests(TestCase):
     def test_some_operator_all_values_present(self):
         filters = {"some": [{"var": "colors"}, {"in": [{"var": ""}, ["red", "blue"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         self.assertEqual(str(q), "(AND: ('colors__icontains', 'red'), ('colors__icontains', 'blue'))")
 
     def test_some_operator_three_values_present(self):
         filters = {"some": [{"var": "colors"}, {"in": [{"var": ""}, ["red", "blue", "green"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         self.assertEqual(
             str(q), "(AND: ('colors__icontains', 'red'), ('colors__icontains', 'blue'), ('colors__icontains', 'green'))"
         )
 
     def test_some_operator_no_match(self):
         filters = {"some": [{"var": "colors"}, {"in": [{"var": ""}, ["yellow", "green"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         self.assertEqual(str(q), "(AND: ('colors__icontains', 'yellow'), ('colors__icontains', 'green'))")
 
     def test_all_operator_exact_match(self):
         filters = {"all": [{"var": "colors"}, {"in": [{"var": ""}, ["red", "blue", "orange"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         pattern = r"^blue orange red$"
         self.assertEqual(str(q), f"(AND: ('colors__regex', '{pattern}'))")
 
     def test_all_operator_extra_value(self):
         filters = {"all": [{"var": "colors"}, {"in": [{"var": ""}, ["red", "blue"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         pattern = r"^blue red$"
         self.assertEqual(str(q), f"(AND: ('colors__regex', '{pattern}'))")
 
     def test_all_operator_single_value(self):
         filters = {"all": [{"var": "colors"}, {"in": [{"var": ""}, ["red"]]}]}
-        q = jsonlogic_to_q(filters)
+        q = instance_jsonlogic_to_q(filters)
         pattern = r"^red$"
         self.assertEqual(str(q), f"(AND: ('colors__regex', '{pattern}'))")

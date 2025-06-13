@@ -1,6 +1,7 @@
 """JsonLogic(https://jsonlogic.com/)-related utilities."""
 
 import operator
+import re
 
 from typing import Any, Callable, Dict
 
@@ -75,10 +76,19 @@ def jsonlogic_to_q(
             ):
                 value_list = in_params[1]
                 if operator_key == "some":
-                    return Q(**{f"{field_prefix}{field}__overlap": value_list})
+                    # All values must be present
+                    q = Q()
+                    for v in value_list:
+                        q = q & Q(**{f"{field_prefix}{field}__icontains": v})
+                    return q
                 if operator_key == "all":
-                    return Q(**{f"{field_prefix}{field}__contained_by": value_list})
-        # Fallback: not supported
+                    # All values present AND no extra values
+                    # Sort the value list for consistent comparison
+                    sorted_values = sorted(value_list)
+                    # Create a pattern that matches the sorted string representation
+                    pattern = r"^" + r" ".join(re.escape(v) for v in sorted_values) + r"$"
+                    q = Q(**{f"{field_prefix}{field}__regex": pattern})
+                    return q
         raise ValueError(f"Unsupported JsonLogic for '{operator_key}': {jsonlogic}")
 
     # Handle binary operators
@@ -192,3 +202,7 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
             field_prefix="json__",
             recursion_func=entities_jsonlogic_to_q,
         )
+
+
+def matches_all(field_value, expected_list):
+    return sorted(field_value.split()) == sorted(expected_list)

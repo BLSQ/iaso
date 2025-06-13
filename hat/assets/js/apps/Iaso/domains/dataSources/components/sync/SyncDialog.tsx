@@ -17,13 +17,9 @@ import {
     Typography,
 } from '@mui/material';
 import { IconButton, LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import InputComponent from '../../../../components/forms/InputComponent';
 import { useFormState } from '../../../../hooks/form';
 import { useSnackMutation } from '../../../../libs/apiHooks';
-import {
-    commaSeparatedIdsToStringArray,
-    convertFormStateToDict,
-} from '../../../../utils/forms';
+import { convertFormStateToDict } from '../../../../utils/forms';
 import { DataSource } from '../../../orgUnits/types/dataSources';
 import { useExportFields } from '../../hooks/useExportFields';
 import MESSAGES from '../../messages';
@@ -33,7 +29,7 @@ import {
     useDataSourceForVersion,
     useDataSourceVersions,
 } from '../../requests';
-import { FIELDS_TO_EXPORT, useFieldsToExport } from '../../utils';
+import { FIELDS_TO_EXPORT } from '../../utils';
 import { ConfirmExportButton } from '../ConfirmExportButton';
 import { Dhis2Credentials } from '../Dhis2Credentials';
 import { VersionPicker } from '../VersionPicker';
@@ -56,6 +52,8 @@ const initialExportData = (defaultVersionId?: number) => ({
     ],
     source_version_id: null, // version id of the origin data source
     source_top_org_unit_id: null,
+    ref_org_unit_group_id: null,
+    source_org_unit_group_id: null,
 });
 
 type Props = {
@@ -65,9 +63,8 @@ type Props = {
 export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
     const [open, setOpen] = useState(false);
     const { formatMessage } = useSafeIntl();
-    const fieldsToExport = useFieldsToExport();
     const defaultVersionId = dataSource.default_version?.id;
-    const { data: sourceVersions } = useDataSourceVersions();
+    const { data: sourceVersions } = useDataSourceVersions(open);
 
     const { mutate: exportToDHIS2 } = useSnackMutation(
         postToDHIS2,
@@ -93,9 +90,12 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
     const refDataVersionId = exportData?.ref_version_id?.value;
     const sourceDataVersionId = exportData?.source_version_id?.value;
 
-    // these ref to enable resetting the treeview when datasource changes
+    // these refs to enable resetting the treeview when datasource changes
     const refTreeviewResetControl = useRef(refDataVersionId);
     const sourceTreeviewResetControl = useRef(sourceDataVersionId);
+    // these refs to enable resetting the group dropdown when datasource changes
+    const refGroupResetControl = useRef(refDataVersionId);
+    const sourceGroupResetControl = useRef(sourceDataVersionId);
 
     const reset = useCallback(() => {
         setExportData(initialExportData(defaultVersionId));
@@ -151,6 +151,20 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
         }
     }, [refDataVersionId]);
 
+    // Reset Group when changing source datasource
+    useEffect(() => {
+        if (sourceGroupResetControl.current !== sourceDataVersionId) {
+            sourceGroupResetControl.current = sourceDataVersionId;
+        }
+    }, [sourceDataVersionId]);
+
+    // Reset Group when changing ref datasource
+    useEffect(() => {
+        if (refGroupResetControl.current !== refDataVersionId) {
+            refGroupResetControl.current = refDataVersionId;
+        }
+    }, [refDataVersionId]);
+
     const { toUpdateFields, toCompareWithFields } = useExportFields({
         exportData,
         versions: dataSource.versions,
@@ -159,6 +173,7 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
         formatMessage,
         refDataVersionId,
         sourceDataVersionId,
+        enableFetchGroups: open,
     });
     return (
         <>
@@ -194,30 +209,10 @@ export const SyncDialog: FunctionComponent<Props> = ({ dataSource }) => {
                                     refTreeviewResetControl.current !==
                                     refDataVersionId
                                 }
+                                showExportFields
+                                exportData={exportData}
+                                setExportDataField={setExportDataField}
                             />
-                            <Grid xs={6} item>
-                                <InputComponent
-                                    type="select"
-                                    keyValue="fields_to_export"
-                                    labelString={formatMessage(
-                                        MESSAGES.fieldsToExport,
-                                    )}
-                                    value={exportData.fields_to_export.value}
-                                    errors={exportData.fields_to_export.errors}
-                                    onChange={(keyValue, newValue) => {
-                                        setExportDataField(
-                                            keyValue,
-                                            commaSeparatedIdsToStringArray(
-                                                newValue,
-                                            ),
-                                        );
-                                    }}
-                                    options={fieldsToExport}
-                                    multi
-                                    required
-                                    withMarginTop={false}
-                                />
-                            </Grid>
                             <Grid xs={12} item>
                                 <Divider />
                             </Grid>

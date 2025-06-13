@@ -149,12 +149,22 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             data_source=cls.data_source, number=2, description="Source A"
         )
         cls.source_version_to_update_top_org_unit = m.OrgUnit.objects.create(version=cls.source_version_to_update)
+        cls.group_in_version_to_update = m.Group.objects.create(
+            name="Group A",
+            source_ref="group-a",
+            source_version=cls.source_version_to_update,
+        )
 
         cls.source_version_to_compare_with = m.SourceVersion.objects.create(
             data_source=cls.data_source, number=1, description="Source B"
         )
         cls.source_version_to_compare_with_top_org_unit = m.OrgUnit.objects.create(
             version=cls.source_version_to_compare_with
+        )
+        cls.group_in_version_to_compare_with = m.Group.objects.create(
+            name="Group B",
+            source_ref="group-b",
+            source_version=cls.source_version_to_compare_with,
         )
 
         cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY")
@@ -181,9 +191,11 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
                 "source_version_to_update_validation_status": None,
                 "source_version_to_update_top_org_unit": None,
                 "source_version_to_update_org_unit_types": None,
+                "source_version_to_update_org_unit_group": None,
                 "source_version_to_compare_with_validation_status": None,
                 "source_version_to_compare_with_top_org_unit": None,
                 "source_version_to_compare_with_org_unit_types": None,
+                "source_version_to_compare_with_org_unit_group": None,
                 "ignore_groups": False,
                 "show_deleted_org_units": False,
                 "field_names": None,
@@ -196,6 +208,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             "source_version_to_update_validation_status": OrgUnit.VALIDATION_NEW,
             "source_version_to_update_top_org_unit": self.source_version_to_update_top_org_unit.pk,
             "source_version_to_update_org_unit_types": [self.org_unit_type_country.pk, self.org_unit_type_region.pk],
+            "source_version_to_update_org_unit_group": self.group_in_version_to_update.pk,
             # Version to compare with.
             "source_version_to_compare_with_validation_status": OrgUnit.VALIDATION_NEW,
             "source_version_to_compare_with_top_org_unit": self.source_version_to_compare_with_top_org_unit.pk,
@@ -203,6 +216,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
                 self.org_unit_type_country.pk,
                 self.org_unit_type_region.pk,
             ],
+            "source_version_to_compare_with_org_unit_group": self.group_in_version_to_compare_with.pk,
             # Options.
             "ignore_groups": True,
             "show_deleted_org_units": False,
@@ -220,6 +234,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         self.assertEqual(
             data["source_version_to_update_org_unit_types"], [self.org_unit_type_country, self.org_unit_type_region]
         )
+        self.assertEqual(data["source_version_to_update_org_unit_group"], self.group_in_version_to_update)
         # Version to compare with.
         self.assertEqual(data["source_version_to_compare_with_validation_status"], OrgUnit.VALIDATION_NEW)
         self.assertEqual(
@@ -229,6 +244,7 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             data["source_version_to_compare_with_org_unit_types"],
             [self.org_unit_type_country, self.org_unit_type_region],
         )
+        self.assertEqual(data["source_version_to_compare_with_org_unit_group"], self.group_in_version_to_compare_with)
         # Options.
         self.assertEqual(data["ignore_groups"], True)
         self.assertEqual(data["show_deleted_org_units"], False)
@@ -251,6 +267,19 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
             serializer.errors["source_version_to_update_top_org_unit"][0],
         )
 
+    def test_validate_source_version_to_update_org_unit_group(self):
+        json_diff_params = {
+            "source_version_to_update_org_unit_group": self.group_in_version_to_compare_with.pk,
+        }
+        serializer = CreateJsonDiffParametersSerializer(
+            data=json_diff_params, context={"data_source_versions_synchronization": self.data_source_sync}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "The version of this group is different from the version to update.",
+            serializer.errors["source_version_to_update_org_unit_group"][0],
+        )
+
     def test_validate_source_version_to_compare_with_top_org_unit(self):
         json_diff_params = {
             "source_version_to_compare_with_top_org_unit": self.source_version_to_update_top_org_unit.pk,
@@ -260,6 +289,19 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         )
         self.assertFalse(serializer.is_valid())
         self.assertIn(
-            "The version of this org unit is different from the version to update.",
+            "The version of this org unit is different from the version to compare with.",
             serializer.errors["source_version_to_compare_with_top_org_unit"][0],
+        )
+
+    def test_validate_source_version_to_compare_with_org_unit_group(self):
+        json_diff_params = {
+            "source_version_to_compare_with_org_unit_group": self.group_in_version_to_update.pk,
+        }
+        serializer = CreateJsonDiffParametersSerializer(
+            data=json_diff_params, context={"data_source_versions_synchronization": self.data_source_sync}
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "The version of this group is different from the version to compare with.",
+            serializer.errors["source_version_to_compare_with_org_unit_group"][0],
         )

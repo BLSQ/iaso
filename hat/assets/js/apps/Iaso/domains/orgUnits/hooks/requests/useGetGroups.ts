@@ -40,6 +40,7 @@ type Params = {
 };
 export const useGetGroupDropdown = (
     params: Params,
+    enabled = true,
 ): UseQueryResult<
     DropdownOptionsWithOriginal<
         number,
@@ -69,6 +70,7 @@ export const useGetGroupDropdown = (
         queryFn: () => getRequest(`/api/groups/dropdown/?${queryString}`),
         snackErrorMsg: MESSAGES.fetchGroupsError,
         options: {
+            enabled,
             staleTime,
             select: data => {
                 if (!data) return [];

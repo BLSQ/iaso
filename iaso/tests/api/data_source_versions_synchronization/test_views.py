@@ -54,6 +54,17 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             created_by=cls.user,
         )
 
+        cls.group_1 = m.Group.objects.create(
+            name="Group 1",
+            source_ref="group-1",
+            source_version=cls.source_1,
+        )
+        cls.group_2 = m.Group.objects.create(
+            name="Group 2",
+            source_ref="group-2",
+            source_version=cls.source_2,
+        )
+
     def test_list_without_auth(self):
         response = self.client.get("/api/datasources/sync/")
         self.assertJSONResponse(response, 401)
@@ -138,6 +149,8 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         json_diff_params = {
             "source_version_to_update_validation_status": m.OrgUnit.VALIDATION_NEW,
             "source_version_to_compare_with_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_update_org_unit_group": self.group_1.id,
+            "source_version_to_compare_with_org_unit_group": self.group_2.id,
             "ignore_groups": True,
             "show_deleted_org_units": False,
             "field_names": ["name"],
@@ -156,10 +169,12 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "'validation_status': 'NEW', "
             "'top_org_unit': None, "
             "'org_unit_types': None, "
+            f"'org_unit_group': {self.group_1.pk}, "
             f"'version_ref': {self.source_2.pk}, "
             "'validation_status_ref': 'NEW', "
             "'top_org_unit_ref': None, "
             "'org_unit_types_ref': None, "
+            f"'org_unit_group_ref': {self.group_2.pk}, "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': {'name'}"

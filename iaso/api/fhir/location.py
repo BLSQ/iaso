@@ -41,8 +41,8 @@ class FHIRLocationFilter(django_filters.FilterSet):
         field_name="validation_status",
         choices=[
             ("active", OrgUnit.VALIDATION_VALID),
-            ("suspended", OrgUnit.VALIDATION_NEW),
-            ("inactive", OrgUnit.VALIDATION_REJECTED),
+            ("inactive", OrgUnit.VALIDATION_NEW),
+            ("suspended", OrgUnit.VALIDATION_REJECTED),
         ],
     )
     identifier = django_filters.CharFilter(method="filter_identifier")

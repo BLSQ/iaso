@@ -213,8 +213,8 @@ class FHIRLocationAPITestCase(APITestCase):
         """Test that validation status is properly mapped to FHIR status"""
         test_cases = [
             (self.country, "active"),  # VALIDATION_VALID
-            (self.district, "suspended"),  # VALIDATION_NEW
-            (self.health_facility, "inactive"),  # VALIDATION_REJECTED
+            (self.district, "inactive"),  # VALIDATION_NEW
+            (self.health_facility, "suspended"),  # VALIDATION_REJECTED
         ]
 
         for org_unit, expected_status in test_cases:

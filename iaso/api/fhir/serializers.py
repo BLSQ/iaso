@@ -92,9 +92,9 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
     def get_status(self, obj: OrgUnit) -> str:
         """Map OrgUnit validation status to FHIR Location status"""
         status_mapping = {
-            OrgUnit.VALIDATION_NEW: "suspended",
+            OrgUnit.VALIDATION_NEW: "inactive",
             OrgUnit.VALIDATION_VALID: "active",
-            OrgUnit.VALIDATION_REJECTED: "inactive",
+            OrgUnit.VALIDATION_REJECTED: "suspended",
         }
         return status_mapping.get(obj.validation_status, "active")
 

@@ -73,19 +73,19 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
             identifiers.append(
                 {
                     "use": "official",
-                    "system": f"http://iaso.org/org-unit/{data_source_name}/source-ref",
+                    "system": f"http://openiaso.com/org-unit/{data_source_name}/source-ref",
                     "value": obj.source_ref,
                 }
             )
 
         # UUID identifier
         if obj.uuid:
-            identifiers.append({"use": "secondary", "system": "http://iaso.org/org-unit/uuid", "value": obj.uuid})
+            identifiers.append({"use": "secondary", "system": "http://openiaso.com/org-unit/uuid", "value": obj.uuid})
 
         # Alias identifiers
         if obj.aliases:
             for alias in obj.aliases:
-                identifiers.append({"use": "secondary", "system": "http://iaso.org/org-unit/alias", "value": alias})
+                identifiers.append({"use": "secondary", "system": "http://openiaso.com/org-unit/alias", "value": alias})
 
         return identifiers
 
@@ -109,7 +109,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
             {
                 "coding": [
                     {
-                        "system": "http://iaso.org/org-unit-type",
+                        "system": "http://openiaso.com/org-unit-type",
                         "code": obj.org_unit_type.short_name,
                         "display": obj.org_unit_type.name,
                     }
@@ -176,7 +176,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         # Validation status extension
         extensions.append(
             {
-                "url": "http://iaso.org/fhir/StructureDefinition/org-unit-validation-status",
+                "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-validation-status",
                 "valueCode": obj.validation_status,
             }
         )
@@ -185,7 +185,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.org_unit_type and obj.org_unit_type.depth is not None:
             extensions.append(
                 {
-                    "url": "http://iaso.org/fhir/StructureDefinition/org-unit-type-depth",
+                    "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-type-depth",
                     "valueInteger": obj.org_unit_type.depth,
                 }
             )
@@ -194,7 +194,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.version:
             extensions.append(
                 {
-                    "url": "http://iaso.org/fhir/StructureDefinition/source-version",
+                    "url": "http://openiaso.com/fhir/StructureDefinition/source-version",
                     "valueString": str(obj.version.number),
                 }
             )
@@ -203,7 +203,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.opening_date:
             extensions.append(
                 {
-                    "url": "http://iaso.org/fhir/StructureDefinition/opening-date",
+                    "url": "http://openiaso.com/fhir/StructureDefinition/opening-date",
                     "valueDate": obj.opening_date.isoformat(),
                 }
             )
@@ -212,7 +212,7 @@ class FHIRLocationSerializer(serializers.ModelSerializer):
         if obj.closed_date:
             extensions.append(
                 {
-                    "url": "http://iaso.org/fhir/StructureDefinition/closed-date",
+                    "url": "http://openiaso.com/fhir/StructureDefinition/closed-date",
                     "valueDate": obj.closed_date.isoformat(),
                 }
             )

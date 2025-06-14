@@ -272,7 +272,7 @@ class FHIRLocationViewSet(viewsets.ReadOnlyModelViewSet):
                             "operation": [
                                 {
                                     "name": "children",
-                                    "definition": "http://iaso.org/fhir/OperationDefinition/Location-children",
+                                    "definition": "http://openiaso.com/fhir/OperationDefinition/Location-children",
                                 }
                             ],
                             "searchParam": [

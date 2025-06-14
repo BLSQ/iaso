@@ -312,7 +312,7 @@ if __name__ == "__main__":
                     "name": "Test Country",
                     "status": "active",
                     "type": [{"coding": [{"display": "Country"}]}],
-                    "identifier": [{"system": "http://iaso.org/source-ref", "value": "CTRY001", "use": "official"}],
+                    "identifier": [{"system": "http://openiaso.com/source-ref", "value": "CTRY001", "use": "official"}],
                 }
             },
             {

@@ -5,10 +5,9 @@ Tests for FHIR Location API
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase
 
-from hat.menupermissions import models as permission
-from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Profile, Project, SourceVersion
+from iaso.models import Account, DataSource, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.test import APITestCase
 
 
 User = get_user_model()
@@ -34,12 +33,8 @@ class FHIRLocationAPITestCase(APITestCase):
         cls.project = Project.objects.create(name="Test Project", app_id="test.project", account=cls.account)
 
         # Create user with permissions
-        cls.user = User.objects.create_user(username="test_user", password="testpass123", email="test@example.com")
-        cls.profile = Profile.objects.create(user=cls.user, account=cls.account)
-
-        # Grant org units permission
-        cls.user.user_permissions.add(
-            permission.Permission.objects.get_or_create(codename="iaso_org_units", defaults={"name": "Org Units"})[0]
+        cls.user = cls.create_user_with_profile(
+            username="test_user", account=cls.account, permissions=["iaso_org_units"]
         )
 
         # Create org unit types
@@ -354,8 +349,7 @@ class FHIRLocationAPITestCase(APITestCase):
     def test_user_without_permission_forbidden(self):
         """Test that user without org_units permission is forbidden"""
         # Create user without permissions
-        user_no_perm = User.objects.create_user(username="no_perm_user", password="testpass123")
-        Profile.objects.create(user=user_no_perm, account=self.account)
+        user_no_perm = self.create_user_with_profile(username="no_perm_user", account=self.account, permissions=[])
 
         self.client.force_authenticate(user=user_no_perm)
 

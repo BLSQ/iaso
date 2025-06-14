@@ -37,14 +37,7 @@ class FHIRLocationFilter(django_filters.FilterSet):
 
     # FHIR search parameters
     name = django_filters.CharFilter(field_name="name", lookup_expr="icontains")
-    status = django_filters.ChoiceFilter(
-        field_name="validation_status",
-        choices=[
-            ("active", OrgUnit.VALIDATION_VALID),
-            ("inactive", OrgUnit.VALIDATION_NEW),
-            ("suspended", OrgUnit.VALIDATION_REJECTED),
-        ],
-    )
+    status = django_filters.CharFilter(method="filter_status")
     identifier = django_filters.CharFilter(method="filter_identifier")
     type = django_filters.CharFilter(field_name="org_unit_type__short_name")
 
@@ -55,6 +48,18 @@ class FHIRLocationFilter(django_filters.FilterSet):
     def filter_identifier(self, queryset, name, value):
         """Filter by any identifier (source_ref, uuid, or alias)"""
         return queryset.filter(models.Q(source_ref=value) | models.Q(uuid=value) | models.Q(aliases__contains=[value]))
+
+    def filter_status(self, queryset, name, value):
+        """Filter by FHIR status mapped to validation_status"""
+        status_mapping = {
+            "active": OrgUnit.VALIDATION_VALID,
+            "inactive": OrgUnit.VALIDATION_NEW,
+            "suspended": OrgUnit.VALIDATION_REJECTED,
+        }
+
+        if value in status_mapping:
+            return queryset.filter(validation_status=status_mapping[value])
+        return queryset
 
 
 class FHIRLocationPermission(permissions.BasePermission):

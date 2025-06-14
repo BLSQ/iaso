@@ -31,6 +31,7 @@ class FHIRLocationAPITestCase(APITestCase):
 
         # Create project
         cls.project = Project.objects.create(name="Test Project", app_id="test.project", account=cls.account)
+        cls.data_source.projects.add(cls.project)
 
         # Create user with permissions
         cls.user = cls.create_user_with_profile(
@@ -84,6 +85,16 @@ class FHIRLocationAPITestCase(APITestCase):
             source_ref="HF001",
             validation_status=OrgUnit.VALIDATION_REJECTED,
         )
+
+        # Calculate paths for all org units to enable ltree functionality
+        cls.country.calculate_paths()
+        cls.country.save()
+        cls.region.calculate_paths()
+        cls.region.save()
+        cls.district.calculate_paths()
+        cls.district.save()
+        cls.health_facility.calculate_paths()
+        cls.health_facility.save()
 
     def setUp(self):
         self.client.force_authenticate(user=self.user)

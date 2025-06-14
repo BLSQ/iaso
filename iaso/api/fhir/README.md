@@ -33,10 +33,10 @@ All endpoints require authentication. Users must have the `iaso_org_units` permi
 | `id` | `id` | Converted to string |
 | `name` | `name` | Direct mapping |
 | `validation_status` | `status` | NEW→suspended, VALID→active, REJECTED→inactive |
-| `source_ref` | `identifier` | With system `http://iaso.org/org-unit/{datasource}/source-ref` |
-| `uuid` | `identifier` | With system `http://iaso.org/org-unit/uuid` |
-| `aliases` | `identifier` | Multiple entries with system `http://iaso.org/org-unit/alias` |
-| `org_unit_type` | `type` | With system `http://iaso.org/org-unit-type` |
+| `source_ref` | `identifier` | With system `http://openiaso.com/org-unit/{datasource}/source-ref` |
+| `uuid` | `identifier` | With system `http://openiaso.com/org-unit/uuid` |
+| `aliases` | `identifier` | Multiple entries with system `http://openiaso.com/org-unit/alias` |
+| `org_unit_type` | `type` | With system `http://openiaso.com/org-unit-type` |
 | `org_unit_type.category` | `physicalType` | COUNTRY→co, REGION/DISTRICT→area, HF→bu |
 | `location` | `position` | Geographic coordinates (longitude, latitude, altitude) |
 | `parent` | `partOf` | Reference to parent location |
@@ -47,11 +47,11 @@ All endpoints require authentication. Users must have the `iaso_org_units` permi
 
 Custom extensions are used for Iaso-specific data:
 
-- `http://iaso.org/fhir/StructureDefinition/org-unit-validation-status` - Validation status
-- `http://iaso.org/fhir/StructureDefinition/org-unit-type-depth` - Organization unit type depth
-- `http://iaso.org/fhir/StructureDefinition/source-version` - Source version number
-- `http://iaso.org/fhir/StructureDefinition/opening-date` - Opening date
-- `http://iaso.org/fhir/StructureDefinition/closed-date` - Closing date
+- `http://openiaso.com/fhir/StructureDefinition/org-unit-validation-status` - Validation status
+- `http://openiaso.com/fhir/StructureDefinition/org-unit-type-depth` - Organization unit type depth
+- `http://openiaso.com/fhir/StructureDefinition/source-version` - Source version number
+- `http://openiaso.com/fhir/StructureDefinition/opening-date` - Opening date
+- `http://openiaso.com/fhir/StructureDefinition/closed-date` - Closing date
 
 ## Search Parameters
 
@@ -90,7 +90,7 @@ Response:
         "mode": "instance",
         "type": [{
           "coding": [{
-            "system": "http://iaso.org/org-unit-type",
+            "system": "http://openiaso.com/org-unit-type",
             "code": "HF",
             "display": "Health Facility"
           }]
@@ -125,12 +125,12 @@ Response:
   "identifier": [
     {
       "use": "official",
-      "system": "http://iaso.org/org-unit/national-system/source-ref",
+      "system": "http://openiaso.com/org-unit/national-system/source-ref",
       "value": "HF001"
     },
     {
       "use": "secondary",
-      "system": "http://iaso.org/org-unit/uuid",
+      "system": "http://openiaso.com/org-unit/uuid",
       "value": "uuid-123-456-789"
     }
   ],
@@ -139,7 +139,7 @@ Response:
   "mode": "instance",
   "type": [{
     "coding": [{
-      "system": "http://iaso.org/org-unit-type",
+      "system": "http://openiaso.com/org-unit-type",
       "code": "HF",
       "display": "Health Facility"
     }],
@@ -165,11 +165,11 @@ Response:
   },
   "extension": [
     {
-      "url": "http://iaso.org/fhir/StructureDefinition/org-unit-validation-status",
+      "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-validation-status",
       "valueCode": "VALID"
     },
     {
-      "url": "http://iaso.org/fhir/StructureDefinition/org-unit-type-depth",
+      "url": "http://openiaso.com/fhir/StructureDefinition/org-unit-type-depth",
       "valueInteger": 3
     }
   ]

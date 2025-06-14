@@ -32,3 +32,7 @@ TODO list for Active List Plugin
 - validation per region
 - Adding indicators on the validation screen
 - Send emails on validation issues
+
+### Bugs
+- Format of periods from excel import does not match mobile import: https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=33355/56/78/90123
+- Files imported by CIV center have issues with the HIV type

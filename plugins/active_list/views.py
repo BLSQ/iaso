@@ -33,6 +33,7 @@ from .models import (
     HIV_HIV1_AND_2,
     HIV_HIV2,
     HIV_UNKNOWN,
+    INACTIVE_REASONS_DICT,
     PATIENT_HISTORY_DISPLAY_FIELDS,
     PATIENT_LIST_DISPLAY_FIELDS,
     SOURCE_EXCEL,
@@ -179,8 +180,18 @@ def patient_history(request):
 
             patient_object["Dernier Enreg"] = "*" if is_last_record else ""
             patient_object["Date D'import"] = record.import_source.creation_date.strftime("%Y-%m-%d %H:%M ")
-            patient_object["Importeur"] = record.import_source.user.username
-
+            patient_object["Importeur"] = record.import_source.user.username if record.import_source.user else "Inconnu"
+            loss_text = ""
+            first = True
+            for event in record.loss_events.all():
+                if not first:
+                    loss_text += "\n "
+                loss_text += "Date: %s - Raison: %s" % (
+                    event.date.strftime("%Y-%m-%d"),
+                    INACTIVE_REASONS_DICT[event.reason],
+                )
+                first = False
+            patient_object["Perdu"] = loss_text
             data.append(patient_object)
         return render(request, "patient_history.html", {"data": data, "patient": patient, "record_mode": record_mode})
 
@@ -607,7 +618,7 @@ def patient_list_upload_format_api(request, org_unit_id, month):
     mode = request.GET.get("mode", "default")
     last_import = None
 
-    # Same data retrieval logic as patient_list_api
+    # todo :  Same data retrieval logic as patient_list_api.Should not be replicated
     if mode == "default":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=month).order_by("-creation_date").first()

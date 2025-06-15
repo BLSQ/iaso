@@ -16,6 +16,6 @@ class Command(BaseCommand):
         parser.add_argument("--name", type=str, required=False, help="Campaign obr name")
 
     def handle(self, name=None, *args, **options):
-        active_patients = Patient.objects.filter(active=True)
+        active_patients = Patient.objects.filter(active=True).select_related("last_record", "last_record__org_unit")
         for patient in active_patients:
             patient.evaluate_loss(save=True)

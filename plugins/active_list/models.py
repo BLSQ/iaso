@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from django.contrib.auth.models import User
 from django.db import models
@@ -84,6 +85,10 @@ INACTIVE_REASONS = [
     (INACTIVE_TRANSFER, "Transfert"),
 ]
 
+INACTIVE_REASONS_DICT = {t[0]: t[1] for t in INACTIVE_REASONS}
+
+NUMBER_OF_DAYS_BEFORE_LOSS = os.environ.get("NUMBER_OF_DAYS_BEFORE_LOSS", 28)
+
 
 class Import(models.Model):
     id = models.AutoField(primary_key=True)  # Django handles auto-incrementing IDs
@@ -133,17 +138,22 @@ class Patient(models.Model):
             print(
                 "Last record next_dispensation_date:",
                 self.last_record.next_dispensation_date,
-                datetime.date.today() - datetime.timedelta(days=28),
+                datetime.date.today() - datetime.timedelta(days=NUMBER_OF_DAYS_BEFORE_LOSS),
             )
-            if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(days=28):
-                self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(days=28)
+            if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(
+                days=NUMBER_OF_DAYS_BEFORE_LOSS
+            ):
+                self.loss_date = self.last_record.next_dispensation_date + datetime.timedelta(
+                    days=NUMBER_OF_DAYS_BEFORE_LOSS
+                )
                 self.active = False
 
                 if save:
                     event = PatientInactiveEvent(
                         patient=self,
                         org_unit=self.last_record.org_unit,
-                        date=self.last_record.next_dispensation_date + datetime.timedelta(days=28),
+                        date=self.last_record.next_dispensation_date
+                        + datetime.timedelta(days=NUMBER_OF_DAYS_BEFORE_LOSS),
                         last_patient_record_at_time_of_loss=self.last_record,
                         reason=INACTIVE_LOST,
                     )
@@ -164,7 +174,7 @@ class PatientInactiveEvent(models.Model):
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.CASCADE, verbose_name="Unité organisationnelle")
     date = models.DateField(verbose_name="Date de perte de suivi")
     last_patient_record_at_time_of_loss = models.ForeignKey(
-        "Record", on_delete=models.CASCADE, null=True, blank=True, related_name="last_patient_record_at_time_of_loss"
+        "Record", on_delete=models.CASCADE, null=True, blank=True, related_name="loss_events"
     )
     reason = models.TextField(verbose_name="Raison de la perte de suivi", choices=INACTIVE_REASONS)
     created_at = models.DateTimeField(auto_now_add=True)

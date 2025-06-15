@@ -38,7 +38,9 @@ TODO list for Active List Plugin
 - Convert period to format 2025-06 when importing from excel format
 - Files imported by CIV center have issues with the HIV type  ✅
 - Dead patients are still marked as active ...
-- 
+- Update validation forms on prod to allow codes with both e and E at the end
+- Update the library version to use the code of Benjamin (and at least include constraints explanations in French)? 
+
 ### Questions
 - what to do when a patient is dead for the dispensiation date. Currently, import fails without date (and then where should they appear ? ) -> I'd say that the answer is dispensiation_date is reporting date in that case)
 - - 

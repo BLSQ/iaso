@@ -741,3 +741,33 @@ select {
         padding: 1rem;
     }
 }
+
+/* Validation Status Badges */
+.validation-status {
+    padding: 3px;
+    text-align: center;
+    color: white;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.validation-status-missing {
+    background-color: #dc2626; /* red */
+}
+
+.validation-status-pending {
+    background-color: #f59e0b; /* orange */
+}
+
+.validation-status-ok {
+    background-color: #10b981; /* green */
+}
+
+.validation-status-new-report {
+    background-color: #7c3aed; /* purple */
+}
+
+.validation-status-correction {
+    background-color: #a16207; /* brown */
+}

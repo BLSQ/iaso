@@ -35,4 +35,10 @@ TODO list for Active List Plugin
 
 ### Bugs
 - Format of periods from excel import does not match mobile import: https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=33355/56/78/90123
-- Files imported by CIV center have issues with the HIV type
+- Convert period to format 2025-06 when importing from excel format
+- Files imported by CIV center have issues with the HIV type  ✅
+- Dead patients are still marked as active ...
+- 
+### Questions
+- what to do when a patient is dead for the dispensiation date. Currently, import fails without date (and then where should they appear ? ) -> I'd say that the answer is dispensiation_date is reporting date in that case)
+- - 

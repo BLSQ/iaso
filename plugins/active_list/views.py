@@ -132,23 +132,57 @@ def completeness(request, region_id, month):
     return render(request, "completeness.html", context)
 
 
+def convert_yyyymm_to_file_format(yyyymm_period):
+    """Convert YYYY-MM format to Mon-YY format (e.g., 2024-06 -> Jun-24)"""
+    try:
+        from datetime import datetime
+
+        # Parse the YYYY-MM format
+        dt = datetime.strptime(yyyymm_period, "%Y-%m")
+        # Format as Mon-YY (e.g., Jun-24)
+        return dt.strftime("%b-%y")
+    except ValueError:
+        return yyyymm_period  # Return original if parsing fails
+
+
+def convert_file_format_to_yyyymm(file_format_period):
+    """Convert Mon-YY format to YYYY-MM format  (e.g.,Jun-24  -> 2024-06)"""
+    try:
+        from datetime import datetime
+
+        # Parse the YYYY-MM format
+        dt = datetime.strptime(file_format_period, "%b-%y")
+        # Format as Mon-YY (e.g., Jun-24)
+        return dt.strftime("%Y-%m")
+    except ValueError:
+        return file_format_period  # Return original if parsing fails
+
+
 @login_required
 def patient_history(request):
     identifier = request.GET.get("identifier", "")
+    record_mode = request.GET.get("record_mode", "latest")
     if identifier:
-        # Fetch the patient based on the identifier
         patient = get_object_or_404(Patient, identifier_code=identifier)
+        if record_mode == "latest":
+            latest_ids = Record.objects.filter(patient=patient).values("period").annotate(latest_id=Max("id"))
+            records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
+        elif record_mode == "all":
+            records = Record.objects.filter(patient=patient).order_by("-id")
 
-        latest_ids = Record.objects.filter(patient=patient).values("period").annotate(latest_id=Max("id"))
-
-        records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
         data = []
         for record in records:
             patient_object = {"Période": record.period[:7], "FOSA": record.org_unit.name}
             for field in PATIENT_HISTORY_DISPLAY_FIELDS:
                 patient_object[PATIENT_HISTORY_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
+            is_last_record = record.patient.last_record.id == record.id
+
+            patient_object["Dernier Enreg"] = "*" if is_last_record else ""
+            patient_object["Date D'import"] = record.import_source.creation_date.strftime("%Y-%m-%d %H:%M ")
+            patient_object["Importeur"] = record.import_source.user.username
+
             data.append(patient_object)
-        return render(request, "patient_history.html", {"data": data, "patient": patient})
+        return render(request, "patient_history.html", {"data": data, "patient": patient, "record_mode": record_mode})
 
     return render(request, "patient_history.html", {"data": []})
 
@@ -461,6 +495,9 @@ def get_human_readable_value(model_instance, field_name):
             return getattr(model_instance, method_name)()
         if isinstance(field, models.BooleanField):
             return "Oui" if getattr(model_instance, field_name) else "Non"
+        print(field, field_name)
+        if getattr(model_instance, field_name) is None:
+            return ""
     except FieldDoesNotExist:
         return None
 
@@ -493,12 +530,20 @@ def get_first_and_last_day(date_str):
 
 def filter_expected_patients_for_the_month(patients, month):
     first_day_str, last_day_str = get_first_and_last_day(month)
-    return patients.filter(next_dispensation_date__gte=first_day_str).filter(next_dispensation_date__lte=last_day_str)
+    return patients.filter(
+        next_dispensation_date__gte=first_day_str
+    ).filter(
+        next_dispensation_date__lte=last_day_str
+    )  # todo improve here to only show the most recent record for each patient (maybe also filter out inactive patients?)
 
 
 def filter_received_patients_for_the_month(patients, month):
     first_day_str, last_day_str = get_first_and_last_day(month)
-    return patients.filter(last_dispensation_date__gte=first_day_str).filter(last_dispensation_date__lte=last_day_str)
+    return patients.filter(
+        last_dispensation_date__gte=first_day_str
+    ).filter(
+        last_dispensation_date__lte=last_day_str
+    )  # todo improve here to only show the most recent record for each patient (maybe also filter out inactive patients?)
 
 
 @login_required
@@ -1188,6 +1233,7 @@ def import_data(file, the_import):
             "VIH 1 + 2": HIV_HIV1_AND_2,
             "VIH 1": HIV_HIV1,
             "VIH 2": HIV_HIV2,
+            0: HIV_UNKNOWN,
         }
     )
 
@@ -1255,17 +1301,6 @@ def import_data(file, the_import):
         selected_period_yyyymm = the_import.month
 
         # Convert selected period to "Mon-YY" format for comparison
-        def convert_yyyymm_to_file_format(yyyymm_period):
-            """Convert YYYY-MM format to Mon-YY format (e.g., 2024-06 -> Jun-24)"""
-            try:
-                from datetime import datetime
-
-                # Parse the YYYY-MM format
-                dt = datetime.strptime(yyyymm_period, "%Y-%m")
-                # Format as Mon-YY (e.g., Jun-24)
-                return dt.strftime("%b-%y")
-            except ValueError:
-                return yyyymm_period  # Return original if parsing fails
 
         expected_file_period = convert_yyyymm_to_file_format(selected_period_yyyymm)
 
@@ -1286,7 +1321,7 @@ def import_data(file, the_import):
                     "org_unit_name": org_unit.name,
                 }
 
-    # this will need to be updated to use batched queries
+    # todo this will need to be updated to use batched queries
     for row in data:
         active = not (
             row["art_stoppage"] or row["death"]
@@ -1295,7 +1330,7 @@ def import_data(file, the_import):
 
         patient, created = Patient.objects.get_or_create(identifier_code=row["identifier_code"])
         new_period = row["period"]
-
+        new_period = convert_file_format_to_yyyymm(new_period)
         record = Record(
             number=row["number"],
             region=row["region"],
@@ -1323,7 +1358,7 @@ def import_data(file, the_import):
             import_source=the_import,
             org_unit=the_import.org_unit,
             patient=patient,
-            period=row["period"],
+            period=new_period,
         )
         record.save()
 

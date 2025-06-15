@@ -3,6 +3,12 @@
 {%  load i18n %}
 {% block content %}
 <h2>Historique d'un patient: {{ patient.identifier_code }}</h2>
+    <p>{%  if record_mode == "all" %}
+        <a href="/active_list/patient_history/?identifier={{patient.identifier_code}}">1 enregistrement par période</a>
+    {% else %}
+    <a href="/active_list/patient_history/?identifier={{patient.identifier_code}}&record_mode=all">Tous les enregistrements</a>
+    {%  endif %}
+    </p>
 <h3>Actif: {% if patient.active %}oui ✅{% else %}non ❌{% endif %}</h3>
 
 

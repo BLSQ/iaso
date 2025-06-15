@@ -180,7 +180,7 @@ def patient_history(request):
 
             patient_object["Dernier Enreg"] = "*" if is_last_record else ""
             patient_object["Date D'import"] = record.import_source.creation_date.strftime("%Y-%m-%d %H:%M ")
-            patient_object["Importeur"] = record.import_source.user.username if record.import_source.user else "Inconnu"
+            patient_object["Importeur"] = "%s - %s" % (record.import_source.user.username if record.import_source.user else "Inconnu", record.import_source.source.lower())
             loss_text = ""
             first = True
             for event in record.loss_events.all():
@@ -475,6 +475,24 @@ def validation_api(request, org_unit_id, month):
             obj["Observation"] = ""
             obj["Validateur"] = ""
 
+        if not latest_import:
+            validation_status = '<div style="padding:3px ;background-color: red; color:white; text-align:center;">Rapport manquant</div>'
+        else:
+            if not latest_validation:
+                validation_status = '<div style="padding:3px ;background-color: orange; text-align:center; color:white">En attente de validation</div>'
+            else:
+                if latest_validation.validation_status == "OK":
+                    if latest_validation.created_at > latest_import.creation_date:
+                        validation_status = '<div style="padding:3px; background-color: green; text-align:center; color:white">OK</div>'
+                    else:
+                        validation_status = '<div style="padding:3px;text-align:center; background-color: purple; color:white">Nouveau rapport</div>'
+                else:
+                    if latest_validation.created_at > latest_import.creation_date:
+                        validation_status = '<div style="padding:3px ; background-color: brown; color:white; text-align:center;">En attente de correction</div>'
+                    else:
+                        validation_status = '<div style="padding:3px ;background-color: purple; color:white">Nouveau rapport</div>'
+
+        obj["Validation"] = validation_status
         obj["org_unit_id"] = org_unit.id
 
         table_content.append(obj)

@@ -178,6 +178,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'forms',
             'groups',
             'ids',
+            'is_soft_deleted',
             'org_unit_type_id',
             'parent_id',
             'paymentIds',

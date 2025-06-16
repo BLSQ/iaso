@@ -259,15 +259,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.sourceVersion',
         defaultMessage: 'Source version',
     },
-
     multiSelectionAction: {
         defaultMessage: 'Edit selected change requests',
         id: 'iaso.changeRequest.multiSelectionAction',
     },
-
     changeSelectedChangeRequests: {
         id: 'iaso.changeRequest.changeSelectedChangeRequests',
         defaultMessage: 'Edit {count} selected change requests.',
+    },
+    changeSelectedChangeRequestsWarning: {
+        id: 'iaso.changeRequest.changeSelectedChangeRequestsWarning',
+        defaultMessage:
+            'Change requests that do not have the "new" status will be ignored.',
     },
     changeSelectedChangeRequestsLaunched: {
         id: 'iaso.snackBar.changeSelectedChangeRequestsLaunched',
@@ -302,6 +305,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.searchByIdsInfo',
         defaultMessage:
             'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
+    },
+    bulkDeleteAction: {
+        id: 'iaso.changeRequest.bulkDeleteAction',
+        defaultMessage: 'Delete selected change requests?',
+    },
+    bulkRestoreAction: {
+        id: 'iaso.changeRequest.bulkRestoreAction',
+        defaultMessage: 'Restore selected change requests?',
+    },
+    bulkDeleteOrgUnitChangesCount: {
+        id: 'iaso.changeRequest.deleteOrgUnitChangesCount',
+        defaultMessage: 'Delete {count} change request(s)',
+    },
+    bulkRestoreOrgUnitChangesCount: {
+        id: 'iaso.changeRequest.restoreOrgUnitChangesCount',
+        defaultMessage: 'Restore {count} change request(s)',
+    },
+    bulkDeleteSuccess: {
+        id: 'iaso.changeRequest.bulkDeleteSuccess',
+        defaultMessage: 'Deleted successfully',
+    },
+    isSoftDeleted: {
+        id: 'iaso.changeRequest.isSoftDeleted',
+        defaultMessage: 'Show only deleted',
     },
 });
 

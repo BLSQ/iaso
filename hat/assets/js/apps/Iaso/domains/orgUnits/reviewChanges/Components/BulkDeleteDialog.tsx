@@ -34,7 +34,7 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
 
     const onDelete = useCallback(
         () => bulkDeleteChangeRequests({ ...selection }),
-        [bulkDeleteChangeRequests, closeDialog, resetSelection, selection],
+        [bulkDeleteChangeRequests, selection],
     );
 
     if (!isOpen) {

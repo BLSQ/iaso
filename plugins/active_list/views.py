@@ -354,7 +354,7 @@ def received_count(org_unit_id, month):
     latest_ids = Record.objects.filter(org_unit_id=org_unit_id).values("patient_id").annotate(latest_id=Max("id"))
 
     records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
-    records = filter_received_patients_for_the_month(records, month)
+    records = filter_received_records_for_the_month(records, month)
     return records.count()
 
 
@@ -388,8 +388,8 @@ def stats(org_unit_id, month):
         .count()
     )
 
-    records = filter_received_patients_for_the_month(records, month)
-    previous_records = filter_received_patients_for_the_month(records, previous_month)
+    records = filter_received_records_for_the_month(records, month)
+    previous_records = filter_received_records_for_the_month(records, previous_month)
     deceased = records.filter(death=True).count()
     previous_deceased = previous_records.filter(death=True).count()
     stopped = records.filter(art_stoppage=True).count()
@@ -479,7 +479,7 @@ def validation_api(request, org_unit_id, month):
             obj["Validateur"] = ""
 
         if not latest_import:
-            validation_status = '<div class="validation-status validation-status-missing">Rapport manquant</div>'
+            validation_status = '<div class="validation-status validation-status-missing">Non transmis</div>'
         else:
             if not latest_validation:
                 validation_status = (
@@ -488,20 +488,16 @@ def validation_api(request, org_unit_id, month):
             else:
                 if latest_validation.validation_status == "OK":
                     if latest_validation.created_at > latest_import.creation_date:
-                        validation_status = '<div class="validation-status validation-status-ok">OK</div>'
+                        validation_status = '<div class="validation-status validation-status-ok">Valide</div>'
                     else:
-                        validation_status = (
-                            '<div class="validation-status validation-status-new-report">Nouveau rapport</div>'
-                        )
+                        validation_status = '<div class="validation-status validation-status-new-report">Nouvelles données arrivées après validation</div>'
                 else:
                     if latest_validation.created_at > latest_import.creation_date:
                         validation_status = (
                             '<div class="validation-status validation-status-correction">En attente de correction</div>'
                         )
                     else:
-                        validation_status = (
-                            '<div class="validation-status validation-status-new-report">Nouveau rapport</div>'
-                        )
+                        validation_status = '<div class="validation-status validation-status-new-report">Nouvelles données en attente de validation</div>'
 
         obj["Validation"] = validation_status
         obj["org_unit_id"] = org_unit.id
@@ -568,22 +564,38 @@ def get_first_and_last_day(date_str):
     return first_day_str, last_day_str
 
 
-def filter_expected_patients_for_the_month(patients, month):
+def filter_expected_records_for_the_month(records, month):
+    """
+    Filter records that have next_dispensation_date within the month,
+    showing only the most recent record for each patient.
+    """
     first_day_str, last_day_str = get_first_and_last_day(month)
-    return patients.filter(
-        next_dispensation_date__gte=first_day_str
-    ).filter(
-        next_dispensation_date__lte=last_day_str
-    )  # todo improve here to only show the most recent record for each patient (maybe also filter out inactive patients?)
+
+    # First filter by date range
+    month_records = records.filter(next_dispensation_date__gte=first_day_str, next_dispensation_date__lte=last_day_str)
+
+    # Get the latest record ID for each patient within the filtered records
+    latest_ids = month_records.values("patient_id").annotate(latest_id=Max("id"))
+
+    # Return only the latest records for each patient
+    return records.filter(id__in=[item["latest_id"] for item in latest_ids])
 
 
-def filter_received_patients_for_the_month(patients, month):
+def filter_received_records_for_the_month(records, month):
+    """
+    Filter records that have last_dispensation_date within the month,
+    showing only the most recent record for each patient.
+    """
     first_day_str, last_day_str = get_first_and_last_day(month)
-    return patients.filter(
-        last_dispensation_date__gte=first_day_str
-    ).filter(
-        last_dispensation_date__lte=last_day_str
-    )  # todo improve here to only show the most recent record for each patient (maybe also filter out inactive patients?)
+
+    # First filter by date range
+    month_records = records.filter(last_dispensation_date__gte=first_day_str, last_dispensation_date__lte=last_day_str)
+
+    # Get the latest record ID for each patient within the filtered records
+    latest_ids = month_records.values("patient_id").annotate(latest_id=Max("id"))
+
+    # Return only the latest records for each patient
+    return records.filter(id__in=[item["latest_id"] for item in latest_ids])
 
 
 @login_required
@@ -597,7 +609,7 @@ def patient_list_api(request, org_unit_id, month):
         records = Record.objects.filter(import_source=last_import).order_by("number")
     elif mode == "expected":
         records = Record.objects.filter(org_unit_id=org_unit_id)
-        records = filter_expected_patients_for_the_month(records, month).order_by("next_dispensation_date")
+        records = filter_expected_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "active":
         record_ids = (
             Patient.objects.filter(active=True)
@@ -654,7 +666,7 @@ def patient_list_upload_format_api(request, org_unit_id, month):
         records = Record.objects.filter(import_source=last_import).order_by("number")
     elif mode == "expected":
         records = Record.objects.filter(org_unit_id=org_unit_id)
-        records = filter_expected_patients_for_the_month(records, month).order_by("next_dispensation_date")
+        records = filter_expected_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "active":
         record_ids = (
             Patient.objects.filter(active=True)
@@ -1132,7 +1144,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
 def validate_import(the_import):
     month = the_import.month
     import_lines = Record.objects.filter(import_source=the_import)
-    viewed_patients_count = filter_expected_patients_for_the_month(import_lines, month).count()
+    viewed_patients_count = filter_expected_records_for_the_month(import_lines, month).count()
     latest_ids = (
         Record.objects.filter(org_unit_id=the_import.org_unit_id)
         .values("identifier_code")

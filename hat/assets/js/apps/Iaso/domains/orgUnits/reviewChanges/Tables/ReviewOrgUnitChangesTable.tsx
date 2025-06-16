@@ -257,7 +257,13 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                         selection.selectedItems.length === 0),
             },
         ],
-        [formatMessage, selection, isRestoreAction],
+        [
+            formatMessage,
+            selection,
+            isRestoreAction,
+            bulkDeletePopupOpen,
+            multiActionPopupOpen,
+        ],
     );
 
     return (

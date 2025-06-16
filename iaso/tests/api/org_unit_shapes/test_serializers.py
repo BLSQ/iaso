@@ -35,6 +35,8 @@ class OrgUnitShapeSerializerTestCase(TestCase):
             "name": self.org_unit.name,
             "geom": "SRID=4326;MULTIPOLYGON (((-1.3 2.5, -1.7 2.8, -1.1 4.1, -1.3 2.5)))",
             "simplified_geom": None,
+            "geom_num_coords": 4,
+            "simplified_geom_num_coords": 0,
         }
         self.assertJSONEqual(json, expected_json)
 
@@ -50,6 +52,8 @@ class OrgUnitShapeSerializerTestCase(TestCase):
         serializer = OrgUnitShapeSerializer(self.org_unit, data=data, context={"request": request})
         self.assertTrue(serializer.is_valid())
         serializer.save()
+        self.assertEqual(serializer.data["geom_num_coords"], 38547)
+        self.assertEqual(serializer.data["simplified_geom_num_coords"], 678)
 
         self.org_unit.refresh_from_db()
         self.assertEqual(self.org_unit.geom.num_coords, 38547)

@@ -7,19 +7,26 @@ from iaso.utils.gis import simplify_geom
 
 
 class OrgUnitShapeSerializer(serializers.ModelSerializer):
+    geom_num_coords = serializers.SerializerMethodField(method_name="get_geom_num_coords")
+    simplified_geom_num_coords = serializers.SerializerMethodField(method_name="get_simplified_geom_num_coords")
+
     class Meta:
         model = OrgUnit
         fields = [
             "id",
             "name",
-            "geom",
+            "geom",  # This is the only writable field.
             "simplified_geom",
+            "geom_num_coords",
+            "simplified_geom_num_coords",
         ]
-        read_only_fields = [
-            "id",
-            "name",
-            "simplified_geom",
-        ]
+        read_only_fields = ["id", "name", "simplified_geom", "geom_num_coords", "simplified_geom_num_coords"]
+
+    def get_geom_num_coords(self, obj: OrgUnit) -> int:
+        return obj.geom.num_coords if obj.geom else 0
+
+    def get_simplified_geom_num_coords(self, obj: OrgUnit) -> int:
+        return obj.simplified_geom.num_coords if obj.simplified_geom else 0
 
     def validate_geom(self, value: str) -> GEOSGeometry:
         try:

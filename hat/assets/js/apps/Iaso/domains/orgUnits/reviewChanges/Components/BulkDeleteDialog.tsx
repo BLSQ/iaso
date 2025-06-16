@@ -37,9 +37,6 @@ export const BulkDeleteDialog: FunctionComponent<Props> = ({
         [bulkDeleteChangeRequests, selection],
     );
 
-    if (!isOpen) {
-        return null;
-    }
     return (
         <ConfirmCancelModal
             open={isOpen}

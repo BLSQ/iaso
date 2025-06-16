@@ -28,6 +28,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "mapped",  # model annotation
             "xls_file",
             "file",
+            "md5",
             "created_at",
             "updated_at",
             "start_period",
@@ -43,6 +44,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "mapped",  # model annotation
             "xls_file",
             "file",
+            "md5",
             "descriptor",
             "created_at",
             "updated_at",
@@ -58,6 +60,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "full_name",
             "mapped",
             "file",
+            "md5",
             "created_at",
             "updated_at",
             "descriptor",

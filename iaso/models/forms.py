@@ -1,3 +1,4 @@
+import hashlib
 import pathlib
 import typing
 
@@ -5,6 +6,7 @@ from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
+from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.db.models import OuterRef, Prefetch, Subquery
@@ -250,11 +252,12 @@ class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)  # type: ignore
-
+            file = SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml")
             form_version = super().create(
                 **kwargs,
                 form=form,
-                file=SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml"),
+                file=file,
+                md5=self.md5sum(file),
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
@@ -267,6 +270,13 @@ class FormVersionManager(models.Manager):
 
         return form_version
 
+    @staticmethod
+    def md5sum(file: File) -> str:
+        md5 = hashlib.md5()
+        for chunk in file.chunks():
+            md5.update(chunk)
+        return md5.hexdigest()
+
 
 class FormVersion(models.Model):
     """A version of a Form
@@ -277,6 +287,7 @@ class FormVersion(models.Model):
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
+    md5 = models.CharField(blank=False, null=True, max_length=32)  # Nullable because of legacy
     xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls

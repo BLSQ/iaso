@@ -120,7 +120,7 @@ def _build_query(params):
         SELECT
         entity1.id,
         entity2.id,
-        cast (({fields_comparison}) / {n} * 100 as smallint) as score
+        cast(GREATEST(LEAST(({fields_comparison}) / {n} * 100, 100), 0) as smallint) as score
         FROM iaso_entity entity1, iaso_entity entity2, iaso_instance instance1, iaso_instance instance2
         WHERE entity1.id != entity2.id
         AND entity1.attributes_id = instance1.id

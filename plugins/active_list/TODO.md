@@ -16,7 +16,7 @@ TODO list for Active List Plugin
 - Ease navigation from dashboard to "/" 
 
 ### Superset Dashboards
-- Update superset dashboards with latest model
+- Update superset dashboards with latest data model
 - Ensure dashboards can be filtered on validated records
 
 ### Excel Upload Validation
@@ -38,7 +38,7 @@ TODO list for Active List Plugin
 - Convert period to format 2025-06 when importing from excel format  ✅
 - Files imported by CIV center have issues with the HIV type  ✅
 - Dead patients are still marked as active ...
-- Update validation forms on prod to allow codes with both e and E at the end 
+- Update validation forms on prod to allow codes with both e and E at the end  ✅
 - Update the library version to use the code of Benjamin (and at least include constraints explanations in French)? 
 
 ### Questions

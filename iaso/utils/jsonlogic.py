@@ -20,6 +20,15 @@ from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 # would have to annotate every field we are casting for.
 # Instance.objects.annotate(b=Cast(KeyTextTransform('usable_vials_physical', "json"), FloatField())).filter(b__gte=2)
 
+lookups = {
+    "==": "exact",
+    "!=": "exact",
+    ">": "gt",
+    ">=": "gte",
+    "<": "lt",
+    "<=": "lte",
+    "in": "icontains",
+}
 
 class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     lookup_name = "forcefloat"
@@ -74,15 +83,6 @@ def jsonlogic_to_q(
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
 
-    lookups = {
-        "==": "exact",
-        "!=": "exact",
-        ">": "gt",
-        ">=": "gte",
-        "<": "lt",
-        "<=": "lte",
-        "in": "icontains",
-    }
 
     if op not in lookups.keys():
         raise ValueError(
@@ -114,11 +114,17 @@ def jsonlogic_to_q(
         q = ~q
     return q
 
-def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", value_field_name: str = "") -> tuple[Q, dict[str, Case], dict[str, list]]:
+def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", value_field_name: str = "") -> tuple[dict[str, Sum], dict[str, list]]:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     multiple criteria for same properties.
-    It will convert a JsonLogic query to a Django Q object
+    It will convert a JsonLogic query to a Django annotation and Q object to apply on annotations.
     It only accept one level deep.
+
+    Exemple of usage: 
+    annotations, filters = annotation_jsonlogic_to_q(json.loads(json_filter), "metric_type", "value")
+    filteredOrgUnitIds = queryset.values('org_unit_id')
+        .annotate(**annotations).filter(filters)
+        .values_list('org_unit_id', flat=True)
 
     :param id_field_name: the identifier field name for "var" of json logic to target
     :value_field_name: the value field name to target
@@ -132,25 +138,16 @@ def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", v
         ]}
     ]
     :return: 
-    A Django Q Object that return all records matching single criteria.
-    As we need to have all records matching any criteria, we use OR to compose the query.
-    This is used to compose HAVING later on which will be used to filter the results.
-    (OR:
-            (AND: ('metric_type__exact', '23'), ('value__gte', 900)),
-            (AND: ('metric_type__exact', '22'), ('value__exact', 700)),
-            (AND: ('metric_type__exact', '23'), ('value__lte', 1500)),
-            (AND: ('metric_type__exact', '24'), ('value__exact', 1000))
-    )
     Annotations:
     {
         '23__gte__900': 
-            <Case: CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__gte', 900))> THEN Value(True), ELSE Value(False)>, 
+            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__gte', 900))> THEN Value(1), ELSE Value(0)), 
         '22__exact__700': 
-            <Case: CASE WHEN <Q: (AND: ('metric_type__exact', '22'), ('value__exact', 700))> THEN Value(True), ELSE Value(False)>, 
+            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '22'), ('value__exact', 700))> THEN Value(1), ELSE Value(0)),
         '23__lte__1500': 
-            <Case: CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__lte', 1500))> THEN Value(True), ELSE Value(False)>, 
+            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__lte', 1500))> THEN Value(1), ELSE Value(0)),
         '24__exact__1000': 
-             <Case: CASE WHEN <Q: (AND: ('metric_type__exact', '24'), ('value__exact', 1000))> THEN Value(True), ELSE Value(False)>
+            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '24'), ('value__exact', 1000))> THEN Value(1), ELSE Value(0))
     }
     Annotation filters: {
     'or': [
@@ -162,30 +159,17 @@ def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", v
         ]}
     ]}
     """
-    from iaso.models import Instance
     # TODO Bullet proof this function, it is used in the API and it is not well tested.
-    # TODO Share this
-    lookups = {
-        "==": "exact",
-        "!=": "exact",
-        ">": "gt",
-        ">=": "gte",
-        "<": "lt",
-        "<=": "lte",
-        "in": "icontains",
-    }
 
     if "and" in jsonlogic or "or" in jsonlogic or "!" in jsonlogic:
         key = "and" if "and" in jsonlogic else "or" if "or" in jsonlogic else "!"
         operation = operator.and_ if key == "and" else operator.or_ if key == "or" else operator.not_
-        sub_query = Q()
         # This will hold all the annotations, which are used to compose the HAVING statement.
         allAnnotations: dict[str, Case] = {}
         # Used to construct the HAVING statement, this is delegated to the caller.
-        # allFilters = { key: [] }
         annotation_query = Q()
         for lookup in jsonlogic[key]:
-            jsonToQ, annotations, annotation_sub_query = keyvalue_jsonlogic_to_q(lookup, id_field_name, value_field_name)
+            annotations, annotation_sub_query = annotation_jsonlogic_to_q(lookup, id_field_name, value_field_name)
             if annotation_sub_query:
                 # If we have a sub query, we need to add it to the annotation query.
                 annotation_query = operation(annotation_query, annotation_sub_query)
@@ -195,13 +179,7 @@ def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", v
                     akey= next(iter(annotations))
                     annotation_query = operation(annotation_query, Q(**{f"{akey}__gte": 1}))
 
-            # if filters:
-                # We need to keep nesting here, otherwise the rule will be flatten and will loose their purpose.
-                # allFilters[key].append(filters)
-            # OR is forced is by purpose, we want all records matching any query to compose HAVING later on
-            # TODO Not sure this is needed, as we are using AND in the sub_query
-            sub_query = operator.or_(sub_query, jsonToQ)
-        return sub_query, allAnnotations, annotation_query            
+        return allAnnotations, annotation_query            
 
     elif len(jsonlogic) == 1:
         # binary operator # >= and such
@@ -217,10 +195,8 @@ def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", v
         # TODO Check for extract and field_prefix on other functions
         lookup = lookups[op]
         value_f = f"{value_field_name}__{lookup}"
-        simple_query = Q(**{value_f: value_field_value})
         # Add ID filter
         id_f = f"{id_field_name}__exact"
-        id_query = Q(**{id_f: id_field_value})
 
         annotation = {
             f"{id_field_value}__{lookup}__{value_field_value}": Sum(Case(
@@ -230,7 +206,7 @@ def keyvalue_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", v
             ))
         }
 
-        return operator.and_(id_query, simple_query), annotation, None
+        return annotation, None
 
         # TODO use OR instead of AND in where clause.
         # TODO Add Having statement

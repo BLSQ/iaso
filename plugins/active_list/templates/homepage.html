@@ -33,8 +33,16 @@
             <div class="homepage-card">
                 <a href="{% url 'validation' %}">
                     <i class="fas fa-check-circle"></i>
-                    <span>Validation</span>
-                    <small class="text-secondary">Valider les données saisies et les rapports</small>
+                    <span>Validation District</span>
+                    <small class="text-secondary">Valider les données saisies et les rapports au niveau district</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'validation_region' %}">
+                    <i class="fas fa-check-double"></i>
+                    <span>Validation Région</span>
+                    <small class="text-secondary">Valider les districts au niveau régional</small>
                 </a>
             </div>
             

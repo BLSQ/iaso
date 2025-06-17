@@ -34,6 +34,8 @@ from .models import (
     HIV_HIV2,
     HIV_UNKNOWN,
     INACTIVE_REASONS_DICT,
+    LEVEL_DISTRICT,
+    LEVEL_REGION,
     PATIENT_HISTORY_DISPLAY_FIELDS,
     PATIENT_LIST_DISPLAY_FIELDS,
     SOURCE_EXCEL,
@@ -41,6 +43,7 @@ from .models import (
     TREATMENT_2NDLINE,
     TREATMENT_3RDLINE,
     TREATMENT_LINE_UNKNOWN,
+    VALIDATION_OK,
     VALIDATION_STATUS_CHOICES,
     Import,
     Patient,
@@ -53,6 +56,7 @@ from .models import (
 UPLOAD_FOLDER = "upload"  # Create this folder in your project directory
 FA_DISTRICT_ORG_UNIT_TYPE_ID = os.environ.get("FA_DISTRICT_ORG_UNIT_TYPE_ID", 4)
 FA_HF_ORG_UNIT_TYPE_ID = os.environ.get("FA_HF_ORG_UNIT_TYPE_ID", 5)
+FA_REGION_ORG_UNIT_TYPE_ID = os.environ.get("FA_REGION_ORG_UNIT_TYPE_ID", 3)
 
 ALLOWED_EXTENSIONS = {"xlsx", "xls", "ods", "csv", "xlsb", "xltm", "xltx", "xlsm"}
 OK = "OK"
@@ -358,7 +362,7 @@ def received_count(org_unit_id, month):
     return records.count()
 
 
-def stats(org_unit_id, month):
+def ou_stats(org_unit_id, month):
     """
     Returns the count of ActivePatientsList entries for a given org_unit and month.
     """
@@ -408,6 +412,39 @@ def stats(org_unit_id, month):
     }
 
 
+def district_stats(org_unit_id, period):
+    """
+    Returns statistics for a district showing the number of facilities that have had
+    positive validations for the given period.
+
+    Args:
+        org_unit_id: The ID of the district org unit
+        period: The period in YYYY-MM format
+
+    Returns:
+        dict: Dictionary with current and previous period statistics
+    """
+    # Get all facilities (children) of the district
+    facilities = OrgUnit.objects.filter(parent_id=org_unit_id, validation_status="ACTIVE")
+    total_facilities = facilities.count()
+
+    # Count facilities with positive validations for current period
+    current_validated_facilities = (
+        Validation.objects.filter(
+            period=period, validation_status=VALIDATION_OK, level=LEVEL_DISTRICT, org_unit__in=facilities
+        )
+        .values("org_unit")
+        .distinct()
+        .count()
+    )
+
+    return {
+        "Établissements validés": "%d (%d)" % (current_validated_facilities, total_facilities),
+        "current_validated": current_validated_facilities,
+        "total_facilities": total_facilities,
+    }
+
+
 def get_previous_period(period):
     """
     Computes the 'yy-mm' format for the month preceding the given period.
@@ -447,7 +484,7 @@ def validation_api(request, org_unit_id, month):
         obj["Dernier rapport"] = ""
         obj["Actifs"] = active_count(org_unit.id)
         obj["Reçus"] = ""
-        obj.update(stats(org_unit.id, month))
+        obj.update(ou_stats(org_unit.id, month))
         obj["Date Validation"] = ""
         obj["Statut"] = ""
         obj["Observation"] = ""
@@ -508,6 +545,145 @@ def validation_api(request, org_unit_id, month):
         "table_content": table_content,
         "completeness": "Rapports: %d/%d - Validations: %d/%d"
         % (report_count, len(org_units), validation_count, len(org_units)),
+    }
+    return JsonResponse(res, status=200, safe=False)
+
+
+@login_required
+def validation_region(request):
+    """
+    View for region-level validation (districts validation by regions)
+    """
+    org_unit = None
+    if request.method == "POST":
+        form = ValidationForm(request.POST)
+        if form.is_valid():
+            form.instance.user_id = request.user.id
+            form.instance.user_name = request.user.username
+            form.instance.level = LEVEL_REGION
+            form.instance.save()
+            # return redirect('validation_region_list') # Replace with actual URL name if needed
+    else:
+        form = ValidationForm()
+    return render(
+        request,
+        "validation_region.html",
+        {
+            "org_unit": org_unit,
+            "statuses": VALIDATION_STATUS_CHOICES,
+            "request": request,
+            "form": form,
+            "FA_HF_ORG_UNIT_TYPE_ID": FA_HF_ORG_UNIT_TYPE_ID,
+            "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
+            "FA_REGION_ORG_UNIT_TYPE_ID": FA_REGION_ORG_UNIT_TYPE_ID,
+        },
+    )
+
+
+@login_required
+def validation_region_api(request, org_unit_id, month):
+    """
+    API for region-level validation showing districts under a region
+    """
+    # Get all districts (children) of the region
+    districts = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
+    previous_period = get_previous_period(month)
+    table_content = []
+    report_count = 0
+    validation_count = 0
+
+    for district in districts:
+        obj = {}
+        obj["District"] = district.name
+
+        # Count facilities in this district that have reports
+        facilities_with_reports = 0
+        district_facilities = OrgUnit.objects.filter(parent_id=district.id)
+        for facility in district_facilities:
+            latest_import = (
+                Import.objects.filter(org_unit=facility).filter(month=month).order_by("-creation_date").first()
+            )
+            if latest_import:
+                facilities_with_reports += 1
+
+        # Get district-level validation
+        latest_validation = (
+            Validation.objects.filter(period=month)
+            .filter(org_unit_id=district.id)
+            .filter(level=LEVEL_DISTRICT)
+            .order_by("-created_at")
+            .first()
+        )
+
+        # Initialize default values
+        obj["Établissements rapportés"] = f"{facilities_with_reports}/{district_facilities.count()}"
+        obj["Date Validation District"] = ""
+        obj["Statut District"] = ""
+        obj["Observation District"] = ""
+        obj["Validateur District"] = ""
+
+        # Get district stats using the function we created
+        district_stats_data = district_stats(district.id, month)
+        obj["Établissements validés"] = district_stats_data["Établissements validés"]
+
+        if latest_validation:
+            obj["Date Validation District"] = latest_validation.created_at.strftime("%d/%m/%y %H:%M")
+            obj["Statut District"] = "Validé" if latest_validation.validation_status == "OK" else "Invalide"
+            obj["Observation District"] = latest_validation.comment
+            obj["Validateur District"] = latest_validation.user_name
+
+        # Check for region-level validation
+        region_validation = (
+            Validation.objects.filter(period=month)
+            .filter(org_unit_id=district.id)
+            .filter(level=LEVEL_REGION)
+            .order_by("-created_at")
+            .first()
+        )
+
+        obj["Date Validation Région"] = ""
+        obj["Statut Région"] = ""
+        obj["Observation Région"] = ""
+        obj["Validateur Région"] = ""
+
+        if region_validation:
+            validation_count += 1
+            obj["Date Validation Région"] = region_validation.created_at.strftime("%d/%m/%y %H:%M")
+            obj["Statut Région"] = "Validé" if region_validation.validation_status == "OK" else "Invalide"
+            obj["Observation Région"] = region_validation.comment
+            obj["Validateur Région"] = region_validation.user_name
+
+        # Determine overall validation status for the district
+        if not latest_validation:
+            validation_status = '<div class="validation-status validation-status-missing">District non validé</div>'
+        else:
+            if latest_validation.validation_status != "OK":
+                validation_status = (
+                    '<div class="validation-status validation-status-correction">District invalide</div>'
+                )
+            elif not region_validation:
+                validation_status = (
+                    '<div class="validation-status validation-status-pending">En attente validation région</div>'
+                )
+            elif region_validation.validation_status == "OK":
+                validation_status = '<div class="validation-status validation-status-ok">Validé par région</div>'
+            else:
+                validation_status = (
+                    '<div class="validation-status validation-status-correction">Rejeté par région</div>'
+                )
+
+        obj["Validation"] = validation_status
+        obj["org_unit_id"] = district.id
+
+        if latest_validation and latest_validation.validation_status == "OK":
+            report_count += 1
+
+        table_content.append(obj)
+
+    res = {
+        "table_content": table_content,
+        "completeness": "Districts validés: %d/%d - Validations région: %d/%d"
+        % (report_count, len(districts), validation_count, len(districts)),
     }
     return JsonResponse(res, status=200, safe=False)
 

@@ -42,4 +42,10 @@ urlpatterns = [
         views.validation,
         name="validation",
     ),
+    path("validation_region/", views.validation_region, name="validation_region"),
+    path(
+        "validation_region_api/<int:org_unit_id>/<str:month>/",
+        views.validation_region_api,
+        name="validation_region_api",
+    ),
 ]

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <script>
+    var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+    var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID  }};
+    var FA_REGION_ORG_UNIT_TYPE_ID = {{ FA_REGION_ORG_UNIT_TYPE_ID }};
+    </script>
+<h2>Validation File Active - Niveau Région</h2>
+<div class="selectBox">
+    <label for="monthSelect">Période de rapportage</label>
+    <select id="monthSelect"></select>
+</div>
+    <div>
+        <label>Choisissez votre région:</label>
+        <div id="orgUnitContainer">
+            </div>
+    </div>
+
+
+    <div id="validation_form" class="validation-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Validation Région</h2>
+                <button type="button" id="closePopup" class="close-btn">&times;</button>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button id="validate_submit" type="submit" class="btn btn-primary">Submit</button>
+            </form>
+        </div>
+    </div>
+    <div class="overlay" style="display: none;"></div>
+<div id="dataContainer">
+    <p>Complétude: <span id="completeness">-</span></p>
+    <div id="table-container"></div>
+</div>
+    <script src="{% static 'validation_region.js' %}"></script>
+{% endblock %}

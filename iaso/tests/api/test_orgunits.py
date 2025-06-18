@@ -634,6 +634,32 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_geo_json(self):
+        org_unit = self.jedi_squad_endor
+        org_unit.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        org_unit.simplified_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        org_unit.save()
+
+        user = self.luke
+        self.client.force_authenticate(user)
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        geo_json_coordinates = response.data["geo_json"]["features"][0]["geometry"]["coordinates"]
+        expected_coordinates = [[[[0, 0], [0, 1], [1, 1], [0, 0]]]]
+        self.assertEqual(geo_json_coordinates, expected_coordinates)
+
+        allow_shape_edition_flag = m.AccountFeatureFlag.objects.get(code="ALLOW_SHAPE_EDITION")
+        user.iaso_profile.account.feature_flags.add(allow_shape_edition_flag)
+
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        geo_json_coordinates = response.data["geo_json"]["features"][0]["geometry"]["coordinates"]
+        expected_coordinates = [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]]
+        self.assertEqual(geo_json_coordinates, expected_coordinates)
+
     def test_org_unit_retrieve_with_instances_count(self):
         self.client.force_authenticate(self.yoda)
 

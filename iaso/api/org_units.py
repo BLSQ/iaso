@@ -821,14 +821,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             self.get_queryset().prefetch_related("reference_instances"),
             pk=pk,
         )
-        # Get instances count for the Org unit and its descendants
-        instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
-        org_unit.instances_count = instances_count
+
+        # Count instances for the Org unit and its descendants.
+        org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
+
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
-        res["geo_json"] = None
-        res["catchment"] = None
+
         # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
@@ -839,12 +839,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 break
             ancestor = ancestor.parent
             ancestor_dict = ancestor_dict["parent"]
-        if org_unit.simplified_geom or org_unit.catchment:
-            geo_queryset = self.get_queryset().filter(id=org_unit.id)
-            if org_unit.simplified_geom:
-                res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
-            if org_unit.catchment:
-                res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+
+        geo_queryset = self.get_queryset().filter(id=org_unit.id)
+
+        can_edit_shape = False
+        if request.user.is_authenticated:
+            can_edit_shape = request.user.iaso_profile.account.feature_flags.filter(code="ALLOW_SHAPE_EDITION").exists()
+
+        res["geo_json"] = None
+        if can_edit_shape and org_unit.geom:
+            res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+        elif org_unit.simplified_geom:
+            res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+
+        res["catchment"] = None
+        if org_unit.catchment:
+            res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
         res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
         return Response(res)

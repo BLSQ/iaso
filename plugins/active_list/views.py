@@ -587,7 +587,6 @@ def validation_region_api(request, org_unit_id, month):
     """
     # Get all districts (children) of the region
     districts = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
-    previous_period = get_previous_period(month)
     table_content = []
     report_count = 0
     validation_count = 0
@@ -606,31 +605,12 @@ def validation_region_api(request, org_unit_id, month):
             if latest_import:
                 facilities_with_reports += 1
 
-        # Get district-level validation
-        latest_validation = (
-            Validation.objects.filter(period=month)
-            .filter(org_unit_id=district.id)
-            .filter(level=LEVEL_DISTRICT)
-            .order_by("-created_at")
-            .first()
-        )
-
         # Initialize default values
         obj["Établissements rapportés"] = f"{facilities_with_reports}/{district_facilities.count()}"
-        obj["Date Validation District"] = ""
-        obj["Statut District"] = ""
-        obj["Observation District"] = ""
-        obj["Validateur District"] = ""
 
         # Get district stats using the function we created
         district_stats_data = district_stats(district.id, month)
         obj["Établissements validés"] = district_stats_data["Établissements validés"]
-
-        if latest_validation:
-            obj["Date Validation District"] = latest_validation.created_at.strftime("%d/%m/%y %H:%M")
-            obj["Statut District"] = "Validé" if latest_validation.validation_status == "OK" else "Invalide"
-            obj["Observation District"] = latest_validation.comment
-            obj["Validateur District"] = latest_validation.user_name
 
         # Check for region-level validation
         region_validation = (
@@ -654,29 +634,17 @@ def validation_region_api(request, org_unit_id, month):
             obj["Validateur Région"] = region_validation.user_name
 
         # Determine overall validation status for the district
-        if not latest_validation:
-            validation_status = '<div class="validation-status validation-status-missing">District non validé</div>'
+        if not region_validation:
+            validation_status = (
+                '<div class="validation-status validation-status-pending">En attente validation région</div>'
+            )
+        elif region_validation.validation_status == "OK":
+            validation_status = '<div class="validation-status validation-status-ok">Validé par région</div>'
         else:
-            if latest_validation.validation_status != "OK":
-                validation_status = (
-                    '<div class="validation-status validation-status-correction">District invalide</div>'
-                )
-            elif not region_validation:
-                validation_status = (
-                    '<div class="validation-status validation-status-pending">En attente validation région</div>'
-                )
-            elif region_validation.validation_status == "OK":
-                validation_status = '<div class="validation-status validation-status-ok">Validé par région</div>'
-            else:
-                validation_status = (
-                    '<div class="validation-status validation-status-correction">Rejeté par région</div>'
-                )
+            validation_status = '<div class="validation-status validation-status-correction">Rejeté par région</div>'
 
         obj["Validation"] = validation_status
         obj["org_unit_id"] = district.id
-
-        if latest_validation and latest_validation.validation_status == "OK":
-            report_count += 1
 
         table_content.append(obj)
 
@@ -716,7 +684,7 @@ def get_human_readable_value(model_instance, field_name):
     return getattr(model_instance, field_name)
 
 
-def get_first_and_last_day(date_str):
+def get_first_and_last_day(date_str, as_date=False):
     """
     Calculates the first and last day of the month given a date string in the format "YYYY-MM".
 
@@ -727,17 +695,20 @@ def get_first_and_last_day(date_str):
       A tuple containing two strings:
         - The first day of the month in the format "YYYY-MM-DD".
         - The last day of the month in the format "YYYY-MM-DD".
+      Alternatively, if as_date is True, returns two datetime objects representing the first and last day of the month.
     """
     year, month = map(int, date_str[:7].split("-"))
 
     # Get the number of days in the month
     _, last_day = calendar.monthrange(year, month)
 
-    # Format the first and last days
-    first_day_str = f"{year}-{month:02d}-01"
-    last_day_str = f"{year}-{month:02d}-{last_day}"
-
-    return first_day_str, last_day_str
+    if not as_date:
+        first_day_str = f"{year}-{month:02d}-01"
+        last_day_str = f"{year}-{month:02d}-{last_day}"
+        return first_day_str, last_day_str
+    first_day_date = datetime(year, month, 1)
+    last_day_date = datetime(year, month, last_day)
+    return first_day_date, last_day_date
 
 
 def filter_expected_records_for_the_month(records, month):
@@ -750,6 +721,25 @@ def filter_expected_records_for_the_month(records, month):
     # First filter by date range
     month_records = records.filter(next_dispensation_date__gte=first_day_str, next_dispensation_date__lte=last_day_str)
 
+    # Get the latest record ID for each patient within the filtered records
+    latest_ids = month_records.values("patient_id").annotate(latest_id=Max("id"))
+
+    # Return only the latest records for each patient
+    return records.filter(id__in=[item["latest_id"] for item in latest_ids])
+
+
+def filter_active_records_for_the_month(records, month):
+    """
+    Filter records that have last_dispensation_date before the first of the month and the next dispensation date at most 28 days after the first of the month,
+    showing only the most recent record for each patient.
+    """
+    first_day, _ = get_first_and_last_day(month, as_date=True)
+
+    # First filter by date range
+    month_records = records.filter(
+        last_dispensation_date__lte=first_day, next_dispensation_date__lte=first_day + timedelta(days=28)
+    )
+    print(month_records)
     # Get the latest record ID for each patient within the filtered records
     latest_ids = month_records.values("patient_id").annotate(latest_id=Max("id"))
 
@@ -777,9 +767,9 @@ def filter_received_records_for_the_month(records, month):
 @login_required
 def patient_list_api(request, org_unit_id, month):
     format = request.GET.get("format", "json")
-    mode = request.GET.get("mode", "default")
+    mode = request.GET.get("mode", "active")
     last_import = None
-    if mode == "default":
+    if mode == "last_import":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=month).order_by("-creation_date").first()
         records = Record.objects.filter(import_source=last_import).order_by("number")
@@ -787,12 +777,8 @@ def patient_list_api(request, org_unit_id, month):
         records = Record.objects.filter(org_unit_id=org_unit_id)
         records = filter_expected_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "active":
-        record_ids = (
-            Patient.objects.filter(active=True)
-            .filter(last_record__org_unit_id=org_unit_id)
-            .values_list("last_record__id", flat=True)
-        )
-        records = Record.objects.filter(id__in=record_ids).order_by("number")
+        records = Record.objects.filter(org_unit_id=org_unit_id)
+        records = filter_active_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "lost":
         first_day, last_day = get_first_and_last_day(month)
         inactive_events = (
@@ -832,11 +818,10 @@ def patient_list_api(request, org_unit_id, month):
 @login_required
 def patient_list_upload_format_api(request, org_unit_id, month):
     """API endpoint to export patient data in upload-compatible Excel format"""
-    mode = request.GET.get("mode", "default")
-    last_import = None
+    mode = request.GET.get("mode", "active")
 
     # todo :  Same data retrieval logic as patient_list_api.Should not be replicated
-    if mode == "default":
+    if mode == "last_import":
         last_import = Import.objects.filter(org_unit=org_unit_id)
         last_import = last_import.filter(month=month).order_by("-creation_date").first()
         records = Record.objects.filter(import_source=last_import).order_by("number")
@@ -844,12 +829,8 @@ def patient_list_upload_format_api(request, org_unit_id, month):
         records = Record.objects.filter(org_unit_id=org_unit_id)
         records = filter_expected_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "active":
-        record_ids = (
-            Patient.objects.filter(active=True)
-            .filter(last_record__org_unit_id=org_unit_id)
-            .values_list("last_record__id", flat=True)
-        )
-        records = Record.objects.filter(id__in=record_ids).order_by("number")
+        records = Record.objects.filter(org_unit_id=org_unit_id)
+        records = filter_active_records_for_the_month(records, month).order_by("next_dispensation_date")
     elif mode == "lost":
         first_day, last_day = get_first_and_last_day(month)
         inactive_events = (
@@ -1596,7 +1577,7 @@ def import_data(file, the_import):
             print("Creating patient %s" % patient.identifier_code, "record", record.id)
         else:
             print(new_period, type(new_period))
-            if not (patient.last_record) or (new_period > patient.last_record.period[:7]):
+            if not (patient.last_record) or (new_period >= patient.last_record.period[:7]):
                 patient.active = active
                 print("Updating patient %s" % patient.identifier_code, "record", record.id)
                 patient.last_record = record

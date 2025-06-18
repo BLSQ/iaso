@@ -438,7 +438,8 @@ def district_stats(org_unit_id, period):
         dict: Dictionary with current and previous period statistics
     """
     # Get all facilities (children) of the district
-    facilities = OrgUnit.objects.filter(parent_id=org_unit_id, validation_status="ACTIVE")
+    facilities = OrgUnit.objects.filter(parent_id=org_unit_id).filter(validation_status="VALID")
+
     total_facilities = facilities.count()
 
     # Count facilities with positive validations for current period
@@ -483,7 +484,9 @@ def get_previous_period(period):
 
 @login_required
 def validation_api(request, org_unit_id, month):
-    org_units = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
+    # Get all child org units using hierarchy method
+    parent_org_unit = OrgUnit.objects.get(id=org_unit_id)
+    org_units = OrgUnit.objects.hierarchy(parent_org_unit).exclude(id=org_unit_id).order_by("name")
     previous_period = get_previous_period(month)
     table_content = []
     report_count = 0
@@ -598,8 +601,9 @@ def validation_region_api(request, org_unit_id, month):
     """
     API for region-level validation showing districts under a region
     """
-    # Get all districts (children) of the region
-    districts = OrgUnit.objects.filter(parent_id=org_unit_id).order_by("name")
+    # Get all districts (children) of the region using hierarchy method
+    region = OrgUnit.objects.get(id=org_unit_id)
+    districts = OrgUnit.objects.filter(parent=region).order_by("name")
     table_content = []
     report_count = 0
     validation_count = 0
@@ -610,7 +614,8 @@ def validation_region_api(request, org_unit_id, month):
 
         # Count facilities in this district that have reports
         facilities_with_reports = 0
-        district_facilities = OrgUnit.objects.filter(parent_id=district.id)
+        district_facilities = OrgUnit.objects.filter(parent=district)
+
         for facility in district_facilities:
             latest_import = (
                 Import.objects.filter(org_unit=facility).filter(month=month).order_by("-creation_date").first()

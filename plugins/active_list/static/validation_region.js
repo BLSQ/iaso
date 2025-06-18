@@ -19,7 +19,12 @@ var callback = function (orgUnitId) {
     var table = generateTable(data.table_content)
     $('#completeness').text(data.completeness)
     $('#table-container').html(table)
-    $('#generatedTable').tablesorter()
+    
+    // Wait for DOM to be ready before initializing tablesorter
+    setTimeout(() => {
+      initializeTableWithStickyHeaders('#generatedTable')
+    }, 300)
+    
     dataContainer.show()
   })
 

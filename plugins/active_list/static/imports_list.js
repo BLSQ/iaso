@@ -122,9 +122,9 @@ document.addEventListener('DOMContentLoaded', function () {
       tableContainer.innerHTML = ''
       tableContainer.appendChild(table)
       
-      // Initialize tablesorter if available
-      if (typeof $.fn.tablesorter !== 'undefined') {
-        $('#generatedTable').tablesorter()
+      // Initialize tablesorter with sticky headers
+      if (typeof initializeTableWithStickyHeaders !== 'undefined') {
+        initializeTableWithStickyHeaders('#generatedTable')
       }
     } catch (error) {
       console.error('Error generating table:', error)

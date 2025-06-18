@@ -62,7 +62,7 @@
                             // Append rows dynamically from the server-generated HTML
                             tableContainer.append(data);
                             $("#tableContainer").show(); // Show the table with results
-                            $('#generatedTable').tablesorter();
+                            initializeTableWithStickyHeaders('#generatedTable');
                             console.log("coucou")
                         }
                     },

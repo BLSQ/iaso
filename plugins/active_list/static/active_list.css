@@ -39,9 +39,6 @@ body {
     background: var(--surface);
     border-bottom: 1px solid var(--border-color);
     box-shadow: var(--shadow);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
 }
 
 .navbar-container {
@@ -366,8 +363,13 @@ th {
     background-color: #f8fafc;
     font-weight: 600;
     color: var(--text-primary);
-    position: sticky;
-    top: 0;
+}
+
+/* Override the existing table styles to ensure spacing works with sticky headers */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
 }
 
 tr:hover {

@@ -18,6 +18,13 @@
     </div>
 </div>
 <script>
-$('#generatedTable').tablesorter()
+// Initialize table with sticky headers
+$(document).ready(function() {
+    if (typeof initializeTableWithStickyHeaders !== 'undefined') {
+        initializeTableWithStickyHeaders('#generatedTable');
+    } else {
+        $('#generatedTable').tablesorter();
+    }
+});
 </script>
 {% endblock %}

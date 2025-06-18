@@ -117,6 +117,34 @@ function formatTimestamp(timestamp) {
   return date.toLocaleString(navigator.language, options);
 }
 
+
+/**
+ * Enhanced table initialization with sticky headers using tablesorter widget
+ * Call this after creating tables with tablesorter
+ */
+function initializeTableWithStickyHeaders(tableSelector = '#generatedTable') {
+    console.log('🔧 Initializing tablesorter with sticky header widget for:', tableSelector);
+    
+    // Initialize tablesorter with sticky header widget
+    if (typeof $.fn.tablesorter !== 'undefined') {
+        $(tableSelector).tablesorter({
+            theme: 'default',
+            widgets: ['stickyHeaders'],
+            widgetOptions: {
+                stickyHeaders: '',
+                stickyHeaders_offset: 0,
+                stickyHeaders_cloneId: '-sticky',
+                stickyHeaders_addResizeEvent: true,
+                stickyHeaders_includeCaption: true,
+                stickyHeaders_zIndex: 1000
+            }
+        });
+        console.log('✅ Tablesorter with sticky headers initialized for:', tableSelector);
+    } else {
+        console.error('❌ Tablesorter not available');
+    }
+}
+
 function generateTable (data) {
   var table = $('<table id="generatedTable"></table>') // Create the table element
   var thead = $('<thead></thead>')

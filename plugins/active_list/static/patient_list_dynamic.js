@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function () {
     excel_link.show()
     $('#nodata').hide()
 
-    $('#generatedTable').tablesorter()
+    initializeTableWithStickyHeaders()
   }
 
   function callback (selectedOrgUnitId) {

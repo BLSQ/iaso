@@ -1692,7 +1692,7 @@ def import_data(file, the_import):
             number=row["number"],
             region=row["region"],
             district=row["district"],
-            code_ets=row["code_ets"],
+            code_ets=str(row["code_ets"]).zfill(5),
             facility_name=row["facility_name"],
             sex=row["sex"],
             age=row["age"],
@@ -1727,7 +1727,6 @@ def import_data(file, the_import):
             print(new_period, type(new_period))
             if not (patient.last_record) or (new_period >= patient.last_record.period[:7]):
                 patient.active = active
-                print("Updating patient %s" % patient.identifier_code, "record", record.id)
                 patient.last_record = record
         patient.save()
         patient.refresh_from_db()

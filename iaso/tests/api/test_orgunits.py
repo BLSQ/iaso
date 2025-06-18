@@ -636,13 +636,21 @@ class OrgUnitAPITestCase(APITestCase):
 
     def test_org_unit_retrieve_geo_json(self):
         org_unit = self.jedi_squad_endor
-        org_unit.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
-        org_unit.simplified_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
-        org_unit.save()
 
         user = self.luke
         self.client.force_authenticate(user)
 
+        # `geo_json` should be `None` when there is no shape.
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["geo_json"], None)
+
+        org_unit.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        org_unit.simplified_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        org_unit.save()
+
+        # `geo_json` should be the "simplified shape" in most cases.
         response = self.client.get(f"/api/orgunits/{org_unit.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
@@ -653,6 +661,7 @@ class OrgUnitAPITestCase(APITestCase):
         allow_shape_edition_flag = m.AccountFeatureFlag.objects.get(code="ALLOW_SHAPE_EDITION")
         user.iaso_profile.account.feature_flags.add(allow_shape_edition_flag)
 
+        # `geo_json` should be the "full shape" when `ALLOW_SHAPE_EDITION` is enabled.
         response = self.client.get(f"/api/orgunits/{org_unit.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())

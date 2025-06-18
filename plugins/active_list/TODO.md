@@ -44,6 +44,9 @@ TODO list for Active List Plugin
 - Double presentation of records here: http://localhost:8081/active_list/patient_history/?identifier=00089/01/19/00078&record_mode=all ✅
 - colonne Etablissements validés pas correcte ici: http://localhost:8081/active_list/validation_region/ ✅
 - on_time is not correctly calculated 
+- last import is not correctly modified with follow up from mobile app: https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=03199/rt/89/01234&record_mode=all
+- from the same record (https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=03199/rt/89/01234&record_mode=all): it apears that record triggers creation of entity that in turn triggers the creation of another record
+- 
 #
 ## Questions
 - what to do when a patient is dead for the dispensiation date. Currently, import fails without date (and then where should they appear ? ) -> I'd say that the answer is dispensiation_date is reporting date in that case)

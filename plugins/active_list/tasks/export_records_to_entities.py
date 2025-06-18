@@ -286,6 +286,8 @@ def create_registration(patient):
     process_instance_file(instance, instance_file, patient.last_record.import_source.user)
     patient.entity = instance.entity
     patient.save()
+    patient.last_record.instance = instance
+    patient.last_record.save()
 
 
 def convert_to_xml_schema(original_dict):

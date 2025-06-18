@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-08 10:41+0000\n"
+"POT-Creation-Date: 2025-06-18 15:44+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -119,10 +119,6 @@ msgid "Attributions"
 msgstr "Attributions"
 
 #: hat/menupermissions/models.py
-msgid "Budget Polio"
-msgstr "Budget Polio"
-
-#: hat/menupermissions/models.py
 msgid "Entities"
 msgstr "Entités"
 
@@ -141,10 +137,6 @@ msgstr "Statistiques de complétude"
 #: hat/menupermissions/models.py
 msgid "Workflows"
 msgstr "Flux de travail"
-
-#: hat/menupermissions/models.py
-msgid "Budget Polio Admin"
-msgstr "Administration Budget Polio"
 
 #: hat/menupermissions/models.py
 msgid "Read Entity duplicates"
@@ -530,6 +522,12 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Budget Polio"
+#~ msgstr "Budget Polio"
+
+#~ msgid "Budget Polio Admin"
+#~ msgstr "Administration Budget Polio"
 
 #~ msgid "Male"
 #~ msgstr "Masculin"

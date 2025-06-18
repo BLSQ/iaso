@@ -180,7 +180,7 @@ def patient_history(request):
             patient_object = {"Période": record.period[:7], "FOSA": record.org_unit.name}
             for field in PATIENT_HISTORY_DISPLAY_FIELDS:
                 patient_object[PATIENT_HISTORY_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
-            is_last_record = record.patient.last_record.id == record.id
+            is_last_record = last_record_id and record.id == last_record_id
 
             patient_object["Dernier Enreg"] = "*" if is_last_record else ""
             patient_object["Date D'import"] = record.import_source.creation_date.strftime("%Y-%m-%d %H:%M ")
@@ -214,6 +214,7 @@ def patient_search(request):
 def import_detail_view(request, import_id):
     """
     View to display a single Import object and its associated ActivePatientsList entries in a table.
+    Only allows access if the import's org unit is within the user's scope.
     Args:
         request: The HTTP request object.
         import_id: The ID of the Import object to retrieve.
@@ -222,14 +223,26 @@ def import_detail_view(request, import_id):
     """
     # Get the Import object, or raise a 404 error if it doesn't exist
     import_obj = get_object_or_404(Import, id=import_id)
+    
+    # Check authorization: ensure user has access to the import's org unit
+    user_accessible_org_units = get_user_accessible_org_units(request.user)
+    
+    # Check if the import's org unit is within user's accessible org units
+    if not user_accessible_org_units or not user_accessible_org_units.filter(id=import_obj.org_unit.id).exists():
+        # User doesn't have access to this import's org unit
+        raise Http404("Import not found or access denied")
 
     # Get the ActivePatientsList entries associated with the Import, ordered by some field (e.g., 'id')
     active_patients_list = Record.objects.filter(import_source=import_obj).order_by("id")
 
+    # Get error message if there's a problem
+    error_message = get_import_error_message(import_obj.file_check)
+    
     context = {
         "import_obj": import_obj,
         "active_patients": active_patients_list,
         "PATIENT_LIST_DISPLAY_FIELDS": PATIENT_LIST_DISPLAY_FIELDS,
+        "error_message": error_message,
     }
 
     # Render the template with the context data
@@ -656,6 +669,156 @@ def validation_region_api(request, org_unit_id, month):
     return JsonResponse(res, status=200, safe=False)
 
 
+@login_required
+def imports_list(request):
+    """
+    View for listing all imports with filtering by org unit
+    """
+    return render(
+        request,
+        "imports_list.html",
+        {
+            "FA_HF_ORG_UNIT_TYPE_ID": FA_HF_ORG_UNIT_TYPE_ID,
+            "FA_DISTRICT_ORG_UNIT_TYPE_ID": FA_DISTRICT_ORG_UNIT_TYPE_ID,
+            "FA_REGION_ORG_UNIT_TYPE_ID": FA_REGION_ORG_UNIT_TYPE_ID,
+        },
+    )
+
+
+def get_import_error_message(file_check):
+    """
+    Get the human-readable error message for an import file_check status.
+    """
+    if not file_check or file_check == "OK":
+        return None
+    
+    return RESPONSES.get(file_check, {}).get("message", "Erreur inconnue")
+
+
+def get_user_accessible_org_units(user):
+    """
+    Get all org units that a user has access to, using the hierarchy method.
+    For superusers, returns all org units.
+    For regular users, returns only org units in their scope using the hierarchy pattern.
+    """
+    try:
+        profile = user.iaso_profile
+        
+        # Start with all valid org units
+        org_units = OrgUnit.objects.filter(validation_status="VALID")
+        
+        # Superusers have access to all org units
+        if user.is_superuser:
+            return org_units
+        
+        # Use the same pattern as completeness_stats.py
+        if profile.org_units.all():
+            # do the intersection
+            roots = org_units.filter(id__in=profile.org_units.all())
+            # take the whole hierarchy
+            org_units = org_units.hierarchy(roots)
+            return org_units
+        else:
+            # User has no org units assigned
+            return org_units
+        
+    except Exception as e:
+        # If there's any issue getting the profile, return empty queryset for security
+        print(f"Error getting user accessible org units: {e}")
+        return OrgUnit.objects.none()
+
+
+@login_required
+def imports_list_api(request):
+    """
+    API for listing imports with filtering and pagination
+    Only shows imports for org units the user has access to
+    """
+    from django.core.paginator import Paginator
+    
+    # Get query parameters
+    org_unit_id = request.GET.get('org_unit_id')
+    status = request.GET.get('status')
+    page = request.GET.get('page', 1)
+    page_size = request.GET.get('page_size', 20)
+    
+    # Get user's accessible org units
+    user = request.user
+    accessible_org_units = get_user_accessible_org_units(user)
+    
+    # Check if accessible_org_units is empty (QuerySet or None)
+    if not accessible_org_units or not accessible_org_units.exists():
+        # User has no access to any org units
+        imports = Import.objects.none()
+    else:
+        # Start with imports from accessible org units only
+        imports = Import.objects.select_related('org_unit', 'user').filter(
+            org_unit__in=accessible_org_units
+        ).order_by('-creation_date')
+        
+        # Further filter by specific org unit if requested
+        if org_unit_id:
+            try:
+                org_unit = OrgUnit.objects.get(id=org_unit_id)
+                # Check if user has access to this specific org unit
+                if accessible_org_units.filter(id=org_unit.id).exists():
+                    imports = imports.filter(org_unit=org_unit)
+                else:
+                    # User doesn't have access to this org unit
+                    imports = Import.objects.none()
+            except OrgUnit.DoesNotExist:
+                imports = Import.objects.none()
+        
+        # Filter by status if requested
+        if status:
+            if status == "OK":
+                imports = imports.filter(file_check="OK")
+            elif status == "ERROR":
+                imports = imports.exclude(file_check__in=["OK", None])
+            elif status == "PENDING":
+                imports = imports.filter(file_check__isnull=True)
+    # Paginate results
+    paginator = Paginator(imports, page_size)
+    page_obj = paginator.get_page(page)
+    
+    # Build table content
+    table_content = []
+    for import_obj in page_obj:
+        # Calculate number of records in this import
+        record_count = Record.objects.filter(import_source=import_obj).count()
+        
+        # Get error message if there's a problem
+        error_message = get_import_error_message(import_obj.file_check)
+        
+        obj = {
+            "ID": import_obj.id,
+            "Établissement": import_obj.org_unit.name if import_obj.org_unit else "N/A",
+            "Fichier": import_obj.file_name or "N/A",
+            "Période": import_obj.month,
+            "Date d'import": import_obj.creation_date.strftime("%d/%m/%Y %H:%M"),
+            "Utilisateur": import_obj.user.username if import_obj.user else "Système",
+            "Source": import_obj.get_source_display() if hasattr(import_obj, 'get_source_display') else import_obj.source,
+            "Nb. enregistrements": record_count,
+            "Statut": "✓ Valide" if import_obj.file_check == "OK" else "⚠ Problème" if import_obj.file_check else "En cours",
+            "Raison du problème": error_message or "-",
+            "Actions": f'<a href="/active_list/import/{import_obj.id}/" class="btn btn-sm btn-outline-primary">Voir détails</a>'
+        }
+        table_content.append(obj)
+    
+    res = {
+        "table_content": table_content,
+        "pagination": {
+            "current_page": page_obj.number,
+            "total_pages": paginator.num_pages,
+            "total_count": paginator.count,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),
+            "page_size": page_size
+        }
+    }
+    return JsonResponse(res, status=200, safe=False)
+
+
 def get_human_readable_value(model_instance, field_name):
     """
     Returns the human-readable value of a choice field in a Django model.
@@ -737,7 +900,7 @@ def filter_active_records_for_the_month(records, month):
 
     # First filter by date range
     month_records = records.filter(
-        last_dispensation_date__lte=first_day, next_dispensation_date__lte=first_day + timedelta(days=28)
+        last_dispensation_date__lte=first_day, next_dispensation_date__gte=first_day - timedelta(days=28)
     )
     print(month_records)
     # Get the latest record ID for each patient within the filtered records
@@ -1298,31 +1461,6 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     return result, None
 
 
-def validate_import(the_import):
-    month = the_import.month
-    import_lines = Record.objects.filter(import_source=the_import)
-    viewed_patients_count = filter_expected_records_for_the_month(import_lines, month).count()
-    latest_ids = (
-        Record.objects.filter(org_unit_id=the_import.org_unit_id)
-        .values("identifier_code")
-        .annotate(latest_id=Max("id"))
-    )
-
-    active_list = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids])
-
-    patients = patients.filter(active=True).filter(org_unit_id=org_unit_id)
-
-
-def check_file(file):
-    # To implement
-    # warning on multiple sheets
-    # needed columns are not there -> refuse file
-    # unrecognized value in column
-    # wrong value in column (wrong type, wrong choice in a selection
-    # name of facility does not match with the one that was picked
-    pass
-
-
 def allowed_file(filename):
     return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -1333,7 +1471,6 @@ def month_string_to_utc_timestamp(month_string):
     """
     year, month = map(int, month_string.split("-"))
     dt = datetime.datetime(year, month, 1, tzinfo=pytz.utc)
-    timestamp = calendar.timegm(dt.utctimetuple())
     return dt
 
 

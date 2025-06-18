@@ -48,4 +48,6 @@ urlpatterns = [
         views.validation_region_api,
         name="validation_region_api",
     ),
+    path("imports_list/", views.imports_list, name="imports_list"),
+    path("imports_list_api/", views.imports_list_api, name="imports_list_api"),
 ]

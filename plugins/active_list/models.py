@@ -126,20 +126,8 @@ class Patient(models.Model):
         """
         Evaluate if the patient is lost based on the last record's discontinuation date.
         """
-        print(
-            "Evaluating loss for patient:",
-            self.identifier_code,
-            "Active status:",
-            self.active,
-            "last_record:",
-            self.last_record,
-        )
+
         if self.last_record and self.last_record.next_dispensation_date:
-            print(
-                "Last record next_dispensation_date:",
-                self.last_record.next_dispensation_date,
-                datetime.date.today() - datetime.timedelta(days=NUMBER_OF_DAYS_BEFORE_LOSS),
-            )
             if self.last_record.next_dispensation_date < datetime.date.today() - datetime.timedelta(
                 days=NUMBER_OF_DAYS_BEFORE_LOSS
             ):
@@ -158,13 +146,11 @@ class Patient(models.Model):
                         reason=INACTIVE_LOST,
                     )
                     event.save()
-                    print("Patient inactive event saved:", event)
             else:
                 self.active = True
                 self.loss_date = None
             if save:
                 self.save()
-                print("Patient status saved. Active:", self.active, "Loss date:", self.loss_date)
 
         return self.active
 

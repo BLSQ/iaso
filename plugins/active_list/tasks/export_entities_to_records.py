@@ -86,7 +86,7 @@ def export_entities_to_records(task=None):
     )
     # Process follow-up instances
     process_instances(followup_instances, "followup")
-    print("DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE DONE")
+
     task.report_success(
         message="All instances processed successfully. %d admission instances and %d follow-up instances processed."
         % (admission_instances.count(), followup_instances.count()),
@@ -105,7 +105,10 @@ def process_instances(instances, form_type):
 
     # Iterate through the groups and process instances
     for (month, org_unit), group_instances in grouped.items():
-        import_source = Import.objects.create(org_unit=org_unit, month=month.strftime("%Y-%m"), source="IASO_ENTITIES")
+        first = group_instances[0]
+        import_source = Import.objects.create(
+            org_unit=org_unit, month=month.strftime("%Y-%m"), source="IASO_ENTITIES", user=first.created_by
+        )
         for instance in group_instances:
             if form_type == "admission":
                 create_patient_and_first_record(instance, import_source)

@@ -46,9 +46,10 @@ TODO list for Active List Plugin
 - on_time is not correctly calculated 
 - last import is not correctly modified with follow up from mobile app: https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=03199/rt/89/01234&record_mode=all
 - from the same record (https://fileactive-pnlsci.bluesquare.org/active_list/patient_history/?identifier=03199/rt/89/01234&record_mode=all): it apears that record triggers creation of entity that in turn triggers the creation of another record
-- 
+
 #
 ## Questions
 - what to do when a patient is dead for the dispensiation date. Currently, import fails without date (and then where should they appear ? ) -> I'd say that the answer is dispensiation_date is reporting date in that case)
 - explain a little better servi ailleurs/transfert in/transfert out 
 - Shouldn't validation be more automated. It feels like we could define a few mechanical criteria for that, rather than asking everybody to check every month
+- Shouldn't the mobile app enforce that you can't have a record older than the latest one? 

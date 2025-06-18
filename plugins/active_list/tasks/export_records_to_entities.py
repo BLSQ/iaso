@@ -91,7 +91,9 @@ def export_records_to_entities(task=None):
 
     # Get records without instances
     records = Record.objects.filter(instance__isnull=True)
-    patients = Patient.objects.filter(last_record__in=records).distinct()
+    patients = Patient.objects.filter(
+        last_record__in=records
+    ).distinct()  # todo this won't create from old records if newer have been converted already
 
     task.report_progress_and_stop_if_killed(
         progress_value=2,

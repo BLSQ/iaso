@@ -22,8 +22,6 @@ vaccine_dashboard_link = settings.DNS_DOMAIN
 
 
 def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list):
-    mail_sent = False
-
     for obj in vaccine_auths:
         account_id = obj.account.id
         next_vaccine_auth = (
@@ -35,41 +33,47 @@ def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing
         )
 
         if next_vaccine_auth and obj.expiration_date < next_vaccine_auth.expiration_date:
-            send_mail(
-                f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
-                f"""
-                ALERT, 
+            try:
+                send_mail(
+                    f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
+                    f"""
+                    ALERT, 
 
-                {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
-                A new authorization is {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
-                Please take appropriate action as needed. 
-                Link to the platform vaccine authorization page : {vaccine_dashboard_link}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account_id}/order/-current_expiration_date/pageSize/20/page/1"
-                RRT team
-                """,
-                settings.DEFAULT_FROM_EMAIL,
-                mailing_list,
-            )
+                    {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
+                    A new authorization is {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
+                    Please take appropriate action as needed. 
+                    Link to the platform vaccine authorization page : {vaccine_dashboard_link}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account_id}/order/-current_expiration_date/pageSize/20/page/1"
+                    RRT team
+                    """,
+                    settings.DEFAULT_FROM_EMAIL,
+                    mailing_list,
+                )
 
-            mail_sent = True
+            except Exception as e:
+                logger.error(f"Could not send emails for {obj}")
+                raise e
         else:
-            send_mail(
-                f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
-                f"""
-                            ALERT
+            try:
+                send_mail(
+                    f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
+                    f"""
+                                ALERT
 
-                            {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
-                            No new authorization pending.
-                            Please take appropriate action as needed. 
-                            Link to the platform vaccine authorization page : {vaccine_dashboard_link}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account_id}/order/-current_expiration_date/pageSize/20/page/1""
-                            RRT team
-                            """,
-                settings.DEFAULT_FROM_EMAIL,
-                mailing_list,
-            )
+                                {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
+                                No new authorization pending.
+                                Please take appropriate action as needed. 
+                                Link to the platform vaccine authorization page : {vaccine_dashboard_link}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{account_id}/order/-current_expiration_date/pageSize/20/page/1""
+                                RRT team
+                                """,
+                    settings.DEFAULT_FROM_EMAIL,
+                    mailing_list,
+                )
 
-            mail_sent = True
+            except Exception as e:
+                logger.error(f"Could not send emails for {obj}")
+                raise e
 
-    return {"vacc_auth_mail_sent_to": mailing_list} if mail_sent else "no_vacc_auth_mail_sent"
+    return {"vacc_auth_mail_sent_to": mailing_list}
 
 
 @task_decorator(task_name="vaccine_authorizations_60_days_expiration_email_alert")
@@ -82,7 +86,7 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
 
     team = get_object_or_404(Team, name=NOPV2_VACCINE_TEAM_NAME)
 
-    mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+    mailing_list = User.objects.filter(pk__in=team.users.all()).values_list("email", flat=True)
     email_sent = 0
 
     for i, vacc_auth in enumerate(vaccine_auths):
@@ -98,7 +102,10 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
         )
 
         logger.info(f"Email for {vacc_auth}")
-        status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
+        try:
+            status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
+        except Exception as e:
+            task.terminate_with_error(message=str(e))
         if not status:
             logger.info("... skipped")
         else:
@@ -179,7 +186,10 @@ def send_email_expired_vaccine_authorizations_alert(task=None):
         )
 
         logger.info(f"Email for {vacc_auth}")
-        status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
+        try:
+            status = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
+        except Exception as e:
+            task.terminate_with_error(message=str(e))
         if not status:
             logger.info("... skipped")
         else:

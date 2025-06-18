@@ -173,13 +173,13 @@ def patient_history(request):
             latest_ids = Record.objects.filter(patient=patient).values("period").annotate(latest_id=Max("id"))
             records = Record.objects.filter(id__in=[item["latest_id"] for item in latest_ids]).order_by("-period")
         elif record_mode == "all":
-            records = Record.objects.filter(patient=patient).order_by("-id")
-
+            records = patient.records.order_by("-id")
         data = []
         for record in records:
-            patient_object = {"Période": record.period[:7], "FOSA": record.org_unit.name}
+            patient_object = {"ID": record.id, "Période": record.period[:7], "FOSA": record.org_unit.name}
             for field in PATIENT_HISTORY_DISPLAY_FIELDS:
                 patient_object[PATIENT_HISTORY_DISPLAY_FIELDS[field]] = get_human_readable_value(record, field)
+            last_record_id = patient.last_record_id
             is_last_record = last_record_id and record.id == last_record_id
 
             patient_object["Dernier Enreg"] = "*" if is_last_record else ""
@@ -223,10 +223,10 @@ def import_detail_view(request, import_id):
     """
     # Get the Import object, or raise a 404 error if it doesn't exist
     import_obj = get_object_or_404(Import, id=import_id)
-    
+
     # Check authorization: ensure user has access to the import's org unit
     user_accessible_org_units = get_user_accessible_org_units(request.user)
-    
+
     # Check if the import's org unit is within user's accessible org units
     if not user_accessible_org_units or not user_accessible_org_units.filter(id=import_obj.org_unit.id).exists():
         # User doesn't have access to this import's org unit
@@ -237,7 +237,7 @@ def import_detail_view(request, import_id):
 
     # Get error message if there's a problem
     error_message = get_import_error_message(import_obj.file_check)
-    
+
     context = {
         "import_obj": import_obj,
         "active_patients": active_patients_list,
@@ -280,7 +280,7 @@ def upload(request):
 
             request.session[f"validation_{validation_id}"] = {"file_path": stored_path}
             answer["download_id"] = validation_id
-        print("answer", answer)
+
         return JsonResponse(answer, status=RESPONSES[result]["status"])
 
     return render(
@@ -691,7 +691,7 @@ def get_import_error_message(file_check):
     """
     if not file_check or file_check == "OK":
         return None
-    
+
     return RESPONSES.get(file_check, {}).get("message", "Erreur inconnue")
 
 
@@ -703,14 +703,14 @@ def get_user_accessible_org_units(user):
     """
     try:
         profile = user.iaso_profile
-        
+
         # Start with all valid org units
         org_units = OrgUnit.objects.filter(validation_status="VALID")
-        
+
         # Superusers have access to all org units
         if user.is_superuser:
             return org_units
-        
+
         # Use the same pattern as completeness_stats.py
         if profile.org_units.all():
             # do the intersection
@@ -718,10 +718,9 @@ def get_user_accessible_org_units(user):
             # take the whole hierarchy
             org_units = org_units.hierarchy(roots)
             return org_units
-        else:
-            # User has no org units assigned
-            return org_units
-        
+        # User has no org units assigned
+        return org_units
+
     except Exception as e:
         # If there's any issue getting the profile, return empty queryset for security
         print(f"Error getting user accessible org units: {e}")
@@ -735,27 +734,29 @@ def imports_list_api(request):
     Only shows imports for org units the user has access to
     """
     from django.core.paginator import Paginator
-    
+
     # Get query parameters
-    org_unit_id = request.GET.get('org_unit_id')
-    status = request.GET.get('status')
-    page = request.GET.get('page', 1)
-    page_size = request.GET.get('page_size', 20)
-    
+    org_unit_id = request.GET.get("org_unit_id")
+    status = request.GET.get("status")
+    page = request.GET.get("page", 1)
+    page_size = request.GET.get("page_size", 20)
+
     # Get user's accessible org units
     user = request.user
     accessible_org_units = get_user_accessible_org_units(user)
-    
+
     # Check if accessible_org_units is empty (QuerySet or None)
     if not accessible_org_units or not accessible_org_units.exists():
         # User has no access to any org units
         imports = Import.objects.none()
     else:
         # Start with imports from accessible org units only
-        imports = Import.objects.select_related('org_unit', 'user').filter(
-            org_unit__in=accessible_org_units
-        ).order_by('-creation_date')
-        
+        imports = (
+            Import.objects.select_related("org_unit", "user")
+            .filter(org_unit__in=accessible_org_units)
+            .order_by("-creation_date")
+        )
+
         # Further filter by specific org unit if requested
         if org_unit_id:
             try:
@@ -768,7 +769,7 @@ def imports_list_api(request):
                     imports = Import.objects.none()
             except OrgUnit.DoesNotExist:
                 imports = Import.objects.none()
-        
+
         # Filter by status if requested
         if status:
             if status == "OK":
@@ -780,16 +781,16 @@ def imports_list_api(request):
     # Paginate results
     paginator = Paginator(imports, page_size)
     page_obj = paginator.get_page(page)
-    
+
     # Build table content
     table_content = []
     for import_obj in page_obj:
         # Calculate number of records in this import
         record_count = Record.objects.filter(import_source=import_obj).count()
-        
+
         # Get error message if there's a problem
         error_message = get_import_error_message(import_obj.file_check)
-        
+
         obj = {
             "ID": import_obj.id,
             "Établissement": import_obj.org_unit.name if import_obj.org_unit else "N/A",
@@ -797,14 +798,20 @@ def imports_list_api(request):
             "Période": import_obj.month,
             "Date d'import": import_obj.creation_date.strftime("%d/%m/%Y %H:%M"),
             "Utilisateur": import_obj.user.username if import_obj.user else "Système",
-            "Source": import_obj.get_source_display() if hasattr(import_obj, 'get_source_display') else import_obj.source,
+            "Source": import_obj.get_source_display()
+            if hasattr(import_obj, "get_source_display")
+            else import_obj.source,
             "Nb. enregistrements": record_count,
-            "Statut": "✓ Valide" if import_obj.file_check == "OK" else "⚠ Problème" if import_obj.file_check else "En cours",
+            "Statut": "✓ Valide"
+            if import_obj.file_check == "OK"
+            else "⚠ Problème"
+            if import_obj.file_check
+            else "En cours",
             "Raison du problème": error_message or "-",
-            "Actions": f'<a href="/active_list/import/{import_obj.id}/" class="btn btn-sm btn-outline-primary">Voir détails</a>'
+            "Actions": f'<a href="/active_list/import/{import_obj.id}/" class="btn btn-sm btn-outline-primary">Voir détails</a>',
         }
         table_content.append(obj)
-    
+
     res = {
         "table_content": table_content,
         "pagination": {
@@ -813,8 +820,8 @@ def imports_list_api(request):
             "total_count": paginator.count,
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
-            "page_size": page_size
-        }
+            "page_size": page_size,
+        },
     }
     return JsonResponse(res, status=200, safe=False)
 
@@ -838,7 +845,6 @@ def get_human_readable_value(model_instance, field_name):
             return getattr(model_instance, method_name)()
         if isinstance(field, models.BooleanField):
             return "Oui" if getattr(model_instance, field_name) else "Non"
-        print(field, field_name)
         if getattr(model_instance, field_name) is None:
             return ""
     except FieldDoesNotExist:
@@ -902,7 +908,7 @@ def filter_active_records_for_the_month(records, month):
     month_records = records.filter(
         last_dispensation_date__lte=first_day, next_dispensation_date__gte=first_day - timedelta(days=28)
     )
-    print(month_records)
+
     # Get the latest record ID for each patient within the filtered records
     latest_ids = month_records.values("patient_id").annotate(latest_id=Max("id"))
 
@@ -1369,7 +1375,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
     )
 
     result = validator.validate_spreadsheet(validation_upload_file)
-    print("validation result", result)
+
     if not result["is_valid"]:
         # Create another fresh file object for error highlighting
         error_file_obj = SimpleUploadedFile(
@@ -1378,7 +1384,7 @@ def handle_upload(file_name, file, org_unit_id, month, bypass=False, user=None):
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         error_file = validator.create_highlighted_excel(error_file_obj, result["errors"])
-        print(FILE_DATA_PROBLEM, error_file)
+
         return FILE_DATA_PROBLEM, error_file
 
     content = upload_file_content
@@ -1625,7 +1631,7 @@ def import_data(file, the_import):
 
         # Get org unit aliases (empty list if None)
         org_unit_aliases = org_unit.aliases or []
-        print(org_unit_aliases)
+
         # Check if any CODE ETS doesn't match org unit aliases
         for code_ets in code_ets_values:
             if str(code_ets) not in org_unit_aliases:

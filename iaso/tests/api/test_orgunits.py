@@ -1263,6 +1263,65 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_unit.source_ref, "NEW_REF_123")
         self.assertEqual(org_unit.validation_status, "VALID")
 
+    def test_edit_org_unit_partial_update_geo_json(self):
+        user = self.yoda
+        self.client.force_authenticate(user)
+
+        org_unit = self.jedi_squad_endor
+        org_unit.geom = None
+        org_unit.simplified_geom = None
+        org_unit.save()
+
+        self.assertEqual(org_unit.geom, None)
+        self.assertEqual(org_unit.simplified_geom, None)
+
+        geo_json = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    # Note: those coordinates are too small to be simplified,
+                    # so they will be used for both `geom` and `simplified_geom`.
+                    "geometry": {"type": "MultiPolygon", "coordinates": [[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]]},
+                }
+            ],
+        }
+        expected_geom = "SRID=4326;MULTIPOLYGON (((1 1, 1 2, 2 2, 2 1, 1 1)))"
+
+        # You shouldn't be able to edit `geo_json` without `ALLOW_SHAPE_EDITION`.
+        data = {"geo_json": geo_json}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, None)
+        self.assertEqual(org_unit.simplified_geom, None)
+
+        allow_shape_edition_flag = m.AccountFeatureFlag.objects.get(code="ALLOW_SHAPE_EDITION")
+        user.iaso_profile.account.feature_flags.add(allow_shape_edition_flag)
+
+        # You should be able to edit `geo_json` with `ALLOW_SHAPE_EDITION`.
+        data = {"geo_json": geo_json}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
+
+        # Passing `geo_json = None` shouldn't delete the current shapes.
+        data = {"geo_json": None}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
+
+        # Passing invalid `geo_json` should return an error.
+        data = {"geo_json": "Invalid"}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data[0]["errorKey"], "geo_json")
+        self.assertEqual(response.data[0]["errorMessage"], "Can't parse geo_json")
+
     def test_edit_org_unit_partial_update_for_opening_and_closed_dates(self):
         """
         Test the various date formats used by API clients.

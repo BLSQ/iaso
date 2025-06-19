@@ -1,5 +1,5 @@
 from django.contrib.gis.geos import Point
-from django.db import InternalError, connections
+from django.db import IntegrityError, InternalError, connections
 from django.db.models import Q
 
 from iaso import models as m
@@ -209,6 +209,30 @@ class OrgUnitModelTestCase(TestCase):
 
         return corrusca, corruscant, first_council, second_council, task_force
 
+    def test_same_code_different_versions(self):
+        # Checks that the same code can be used multiple times in different source versions
+        code = "chuck norris is stronger than database constraints"
+        source = m.DataSource.objects.create(name="source")
+        version1 = m.SourceVersion.objects.create(data_source=source, number=1)
+        version2 = m.SourceVersion.objects.create(data_source=source, number=2)
+
+        org_unit_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 1",
+            org_unit_type=self.sector,
+            version=version1,
+            code=code,
+        )
+        org_unit_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 2",
+            org_unit_type=self.sector,
+            version=version2,
+            code=code,
+        )
+        # No IntegrityError should be raised -> 2 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 2)
+        self.assertEqual(org_unit_1.code, org_unit_2.code)
+
 
 class OrgUnitModelDbTestCase(TestCase):
     """OrgUnit: tests at the database (constraints, ...) level"""
@@ -302,3 +326,42 @@ class OrgUnitModelDbTestCase(TestCase):
             orgunit.extra_fields,
             {"population": 2500, "source": "snis", "foo": "bar"},
         )
+
+    def test_same_code_same_version(self):
+        # Checks that the same code cannot be used multiple times in the same source version
+        code = "chuck norris is stronger than database constraints"
+        m.OrgUnit.objects.create(
+            name="OrgUnit 1",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+        )
+
+        with self.assertRaisesMessage(IntegrityError, "unique_code_per_source_version_if_not_blank"):
+            m.OrgUnit.objects.create(
+                name="OrgUnit 2",
+                org_unit_type=self.sector,
+                version=self.version1,
+                code=code,
+            )
+
+    def test_blank_codes_same_version(self):
+        # Checks that blank codes can be used multiple times in the same source version
+        code = ""
+        org_unit_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 1",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+        )
+        org_unit_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 2",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+        )
+
+        # No IntegrityError should be raised -> 2 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 2)
+        self.assertEqual(org_unit_1.code, org_unit_2.code)

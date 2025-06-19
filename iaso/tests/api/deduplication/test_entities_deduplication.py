@@ -903,6 +903,10 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                     "Prenom",
                     "Nom",
                     "age__int__",
+                    "height_cm__decimal__",
+                    "weight_kgs__double__",
+                    "transfer_from_tsfp__bool__",
+                    "something_else",
                 ],
                 "algorithm": "levenshtein",
                 "parameters": [

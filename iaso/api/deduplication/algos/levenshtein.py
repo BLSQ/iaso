@@ -29,9 +29,12 @@ def _build_query(params):
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
             fc_arr.append(
-                "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
+                "(1.0 - (CASE "
+                "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                "THEN abs( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision ) "
+                "ELSE NULL END))"
             )
-            query_params.extend([f_name, f_name, f_name, f_name])
+            query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
         elif f_type == "text" or f_type is None:  # Handle both text and undefined types as text
             fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
             query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
@@ -62,7 +65,9 @@ def _build_query(params):
             # For numeric types, use the same comparison as numbers
             if cast_type in ["integer", "bigint", "double precision"]:
                 fc_arr.append(
-                    "(1.0 - ( abs ( (instance1.json->>%s)::"
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                    "THEN abs( (instance1.json->>%s)::"
                     + cast_type
                     + " - (instance2.json->>%s)::"
                     + cast_type
@@ -70,19 +75,23 @@ def _build_query(params):
                     + cast_type
                     + ", (instance2.json->>%s)::"
                     + cast_type
-                    + " )))"
+                    + " ) "
+                    "ELSE NULL END))"
                 )
-                query_params.extend([f_name, f_name, f_name, f_name])
+                query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
             # For boolean types, compare as 0/1
             elif cast_type == "boolean":
                 fc_arr.append(
-                    "(1.0 - abs( (instance1.json->>%s)::"
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                    "THEN abs( (instance1.json->>%s)::"
                     + cast_type
                     + "::integer - (instance2.json->>%s)::"
                     + cast_type
-                    + "::integer ))"
+                    + "::integer ) "
+                    "ELSE NULL END))"
                 )
-                query_params.extend([f_name, f_name])
+                query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name])
             # For date/time types, compare as timestamps
             if cast_type == "date":
                 fc_arr.append(
@@ -120,7 +129,13 @@ def _build_query(params):
         SELECT
         entity1.id,
         entity2.id,
-        cast (({fields_comparison}) / {n} * 100 as smallint) as score
+        cast(GREATEST(LEAST(
+            COALESCE(
+                ({fields_comparison}) / NULLIF({n}, 0) * 100,
+                0
+            ),
+            100
+        ), 0) as smallint) as score
         FROM iaso_entity entity1, iaso_entity entity2, iaso_instance instance1, iaso_instance instance2
         WHERE entity1.id != entity2.id
         AND entity1.attributes_id = instance1.id

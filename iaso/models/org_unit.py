@@ -25,6 +25,7 @@ from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
+from ..utils.models.soft_deletable import SoftDeletableModel
 from .project import Project
 
 
@@ -676,7 +677,7 @@ class OrgUnitChangeRequestQuerySet(models.QuerySet):
         return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
 
 
-class OrgUnitChangeRequest(models.Model):
+class OrgUnitChangeRequest(SoftDeletableModel):
     """
     A request to change an OrgUnit.
 

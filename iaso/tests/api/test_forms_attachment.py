@@ -3,7 +3,6 @@ import typing
 
 from unittest import mock
 from unittest.mock import MagicMock, patch
-from xml.sax.saxutils import escape
 
 import time_machine
 
@@ -14,6 +13,8 @@ from django.utils.timezone import now
 from rest_framework import status
 
 from iaso import models as m
+from iaso.api.query_params import APP_ID
+from iaso.enketo.enketo_url import generate_signed_url
 from iaso.test import APITestCase
 from iaso.utils.models.virus_scan import VirusScanStatus
 
@@ -27,6 +28,8 @@ EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
+    PATH_TO_FIXTURES = "iaso/tests/fixtures/form_attachments/"
+    maxDiff = None
 
     @classmethod
     def setUpTestData(cls):
@@ -280,54 +283,52 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
-
         response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_not_found(self):
         f"""GET {MANIFEST_URL} with wrong id: 404"""
-
         self.client.force_authenticate(self.yoda)
         response = self.client.get(MANIFEST_URL.format(form_id=100))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_found_but_empty_attachments(self):
         f"""GET {MANIFEST_URL} with no attachments: 200"""
-
         self.client.force_authenticate(self.yoda)
         response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as f:
+            expected_content = f.read()
         self.assertEqual(
-            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n\n</manifest>',
+            expected_content,
             content,
         )
 
     def test_manifest_form_found_with_attachments(self):
         f"""GET {MANIFEST_URL} with attachments: 200"""
-
         self.client.force_authenticate(self.yoda)
         response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
         content = self.assertXMLResponse(response, 200)
-        self.assertEqual(
-            str(
-                b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-                b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
-                b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
-                b"<downloadUrl>http://testserver"
-                + self.attachment1.file.url.encode("ascii")
-                + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
-                b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
-                b"<downloadUrl>http://testserver"
-                + self.attachment2.file.url.encode("ascii")
-                + b"</downloadUrl>\n</mediaFile>\n</manifest>"
-            ),
-            str(content),
+        content_str = content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_1_hash": self.attachment1.md5,
+            "attachment_2_hash": self.attachment2.md5,
+            "attachment_1_name": self.attachment1.name,
+            "attachment_2_name": self.attachment2.name,
+            "attachment_1_url": self.attachment1.file.url,
+            "attachment_2_url": self.attachment2.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
         )
+        self.assertEqual(expected_xml, content_str)
 
     def test_form_attachments_with_invalid_character(self):
         f"""POST {BASE_URL}: allowed to update"""
-
         file = mock.MagicMock(spec=File)
         file.name = "<&>.png"
         attachment = self.form_1.attachments.create(
@@ -339,15 +340,17 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
-        self.assertEqual(
-            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>&lt;&amp;&gt;.png'
-            b"</filename>\n    <hash>md5:test1</hash>\n    "
-            b"<downloadUrl>http://testserver"
-            + escape(attachment.file.url).encode("ascii")
-            + b"</downloadUrl>\n</mediaFile>\n</manifest>",
-            content,
+        content_str = content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_url": attachment.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_invalid_character.xml", context=context
         )
+        self.assertEqual(expected_xml, content_str)
 
     def assertXMLResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, HttpResponse)
@@ -368,6 +371,44 @@ class FormAttachmentsAPITestCase(APITestCase):
             data={"app_id": self.project_1.app_id},
         )
         self.assertXMLResponse(response, 200)
+
+    def test_manifest_anonymous_app_id_project_with_authentication(self):
+        f"""GET {BASE_URL} via app id"""
+
+        self.project_1.needs_authentication = True
+        self.project_1.save()
+
+        response = self.client.get(
+            MANIFEST_URL.format(form_id=self.form_2.id),
+            headers={"Content-Type": "application/json"},
+            data={"app_id": self.project_1.app_id},
+        )
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_manifest_anonymous_with_signed_url(self):
+        """Test that signed anonymous URLs can be used to fetch manifests (enketo use case)"""
+        path = MANIFEST_URL.format(form_id=self.form_2.id)
+        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+
+        response = self.client.get(signed_url)
+        self.assertXMLResponse(response, status.HTTP_200_OK)
+
+        content_str = response.content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_1_hash": self.attachment1.md5,
+            "attachment_2_hash": self.attachment2.md5,
+            "attachment_1_name": self.attachment1.name,
+            "attachment_2_name": self.attachment2.name,
+            "attachment_1_url": self.attachment1.file.url,
+            "attachment_2_url": self.attachment2.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
+        )
+        self.assertEqual(expected_xml, content_str)
 
 
 class MockResults:

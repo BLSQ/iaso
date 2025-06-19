@@ -18,6 +18,8 @@ from hat.menupermissions import models as permission
 from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
+from ..enketo import enketo_settings
+from ..enketo.enketo_url import verify_signed_url
 from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
@@ -39,6 +41,15 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
             .filter(id=obj.id)
             .exists()
         )
+
+
+class HasFormPermissionOrSignedURL(HasFormPermission):
+    def has_permission(self, request, view):
+        if super().has_permission(request, view):
+            return True
+
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        return verify_signed_url(request, enketo_secret)
 
 
 class FormPredefinedFilterSerializer(serializers.ModelSerializer):
@@ -247,8 +258,9 @@ class FormsViewSet(ModelViewSet):
     )
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
+    FORM_PK = "form_pk"
 
-    def get_queryset(self):
+    def get_queryset(self, mobile=False):
         form_objects = Form.objects
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
@@ -291,31 +303,33 @@ class FormsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
         else:
             profile = False
-
-        if profile and profile.org_units.exists():
-            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="")
-                        & ~Q(instances__device__test_device=True)
-                        & ~Q(instances__deleted=True)
-                        & Q(instances__org_unit__in=orgunits)
-                    ),
-                    distinct=True,
+        if not mobile:
+            if profile and profile.org_units.exists():
+                orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                            & Q(instances__org_unit__in=orgunits)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
-        else:
-            queryset = queryset.annotate(
-                instances_count=Count(
-                    "instances",
-                    filter=(
-                        ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
-                    ),
-                    distinct=True,
+            else:
+                queryset = queryset.annotate(
+                    instances_count=Count(
+                        "instances",
+                        filter=(
+                            ~Q(instances__file="")
+                            & ~Q(instances__device__test_device=True)
+                            & ~Q(instances__deleted=True)
+                        ),
+                        distinct=True,
+                    )
                 )
-            )
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
@@ -417,9 +431,7 @@ class FormsViewSet(ModelViewSet):
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
 
-    FORM_PK = "form_pk"
-
-    @action(detail=True, methods=["get"])
+    @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
@@ -437,10 +449,10 @@ class FormsViewSet(ModelViewSet):
 
             media_files.append(
                 f"""<mediaFile>
-    <filename>{escape(attachment.name)}</filename>
-    <hash>md5:{attachment.md5}</hash>
-    <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-</mediaFile>"""
+                        <filename>{escape(attachment.name)}</filename>
+                        <hash>md5:{attachment.md5}</hash>
+                        <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
+                    </mediaFile>"""
             )
 
         nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
@@ -451,13 +463,13 @@ class FormsViewSet(ModelViewSet):
                 "X-OpenRosa-Version": "1.0",
             },
             content=f"""<?xml version="1.0" encoding="UTF-8"?>
-<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-{nl.join(media_files)}
-</manifest>""",
+                        <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+                            {nl.join(media_files)}
+                        </manifest>""",
         )
 
 
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset().exclude(form_versions=None)
+        return super().get_queryset(mobile=True).exclude(form_versions=None)

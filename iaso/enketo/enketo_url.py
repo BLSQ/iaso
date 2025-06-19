@@ -1,12 +1,17 @@
 import json
 import logging
 import sys
+import time
 
 from json.decoder import JSONDecodeError
+from urllib.parse import urlencode
 
 import requests
 
 from django.conf import settings as django_settings
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
+
+from iaso.api.query_params import ENKETO_EXPIRES, ENKETO_SIGNED
 
 
 logger = logging.getLogger(__name__)
@@ -18,7 +23,9 @@ class EnketoError(Exception):
     pass
 
 
-def enketo_settings():
+def enketo_settings(specific_env: str = None):
+    if specific_env:
+        return django_settings.ENKETO.get(specific_env, None)
     return django_settings.ENKETO
 
 
@@ -28,19 +35,6 @@ def urljoin(arg1, arg2):
     u = u.replace("http:/", "http://")
     u = u.replace("https:/", "https://")
     return u
-
-
-def enketo_url_for_creation(uuid, server_url, return_url=None):
-    """Return Enketo webform URL."""
-    settings = enketo_settings()
-    url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
-    url = urljoin(url, "/single")
-    data = {"server_url": server_url, "form_id": uuid}
-
-    if return_url:
-        data["return_url"] = "%s" % return_url
-
-    return get_url_from_enketo(url, data)
 
 
 def enketo_url_for_edition(form_url, form_id_string, instance_xml=None, instance_id=None, return_url=None, **kwargs):
@@ -104,3 +98,30 @@ def handle_enketo_error(response):
         if "message" in data:
             raise EnketoError(data["message"])
         raise EnketoError(response.text)
+
+
+def generate_signed_url(path: str, secret: str, expiry_seconds=300, extra_params: dict = {}) -> str:
+    signer = TimestampSigner(secret)
+    signed_path = signer.sign(path)
+    expires = int(time.time()) + expiry_seconds
+    params = urlencode({**extra_params, "expires": expires, "signed": signed_path})
+    return f"{path}?{params}"
+
+
+def verify_signed_url(request, secret: str) -> bool:
+    path = request.path
+    signed = request.query_params.get(ENKETO_SIGNED, None)
+    expires = request.query_params.get(ENKETO_EXPIRES, None)
+
+    if not signed or not expires:
+        return False
+
+    if int(expires) < int(time.time()):
+        return False
+
+    signer = TimestampSigner(secret)
+    try:
+        original = signer.unsign(signed)
+        return original == path
+    except (BadSignature, SignatureExpired):
+        return False

@@ -7,12 +7,14 @@ import {
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
 
+export type ObrName = string;
+
 export type GroupedCampaign = {
     id: number;
     created_at: string;
     updated_at: string;
     name: string;
-    campaigns: { id: string; name: string }[];
+    campaigns: { id: string; name: ObrName }[];
 };
 
 export type GroupedCampaigns = Pagination & {
@@ -244,7 +246,7 @@ export type CalendarCampaign = {
     id: string;
     epid: Nullable<string>;
     scopes: Scope[];
-    obr_name: string;
+    obr_name: ObrName;
     vaccines: string;
     account: number;
     top_level_org_unit_name: string;
@@ -289,7 +291,7 @@ export type Campaign = {
     account: number;
     // Maybe vaccine name can be typed more strictly
     scopes: Scope[];
-    obr_name: string;
+    obr_name: ObrName;
     vaccines: string;
     epid: Nullable<string>;
     gpei_coordinator: Nullable<string>;
@@ -339,7 +341,7 @@ export type Campaign = {
 };
 
 export type MergedShapeProperties = {
-    obr_name: string;
+    obr_name: ObrName;
     id: string;
     vaccine: string;
     scope_key: string;
@@ -439,7 +441,7 @@ type NestedRound = {
 export type CampaignListItem = {
     id: string;
     epid: Nullable<string>;
-    obr_name: string;
+    obr_name: ObrName;
     account: number;
     cvdpv2_notified_at: Nullable<string>;
     top_level_org_unit_name: Nullable<string>;
@@ -458,7 +460,7 @@ export type DefaultCampaignValues = {
     initial_org_unit?: number;
     top_level_org_unit_id?: number;
     campaign_types: number[];
-    obr_name?: string;
+    obr_name?: ObrName;
     description?: string;
     gpei_coordinator?: string;
     is_preventive: boolean;
@@ -528,3 +530,79 @@ export type CampaignTypesDropdown = DropdownOptionsWithOriginal<
     string,
     CampaignType
 >;
+
+/** UUID as string */
+export type UuidAsString = string;
+/**
+ * YYYY-MM-dd
+ */
+export type DateAsString = string;
+/**
+ * MM-YYYY e.g 12-2024
+ */
+export type MonthYear = string;
+/**
+ * number as string e.g. "5"
+ */
+export type NumberAsString = string;
+
+export type PreparednessIndicator = {
+    operational_fund: number;
+    vaccine_and_droppers_received: number;
+    vaccine_cold_chain_assessment: number;
+    vaccine_monitors_training_and_deployment: number;
+    penmarkers_supply: number;
+    sia_training: number;
+    sia_micro_planning: number;
+    communication_sm_fund: number;
+    communication_sm_activities: number;
+    communication_c4d: number;
+    status_score: number;
+};
+
+export type PreparednessScores = {
+    planning_score: number;
+    training_score: number;
+    monitoring_score: number;
+    vaccine_score: number;
+    advocacy_score: number;
+    adverse_score: number;
+    security_score: number | null;
+    status_score: number;
+};
+
+export type RegionName = string;
+export type DistrictName = string;
+
+export type RefreshPreparednessResponse = {
+    national: PreparednessIndicator & { round: string };
+    regions: {
+        [key: RegionName]: PreparednessIndicator;
+    };
+    districts: {
+        [key: DistrictName]: PreparednessScores &
+            PreparednessIndicator & { region: string };
+    };
+    format: string;
+    totals: {
+        national_score: number;
+        regional_score: number;
+        district_score: number;
+    };
+    title: string;
+    created_at: string;
+    national_score: number;
+    regional_score: number;
+    district_score: number;
+    overall_status_score: number;
+    indicators: {
+        [key: string]: {
+            sn: number;
+            key: string;
+            title: string;
+            national: number;
+            regions: number;
+            districts: number;
+        };
+    };
+};

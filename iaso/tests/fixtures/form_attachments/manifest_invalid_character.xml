@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+                        <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+                            <mediaFile>
+                        <filename>&lt;&amp;&gt;.png</filename>
+                        <hash>md5:test1</hash>
+                        <downloadUrl>http://testserver{{ attachment_url }}</downloadUrl>
+                    </mediaFile>
+                        </manifest>

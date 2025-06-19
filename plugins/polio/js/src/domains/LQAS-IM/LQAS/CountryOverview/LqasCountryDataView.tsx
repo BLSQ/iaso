@@ -1,54 +1,47 @@
+import { Campaign, MapShapes, Side } from '../../../../constants/types';
 import React, { FunctionComponent, useMemo } from 'react';
+import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
+import { baseUrls } from '../../../../constants/urls';
+import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
+import { getLqasMapLayer, useLqasMapHeaderData } from './utils';
 
 import { Divider, Paper } from '@mui/material';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Campaign, MapShapes, Side } from '../../../../constants/types';
-import { baseUrls } from '../../../../constants/urls';
-import { getLqasImMapLayer } from '../../IM/utils';
-import { LIST, LqasIMView, MAP } from '../../shared/constants';
-import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
-import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
+import { LIST, MAP, paperElevation } from '../../shared/constants';
 import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
-import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
-import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
-import { ConvertedLqasImData, LqasImMapLayer } from '../../types';
-import { LqasCountryListOverview } from './LqasCountryListOverview';
-import { LqasCountryMap } from './LqasCountryMap';
 import { LqasSummary } from './LqasSummary';
+import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
+import { DropdownOptions } from 'Iaso/types/utils';
+import { LqasCountryListView } from './LqasCountryListView';
+import { LqasCountryMapView } from './LqasCountryMapView';
 
 type Props = {
-    round: number | undefined | string;
-    campaign?: string;
-    campaigns: Array<Campaign>;
+    roundNumber?: number;
+    campaign?: Campaign;
     countryId?: number;
     data: Record<string, ConvertedLqasImData>;
-    isFetching: boolean;
-    debugData: Record<string, unknown> | null | undefined;
-    paperElevation: number;
-    options: DropdownOptions<number>[];
     onRoundChange: (value: number) => void;
     side: Side;
+    debugData?: Record<string, unknown> | null;
     params: Record<string, string | undefined>;
+    isFetching: boolean;
+    roundOptions?: DropdownOptions<string>[];
 };
 
 const baseUrl = baseUrls.lqasCountry;
-
-export const LqasOverviewContainer: FunctionComponent<Props> = ({
-    round: roundProp,
-    campaign,
-    campaigns,
+export const LqasCountryDataView: FunctionComponent<Props> = ({
+    params,
+    side,
     countryId,
+    campaign,
     data,
+    roundNumber,
     isFetching,
     debugData,
-    paperElevation,
-    options,
+    roundOptions,
     onRoundChange,
-    side,
-    params,
 }) => {
-    const round =
-        typeof roundProp === 'string' ? parseInt(roundProp, 10) : roundProp;
+    const campaignObrName = campaign?.obr_name;
     const { tab, handleChangeTab } = useLqasImTabState({
         baseUrl,
         params,
@@ -62,50 +55,40 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     }: MapShapes = useMapShapes(countryId);
 
     const mainLayer: LqasImMapLayer[] = useMemo(() => {
-        return getLqasImMapLayer({
-            data,
-            selectedCampaign: campaign,
-            type: LqasIMView.lqas,
-            campaigns,
-            round,
-            shapes,
-        });
-    }, [data, campaign, campaigns, round, shapes]);
-
-    const { startDate, endDate, scopeCount } = useLqasImMapHeaderData({
+        return getLqasMapLayer({ data, campaign, roundNumber, shapes });
+    }, [data, campaign, roundNumber, shapes]);
+    const { startDate, endDate, scopeCount } = useLqasMapHeaderData({
         campaign,
-        campaigns,
-        round,
-        type: LqasIMView.lqas,
+        roundNumber,
         withScopeCount: true,
     });
+
     return (
         <Paper elevation={paperElevation}>
             <LqasImMapHeader
-                round={round}
+                round={roundNumber}
                 startDate={startDate}
                 endDate={endDate}
-                options={options ?? []}
+                options={roundOptions ?? []}
                 onRoundSelect={onRoundChange}
-                campaignObrName={campaign}
+                campaignObrName={campaignObrName}
                 isFetching={isFetching}
             />
             <Divider />
             <LqasSummary
-                round={round}
-                campaign={campaign}
+                round={roundNumber}
+                campaign={campaignObrName}
                 data={data}
                 scopeCount={scopeCount as number}
             />
             <Divider />
             <LqasImTabs tab={tab} handleChangeTab={handleChangeTab} />
             {tab === MAP && (
-                <LqasCountryMap
+                <LqasCountryMapView
                     side={side}
-                    round={round}
-                    selectedCampaign={campaign}
+                    roundNumber={roundNumber}
+                    campaign={campaign}
                     countryId={countryId}
-                    campaigns={campaigns}
                     data={data}
                     isFetching={isFetching}
                     isFetchingGeoJson={isFetchingGeoJson}
@@ -116,7 +99,8 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
                 />
             )}
             {tab === LIST && (
-                <LqasCountryListOverview
+                <LqasCountryListView
+                    side={side}
                     shapes={mainLayer}
                     regionShapes={regionShapes}
                     isFetching={

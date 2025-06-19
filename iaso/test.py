@@ -11,6 +11,7 @@ from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
 from hat.api_import.models import APIImport
@@ -145,6 +146,12 @@ class IasoTestCaseMixin:
             name=name,
         )
         return org_unit
+
+    def load_fixture_with_jinja_template(self, path_to_fixtures: str, fixture_name: str, context: dict = {}) -> str:
+        # Loads a fixture with Jinja2 templating support - context contains all variables
+        env = Environment(loader=FileSystemLoader(path_to_fixtures))
+        template = env.get_template(fixture_name)
+        return template.render(context)
 
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):

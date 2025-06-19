@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,12 +9,16 @@ import {
 } from 'bluesquare-components';
 import classnames from 'classnames';
 import { FormikProvider, useFormik } from 'formik';
-import React, { FunctionComponent, useCallback } from 'react';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_SUPPLY_CHAIN_READ,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import { baseUrls } from '../../../../constants/urls';
 import { PREALERT, VAR, VRF } from '../constants';
 import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
@@ -183,20 +188,33 @@ export const VaccineSupplyChainDetails: FunctionComponent = () => {
                                 items={values.arrival_reports}
                             />
                         )}
-                        <Grid container spacing={2} justifyContent="flex-end">
-                            <Box style={{ display: 'inline-flex' }} mr={3}>
-                                <VaccineSupplyChainConfirmButtons
-                                    className={classes.button}
-                                    tab={tab}
-                                    onSubmitTab={() => handleSubmit()}
-                                    onSubmitAll={() => handleSubmit(true)}
-                                    onCancel={onCancel}
-                                    allowSaveTab={allowSaveTab}
-                                    allowSaveAll={allowSaveAll}
-                                    showSaveAllButton={Boolean(values?.vrf?.id)}
-                                />
-                            </Box>
-                        </Grid>
+                        <DisplayIfUserHasPerm
+                            permissions={[
+                                POLIO_SUPPLY_CHAIN_WRITE,
+                                POLIO_SUPPLY_CHAIN_READ,
+                            ]}
+                        >
+                            <Grid
+                                container
+                                spacing={2}
+                                justifyContent="flex-end"
+                            >
+                                <Box style={{ display: 'inline-flex' }} mr={3}>
+                                    <VaccineSupplyChainConfirmButtons
+                                        className={classes.button}
+                                        tab={tab}
+                                        onSubmitTab={() => handleSubmit()}
+                                        onSubmitAll={() => handleSubmit(true)}
+                                        onCancel={onCancel}
+                                        allowSaveTab={allowSaveTab}
+                                        allowSaveAll={allowSaveAll}
+                                        showSaveAllButton={Boolean(
+                                            values?.vrf?.id,
+                                        )}
+                                    />
+                                </Box>
+                            </Grid>
+                        </DisplayIfUserHasPerm>
                     </>
                 )}
             </Box>

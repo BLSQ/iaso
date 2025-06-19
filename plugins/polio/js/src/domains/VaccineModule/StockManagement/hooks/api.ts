@@ -30,6 +30,7 @@ import {
     StockManagementListParams,
     StockVariationParams,
 } from '../types';
+import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
 
 const defaults = {
     order: 'country',
@@ -445,7 +446,12 @@ const createEditFormA = async (body: any) => {
     return postRequest2(requestBody);
 };
 
-export const useSaveFormA = () => {
+export const useSaveFormA = (): UseMutationResult<
+    FormAFormValues,
+    any,
+    any,
+    any
+> => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
         invalidateQueryKey: [

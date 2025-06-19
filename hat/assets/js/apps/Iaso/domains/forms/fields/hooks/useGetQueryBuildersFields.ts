@@ -113,11 +113,12 @@ export const getQueryBuildersFields = (
                         formDescriptor,
                     );
                     if (descriptor?.children) {
-                        const listValues =
-                            descriptor.children.map(child => ({
-                                value: child.name,
-                                title: formatLabel(child),
-                            })) || [];
+                        const listValues = Object.fromEntries(
+                            (descriptor.children || []).map(child => [
+                                child.name,
+                                formatLabel(child),
+                            ]),
+                        );
                         // @ts-ignore
                         fields[fieldCopy.fieldKey].fieldSettings = {
                             listValues,

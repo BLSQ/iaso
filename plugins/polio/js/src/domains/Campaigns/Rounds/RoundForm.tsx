@@ -49,19 +49,25 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const handleOnHoldUpdate = useCallback(
         (_, value: boolean) => {
             if (value) {
+                // Set current round and all subsequent rounds on hold
                 rounds.forEach((rnd, i) => {
                     if (rnd.number >= roundNumber) {
                         setFieldValue(`rounds[${i}].on_hold`, true);
                         setFieldTouched(`rounds[${i}].on_hold`, true);
                     }
                 });
+                // If value is false and we're updating the last round, we don't open the modal and just update the round
+            } else if (roundIndex === rounds.length - 1) {
+                setFieldValue(`rounds[${roundIndex}].on_hold`, false);
+                setFieldTouched(`rounds[${roundIndex}].on_hold`, true);
+                // if value is false, user needs to decide whether to update the current round or all subsequent rounds so we open the modal
             } else {
                 setOpenOnHoldModal(true);
             }
         },
-        [roundNumber, setFieldValue, setFieldTouched, rounds],
+        [roundNumber, setFieldValue, setFieldTouched, rounds, roundIndex],
     );
-
+    // Set on_hold to false to the current round and all rounds after it
     const onChangeAllRounds = useCallback(() => {
         rounds.forEach((rnd, i) => {
             if (rnd.number >= roundNumber) {
@@ -71,6 +77,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         });
     }, [roundNumber, setFieldValue, setFieldTouched, rounds]);
 
+    // Set on_hold to false for the current round but not the following rounds
     const onChangeCurrentRoundOnly = useCallback(() => {
         setFieldValue(`rounds[${roundIndex}].on_hold`, false);
     }, [roundIndex, setFieldValue]);

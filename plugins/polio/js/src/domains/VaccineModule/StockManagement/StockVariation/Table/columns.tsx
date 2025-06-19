@@ -41,16 +41,27 @@ export const useFormATableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
+                Cell: settings => {
+                    const campaign = settings.row.original.campaign;
+                    const altCampaign =
+                        settings.row.original.alternative_campaign;
+                    if (campaign) return campaign;
+                    if (altCampaign) return altCampaign;
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.round),
                 accessor: 'round_number',
                 id: 'round__number',
                 sortable: true,
-                Cell: settings =>
-                    settings.row.original.round_number
-                        ? settings.row.original.round_number
-                        : textPlaceholder,
+                Cell: settings => {
+                    const value = settings.row.original.round_number;
+                    if (Number.isSafeInteger(value)) {
+                        return value;
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.form_a_reception_date),

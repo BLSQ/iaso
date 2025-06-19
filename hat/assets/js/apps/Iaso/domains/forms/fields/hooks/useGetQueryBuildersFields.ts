@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { QueryBuilderFields, useSafeIntl } from 'bluesquare-components';
 
 import { findDescriptorInChildren } from '../../../../utils';
@@ -149,11 +150,15 @@ export const useGetQueryBuildersFields = (
     configFields: Field[] = iasoFields,
 ): QueryBuilderFields => {
     const { formatMessage } = useSafeIntl();
-    return getQueryBuildersFields(
-        formatMessage,
-        formDescriptors,
-        possibleFields,
-        configFields,
+    return useMemo(
+        () =>
+            getQueryBuildersFields(
+                formatMessage,
+                formDescriptors,
+                possibleFields,
+                configFields,
+            ),
+        [formatMessage, formDescriptors, possibleFields, configFields],
     );
 };
 
@@ -163,6 +168,7 @@ export const useGetQueryBuilderFieldsForAllForms = (
 ): QueryBuilderFields => {
     const { formatMessage } = useSafeIntl();
     if (!allPossibleFields || !formDescriptors) return {};
+    const reducedFields: QueryBuilderFields = {};
     return allPossibleFields.reduce(
         (fields, { form_id, name, possibleFields }) => ({
             ...fields,
@@ -181,6 +187,6 @@ export const useGetQueryBuilderFieldsForAllForms = (
                 ),
             },
         }),
-        {} as QueryBuilderFields,
+        reducedFields,
     );
 };

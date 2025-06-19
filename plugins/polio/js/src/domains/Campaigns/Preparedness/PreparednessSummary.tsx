@@ -1,10 +1,10 @@
+import React, { FunctionComponent } from 'react';
 import { Grid, Typography } from '@mui/material';
-import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-
 import { isEmpty } from 'lodash';
 import MESSAGES from '../../../constants/messages';
+import { RefreshPreparednessResponse } from '../../../constants/types';
 
 const formatIndicator = indicatorValue => {
     if (indicatorValue === null || indicatorValue === undefined)
@@ -15,11 +15,13 @@ const formatIndicator = indicatorValue => {
     return indicatorValue;
 };
 
-export const PreparednessSummary = ({ preparedness }) => {
+type Props = { preparedness?: RefreshPreparednessResponse };
+
+export const PreparednessSummary: FunctionComponent<Props> = ({
+    preparedness,
+}) => {
     const { formatMessage } = useSafeIntl();
     if (!preparedness || isEmpty(preparedness)) return null;
-    if (preparedness.status === 'error')
-        return <Typography>Error: {preparedness.details}</Typography>;
 
     const createdAt = moment(preparedness.created_at);
     return (
@@ -89,17 +91,6 @@ export const PreparednessSummary = ({ preparedness }) => {
                     {preparedness.title}. {formatMessage(MESSAGES.refreshedAt)}:{' '}
                     {createdAt.format('LTS')} ({createdAt.fromNow()})
                 </Typography>
-                {preparedness.warnings && preparedness.warnings.length > 0 && (
-                    <div>
-                        <Typography variant="caption">
-                            <b title={preparedness.warnings.join('\n')}>
-                                {formatMessage(
-                                    MESSAGES.preparednessSomeWarningsDuringTheParsing,
-                                )}
-                            </b>                            
-                        </Typography>
-                    </div>
-                )}
             </Typography>
         </>
     );

@@ -51,7 +51,6 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
         : '-';
     const isNewOrgunit = params.orgUnitId === '0';
     const { account } = useCurrentUser();
-
     return (
         <>
             {!orgUnit && <LoadingSpinner absolute />}
@@ -64,6 +63,14 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                             value={
                                 orgUnit.source ??
                                 account.default_version?.data_source.name
+                            }
+                            dataTestId="source"
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.sourceVersion)}
+                            value={
+                                orgUnit.version ??
+                                account.default_version?.number
                             }
                             dataTestId="source"
                         />

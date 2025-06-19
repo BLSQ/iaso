@@ -231,7 +231,9 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
 
 
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
-    campaign = serializers.CharField(source="campaign.obr_name")
+    campaign = serializers.CharField(source="campaign.obr_name", required=False)
+    # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
@@ -251,7 +253,15 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "round",
             "round_number",
             "can_edit",
+            "alternative_campaign",
         ]
+
+    def validate(self, data):
+        # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
+        if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
+            raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+        validated_data = super().validate(data)
+        return validated_data
 
     def get_round_number(self, obj):
         return obj.round.number if obj.round else None
@@ -289,8 +299,23 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
+    def validate(self, data):
+        # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
+        if data.get("campaign", None) is None and data.get("non_obr_name", None) is None:
+            raise serializers.ValidationError(
+                {"error": "At least one of 'campaign' or 'alternative campaign' must be provided"}
+            )
+        validated_data = super().validate(data)
+        return validated_data
+
+
+class OutgoingStockMovementPatchSerializer(OutgoingStockMovementSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name", required=False, allow_null=True)
+    alternative_campaign = serializers.CharField(source="non_obr_name", required=False, allow_blank=True)
+
+
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
-    serializer_class = OutgoingStockMovementSerializer
     model_class = OutgoingStockMovement
     permission_classes = [
         lambda: VaccineStockPermission(
@@ -306,6 +331,11 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         "report_date",
         "form_a_reception_date",
     ]
+
+    def get_serializer_class(self):
+        if self.action == "partial_update":
+            return OutgoingStockMovementPatchSerializer
+        return OutgoingStockMovementStrictSerializer
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
@@ -327,7 +357,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         # When Form A is created, find if there is a matching earmarked stock
         # and create a new earmarked stock of type USED with the same values
         if response.status_code == 201:
-            movement = OutgoingStockMovement.objects.get(id=response.data["id"])
+            movement = OutgoingStockMovement.objects.filter(id=response.data["id"]).first()
             if movement and movement.round and movement.vaccine_stock:
                 total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
 

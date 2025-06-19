@@ -1,6 +1,6 @@
 import { Tab, Box } from '@mui/material';
 import { useFormikContext } from 'formik';
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 
@@ -8,11 +8,12 @@ import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
 
 import { PreparednessConfig } from './PreparednessConfig';
+import { PolioCampaignValues } from '../../../constants/types';
 
-export const PreparednessForm = () => {
-    const classes = useStyles();
+export const PreparednessForm: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values } = useFormikContext();
+    const { values } = useFormikContext<PolioCampaignValues>();
     const { rounds = [] } = values;
     const sortedRounds = [...rounds].sort((a, b) => a.number - b.number);
 
@@ -20,9 +21,9 @@ export const PreparednessForm = () => {
         ? `${sortedRounds[0]?.number}`
         : '1';
 
-    const [currentTab, setCurrentTab] = useState(defaultRoundNumber);
+    const [currentTab, setCurrentTab] = useState<string>(defaultRoundNumber);
 
-    const handleChangeTab = (event, newValue) => {
+    const handleChangeTab = (_: any, newValue: string) => {
         setCurrentTab(newValue);
     };
 
@@ -48,7 +49,7 @@ export const PreparednessForm = () => {
                         className={classes.tabPanel}
                     >
                         <PreparednessConfig
-                            roundNumber={round.number}
+                            round={round}
                             campaignName={values.obr_name}
                         />
                     </TabPanel>

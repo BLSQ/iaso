@@ -41,11 +41,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         values,
         values: { rounds = [] },
         setFieldValue,
-        setValues,
-        touched,
         setFieldTouched,
-        initialValues,
-        setFormikState,
     } = useFormikContext<CampaignFormValues>();
     const isCampaignOnHold = values.on_hold;
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);

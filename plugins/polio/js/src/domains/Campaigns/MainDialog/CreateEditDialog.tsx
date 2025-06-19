@@ -174,10 +174,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const [selectedTab, setSelectedTab] = useState(0);
 
     const CurrentForm = tabs[selectedTab].form;
-    console.log('values', formik.values);
-    console.log('Initial', formik.initialValues);
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
-    console.log('isFormChanged', isFormChanged);
 
     const saveDisabled =
         !isFormChanged ||

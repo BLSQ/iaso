@@ -306,7 +306,7 @@ def enketo_form_list(request):
         # pass the app_id so it can be accessed anonymously from Enketo
         project = i.form.projects.first()
         app_id = project.app_id if project else ""
-        url = f"/api/forms/{i.form_id}/manifest/"
+        url = f"/api/forms/{i.form_id}/manifest_enketo/"
         secret = enketo_settings("ENKETO_SIGNING_SECRET")
         url_with_secret = generate_signed_url(path=url, secret=secret, extra_params={APP_ID: app_id})
         manifest_url = public_url_for_enketo(request, url_with_secret)

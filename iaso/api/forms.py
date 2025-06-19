@@ -15,15 +15,16 @@ from rest_framework.request import Request
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from hat.menupermissions import models as permission
-from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
-from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
+from .serializers import AppIdSerializer
 
 
 class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
@@ -41,15 +42,6 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
             .filter(id=obj.id)
             .exists()
         )
-
-
-class HasFormPermissionOrSignedURL(HasFormPermission):
-    def has_permission(self, request, view):
-        if super().has_permission(request, view):
-            return True
-
-        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
-        return verify_signed_url(request, enketo_secret)
 
 
 class FormPredefinedFilterSerializer(serializers.ModelSerializer):
@@ -431,42 +423,79 @@ class FormsViewSet(ModelViewSet):
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
 
-    @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
+    @action(detail=True, methods=["get"])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
-        This is used for the mobile app and Enketo to fetch the list of file attached to the Form
+        This is used for the mobile app to fetch the list of files attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
         form = self.get_object()
-        attachments = form.attachments.all()
-        media_files = []
-        for attachment in attachments:
-            attachment_file_url: str = attachment.file.url
-            if not attachment_file_url.startswith("http"):
-                # Needed for local dev
-                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        return generate_manifest_for_form(form, request)
 
-            media_files.append(
-                f"""<mediaFile>
-                        <filename>{escape(attachment.name)}</filename>
-                        <hash>md5:{attachment.md5}</hash>
-                        <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-                    </mediaFile>"""
-            )
+    @action(detail=True, methods=["get"], permission_classes=[ReadOnly])
+    def manifest_enketo(self, request, pk, *args, **kwargs):
+        """Returns a xml manifest file in the openrosa format for the Form
 
-        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+        This is used by enketo to fetch the list of files attached to the Form
+        see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+        """
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        if verify_signed_url(request, enketo_secret):
+            app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=True)
+            queryset = Form.objects.filter(
+                projects__app_id=app_id
+            )  # Not using the default queryset because there's no auth
+            form = get_object_or_404(queryset, pk=pk)
+            return generate_manifest_for_form(form, request)
+
         return HttpResponse(
-            status=status.HTTP_200_OK,
+            status=status.HTTP_400_BAD_REQUEST,
             content_type="text/xml",
             headers={
                 "X-OpenRosa-Version": "1.0",
             },
-            content=f"""<?xml version="1.0" encoding="UTF-8"?>
-                        <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-                            {nl.join(media_files)}
-                        </manifest>""",
+            content="<error>Invalid URL signature</error>",
         )
+
+
+def generate_manifest_for_form(form: Form, request: Request) -> HttpResponse:
+    attachments = form.attachments.all()
+    media_files = []
+    for attachment in attachments:
+        attachment_file_url: str = attachment.file.url
+        if not attachment_file_url.startswith("http"):
+            # Needed for local dev
+            attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        media_files.append(generate_manifest_media_file(attachment, attachment_file_url))
+
+    manifest = generate_manifest_structure(media_files)
+    return HttpResponse(
+        status=status.HTTP_200_OK,
+        content_type="text/xml",
+        headers={
+            "X-OpenRosa-Version": "1.0",
+        },
+        content=manifest,
+    )
+
+
+def generate_manifest_media_file(attachment: FormAttachment, url: str) -> str:
+    return f"""<mediaFile>
+        <filename>{escape(attachment.name)}</filename>
+        <hash>md5:{attachment.md5}</hash>
+        <downloadUrl>{escape(url)}</downloadUrl>
+    </mediaFile>"""
+
+
+def generate_manifest_structure(content: list[str]) -> str:
+    nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+    return (
+        f"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+    {nl.join(content)}
+</manifest>""",
+    )
 
 
 class MobileFormViewSet(FormsViewSet):

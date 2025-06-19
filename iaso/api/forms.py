@@ -24,7 +24,7 @@ from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired,
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
-from .query_params import APP_ID
+from .serializers import AppIdSerializer
 
 
 class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
@@ -442,7 +442,7 @@ class FormsViewSet(ModelViewSet):
         """
         enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
         if verify_signed_url(request, enketo_secret):
-            app_id = request.query_params.get(APP_ID, None)
+            app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=True)
             queryset = Form.objects.filter(
                 projects__app_id=app_id
             )  # Not using the default queryset because there's no auth

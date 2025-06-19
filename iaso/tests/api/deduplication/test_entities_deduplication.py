@@ -842,3 +842,105 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_analyze.data["status"], "SUCCESS")
         # Optionally: check that results exist
         # (You can add more detailed assertions if needed)
+
+    def test_analyzes_smallint_overflow_prevention(self):
+        """Test that the deduplication algorithm handles edge cases that could cause smallint overflow."""
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        orgunit = self.default_orgunit
+
+        # Create entities with extreme values that could cause overflow
+        # Instance 1 - with very large numbers and edge cases
+        instance_json_1 = {
+            "Prenom": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+            "Nom": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+            "age__int__": "999999999",  # Very large integer
+            "height_cm__decimal__": "999999999.999999",  # Very large decimal
+            "weight_kgs__double__": "999999999.999999",  # Very large double
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_1", instance_json_1, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 2 - with zero values that could cause division by zero
+        instance_json_2 = {
+            "Prenom": "different_text_field",
+            "Nom": "different_text_field",
+            "age__int__": "0",  # Zero value
+            "height_cm__decimal__": "0.0",  # Zero decimal
+            "weight_kgs__double__": "0.0",  # Zero double
+            "transfer_from_tsfp__bool__": "false",
+            "something_else": "different_text_field",
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_2", instance_json_2, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 3 - with NULL-like values
+        instance_json_3 = {
+            "Prenom": "",  # Empty string
+            "Nom": "",  # Empty string
+            "age__int__": None,  # NULL value instead of empty string
+            "height_cm__decimal__": None,  # NULL value instead of empty string
+            "weight_kgs__double__": None,  # NULL value instead of empty string
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "",  # Empty text field
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_3", instance_json_3, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Test with all available field types to ensure no smallint overflow
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": [
+                    "Prenom",
+                    "Nom",
+                    "age__int__",
+                ],
+                "algorithm": "levenshtein",
+                "parameters": [
+                    {"name": "levenshtein_max_distance", "value": 10},  # Higher distance to test edge cases
+                    {"name": "above_score_display", "value": 0},  # Show all results
+                ],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        # Run the task service to process the analyze
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        # Check that the analyze completed successfully without smallint overflow
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+
+        # Get the duplicates and verify scores are within valid range
+        response_duplicates = self.client.get("/api/entityduplicates/")
+        self.assertEqual(response_duplicates.status_code, 200)
+
+        # Verify that all similarity scores are within valid smallint range (0-100)
+        for duplicate in response_duplicates.data["results"]:
+            similarity_score = duplicate["similarity"]
+            self.assertIsInstance(similarity_score, (int, float))
+            self.assertGreaterEqual(similarity_score, 0)
+            self.assertLessEqual(similarity_score, 100)
+
+        # Verify that the database stores valid smallint values
+        from iaso.models.deduplication import EntityDuplicate
+
+        db_duplicates = EntityDuplicate.objects.filter(analyze_id=analyze_id)
+        for duplicate in db_duplicates:
+            if duplicate.similarity_score is not None:
+                self.assertGreaterEqual(duplicate.similarity_score, -32768)
+                self.assertLessEqual(duplicate.similarity_score, 32767)

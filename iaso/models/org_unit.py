@@ -319,6 +319,7 @@ class OrgUnit(TreeModel):
     default_image = models.ForeignKey(
         "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
     )
+    code = models.TextField(blank=True, db_index=True)  # DHIS2 code
 
     class Meta:
         indexes = [
@@ -328,6 +329,13 @@ class OrgUnit(TreeModel):
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
             models.Index(fields=["org_unit_type", "version"]),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code", "version"],
+                condition=~Q(code=""),
+                name="unique_code_per_source_version_if_not_blank",
+            ),
         ]
 
     def __str__(self) -> str:

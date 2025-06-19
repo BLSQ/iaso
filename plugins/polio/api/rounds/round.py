@@ -110,10 +110,13 @@ class RoundSerializer(serializers.ModelSerializer):
                 datelog_serializer.is_valid(raise_exception=True)
                 datelog_instance = datelog_serializer.save()
                 instance.datelogs.add(datelog_instance)
-
+        preparedness_should_update = (
+            instance.preparedness_spreadsheet_url != validated_data["preparedness_spreadsheet_url"]
+        )
         round = super().update(instance, validated_data)
-        # update the preparedness cache in case we touched the spreadsheet url
-        set_preparedness_cache_for_round(round)
+        # update the preparedness cache if we touched the spreadsheet url
+        if preparedness_should_update:
+            set_preparedness_cache_for_round(round)
         return round
 
 

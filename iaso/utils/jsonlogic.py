@@ -4,7 +4,7 @@ import operator
 
 from typing import Any, Callable, Dict
 
-from django.db.models import Exists, OuterRef, Q, Transform, Case, When, Value, BooleanField, Sum, IntegerField
+from django.db.models import Exists, OuterRef, Q, Transform, Case, When, Sum, IntegerField
 from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 
 
@@ -165,7 +165,7 @@ def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "",
         key = "and" if "and" in jsonlogic else "or" if "or" in jsonlogic else "!"
         operation = operator.and_ if key == "and" else operator.or_ if key == "or" else operator.not_
         # This will hold all the annotations, which are used to compose the HAVING statement.
-        allAnnotations: dict[str, Case] = {}
+        all_annotations: dict[str, Case] = {}
         # Used to construct the HAVING statement, this is delegated to the caller.
         annotation_query = Q()
         for lookup in jsonlogic[key]:
@@ -174,14 +174,15 @@ def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "",
                 # If we have a sub query, we need to add it to the annotation query.
                 annotation_query = operation(annotation_query, annotation_sub_query)
             if annotations:
-                allAnnotations.update(annotations)
+                all_annotations.update(annotations)
+                # If annotation has only one key, it means that it is a nested query
                 if (len(annotations.keys()) == 1):
                     akey= next(iter(annotations))
                     annotation_query = operation(annotation_query, Q(**{f"{akey}__gte": 1}))
 
-        return allAnnotations, annotation_query            
-
-    elif len(jsonlogic) == 1:
+        return all_annotations, annotation_query  
+              
+    if len(jsonlogic) == 1:
         # binary operator # >= and such
         op = list(jsonlogic.keys())[0] 
         # params [{"var":"22"}, 700]
@@ -207,32 +208,6 @@ def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "",
         }
 
         return annotation, None
-
-        # TODO use OR instead of AND in where clause.
-        # TODO Add Having statement
-        # SQL: 
-    #     HAVING
-    # SUM(CASE WHEN metric_type = 22 AND value > 100 THEN 1 ELSE 0 END) > 0
-    # AND SUM(CASE WHEN metric_type = 23 AND value < 50 THEN 1 ELSE 0 END) > 0
-    # OR  SUM(CASE WHEN metric_type = 24 AND value = 75 THEN 1 ELSE 0 END) > 0
-    # Translates to Q()
-    #.annotate(
-    #     cond_22=Count(Case(
-    #         When(metric_type=22, value__gt=100, then=1),
-    #         output_field=IntegerField()
-    #     )),
-    #     cond_23=Count(Case(
-    #         When(metric_type=23, value__lt=50, then=1),
-    #         output_field=IntegerField()
-    #     )),
-    #     cond_24=Count(Case(
-    #         When(metric_type=24, value=75, then=1),
-    #         output_field=IntegerField()
-    #     )),
-    # )
-    # .filter(
-    #     (Q(cond_22__gt=0) & Q(cond_23__gt=0)) | Q(cond_24__gt=0)
-    # )
     return
 
 def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:

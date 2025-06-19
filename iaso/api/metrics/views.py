@@ -35,12 +35,12 @@ class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         json_filter = request.query_params.get("json_filter")
         if not json_filter:
-            return queryset.values('org_unit_id').distinct().values_list('org_unit_id', flat=True)
+            return queryset.values("org_unit_id").distinct().values_list("org_unit_id", flat=True)
 
         annotations, filters = annotation_jsonlogic_to_q(json.loads(json_filter), "metric_type", "value")
-        filteredOrgUnitIds = queryset.values('org_unit_id')\
+        filteredOrgUnitIds = queryset.values("org_unit_id")\
             .annotate(**annotations).filter(filters)\
-            .values_list('org_unit_id', flat=True)
+            .values_list("org_unit_id", flat=True)
 
         # rows = queryset.filter(org_unit_id__in=filteredOrgUnitIds)
         return filteredOrgUnitIds

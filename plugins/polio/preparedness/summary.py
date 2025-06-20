@@ -99,13 +99,15 @@ def find_snapshot_for_date(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
     return ssi
 
 
-def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int):
+def score_for_x_day_before(
+    ssi_for_campaign, ref_date: date, n_day: int, obr_name: str, round_number: int, country_id: int
+):
     day = ref_date - timedelta(days=n_day)
     ssi = find_snapshot_for_date(ssi_for_campaign, ref_date, n_day, obr_name, round_number)
     if ssi is None:
         return None, day, None
     try:
-        preparedness = get_preparedness(ssi.cached_spreadsheet)
+        preparedness = get_preparedness(ssi.cached_spreadsheet, country_id)
         summary = preparedness_summary(preparedness)
         score = summary["overall_status_score"]
     except Exception:
@@ -113,13 +115,15 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int, obr_nam
     return ssi.created_at, day, score
 
 
-def history_for_campaign(ssi_qs, round: Round, campaign: Campaign):
+def history_for_campaign(ssi_qs, round: Round, campaign: Campaign, country_id: int):
     ref_date = round.started_at
     if not ref_date:
         return {"error": f"Please configure a start date for the round {round}"}
     r = []
     for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day, campaign.obr_name, round.number)
+        sync_time, day, score = score_for_x_day_before(
+            ssi_qs, ref_date, n_day, campaign.obr_name, round.number, country_id
+        )
         r.append(
             {
                 "days_before": n_day,
@@ -147,6 +151,7 @@ def _make_prep(c: Campaign, round: Round):
         "round_start": round.started_at,
         "round_end": round.ended_at,
     }
+    country = c.country
     try:
         spread_id = extract_id_from_url(url)
         ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id).order_by("created_at")
@@ -158,12 +163,12 @@ def _make_prep(c: Campaign, round: Round):
             return campaign_prep
         campaign_prep["date"] = last_ssi.created_at
         cs = last_ssi.cached_spreadsheet
-        last_p = get_preparedness(cs)
+        last_p = get_preparedness(cs, country.id)
         campaign_prep.update(preparedness_summary(last_p))
         if round.number != last_p["national"]["round"]:
             logger.info(f"Round mismatch on {c} {round}")
 
-        campaign_prep["history"] = history_for_campaign(ssi_qs, round, c)
+        campaign_prep["history"] = history_for_campaign(ssi_qs, round, c, country.id)
     except Exception as e:  # FIXME: too broad Exception
         campaign_prep["status"] = "error"
         campaign_prep["details"] = str(e)

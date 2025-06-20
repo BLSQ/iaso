@@ -8,6 +8,7 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
+from plugins.polio.preparedness.spreadsheet_manager import TEMPLATE_VERSION, get_config_for_country
 
 
 logger = getLogger(__name__)
@@ -165,7 +166,7 @@ def get_national_level_preparedness(spread: CachedSpread):
     )
 
 
-def get_regional_level_preparedness(spread: CachedSpread):
+def get_regional_level_preparedness(spread: CachedSpread, ignore_list=None):
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -179,6 +180,9 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
+        if ignore_list and sheet.title.lower() in ignore_list:
+            logger.info(f"Skipping {sheet.title} as required by country configuration")
+            continue
         if sheet.is_hidden:
             continue
         # detect if we are in a Regional Spreadsheet form the title
@@ -254,7 +258,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
     return {"regions": regions, "districts": districts, "warnings": warnings}
 
 
-def get_regional_level_preparedness_v2(spread: CachedSpread):
+def get_regional_level_preparedness_v2(spread: CachedSpread, ignore_list=None):
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -267,6 +271,9 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
+        if ignore_list and sheet.title.lower() in ignore_list:
+            logger.info(f"Skipping {sheet.title} as required by country configuration")
+            continue
         if sheet.is_hidden:
             continue
         # detect if we are in a Regional Spreadsheet form the title
@@ -380,24 +387,28 @@ def get_national_level_preparedness_v2(spread: CachedSpread):
     )
 
 
-def parse_prepardness_v2(spread: CachedSpread):
+def parse_prepardness_v2(spread: CachedSpread, ignore_list=None):
     preparedness_data = {
         "national": get_national_level_preparedness_v2(spread),
-        **get_regional_level_preparedness_v2(spread),
-        "format": "v3.3",
+        **get_regional_level_preparedness_v2(spread, ignore_list),
+        "format": TEMPLATE_VERSION,
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data
 
 
-def get_preparedness(spread: CachedSpread):
+def get_preparedness(spread: CachedSpread, country_id=None):
+    ignore_list = None
+    if country_id is not None:
+        config, _ = get_config_for_country(country_id)
+        ignore_list = config["ignore_worksheets"]
     #  use New system with named range
     if "national_status_score" in spread.range_dict:
-        return parse_prepardness_v2(spread)
+        return parse_prepardness_v2(spread, ignore_list)
     # old system with hard code emplacement
     preparedness_data = {
         "national": get_national_level_preparedness(spread),
-        **get_regional_level_preparedness(spread),
+        **get_regional_level_preparedness(spread, ignore_list),
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data

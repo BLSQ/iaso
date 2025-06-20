@@ -29,13 +29,13 @@ logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3.3"
+TEMPLATE_VERSION = "v3.4"
 
 
-def get_config_for_country(config, country):
+def get_config_for_country(country_id):
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
-    if str(country.id) in config:
-        return config[str(country.id)], str(country.id)
+    if str(country_id) in config:
+        return config[str(country_id)], str(country_id)
     if TEMPLATE_VERSION not in config:
         raise Exception(f"Template config for {TEMPLATE_VERSION} not found")
     return config[TEMPLATE_VERSION], TEMPLATE_VERSION
@@ -204,8 +204,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
     except Exception as e:
         logger.exception(e)
         logger.error(f"Could not find template language for {campaign}")
-    config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
-    config_for_country, template_version = get_config_for_country(config=config, country=country)
+    config_for_country, template_version = get_config_for_country(country_id=country.id)
     spreadsheet = create_spreadsheet(campaign.obr_name, lang, config_for_country)
 
     alt_sheets, alt_regions, alt_names, alt_regions_list = setup_multilingual_sheets(config_for_country, campaign)

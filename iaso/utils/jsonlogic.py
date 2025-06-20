@@ -20,7 +20,7 @@ from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 # would have to annotate every field we are casting for.
 # Instance.objects.annotate(b=Cast(KeyTextTransform('usable_vials_physical', "json"), FloatField())).filter(b__gte=2)
 
-lookups = {
+LOOKUPS = {
     "==": "exact",
     "!=": "exact",
     ">": "gt",
@@ -83,10 +83,9 @@ def jsonlogic_to_q(
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
 
-
-    if op not in lookups.keys():
+    if op not in LOOKUPS.keys():
         raise ValueError(
-            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{LOOKUPS.keys()}"
         )
 
     field_position = 1 if op == "in" else 0
@@ -104,7 +103,7 @@ def jsonlogic_to_q(
         # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
-    lookup = lookups[op]
+    lookup = LOOKUPS[op]
 
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
@@ -194,7 +193,7 @@ def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "",
         value_field_value = next((arg for arg in params if arg != var_obj), None)
         # Create query object 
         # TODO Check for extract and field_prefix on other functions
-        lookup = lookups[op]
+        lookup = LOOKUPS[op]
         value_f = f"{value_field_name}__{lookup}"
         # Add ID filter
         id_f = f"{id_field_name}__exact"

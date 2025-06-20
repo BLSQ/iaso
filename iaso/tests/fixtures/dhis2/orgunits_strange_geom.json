@@ -12,6 +12,7 @@
             "path": "/c",
             "level": 1,
             "openingDate": "2023-05-10T00:00:00.000",
+            "code": "new-code-c",
             "geometry": {
                 "type": "MultiPolygon",
                 "coordinates": [
@@ -66,6 +67,7 @@
             "openingDate": "2023-05-10T00:00:00.000",
             "closedDate": "2023-10-30T00:00:00.000",
             "organisationUnitGroups": [],
+            "code": "new-code-a",
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
@@ -86,6 +88,7 @@
             "level": 1,
             "openingDate": "2023-05-10T00:00:00.000",
             "organisationUnitGroups": [],
+            "code": "new-code-b",
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
@@ -114,6 +117,7 @@
             "openingDate": "2023-05-10T00:00:00.000",
             "closedDate": "2023-10-30T00:00:00.000",
             "organisationUnitGroups": [],
+            "code": "new-code-d",
             "geometry": {
                 "type": "MultiPolygon",
                 "coordinates": [

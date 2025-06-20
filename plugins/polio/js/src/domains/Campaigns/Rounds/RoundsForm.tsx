@@ -59,7 +59,7 @@ export const RoundsForm: FunctionComponent = () => {
             number: roundIndex,
             started_at: null,
             ended_at: null,
-        } as Round);
+        } as unknown as Round);
         const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
         setFieldValue('rounds', sortedRounds);
         setLastRound(newRounds[sortedRounds.length - 1]);

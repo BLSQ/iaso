@@ -2485,6 +2485,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.periods.month',
         defaultMessage: 'Month',
     },
+    removeOnHoldLaterRounds: {
+        id: 'iaso.polio.label.removeOnHoldLaterRounds',
+        defaultMessage: 'Remove "on hold" for later rounds?',
+    },
 });
 
 export default MESSAGES;

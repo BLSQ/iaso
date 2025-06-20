@@ -628,6 +628,7 @@
     "iaso.polio.label.removeLastLink": "Remove last link",
     "iaso.polio.label.removeLastShipment": "Remove last shipment",
     "iaso.polio.label.removeLastVaccine": "Remove last vaccine",
+    "iaso.polio.label.removeOnHoldLaterRounds": "Remove 'on hold' for later rounds?",
     "iaso.polio.label.report_date": "Date of report",
     "iaso.polio.label.reportingDelays": "Reporting delays",
     "iaso.polio.label.reportingDistricts": "Reporting districts",

@@ -409,7 +409,7 @@ def get_preparedness(spread: CachedSpread, country_id=None):
         from plugins.polio.preparedness.spreadsheet_manager import get_config_for_country
 
         config, _ = get_config_for_country(country_id)
-        ignore_list = config["ignore_worksheets"]
+        ignore_list = config.get("ignore_worksheets", None)
     #  use New system with named range
     if "national_status_score" in spread.range_dict:
         return parse_prepardness_v2(spread, ignore_list)

@@ -726,7 +726,8 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         spreadsheet_url = attrs.get("google_sheet_url")
-        return preparedness_from_url(spreadsheet_url, force_refresh=True)
+        country_id = attrs.get("country_id")
+        return preparedness_from_url(spreadsheet_url, country_id=country_id, force_refresh=True)
 
     def to_representation(self, instance):
         return instance
@@ -897,7 +898,7 @@ class CampaignViewSet(ModelViewSet):
         serializer = CampaignTypeSerializer(campaign_types, many=True)
         return Response(serializer.data)
 
-    @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
+    @action(methods=["POST"], detail=True, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
         campaign = self.get_object()
         country = campaign.country

@@ -26,19 +26,24 @@ export const useGetPreparednessData = (
 type RefreshPreparednessArgs = {
     googleSheetUrl?: Url | null;
     campaignName?: ObrName;
+    campaignId?: UuidAsString;
 };
 
 const refreshPreparedness = ({
     googleSheetUrl,
     campaignName,
+    campaignId,
 }: RefreshPreparednessArgs): Promise<RefreshPreparednessResponse> => {
     // launch task to refresh endpoint for preparedness dashboard
-    postRequest('/api/tasks/create/refreshpreparedness/', {
+    postRequest(`/api/tasks/create/refreshpreparedness/`, {
         obr_name: campaignName,
     });
-    return postRequest('/api/polio/campaigns/preview_preparedness/', {
-        google_sheet_url: googleSheetUrl,
-    });
+    return postRequest(
+        `/api/polio/campaigns/${campaignId}/preview_preparedness/`,
+        {
+            google_sheet_url: googleSheetUrl,
+        },
+    );
 };
 
 // This retrieve data but since it contact data from an external service this is

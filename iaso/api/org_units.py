@@ -295,6 +295,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             {"title": "Type", "width": 15},
             {"title": "Latitude", "width": 15},
             {"title": "Longitude", "width": 15},
+            {"title": "Code", "width": 15},
             {"title": "Date d'ouverture", "width": 20},
             {"title": "Date de fermeture", "width": 20},
             {"title": "Date de création", "width": 20},
@@ -346,6 +347,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             "instances_count",
             "opening_date",
             "closed_date",
+            "code",
         )
 
         user_account_name = profile.account.name if profile else ""
@@ -368,12 +370,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 for field_name in parent_source_ref_name
             ]
 
+            code = org_unit.get("code") if org_unit.get("code") != "" else None
+
             org_unit_values = [
                 org_unit.get("id"),
                 org_unit.get("name"),
                 org_unit.get("org_unit_type__name"),
                 location.y if location else None,
                 location.x if location else None,
+                code,
                 (
                     org_unit.get("opening_date").strftime("%Y-%m-%d")
                     if org_unit.get("opening_date") is not None

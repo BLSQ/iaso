@@ -696,7 +696,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
         read_only_fields = fields
 
 
-def preparedness_from_url(spreadsheet_url, force_refresh=False):
+def preparedness_from_url(spreadsheet_url, country_id, force_refresh=False):
     try:
         if force_refresh:
             ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
@@ -707,7 +707,7 @@ def preparedness_from_url(spreadsheet_url, force_refresh=False):
 
         cs = ssi.cached_spreadsheet
         r = {}
-        preparedness_data = get_preparedness(cs)
+        preparedness_data = get_preparedness(cs, country_id)
         r.update(preparedness_data)
         r["title"] = cs.title
         r["created_at"] = ssi.created_at
@@ -722,10 +722,12 @@ def preparedness_from_url(spreadsheet_url, force_refresh=False):
 
 class PreparednessPreviewSerializer(serializers.Serializer):
     google_sheet_url = serializers.URLField()
+    country_id = serializers.IntegerField()
 
     def validate(self, attrs):
         spreadsheet_url = attrs.get("google_sheet_url")
-        return preparedness_from_url(spreadsheet_url, force_refresh=True)
+        country_id = attrs.get("country_id")
+        return preparedness_from_url(spreadsheet_url, country_id=country_id, force_refresh=True)
 
     def to_representation(self, instance):
         return instance
@@ -740,7 +742,7 @@ def get_current_preparedness(campaign, roundNumber):
     if not round.preparedness_spreadsheet_url:
         return {}
     spreadsheet_url = round.preparedness_spreadsheet_url
-    return preparedness_from_url(spreadsheet_url)
+    return preparedness_from_url(spreadsheet_url, campaign.country.id)
 
 
 class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
@@ -896,9 +898,14 @@ class CampaignViewSet(ModelViewSet):
         serializer = CampaignTypeSerializer(campaign_types, many=True)
         return Response(serializer.data)
 
-    @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
+    @action(methods=["POST"], detail=True, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
-        serializer = PreparednessPreviewSerializer(data=request.data)
+        campaign = self.get_object()
+        country = campaign.country
+        # Create a mutable copy of the data
+        data = request.data.copy()
+        data["country_id"] = country.id
+        serializer = PreparednessPreviewSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 

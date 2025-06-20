@@ -45,6 +45,9 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     } = useFormikContext<CampaignFormValues>();
     const isCampaignOnHold = values.on_hold;
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
+    const isEarlierRoundOnHold = Boolean(
+        rounds.find(r => r.number < roundNumber && r.on_hold),
+    );
     const [openOnHoldModal, setOpenOnHoldModal] = useState<boolean>(false);
     const handleOnHoldUpdate = useCallback(
         (_, value: boolean) => {
@@ -120,7 +123,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             label={formatMessage(MESSAGES.onHoldRound)}
                             name={`rounds[${roundIndex}].on_hold`}
                             component={BooleanInput}
-                            disabled={isCampaignOnHold}
+                            disabled={isCampaignOnHold || isEarlierRoundOnHold}
                             onChange={handleOnHoldUpdate}
                         />
                     </Box>

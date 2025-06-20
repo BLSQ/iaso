@@ -1,5 +1,6 @@
+import logging
+
 from enum import Enum
-from logging import getLogger
 from typing import Any, Dict, Optional
 
 from gspread.utils import absolute_range_name, rowcol_to_a1
@@ -8,10 +9,9 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
-from plugins.polio.preparedness.spreadsheet_manager import TEMPLATE_VERSION, get_config_for_country
 
 
-logger = getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def parse_value(value: str):
@@ -388,6 +388,10 @@ def get_national_level_preparedness_v2(spread: CachedSpread):
 
 
 def parse_prepardness_v2(spread: CachedSpread, ignore_list=None):
+    # Import inside function to avoid circular import:
+    # models/__init__.py -> models/base.py -> parser.py -> spreadsheet_manager.py -> models
+    from plugins.polio.preparedness.spreadsheet_manager import TEMPLATE_VERSION
+
     preparedness_data = {
         "national": get_national_level_preparedness_v2(spread),
         **get_regional_level_preparedness_v2(spread, ignore_list),
@@ -400,6 +404,10 @@ def parse_prepardness_v2(spread: CachedSpread, ignore_list=None):
 def get_preparedness(spread: CachedSpread, country_id=None):
     ignore_list = None
     if country_id is not None:
+        # Import inside function to avoid circular import:
+        # models/__init__.py -> models/base.py -> parser.py -> spreadsheet_manager.py -> models
+        from plugins.polio.preparedness.spreadsheet_manager import get_config_for_country
+
         config, _ = get_config_for_country(country_id)
         ignore_list = config["ignore_worksheets"]
     #  use New system with named range

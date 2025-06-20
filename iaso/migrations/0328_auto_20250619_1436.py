@@ -15,10 +15,13 @@ def migrate_data_forward(apps, schema_editor):
                 "select id from iaso_formversion where version_id = iaso_instance.json->>'_version' limit 1", ()
             )
         )
-    ).iterator(chunk_size=chunk_size)
+        .iterator(chunk_size=chunk_size)
+    )
 
     instance_to_update = []
     for instance in instances:
+        if not instance.annotated_form_version_id:
+            continue
         instance.form_version_id = instance.annotated_form_version_id
         instance_to_update.append(instance)
         if len(instance_to_update) > chunk_size:

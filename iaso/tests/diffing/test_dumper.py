@@ -134,13 +134,13 @@ class DumperTestCase(PyramidBaseTest):
                     "default_image": None,
                     "reference_instances": [],
                 },
-                "status": "modified",
+                "status": Differ.STATUS_MODIFIED,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": "Angola",
                         "after": "Angola new",
-                        "status": "modified",
+                        "status": Differ.STATUS_MODIFIED,
                         "distance": None,
                     }
                 ],
@@ -237,13 +237,13 @@ class DumperTestCase(PyramidBaseTest):
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": None,
-                "status": "new",
+                "status": Differ.STATUS_NEW,
                 "comparisons": [
                     {
                         "field": "name",
                         "before": None,
                         "after": "Angola",
-                        "status": "new",
+                        "status": Differ.STATUS_NEW,
                         "distance": None,
                     }
                 ],

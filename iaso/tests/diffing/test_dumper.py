@@ -76,6 +76,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
+                    "code": "",
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
@@ -104,6 +105,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
+                    "code": "",
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": {
@@ -132,6 +134,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
+                    "code": "",
                     "reference_instances": [],
                 },
                 "status": "modified",
@@ -206,6 +209,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
+                    "code": "",
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
@@ -234,6 +238,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
+                    "code": "",
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": None,

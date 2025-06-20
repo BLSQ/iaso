@@ -4,7 +4,7 @@ import operator
 
 from typing import Any, Callable, Dict
 
-from django.db.models import Exists, OuterRef, Q, Transform, Case, When, Sum, IntegerField
+from django.db.models import Exists, OuterRef, Q, Transform
 from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 
 
@@ -113,21 +113,15 @@ def jsonlogic_to_q(
         q = ~q
     return q
 
-def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "", value_field_name: str = "") -> tuple[dict[str, Sum], dict[str, list]]:
-    """This enhances the jsonlogic_to_q() method to allow filtering entities on
-    multiple criteria for same properties.
-    It will convert a JsonLogic query to a Django annotation and Q object to apply on annotations.
-    It only accept one level deep.
-
-    Exemple of usage: 
-    annotations, filters = annotation_jsonlogic_to_q(json.loads(json_filter), "metric_type", "value")
-    filteredOrgUnitIds = queryset.values('org_unit_id')
-        .annotate(**annotations).filter(filters)
-        .values_list('org_unit_id', flat=True)
-
-    :param id_field_name: the identifier field name for "var" of json logic to target
-    :value_field_name: the value field name to target
-    :jsonlogic:
+def jsonlogic_to_exists_q_clauses(
+        jsonlogic: Dict[str, Any], entities: Any, id_field_name: str, 
+        value_field_name: str, group_by_field_name: str
+        ) -> Q:
+    """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
+    This is used to filter entities based on the existence of certain conditions
+    in their related instances.
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict.
+    Example:
      "or":[
         {">=":[{"var":"23"},900]},
         {"==":[{"var":"22"},700]},
@@ -136,78 +130,60 @@ def annotation_jsonlogic_to_q(jsonlogic: Dict[str, Any], id_field_name: str= "",
             {"==":[{"var":"24"},1000]}
         ]}
     ]
-    :return: 
-    Annotations:
-    {
-        '23__gte__900': 
-            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__gte', 900))> THEN Value(1), ELSE Value(0)), 
-        '22__exact__700': 
-            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '22'), ('value__exact', 700))> THEN Value(1), ELSE Value(0)),
-        '23__lte__1500': 
-            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '23'), ('value__lte', 1500))> THEN Value(1), ELSE Value(0)),
-        '24__exact__1000': 
-            Sum(CASE WHEN <Q: (AND: ('metric_type__exact', '24'), ('value__exact', 1000))> THEN Value(1), ELSE Value(0))
-    }
-    Annotation filters: {
-    'or': [
-        <Q: (AND: {'23__gte__900': True})>,
-        <Q: (AND: {'22__exact__700': True})>,
-        {'and': [
-            <Q: (AND: {'23__lte__1500': True})>, 
-            <Q: (AND: {'24__exact__1000': True})>
-        ]}
-    ]}
+    :param entities: The Django model manager for the entities to filter. Should be a QuerySet or Manager.
+    :param id_field_name: The name of the field in the entities that corresponds to the "var" in the JsonLogic query.
+    :param value_field_name: The name of the field in the entities that corresponds to the value being compared in the JsonLogic query.
+    :param group_by_field_name: The name of the field used to group the entities in the Exists clause.
+    :return: A Django Q object.
     """
-    # TODO Bullet proof this function, it is used in the API and it is not well tested.
+    if "and" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(
+                sub_query, 
+                jsonlogic_to_exists_q_clauses(
+                    lookup, entities, id_field_name, value_field_name, group_by_field_name
+                )
+            )
+        return sub_query
+    if "or" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(
+                sub_query, 
+                jsonlogic_to_exists_q_clauses(
+                    lookup, entities, id_field_name, value_field_name, group_by_field_name
+                )
+            )
+        return sub_query
+    if "!" in jsonlogic:
+        return ~jsonlogic_to_exists_q_clauses(
+            jsonlogic["!"], entities, id_field_name, value_field_name, group_by_field_name
+        )
 
-    if "and" in jsonlogic or "or" in jsonlogic or "!" in jsonlogic:
-        key = "and" if "and" in jsonlogic else "or" if "or" in jsonlogic else "!"
-        operation = operator.and_ if key == "and" else operator.or_ if key == "or" else operator.not_
-        # This will hold all the annotations, which are used to compose the HAVING statement.
-        all_annotations: dict[str, Case] = {}
-        # Used to construct the HAVING statement, this is delegated to the caller.
-        annotation_query = Q()
-        for lookup in jsonlogic[key]:
-            annotations, annotation_sub_query = annotation_jsonlogic_to_q(lookup, id_field_name, value_field_name)
-            if annotation_sub_query:
-                # If we have a sub query, we need to add it to the annotation query.
-                annotation_query = operation(annotation_query, annotation_sub_query)
-            if annotations:
-                all_annotations.update(annotations)
-                # If annotation has only one key, it means that it is a nested query
-                if (len(annotations.keys()) == 1):
-                    akey= next(iter(annotations))
-                    annotation_query = operation(annotation_query, Q(**{f"{akey}__gte": 1}))
+    if not jsonlogic.keys():
+        return Q()
 
-        return all_annotations, annotation_query  
-              
-    if len(jsonlogic) == 1:
-        # binary operator # >= and such
-        op = list(jsonlogic.keys())[0] 
-        # params [{"var":"22"}, 700]
-        params = jsonlogic[op]
-        # {"var": "22"} => to explode
-        var_obj = next((arg for arg in params if isinstance(arg, dict) and "var" in arg), None)
-        id_field_value = var_obj["var"] # TODO verify if not None
-        # 700, all good
-        value_field_value = next((arg for arg in params if arg != var_obj), None)
-        # Create query object 
-        # TODO Check for extract and field_prefix on other functions
-        lookup = LOOKUPS[op]
-        value_f = f"{value_field_name}__{lookup}"
-        # Add ID filter
-        id_f = f"{id_field_name}__exact"
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
 
-        annotation = {
-            f"{id_field_value}__{lookup}__{value_field_value}": Sum(Case(
-                When(**{id_f: id_field_value}, **{value_f: value_field_value}, then=1),
-                default=0,
-                output_field=IntegerField()
-            ))
-        }
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    value = params[0] if op == "in" else params[1]
+    q = Q(
+        Exists(
+            entities.filter(**{
+                group_by_field_name: OuterRef(group_by_field_name),
+                id_field_name: field["var"],
+            }).filter(Q(**{f"{value_field_name}__{LOOKUPS[op]}": value}))
+        )
+    )
 
-        return annotation, None
-    return
+    if op == "!=":
+        # invert the filter
+        q = ~q
+    return q
+
 
 def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on

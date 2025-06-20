@@ -1,12 +1,10 @@
 import json
-import operator
 
-from django.db.models import Exists, OuterRef, Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 
 from iaso.models import MetricType, MetricValue
-from iaso.utils.jsonlogic import LOOKUPS, annotation_jsonlogic_to_q, jsonlogic_to_q
+from iaso.utils.jsonlogic import LOOKUPS, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
 
 from .serializers import MetricTypeSerializer, MetricValueSerializer, OrgUnitIdSerializer
 
@@ -37,67 +35,21 @@ class ValueFilterBackend(filters.BaseFilterBackend):
 class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         json_filter = request.query_params.get("json_filter")
+        group_by_field_name = "org_unit_id"
 
         if not json_filter:
-            return queryset.values("org_unit_id").distinct().values_list("org_unit_id", flat=True)
+            return queryset.values(group_by_field_name).distinct().values_list(group_by_field_name, flat=True)
 
-        annotations, filters = annotation_jsonlogic_to_q(json.loads(json_filter), "metric_type", "value")
-        print(queryset.values("org_unit_id").annotate(**annotations).filter(filters).query)
-        print(queryset.values("org_unit_id").annotate(**annotations).filter(filters).count())
-
-        filteredOrgUnitIds = (
-            queryset.values("org_unit_id").annotate(**annotations).filter(filters).values_list("org_unit_id", flat=True)
+        q = jsonlogic_to_exists_q_clauses(
+            jsonlogic=json.loads(json_filter), 
+            entities=MetricValue.objects, 
+            id_field_name="metric_type_id", 
+            value_field_name="value", 
+            group_by_field_name=group_by_field_name
         )
 
-        print("%" * 20)
-
-        q = self._jsonlogic_to_exists_q_clauses(jsonlogic=json.loads(json_filter))
-        qs = queryset.filter(q).values("org_unit_id").distinct()
-        print(qs.query)
-        print(qs.count())
-
-        print("EQUALS", sorted(list(filteredOrgUnitIds)) == sorted(list(qs.values_list("org_unit_id", flat=True))))
-
-        # rows = queryset.filter(org_unit_id__in=filteredOrgUnitIds)
-        return filteredOrgUnitIds
-
-    def _jsonlogic_to_exists_q_clauses(self, jsonlogic):
-        if "and" in jsonlogic:
-            sub_query = Q()
-            for lookup in jsonlogic["and"]:
-                sub_query = operator.and_(sub_query, self._jsonlogic_to_exists_q_clauses(lookup))
-            return sub_query
-        if "or" in jsonlogic:
-            sub_query = Q()
-            for lookup in jsonlogic["or"]:
-                sub_query = operator.or_(sub_query, self._jsonlogic_to_exists_q_clauses(lookup))
-            return sub_query
-        if "!" in jsonlogic:
-            return ~self._jsonlogic_to_exists_q_clauses(jsonlogic["!"])
-
-        if not jsonlogic.keys():
-            return Q()
-
-        op = list(jsonlogic.keys())[0]
-        params = jsonlogic[op]
-
-        field_position = 1 if op == "in" else 0
-        field = params[field_position]
-        value = params[0] if op == "in" else params[1]
-
-        q = Q(
-            Exists(
-                MetricValue.objects.filter(
-                    org_unit_id=OuterRef("org_unit_id"),
-                    metric_type_id=field["var"],
-                ).filter(Q(**{f"value__{LOOKUPS[op]}": value}))
-            )
-        )
-
-        if op == "!=":
-            # invert the filter
-            q = ~q
-        return q
+        qs = queryset.filter(q).values_list(group_by_field_name, flat=True).distinct()
+        return qs
 
 
 class MetricValueViewSet(viewsets.ModelViewSet):

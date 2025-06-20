@@ -1127,9 +1127,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
     # Mock send_mail to raise an exception when receiving invalid recipients
     def mock_send_mail(self, subject, message, from_email, recipient_list, **kwargs):
-        print("---------------------------------")
-        print("recipients list", recipient_list)
-        print("---------------------------------")
         if not all(isinstance(r, str) and "@" in r for r in recipient_list):
             raise ValueError("Invalid email recipients")
         return 1  # Django's send_mail returns the number of successfully sent messages

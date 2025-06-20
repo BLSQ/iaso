@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 
 from iaso.models import MetricType, MetricValue
-from iaso.utils.jsonlogic import jsonlogic_to_q, annotation_jsonlogic_to_q
+from iaso.utils.jsonlogic import LOOKUPS, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
 
 from .serializers import MetricTypeSerializer, MetricValueSerializer, OrgUnitIdSerializer
 
@@ -31,19 +31,26 @@ class ValueFilterBackend(filters.BaseFilterBackend):
 
         return queryset
 
+
 class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         json_filter = request.query_params.get("json_filter")
+        group_by_field_name = "org_unit_id"
+
         if not json_filter:
-            return queryset.values("org_unit_id").distinct().values_list("org_unit_id", flat=True)
+            return queryset.values(group_by_field_name).distinct().values_list(group_by_field_name, flat=True)
 
-        annotations, filters = annotation_jsonlogic_to_q(json.loads(json_filter), "metric_type", "value")
-        filteredOrgUnitIds = queryset.values("org_unit_id")\
-            .annotate(**annotations).filter(filters)\
-            .values_list("org_unit_id", flat=True)
+        q = jsonlogic_to_exists_q_clauses(
+            json.loads(json_filter), 
+            MetricValue.objects, 
+            "metric_type_id", 
+            "value", 
+            group_by_field_name
+        )
 
-        # rows = queryset.filter(org_unit_id__in=filteredOrgUnitIds)
-        return filteredOrgUnitIds
+        qs = queryset.filter(q).values_list(group_by_field_name, flat=True).distinct()
+        return qs
+
 
 class MetricValueViewSet(viewsets.ModelViewSet):
     serializer_class = MetricValueSerializer
@@ -54,11 +61,13 @@ class MetricValueViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return MetricValue.objects.filter(metric_type__account=self.request.user.iaso_profile.account)
 
+
 class MetricOrgUnitsViewSet(viewsets.ModelViewSet):
     """
     This viewset is used to retrieve the org units for a given metric type.
     It is used in the frontend to display the org units for a given metric type.
     """
+
     serializer_class = OrgUnitIdSerializer
     queryset = MetricValue.objects.all()
     filter_backends = [DjangoFilterBackend, ValueAndTypeFilterBackend]

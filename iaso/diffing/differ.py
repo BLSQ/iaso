@@ -49,7 +49,7 @@ class Differ:
         if org_unit_types:
             queryset = queryset.filter(org_unit_type__in=org_unit_types)
         if org_unit_group:
-            queryset = queryset.filter(groups=org_unit_group).distinct()  # distinct because groups is m2m
+            queryset = queryset.filter(groups=org_unit_group).distinct("id")  # distinct because groups is m2m
         return queryset
 
     def diff(

@@ -321,11 +321,11 @@ export const useDataSourceAsDropDown = () =>
 export const useCopyDataSourceVersion = () => {
     return useSnackMutation(
         ({
-             dataSourceId,
-             dataSourceVersionNumber,
-             destinationSourceId,
-             destinationVersionNumber,
-         }) => {
+            dataSourceId,
+            dataSourceVersionNumber,
+            destinationSourceId,
+            destinationVersionNumber,
+        }) => {
             return postRequest('/api/copyversion/', {
                 source_source_id: dataSourceId,
                 source_version_number: dataSourceVersionNumber,
@@ -357,11 +357,11 @@ export const useCreateSourceVersion = () => {
 };
 
 const updateSourceVersion = async ({
-                                       sourceVersionId,
-                                       description,
-                                       dataSourceId,
-                                       sourceVersionNumber,
-                                   }) => {
+    sourceVersionId,
+    description,
+    dataSourceId,
+    sourceVersionNumber,
+}) => {
     return putRequest(`/api/sourceversions/${sourceVersionId}/`, {
         id: sourceVersionId,
         description,

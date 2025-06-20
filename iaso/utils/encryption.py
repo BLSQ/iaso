@@ -1,10 +1,26 @@
+import hashlib
 import os
+
+from functools import partial
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA1
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
+from django.core.files import File
+
+
+def calculate_md5(file: File, block_size: int = 65536) -> str:
+    if not file:
+        return ""
+
+    hasher = hashlib.md5()
+
+    for buf in iter(partial(file.read, block_size), b""):
+        hasher.update(buf)
+
+    return hasher.hexdigest()
 
 
 def encrypt_file(file_path, file_name_in, file_name_out, password):

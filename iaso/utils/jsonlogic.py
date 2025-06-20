@@ -114,7 +114,7 @@ def jsonlogic_to_q(
     return q
 
 def jsonlogic_to_exists_q_clauses(
-        jsonlogic: Dict[str, Any], entities: Any, id_field_name: str, 
+        jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, 
         value_field_name: str, group_by_field_name: str
         ) -> Q:
     """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
@@ -142,7 +142,7 @@ def jsonlogic_to_exists_q_clauses(
             sub_query = operator.and_(
                 sub_query, 
                 jsonlogic_to_exists_q_clauses(
-                    lookup, entities, id_field_name, value_field_name, group_by_field_name
+                    lookup, queryset, id_field_name, value_field_name, group_by_field_name
                 )
             )
         return sub_query
@@ -152,13 +152,13 @@ def jsonlogic_to_exists_q_clauses(
             sub_query = operator.or_(
                 sub_query, 
                 jsonlogic_to_exists_q_clauses(
-                    lookup, entities, id_field_name, value_field_name, group_by_field_name
+                    lookup, queryset, id_field_name, value_field_name, group_by_field_name
                 )
             )
         return sub_query
     if "!" in jsonlogic:
         return ~jsonlogic_to_exists_q_clauses(
-            jsonlogic["!"], entities, id_field_name, value_field_name, group_by_field_name
+            jsonlogic["!"], queryset, id_field_name, value_field_name, group_by_field_name
         )
 
     if not jsonlogic.keys():
@@ -172,7 +172,7 @@ def jsonlogic_to_exists_q_clauses(
     value = params[0] if op == "in" else params[1]
     q = Q(
         Exists(
-            entities.filter(**{
+            queryset.filter(**{
                 group_by_field_name: OuterRef(group_by_field_name),
                 id_field_name: field["var"],
             }).filter(Q(**{f"{value_field_name}__{LOOKUPS[op]}": value}))

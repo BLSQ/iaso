@@ -41,11 +41,11 @@ class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
             return queryset.values(group_by_field_name).distinct().values_list(group_by_field_name, flat=True)
 
         q = jsonlogic_to_exists_q_clauses(
-            jsonlogic=json.loads(json_filter), 
-            entities=MetricValue.objects, 
-            id_field_name="metric_type_id", 
-            value_field_name="value", 
-            group_by_field_name=group_by_field_name
+            json.loads(json_filter), 
+            MetricValue.objects, 
+            "metric_type_id", 
+            "value", 
+            group_by_field_name
         )
 
         qs = queryset.filter(q).values_list(group_by_field_name, flat=True).distinct()

@@ -9,8 +9,7 @@ def migrate_data_forward(apps, schema_editor):
     Instance = apps.get_model("iaso", "Instance")
 
     instances = (
-        Instance.objects.filter(form_version__isnull=True)
-        .filter(json__isnull=False)
+        Instance.objects.filter(form_version__isnull=True, json__isnull=False)
         .annotate(
             annotated_form_version_id=RawSQL(
                 "select id from iaso_formversion where version_id = iaso_instance.json->>'_version' limit 1", ()

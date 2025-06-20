@@ -24,7 +24,7 @@ def migrate_data_forward(apps, schema_editor):
             continue
         instance.form_version_id = instance.annotated_form_version_id
         instance_to_update.append(instance)
-        if len(instance_to_update) > chunk_size:
+        if len(instance_to_update) >= chunk_size:
             Instance.objects.bulk_update(instance_to_update, ["form_version_id"])
             instance_to_update = []
 

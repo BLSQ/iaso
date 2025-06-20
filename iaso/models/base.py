@@ -365,6 +365,14 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "message": message}
         self.save()
 
+    def terminate_with_error(self, message=None):
+        self.refresh_from_db()
+        logger.error(f"Task {self} ended in error")
+        self.status = ERRORED
+        self.ended_at = timezone.now()
+        self.result = {"result": ERRORED, "message": message if message else "Error"}
+        self.save()
+
 
 class Link(models.Model):
     destination = models.ForeignKey(

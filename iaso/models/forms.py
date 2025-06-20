@@ -1,4 +1,3 @@
-import hashlib
 import pathlib
 import typing
 
@@ -6,12 +5,13 @@ from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
-from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.db.models import OuterRef, Prefetch, Subquery
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
+
+from iaso.utils.encryption import calculate_md5
 
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
@@ -257,7 +257,7 @@ class FormVersionManager(models.Manager):
                 **kwargs,
                 form=form,
                 file=file,
-                md5=self.md5sum(file),
+                md5=calculate_md5(file),
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
@@ -269,13 +269,6 @@ class FormVersionManager(models.Manager):
                 copy_mappings_from_previous_version(form_version, latest_version)
 
         return form_version
-
-    @staticmethod
-    def md5sum(file: File) -> str:
-        md5 = hashlib.md5()
-        for chunk in file.chunks():
-            md5.update(chunk)
-        return md5.hexdigest()
 
 
 class FormVersion(models.Model):

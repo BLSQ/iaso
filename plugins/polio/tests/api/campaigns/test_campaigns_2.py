@@ -12,6 +12,7 @@ from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account, Team
+from iaso.models.org_unit import OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.export_utils import format_date
 from plugins.polio.models import Campaign, CampaignType, ReasonForDelay, Round, RoundScope
@@ -96,11 +97,22 @@ class PolioAPITestCase(APITestCase):
 
     @mock.patch("plugins.polio.api.campaigns.campaigns.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
+        org_unit_type = OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
+        self.org_unit.org_unit_type = org_unit_type
+        self.org_unit.save()
+        campaign = Campaign.objects.create(
+            obr_name="Campaign", initial_org_unit=self.org_unit, account=self.account, country=self.org_unit
+        )
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
         url = "https://docs.google.com/spreadsheets/d/1"
         error_message = "Error test_preview_invalid_document"
         mock_SpreadSheetImport.create_for_url.side_effect = InvalidFormatError(error_message)
-        response = self.client.post("/api/polio/campaigns/preview_preparedness/", {"google_sheet_url": url})
+        response = self.client.post(
+            f"/api/polio/campaigns/{campaign.id}/preview_preparedness/",
+            {
+                "google_sheet_url": url,
+            },
+        )
         mock_SpreadSheetImport.create_for_url.assert_called_with(url)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json().get("non_field_errors"), [error_message])

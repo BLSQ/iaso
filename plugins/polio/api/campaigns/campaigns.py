@@ -742,7 +742,7 @@ def get_current_preparedness(campaign, roundNumber):
     if not round.preparedness_spreadsheet_url:
         return {}
     spreadsheet_url = round.preparedness_spreadsheet_url
-    return preparedness_from_url(spreadsheet_url, campaign.country)
+    return preparedness_from_url(spreadsheet_url, campaign.country.id)
 
 
 class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
@@ -902,7 +902,10 @@ class CampaignViewSet(ModelViewSet):
     def preview_preparedness(self, request, **kwargs):
         campaign = self.get_object()
         country = campaign.country
-        serializer = PreparednessPreviewSerializer(data={**request.data, "country_id": country.id})
+        # Create a mutable copy of the data
+        data = request.data.copy()
+        data["country_id"] = country.id
+        serializer = PreparednessPreviewSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 

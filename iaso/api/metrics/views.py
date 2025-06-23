@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 
 from iaso.models import MetricType, MetricValue
-from iaso.utils.jsonlogic import LOOKUPS, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
+from iaso.utils.jsonlogic import jsonlogic_to_exists_q_clauses, jsonlogic_to_q
 
 from .serializers import MetricTypeSerializer, MetricValueSerializer, OrgUnitIdSerializer
 
@@ -41,11 +41,7 @@ class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
             return queryset.values(group_by_field_name).distinct().values_list(group_by_field_name, flat=True)
 
         q = jsonlogic_to_exists_q_clauses(
-            json.loads(json_filter), 
-            MetricValue.objects, 
-            "metric_type_id", 
-            "value", 
-            group_by_field_name
+            json.loads(json_filter), MetricValue.objects, "metric_type_id", "value", group_by_field_name
         )
 
         qs = queryset.filter(q).values_list(group_by_field_name, flat=True).distinct()

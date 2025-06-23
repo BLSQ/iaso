@@ -280,7 +280,7 @@ class FormVersion(models.Model):
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
-    md5 = models.CharField(blank=False, null=False, max_length=32)
+    md5 = models.CharField(blank=True, max_length=32)
     xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls

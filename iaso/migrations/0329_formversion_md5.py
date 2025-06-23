@@ -6,8 +6,11 @@ from iaso.utils.encryption import calculate_md5
 
 
 def migrate_data_forward(apps, schema_editor):
-    chunk_size = 500
+    chunk_size = 50
     version_to_update = []
+
+    print("-" * 80)
+    print("Start populating `FormVersion.md5`…")
 
     FormVersion = apps.get_model("iaso", "FormVersion")
     versions = FormVersion.objects.iterator(chunk_size=chunk_size)
@@ -23,14 +26,19 @@ def migrate_data_forward(apps, schema_editor):
             version_to_update.append(version)
 
             if len(version_to_update) >= chunk_size:
+                print(f"Updating {len(version_to_update)} FormVersions…")
                 FormVersion.objects.bulk_update(version_to_update, ["md5"])
                 version_to_update = []
 
     if len(version_to_update) > 0:
+        print(f"Updating {len(version_to_update)} FormVersions…")
         FormVersion.objects.bulk_update(version_to_update, ["md5"])
+
+    print("Done.")
 
 
 class Migration(migrations.Migration):
+    atomic = False  # Prevent the migration from running in a transaction.
     dependencies = [
         ("iaso", "0328_auto_20250619_1436"),
     ]

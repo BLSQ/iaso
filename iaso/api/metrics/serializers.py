@@ -34,3 +34,10 @@ class MetricValueSerializer(serializers.ModelSerializer):
         model = MetricValue
         fields = ["id", "metric_type", "org_unit", "year", "value"]
         read_only_fields = fields
+
+
+class OrgUnitIdSerializer(serializers.Serializer):
+    org_unit_id = serializers.IntegerField()
+
+    def to_representation(self, instance):
+        return {"org_unit_id": instance}

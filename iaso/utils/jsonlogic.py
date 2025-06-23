@@ -20,6 +20,16 @@ from django.db.models.fields.json import JSONField, KeyTransformTextLookupMixin
 # would have to annotate every field we are casting for.
 # Instance.objects.annotate(b=Cast(KeyTextTransform('usable_vials_physical', "json"), FloatField())).filter(b__gte=2)
 
+LOOKUPS = {
+    "==": "exact",
+    "!=": "exact",
+    ">": "gt",
+    ">=": "gte",
+    "<": "lt",
+    "<=": "lte",
+    "in": "icontains",
+}
+
 
 class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     lookup_name = "forcefloat"
@@ -74,19 +84,9 @@ def jsonlogic_to_q(
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
 
-    lookups = {
-        "==": "exact",
-        "!=": "exact",
-        ">": "gt",
-        ">=": "gte",
-        "<": "lt",
-        "<=": "lte",
-        "in": "icontains",
-    }
-
-    if op not in lookups.keys():
+    if op not in LOOKUPS.keys():
         raise ValueError(
-            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{LOOKUPS.keys()}"
         )
 
     field_position = 1 if op == "in" else 0
@@ -104,10 +104,79 @@ def jsonlogic_to_q(
         # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
-    lookup = lookups[op]
+    lookup = LOOKUPS[op]
 
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
     q = Q(**{f: value})
+
+    if op == "!=":
+        # invert the filter
+        q = ~q
+    return q
+
+
+def jsonlogic_to_exists_q_clauses(
+    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, value_field_name: str, group_by_field_name: str
+) -> Q:
+    """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
+    This is used to filter entities based on the existence of certain conditions
+    in their related instances.
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict.
+    Example:
+     "or":[
+        {">=":[{"var":"23"},900]},
+        {"==":[{"var":"22"},700]},
+        {"and":[
+            {"<=":[{"var":"23"},1500]},
+            {"==":[{"var":"24"},1000]}
+        ]}
+    ]
+    :param entities: The Django model manager for the entities to filter. Should be a QuerySet or Manager.
+    :param id_field_name: The name of the field in the entities that corresponds to the "var" in the JsonLogic query.
+    :param value_field_name: The name of the field in the entities that corresponds to the value being compared in the JsonLogic query.
+    :param group_by_field_name: The name of the field used to group the entities in the Exists clause.
+    :return: A Django Q object.
+    """
+    if "and" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
+            )
+        return sub_query
+    if "or" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
+            )
+        return sub_query
+    if "!" in jsonlogic:
+        return ~jsonlogic_to_exists_q_clauses(
+            jsonlogic["!"], queryset, id_field_name, value_field_name, group_by_field_name
+        )
+
+    if not jsonlogic.keys():
+        return Q()
+
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
+
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    value = params[0] if op == "in" else params[1]
+    q = Q(
+        Exists(
+            queryset.filter(
+                **{
+                    group_by_field_name: OuterRef(group_by_field_name),
+                    id_field_name: field["var"],
+                }
+            ).filter(Q(**{f"{value_field_name}__{LOOKUPS[op]}": value}))
+        )
+    )
 
     if op == "!=":
         # invert the filter

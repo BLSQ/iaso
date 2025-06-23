@@ -849,9 +849,9 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
 
 @admin.register(OrgUnitChangeRequest)
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
-    list_display = ("pk", "org_unit", "created_at", "status")
+    list_display = ("pk", "org_unit", "created_at", "status", "deleted_at")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status", "kind", "data_source_synchronization")
+    list_filter = ("status", "kind", "data_source_synchronization", "deleted_at")
     readonly_fields = (
         "uuid",
         "created_at",

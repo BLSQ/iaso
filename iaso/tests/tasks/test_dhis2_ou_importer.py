@@ -28,7 +28,7 @@ class DHIS2TestMixin:
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate,code"
             "&pageSize=500&page=1&totalPages=True",
             json=orgunit_response_content,
             status=200,
@@ -265,16 +265,16 @@ class TaskTests(TestCase, DHIS2TestMixin):
         )
 
         created_orgunits_qs = OrgUnit.objects.order_by("id")
-        created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
+        created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name", "code")]
 
         # assert the pyramid imported seem okish
         self.assertEqual(
             created_orgunits,
             [
-                {"name": "Sierra Leone", "source_ref": "ImspTQPwCqd"},
-                {"name": "Kenema", "source_ref": "kJq2mPyFEHo"},
-                {"name": "Gorama Mende", "source_ref": "KXSqt7jv6DU"},
-                {"name": "Bambara Kaima CHP", "source_ref": "LOpWauwwghf"},
+                {"name": "Sierra Leone", "source_ref": "ImspTQPwCqd", "code": "lvl1"},
+                {"name": "Kenema", "source_ref": "kJq2mPyFEHo", "code": "lvl2"},
+                {"name": "Gorama Mende", "source_ref": "KXSqt7jv6DU", "code": "lvl3"},
+                {"name": "Bambara Kaima CHP", "source_ref": "LOpWauwwghf", "code": "lvl5"},
             ],
         )
 
@@ -324,8 +324,10 @@ class TaskTests(TestCase, DHIS2TestMixin):
         # Existing version with data
         version = m.SourceVersion.objects.create(data_source=self.source, number=1)
 
-        OrgUnit.objects.create(name="original c", source_ref="c", version=version)
-        OrgUnit.objects.create(name="original d", source_ref="d", version=version)
+        old_code_c = "old-code-c"
+        old_code_d = "old-code-d"
+        OrgUnit.objects.create(name="original c", source_ref="c", version=version, code=old_code_c)
+        OrgUnit.objects.create(name="original d", source_ref="d", version=version, code=old_code_d)
 
         self.old_counts = self.counts()
 
@@ -361,19 +363,23 @@ class TaskTests(TestCase, DHIS2TestMixin):
         ou_a = OrgUnit.objects.get(source_ref="a")
         self.assertEqual(ou_a.name, "Simple square")
         self.assertEqual(ou_a.geom.area, 1)
+        self.assertEqual(ou_a.code, "new-code-a")
 
         ou_b = OrgUnit.objects.get(source_ref="b")
         self.assertEqual(ou_b.name, "Simple square with a hole")
         self.assertAlmostEqual(ou_b.geom.area, 0.6400000000000033)
+        self.assertEqual(ou_b.code, "new-code-b")
 
         # didn't touch the existing
         ou_d = OrgUnit.objects.get(source_ref="d")
         self.assertEqual(ou_d.name, "original d")
         self.assertEqual(ou_d.geom, None)
+        self.assertEqual(ou_d.code, old_code_d)
 
         ou_c = OrgUnit.objects.get(source_ref="c")
         self.assertEqual(ou_c.geom, None)
         self.assertEqual(ou_c.name, "original c")
+        self.assertEqual(ou_c.code, old_code_c)
 
         self.assertEqual(OrgUnit.objects.count(), 4)
 
@@ -412,10 +418,12 @@ class TaskTests(TestCase, DHIS2TestMixin):
         ou_a = created_orgunits_qs.get(source_ref="a")
         self.assertEqual(ou_a.name, "Simple square")
         self.assertEqual(ou_a.geom.area, 1)
+        self.assertEqual(ou_a.code, "new-code-a")
 
         ou_b = created_orgunits_qs.get(source_ref="b")
         self.assertEqual(ou_b.name, "Simple square with a hole")
         self.assertAlmostEqual(ou_b.geom.area, 0.6400000000000033)
+        self.assertEqual(ou_b.code, "new-code-b")
 
         ou_d = created_orgunits_qs.get(source_ref="d")
         self.assertEqual(ou_d.name, "Two polygon of area 1 each")
@@ -423,6 +431,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertEqual(len(ou_d.geom.coords), 2)
         self.assertEqual(len(ou_d.geom.coords[0]), 1)
         self.assertEqual(len(ou_d.geom.coords[1]), 1)
+        self.assertEqual(ou_d.code, "new-code-d")
 
         ou_c = created_orgunits_qs.get(source_ref="c")
         self.assertAlmostEqual(ou_c.geom.area, 0.019948936631078506)
@@ -430,6 +439,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertEqual(len(ou_c.geom.coords), 2)
         self.assertEqual(len(ou_c.geom.coords[0]), 2)
         self.assertEqual(len(ou_c.geom.coords[1]), 2)
+        self.assertEqual(ou_c.code, "new-code-c")
 
         g = m.Group.objects.latest("id")
         self.assertEqual(g.org_units.count(), 4)
@@ -482,17 +492,21 @@ class TaskTests(TestCase, DHIS2TestMixin):
         ou_a = OrgUnit.objects.get(source_ref="a")
         self.assertEqual(ou_a.name, "original a")
         self.assertEqual(ou_a.geom, None)
+        self.assertEqual(ou_a.code, "")
 
         ou_b = OrgUnit.objects.get(source_ref="b")
         self.assertEqual(ou_b.name, "original b")
         self.assertEqual(ou_b.geom, None)
+        self.assertEqual(ou_b.code, "")
 
         ou_d = OrgUnit.objects.get(source_ref="d")
         self.assertEqual(ou_d.name, "original d")
         self.assertEqual(ou_d.geom, None)
+        self.assertEqual(ou_d.code, "")
 
         ou_c = OrgUnit.objects.get(source_ref="c")
         self.assertEqual(ou_c.geom, None)
         self.assertEqual(ou_c.name, "original c")
+        self.assertEqual(ou_c.code, "")
 
         self.assertEqual(OrgUnit.objects.count(), 4)

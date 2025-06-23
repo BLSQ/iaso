@@ -1,1 +1,203 @@
-{"organisationUnitGroups":[{"lastUpdated":"2017-01-26T17:45:32.748","id":"nlX2VoouN63","href":"https://play.dhis2.org/2.30/api/organisationUnitGroups/nlX2VoouN63","created":"2017-01-26T17:45:32.748","name":"Eastern Area","shortName":"Eastern Area","displayName":"Eastern Area","publicAccess":"rw------","displayShortName":"Eastern Area","externalAccess":false,"featureType":"NONE","dimensionItem":"nlX2VoouN63","favorite":false,"dimensionItemType":"ORGANISATION_UNIT_GROUP","access":{"read":true,"update":true,"externalize":false,"delete":true,"write":true,"manage":true},"user":{"id":"GOLswS44mh8"},"favorites":[],"translations":[],"organisationUnits":[{"id":"jUb8gELQApl"},{"id":"PMa2VCrupOd"},{"id":"bL4ooGhyHRQ"}],"userGroupAccesses":[],"attributeValues":[],"groupSets":[{"id":"uIuxlbV1vRT"}],"userAccesses":[],"legendSets":[]},{"lastUpdated":"2017-01-26T17:43:47.259","id":"J40PpdN4Wkk","href":"https://play.dhis2.org/2.30/api/organisationUnitGroups/J40PpdN4Wkk","created":"2017-01-26T17:43:47.259","name":"Northern Area","shortName":"Northern Area","displayName":"Northern Area","publicAccess":"rw------","displayShortName":"Northern Area","externalAccess":false,"featureType":"NONE","dimensionItem":"J40PpdN4Wkk","favorite":false,"dimensionItemType":"ORGANISATION_UNIT_GROUP","access":{"read":true,"update":true,"externalize":false,"delete":true,"write":true,"manage":true},"user":{"id":"GOLswS44mh8"},"favorites":[],"translations":[],"organisationUnits":[{"id":"eIQbndfxQMb"},{"id":"fdc6uOvgoji"},{"id":"qhqAxPSTUXp"},{"id":"Vth0fbpFcsO"}],"userGroupAccesses":[],"attributeValues":[],"groupSets":[{"id":"uIuxlbV1vRT"}],"userAccesses":[],"legendSets":[]},{"lastUpdated":"2017-01-26T17:45:00.717","id":"jqBqIXoXpfy","href":"https://play.dhis2.org/2.30/api/organisationUnitGroups/jqBqIXoXpfy","created":"2017-01-26T17:45:00.717","name":"Southern Area","shortName":"Southern Area","displayName":"Southern Area","publicAccess":"rw------","displayShortName":"Southern Area","externalAccess":false,"featureType":"NONE","dimensionItem":"jqBqIXoXpfy","favorite":false,"dimensionItemType":"ORGANISATION_UNIT_GROUP","access":{"read":true,"update":true,"externalize":false,"delete":true,"write":true,"manage":true},"user":{"id":"GOLswS44mh8"},"favorites":[],"translations":[],"organisationUnits":[{"id":"O6uvpzGd5pu"},{"id":"jmIPBj66vD6"},{"id":"lc3eMKXaEfw"}],"userGroupAccesses":[],"attributeValues":[],"groupSets":[{"id":"uIuxlbV1vRT"}],"userAccesses":[],"legendSets":[]},{"lastUpdated":"2017-01-26T17:44:20.168","id":"b0EsAxm8Nge","href":"https://play.dhis2.org/2.30/api/organisationUnitGroups/b0EsAxm8Nge","created":"2017-01-26T17:44:20.168","name":"Western Area","shortName":"Western Area","displayName":"Western Area","publicAccess":"rw------","displayShortName":"Western Area","externalAccess":false,"featureType":"NONE","dimensionItem":"b0EsAxm8Nge","favorite":false,"dimensionItemType":"ORGANISATION_UNIT_GROUP","access":{"read":true,"update":true,"externalize":false,"delete":true,"write":true,"manage":true},"user":{"id":"GOLswS44mh8"},"favorites":[],"translations":[],"organisationUnits":[{"id":"at6UHUQatSo"},{"id":"PMa2VCrupOd"},{"id":"TEQlaapDQoK"}],"userGroupAccesses":[],"attributeValues":[],"groupSets":[{"id":"uIuxlbV1vRT"}],"userAccesses":[],"legendSets":[]}]}
+{
+  "organisationUnitGroups": [
+    {
+      "lastUpdated": "2017-01-26T17:45:32.748",
+      "id": "nlX2VoouN63",
+      "href": "https://play.dhis2.org/2.30/api/organisationUnitGroups/nlX2VoouN63",
+      "created": "2017-01-26T17:45:32.748",
+      "name": "Eastern Area",
+      "shortName": "Eastern Area",
+      "displayName": "Eastern Area",
+      "publicAccess": "rw------",
+      "displayShortName": "Eastern Area",
+      "externalAccess": false,
+      "featureType": "NONE",
+      "dimensionItem": "nlX2VoouN63",
+      "favorite": false,
+      "dimensionItemType": "ORGANISATION_UNIT_GROUP",
+      "access": {
+        "read": true,
+        "update": true,
+        "externalize": false,
+        "delete": true,
+        "write": true,
+        "manage": true
+      },
+      "user": {
+        "id": "GOLswS44mh8"
+      },
+      "favorites": [],
+      "translations": [],
+      "organisationUnits": [
+        {
+          "id": "jUb8gELQApl"
+        },
+        {
+          "id": "PMa2VCrupOd"
+        },
+        {
+          "id": "bL4ooGhyHRQ"
+        }
+      ],
+      "userGroupAccesses": [],
+      "attributeValues": [],
+      "groupSets": [
+        {
+          "id": "uIuxlbV1vRT"
+        }
+      ],
+      "userAccesses": [],
+      "legendSets": []
+    },
+    {
+      "lastUpdated": "2017-01-26T17:43:47.259",
+      "id": "J40PpdN4Wkk",
+      "href": "https://play.dhis2.org/2.30/api/organisationUnitGroups/J40PpdN4Wkk",
+      "created": "2017-01-26T17:43:47.259",
+      "name": "Northern Area",
+      "shortName": "Northern Area",
+      "displayName": "Northern Area",
+      "publicAccess": "rw------",
+      "displayShortName": "Northern Area",
+      "externalAccess": false,
+      "featureType": "NONE",
+      "dimensionItem": "J40PpdN4Wkk",
+      "favorite": false,
+      "dimensionItemType": "ORGANISATION_UNIT_GROUP",
+      "access": {
+        "read": true,
+        "update": true,
+        "externalize": false,
+        "delete": true,
+        "write": true,
+        "manage": true
+      },
+      "user": {
+        "id": "GOLswS44mh8"
+      },
+      "favorites": [],
+      "translations": [],
+      "organisationUnits": [
+        {
+          "id": "eIQbndfxQMb"
+        },
+        {
+          "id": "fdc6uOvgoji"
+        },
+        {
+          "id": "qhqAxPSTUXp"
+        },
+        {
+          "id": "Vth0fbpFcsO"
+        }
+      ],
+      "userGroupAccesses": [],
+      "attributeValues": [],
+      "groupSets": [
+        {
+          "id": "uIuxlbV1vRT"
+        }
+      ],
+      "userAccesses": [],
+      "legendSets": []
+    },
+    {
+      "lastUpdated": "2017-01-26T17:45:00.717",
+      "id": "jqBqIXoXpfy",
+      "href": "https://play.dhis2.org/2.30/api/organisationUnitGroups/jqBqIXoXpfy",
+      "created": "2017-01-26T17:45:00.717",
+      "name": "Southern Area",
+      "shortName": "Southern Area",
+      "displayName": "Southern Area",
+      "publicAccess": "rw------",
+      "displayShortName": "Southern Area",
+      "externalAccess": false,
+      "featureType": "NONE",
+      "dimensionItem": "jqBqIXoXpfy",
+      "favorite": false,
+      "dimensionItemType": "ORGANISATION_UNIT_GROUP",
+      "access": {
+        "read": true,
+        "update": true,
+        "externalize": false,
+        "delete": true,
+        "write": true,
+        "manage": true
+      },
+      "user": {
+        "id": "GOLswS44mh8"
+      },
+      "favorites": [],
+      "translations": [],
+      "organisationUnits": [
+        {
+          "id": "O6uvpzGd5pu"
+        },
+        {
+          "id": "jmIPBj66vD6"
+        },
+        {
+          "id": "lc3eMKXaEfw"
+        }
+      ],
+      "userGroupAccesses": [],
+      "attributeValues": [],
+      "groupSets": [
+        {
+          "id": "uIuxlbV1vRT"
+        }
+      ],
+      "userAccesses": [],
+      "legendSets": []
+    },
+    {
+      "lastUpdated": "2017-01-26T17:44:20.168",
+      "id": "b0EsAxm8Nge",
+      "href": "https://play.dhis2.org/2.30/api/organisationUnitGroups/b0EsAxm8Nge",
+      "created": "2017-01-26T17:44:20.168",
+      "name": "Western Area",
+      "shortName": "Western Area",
+      "displayName": "Western Area",
+      "publicAccess": "rw------",
+      "displayShortName": "Western Area",
+      "externalAccess": false,
+      "featureType": "NONE",
+      "dimensionItem": "b0EsAxm8Nge",
+      "favorite": false,
+      "dimensionItemType": "ORGANISATION_UNIT_GROUP",
+      "access": {
+        "read": true,
+        "update": true,
+        "externalize": false,
+        "delete": true,
+        "write": true,
+        "manage": true
+      },
+      "user": {
+        "id": "GOLswS44mh8"
+      },
+      "favorites": [],
+      "translations": [],
+      "organisationUnits": [
+        {
+          "id": "at6UHUQatSo"
+        },
+        {
+          "id": "PMa2VCrupOd"
+        },
+        {
+          "id": "TEQlaapDQoK"
+        }
+      ],
+      "userGroupAccesses": [],
+      "attributeValues": [],
+      "groupSets": [
+        {
+          "id": "uIuxlbV1vRT"
+        }
+      ],
+      "userAccesses": [],
+      "legendSets": []
+    }
+  ]
+}

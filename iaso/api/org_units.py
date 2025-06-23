@@ -295,6 +295,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             {"title": "Type", "width": 15},
             {"title": "Latitude", "width": 15},
             {"title": "Longitude", "width": 15},
+            {"title": "Code", "width": 15},
             {"title": "Date d'ouverture", "width": 20},
             {"title": "Date de fermeture", "width": 20},
             {"title": "Date de création", "width": 20},
@@ -346,6 +347,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             "instances_count",
             "opening_date",
             "closed_date",
+            "code",
         )
 
         user_account_name = profile.account.name if profile else ""
@@ -368,12 +370,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 for field_name in parent_source_ref_name
             ]
 
+            code = org_unit.get("code") if org_unit.get("code") != "" else None
+
             org_unit_values = [
                 org_unit.get("id"),
                 org_unit.get("name"),
                 org_unit.get("org_unit_type__name"),
                 location.y if location else None,
                 location.x if location else None,
+                code,
                 (
                     org_unit.get("opening_date").strftime("%Y-%m-%d")
                     if org_unit.get("opening_date") is not None
@@ -474,6 +479,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
         profile = request.user.iaso_profile
+        can_edit_shape = profile.account.feature_flags.filter(code="ALLOW_SHAPE_EDITION").exists()
 
         self.check_object_permissions(request, org_unit)
 
@@ -527,11 +533,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
 
-        if "geo_json" in request.data and request.data["geo_json"]:
-            logger.warning(
-                "The `geo_json` field is deprecated. Use the `geom` field to modify the geometry.",
-                extra={"request_data": request.data},
-            )
+        geo_json = request.data.get("geo_json")
+        if geo_json and can_edit_shape:
+            try:
+                geometry = geo_json["features"][0]["geometry"] if geo_json else None
+                coordinates = geometry["coordinates"] if geometry else None
+                if coordinates:
+                    multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                    # Keep geom and simplified geom consistent.
+                    org_unit.geom = multi_polygon
+                    org_unit.simplified_geom = simplify_geom(multi_polygon)
+            except Exception:
+                errors.append({"errorKey": "geo_json", "errorMessage": _("Can't parse geo_json")})
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -647,15 +660,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
             res = org_unit.as_dict_with_parents()
             res["geo_json"] = None
             res["catchment"] = None
-            if org_unit.simplified_geom or org_unit.catchment:
-                queryset = self.get_queryset().filter(id=org_unit.id)
-                if org_unit.simplified_geom:
-                    res["geo_json"] = geojson_queryset(queryset, geometry_field="simplified_geom")
+
+            if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+                geo_queryset = self.get_queryset().filter(id=org_unit.id)
+
+                if can_edit_shape and org_unit.geom:
+                    res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+                elif org_unit.simplified_geom:
+                    res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+
                 if org_unit.catchment:
-                    res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
+                    res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
             res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
             return Response(res)
+
         return Response(errors, status=400)
 
     def get_date(self, date: str) -> Union[datetime.date, None]:
@@ -821,14 +840,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
             self.get_queryset().prefetch_related("reference_instances"),
             pk=pk,
         )
-        # Get instances count for the Org unit and its descendants
-        instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
-        org_unit.instances_count = instances_count
+
+        # Count instances for the Org unit and its descendants.
+        org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
+
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
-        res["geo_json"] = None
-        res["catchment"] = None
+
         # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
@@ -839,10 +858,24 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 break
             ancestor = ancestor.parent
             ancestor_dict = ancestor_dict["parent"]
-        if org_unit.simplified_geom or org_unit.catchment:
+
+        res["geo_json"] = None
+        res["catchment"] = None
+
+        if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+            can_edit_shape = False
+            if request.user.is_authenticated:
+                can_edit_shape = request.user.iaso_profile.account.feature_flags.filter(
+                    code="ALLOW_SHAPE_EDITION"
+                ).exists()
+
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
-            if org_unit.simplified_geom:
+
+            if can_edit_shape and org_unit.geom:
+                res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+            elif org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 

@@ -1,40 +1,37 @@
-import { Box, Chip } from '@mui/material';
+import React, { FunctionComponent, useMemo } from 'react';
+import { Box } from '@mui/material';
 import {
     IconButton,
     IntlFormatMessage,
     IntlMessage,
     useSafeIntl,
+    ConfirmCancelModal,
+    makeFullModal,
+    AddButton,
+    InputWithInfos,
+    DndSelect,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import isEqual from 'lodash/isEqual';
-import React, {
-    FunctionComponent,
-    ReactNode,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
 import * as yup from 'yup';
 
-import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
 import MESSAGES from '../messages';
-
-type RenderTriggerProps = {
-    openDialog: () => void;
-};
+import { EntityType } from '../types/entityType';
 
 type EmptyEntityType = Partial<EntityType>;
 
 type Props = {
+    isOpen: boolean;
+    closeDialog: () => void;
     titleMessage: IntlMessage;
-    renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData?: EntityType | EmptyEntityType;
     saveEntityType: (
         e: EntityType | EmptyEntityType,
@@ -42,9 +39,32 @@ type Props = {
     ) => void;
 };
 
-export const EntityTypesDialog: FunctionComponent<Props> = ({
+const getSelectedFields = (
+    fieldValues: string[] | undefined,
+    possibleFieldsOptions: Array<{ label: string; value: string }>,
+) => {
+    const selected = fieldValues?.map(field =>
+        possibleFieldsOptions.find(f => f.value === field),
+    );
+    return selected?.filter(Boolean) as typeof possibleFieldsOptions;
+};
+
+const styles: SxStyles = {
+    inputWithInfos: {
+        mt: 2,
+        '& .MuiGrid-item': {
+            alignContent: 'center',
+        },
+        '& .MuiGrid-item > .MuiBox-root': {
+            top: 'auto',
+        },
+    },
+};
+
+const EntityTypesDialog: FunctionComponent<Props> = ({
     titleMessage,
-    renderTrigger,
+    closeDialog,
+    isOpen,
     initialData = {
         id: undefined,
         name: undefined,
@@ -55,8 +75,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     },
     saveEntityType,
 }) => {
-    const [isOpen, setIsOpen] = useState<boolean>(false);
-    const [closeModal, setCloseModal] = useState<any>();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
@@ -97,9 +115,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         validationSchema: getSchema,
         onSubmit: values =>
             saveEntityType(values, {
-                onSuccess: () => {
-                    closeModal.closeDialog();
-                },
+                onSuccess: closeDialog,
             }),
     });
     const {
@@ -109,7 +125,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         touched,
         setFieldTouched,
         isValid,
-        initialValues,
         handleSubmit,
         resetForm,
     } = formik;
@@ -136,29 +151,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         enabled: isOpen,
     });
 
-    const renderTags = useCallback(
-        (tagValue, getTagProps) =>
-            tagValue
-                .sort((a, b) =>
-                    formatLabel(a).localeCompare(formatLabel(b), undefined, {
-                        sensitivity: 'accent',
-                    }),
-                )
-                .map((option, index) => {
-                    const field = possibleFields.find(
-                        f => f.name === option.value,
-                    );
-                    return (
-                        <Chip
-                            color={field?.is_latest ? 'primary' : 'secondary'}
-                            label={option.label}
-                            {...getTagProps({ index })}
-                        />
-                    );
-                }),
-        [possibleFields],
-    );
-
     const possibleFieldsOptions = useMemo(
         () =>
             possibleFields.map(field => ({
@@ -172,31 +164,50 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         [formatMessage, possibleFields],
     );
 
+    const selectedFieldsListView = useMemo(
+        () => getSelectedFields(values.fields_list_view, possibleFieldsOptions),
+        [values.fields_list_view, possibleFieldsOptions],
+    );
+    const selectedFieldsDetailInfoView = useMemo(
+        () =>
+            getSelectedFields(
+                values.fields_detail_info_view,
+                possibleFieldsOptions,
+            ),
+        [values.fields_detail_info_view, possibleFieldsOptions],
+    );
+    const selectedFieldsDuplicateSearch = useMemo(
+        () =>
+            getSelectedFields(
+                values.fields_duplicate_search,
+                possibleFieldsOptions,
+            ),
+        [values.fields_duplicate_search, possibleFieldsOptions],
+    );
+
+    const helperText = useMemo(() => {
+        if (isNew && !values.reference_form) {
+            return formatMessage(MESSAGES.selectReferenceForm);
+        }
+        return undefined;
+    }, [formatMessage, isNew, values.reference_form]);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
-                allowConfirm={isValid && !isEqual(values, initialValues)}
+            <ConfirmCancelModal
+                allowConfirm={isValid && !isEqual(values, initialData)}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
-                    handleSubmit();
-                }}
-                onCancel={closeDialog => {
+                onConfirm={handleSubmit}
+                onCancel={() => {
                     closeDialog();
                     resetForm();
                 }}
+                onClose={() => null}
+                closeDialog={closeDialog}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                renderTrigger={renderTrigger}
                 maxWidth="md"
-                onOpen={() => {
-                    resetForm();
-                    setIsOpen(true);
-                }}
-                onClosed={() => {
-                    setIsOpen(false);
-                }}
+                open={isOpen}
             >
                 <div id="entity-types-dialog">
                     {!isNew && formName && (
@@ -216,101 +227,120 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                             </Box>
                         </Box>
                     )}
-                    {isNew && (
-                        <InputComponent
-                            required
-                            keyValue="reference_form"
-                            errors={getErrors('reference_form')}
-                            onChange={onChange}
-                            disabled={isFetchingForms}
-                            loading={isFetchingForms}
-                            value={values.reference_form || null}
-                            type="select"
-                            options={
-                                formsList?.map(t => ({
-                                    label: t.name,
-                                    value: t.id,
-                                })) || []
-                            }
-                            label={MESSAGES.referenceForm}
-                        />
+                    {isOpen && !isFetchingForm && (
+                        <>
+                            {isNew && (
+                                <InputComponent
+                                    required
+                                    keyValue="reference_form"
+                                    errors={getErrors('reference_form')}
+                                    onChange={onChange}
+                                    disabled={isFetchingForms}
+                                    loading={isFetchingForms}
+                                    value={values.reference_form || null}
+                                    type="select"
+                                    options={
+                                        formsList?.map(t => ({
+                                            label: t.name,
+                                            value: t.id,
+                                        })) || []
+                                    }
+                                    label={MESSAGES.referenceForm}
+                                />
+                            )}
+                            <InputComponent
+                                keyValue="name"
+                                onChange={onChange}
+                                value={values.name}
+                                errors={getErrors('name')}
+                                type="text"
+                                label={MESSAGES.name}
+                                required
+                            />
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsListView,
+                                    )}
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.fieldsListView,
+                                        )}
+                                        value={selectedFieldsListView}
+                                        onChange={value => {
+                                            onChange('fields_list_view', value);
+                                        }}
+                                        disabled={!values.reference_form}
+                                        isRequired
+                                        helperText={helperText}
+                                        keyValue="fields_list_view"
+                                    />
+                                </InputWithInfos>
+                            </Box>
+
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsDetailInfoView,
+                                    )}
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.fieldsDetailInfoView,
+                                        )}
+                                        value={selectedFieldsDetailInfoView}
+                                        onChange={value => {
+                                            onChange(
+                                                'fields_detail_info_view',
+                                                value,
+                                            );
+                                        }}
+                                        disabled={!values.reference_form}
+                                        isRequired
+                                        helperText={helperText}
+                                        keyValue="fields_detail_info_view"
+                                    />
+                                </InputWithInfos>
+                            </Box>
+
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsDuplicateSearch,
+                                    )}
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.fieldsDuplicateSearch,
+                                        )}
+                                        value={selectedFieldsDuplicateSearch}
+                                        onChange={value => {
+                                            onChange(
+                                                'fields_duplicate_search',
+                                                value,
+                                            );
+                                        }}
+                                        disabled={!values.reference_form}
+                                        helperText={helperText}
+                                        keyValue="fields_duplicate_search"
+                                    />
+                                </InputWithInfos>
+                            </Box>
+                        </>
                     )}
-                    <InputComponent
-                        keyValue="name"
-                        onChange={onChange}
-                        value={values.name}
-                        errors={getErrors('name')}
-                        type="text"
-                        label={MESSAGES.name}
-                        required
-                    />
-                    <InputComponent
-                        type="select"
-                        multi
-                        required
-                        disabled={isFetchingForm || !values.reference_form}
-                        keyValue="fields_list_view"
-                        onChange={(key, value) =>
-                            onChange(key, value ? value.split(',') : null)
-                        }
-                        value={!isFetchingForm ? values.fields_list_view : []}
-                        label={MESSAGES.fieldsListView}
-                        options={possibleFieldsOptions}
-                        renderTags={renderTags}
-                        helperText={
-                            isNew && !values.reference_form
-                                ? formatMessage(MESSAGES.selectReferenceForm)
-                                : undefined
-                        }
-                    />
-                    <InputComponent
-                        type="select"
-                        multi
-                        required
-                        disabled={isFetchingForm || !values.reference_form}
-                        loading={isFetchingForm}
-                        keyValue="fields_detail_info_view"
-                        onChange={(key, value) =>
-                            onChange(key, value ? value.split(',') : null)
-                        }
-                        value={
-                            !isFetchingForm
-                                ? values.fields_detail_info_view
-                                : []
-                        }
-                        label={MESSAGES.fieldsDetailInfoView}
-                        options={possibleFieldsOptions}
-                        renderTags={renderTags}
-                        helperText={
-                            isNew && !values.reference_form
-                                ? formatMessage(MESSAGES.selectReferenceForm)
-                                : undefined
-                        }
-                    />
-                    <InputComponent
-                        type="select"
-                        multi
-                        disabled={isFetchingForm || !values.reference_form}
-                        keyValue="fields_duplicate_search"
-                        onChange={(key, value) =>
-                            onChange(key, value ? value.split(',') : null)
-                        }
-                        value={
-                            !isFetchingForm
-                                ? values.fields_duplicate_search
-                                : []
-                        }
-                        label={MESSAGES.fieldsDuplicateSearch}
-                        renderTags={renderTags}
-                        options={possibleFieldsOptions}
-                        helperText={
-                            isNew && !values.reference_form
-                                ? formatMessage(MESSAGES.selectReferenceForm)
-                                : undefined
-                        }
-                    />
                 </div>
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
+};
+const modalWithButton = makeFullModal(EntityTypesDialog, AddButton);
+const modalWithIcon = makeFullModal(EntityTypesDialog, EditIconButton);
+
+export {
+    modalWithButton as AddEntityTypesDialog,
+    modalWithIcon as EditEntityTypesDialog,
 };

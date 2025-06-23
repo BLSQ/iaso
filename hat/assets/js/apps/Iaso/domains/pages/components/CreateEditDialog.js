@@ -61,8 +61,10 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
 
     const defaultValues = {
         type: selectedPage?.type ?? RAW,
-        needs_authentication: !(selectedPage?.needs_authentication ?? false),
     };
+    if (!selectedPage) {
+        defaultValues['needs_authentication'] = false;
+    }
     const getSchema = () => {
         return yup.lazy(vals => {
             const type = get(vals, 'type');
@@ -81,7 +83,20 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                               .string()
                               .trim()
                               .url(formatMessage(MESSAGES.urlNotValid))
-                        : yup.string().trim(),
+                        : type === SUPERSET
+                          ? yup.string().trim().nullable()
+                          : yup.string().trim(),
+                superset_dashboard_id:
+                    type === SUPERSET
+                        ? yup
+                              .string()
+                              .trim()
+                              .required(
+                                  formatMessage(
+                                      MESSAGES.supersetDashboardIdRequired,
+                                  ),
+                              )
+                        : yup.string().trim().nullable(),
                 type: yup.string().trim().required(),
             });
         });

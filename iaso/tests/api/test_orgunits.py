@@ -83,6 +83,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
+            code="code1",
         )
 
         cls.instance_related_to_reference_form = cls.create_form_instance(
@@ -109,6 +110,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon_empty,
             catchment=mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code2",
         )
 
         # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
@@ -131,6 +133,7 @@ class OrgUnitAPITestCase(APITestCase):
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
+            code="code3",
         )
         cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=jedi_council_endor,
@@ -141,6 +144,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon,
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code4",
         )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
@@ -152,6 +156,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code5",
         )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
@@ -634,6 +639,41 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_geo_json(self):
+        org_unit = self.jedi_squad_endor
+
+        user = self.luke
+        self.client.force_authenticate(user)
+
+        # `geo_json` should be `None` when there is no shape.
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["geo_json"], None)
+
+        org_unit.geom = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        org_unit.simplified_geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        org_unit.save()
+
+        # `geo_json` should be the "simplified shape" in most cases.
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        geo_json_coordinates = response.data["geo_json"]["features"][0]["geometry"]["coordinates"]
+        expected_coordinates = [[[[0, 0], [0, 1], [1, 1], [0, 0]]]]
+        self.assertEqual(geo_json_coordinates, expected_coordinates)
+
+        allow_shape_edition_flag = m.AccountFeatureFlag.objects.get(code="ALLOW_SHAPE_EDITION")
+        user.iaso_profile.account.feature_flags.add(allow_shape_edition_flag)
+
+        # `geo_json` should be the "full shape" when `ALLOW_SHAPE_EDITION` is enabled.
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+        geo_json_coordinates = response.data["geo_json"]["features"][0]["geometry"]["coordinates"]
+        expected_coordinates = [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]]
+        self.assertEqual(geo_json_coordinates, expected_coordinates)
+
     def test_org_unit_retrieve_with_instances_count(self):
         self.client.force_authenticate(self.yoda)
 
@@ -700,7 +740,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/orgunits/?csv=true")
+        response = self.client.get("/api/orgunits/?order=id&csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -709,9 +749,103 @@ class OrgUnitAPITestCase(APITestCase):
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
+
+        headers = data[0]
+        self.assertEqual(
+            headers,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
+
         first_row = data[1]
         first_row_name = first_row[1]
-        self.assertEqual(first_row_name, self.jedi_council_brussels.name)
+        self.assertEqual(first_row_name, self.jedi_council_corruscant.name)
+
+        first_row_code = first_row[5]
+        self.assertEqual(first_row_code, self.jedi_council_corruscant.code)
+
+    def test_can_retrieve_org_units_list_in_xlsx_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?&order=id&xlsx=true")
+        columns, excel_data = self.assertXlsxFileResponse(response)
+
+        self.assertEqual(
+            columns,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
+
+        ids = excel_data["ID"]
+        self.assertEqual(
+            ids,
+            {
+                0: self.jedi_council_corruscant.id,
+                1: self.jedi_council_endor.id,
+                2: self.jedi_squad_endor.id,
+                3: self.jedi_squad_endor_2.id,
+                4: self.jedi_council_brussels.id,
+            },
+        )
+
+        codes = excel_data["Code"]
+        self.assertEqual(
+            codes,
+            {
+                0: self.jedi_council_corruscant.code,
+                1: self.jedi_council_endor.code,
+                2: self.jedi_squad_endor.code,
+                3: self.jedi_squad_endor_2.code,
+                4: self.jedi_council_brussels.code,
+            },
+        )
 
     def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
         self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
@@ -1227,6 +1361,65 @@ class OrgUnitAPITestCase(APITestCase):
         # Verify other fields remain unchanged from previous update
         self.assertEqual(org_unit.source_ref, "NEW_REF_123")
         self.assertEqual(org_unit.validation_status, "VALID")
+
+    def test_edit_org_unit_partial_update_geo_json(self):
+        user = self.yoda
+        self.client.force_authenticate(user)
+
+        org_unit = self.jedi_squad_endor
+        org_unit.geom = None
+        org_unit.simplified_geom = None
+        org_unit.save()
+
+        self.assertEqual(org_unit.geom, None)
+        self.assertEqual(org_unit.simplified_geom, None)
+
+        geo_json = {
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    # Note: those coordinates are too small to be simplified,
+                    # so they will be used for both `geom` and `simplified_geom`.
+                    "geometry": {"type": "MultiPolygon", "coordinates": [[[[1, 1], [1, 2], [2, 2], [2, 1], [1, 1]]]]},
+                }
+            ],
+        }
+        expected_geom = "SRID=4326;MULTIPOLYGON (((1 1, 1 2, 2 2, 2 1, 1 1)))"
+
+        # You shouldn't be able to edit `geo_json` without `ALLOW_SHAPE_EDITION`.
+        data = {"geo_json": geo_json}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, None)
+        self.assertEqual(org_unit.simplified_geom, None)
+
+        allow_shape_edition_flag = m.AccountFeatureFlag.objects.get(code="ALLOW_SHAPE_EDITION")
+        user.iaso_profile.account.feature_flags.add(allow_shape_edition_flag)
+
+        # You should be able to edit `geo_json` with `ALLOW_SHAPE_EDITION`.
+        data = {"geo_json": geo_json}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
+
+        # Passing `geo_json = None` shouldn't delete the current shapes.
+        data = {"geo_json": None}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.geom, expected_geom)
+        self.assertEqual(org_unit.simplified_geom, expected_geom)
+
+        # Passing invalid `geo_json` should return an error.
+        data = {"geo_json": "Invalid"}
+        response = self.client.patch(f"/api/orgunits/{org_unit.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data[0]["errorKey"], "geo_json")
+        self.assertEqual(response.data[0]["errorMessage"], "Can't parse geo_json")
 
     def test_edit_org_unit_partial_update_for_opening_and_closed_dates(self):
         """

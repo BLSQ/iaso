@@ -41,7 +41,7 @@ from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.emoji import fix_emoji
-from ..utils.jsonlogic import jsonlogic_to_q
+from ..utils.jsonlogic import instance_jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
@@ -363,6 +363,14 @@ class Task(models.Model):
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
+        self.save()
+
+    def terminate_with_error(self, message=None):
+        self.refresh_from_db()
+        logger.error(f"Task {self} ended in error")
+        self.status = ERRORED
+        self.ended_at = timezone.now()
+        self.result = {"result": ERRORED, "message": message if message else "Error"}
         self.save()
 
 
@@ -941,7 +949,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             queryset = queryset.filter(created_by__id__in=user_ids.split(","))
 
         if json_content:
-            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            q = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
             queryset = queryset.filter(q)
 
         return queryset

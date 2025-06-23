@@ -1,7 +1,12 @@
+import csv
 import importlib
+import io
 import typing
 
 from unittest import mock
+
+import numpy as np
+import pandas as pd
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
@@ -192,12 +197,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         expected_attachment_filename: str = None,
         streaming: bool = False,
     ):
-        if streaming:
-            self.assertIsInstance(response, StreamingHttpResponse)
-            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
-            self.assertIsInstance(list(response.streaming_content), list)
-        else:
-            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response["Content-Type"])
 
@@ -205,6 +204,61 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+        content = response.getvalue()
+
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
+        return content
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        decoded_response = content.decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
+
+    def assertXlsxFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+    ) -> tuple[list, dict]:
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        excel_data = pd.read_excel(content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+
+        return excel_columns, data_dict
 
     def assertValidListData(
         self,

@@ -19,7 +19,10 @@ import DatesRange from '../../../../components/filters/DatesRange';
 import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
-import { useFilterState } from '../../../../hooks/useFilterState';
+import {
+    useCheckBoxFilter,
+    useFilterState,
+} from '../../../../hooks/useFilterState';
 import { DropdownOptions } from '../../../../types/utils';
 import * as Permission from '../../../../utils/permissions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
@@ -288,6 +291,15 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         }
     }, [selectedVersionId]);
 
+    const {
+        checkBoxValue: softDeleted,
+        handleCheckboxChange: handleSoftDeleted,
+    } = useCheckBoxFilter({
+        initialValue: filters.is_soft_deleted === 'true',
+        handleChange,
+        keyValue: 'is_soft_deleted',
+    });
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4} lg={3}>
@@ -522,7 +534,14 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     labelFrom={MESSAGES.createdDateFrom}
                     labelTo={MESSAGES.createdDateTo}
                 />
-                <Box mt={2} display="flex" justifyContent="flex-end">
+                <InputComponent
+                    keyValue="is_soft_deleted"
+                    onChange={handleSoftDeleted}
+                    value={softDeleted}
+                    type="checkbox"
+                    label={MESSAGES.isSoftDeleted}
+                />
+                <Box mt={2} mb={2} display="flex" justifyContent="flex-end">
                     <FilterButton
                         disabled={!filtersUpdated}
                         onFilter={handleSearch}

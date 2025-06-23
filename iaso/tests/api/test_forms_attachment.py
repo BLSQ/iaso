@@ -20,7 +20,8 @@ from iaso.utils.models.virus_scan import VirusScanStatus
 
 
 BASE_URL = "/api/formattachments/"
-MANIFEST_URL = "/api/forms/{form_id}/manifest/"
+MANIFEST_MOBILE_URL = "/api/forms/{form_id}/manifest/"
+MANIFEST_ENKETO_URL = "/api/forms/{form_id}/manifest_enketo/"
 SAFE_FILE_PATH = "iaso/tests/fixtures/clamav/safe.jpg"
 EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 
@@ -283,19 +284,19 @@ class FormAttachmentsAPITestCase(APITestCase):
 
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_2.id))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_not_found(self):
-        f"""GET {MANIFEST_URL} with wrong id: 404"""
+        f"""GET {MANIFEST_MOBILE_URL} with wrong id: 404"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=100))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=100))
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_found_but_empty_attachments(self):
-        f"""GET {MANIFEST_URL} with no attachments: 200"""
+        f"""GET {MANIFEST_MOBILE_URL} with no attachments: 200"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
         # be careful when you edit the xml file, because any difference in spacing will break the test!
         with open("iaso/tests/fixtures/form_attachments/manifest_empty.xml", "rb") as f:
@@ -306,9 +307,9 @@ class FormAttachmentsAPITestCase(APITestCase):
         )
 
     def test_manifest_form_found_with_attachments(self):
-        f"""GET {MANIFEST_URL} with attachments: 200"""
+        f"""GET {MANIFEST_MOBILE_URL} with attachments: 200"""
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_2.id))
         content = self.assertXMLResponse(response, 200)
         content_str = content.decode("utf-8")
 
@@ -338,7 +339,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         )
         self.form_1.save()
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_1.id))
         content = self.assertXMLResponse(response, 200)
         content_str = content.decode("utf-8")
 
@@ -366,7 +367,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""GET {BASE_URL} via app id"""
 
         response = self.client.get(
-            MANIFEST_URL.format(form_id=self.form_2.id),
+            MANIFEST_MOBILE_URL.format(form_id=self.form_2.id),
             headers={"Content-Type": "application/json"},
             data={"app_id": self.project_1.app_id},
         )
@@ -379,15 +380,15 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.project_1.save()
 
         response = self.client.get(
-            MANIFEST_URL.format(form_id=self.form_2.id),
+            MANIFEST_MOBILE_URL.format(form_id=self.form_2.id),
             headers={"Content-Type": "application/json"},
             data={"app_id": self.project_1.app_id},
         )
         self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
 
-    def test_manifest_anonymous_with_signed_url(self):
+    def test_enketo_manifest_anonymous_with_signed_url(self):
         """Test that signed anonymous URLs can be used to fetch manifests (enketo use case)"""
-        path = MANIFEST_URL.format(form_id=self.form_2.id)
+        path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
         signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
 
         response = self.client.get(signed_url)
@@ -409,6 +410,58 @@ class FormAttachmentsAPITestCase(APITestCase):
             path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
         )
         self.assertEqual(expected_xml, content_str)
+
+    def test_enketo_manifest_anonymous_with_signed_url_and_authentication_feature_flag(self):
+        """Test that signed anonymous URLs can be used to fetch manifests,
+        even if the authentication feature flag is enabled"""
+        # Setting the authentication feature flag
+        feature_flag = m.FeatureFlag.objects.get(code=m.FeatureFlag.REQUIRE_AUTHENTICATION)
+        self.project_1.needs_authentication = True
+        self.project_1.feature_flags.add(feature_flag)
+        self.project_1.save()
+
+        # Rebuilding the signed URL with the app_id
+        path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
+        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+
+        response = self.client.get(signed_url)
+        self.assertXMLResponse(response, status.HTTP_200_OK)  # 200 even without authentication
+
+        content_str = response.content.decode("utf-8")
+
+        # Prepare values for each variable in the Jinja template
+        context = {
+            "attachment_1_hash": self.attachment1.md5,
+            "attachment_2_hash": self.attachment2.md5,
+            "attachment_1_name": self.attachment1.name,
+            "attachment_2_name": self.attachment2.name,
+            "attachment_1_url": self.attachment1.file.url,
+            "attachment_2_url": self.attachment2.file.url,
+        }
+        # be careful when you edit the xml file, because any difference in spacing will break the test!
+        expected_xml = self.load_fixture_with_jinja_template(
+            path_to_fixtures=self.PATH_TO_FIXTURES, fixture_name="manifest_multiple_attachments.xml", context=context
+        )
+        self.assertEqual(expected_xml, content_str)
+
+    def test_enketo_manifest_anonymous_with_invalid_signed_url(self):
+        """Test that an invalid signed anonymous URL generates an error"""
+        path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
+        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+
+        response = self.client.get(f"{signed_url}error")
+        self.assertXMLResponse(response, status.HTTP_400_BAD_REQUEST)
+
+        content_str = response.content.decode("utf-8")
+        self.assertEqual(content_str, "<error>Invalid URL signature</error>")
+
+    def test_enketo_manifest_anonymous_with_signed_url_error_unknown_form(self):
+        """Test that a signed anonymous URL generates an error when querying an unknown form"""
+        path = MANIFEST_ENKETO_URL.format(form_id=123456789)
+        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+
+        response = self.client.get(signed_url)
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
 
 
 class MockResults:

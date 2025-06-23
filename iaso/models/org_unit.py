@@ -333,8 +333,8 @@ class OrgUnit(TreeModel):
         constraints = [
             models.UniqueConstraint(
                 fields=["code", "version"],
-                condition=~Q(code=""),
-                name="unique_code_per_source_version_if_not_blank",
+                condition=Q(~Q(code=""), Q(validation_status="VALID")),
+                name="unique_code_per_source_version_if_not_blank_and_valid_status",
             ),
         ]
 

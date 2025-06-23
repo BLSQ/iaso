@@ -209,7 +209,7 @@ class OrgUnitModelTestCase(TestCase):
 
         return corrusca, corruscant, first_council, second_council, task_force
 
-    def test_same_code_different_versions(self):
+    def test_same_code_different_versions_valid_status(self):
         # Checks that the same code can be used multiple times in different source versions
         code = "chuck norris is stronger than database constraints"
         source = m.DataSource.objects.create(name="source")
@@ -232,6 +232,64 @@ class OrgUnitModelTestCase(TestCase):
         total_count = m.OrgUnit.objects.count()
         self.assertEqual(total_count, 2)
         self.assertEqual(org_unit_1.code, org_unit_2.code)
+
+    def test_same_code_different_versions_various_statuses(self):
+        code = "chuck norris is stronger than database constraints"
+        source = m.DataSource.objects.create(name="source")
+        version1 = m.SourceVersion.objects.create(data_source=source, number=1)
+        version2 = m.SourceVersion.objects.create(data_source=source, number=2)
+
+        org_unit_valid_1 = m.OrgUnit.objects.create(
+            name="OrgUnit valid 1",
+            org_unit_type=self.sector,
+            version=version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        org_unit_valid_2 = m.OrgUnit.objects.create(
+            name="OrgUnit valid 2",
+            org_unit_type=self.sector,
+            version=version2,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        org_unit_new_1 = m.OrgUnit.objects.create(
+            name="OrgUnit new 1",
+            org_unit_type=self.sector,
+            version=version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_new_2 = m.OrgUnit.objects.create(
+            name="OrgUnit new 2",
+            org_unit_type=self.sector,
+            version=version2,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_rejected_1 = m.OrgUnit.objects.create(
+            name="OrgUnit rejected 1",
+            org_unit_type=self.sector,
+            version=version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+        org_unit_rejected_2 = m.OrgUnit.objects.create(
+            name="OrgUnit rejected 2",
+            org_unit_type=self.sector,
+            version=version2,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+
+        # No IntegrityError should be raised -> 6 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 6)
+        self.assertEqual(org_unit_valid_1.code, org_unit_valid_2.code)
+        self.assertEqual(org_unit_valid_1.code, org_unit_new_1.code)
+        self.assertEqual(org_unit_valid_1.code, org_unit_new_2.code)
+        self.assertEqual(org_unit_valid_1.code, org_unit_rejected_1.code)
+        self.assertEqual(org_unit_valid_1.code, org_unit_rejected_2.code)
 
 
 class OrgUnitModelDbTestCase(TestCase):
@@ -327,41 +385,137 @@ class OrgUnitModelDbTestCase(TestCase):
             {"population": 2500, "source": "snis", "foo": "bar"},
         )
 
-    def test_same_code_same_version(self):
-        # Checks that the same code cannot be used multiple times in the same source version
+    def test_same_code_same_version_valid_status(self):
+        # Checks that the same code cannot be used multiple times in the same source version with the "valid" status
         code = "chuck norris is stronger than database constraints"
         m.OrgUnit.objects.create(
             name="OrgUnit 1",
             org_unit_type=self.sector,
             version=self.version1,
             code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
-        with self.assertRaisesMessage(IntegrityError, "unique_code_per_source_version_if_not_blank"):
+        with self.assertRaisesMessage(IntegrityError, "unique_code_per_source_version_if_not_blank_and_valid_status"):
             m.OrgUnit.objects.create(
                 name="OrgUnit 2",
                 org_unit_type=self.sector,
                 version=self.version1,
                 code=code,
+                validation_status=m.OrgUnit.VALIDATION_VALID,
             )
 
-    def test_blank_codes_same_version(self):
-        # Checks that blank codes can be used multiple times in the same source version
+    def test_same_code_same_version_various_statuses(self):
+        code = "chuck norris is stronger than database constraints"
+        org_unit_valid = m.OrgUnit.objects.create(
+            name="OrgUnit 1",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        org_unit_new_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 2",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_new_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 3",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_rejected_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 4",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+        org_unit_rejected_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 5",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+
+        # No IntegrityError should be raised -> 5 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 5)
+        self.assertEqual(org_unit_valid.code, org_unit_new_1.code)
+        self.assertEqual(org_unit_valid.code, org_unit_new_2.code)
+        self.assertEqual(org_unit_valid.code, org_unit_rejected_1.code)
+        self.assertEqual(org_unit_valid.code, org_unit_rejected_2.code)
+
+    def test_blank_codes_same_version_valid_status(self):
+        # Checks that blank codes can be used multiple times in the same source version with the "valid" status
         code = ""
         org_unit_1 = m.OrgUnit.objects.create(
             name="OrgUnit 1",
             org_unit_type=self.sector,
             version=self.version1,
             code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
         org_unit_2 = m.OrgUnit.objects.create(
             name="OrgUnit 2",
             org_unit_type=self.sector,
             version=self.version1,
             code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
         # No IntegrityError should be raised -> 2 org units are created
         total_count = m.OrgUnit.objects.count()
         self.assertEqual(total_count, 2)
         self.assertEqual(org_unit_1.code, org_unit_2.code)
+
+    def test_blank_codes_same_version_various_statuses(self):
+        code = ""
+        org_unit_valid = m.OrgUnit.objects.create(
+            name="OrgUnit 1",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        org_unit_new_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 2",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_new_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 3",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+        org_unit_rejected_1 = m.OrgUnit.objects.create(
+            name="OrgUnit 4",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+        org_unit_rejected_2 = m.OrgUnit.objects.create(
+            name="OrgUnit 5",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_REJECTED,
+        )
+
+        # No IntegrityError should be raised -> 5 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 5)
+        self.assertEqual(org_unit_valid.code, org_unit_new_1.code)
+        self.assertEqual(org_unit_valid.code, org_unit_new_2.code)
+        self.assertEqual(org_unit_valid.code, org_unit_rejected_1.code)
+        self.assertEqual(org_unit_valid.code, org_unit_rejected_2.code)

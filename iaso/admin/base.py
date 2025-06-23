@@ -575,12 +575,12 @@ class SourceVersionAdmin(admin.ModelAdmin):
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
         "id",
-        "uuid",
+        "uuid__exact",
         "account__name",
         "entity_type__name",
         "attributes__json",
-        "attributes__id",
-        "attributes__uuid",
+        "attributes__id__exact",
+        "attributes__uuid__exact",
     ]
 
     def get_form(self, request, obj=None, **kwargs):

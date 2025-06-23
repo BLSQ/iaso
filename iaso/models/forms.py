@@ -11,6 +11,8 @@ from django.db.models import OuterRef, Prefetch, Subquery
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
+from iaso.utils.encryption import calculate_md5
+
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
@@ -21,7 +23,7 @@ from ..utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
-from ..utils.models.virus_scan import VirusScanStatus
+from ..utils.virus_scan.model import VirusScanStatus
 from .project import Project
 
 
@@ -250,11 +252,12 @@ class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)  # type: ignore
-
+            file = SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml")
             form_version = super().create(
                 **kwargs,
                 form=form,
-                file=SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml"),
+                file=file,
+                md5=calculate_md5(file),
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
@@ -277,6 +280,7 @@ class FormVersion(models.Model):
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
+    md5 = models.CharField(blank=True, max_length=32)
     xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls

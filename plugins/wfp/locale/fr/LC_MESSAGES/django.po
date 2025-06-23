@@ -141,3 +141,19 @@ msgstr "Référence retournée"
 #: plugins/wfp/models.py
 msgid "Transfer from other TSFP"
 msgstr "Transfert d'un autre TSFP"
+
+#: plugins/wfp/models.py
+msgid "Full"
+msgstr "Complet"
+
+#: plugins/wfp/models.py
+msgid "Partial"
+msgstr "Partiel"
+
+#: plugins/wfp/models.py
+msgid "None"
+msgstr "Aucun"
+
+#: plugins/wfp/models.py
+msgid "More"
+msgstr "Plus"

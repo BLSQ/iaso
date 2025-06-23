@@ -16,13 +16,15 @@ from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
-from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -56,6 +58,7 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
+    instance_files = InstanceFileSerializer(many=True, read_only=True, source="instancefile_set")
 
     class Meta:
         model = Instance
@@ -67,6 +70,7 @@ class ReferenceInstancesSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "json",
+            "instance_files",
         ]
 
 
@@ -138,10 +142,10 @@ class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm(permission.FORMS)
-                or request.user.has_perm(permission.ORG_UNITS)
-                or request.user.has_perm(permission.ORG_UNITS_READ)
-                or request.user.has_perm(permission.SUBMISSIONS)
+                request.user.has_perm(core_permissions.FORMS)
+                or request.user.has_perm(core_permissions.ORG_UNITS)
+                or request.user.has_perm(core_permissions.ORG_UNITS_READ)
+                or request.user.has_perm(core_permissions.SUBMISSIONS)
             )
         ):
             return False
@@ -323,7 +327,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
+        reference_instances = (
+            org_unit.reference_instances(manager="non_deleted_objects")
+            .prefetch_related("instancefile_set")
+            .order_by("id")
+        )
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 

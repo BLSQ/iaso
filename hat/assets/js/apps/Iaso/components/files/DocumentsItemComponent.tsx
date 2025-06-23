@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from 'react';
 
+import AttachFile from '@mui/icons-material/AttachFile';
 import { Paper, Box } from '@mui/material';
 
-import AttachFile from '@mui/icons-material/AttachFile';
-
 import {
-    displayDateFromTimestamp,
     PdfSvg,
     TextSvg,
     WordSvg,
@@ -13,7 +11,7 @@ import {
     CsvSvg,
 } from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
-import { ShortFile } from '../../domains/instances/types/instance';
+import { PdfPreview } from './pdf/PdfPreview';
 
 const styles = {
     paper: {
@@ -50,6 +48,7 @@ const styles = {
         width: '100%',
         height: '20px',
         whiteSpace: 'nowrap',
+        fontSize: 10,
     },
 };
 type IconProps = {
@@ -76,24 +75,65 @@ const ExtensionIcon: FunctionComponent<IconProps> = ({ fileExtension }) => {
 };
 
 type Props = {
-    file: ShortFile;
+    filePath: string;
+    fileInfo?: string;
+};
+export const OpenButtonComponent = ({ onClick, disabled, ...buttonProps }) => (
+    <Box
+        role="button"
+        onClick={disabled ? undefined : onClick}
+        sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: disabled ? 0.5 : 1,
+            cursor: disabled ? 'not-allowed' : 'pointer',
+        }}
+    >
+        <Paper sx={styles.paper}>
+            <PdfSvg color="secondary" sx={styles.icon} />
+            <Box sx={styles.fileInfo}>{buttonProps.label}</Box>
+        </Paper>
+    </Box>
+);
+
+const PdfItem: FunctionComponent<Props> = ({ filePath, fileInfo }) => {
+    return (
+        <PdfPreview
+            fileInfo={fileInfo}
+            pdfUrl={filePath}
+            OpenButtonComponent={OpenButtonComponent}
+            buttonProps={{
+                label: fileInfo,
+            }}
+        />
+    );
 };
 
-const DocumentsItemComponent: FunctionComponent<Props> = ({ file }) => {
-    const fileName = getFileName(file.path);
+const DocumentsItemComponent: FunctionComponent<Props> = ({
+    filePath,
+    fileInfo,
+}) => {
+    const fileName = getFileName(filePath);
+    if (fileName.extension === 'pdf') {
+        return (
+            <PdfItem
+                filePath={filePath}
+                fileInfo={`${fileName.name}.${fileName.extension}`}
+            />
+        );
+    }
     return (
         <Box
             component="a"
-            href={file.path}
+            href={filePath}
             target="_blank"
             sx={styles.link}
             rel="noreferrer"
         >
             <Paper sx={styles.paper}>
                 <ExtensionIcon fileExtension={fileName.extension} />
-                <Box sx={styles.fileInfo}>
-                    {displayDateFromTimestamp(file.createdAt)}
-                </Box>
+                {fileInfo && <Box sx={styles.fileInfo}>{fileInfo}</Box>}
                 <Box sx={styles.fileInfo}>
                     {`${fileName.name}.${fileName.extension}`}
                 </Box>

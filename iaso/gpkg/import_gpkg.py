@@ -12,7 +12,7 @@ from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
 
 from hat.audit import models as audit_models
-from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.org_unit import get_or_create_org_unit_type
 from iaso.utils.gis import simplify_geom
 
@@ -23,11 +23,17 @@ except ImportError:
     TypedDict = type
 
 
-def get_or_create_org_unit_type_and_assign_project(name: str, project: Project, depth: int) -> OrgUnitType:
-    """Get or create the OUT '(in the scope of the project's account) then assign it to the project"""
+def get_or_create_org_unit_type_and_assign_project(name: str, projects: list, depth: int) -> OrgUnitType:
+    """Get or create the OUT '(in the scope of the project's account) then assign it to all projects"""
     # TODO: check what happens if the project has no account?
-    out = get_or_create_org_unit_type(name=name, depth=depth, account=project.account, preferred_project=project)  # type: ignore
-    out.projects.add(project)
+    # Use the first project for account and preferred_project
+    first_project = projects[0]
+    out = get_or_create_org_unit_type(
+        name=name, depth=depth, account=first_project.account, preferred_project=first_project
+    )  # type: ignore
+    # Assign to all projects in the source
+    for project in projects:
+        out.projects.add(project)
     return out
 
 
@@ -149,6 +155,10 @@ def create_or_update_orgunit(
     orgunit.source_ref = ref
     orgunit.version = source_version
 
+    # Import code if it exists in properties
+    code = props.get("code", "")
+    orgunit.code = code.strip() if code else ""  # code could be null in gpkg
+
     # Import dates if they exist in properties
 
     apply_date_field("closed_date", props, orgunit, task)
@@ -249,23 +259,18 @@ def validate_property(props: Dict[str, str], property_name: str, orgunit_name: s
 
 
 @transaction.atomic
-def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
+def import_gpkg_file(filename, source_name, version_number, validation_status, description):
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")
-    # this will cause issue if another tenant use the same source name as we will attach an existing source
-    # to our project via the tenant.
-    source.projects.add(project_id)
-    project = Project.objects.get(id=project_id)
     import_gpkg_file2(
-        filename, project, source, version_number, validation_status, user=None, description=description, task=None
+        filename, source, version_number, validation_status, user=None, description=description, task=None
     )
 
 
 @transaction.atomic
 def import_gpkg_file2(
     filename,
-    project: Project,
     source: DataSource,
     version_number: Optional[int],
     validation_status,
@@ -286,8 +291,14 @@ def import_gpkg_file2(
     if not created:
         version.save()
 
-    # TODO: check: what if the source has no projects? Or the project has no account?
-    account = source.projects.first().account  # type: ignore
+    # Get all projects from the source
+    source_projects = source.projects.all()
+    if not source_projects.exists():
+        raise ValueError("DataSource must have at least one project assigned")
+
+    # Use the first project for account access
+    first_project = source_projects.first()
+    account = first_project.account  # type: ignore
     if not account.default_version:  # type: ignore
         account.default_version = version  # type: ignore
         account.save()  # type: ignore
@@ -334,7 +345,9 @@ def import_gpkg_file2(
         colx = fiona.open(filename, mode="r", layer=layer_name)
 
         _, depth, name = layer_name.split("-", maxsplit=2)
-        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, project, int(depth))
+
+        # Create org unit type for all projects in the source (org units are shared across projects in the source)
+        org_unit_type = get_or_create_org_unit_type_and_assign_project(name, list(source_projects), int(depth))
 
         # collect all the OrgUnit to create from this layer
         row: OrgUnitData

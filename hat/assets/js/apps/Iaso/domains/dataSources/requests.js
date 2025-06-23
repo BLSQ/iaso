@@ -80,12 +80,12 @@ const compareVersions = (a, b) => {
     return comparison;
 };
 
-export const useDataSourceVersions = () => {
-    return useSnackQuery(
-        ['dataSourceVersions'],
-        getDataSourceVersions,
-        undefined,
-        {
+export const useDataSourceVersions = (enabled = true) => {
+    return useSnackQuery({
+        queryKey: ['dataSourceVersions'],
+        queryFn: getDataSourceVersions,
+        options: {
+            enabled,
             select: data => {
                 return data.versions
                     .map(version => {
@@ -100,7 +100,7 @@ export const useDataSourceVersions = () => {
                     .sort(compareVersions);
             },
         },
-    );
+    });
 };
 
 export const useDataSourcesDropDown = () => {

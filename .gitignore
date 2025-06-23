@@ -202,4 +202,5 @@ plugins/snt-malaria
 CACHEDIR.TAG
 iaso_3_9_18
 .cursor
+/temp
 iaso-enketo/

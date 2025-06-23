@@ -1,5 +1,7 @@
 from datetime import date
+from enum import Enum
 from tempfile import NamedTemporaryFile
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpResponse
@@ -13,9 +15,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
@@ -32,7 +35,15 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import VaccineStockCalculator
+from plugins.polio.models.base import Round, VaccineStockCalculator
+
+
+class CampaignCategory(str, Enum):
+    TEST_CAMPAIGN = "TEST_CAMPAIGN"
+    CAMPAIGN_ON_HOLD = "CAMPAIGN_ON_HOLD"
+    ALL_ROUNDS_ON_HOLD = "ALL_ROUNDS_ON_HOLD"
+    ROUND_ON_HOLD = "ROUND_ON_HOLD"
+    REGULAR = "REGULAR"
 
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -230,13 +241,27 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         return Response(serializer.data)
 
 
-class OutgoingStockMovementSerializer(serializers.ModelSerializer):
+def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional[Round]) -> str:
+    if campaign is None:
+        return CampaignCategory.REGULAR
+    if campaign.is_test:
+        return CampaignCategory.TEST_CAMPAIGN
+    if campaign.on_hold:
+        return CampaignCategory.CAMPAIGN_ON_HOLD
+    if not campaign.rounds.exclude(on_hold=True).exists():
+        return CampaignCategory.ALL_ROUNDS_ON_HOLD
+    if round is not None and round.on_hold:
+        return CampaignCategory.ROUND_ON_HOLD
+    return CampaignCategory.REGULAR
+
+
+class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
     # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
-    document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -248,18 +273,22 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "form_a_reception_date",
             "usable_vials_used",
             "lot_numbers",
-            "document",
+            "scan_result",
+            "scan_timestamp",
+            "file",
             "comment",
             "round",
             "round_number",
             "can_edit",
             "alternative_campaign",
+            "campaign_category",
         ]
 
     def validate(self, data):
         # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
-        if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
+        if data.get("campaign", None) and data.get("non_obr_name", None):
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+
         validated_data = super().validate(data)
         return validated_data
 
@@ -270,10 +299,13 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -290,12 +322,14 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
-        return OutgoingStockMovement.objects.create(**validated_data)
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
+        self.scan_file_if_exists(validated_data, instance)
         return super().update(instance, validated_data)
 
 
@@ -319,9 +353,9 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     model_class = OutgoingStockMovement
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
     filter_backends = [
@@ -340,9 +374,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
 
-        base_queryset = OutgoingStockMovement.objects.filter(
-            Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
-        )
+        base_queryset = OutgoingStockMovement.objects.all()
 
         if vaccine_stock_id is None:
             return base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
@@ -379,22 +411,30 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         return response
 
 
-class IncidentReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class IncidentReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = IncidentReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
@@ -402,29 +442,37 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
     model_class = IncidentReport
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
 
-class DestructionReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class DestructionReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = DestructionReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):
@@ -432,9 +480,9 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
     model_class = DestructionReport
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -474,6 +522,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.SerializerMethodField()
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -491,16 +540,20 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "can_edit",
+            "campaign_category",
         ]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def get_campaign(self, obj):
         return obj.campaign.obr_name if obj.campaign else None
@@ -563,9 +616,9 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
     filterset_class = EarmarkedStockFilter
     permission_classes = [
         lambda: VaccineStockEarmarkPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
 
@@ -614,9 +667,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-            read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
     ]
     serializer_class = VaccineStockSerializer

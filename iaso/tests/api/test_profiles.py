@@ -1,8 +1,6 @@
 import typing
 
 import jsonschema
-import numpy as np
-import pandas as pd
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -10,7 +8,8 @@ from django.core import mail
 from django.test import override_settings
 from rest_framework import status
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.models import Profile
@@ -197,16 +196,16 @@ class ProfileAPITestCase(APITestCase):
 
         # Users.
         cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[permission._FORMS]
+            username="janedoe", account=cls.account, permissions=[core_permissions._FORMS]
         )
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[permission._FORMS, permission._USERS_ADMIN]
+            username="jim", account=cls.account, permissions=[core_permissions._FORMS, core_permissions._USERS_ADMIN]
         )
         cls.jam = cls.create_user_with_profile(
             username="jam",
             account=cls.account,
-            permissions=[permission._USERS_MANAGED],
+            permissions=[core_permissions._USERS_MANAGED],
             language="en",
         )
         cls.jom = cls.create_user_with_profile(username="jom", account=cls.account, permissions=[], language="fr")
@@ -216,7 +215,7 @@ class ProfileAPITestCase(APITestCase):
         cls.user_managed_geo_limit = cls.create_user_with_profile(
             username="managedGeoLimit",
             account=cls.account,
-            permissions=[permission._USERS_MANAGED],
+            permissions=[core_permissions._USERS_MANAGED],
             org_units=[cls.org_unit_from_parent_type],
         )
         cls.team1 = Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
@@ -382,12 +381,8 @@ class ProfileAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -409,10 +404,8 @@ class ProfileAPITestCase(APITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
-
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
@@ -687,7 +680,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
-            ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            ["<Permission: iaso | core permission support | Formulaires>"],
             transform=repr,
         )
         org_units = profile.org_units.all()
@@ -765,7 +758,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
-            ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            ["<Permission: iaso | core permission support | Formulaires>"],
             transform=repr,
         )
         org_units = profile.org_units.all()
@@ -968,7 +961,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "unittest_password",
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -983,7 +976,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         jum.refresh_from_db()
@@ -997,14 +990,18 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED, permission._USERS_ADMIN],
+            "user_permissions": [
+                core_permissions._FORMS,
+                core_permissions._USERS_MANAGED,
+                core_permissions._USERS_ADMIN,
+            ],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=permission._USERS_ADMIN)])
+        group.permissions.set([Permission.objects.get(codename=core_permissions._USERS_ADMIN)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1019,7 +1016,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=permission._FORMS)])
+        group.permissions.set([Permission.objects.get(codename=core_permissions._FORMS)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1100,8 +1097,8 @@ class ProfileAPITestCase(APITestCase):
         user = self.jam
         user.iaso_profile.org_units.set([self.org_unit_from_sub_type])
 
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
+        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
 
         profile_to_modify = Profile.objects.get(user=self.jum)
         profile_to_modify.org_units.set([self.org_unit_from_sub_type])
@@ -1120,7 +1117,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             response.data["detail"],
             (
-                f"User with menupermissions.iaso_users_managed cannot assign an OrgUnit outside "
+                f"User with iaso.iaso_users_managed cannot assign an OrgUnit outside "
                 f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
             ),
         )
@@ -1132,8 +1129,8 @@ class ProfileAPITestCase(APITestCase):
         """
         user = self.jam
 
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
+        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
 
         user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
@@ -1383,10 +1380,10 @@ class ProfileAPITestCase(APITestCase):
         )
 
         # An "admin" user with `projects` restrictions can assign projects outside his range.
-        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        user.user_permissions.add(Permission.objects.get(codename=core_permissions._USERS_ADMIN))
         del user._perm_cache
         del user._user_perm_cache
-        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
         user.iaso_profile.projects.set([self.project])
         response = self.client.patch(
             f"/api/profiles/{profile_to_edit.id}/",
@@ -1406,8 +1403,8 @@ class ProfileAPITestCase(APITestCase):
         project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
 
         user_admin = self.jim
-        self.assertFalse(user_admin.has_perm(permission.USERS_MANAGED))
-        self.assertTrue(user_admin.has_perm(permission.USERS_ADMIN))
+        self.assertFalse(user_admin.has_perm(core_permissions.USERS_MANAGED))
+        self.assertTrue(user_admin.has_perm(core_permissions.USERS_ADMIN))
 
         profile_to_edit = user_admin.iaso_profile
         profile_to_edit.projects.set([project_1])
@@ -1832,3 +1829,44 @@ class ProfileAPITestCase(APITestCase):
         # Should only include the user once despite being in multiple levels
         self.assertEqual(len(profiles), 1)
         self.assertEqual(profiles[0]["user_name"], "janedoe")
+
+    def test_update_password_for_single_user(self):
+        single_user = self.jim
+        single_user.set_password("p4ssword")
+        single_user.save()
+
+        self.client.force_authenticate(single_user)
+        new_data = {
+            "user_name": single_user.username,
+            "password": "new_p4ssword",
+        }
+        response = self.client.patch(f"/api/profiles/{single_user.iaso_profile.pk}/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        single_user.refresh_from_db()
+        self.assertEqual(single_user.check_password("new_p4ssword"), True)
+
+    def test_update_password_for_multi_user(self):
+        """
+        For tenant users, changing the password of an `account_user`
+        should update the password of the `main_user`.
+        """
+        main_user = m.User.objects.create(username="main_user", email="main_user@health.org")
+        main_user.set_password("p4ssword")
+        main_user.save()
+        account_user = self.create_user_with_profile(
+            username="user_1",
+            email="user_1@health.org",
+            account=self.account,
+            permissions=[core_permissions._USERS_ADMIN],
+        )
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user)
+
+        self.client.force_authenticate(account_user)
+        new_data = {
+            "user_name": account_user.username,
+            "password": "new_p4ssword",
+        }
+        response = self.client.patch(f"/api/profiles/{account_user.iaso_profile.pk}/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        main_user.refresh_from_db()
+        self.assertEqual(main_user.check_password("new_p4ssword"), True)

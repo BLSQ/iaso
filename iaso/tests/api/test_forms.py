@@ -50,7 +50,11 @@ class FormsAPITestCase(APITestCase):
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=cls.now)
-
+        form_version = cls.form_1.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
+        form_version.possible_fields = {}
+        form_version.save()
         cls.project_3 = m.Project.objects.create(name="Kotor", app_id="knights.of.the.old.republic", account=star_wars)
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
@@ -69,7 +73,11 @@ class FormsAPITestCase(APITestCase):
             single_per_period=True,
             created_at=cls.now,
         )
-        cls.form_2.form_versions.create(file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401")
+        form_version = cls.form_2.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
+        form_version.possible_fields = {}
+        form_version.save()
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
 
@@ -737,3 +745,49 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(response.json()["forms"][0]["instances_count"], 2)
+
+    def test_instance_count_computation_removed_when_not_requested(self):
+        """
+        Test that instance_count computation is removed when not in requested fields.
+        This test verifies the optimization added in iaso/api/forms.py:299-311.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Test with specific fields that don't include instances_count or :all
+        response = self.client.get("/api/forms/?fields=id,name,form_id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        # The response should not include instances_count field when not requested
+        for form_data in response.json()["forms"]:
+            self.assertNotIn("instances_count", form_data)
+
+        # Test that instances_count is included when explicitly requested
+        response = self.client.get(
+            "/api/forms/?fields=id,name,instances_count", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+        # Test that instances_count is included when no fields parameter is provided (default behavior)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+    def test_forms_list_no_duplicates_when_linked_to_multiple_projects(self):
+        """
+        Ensure that a form linked to multiple projects appears only once in the forms list API response.
+        """
+        self.client.force_authenticate(self.yoda)
+        # Link form_1 to both project_1 and project_2
+        self.project_2.forms.add(self.form_1)
+        self.project_2.save()
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        form_ids = [form["id"] for form in response.json()["forms"]]
+        # Assert that each form id appears only once
+        self.assertEqual(len(form_ids), len(set(form_ids)), "Duplicate forms found in API response!")

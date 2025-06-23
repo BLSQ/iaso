@@ -1,8 +1,15 @@
+import csv
 import importlib
+import io
 import typing
 
+from importlib import import_module
 from unittest import mock
 
+import numpy as np
+import pandas as pd
+
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -17,6 +24,7 @@ from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 from hat.api_import.models import APIImport
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
+from iaso.permissions import CorePermissionSupport
 
 
 class IasoTestCaseMixin:
@@ -38,8 +46,19 @@ class IasoTestCaseMixin:
         m.Profile.objects.create(user=user, account=account)
 
         if permissions is not None:
-            content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-            user.user_permissions.set(Permission.objects.filter(codename__in=permissions, content_type=content_type))
+            content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+            content_types.append(ContentType.objects.get_for_model(CorePermissionSupport))
+
+            for plugin in settings.PLUGINS:
+                try:
+                    permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
+                    content_types.append(ContentType.objects.get_for_model(permission_model))
+                except ImportError:
+                    pass
+
+            user.user_permissions.set(
+                Permission.objects.filter(codename__in=permissions, content_type__in=content_types)
+            )
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
@@ -120,12 +139,13 @@ class IasoTestCaseMixin:
         return [user, anon, user_no_perms]
 
     @staticmethod
-    def create_account_datasource_version_project(source_name, account_name, project_name):
+    def create_account_datasource_version_project(source_name, account_name, project_name, app_id=None):
         """Create a project and all related data: account, data source, source version"""
         data_source = m.DataSource.objects.create(name=source_name)
         source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
         account = m.Account.objects.create(name=account_name, default_version=source_version)
-        project = m.Project.objects.create(name=project_name, app_id=f"{project_name}.app", account=account)
+        app_id = app_id or f"{project_name}.app"
+        project = m.Project.objects.create(name=project_name, app_id=app_id, account=account)
         data_source.projects.set([project])
 
         return [account, data_source, source_version, project]
@@ -192,12 +212,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         expected_attachment_filename: str = None,
         streaming: bool = False,
     ):
-        if streaming:
-            self.assertIsInstance(response, StreamingHttpResponse)
-            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
-            self.assertIsInstance(list(response.streaming_content), list)
-        else:
-            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response["Content-Type"])
 
@@ -205,6 +219,61 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+        content = response.getvalue()
+
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
+        return content
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        decoded_response = content.decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
+
+    def assertXlsxFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+    ) -> tuple[list, dict]:
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        excel_data = pd.read_excel(content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+
+        return excel_columns, data_dict
 
     def assertValidListData(
         self,
@@ -296,3 +365,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
                 self.assertTrue(any(isinstance(data[field], t) for t in expected_type))
             else:
                 self.assertIsInstance(data[field], expected_type)
+
+
+class MockClamavScanResults:
+    def __init__(self, state, details, passed):
+        self.state = state
+        self.details = details
+        self.passed = passed

@@ -4,9 +4,10 @@ from django.contrib import auth
 from django.contrib.auth.models import User
 from django.db.models import Q
 
+import iaso.permissions as core_permissions
+
 from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
-from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.models import QUEUED, Task
 from iaso.models.microplanning import TeamType
@@ -34,7 +35,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.group_2 = auth.models.Group.objects.create(name="group_2")
         cls.group_3 = auth.models.Group.objects.create(name="group_3")
         cls.group_admin = auth.models.Group.objects.create(name="group_admin")
-        cls.group_admin.permissions.set([auth.models.Permission.objects.get(codename=permission._USERS_ADMIN)])
+        cls.group_admin.permissions.set([auth.models.Permission.objects.get(codename=core_permissions._USERS_ADMIN)])
         cls.group_4 = auth.models.Group.objects.create(name="group_4")
         cls.user_role = m.UserRole.objects.create(group=cls.group_1, account=cls.account1)
         cls.user_role_2 = m.UserRole.objects.create(group=cls.group_2, account=cls.account1)
@@ -68,21 +69,21 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_admin = cls.create_user_with_profile(
             username="user_admin",
             account=cls.account1,
-            permissions=[permission._USERS_ADMIN, permission._DATA_TASKS],
+            permissions=[core_permissions._USERS_ADMIN, core_permissions._DATA_TASKS],
             language="en",
         )
         saveUserProfile(cls.user_admin)
         cls.user_managed = cls.create_user_with_profile(
             username="user_managed",
             account=cls.account1,
-            permissions=[permission._USERS_MANAGED, permission._DATA_TASKS],
+            permissions=[core_permissions._USERS_MANAGED, core_permissions._DATA_TASKS],
             language="en",
         )
         saveUserProfile(cls.user_admin)
         cls.user_admin_no_task = cls.create_user_with_profile(
             username="user_admin_no_task",
             account=cls.account1,
-            permissions=[permission._USERS_ADMIN],
+            permissions=[core_permissions._USERS_ADMIN],
             org_units=[cls.org_unit2],
             projects=[cls.project_2],
             language="en",
@@ -92,7 +93,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_admin_no_task2 = cls.create_user_with_profile(
             username="user_admin_no_task2",
             account=cls.account1,
-            permissions=[permission._USERS_ADMIN],
+            permissions=[core_permissions._USERS_ADMIN],
             projects=[cls.project_2],
             org_units=[cls.org_unit2],
             language="en",
@@ -102,7 +103,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_with_user_role1 = cls.create_user_with_profile(
             username="user_with_user_role1",
             account=cls.account1,
-            permissions=[permission._USERS_ADMIN],
+            permissions=[core_permissions._USERS_ADMIN],
             projects=[cls.project_2],
             org_units=[cls.org_unit2],
             language="en",
@@ -113,14 +114,14 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_admin_account2 = cls.create_user_with_profile(
             username="user_admin_account2",
             account=cls.account2,
-            permissions=[permission._USERS_ADMIN, permission._DATA_TASKS],
+            permissions=[core_permissions._USERS_ADMIN, core_permissions._DATA_TASKS],
             language="en",
         )
         saveUserProfile(cls.user_admin_account2)
         cls.user_admin_no_task_account2 = cls.create_user_with_profile(
             username="user_admin_no_task_account2",
             account=cls.account2,
-            permissions=[permission._USERS_ADMIN],
+            permissions=[core_permissions._USERS_ADMIN],
             org_units=None,
             language="en",
         )
@@ -128,7 +129,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.user_admin_account3 = cls.create_user_with_profile(
             username="user_admin_account3",
             account=cls.account3,
-            permissions=[permission._USERS_ADMIN, permission._DATA_TASKS],
+            permissions=[core_permissions._USERS_ADMIN, core_permissions._DATA_TASKS],
             org_units=None,
             language="en",
         )
@@ -145,7 +146,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.add_users_team_launcher_1 = cls.create_user_with_profile(
             username="add_users_team_launcher_1",
             account=cls.account1,
-            permissions=[permission._USERS_ADMIN, permission._DATA_TASKS, permission._TEAMS],
+            permissions=[core_permissions._USERS_ADMIN, core_permissions._DATA_TASKS, core_permissions._TEAMS],
             language="en",
         )
         saveUserProfile(cls.add_users_team_launcher_1)
@@ -361,7 +362,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
     def test_profile_bulkupdate_for_user_with_restricted_projects(self):
         user = self.user_admin
         user.iaso_profile.projects.set([self.project_1.pk, self.project_2.pk])
-        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
 
         user_to_update = self.user_admin_no_task
         user_to_update.iaso_profile.projects.set([self.project_2.pk])
@@ -881,7 +882,7 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
     def test_profile_bulkupdate_user_without_iaso_team_permission(self):
         """POST /api/tasks/create/profilesbulkupdate/ a user without permission menupermissions.iaso_teams cannot add users to team"""
         user = self.user_managed
-        self.assertFalse(user.has_perm(permission.TEAMS))
+        self.assertFalse(user.has_perm(core_permissions.TEAMS))
 
         self.client.force_authenticate(user)
 

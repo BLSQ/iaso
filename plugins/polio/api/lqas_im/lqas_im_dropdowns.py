@@ -8,10 +8,10 @@ from django.db.models import Q, QuerySet
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import ValidationError
 
-from hat.menupermissions import models as iaso_permission
 from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.org_unit import OrgUnit
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
 
@@ -19,14 +19,14 @@ from plugins.polio.models import Campaign, Round
 class HasPolioPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(iaso_permission.POLIO) or request.user.is_superuser
+            request.user.has_perm(polio_permissions.POLIO) or request.user.is_superuser
         )
 
 
 class HasPolioAdminPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(iaso_permission.POLIO_CONFIG) or request.user.is_superuser
+            request.user.has_perm(polio_permissions.POLIO_CONFIG) or request.user.is_superuser
         )
 
 
@@ -57,6 +57,9 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
         )
         countries_with_lqas = (
             Round.objects.filter(campaign__country__in=queryset)
+            .filter(campaign__is_test=False)
+            .filter(campaign__on_hold=False)
+            .filter(on_hold=False)
             .filter(with_lqas_end_date | without_lqas_end_date)
             .values_list("campaign__country__id")
         )
@@ -109,7 +112,7 @@ class LqasImCampaignOptionsFilter(django_filters.rest_framework.FilterSet):
             ended_at__lte=last_day - timedelta(days=10),  # same logic a s above
         )
 
-        rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date)
+        rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date).filter(on_hold=False)
 
         return queryset.filter(rounds__in=rounds_with_lqas)
 
@@ -133,7 +136,13 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        # Sometimes filter_for_user will return duplicate campaigns but fixing this at the queryset manager level introduces a whole loit of new bugs
+        campaigns = (
+            Campaign.polio_objects.filter_for_user(user)
+            .filter(is_test=False)
+            .filter(on_hold=False)
+            .distinct("obr_name")
+        )
         return campaigns
 
 
@@ -172,7 +181,7 @@ class LqasImRoundOptionsFilter(django_filters.rest_framework.FilterSet):
             ended_at__gte=first_day - timedelta(days=10),
             ended_at__lte=last_day - timedelta(days=10),
         )
-        return queryset.filter(with_lqas_end_date | without_lqas_end_date)
+        return queryset.filter(with_lqas_end_date | without_lqas_end_date).filter(on_hold=False)
 
 
 class LqasImRoundOptionsViewset(ModelViewSet):
@@ -185,4 +194,4 @@ class LqasImRoundOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Round.objects.filter_for_user(user)
+        return Round.objects.filter_for_user(user).filter(on_hold=False)

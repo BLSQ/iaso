@@ -21,7 +21,6 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
         path = tmp_file.name
         total = import_gpkg_file2(
             path,
-            project=ig.project,
             source=ig.data_source,
             version_number=ig.version_number,
             validation_status="NEW",

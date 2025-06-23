@@ -12,18 +12,20 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from hat.menupermissions import models as permission
-from iaso.models import Form, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
+from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
-from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
+from .serializers import AppIdSerializer
 
 
 class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
@@ -31,7 +33,7 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
 
-        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
+        return request.user.is_authenticated and request.user.has_perm(core_permissions.FORMS)
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -41,15 +43,6 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
             .filter(id=obj.id)
             .exists()
         )
-
-
-class HasFormPermissionOrSignedURL(HasFormPermission):
-    def has_permission(self, request, view):
-        if super().has_permission(request, view):
-            return True
-
-        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
-        return verify_signed_url(request, enketo_secret)
 
 
 class FormPredefinedFilterSerializer(serializers.ModelSerializer):
@@ -230,11 +223,28 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return form
 
 
+# empty fields then do return true assume it's give me all the fields like the forms page list
+# if specified fields contains :all or field_name then do return True
+# else False
+def is_field_referenced(field_name, requested_fields, order):
+    result = False
+
+    if (
+        not requested_fields
+        or ":all" in requested_fields.split(",")
+        or field_name in requested_fields.split(",")
+        or field_name in order
+    ):
+        result = True
+
+    return result
+
+
 class FormsViewSet(ModelViewSet):
     f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{permission.FORMS}"  permission.
+    having the "{core_permissions.FORMS}"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -288,22 +298,34 @@ class FormsViewSet(ModelViewSet):
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
-        queryset = queryset.annotate(
-            mapping_count=Count("mapping"),
-            has_mappings=Case(
-                When(mapping_count__gt=0, then=True),
-                default=False,
-                output_field=BooleanField(),
-            ),
-        )
+        requested_fields = self.request.query_params.get("fields")
 
-        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+        is_request_from_manifest = self.request.path.endswith("/manifest/")
+        default_order = "id" if is_request_from_manifest else "instance_updated_at"
+
+        order = self.request.query_params.get("order", default_order).split(",")
+
+        if is_field_referenced("has_mappings", requested_fields, order):
+            queryset = queryset.annotate(
+                mapping_count=Count("mapping"),
+                has_mappings=Case(
+                    When(mapping_count__gt=0, then=True),
+                    default=False,
+                    output_field=BooleanField(),
+                ),
+            )
 
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
         else:
             profile = False
-        if not mobile:
+
+        if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
+            queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+
+        enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
+
+        if not mobile and enable_count:
             if profile and profile.org_units.exists():
                 orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
                 queryset = queryset.annotate(
@@ -353,24 +375,33 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
-        queryset = queryset.prefetch_related(
-            "form_versions",
-            "projects",
-            "projects__feature_flags",
-            "reference_of_org_unit_types",
-            "org_unit_types",
-            "org_unit_types__reference_forms",
-            "org_unit_types__sub_unit_types",
-            "org_unit_types__allow_creating_sub_unit_types",
-        )
+        # spare 8 or more sql when not needed
+        if not is_request_from_manifest:
+            # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+            # TODO
+            #  - be smarter cfr is_field_referenced
+            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
+
+            queryset = queryset.prefetch_related(
+                "form_versions",
+                "projects",
+                "projects__feature_flags",
+                "reference_of_org_unit_types",
+                "org_unit_types",
+                "org_unit_types__reference_forms",
+                "org_unit_types__sub_unit_types",
+                "org_unit_types__allow_creating_sub_unit_types",
+            )
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()
 
         # TODO: allow this only from a predefined list for security purposes
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+
         queryset = queryset.order_by(*order)
+
+        # Ensure duplicates are removed after all joins and annotations
+        queryset = queryset.distinct()
 
         return queryset
 
@@ -431,42 +462,79 @@ class FormsViewSet(ModelViewSet):
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
 
-    @action(detail=True, methods=["get"], permission_classes=[HasFormPermissionOrSignedURL])
+    @action(detail=True, methods=["get"])
     def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
-        This is used for the mobile app and Enketo to fetch the list of file attached to the Form
+        This is used for the mobile app to fetch the list of files attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
         form = self.get_object()
-        attachments = form.attachments.all()
-        media_files = []
-        for attachment in attachments:
-            attachment_file_url: str = attachment.file.url
-            if not attachment_file_url.startswith("http"):
-                # Needed for local dev
-                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        return generate_manifest_for_form(form, request)
 
-            media_files.append(
-                f"""<mediaFile>
-                        <filename>{escape(attachment.name)}</filename>
-                        <hash>md5:{attachment.md5}</hash>
-                        <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
-                    </mediaFile>"""
-            )
+    @action(detail=True, methods=["get"], permission_classes=[ReadOnly])
+    def manifest_enketo(self, request, pk, *args, **kwargs):
+        """Returns a xml manifest file in the openrosa format for the Form
 
-        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+        This is used by enketo to fetch the list of files attached to the Form
+        see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+        """
+        enketo_secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        if verify_signed_url(request, enketo_secret):
+            app_id = AppIdSerializer(data=request.query_params).get_app_id(raise_exception=True)
+            queryset = Form.objects.filter(
+                projects__app_id=app_id
+            )  # Not using the default queryset because there's no auth
+            form = get_object_or_404(queryset, pk=pk)
+            return generate_manifest_for_form(form, request)
+
         return HttpResponse(
-            status=status.HTTP_200_OK,
+            status=status.HTTP_400_BAD_REQUEST,
             content_type="text/xml",
             headers={
                 "X-OpenRosa-Version": "1.0",
             },
-            content=f"""<?xml version="1.0" encoding="UTF-8"?>
-                        <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
-                            {nl.join(media_files)}
-                        </manifest>""",
+            content="<error>Invalid URL signature</error>",
         )
+
+
+def generate_manifest_for_form(form: Form, request: Request) -> HttpResponse:
+    attachments = form.attachments.all()
+    media_files = []
+    for attachment in attachments:
+        attachment_file_url: str = attachment.file.url
+        if not attachment_file_url.startswith("http"):
+            # Needed for local dev
+            attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+        media_files.append(generate_manifest_media_file(attachment, attachment_file_url))
+
+    manifest = generate_manifest_structure(media_files)
+    return HttpResponse(
+        status=status.HTTP_200_OK,
+        content_type="text/xml",
+        headers={
+            "X-OpenRosa-Version": "1.0",
+        },
+        content=manifest,
+    )
+
+
+def generate_manifest_media_file(attachment: FormAttachment, url: str) -> str:
+    return f"""<mediaFile>
+        <filename>{escape(attachment.name)}</filename>
+        <hash>md5:{attachment.md5}</hash>
+        <downloadUrl>{escape(url)}</downloadUrl>
+    </mediaFile>"""
+
+
+def generate_manifest_structure(content: list[str]) -> str:
+    nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+    return (
+        f"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+    {nl.join(content)}
+</manifest>""",
+    )
 
 
 class MobileFormViewSet(FormsViewSet):

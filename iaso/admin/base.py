@@ -460,7 +460,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
-    autocomplete_fields = ["account"]
+    autocomplete_fields = ["account", "user"]
 
 
 @admin.register(ExportRequest)
@@ -564,6 +564,7 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
+        "id",
         "uuid",
         "account__name",
         "entity_type__name",
@@ -822,6 +823,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):
@@ -845,13 +847,15 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("task",)
+    search_fields = ("id",)
 
 
 @admin.register(OrgUnitChangeRequest)
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
-    list_display = ("pk", "org_unit", "created_at", "status")
+    list_display = ("pk", "org_unit", "created_at", "status", "deleted_at")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status", "kind", "data_source_synchronization")
+    list_filter = ("status", "kind", "data_source_synchronization", "deleted_at")
     readonly_fields = (
         "uuid",
         "created_at",
@@ -1075,34 +1079,33 @@ class TenantUserAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         return urls
 
+    @admin.display(
+        description="Account",
+        ordering="account_user__iaso_profile__account",
+    )
     def account(self, obj):
         return obj.account
 
-    account.admin_order_field = "account_user__iaso_profile__account"
-    account.short_description = "Account"
-
+    @admin.display(description="Total Accounts")
     def all_accounts_count(self, obj):
         return obj.main_user.tenant_users.count()
 
-    all_accounts_count.short_description = "Total Accounts"
-
+    @admin.display(
+        description="Self Account",
+        boolean=True,
+    )
     def is_self_account(self, obj):
         return obj.main_user == obj.account_user
 
-    is_self_account.boolean = True
-    is_self_account.short_description = "Self Account"
-
+    @admin.display(description="All Account Users")
     def all_account_users(self, obj):
         users = obj.get_all_account_users()
         return format_html("<br>".join(user.username for user in users))
 
-    all_account_users.short_description = "All Account Users"
-
+    @admin.display(description="Other Accounts")
     def other_accounts(self, obj):
         accounts = obj.get_other_accounts()
-        return format_html("<br>".join(str(account) for account in accounts))
-
-    other_accounts.short_description = "Other Accounts"
+        return format_html("<br>".join(account.name for account in accounts))
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")

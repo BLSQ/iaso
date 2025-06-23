@@ -195,55 +195,49 @@ export const OrgUnits: FunctionComponent = () => {
                             />
                         </Box>
                     )}
-                {isSearchActive && (
-                    <Box px={4}>
-                        <Tabs
-                            value={tab}
-                            classes={{
-                                root: classes.tabs,
-                            }}
-                            className={classes.marginBottom}
-                            indicatorColor="primary"
-                            onChange={(event, newtab) =>
-                                handleChangeTab(newtab)
-                            }
-                        >
-                            <Tab
-                                value="list"
-                                label={formatMessage(MESSAGES.list)}
-                            />
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                        </Tabs>
-                        {tab === 'list' && (
-                            <TableList
-                                params={params}
-                                saveMulti={saveMulti}
-                                orgUnitsData={orgUnitsData}
-                            />
-                        )}
 
-                        <Box
-                            className={
-                                tab === 'map' ? '' : classes.hiddenOpacity
-                            }
-                        >
-                            <Box className={classes.containerMarginNeg}>
-                                <OrgUnitsMap
-                                    getSearchColor={getSearchColor}
-                                    orgUnits={
-                                        orgUnitsDataLocation || {
-                                            locations: [],
-                                            shapes: [],
-                                        }
+                <Box px={4}>
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                        }}
+                        className={classes.marginBottom}
+                        indicatorColor="primary"
+                        onChange={(event, newtab) => handleChangeTab(newtab)}
+                    >
+                        <Tab
+                            value="list"
+                            label={formatMessage(MESSAGES.list)}
+                        />
+                        <Tab
+                            value="map"
+                            label={formatMessage(MESSAGES.map)}
+                            disabled={!isSearchActive}
+                        />
+                    </Tabs>
+                    {tab === 'list' && (
+                        <TableList
+                            params={params}
+                            saveMulti={saveMulti}
+                            orgUnitsData={orgUnitsData}
+                        />
+                    )}
+
+                    <Box className={tab === 'map' ? '' : classes.hiddenOpacity}>
+                        <Box className={classes.containerMarginNeg}>
+                            <OrgUnitsMap
+                                getSearchColor={getSearchColor}
+                                orgUnits={
+                                    orgUnitsDataLocation || {
+                                        locations: [],
+                                        shapes: [],
                                     }
-                                />
-                            </Box>
+                                }
+                            />
                         </Box>
                     </Box>
-                )}
+                </Box>
             </Box>
         </>
     );

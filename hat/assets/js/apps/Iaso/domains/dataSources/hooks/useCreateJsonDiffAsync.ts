@@ -31,6 +31,13 @@ const createJsonDiffAsync = async ({
         );
     }
 
+    if (toUpdateFields.group.value) {
+        params.source_version_to_update_org_unit_group = parseInt(
+            toUpdateFields.group.value,
+            10,
+        );
+    }
+
     if (toUpdateFields.orgUnitTypes.value.length > 0) {
         params.source_version_to_update_org_unit_types =
             toUpdateFields.orgUnitTypes.value.map(outId => parseInt(outId, 10));
@@ -49,6 +56,13 @@ const createJsonDiffAsync = async ({
         );
     }
 
+    if (toCompareWithFields.group.value) {
+        params.source_version_to_compare_with_org_unit_group = parseInt(
+            toCompareWithFields.group.value,
+            10,
+        );
+    }
+
     if (toCompareWithFields.orgUnitTypes.value.length > 0) {
         params.source_version_to_compare_with_org_unit_types =
             toCompareWithFields.orgUnitTypes.value.map(outId =>
@@ -58,7 +72,7 @@ const createJsonDiffAsync = async ({
 
     // Options
     const nonEmptyFields = fieldsToExport.filter(
-        field => field !== 'geometry' && field !== 'groups',
+        field => field !== 'geometry' && field !== 'groups' && field !== 'code',
     );
     if (nonEmptyFields.length > 0) {
         params.field_names = nonEmptyFields;
@@ -66,7 +80,6 @@ const createJsonDiffAsync = async ({
 
     params.ignore_groups = !fieldsToExport.includes('groups');
     params.show_deleted_org_units = false;
-
     return patchRequest(
         `/api/datasources/sync/${id}/create_json_diff/`,
         params,
@@ -74,6 +87,7 @@ const createJsonDiffAsync = async ({
 };
 
 export const useCreateJsonDiffAsync = () => {
+    const ignoreErrorCodes = [400];
     return useSnackMutation<SyncResponse, Error, SyncParams>({
         mutationFn: ({
             id,
@@ -88,5 +102,6 @@ export const useCreateJsonDiffAsync = () => {
                 fieldsToExport,
             }),
         showSucessSnackBar: false,
+        ignoreErrorCodes,
     });
 };

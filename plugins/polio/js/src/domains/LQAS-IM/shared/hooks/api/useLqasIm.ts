@@ -49,6 +49,10 @@ export const useLqasIm = (
             keepPreviousData: false,
             initialData: { stats: {} },
             enabled: Boolean(countryId),
+            onError: err => {
+                console.warn(err);
+                return undefined;
+            },
         },
     });
 };

@@ -4,8 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.audit.audit_mixin import AuditMixin
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import ReasonForDelay
 
 
@@ -67,7 +67,7 @@ class ReasonForDelaySerializer(serializers.ModelSerializer):
 
 class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch"]
-    permission_classes = [HasPermission(permission.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [HasPermission(polio_permissions.POLIO_CONFIG)]  # type: ignore
     serializer_class = ReasonForDelaySerializer
     ordering_fields = ["updated_at", "created_at", "name_en", "name_fr", "key_name", "id"]
     filter_backends = [
@@ -84,7 +84,9 @@ class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
 
     # This endpoint is to populate the dropdown choices for regular polio users
     @action(
-        methods=["GET"], detail=False, permission_classes=[HasPermission(permission.POLIO, permission.POLIO_CONFIG)]
+        methods=["GET"],
+        detail=False,
+        permission_classes=[HasPermission(polio_permissions.POLIO, polio_permissions.POLIO_CONFIG)],
     )  # type: ignore
     def forcampaign(self, request):
         queryset = self.get_queryset()

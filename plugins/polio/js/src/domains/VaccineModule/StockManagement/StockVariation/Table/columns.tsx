@@ -14,7 +14,8 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import { USED } from '../../constants';
+import { REGULAR, USED } from '../../constants';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -26,6 +27,8 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
+import { Box, Tooltip } from '@mui/material';
+import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -45,9 +48,14 @@ export const useFormATableColumns = (
                     const campaign = settings.row.original.campaign;
                     const altCampaign =
                         settings.row.original.alternative_campaign;
-                    if (campaign) return campaign;
-                    if (altCampaign) return altCampaign;
-                    return textPlaceholder;
+                    const text = campaign ?? altCampaign ?? textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
                 },
             },
             {
@@ -97,7 +105,14 @@ export const useFormATableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -193,7 +208,14 @@ export const useDestructionTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -308,7 +330,14 @@ export const useIncidentTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
 
                             <DisplayIfUserHasPerm
@@ -391,12 +420,17 @@ export const useEarmarkedTableColumns = (
                 id: 'campaign',
                 sortable: true,
                 Cell: settings => {
-                    if (settings.row.original.campaign) {
-                        return settings.row.original.campaign;
-                    }
-                    return settings.row.original.temporary_campaign_name
-                        ? `(${settings.row.original.temporary_campaign_name})`
-                        : textPlaceholder;
+                    const text =
+                        settings.row.original.campaign ??
+                        settings.row.original.temporary_campaign_name ??
+                        textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
                 },
             },
             {

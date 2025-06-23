@@ -12,6 +12,8 @@ from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
 
 logger = getLogger(__name__)
 
+TEMPLATE_VERSION = "v3.5"
+
 
 def parse_value(value: str):
     try:
@@ -384,7 +386,7 @@ def parse_prepardness_v2(spread: CachedSpread):
     preparedness_data = {
         "national": get_national_level_preparedness_v2(spread),
         **get_regional_level_preparedness_v2(spread),
-        "format": "v3.3",
+        "format": TEMPLATE_VERSION,
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data

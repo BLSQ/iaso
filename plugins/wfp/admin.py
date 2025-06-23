@@ -46,13 +46,23 @@ class JourneyAdmin(admin.ModelAdmin):
 class VisitAdmin(admin.ModelAdmin):
     list_display = ("id", "date", "number", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
-    list_filter = ("date", "number", "journey__programme_type", "journey__beneficiary__account")
+    list_filter = (
+        "date",
+        "number",
+        "journey__programme_type",
+        "journey__beneficiary__account",
+    )
 
 
 @admin.register(Step)
 class StepAdmin(admin.ModelAdmin):
-    list_display = ("id", "assistance_type", "quantity_given", "visit")
-    list_filter = ("assistance_type", "visit__journey__programme_type", "visit__journey__beneficiary__account")
+    list_display = ("id", "assistance_type", "quantity_given", "ration_size", "visit")
+    list_filter = (
+        "assistance_type",
+        "ration_size",
+        "visit__journey__programme_type",
+        "visit__journey__beneficiary__account",
+    )
 
 
 @admin.register(MonthlyStatistics)
@@ -83,4 +93,5 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "given_sachet_rusf",
         "given_sachet_rutf",
         "given_quantity_csb",
+        "given_ration_cbt",
     )

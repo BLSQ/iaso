@@ -83,6 +83,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
         vials_used = random.randint(5, usable_vials_start_day)
         usable_vials_theoretical = usable_vials_start_day - vials_used
         usable_vials_physical = random.randint(11, 50)
+        health_facility_electricity = random.choice(["yes", "no"])
 
         iaso_client.post(
             "/sync/form_upload/",
@@ -108,9 +109,32 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                                 "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                             },
                             "equipment_group": {
-                                "HFR_CS_16": random.choice(["yes", "no"]),
-                                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                                "HFR_CS_16": health_facility_electricity,
+                                "HFR_CS_17": (
+                                    random.choice(
+                                        [
+                                            "pub gr_elect syst_sol",
+                                            "pub gr_elect syst_sol autre",
+                                            "gr_elect syst_sol autre",
+                                            "syst_sol autre",
+                                            "gr_elect",
+                                            "syst_sol autre",
+                                            "autre",
+                                        ]
+                                    )
+                                    if health_facility_electricity == "yes"
+                                    else None
+                                ),
+                                "HFR_CS_18": random.choice(
+                                    [
+                                        "res_pub forage puit puit_non_prot",
+                                        "forage",
+                                        "forage puit puit_non_prot",
+                                        "puit puit_non_prot",
+                                        "puit",
+                                        "puit_non_prot",
+                                    ]
+                                ),
                             },
                             "services_group": {
                                 "HFR_CS_26": random.choice(["yes", "no"]),

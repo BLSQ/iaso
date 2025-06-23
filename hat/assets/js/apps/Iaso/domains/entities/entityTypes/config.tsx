@@ -1,24 +1,22 @@
+import React, { ReactElement, useMemo } from 'react';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import {
     Column,
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { ReactElement, useMemo } from 'react';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import Workflow from '../../../components/svg/Workflow';
-import { EntityTypesDialog } from './components/EntityTypesDialog';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { EditEntityTypesDialog } from './components/EntityTypesDialog';
 
 import MESSAGES from './messages';
 
-import { baseUrls } from '../../../constants/urls';
-
-import { userHasPermission } from '../../users/utils';
 import { EntityType } from './types/entityType';
-
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 export const baseUrl = baseUrls.entityTypes;
 
@@ -70,17 +68,9 @@ export const useColumns = ({
                                 Permission.ENTITY_TYPE_WRITE,
                                 currentUser,
                             ) && (
-                                <EntityTypesDialog
-                                    renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
-                                            id={`edit-button-${type.id}`}
-                                            onClick={openDialog}
-                                            icon="edit"
-                                            dataTestId="edit-button"
-                                            tooltipMessage={MESSAGES.edit}
-                                        />
-                                    )}
+                                <EditEntityTypesDialog
                                     initialData={type}
+                                    iconProps={{}}
                                     titleMessage={MESSAGES.updateMessage}
                                     saveEntityType={saveEntityType}
                                 />

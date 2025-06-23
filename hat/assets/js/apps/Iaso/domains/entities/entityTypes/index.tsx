@@ -7,26 +7,25 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton,
     useRedirectTo,
 } from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { PaginationParams } from '../../../types/general';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { AddEntityTypesDialog } from './components/EntityTypesDialog';
 import { Filters } from './components/Filters';
-import { EntityTypesDialog } from './components/EntityTypesDialog';
+import { useColumns, baseUrl } from './config';
 import {
     useGetTypesPaginated,
     useDelete,
     useSave,
 } from './hooks/requests/entitiyTypes';
-import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
-import { PaginationParams } from '../../../types/general';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
-import * as Permission from '../../../utils/permissions';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,14 +68,11 @@ export const EntityTypes: FunctionComponent = () => {
                         Permission.ENTITY_TYPE_WRITE,
                         currentUser,
                     ) && (
-                        <EntityTypesDialog
+                        <AddEntityTypesDialog
+                            iconProps={{
+                                dataTestId: 'add-entity-button',
+                            }}
                             titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => (
-                                <AddButton
-                                    dataTestId="add-entity-button"
-                                    onClick={openDialog}
-                                />
-                            )}
                             saveEntityType={saveEntityType}
                         />
                     )}

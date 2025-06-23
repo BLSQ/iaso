@@ -11,14 +11,14 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+import iaso.permissions as core_permissions
+
 from hat.audit.models import INSTANCE_API, log_modification
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.query_params import APP_ID
 from iaso.dhis2.datavalue_exporter import InstanceExportError
 from iaso.enketo import (
     EnketoError,
-    calculate_file_md5,
     enketo_settings,
     enketo_url_for_edition,
     extract_xml_instance_from_form_xml,
@@ -28,6 +28,7 @@ from iaso.enketo import (
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+from iaso.utils.encryption import calculate_md5
 
 
 logger = getLogger(__name__)
@@ -263,7 +264,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission(permission.SUBMISSIONS_UPDATE)])  # type: ignore
+@permission_classes([HasPermission(core_permissions.SUBMISSIONS_UPDATE)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.
@@ -306,7 +307,7 @@ def enketo_form_list(request):
         # pass the app_id so it can be accessed anonymously from Enketo
         project = i.form.projects.first()
         app_id = project.app_id if project else ""
-        url = f"/api/forms/{i.form_id}/manifest/"
+        url = f"/api/forms/{i.form_id}/manifest_enketo/"
         secret = enketo_settings("ENKETO_SIGNING_SECRET")
         url_with_secret = generate_signed_url(path=url, secret=secret, extra_params={APP_ID: app_id})
         manifest_url = public_url_for_enketo(request, url_with_secret)
@@ -319,7 +320,7 @@ def enketo_form_list(request):
             download_url=downloadurl,
             version=latest_form_version.version_id,
             manifest_url=manifest_url,
-            md5checksum=calculate_file_md5(latest_form_version.file),
+            md5checksum=calculate_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )
 

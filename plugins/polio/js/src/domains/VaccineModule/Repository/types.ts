@@ -32,7 +32,7 @@ export type DocumentData = {
     file?: string;
 };
 
-export type VaccineRepositotyForms = {
+export type VaccineRepositoryForms = {
     country_name: string;
     campaign_obr_name: string;
     rounds_count: string;

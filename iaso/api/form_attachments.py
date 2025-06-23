@@ -1,17 +1,17 @@
-import hashlib
 import typing
 
-from django.core.files import File
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from rest_framework import parsers, serializers, status
 from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
-from iaso.models import Form, FormAttachment, Project
+import iaso.permissions as core_permissions
 
-from ..utils.clamav import scan_uploaded_file_for_virus
+from iaso.models import Form, FormAttachment, Project
+from iaso.utils.encryption import calculate_md5
+from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
+
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID
@@ -57,7 +57,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
         try:
             previous_attachment = FormAttachment.objects.get(name=file.name, form=form)
             previous_attachment.file = file
-            previous_attachment.md5 = self.md5sum(file)
+            previous_attachment.md5 = calculate_md5(file)
             previous_attachment.file_scan_status = scan_result
             previous_attachment.file_last_scan = scan_timestamp
             previous_attachment.save()
@@ -67,20 +67,13 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
                 form=form,
                 name=file.name,
                 file=file,
-                md5=self.md5sum(file),
+                md5=calculate_md5(file),
                 file_last_scan=scan_timestamp,
                 file_scan_status=scan_result,
             )
         except Exception as e:
             # putting the error in an array to prevent front-end crash
             raise serializers.ValidationError({"file": [e]})
-
-    @staticmethod
-    def md5sum(file: File):
-        md5 = hashlib.md5()
-        for chunk in file.chunks():
-            md5.update(chunk)
-        return md5.hexdigest()
 
 
 class HasFormAttachmentPermission(HasFormPermission):
@@ -99,7 +92,7 @@ class FormAttachmentsViewSet(ModelViewSet):
     f"""Form Attachments API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{permission.FORMS}"  permission.
+    having the "{core_permissions.FORMS}"  permission.
 
     GET /api/formattachments/?form_id=<form_id>
     GET /api/formattachments/<id>/

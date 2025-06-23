@@ -24,11 +24,14 @@ import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGet
 import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal.tsx';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models.ts';
 import { isValidPeriod } from '../../periods/utils';
 
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { INSTANCE_STATUSES } from '../constants';
 
 import { useGetForms } from '../hooks';
@@ -37,11 +40,7 @@ import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import MESSAGES from '../messages';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
-
-import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { ColumnSelect } from './ColumnSelect.tsx';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -133,11 +132,12 @@ const InstancesFiltersComponent = ({
         queryBuilderListToReplace,
     );
     const handleSearch = useCallback(() => {
-        if (isInstancesFilterUpdated) {
+        if (isInstancesFilterUpdated || params?.isSearchActive !== 'true') {
             setIsInstancesFilterUpdated(false);
             const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
+                isSearchActive: 'true',
                 page: 1,
             };
             // removing columns params to refetch correct columns
@@ -248,7 +248,7 @@ const InstancesFiltersComponent = ({
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
-    const isSearchDisabled =
+    const hasNoChangesToSearch =
         !isInstancesFilterUpdated ||
         periodError ||
         startPeriodError ||
@@ -564,7 +564,13 @@ const InstancesFiltersComponent = ({
                             </Box>
                         )}
                         <Button
-                            disabled={textSearchError || isSearchDisabled}
+                            disabled={
+                                textSearchError ||
+                                // Disable search button if a search is already active AND there are no new changes to search for
+                                // This prevents unnecessary duplicate searches when filters haven't changed
+                                (params?.isSearchActive === 'true' &&
+                                    hasNoChangesToSearch)
+                            }
                             variant="contained"
                             className={classes.button}
                             color="primary"

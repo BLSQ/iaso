@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useGetOrgUnitValidationStatus } from 'Iaso/domains/orgUnits/hooks/utils/useGetOrgUnitValidationStatus';
 import { VersionFields } from '../components/VersionPicker';
 import { useOrgUnitTypes } from '../requests';
 import {
@@ -15,13 +16,25 @@ export const useExportFields = ({
     formatMessage,
     refDataVersionId,
     sourceDataVersionId,
+    enableFetchGroups,
 }) => {
     const {
         data: orgUnitStatusAsOptions,
         isLoading: isLoadingOrgUnitStatusAsOptions,
-    } = useGetValidationStatus(true);
+    } = useGetOrgUnitValidationStatus(true);
     const { data: orgUnitTypes, isLoading: areOrgUnitTypesLoading } =
         useOrgUnitTypes();
+
+    const { data: groupsRef, isLoading: isLoadingGroupRef } =
+        useGetGroupDropdown(
+            { sourceVersionId: refDataVersionId },
+            enableFetchGroups,
+        );
+    const { data: groupsSource, isLoading: isLoadingGroupSource } =
+        useGetGroupDropdown(
+            { sourceVersionId: sourceDataVersionId },
+            enableFetchGroups && Boolean(sourceDataVersionId),
+        );
 
     const toCompareWithFields: VersionFields = useMemo(
         () => ({
@@ -57,6 +70,13 @@ export const useExportFields = ({
                 errors: exportData.ref_top_org_unit_id.errors,
                 disabled: !refDataVersionId,
             },
+            group: {
+                key: 'ref_org_unit_group_id',
+                value: exportData.ref_org_unit_group_id?.value,
+                errors: exportData.ref_org_unit_group_id.errors,
+                options: groupsRef ?? [],
+                isLoading: isLoadingGroupRef,
+            },
         }),
         [
             refDataVersionId,
@@ -68,6 +88,8 @@ export const useExportFields = ({
             isLoadingOrgUnitStatusAsOptions,
             orgUnitTypes,
             areOrgUnitTypesLoading,
+            groupsRef,
+            isLoadingGroupRef,
         ],
     );
     const toUpdateFields: VersionFields = useMemo(
@@ -103,6 +125,14 @@ export const useExportFields = ({
                 errors: exportData.source_top_org_unit_id.errors,
                 disabled: !sourceDataVersionId,
             },
+            group: {
+                key: 'source_org_unit_group_id',
+                value: exportData.source_org_unit_group_id?.value,
+                errors: exportData.source_org_unit_group_id.errors,
+                disabled: !sourceDataVersionId,
+                options: groupsSource ?? [],
+                isLoading: isLoadingGroupSource,
+            },
         }),
         [
             sourceDataVersionId,
@@ -113,6 +143,8 @@ export const useExportFields = ({
             isLoadingOrgUnitStatusAsOptions,
             orgUnitTypes,
             areOrgUnitTypesLoading,
+            groupsSource,
+            isLoadingGroupSource,
         ],
     );
 

@@ -44,6 +44,7 @@ __all__ = [
     "ImportGPKG",
     "Instance",
     "InstanceFile",
+    "InstanceQuerySet",
     "MetricType",
     "MetricValue",
     "OrgUnit",

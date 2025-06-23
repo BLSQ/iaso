@@ -2,10 +2,20 @@
 import React, { useMemo, FunctionComponent, JSX } from 'react';
 import CommentIcon from '@mui/icons-material/Comment';
 import FunctionsIcon from '@mui/icons-material/Functions';
-import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
+import {
+    Box,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+    Tooltip,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { textPlaceholder } from 'bluesquare-components';
 import isPlainObject from 'lodash/isPlainObject';
+import DocumentsItemComponent from 'Iaso/components/files/DocumentsItemComponent';
+import VideoItemComponent from 'Iaso/components/files/VideoItemComponent';
+import { getFileName, getFileType } from 'Iaso/utils/filesUtils';
 import { useLocale } from '../../app/contexts/LocaleContext';
 import { InstanceImagePreview } from './InstanceImagePreview';
 
@@ -43,6 +53,13 @@ type FormNoteFieldProps = {
 };
 
 type PhotoFieldProps = {
+    descriptor: Descriptor;
+    data: Data;
+    showQuestionKey?: boolean;
+    files?: string[];
+};
+
+type FileFieldProps = {
     descriptor: Descriptor;
     data: Data;
     showQuestionKey?: boolean;
@@ -113,6 +130,20 @@ const useStyles = makeStyles(theme => ({
         color: theme.palette.mediumGray.main,
     },
 }));
+
+/**
+ * Slugification function that matches Django's slugify_underscore behavior
+ * Replaces spaces with underscores, converts accented characters to ASCII, and removes parentheses and commas
+ * @param value - The string to slugify
+ * @returns The slugified string
+ */
+const slugifyValue = (value: string): string => {
+    return value
+        .normalize('NFD') // Decompose characters into base + accent
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
+        .replace(/[(),]/g, '') // Remove parentheses and commas
+        .replace(/\s+/g, '_'); // Replace spaces with underscores
+};
 
 /**
  * Translate the provided label if it is translatable
@@ -244,7 +275,7 @@ const PhotoField: FunctionComponent<PhotoFieldProps> = ({
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
-            const slugifiedValue = value.replace(/\s/g, '_'); // Replace spaces with underscores
+            const slugifiedValue = slugifyValue(value);
             return files.find(f => f.includes(slugifiedValue));
         }
         return null;
@@ -274,6 +305,67 @@ const PhotoField: FunctionComponent<PhotoFieldProps> = ({
     );
 };
 
+const FileField: FunctionComponent<FileFieldProps> = ({
+    descriptor,
+    data,
+    showQuestionKey = true,
+    files = [],
+}) => {
+    const classes = useStyles();
+    const value = data[descriptor.name];
+
+    const fileUrl = useMemo(() => {
+        if (value && files.length > 0) {
+            const slugifiedValue = slugifyValue(value);
+            return files.find(f => f.includes(slugifiedValue));
+        }
+        return null;
+    }, [value, files]);
+    const fileName = value ? getFileName(value) : undefined;
+    const fileType = fileName ? getFileType(fileName) : undefined;
+
+    return (
+        <TableRow>
+            <TableCell className={classes.tableCell}>
+                <Label
+                    descriptor={descriptor}
+                    showQuestionKey={showQuestionKey}
+                />
+            </TableCell>
+            <TableCell
+                className={classes.tableCell}
+                align="right"
+                title={getRawValue(descriptor, data)}
+            >
+                {value && fileUrl && fileName && (
+                    <>
+                        {fileType === 'image' && (
+                            <InstanceImagePreview
+                                imageUrl={fileUrl}
+                                altText={descriptor.name}
+                            />
+                        )}
+                        {fileType === 'video' && (
+                            <Box sx={{ height: '200px' }}>
+                                <VideoItemComponent
+                                    videoPath={fileUrl}
+                                    fileInfo={fileName.name}
+                                />
+                            </Box>
+                        )}
+                        {(fileType === 'document' || fileType === 'other') && (
+                            <Box sx={{ float: 'right', width: '150px' }}>
+                                <DocumentsItemComponent filePath={fileUrl} />
+                            </Box>
+                        )}
+                    </>
+                )}
+                {(!value || !fileUrl) && textPlaceholder}
+            </TableCell>
+        </TableRow>
+    );
+};
+
 const FormChild = ({
     descriptor,
     data,
@@ -291,6 +383,7 @@ const FormChild = ({
                             descriptor={descriptor}
                             data={subdata}
                             showQuestionKey={showQuestionKey}
+                            files={files}
                         />
                     ))}
                 </>
@@ -326,6 +419,15 @@ const FormChild = ({
         case 'image':
             return (
                 <PhotoField
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                    files={files}
+                />
+            );
+        case 'file':
+            return (
+                <FileField
                     descriptor={descriptor}
                     data={data}
                     showQuestionKey={showQuestionKey}

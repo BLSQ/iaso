@@ -124,6 +124,9 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         api_import.save()
         raise e
 
+    api_import.has_problem = False
+    api_import.exception = ""
+    api_import.save()
     the_task.report_success_with_result(
         message=result_message(user, project, start_date, start_time, stats),
     )

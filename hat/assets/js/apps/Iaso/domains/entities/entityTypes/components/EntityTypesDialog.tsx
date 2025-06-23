@@ -8,6 +8,7 @@ import {
     ConfirmCancelModal,
     makeFullModal,
     AddButton,
+    InputWithInfos,
     DndSelect,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
@@ -15,6 +16,7 @@ import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../../components/forms/InputComponent';
 
 import { baseUrls } from '../../../../constants/urls';
@@ -45,6 +47,18 @@ const getSelectedFields = (
         possibleFieldsOptions.find(f => f.value === field),
     );
     return selected?.filter(Boolean) as typeof possibleFieldsOptions;
+};
+
+const styles: SxStyles = {
+    inputWithInfos: {
+        mt: 2,
+        '& .MuiGrid-item': {
+            alignContent: 'center',
+        },
+        '& .MuiGrid-item > .MuiBox-root': {
+            top: 'auto',
+        },
+    },
 };
 
 const EntityTypesDialog: FunctionComponent<Props> = ({
@@ -243,57 +257,78 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
                                 label={MESSAGES.name}
                                 required
                             />
-                            <Box mt={2}>
-                                <DndSelect
-                                    options={possibleFieldsOptions}
-                                    label={formatMessage(
-                                        MESSAGES.fieldsListView,
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsListView,
                                     )}
-                                    value={selectedFieldsListView}
-                                    onChange={value => {
-                                        onChange('fields_list_view', value);
-                                    }}
-                                    disabled={!values.reference_form}
-                                    isRequired
-                                    helperText={helperText}
-                                />
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.fieldsListView,
+                                        )}
+                                        value={selectedFieldsListView}
+                                        onChange={value => {
+                                            onChange('fields_list_view', value);
+                                        }}
+                                        disabled={!values.reference_form}
+                                        isRequired
+                                        helperText={helperText}
+                                        keyValue="fields_list_view"
+                                    />
+                                </InputWithInfos>
                             </Box>
 
-                            <Box mt={2}>
-                                <DndSelect
-                                    options={possibleFieldsOptions}
-                                    label={formatMessage(
-                                        MESSAGES.fieldsDetailInfoView,
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsDetailInfoView,
                                     )}
-                                    value={selectedFieldsDetailInfoView}
-                                    onChange={value => {
-                                        onChange(
-                                            'fields_detail_info_view',
-                                            value,
-                                        );
-                                    }}
-                                    disabled={!values.reference_form}
-                                    isRequired
-                                    helperText={helperText}
-                                />
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.infosFieldsDetailInfoView,
+                                        )}
+                                        value={selectedFieldsDetailInfoView}
+                                        onChange={value => {
+                                            onChange(
+                                                'fields_detail_info_view',
+                                                value,
+                                            );
+                                        }}
+                                        disabled={!values.reference_form}
+                                        isRequired
+                                        helperText={helperText}
+                                        keyValue="fields_detail_info_view"
+                                    />
+                                </InputWithInfos>
                             </Box>
 
-                            <Box mt={2}>
-                                <DndSelect
-                                    options={possibleFieldsOptions}
-                                    label={formatMessage(
-                                        MESSAGES.fieldsDuplicateSearch,
+                            <Box sx={styles.inputWithInfos}>
+                                <InputWithInfos
+                                    infos={formatMessage(
+                                        MESSAGES.infosFieldsDuplicateSearch,
                                     )}
-                                    value={selectedFieldsDuplicateSearch}
-                                    onChange={value => {
-                                        onChange(
-                                            'fields_duplicate_search',
-                                            value,
-                                        );
-                                    }}
-                                    disabled={!values.reference_form}
-                                    helperText={helperText}
-                                />
+                                >
+                                    <DndSelect
+                                        options={possibleFieldsOptions}
+                                        label={formatMessage(
+                                            MESSAGES.fieldsDuplicateSearch,
+                                        )}
+                                        value={selectedFieldsDuplicateSearch}
+                                        onChange={value => {
+                                            onChange(
+                                                'fields_duplicate_search',
+                                                value,
+                                            );
+                                        }}
+                                        disabled={!values.reference_form}
+                                        helperText={helperText}
+                                        keyValue="fields_duplicate_search"
+                                    />
+                                </InputWithInfos>
                             </Box>
                         </>
                     )}

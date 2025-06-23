@@ -30,6 +30,7 @@ LOOKUPS = {
     "in": "icontains",
 }
 
+
 class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     lookup_name = "forcefloat"
 
@@ -113,10 +114,10 @@ def jsonlogic_to_q(
         q = ~q
     return q
 
+
 def jsonlogic_to_exists_q_clauses(
-        jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, 
-        value_field_name: str, group_by_field_name: str
-        ) -> Q:
+    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, value_field_name: str, group_by_field_name: str
+) -> Q:
     """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
     This is used to filter entities based on the existence of certain conditions
     in their related instances.
@@ -140,20 +141,16 @@ def jsonlogic_to_exists_q_clauses(
         sub_query = Q()
         for lookup in jsonlogic["and"]:
             sub_query = operator.and_(
-                sub_query, 
-                jsonlogic_to_exists_q_clauses(
-                    lookup, queryset, id_field_name, value_field_name, group_by_field_name
-                )
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
             )
         return sub_query
     if "or" in jsonlogic:
         sub_query = Q()
         for lookup in jsonlogic["or"]:
             sub_query = operator.or_(
-                sub_query, 
-                jsonlogic_to_exists_q_clauses(
-                    lookup, queryset, id_field_name, value_field_name, group_by_field_name
-                )
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
             )
         return sub_query
     if "!" in jsonlogic:
@@ -172,10 +169,12 @@ def jsonlogic_to_exists_q_clauses(
     value = params[0] if op == "in" else params[1]
     q = Q(
         Exists(
-            queryset.filter(**{
-                group_by_field_name: OuterRef(group_by_field_name),
-                id_field_name: field["var"],
-            }).filter(Q(**{f"{value_field_name}__{LOOKUPS[op]}": value}))
+            queryset.filter(
+                **{
+                    group_by_field_name: OuterRef(group_by_field_name),
+                    id_field_name: field["var"],
+                }
+            ).filter(Q(**{f"{value_field_name}__{LOOKUPS[op]}": value}))
         )
     )
 

@@ -135,11 +135,19 @@ export const useGetCountriesOptions = (
     }, [countries, isFetching]);
 };
 
-export const useCampaignDropDowns = (
-    countryId?: number,
-    campaign?: string,
-    vaccine?: string,
-): CampaignDropdowns => {
+type UseCampaignDropdownsParams = {
+    countryId?: number;
+    campaign?: string;
+    vaccine?: string;
+    rounds?: number;
+};
+
+export const useCampaignDropDowns = ({
+    countryId,
+    campaign,
+    vaccine,
+    rounds: rndsParams,
+}): CampaignDropdowns => {
     const options: Options = {
         enabled: Boolean(countryId),
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
@@ -157,6 +165,16 @@ export const useCampaignDropDowns = (
         const campaigns = list
             .filter(
                 c => c.separate_scopes_per_round || (c.scopes ?? []).length > 0,
+            )
+            // filter out on hold campaign, except selected campaign to avoid UI bug
+            .filter(
+                c => !c.on_hold || c.obr_name === selectedCampaign?.obr_name,
+            )
+            // filter out campaign with all rounds on hold, except selected campaign to avoid UI bug
+            .filter(
+                c =>
+                    !c.rounds.every(rnd => rnd.on_hold) ||
+                    c.obr_name === selectedCampaign?.obr_name,
             )
             .map(c => ({
                 label: c.obr_name,
@@ -181,6 +199,12 @@ export const useCampaignDropDowns = (
                           (!selectedCampaign?.separate_scopes_per_round &&
                               (selectedCampaign?.scopes ?? []).length > 0),
                   )
+                  // filter out rounds on_hold, except selected round to avoid UI bug
+                  .filter(
+                      round =>
+                          !round.on_hold ||
+                          (rndsParams ?? []).includes(round.number),
+                  )
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,
@@ -192,6 +216,7 @@ export const useCampaignDropDowns = (
             vaccines,
             rounds,
             isFetching,
+            rndsParams,
         };
     }, [data, vaccine, isFetching, campaign]);
 };

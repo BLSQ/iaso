@@ -14,7 +14,8 @@ import {
     STOCK_EARMARKS_ADMIN,
 } from '../../../../../constants/permissions';
 import { VaccineForStock } from '../../../../../constants/types';
-import { USED } from '../../constants';
+import { REGULAR, USED } from '../../constants';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
     useDeleteDestruction,
     useDeleteEarmarked,
@@ -26,6 +27,7 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
+import { Box, Tooltip } from '@mui/material';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -45,9 +47,35 @@ export const useFormATableColumns = (
                     const campaign = settings.row.original.campaign;
                     const altCampaign =
                         settings.row.original.alternative_campaign;
-                    if (campaign) return campaign;
-                    if (altCampaign) return altCampaign;
-                    return textPlaceholder;
+                    const text = campaign ?? altCampaign ?? textPlaceholder;
+
+                    if (settings.row.original.campaign_category === REGULAR)
+                        return text;
+
+                    return (
+                        <Box
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            gap={theme => theme.spacing(2)}
+                        >
+                            <Tooltip
+                                sx={{
+                                    color: theme => theme.palette.warning.main,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                }}
+                                title={formatMessage(
+                                    MESSAGES[
+                                        settings.row.original.campaign_category
+                                    ],
+                                )}
+                            >
+                                <WarningAmberOutlinedIcon />
+                            </Tooltip>
+                            <span>{text}</span>
+                        </Box>
+                    );
                 },
             },
             {

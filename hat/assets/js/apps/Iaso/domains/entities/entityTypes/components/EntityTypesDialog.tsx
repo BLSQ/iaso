@@ -289,7 +289,7 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
                                     <DndSelect
                                         options={possibleFieldsOptions}
                                         label={formatMessage(
-                                            MESSAGES.infosFieldsDetailInfoView,
+                                            MESSAGES.fieldsDetailInfoView,
                                         )}
                                         value={selectedFieldsDetailInfoView}
                                         onChange={value => {

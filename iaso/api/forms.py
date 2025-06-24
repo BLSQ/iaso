@@ -295,7 +295,20 @@ class FormsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
         else:
             profile = False
-        if not mobile:
+
+        # empty fields then do the count assume it's give me all the fields like the forms page list (except for mobile)
+        # if specified fields contains :all or instances_count then do the count
+        requested_fields = self.request.query_params.get("fields")
+        enable_count = False
+        if (
+            not requested_fields
+            or ":all" in requested_fields.split(",")
+            or "instances_count" in requested_fields.split(",")
+        ):
+            enable_count = True
+        # TODO do the same thing to remove instance_updated_at if not in order or fields ?
+
+        if not mobile and enable_count:
             if profile and profile.org_units.exists():
                 orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
                 queryset = queryset.annotate(

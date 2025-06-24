@@ -218,7 +218,7 @@ export const useCampaignDropDowns = ({
             isFetching,
             rndsParams,
         };
-    }, [data, vaccine, isFetching, campaign]);
+    }, [data, vaccine, isFetching, campaign, rndsParams]);
 };
 
 const getVrfDetails = (id?: string) => {

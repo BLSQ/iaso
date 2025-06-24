@@ -519,3 +519,33 @@ class OrgUnitModelDbTestCase(TestCase):
         self.assertEqual(org_unit_valid.code, org_unit_new_2.code)
         self.assertEqual(org_unit_valid.code, org_unit_rejected_1.code)
         self.assertEqual(org_unit_valid.code, org_unit_rejected_2.code)
+
+    def test_switch_new_orgunit_to_valid_raises_error_with_same_code(self):
+        code = "chuck norris is stronger than database constraints"
+        org_unit_valid = m.OrgUnit.objects.create(
+            name="OrgUnit valid",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+        org_unit_new = m.OrgUnit.objects.create(
+            name="OrgUnit new",
+            org_unit_type=self.sector,
+            version=self.version1,
+            code=code,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+        )
+
+        # No IntegrityError should be raised -> 2 org units are created
+        total_count = m.OrgUnit.objects.count()
+        self.assertEqual(total_count, 2)
+
+        with self.assertRaisesMessage(IntegrityError, "unique_code_per_source_version_if_not_blank_and_valid_status"):
+            # Switching to valid was not allowed since this code was already taken
+            org_unit_new.validation_status = m.OrgUnit.VALIDATION_VALID
+            org_unit_new.save()
+
+        org_unit_new.refresh_from_db()
+        self.assertEqual(org_unit_valid.code, org_unit_new.code)
+        self.assertEqual(org_unit_new.validation_status, m.OrgUnit.VALIDATION_NEW)  # did not change

@@ -857,6 +857,7 @@
     "iaso.polio.tooltip.label.CAMPAIGN_ON_HOLD": "Cette campagne a été mise en pause",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.tooltip.label.ROUND_ON_HOLD": "Le rounds concerné a été mis en pause",
+    "iaso.polio.tooltip.label.roundsOnHold": "Un ou plusiers rounds ont été mis en pause",
     "iaso.polio.tooltip.label.TEST_CAMPAIGN": "Cette campagne a été marquée comme campagne de test",
     "iaso.polio.vaccine": "Vaccin",
     "iaso.polio.vaccines": "Vaccins",

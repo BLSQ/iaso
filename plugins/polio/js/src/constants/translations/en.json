@@ -858,6 +858,7 @@
     "iaso.polio.tooltip.label.CAMPAIGN_ON_HOLD": "This campaign has been put on hold",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.tooltip.label.ROUND_ON_HOLD": "The attached round has been put on hold",
+    "iaso.polio.tooltip.label.roundsOnHold": "The attached round(s) have been put on hold",
     "iaso.polio.tooltip.label.TEST_CAMPAIGN": "This campaign has been marked as test campaign",
     "iaso.polio.vaccine": "Vaccine",
     "iaso.polio.vaccines": "Vaccines",

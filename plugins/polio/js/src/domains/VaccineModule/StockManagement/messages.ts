@@ -430,6 +430,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.tooltip.label.CAMPAIGN_ON_HOLD',
         defaultMessage: 'This campaign has been put on hold',
     },
+    roundsOnHold: {
+        id: 'iaso.polio.tooltip.label.roundsOnHold',
+        defaultMessage: 'The attached round(s) have been put on hold',
+    },
 });
 
 export default MESSAGES;

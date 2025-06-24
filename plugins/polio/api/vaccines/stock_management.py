@@ -1,4 +1,5 @@
 from datetime import date
+from enum import Enum
 from tempfile import NamedTemporaryFile
 
 from django.db.models import Q
@@ -33,6 +34,14 @@ from plugins.polio.models import (
     VaccineStock,
 )
 from plugins.polio.models.base import VaccineStockCalculator
+
+
+class CampaignCategory(str, Enum):
+    TEST_CAMPAIGN = "TEST_CAMPAIGN"
+    CAMPAIGN_ON_HOLD = "CAMPAIGN_ON_HOLD"
+    ALL_ROUNDS_ON_HOLD = "ALL_ROUNDS_ON_HOLD"
+    ROUND_ON_HOLD = "ROUND_ON_HOLD"
+    REGULAR = "REGULAR"
 
 
 vaccine_stock_id_param = openapi.Parameter(
@@ -237,6 +246,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = OutgoingStockMovement
@@ -254,6 +264,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "round_number",
             "can_edit",
             "alternative_campaign",
+            "campaign_category",
         ]
 
     def validate(self, data):
@@ -274,6 +285,21 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        campaign = obj.campaign
+        if campaign is None:
+            return CampaignCategory.REGULAR
+
+        if campaign.is_test:
+            return CampaignCategory.TEST_CAMPAIGN
+        if campaign.on_hold:
+            return CampaignCategory.CAMPAIGN_ON_HOLD
+        if not campaign.rounds.exclude(on_hold=True).exists():
+            return CampaignCategory.ALL_ROUNDS_ON_HOLD
+        if obj.round.on_hold:
+            return CampaignCategory.ROUND_ON_HOLD
+        return CampaignCategory.REGULAR
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -340,9 +366,10 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
 
-        base_queryset = OutgoingStockMovement.objects.filter(
-            Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
-        )
+        base_queryset = OutgoingStockMovement.objects.all()
+        # base_queryset = OutgoingStockMovement.objects.filter(
+        #     Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
+        # )
 
         if vaccine_stock_id is None:
             return base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)

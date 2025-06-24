@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1432,6 +1432,34 @@ class Instance(models.Model):
         return super(Instance, self).save(*args, **kwargs)
 
 
+class InstanceFileQuerySet(models.QuerySet):
+    pass
+
+
+class AnnotatedInstanceFileQuerySet(models.QuerySet):
+    def filter_image_only(self, image_only: bool):
+        queryset = self
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
+        return queryset
+
+
+class AnnotatedInstanceFileManager(models.Manager):
+    def get_queryset(self):
+        """
+        Annotates results with the file extension.
+        """
+        return (
+            super()
+            .get_queryset()
+            .order_by("id")
+            .annotate(
+                file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+            )
+        )
+
+
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
     instance = models.ForeignKey(Instance, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -1440,6 +1468,9 @@ class InstanceFile(models.Model):
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     deleted = models.BooleanField(default=False)
+
+    objects = models.Manager().from_queryset(InstanceFileQuerySet)()
+    objects_with_file_extensions = AnnotatedInstanceFileManager.from_queryset(AnnotatedInstanceFileQuerySet)()
 
     def __str__(self):
         return "%s " % (self.name,)

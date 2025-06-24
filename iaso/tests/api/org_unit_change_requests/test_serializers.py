@@ -311,6 +311,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                             "created_at": 1697202000.0,
                             "updated_at": 1697202000.0,
                             "json": {"Foo": "Bar"},
+                            "instance_files": [],
                         }
                     )
                 ],

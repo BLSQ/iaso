@@ -737,3 +737,41 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
         self.assertEqual(response.json()["forms"][0]["instances_count"], 2)
+
+    def test_instance_count_computation_removed_when_not_requested(self):
+        """
+        Test that instance_count computation is removed when not in requested fields.
+        This test verifies the optimization added in iaso/api/forms.py:299-311.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Test with specific fields that don't include instances_count or :all
+        response = self.client.get("/api/forms/?fields=id,name,form_id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        # The response should not include instances_count field when not requested
+        for form_data in response.json()["forms"]:
+            self.assertNotIn("instances_count", form_data)
+
+        # Test that instances_count is included when explicitly requested
+        response = self.client.get(
+            "/api/forms/?fields=id,name,instances_count", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+        # Test that instances_count is included with :all
+        response = self.client.get("/api/forms/?fields=:all", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)
+
+        # Test that instances_count is included when no fields parameter is provided (default behavior)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        for form_data in response.json()["forms"]:
+            self.assertIn("instances_count", form_data)

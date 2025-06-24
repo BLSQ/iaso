@@ -5,35 +5,36 @@ from django.db.models.expressions import RawSQL
 
 
 def migrate_data_forward(apps, schema_editor):
+    chunk_size = 5000
     Instance = apps.get_model("iaso", "Instance")
 
-    chunk_size = 500
-    instance_to_update = []
+    print("-" * 80)
+    print("Start fixing `form_version_id=None` where possible.")
 
-    while True:
-        instances = (
-            Instance.objects.filter(form_version__isnull=True, json__isnull=False)
-            .annotate(
-                annotated_form_version_id=RawSQL(
-                    "select id from iaso_formversion where version_id = iaso_instance.json->>'_version' limit 1", ()
-                )
+    instances = (
+        Instance.objects.filter(form_version__isnull=True, json__isnull=False)
+        .annotate(
+            annotated_form_version_id=RawSQL(
+                "select id from iaso_formversion where version_id = iaso_instance.json->>'_version' limit 1", ()
             )
-            .only("id", "form_version_id")[:chunk_size]
         )
+        .iterator(chunk_size=chunk_size)
+    )
 
-        if not instances.exists():
-            break
+    instance_to_update = []
+    for instance in instances:
+        if not instance.annotated_form_version_id:
+            continue
+        instance.form_version_id = instance.annotated_form_version_id
+        instance_to_update.append(instance)
+        if len(instance_to_update) >= chunk_size:
+            print(f"Updating {len(instance_to_update)} Instances…")
+            Instance.objects.bulk_update(instance_to_update, ["form_version_id"])
+            instance_to_update = []
 
-        for instance in instances:
-            if not instance.annotated_form_version_id:
-                continue
-            instance.form_version_id = instance.annotated_form_version_id
-            instance_to_update.append(instance)
-
+    if len(instance_to_update) > 0:
         print(f"Updating {len(instance_to_update)} Instances…")
-
         Instance.objects.bulk_update(instance_to_update, ["form_version_id"])
-        instance_to_update = []
 
     print("Done.")
 

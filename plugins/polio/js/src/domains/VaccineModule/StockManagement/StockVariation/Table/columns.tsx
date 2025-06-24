@@ -28,6 +28,7 @@ import { EditEarmarked } from '../Modals/CreateEditEarmarked';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { EditIncident } from '../Modals/CreateEditIncident';
 import { Box, Tooltip } from '@mui/material';
+import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -48,33 +49,12 @@ export const useFormATableColumns = (
                     const altCampaign =
                         settings.row.original.alternative_campaign;
                     const text = campaign ?? altCampaign ?? textPlaceholder;
-
-                    if (settings.row.original.campaign_category === REGULAR)
-                        return text;
-
+                    const category = settings.row.original.campaign_category;
                     return (
-                        <Box
-                            display="flex"
-                            alignItems="center"
-                            justifyContent="center"
-                            gap={theme => theme.spacing(2)}
-                        >
-                            <Tooltip
-                                sx={{
-                                    color: theme => theme.palette.warning.main,
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                }}
-                                title={formatMessage(
-                                    MESSAGES[
-                                        settings.row.original.campaign_category
-                                    ],
-                                )}
-                            >
-                                <WarningAmberOutlinedIcon />
-                            </Tooltip>
-                            <span>{text}</span>
-                        </Box>
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
                     );
                 },
             },
@@ -419,12 +399,17 @@ export const useEarmarkedTableColumns = (
                 id: 'campaign',
                 sortable: true,
                 Cell: settings => {
-                    if (settings.row.original.campaign) {
-                        return settings.row.original.campaign;
-                    }
-                    return settings.row.original.temporary_campaign_name
-                        ? `(${settings.row.original.temporary_campaign_name})`
-                        : textPlaceholder;
+                    const text =
+                        settings.row.original.campaign ??
+                        settings.row.original.temporary_campaign_name ??
+                        textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
                 },
             },
             {

@@ -5,7 +5,7 @@ from django.db.models.expressions import RawSQL
 
 
 def migrate_data_forward(apps, schema_editor):
-    chunk_size = 5000
+    chunk_size = 500  # Keep a small chunk_size because the SELECT query is very costly.
     Instance = apps.get_model("iaso", "Instance")
 
     print("-" * 80)

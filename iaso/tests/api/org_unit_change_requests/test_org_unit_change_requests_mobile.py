@@ -11,13 +11,21 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        data_source = m.DataSource.objects.create(name="Data source")
-        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
-        account = m.Account.objects.create(name="Account", default_version=version)
-        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.version = m.SourceVersion.objects.create(number=1, data_source=cls.data_source)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.version)
+        cls.project_a = m.Project.objects.create(name="Project A", account=cls.account, app_id="project.a")
+        cls.project_b = m.Project.objects.create(name="Project B", account=cls.account, app_id="project.b")
+        cls.data_source.projects.set([cls.project_a, cls.project_b])
 
-        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
+        org_unit_type_a = m.OrgUnitType.objects.create(name="Org unit type A")
+        org_unit_type_a.projects.set([cls.project_a])
+
+        org_unit_type_b = m.OrgUnitType.objects.create(name="Org unit type B")
+        org_unit_type_b.projects.set([cls.project_b])
+
+        cls.org_unit_a = m.OrgUnit.objects.create(name="A", org_unit_type=org_unit_type_a, version=cls.version)
+        cls.org_unit_b = m.OrgUnit.objects.create(name="B", org_unit_type=org_unit_type_b, version=cls.version)
 
         form_1 = m.Form.objects.create(name="Form 1")
         form_2 = m.Form.objects.create(name="Form 2")
@@ -25,49 +33,39 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         form_version_1 = m.FormVersion.objects.create(form=form_1, version_id=1)
         form_version_2 = m.FormVersion.objects.create(form=form_2, version_id=1)
 
-        instance_1 = m.Instance.objects.create(
+        cls.instance_1 = m.Instance.objects.create(
             form=form_1,
-            org_unit=org_unit,
+            org_unit=cls.org_unit_a,
             uuid=uuid.uuid4(),
             json={"key": "value"},
             form_version=form_version_1,
+            project=cls.project_a,
         )
-        instance_2 = m.Instance.objects.create(
+        cls.instance_2 = m.Instance.objects.create(
             form=form_2,
-            org_unit=org_unit,
+            org_unit=cls.org_unit_a,
             uuid=uuid.uuid4(),
             json={"key": "value"},
             form_version=form_version_2,
+            project=cls.project_a,
         )
 
-        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
-        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit_a, form=form_1, instance=cls.instance_1)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit_a, form=form_2, instance=cls.instance_2)
 
-        user = cls.create_user_with_profile(
-            username="user", account=account, permissions=["iaso_org_unit_change_request"]
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=["iaso_org_unit_change_request"]
         )
-        user2 = cls.create_user_with_profile(
-            username="user2", account=account, permissions=["iaso_org_unit_change_request"]
+        cls.user.iaso_profile.org_units.set([cls.org_unit_a, cls.org_unit_b])
+
+        cls.user2 = cls.create_user_with_profile(
+            username="user2", account=cls.account, permissions=["iaso_org_unit_change_request"]
         )
-
-        data_source.projects.set([project])
-        org_unit_type.projects.set([project])
-        user.iaso_profile.org_units.set([org_unit])
-
-        cls.account = account
-        cls.data_source = data_source
-        cls.instance_1 = instance_1
-        cls.instance_2 = instance_2
-        cls.org_unit = org_unit
-        cls.project = project
-        cls.user = user
-        cls.user2 = user2
-        cls.version = version
 
     def test_list_ok(self):
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo", created_by=self.user)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar", created_by=self.user2)
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Ding", created_by=self.user)
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Foo", created_by=self.user)
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Bar", created_by=self.user2)
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Ding", created_by=self.user)
 
         self.client.force_authenticate(self.user)
 
@@ -82,9 +80,39 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             #   6. SELECT OrgUnitChangeRequest
             #   8. PREFETCH OrgUnitChangeRequest.new_groups
             #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
-            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+            response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
+
+    def test_list_should_be_filtered_by_project_via_orgunittype(self):
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_b, new_name="Foo", created_by=self.user)
+
+        self.client.force_authenticate(self.user)
+
+        # This should return only change requests related to `self.project_b`.
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_b.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data["results"]))
+        self.assertEqual(response.data["results"][0]["org_unit_id"], self.org_unit_b.pk)
+
+    def test_list_should_be_filtered_by_project_via_new_reference_instances(self):
+        # The `change_request` is related to project B via org_unit -> org_unit_type -> projects.
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit_b, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
+        )
+        self.assertEqual(change_request.org_unit.org_unit_type.projects.count(), 1)
+        self.assertEqual(change_request.org_unit.org_unit_type.projects.first(), self.project_b)
+
+        # The `new_reference_instances` is related to project A.
+        change_request.new_reference_instances.set([self.instance_1.pk])
+        self.assertEqual(change_request.new_reference_instances.count(), 1)
+        self.assertEqual(change_request.new_reference_instances.first().project, self.project_a)
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(0, len(response.data["results"]))  # We expect no results in this case.
 
     def test_list_should_not_include_change_requests_linked_to_data_source_synchronization(self):
         self.client.force_authenticate(self.user)
@@ -98,25 +126,25 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
             created_by=self.user,
         )
         m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit,
+            org_unit=self.org_unit_a,
             new_name="Foo",
             created_by=self.user,
             data_source_synchronization=data_source_synchronization,
         )
 
-        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
         self.assertJSONResponse(response, 200)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_should_not_include_soft_deleted_intances(self):
         change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
+            org_unit=self.org_unit_a, new_name="Foo", created_by=self.user, requested_fields=["new_reference_instances"]
         )
         change_request.new_reference_instances.set([self.instance_1.pk])
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"]))
         self.assertEqual(len(response.data["results"][0]["new_reference_instances"]), 1)
@@ -126,10 +154,10 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         self.instance_1.deleted = True
         self.instance_1.save()
 
-        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
         self.assertJSONResponse(response, 200)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_list_without_auth(self):
-        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
+        response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project_a.app_id}")
         self.assertJSONResponse(response, 401)

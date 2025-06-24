@@ -172,7 +172,7 @@ class CommandTests(TestCase):
                 status=200,
             )
 
-        for uid in ["RpbiCJpIYEj", "w1Atoz18PCL", "gzcv65VyaGq"]:
+        for uid in ["RpbiCJpIYEj", "w1Atoz18PCL", "gzcv65VyaGq", "f25dqv3Y7Z0", "oRVt7g429ZO", "uYxK4wmcPqA"]:
             responses.add(
                 responses.GET,
                 "https://play.dhis2.org/2.30/api/organisationUnitGroups.json?fields=%3Aall&filter=id:eq:"

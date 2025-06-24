@@ -290,7 +290,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         campaign = obj.campaign
         if campaign is None:
             return CampaignCategory.REGULAR
-
         if campaign.is_test:
             return CampaignCategory.TEST_CAMPAIGN
         if campaign.on_hold:
@@ -501,6 +500,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
     campaign = serializers.SerializerMethodField()
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = EarmarkedStock
@@ -518,6 +518,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "can_edit",
+            "campaign_category",
         ]
 
     def get_can_edit(self, obj):
@@ -528,6 +529,20 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             non_admin_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             read_only_perm=permission.POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        campaign = obj.campaign
+        if campaign is None:
+            return CampaignCategory.REGULAR
+        if campaign.is_test:
+            return CampaignCategory.TEST_CAMPAIGN
+        if campaign.on_hold:
+            return CampaignCategory.CAMPAIGN_ON_HOLD
+        if not campaign.rounds.exclude(on_hold=True).exists():
+            return CampaignCategory.ALL_ROUNDS_ON_HOLD
+        if obj.round is not None and obj.round.on_hold:
+            return CampaignCategory.ROUND_ON_HOLD
+        return CampaignCategory.REGULAR
 
     def get_campaign(self, obj):
         return obj.campaign.obr_name if obj.campaign else None

@@ -18,7 +18,6 @@ from iaso.api.query_params import APP_ID
 from iaso.dhis2.datavalue_exporter import InstanceExportError
 from iaso.enketo import (
     EnketoError,
-    calculate_file_md5,
     enketo_settings,
     enketo_url_for_edition,
     extract_xml_instance_from_form_xml,
@@ -28,6 +27,7 @@ from iaso.enketo import (
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+from iaso.utils.encryption import calculate_md5
 
 
 logger = getLogger(__name__)
@@ -319,7 +319,7 @@ def enketo_form_list(request):
             download_url=downloadurl,
             version=latest_form_version.version_id,
             manifest_url=manifest_url,
-            md5checksum=calculate_file_md5(latest_form_version.file),
+            md5checksum=calculate_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )
 

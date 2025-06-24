@@ -234,6 +234,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.status',
         defaultMessage: 'Status',
     },
+    group: {
+        id: 'iaso.datasources.label.groups',
+        defaultMessage: 'Group',
+    },
     fieldsToExport: {
         id: 'iaso.datasources.label.fieldsToExport',
         defaultMessage: 'Fields to export',

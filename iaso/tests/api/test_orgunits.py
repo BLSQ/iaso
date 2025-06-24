@@ -4,9 +4,6 @@ import io
 import json
 import typing
 
-import numpy as np
-import pandas as pd
-
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 from django.test import SimpleTestCase
@@ -794,15 +791,10 @@ class OrgUnitAPITestCase(APITestCase):
     def test_can_retrieve_org_units_list_in_xlsx_format(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/orgunits/?&order=id&xlsx=true")
-        self.assertFileResponse(
-            response, status.HTTP_200_OK, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
-            excel_columns,
+            columns,
             [
                 "ID",
                 "Nom",
@@ -831,9 +823,7 @@ class OrgUnitAPITestCase(APITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
-
-        ids = data_dict["ID"]
+        ids = excel_data["ID"]
         self.assertEqual(
             ids,
             {
@@ -845,7 +835,7 @@ class OrgUnitAPITestCase(APITestCase):
             },
         )
 
-        codes = data_dict["Code"]
+        codes = excel_data["Code"]
         self.assertEqual(
             codes,
             {

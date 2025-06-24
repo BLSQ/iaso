@@ -6,8 +6,6 @@ from io import StringIO
 from typing import List
 from unittest import mock
 
-import numpy as np
-import pandas as pd
 import pytz
 
 from django.http import StreamingHttpResponse
@@ -1605,14 +1603,9 @@ class StorageAPITestCase(APITestCase):
 
         # 1. Check the response status and content type
         response = self.client.get("/api/storages/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         # 2. Check the headers
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -1630,9 +1623,8 @@ class StorageAPITestCase(APITestCase):
         )
 
         # 3. Check the data
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "Storage ID": {
                     0: "EXISTING_STORAGE",
@@ -1755,14 +1747,11 @@ class StorageAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs?xlsx=true")
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
 
         # 1. Check the response status and content type
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         # 2. Check the headers
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -1782,9 +1771,8 @@ class StorageAPITestCase(APITestCase):
         )
 
         # 3. Check the data
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertEqual(
-            data_dict,
+            excel_data,
             {
                 "id": {0: "e4200710-bf82-4d29-a29b-6a042f79ef25"},
                 "storage_id": {0: "EXISTING_STORAGE"},

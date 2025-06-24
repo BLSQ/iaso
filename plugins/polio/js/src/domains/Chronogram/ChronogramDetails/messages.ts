@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     actions: {
         id: 'iaso.label.actions',
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
     },
     no: {
         id: 'iaso.label.no',

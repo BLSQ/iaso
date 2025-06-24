@@ -1,5 +1,5 @@
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 export const useGetCampaign = campaignId => {
     return useSnackQuery(

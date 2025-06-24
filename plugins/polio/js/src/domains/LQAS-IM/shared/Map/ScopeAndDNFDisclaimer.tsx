@@ -11,6 +11,7 @@ type Props = {
     data: LqasImDebugData;
     campaigns?: any;
     round?: number;
+    scopeIds?: number[];
 };
 
 const style = theme => ({
@@ -33,11 +34,12 @@ export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     data,
     campaigns,
     round,
+    scopeIds: scopeIdsProp,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { districtsNotFound } = data[campaign] ?? {};
-    const scopeIds = findScopeIds(campaign, campaigns, round);
+    const scopeIds = scopeIdsProp ?? findScopeIds(campaign, campaigns, round);
     const hasScope = scopeIds.length > 0;
     const allDistrictsFound = districtsNotFound?.length === 0;
     return (

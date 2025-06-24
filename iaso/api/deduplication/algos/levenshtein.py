@@ -29,10 +29,13 @@ def _build_query(params):
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
             fc_arr.append(
-                "(1.0 - ( abs ( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision )))"
+                "(1.0 - (CASE "
+                "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                "THEN abs( (instance1.json->>%s)::double precision - (instance2.json->>%s)::double precision ) / greatest( (instance1.json->>%s)::double precision, (instance2.json->>%s)::double precision ) "
+                "ELSE NULL END))"
             )
-            query_params.extend([f_name, f_name, f_name, f_name])
-        elif f_type == "text":
+            query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
+        elif f_type == "text" or f_type is None:  # Handle both text and undefined types as text
             fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
             query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
         elif f_type == "calculate":
@@ -62,21 +65,58 @@ def _build_query(params):
             # For numeric types, use the same comparison as numbers
             if cast_type in ["integer", "bigint", "double precision"]:
                 fc_arr.append(
-                    f"(1.0 - ( abs ( (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / greatest( (instance1.json->>%s)::{cast_type}, (instance2.json->>%s)::{cast_type} )))"
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                    "THEN abs( (instance1.json->>%s)::"
+                    + cast_type
+                    + " - (instance2.json->>%s)::"
+                    + cast_type
+                    + " ) / greatest( (instance1.json->>%s)::"
+                    + cast_type
+                    + ", (instance2.json->>%s)::"
+                    + cast_type
+                    + " ) "
+                    "ELSE NULL END))"
                 )
-                query_params.extend([f_name, f_name, f_name, f_name])
+                query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
             # For boolean types, compare as 0/1
             elif cast_type == "boolean":
                 fc_arr.append(
-                    f"(1.0 - abs( (instance1.json->>%s)::{cast_type}::integer - (instance2.json->>%s)::{cast_type}::integer ))"
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                    "THEN abs( (instance1.json->>%s)::"
+                    + cast_type
+                    + "::integer - (instance2.json->>%s)::"
+                    + cast_type
+                    + "::integer ) "
+                    "ELSE NULL END))"
                 )
-                query_params.extend([f_name, f_name])
+                query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name])
             # For date/time types, compare as timestamps
-            elif cast_type in ["date", "time", "timestamp"]:
+            if cast_type == "date":
                 fc_arr.append(
-                    f"(1.0 - abs( extract(epoch from (instance1.json->>%s)::{cast_type} - (instance2.json->>%s)::{cast_type} ) / 86400.0 ))"
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' AND (instance2.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' "
+                    "THEN abs(EXTRACT(EPOCH FROM ((instance1.json->>%s)::date::timestamp - (instance2.json->>%s)::date::timestamp))/86400.0) "
+                    "ELSE NULL END))"
                 )
-                query_params.extend([f_name, f_name])
+                query_params.extend([f_name, f_name, f_name, f_name])
+            elif cast_type == "time":
+                fc_arr.append(
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}' AND (instance2.json->>%s) ~ '^[0-9]{2}:[0-9]{2}:[0-9]{2}' "
+                    "THEN abs(EXTRACT(EPOCH FROM ((instance1.json->>%s)::time - (instance2.json->>%s)::time))/86400.0) "
+                    "ELSE NULL END))"
+                )
+                query_params.extend([f_name, f_name, f_name, f_name])
+            elif cast_type == "timestamp":
+                fc_arr.append(
+                    "(1.0 - (CASE "
+                    "WHEN (instance1.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}' AND (instance2.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}' "
+                    "THEN abs(EXTRACT(EPOCH FROM ((instance1.json->>%s)::timestamp - (instance2.json->>%s)::timestamp))/31536000.0) "
+                    "ELSE NULL END))"
+                )
+                query_params.extend([f_name, f_name, f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
 
@@ -89,7 +129,13 @@ def _build_query(params):
         SELECT
         entity1.id,
         entity2.id,
-        cast (({fields_comparison}) / {n} * 100 as smallint) as score
+        cast(GREATEST(LEAST(
+            COALESCE(
+                ({fields_comparison}) / NULLIF({n}, 0) * 100,
+                0
+            ),
+            100
+        ), 0) as smallint) as score
         FROM iaso_entity entity1, iaso_entity entity2, iaso_instance instance1, iaso_instance instance2
         WHERE entity1.id != entity2.id
         AND entity1.attributes_id = instance1.id
@@ -126,6 +172,18 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         potential_duplicates = []
         try:
             the_params, the_query = _build_query(params)
+
+            # Log the generated query and parameters just before execution
+            task.report_progress_and_stop_if_killed(
+                progress_value=10,
+                end_value=count,
+                progress_message="=== SQL Query ===\n"
+                + the_query
+                + "\n=== Parameters ===\n"
+                + str(the_params)
+                + "\n=== End Query ===",
+            )
+
             cursor.execute(the_query, the_params)
 
             while True:

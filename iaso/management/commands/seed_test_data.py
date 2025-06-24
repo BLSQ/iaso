@@ -66,7 +66,7 @@ class Command(BaseCommand):
 
         response = requests.get(f"http://play.im.dhis2.org/{dhis2_version}")
         dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
-        dhis2_version = dhis2_url.split("/")[-1]
+        dhis2_version = dhis2_url.split("/")[-3]
         print("dhis2_version resolved to ", dhis2_version)
 
         mode = options.get("mode")

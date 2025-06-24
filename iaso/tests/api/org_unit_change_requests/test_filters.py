@@ -355,7 +355,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/orgunits/changes/?ids={change_request_1.pk},{change_request_3.pk}")
         self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response.data["results"]), 2)
+        self.assertEqual(response.data["count"], 2)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertIn(change_request_1.pk, result_ids)
         self.assertNotIn(change_request_2.pk, result_ids)
@@ -363,8 +363,42 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/orgunits/changes/?ids={change_request_2.pk}")
         self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response.data["results"]), 1)
+        self.assertEqual(response.data["count"], 1)
         result_ids = {change["id"] for change in response.data["results"]}
         self.assertNotIn(change_request_1.pk, result_ids)
         self.assertIn(change_request_2.pk, result_ids)
         self.assertNotIn(change_request_3.pk, result_ids)
+
+    def test_filter_by_is_soft_deleted(self):
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+
+        change_request_2.delete()
+        change_request_3.delete()
+
+        self.client.force_authenticate(self.user)
+
+        # Show only non-soft-deleted.
+        response = self.client.get("/api/orgunits/changes/?is_soft_deleted=false")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+
+        # Show only soft-deleted.
+        response = self.client.get("/api/orgunits/changes/?is_soft_deleted=true")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+
+        # Show all, whether soft-deleted or not.
+        response = self.client.get("/api/orgunits/changes/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 3)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)

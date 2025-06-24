@@ -240,7 +240,7 @@ const MESSAGES = defineMessages({
     },
     invalidDate: {
         id: 'iaso.polio.form.invalidDate',
-        defaultMessage: 'Invalid date',
+        defaultMessage: 'Date is invalid',
     },
     noRounds: {
         id: 'iaso.polio.form.label.noRounds',

@@ -1,10 +1,10 @@
 import datetime
 
-from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
 import pytz
+import time_machine
 
 from iaso import models as m
 from iaso.api.query_params import IMAGE_ONLY
@@ -14,9 +14,9 @@ from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
 
+@time_machine.travel(MOCK_DATE, tick=False)
 class InstancesMobileAPITestCase(TaskAPITestCase):
     @classmethod
-    @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUpTestData(cls):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
 

@@ -45,6 +45,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             permissions=[
                 permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
                 permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
@@ -1522,7 +1523,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user_rw_perms)
 
         # Test list endpoint
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movements/")
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
         self.assertEqual(response.status_code, 200)
 
         # Check that campaign_category is present in the response
@@ -1539,7 +1540,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         # Test detail endpoint
         movement_id = results[0]["id"]
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movements/{movement_id}/")
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{movement_id}/")
         self.assertEqual(response.status_code, 200)
         self.assertIn("campaign_category", response.data)
         self.assertIsInstance(response.data["campaign_category"], str)
@@ -1553,8 +1554,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
             campaign=self.campaign,
             round=self.campaign_round_1,
             vaccine_stock=self.vaccine_stock,
-            quantity=100,
-            reason="Test earmarking",
+            vials_earmarked=5,
+            doses_earmarked=100,
         )
 
         # Test list endpoint
@@ -1631,7 +1632,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         )
 
         # Test API responses
-        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movements/")
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
         self.assertEqual(response.status_code, 200)
 
         results = response.data["results"]

@@ -296,7 +296,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             return CampaignCategory.CAMPAIGN_ON_HOLD
         if not campaign.rounds.exclude(on_hold=True).exists():
             return CampaignCategory.ALL_ROUNDS_ON_HOLD
-        if obj.round.on_hold:
+        if obj.round is not None and obj.round.on_hold:
             return CampaignCategory.ROUND_ON_HOLD
         return CampaignCategory.REGULAR
 

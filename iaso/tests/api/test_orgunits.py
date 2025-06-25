@@ -83,6 +83,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
+            code="code1",
         )
 
         cls.instance_related_to_reference_form = cls.create_form_instance(
@@ -109,6 +110,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon_empty,
             catchment=mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code2",
         )
 
         # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
@@ -131,6 +133,7 @@ class OrgUnitAPITestCase(APITestCase):
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
+            code="code3",
         )
         cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=jedi_council_endor,
@@ -141,6 +144,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon,
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code4",
         )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
@@ -152,6 +156,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code5",
         )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
@@ -735,7 +740,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/orgunits/?csv=true")
+        response = self.client.get("/api/orgunits/?order=id&csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -744,9 +749,103 @@ class OrgUnitAPITestCase(APITestCase):
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
+
+        headers = data[0]
+        self.assertEqual(
+            headers,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
+
         first_row = data[1]
         first_row_name = first_row[1]
-        self.assertEqual(first_row_name, self.jedi_council_brussels.name)
+        self.assertEqual(first_row_name, self.jedi_council_corruscant.name)
+
+        first_row_code = first_row[5]
+        self.assertEqual(first_row_code, self.jedi_council_corruscant.code)
+
+    def test_can_retrieve_org_units_list_in_xlsx_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?&order=id&xlsx=true")
+        columns, excel_data = self.assertXlsxFileResponse(response)
+
+        self.assertEqual(
+            columns,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
+
+        ids = excel_data["ID"]
+        self.assertEqual(
+            ids,
+            {
+                0: self.jedi_council_corruscant.id,
+                1: self.jedi_council_endor.id,
+                2: self.jedi_squad_endor.id,
+                3: self.jedi_squad_endor_2.id,
+                4: self.jedi_council_brussels.id,
+            },
+        )
+
+        codes = excel_data["Code"]
+        self.assertEqual(
+            codes,
+            {
+                0: self.jedi_council_corruscant.code,
+                1: self.jedi_council_endor.code,
+                2: self.jedi_squad_endor.code,
+                3: self.jedi_squad_endor_2.code,
+                4: self.jedi_council_brussels.code,
+            },
+        )
 
     def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
         self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)

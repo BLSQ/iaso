@@ -784,3 +784,164 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
 
         self.assertIn("can_edit", result)
         self.assertIsInstance(result["can_edit"], bool)
+
+    def test_vaccine_request_form_api_includes_campaign_category(self):
+        """Test that the VaccineRequestForm API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Test list endpoint
+        response = self.client.get(self.BASE_URL)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+    def test_campaign_category_values_for_different_campaign_states(self):
+        """Test that campaign_category returns correct values for different campaign states in VRF"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Create test campaign
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create VRF for test campaign
+        test_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=test_campaign,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        test_vrf.rounds.set([test_round])
+
+        # Create campaign on hold
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create VRF for campaign on hold
+        hold_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_on_hold,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        hold_vrf.rounds.set([round_on_hold])
+
+        # Create campaign with all rounds on hold
+        campaign_all_rounds_hold = pm.Campaign.objects.create(
+            obr_name="All Rounds On Hold VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+        round1_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=True,
+        )
+        round2_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+
+        # Create VRF for campaign with all rounds on hold
+        all_rounds_hold_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_all_rounds_hold,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        all_rounds_hold_vrf.rounds.set([round1_all_hold, round2_all_hold])
+
+        # Create campaign with mixed rounds (some on hold, some not)
+        campaign_mixed_rounds = pm.Campaign.objects.create(
+            obr_name="Mixed Rounds VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+        round1_active = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=False,
+        )
+        round2_hold = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+
+        # Create VRF for campaign with mixed rounds
+        mixed_rounds_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_mixed_rounds,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        mixed_rounds_vrf.rounds.set([round1_active, round2_hold])
+
+        # Test API responses
+        response = self.client.get(self.BASE_URL)
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+
+        # Find our test VRFs in the response
+        test_vrf_data = next((item for item in results if item["id"] == test_vrf.id), None)
+        hold_vrf_data = next((item for item in results if item["id"] == hold_vrf.id), None)
+        all_rounds_hold_vrf_data = next((item for item in results if item["id"] == all_rounds_hold_vrf.id), None)
+        mixed_rounds_vrf_data = next((item for item in results if item["id"] == mixed_rounds_vrf.id), None)
+
+        # Verify campaign categories
+        self.assertIsNotNone(test_vrf_data)
+        self.assertIsNotNone(hold_vrf_data)
+        self.assertIsNotNone(all_rounds_hold_vrf_data)
+        self.assertIsNotNone(mixed_rounds_vrf_data)
+
+        self.assertEqual(test_vrf_data["campaign_category"], "TEST_CAMPAIGN")
+        self.assertEqual(hold_vrf_data["campaign_category"], "CAMPAIGN_ON_HOLD")
+        self.assertEqual(all_rounds_hold_vrf_data["campaign_category"], "ALL_ROUNDS_ON_HOLD")
+        self.assertEqual(mixed_rounds_vrf_data["campaign_category"], "ROUND_ON_HOLD")

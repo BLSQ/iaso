@@ -45,6 +45,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             permissions=[
                 permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
                 permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
@@ -1382,3 +1383,263 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         res = self.assertJSONResponse(response, 400)
         self.assertEqual(res["error"][0], "campaign and alternative campaign cannot both be defined")
+
+    def test_campaign_category_enum_and_get_campaign_category_method(self):
+        """Test the CampaignCategory enum and get_campaign_category method"""
+        from plugins.polio.api.vaccines.stock_management import CampaignCategory, OutgoingStockMovementSerializer
+
+        # Test serializer method with different campaign scenarios
+        serializer = OutgoingStockMovementSerializer()
+
+        # Test with None campaign but with non_obr_name (should return REGULAR)
+        obj_without_campaign = pm.OutgoingStockMovement.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+            non_obr_name="Test Campaign Name",  # Required by constraint
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_without_campaign), CampaignCategory.REGULAR)
+
+        # Test with test campaign
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign Enum",
+            country=self.country,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+        obj_test_campaign = pm.OutgoingStockMovement.objects.create(
+            campaign=test_campaign,
+            round=test_round,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_test_campaign), CampaignCategory.TEST_CAMPAIGN)
+
+        # Test with campaign on hold
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold Enum",
+            country=self.country,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+        obj_campaign_on_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_on_hold,
+            round=round_on_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_campaign_on_hold), CampaignCategory.CAMPAIGN_ON_HOLD)
+
+        # Test with all rounds on hold
+        campaign_all_rounds_hold = pm.Campaign.objects.create(
+            obr_name="All Rounds On Hold Enum",
+            country=self.country,
+            account=self.account,
+        )
+        round1_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=True,
+        )
+        round2_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+        obj_all_rounds_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_all_rounds_hold,
+            round=round1_all_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_all_rounds_hold), CampaignCategory.ALL_ROUNDS_ON_HOLD)
+
+        # Test with specific round on hold
+        campaign_mixed_rounds = pm.Campaign.objects.create(
+            obr_name="Mixed Rounds Enum",
+            country=self.country,
+            account=self.account,
+        )
+        round1_active = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=False,
+        )
+        round2_hold = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+        obj_round_on_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_mixed_rounds,
+            round=round2_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_round_on_hold), CampaignCategory.ROUND_ON_HOLD)
+
+        # Test with regular campaign (no holds)
+        obj_regular = pm.OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            round=self.campaign_round_1,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_regular), CampaignCategory.REGULAR)
+
+    def test_outgoing_stock_movement_api_includes_campaign_category(self):
+        """Test that the OutgoingStockMovement API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Test list endpoint
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+        # Test detail endpoint
+        movement_id = results[0]["id"]
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{movement_id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("campaign_category", response.data)
+        self.assertIsInstance(response.data["campaign_category"], str)
+
+    def test_earmarked_stock_api_includes_campaign_category(self):
+        """Test that the EarmarkedStock API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Create an earmarked stock for testing
+        earmarked_stock = pm.EarmarkedStock.objects.create(
+            campaign=self.campaign,
+            round=self.campaign_round_1,
+            vaccine_stock=self.vaccine_stock,
+            vials_earmarked=5,
+            doses_earmarked=100,
+        )
+
+        # Test list endpoint
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+        # Test detail endpoint
+        stock_id = results[0]["id"]
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{stock_id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("campaign_category", response.data)
+        self.assertIsInstance(response.data["campaign_category"], str)
+
+    def test_campaign_category_values_for_different_scenarios(self):
+        """Test that campaign_category returns correct values for different campaign states"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Create test campaigns with different states
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign API",
+            country=self.country,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold API",
+            country=self.country,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create movements for each campaign
+        test_movement = pm.OutgoingStockMovement.objects.create(
+            campaign=test_campaign,
+            round=test_round,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+
+        hold_movement = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_on_hold,
+            round=round_on_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+
+        # Test API responses
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        test_movement_data = next((item for item in results if item["id"] == test_movement.id), None)
+        hold_movement_data = next((item for item in results if item["id"] == hold_movement.id), None)
+
+        self.assertIsNotNone(test_movement_data)
+        self.assertIsNotNone(hold_movement_data)
+        self.assertEqual(test_movement_data["campaign_category"], "TEST_CAMPAIGN")
+        self.assertEqual(hold_movement_data["campaign_category"], "CAMPAIGN_ON_HOLD")

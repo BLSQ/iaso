@@ -21,6 +21,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { useDeleteVrf } from '../hooks/api/vrf';
 import MESSAGES from '../messages';
 import { SupplyChainList } from '../types';
+import { CampaignNameWithWarning } from '../../StockManagement/StockVariation/Table/CampaignNameWithWarning';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -44,6 +45,16 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.obrName),
                 accessor: 'obr_name',
                 sortable: true,
+                Cell: settings => {
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={settings.row.original.obr_name}
+                            category={category}
+                            isVrf
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.roundNumbers),

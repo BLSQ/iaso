@@ -57,6 +57,7 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
 
         with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_1 = cls.create_form_instance(
+                uuid=str(uuid4()),
                 form=cls.form_1,
                 period="202001",
                 org_unit=cls.jedi_council_corruscant,
@@ -119,6 +120,13 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
         response = self.client.patch(f"/api/mobile/instances/{instance.pk}/", data={})
         self.assertJSONResponse(response, 403)
 
+    def test_wrong_id_passed(self):
+        """GET /mobile/instances/{instance.pk}/attachments/"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.form_1.instances.first()
+        response = self.client.get("/api/mobile/instances/test/attachments/", data={})
+        self.assertJSONResponse(response, 404)
+
     def test_attachments_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
         self.client.force_authenticate(self.yoda)
@@ -126,6 +134,13 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
         m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
         response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/")
+        self.assertJSONResponse(response, 200)
+        data = response.json()["attachments"]
+        self.assertEqual(len(data), 2)
+        self.assertTrue(data[0]["file"].endswith("test1.jpg"))
+        self.assertTrue(data[1]["file"].endswith("test2.pdf"))
+
+        response = self.client.get(f"/api/mobile/instances/{instance.uuid}/attachments/")
         self.assertJSONResponse(response, 200)
         data = response.json()["attachments"]
         self.assertEqual(len(data), 2)

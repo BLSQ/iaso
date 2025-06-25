@@ -1,4 +1,5 @@
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import BasePermission
 
 from iaso.api.common import ModelViewSet
@@ -28,6 +29,7 @@ class InstancesMobileViewSet(ModelViewSet):
 
     permission_classes = [DenyAll]
     http_method_names = ["get"]
+    lookup_field = "uuid"
 
     def get_queryset(self):
         request = self.request
@@ -36,8 +38,12 @@ class InstancesMobileViewSet(ModelViewSet):
         return queryset
 
     @action(["GET"], detail=True, permission_classes=[HasInstancePermission])
-    def attachments(self, request, pk):
-        instance = self.get_queryset().get(pk=pk)
+    def attachments(self, request, uuid):
+        try:
+            instance = self.get_queryset().get(uuid=uuid)
+        except Instance.DoesNotExist:
+            instance = get_object_or_404(self.get_queryset(), pk=uuid)
+
         queryset = InstanceFile.objects_with_file_extensions.filter(instance=instance)
 
         image_only = ImageOnlySerializer(data=request.query_params).get_image_only(raise_exception=False)

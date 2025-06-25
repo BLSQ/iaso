@@ -366,9 +366,6 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock")
 
         base_queryset = OutgoingStockMovement.objects.all()
-        # base_queryset = OutgoingStockMovement.objects.filter(
-        #     Q(round__isnull=True) | Q(round__isnull=False, round__on_hold=False)
-        # )
 
         if vaccine_stock_id is None:
             return base_queryset.filter(vaccine_stock__account=self.request.user.iaso_profile.account)

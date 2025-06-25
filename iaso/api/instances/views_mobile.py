@@ -7,7 +7,6 @@ from iaso.api.instances.instances import HasInstancePermission, InstanceFileSeri
 from iaso.api.instances.serializers import ImageOnlySerializer
 from iaso.models import (
     Instance,
-    InstanceFile,
     InstanceQuerySet,
 )
 
@@ -44,10 +43,13 @@ class InstancesMobileViewSet(ModelViewSet):
         except Instance.DoesNotExist:
             instance = get_object_or_404(self.get_queryset(), pk=uuid)
 
-        queryset = InstanceFile.objects_with_file_extensions.filter(instance=instance)
+        image_only_serializer = ImageOnlySerializer(data=request.query_params)
+        image_only_serializer.is_valid(raise_exception=False)
+        image_only = image_only_serializer.validated_data["image_only"]
 
-        image_only = ImageOnlySerializer(data=request.query_params).get_image_only(raise_exception=False)
-        queryset = queryset.filter_image_only(image_only=image_only)
+        queryset = instance.instancefile_set(manager="objects_with_file_extensions").filter_image_only(
+            image_only=image_only
+        )
 
         self.paginator.results_key = "attachments"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10

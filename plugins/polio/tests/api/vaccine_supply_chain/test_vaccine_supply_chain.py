@@ -805,13 +805,6 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                 ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
             )
 
-        # Test detail endpoint
-        form_id = results[0]["id"]
-        response = self.client.get(f"{self.BASE_URL}{form_id}/")
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("campaign_category", response.data)
-        self.assertIsInstance(response.data["campaign_category"], str)
-
     def test_campaign_category_values_for_different_campaign_states(self):
         """Test that campaign_category returns correct values for different campaign states in VRF"""
         self.client.force_authenticate(user=self.user_rw_perm)

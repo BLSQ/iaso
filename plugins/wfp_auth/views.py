@@ -138,9 +138,11 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             users = User.objects.filter(iaso_profile__account=account).filter(email=email)
             user = users.first()
             if not user:
+                prefix = app_id if app_id else account.name
                 user = User.objects.create(
                     email=email,
-                    username=email,
+                    # If another user in another account has the same username, an IntegrityError is triggered
+                    username=f"{prefix}_{email}",
                     first_name=extra_data.get("given_name"),
                     last_name=extra_data.get("family_name"),
                 )
@@ -237,7 +239,14 @@ def token_view(request):
         )
     except Exception as e:
         logger.exception(str(e))
-        return JsonResponse({"result": "error", "message": "error login account"})
+        return JsonResponse(
+            {
+                "result": "error",
+                "message": "error login account",
+                "details": str(e),
+            },
+            status=500,
+        )
     user = social_account.user
 
     # from https://django-rest-framework-simplejwt.readthedocs.io/en/latest/creating_tokens_manually.html

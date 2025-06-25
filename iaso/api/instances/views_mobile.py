@@ -44,7 +44,7 @@ class InstancesMobileViewSet(ModelViewSet):
             instance = get_object_or_404(self.get_queryset(), pk=uuid)
 
         image_only_serializer = ImageOnlySerializer(data=request.query_params)
-        image_only_serializer.is_valid(raise_exception=False)
+        image_only_serializer.is_valid(raise_exception=True)
         image_only = image_only_serializer.validated_data["image_only"]
 
         queryset = instance.instancefile_set(manager="objects_with_file_extensions").filter_image_only(

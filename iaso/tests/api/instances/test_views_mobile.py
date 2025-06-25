@@ -1,135 +1,114 @@
-import datetime
-
-from unittest.mock import patch
 from uuid import uuid4
-
-import pytz
-import time_machine
 
 from iaso import models as m
 from iaso.api.query_params import IMAGE_ONLY
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
-MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
-
-
-@time_machine.travel(MOCK_DATE, tick=False)
 class InstancesMobileAPITestCase(TaskAPITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
+        cls.account = account = m.Account.objects.create(name="Account")
+        cls.data_source = data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
 
-        sw_source = m.DataSource.objects.create(name="Galactic Empire")
-        cls.sw_source = sw_source
-        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        star_wars.default_version = sw_version
-        star_wars.save()
-        cls.sw_version = sw_version
+        account.default_version = source_version
+        account.save()
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda",
-            last_name="Da",
-            first_name="Yo",
-            account=star_wars,
+        cls.user = cls.create_user_with_profile(
+            username="john_doe",
+            last_name="Doe",
+            first_name="John",
+            account=account,
             permissions=["iaso_submissions", "iaso_org_units"],
         )
 
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org Unit Type", short_name="Cnc")
 
-        cls.jedi_council_corruscant_uuid = str(uuid4())
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council",
-            source_ref="jedi_council_corruscant_ref",
-            version=sw_version,
+        cls.org_unit = m.OrgUnit.objects.create(
+            name="Org Unit",
+            source_ref="org_unit_ref",
+            version=source_version,
             validation_status="VALID",
-            uuid=cls.jedi_council_corruscant_uuid,
+            uuid=str(uuid4()),
         )
 
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+        cls.project = m.Project.objects.create(name="Project", app_id="project.id", account=account)
+
+        data_source.projects.add(cls.project)
+
+        cls.form = m.Form.objects.create(name="Form", period_type=m.MONTH, single_per_period=True)
+
+        cls.instance_1 = cls.create_form_instance(
+            uuid=str(uuid4()),
+            form=cls.form,
+            period="202001",
+            org_unit=cls.org_unit,
+            project=cls.project,
+            created_by=cls.user,
+            export_id="Vzhn0nceudr",
+        )
+        cls.instance_2 = cls.create_form_instance(
+            form=cls.form,
+            period="202002",
+            org_unit=cls.org_unit,
+            project=cls.project,
+            created_by=cls.user,
         )
 
-        sw_source.projects.add(cls.project)
-
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
-        date1 = datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)
-
-        with patch("django.utils.timezone.now", lambda: date1):
-            cls.instance_1 = cls.create_form_instance(
-                uuid=str(uuid4()),
-                form=cls.form_1,
-                period="202001",
-                org_unit=cls.jedi_council_corruscant,
-                project=cls.project,
-                created_by=cls.yoda,
-                export_id="Vzhn0nceudr",
-                source_created_at=date1,
-            )
-        with patch("django.utils.timezone.now", lambda: date1):
-            cls.instance_2 = cls.create_form_instance(
-                form=cls.form_1,
-                period="202002",
-                org_unit=cls.jedi_council_corruscant,
-                project=cls.project,
-                created_by=cls.yoda,
-                source_created_at=date1,
-            )
-
-        cls.project.unit_types.add(cls.jedi_council)
-        cls.project.forms.add(cls.form_1)
-        sw_source.projects.add(cls.project)
+        cls.project.unit_types.add(cls.org_unit_type)
+        cls.project.forms.add(cls.form)
+        data_source.projects.add(cls.project)
         cls.project.save()
 
     def test_attachments_permission_denied_when_anonymous(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        instance = self.form_1.instances.first()
+        instance = self.form.instances.first()
         response = self.client.get(f"/api/mobile/instances/{instance.pk}/attachments/")
         self.assertJSONResponse(response, 401)
 
     def test_get_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
-        instance = self.form_1.instances.first()
+        self.client.force_authenticate(self.user)
+        instance = self.form.instances.first()
         response = self.client.get(f"/api/mobile/instances/{instance.pk}/")
         self.assertJSONResponse(response, 403)
 
     def test_list_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user)
         response = self.client.get("/api/mobile/instances/")
         self.assertJSONResponse(response, 403)
 
     def test_delete_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
-        instance = self.form_1.instances.first()
+        self.client.force_authenticate(self.user)
+        instance = self.form.instances.first()
         response = self.client.delete(f"/api/mobile/instances/{instance.pk}/")
         self.assertJSONResponse(response, 403)
 
     def test_post_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user)
         response = self.client.post("/api/mobile/instances/", data={})
         self.assertJSONResponse(response, 403)
 
     def test_patch_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
-        instance = self.form_1.instances.first()
+        self.client.force_authenticate(self.user)
+        instance = self.form.instances.first()
         response = self.client.patch(f"/api/mobile/instances/{instance.pk}/", data={})
         self.assertJSONResponse(response, 403)
 
     def test_wrong_id_passed(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
-        instance = self.form_1.instances.first()
+        self.client.force_authenticate(self.user)
         response = self.client.get("/api/mobile/instances/test/attachments/", data={})
         self.assertJSONResponse(response, 404)
 
     def test_attachments_when_logged_in(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user)
         instance = self.instance_1
         m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")
@@ -154,7 +133,7 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
 
     def test_attachments_filter_image_only(self):
         """GET /mobile/instances/{instance.pk}/attachments/"""
-        self.client.force_authenticate(self.yoda)
+        self.client.force_authenticate(self.user)
         instance = self.instance_1
         m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
         m.InstanceFile.objects.create(instance=instance, file="test2.pdf")

@@ -150,6 +150,7 @@
     "iaso.datasources.label.fieldsToExport": "Fields to export",
     "iaso.datasources.label.geoPkgTitle": "Import from GeoPackage",
     "iaso.datasources.label.gpkgFormFile": "Choose file",
+    "iaso.datasources.label.groups": "Group",
     "iaso.datasources.label.nextVersion": "Next version",
     "iaso.datasources.label.orgUnitTypes": "Org unit types",
     "iaso.datasources.label.project": "Project",

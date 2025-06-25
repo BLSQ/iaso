@@ -150,6 +150,7 @@
     "iaso.datasources.label.fieldsToExport": "Champs à exporter",
     "iaso.datasources.label.geoPkgTitle": "Importer depuis un GeoPackage",
     "iaso.datasources.label.gpkgFormFile": "Sélectionner un fichier",
+    "iaso.datasources.label.groups": "Groupe",
     "iaso.datasources.label.nextVersion": "Version suivante",
     "iaso.datasources.label.orgUnitTypes": "Types d'unité d'organisation",
     "iaso.datasources.label.project": "Projet",

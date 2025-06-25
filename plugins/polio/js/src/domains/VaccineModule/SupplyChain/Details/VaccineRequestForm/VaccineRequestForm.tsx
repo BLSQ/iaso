@@ -55,11 +55,12 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         vaccines,
         rounds,
         isFetching: isFetchingDropDowns,
-    } = useCampaignDropDowns(
-        values?.vrf?.country,
-        values?.vrf?.campaign,
-        values?.vrf?.vaccine_type,
-    );
+    } = useCampaignDropDowns({
+        countryId: values?.vrf?.country,
+        campaign: values?.vrf?.campaign,
+        rounds: values?.vrf?.rounds,
+        vaccine: values?.vrf?.vaccine_type,
+    });
 
     useEffect(() => {
         if (!values?.vrf?.vrf_type) {

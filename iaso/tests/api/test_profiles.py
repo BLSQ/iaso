@@ -1,8 +1,6 @@
 import typing
 
 import jsonschema
-import numpy as np
-import pandas as pd
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -382,12 +380,8 @@ class ProfileAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -409,10 +403,8 @@ class ProfileAPITestCase(APITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
-
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},

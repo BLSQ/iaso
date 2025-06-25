@@ -18,9 +18,11 @@ class PyramidBaseTest(TestCase):
             data_source=cls.data_source, number=2, description="Foo"
         )
 
-        cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY")
-        cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION")
-        cls.org_unit_type_district = m.OrgUnitType.objects.create(category="DISTRICT")
+        cls.org_unit_type_country = m.OrgUnitType.objects.create(category="COUNTRY", name="Country", short_name="CTY")
+        cls.org_unit_type_region = m.OrgUnitType.objects.create(category="REGION", name="Region", short_name="REG")
+        cls.org_unit_type_district = m.OrgUnitType.objects.create(
+            category="DISTRICT", name="District", short_name="DST"
+        )
 
         # Groups in the pyramid to update.
 

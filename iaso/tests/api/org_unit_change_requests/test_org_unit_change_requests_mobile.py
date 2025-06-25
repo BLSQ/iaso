@@ -86,6 +86,8 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_should_be_filtered_by_project_via_orgunittype(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_b, new_name="Foo", created_by=self.user)
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Bar", created_by=self.user)
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Ding", created_by=self.user)
 
         self.client.force_authenticate(self.user)
 

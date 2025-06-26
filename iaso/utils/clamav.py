@@ -15,7 +15,7 @@ from iaso.utils.models.virus_scan import VirusScanStatus
 logger = logging.getLogger(__name__)
 
 
-def scan_uploaded_file_for_virus(uploaded_file: InMemoryUploadedFile):
+def scan_uploaded_file_for_virus(self, uploaded_file: InMemoryUploadedFile):
     # We need a temporary file because the library requires sending disk files (not memory files)
     logger.info(f"Scanning InMemoryUploadedFile {uploaded_file.name} for virus")
     with tempfile.NamedTemporaryFile(mode="wb") as temp_file:
@@ -24,17 +24,17 @@ def scan_uploaded_file_for_virus(uploaded_file: InMemoryUploadedFile):
 
         temp_file.flush()  # If you don't flush, you send an empty file
         temp_file_path = temp_file.name
-        result = _scan_with_clamav(temp_file_path)
+        result = self._scan_with_clamav(temp_file_path)
 
     return result
 
 
-def scan_disk_file_for_virus(file_path: str):
+def scan_disk_file_for_virus(self, file_path: str):
     logger.info(f"Scanning disk file {file_path} for virus")
-    return _scan_with_clamav(file_path)
+    return self._scan_with_clamav(file_path)
 
 
-def _scan_with_clamav(file_path: str):
+def _scan_with_clamav(self, file_path: str):
     is_clamav_active = settings.CLAMAV_ACTIVE
     if not is_clamav_active:
         logger.info("ClamAV is not active, skipping scan")

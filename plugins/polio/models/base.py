@@ -41,7 +41,7 @@ from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     SoftDeletableModel,
 )
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.utils.models.virus_scan import ModelWithFile
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -1360,7 +1360,11 @@ class VaccineRequestFormType(models.TextChoices):
     NOT_REQUIRED = "Not Required", _("Not Required")
 
 
-class VaccineRequestForm(SoftDeletableModel):
+class VaccineRequestForm(ModelWithFile, SoftDeletableModel):
+    file_field_name = "document"
+    storage = CustomPublicStorage()
+    upload_to = "public_documents/vrf/"
+
     class Meta:
         indexes = [
             models.Index(fields=["campaign", "vaccine_type"]),  # Frequently filtered together
@@ -1395,12 +1399,6 @@ class VaccineRequestForm(SoftDeletableModel):
     comment = models.TextField(blank=True, null=True)
     target_population = models.PositiveIntegerField(null=True, blank=True)
 
-    document = models.FileField(storage=CustomPublicStorage(), upload_to="public_documents/vrf/", null=True, blank=True)
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
-
     objects = DefaultSoftDeletableManager()
 
     def get_country(self):
@@ -1426,7 +1424,12 @@ class VaccineRequestForm(SoftDeletableModel):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(models.Model):
+class VaccinePreAlert(ModelWithFile):
+    # file storage config
+    file_field_name = "document"
+    storage = CustomPublicStorage()
+    upload_to = "public_documents/prealert/"
+
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
     po_number = models.CharField(max_length=200, blank=True, null=True, default=None, unique=True)
@@ -1438,17 +1441,6 @@ class VaccinePreAlert(models.Model):
     vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/prealert/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
 
     def save(self, *args, **kwargs):
         self.doses_per_vial = self.get_doses_per_vial()
@@ -1600,7 +1592,12 @@ class VaccineStockHistory(models.Model):
 
 
 # Form A
-class OutgoingStockMovement(models.Model):
+class OutgoingStockMovement(ModelWithFile):
+    # file storage config
+    file_field_name = "document"
+    storage = CustomPublicStorage()
+    upload_to = "public_documents/forma/"
+
     class Meta:
         indexes = [
             models.Index(fields=["vaccine_stock", "campaign"]),  # Frequently queried together
@@ -1630,22 +1627,16 @@ class OutgoingStockMovement(models.Model):
     comment = models.TextField(blank=True, null=True)
     non_obr_name = models.CharField(blank=True)
 
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/forma/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class DestructionReport(models.Model):
+class DestructionReport(ModelWithFile):
+    # file storage config
+    file_field_name = "document"
+    storage = CustomPublicStorage()
+    upload_to = "public_documents/destructionreport/"
+
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
     action = models.TextField()
     rrt_destruction_report_reception_date = models.DateField()
@@ -1653,17 +1644,6 @@ class DestructionReport(models.Model):
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/destructionreport/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1675,7 +1655,12 @@ class DestructionReport(models.Model):
         ]
 
 
-class IncidentReport(models.Model):
+class IncidentReport(ModelWithFile):
+    # file storage config
+    file_field_name = "document"
+    storage = CustomPublicStorage()
+    upload_to = "public_documents/incidentreport/"
+
     class StockCorrectionChoices(models.TextChoices):
         VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
@@ -1700,17 +1685,6 @@ class IncidentReport(models.Model):
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
-
-    document = models.FileField(
-        storage=CustomPublicStorage(),
-        upload_to="public_documents/incidentreport/",
-        null=True,
-        blank=True,
-    )
-    document_last_scan = models.DateTimeField(blank=True, null=True)
-    document_scan_status = models.CharField(
-        max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING
-    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1888,7 +1862,7 @@ class Notification(models.Model):
         return f"{self.epid_number}"
 
 
-class NotificationImport(models.Model):
+class NotificationImport(ModelWithFile):
     """
     Handle bulk import of polio virus outbreaks notifications via .xlsx files.
     This model stores .xlsx files and use them to populate `Notification`.
@@ -1916,10 +1890,12 @@ class NotificationImport(models.Model):
         PENDING = "pending", _("Pending")
         DONE = "done", _("Done")
 
+    # file storage config
+    file_field_name = "file"
+    upload_to = "uploads/polio_notifications/%Y-%m-%d-%H-%M/"
+    file_is_optional = False
+
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
-    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
-    file_last_scan = models.DateTimeField(blank=True, null=True)
-    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)

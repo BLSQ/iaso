@@ -481,6 +481,7 @@ class OrgUnit(TreeModel):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
+            "code": self.code,
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,

@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import uuid
 import zipfile
@@ -790,3 +791,54 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(ou_change_req.new_name, "LaLaland Edited")
         self.assertEqual(ou_change_req.org_unit_id, 1)
         self.assertEqual(ou_change_req.created_by, self.user)
+
+    def test_instance_without_entity_creation(self):
+        zip_path = "/tmp/instance_without_entity.zip"
+
+        # Create instances.json without entity references
+        instances_data = [
+            {
+                "id": "standalone-instance-uuid-1234",
+                "created_at": 1712326150005,
+                "updated_at": 1712326150005,
+                "file": "/storage/test/standalone_instance.xml",
+                "name": "Enregistrement",
+                "formId": "1",
+                "orgUnitId": "1",
+            }
+        ]
+
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            zipf.writestr("instances.json", json.dumps(instances_data))
+
+            with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
+                zipf.writestr("standalone-instance-uuid-1234/standalone_instance.xml", xml_file.read())
+
+        save_file_to_api_import(self.api_import, zip_path)
+
+        self.assertEqual(m.Entity.objects.count(), 0)
+        self.assertEqual(m.Instance.objects.count(), 0)
+
+        process_mobile_bulk_upload(
+            api_import_id=self.api_import.id,
+            project_id=self.project.id,
+            task=self.task,
+            _immediate=True,
+        )
+
+        # check Task status and result
+        self.task.refresh_from_db()
+        self.assertEqual(self.task.status, m.SUCCESS)
+
+        self.api_import.refresh_from_db()
+        self.assertEqual(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
+
+        # No entities should be created since no entityUuid/entityTypeId provided
+        self.assertEqual(m.Entity.objects.count(), 0)
+
+        # But instance should be created without entity reference
+        self.assertEqual(m.Instance.objects.count(), 1)
+        instance = m.Instance.objects.first()
+        self.assertEqual(instance.uuid, "standalone-instance-uuid-1234")
+        self.assertIsNone(instance.entity)

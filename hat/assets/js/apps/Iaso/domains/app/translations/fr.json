@@ -1016,7 +1016,7 @@
     "iaso.pages.errors.urlNotValid": "L'url n'est pas valide",
     "iaso.pages.superset": "Superset",
     "iaso.pages.superset_dashboard_id": "Identifiant du tableau de bord",
-    "iaso.pages.superset_dashboard_id_required": "Identifiant du tableau de bord est requise",
+    "iaso.pages.superset_dashboard_id_required": "Identifiant du tableau de bord est requis",
     "iaso.pages.title": "Liens intégrés",
     "iaso.payments.createLot": "Créer un nouveau lot de paiements",
     "iaso.payments.download_payments": "Télécharger les paiements",

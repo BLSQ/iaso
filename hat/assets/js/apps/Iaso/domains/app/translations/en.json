@@ -1021,6 +1021,7 @@
     "iaso.pages.errors.urlNotValid": "Url is not valid",
     "iaso.pages.superset": "Superset",
     "iaso.pages.superset_dashboard_id": "Dashboard ID",
+    "iaso.pages.superset_dashboard_id_required": "Dashboard ID is required",
     "iaso.pages.title": "Embedded links",
     "iaso.payments.createLot": "Create a new lot of payments",
     "iaso.payments.download_payments": "Download payments",

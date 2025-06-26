@@ -204,7 +204,10 @@ class InstancesViewSet(viewsets.ViewSet):
         instances = instances.for_filters(**filters)
         queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
-        image_only = ImageOnlySerializer(data=request.query_params).get_image_only(raise_exception=False)
+        image_only_serializer = ImageOnlySerializer(data=request.query_params)
+        image_only_serializer.is_valid(raise_exception=True)
+        image_only = image_only_serializer.validated_data["image_only"]
+
         queryset = queryset.filter_image_only(image_only=image_only)
 
         paginator = common.Paginator()

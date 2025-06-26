@@ -110,10 +110,14 @@ def launch_dataset_refresh(group_id, data_set_id):
     # FIXME : import is not extra but will do till we move this model
     from iaso.models.json_config import Config
 
+    # Get the config for the powerBI refresh
     conf = get_object_or_404(Config, slug="powerbi_sp")
     config = conf.content
+    # Get configs to launch associated OH pipelines if any
     dataset_config = get_extra_config_for_data_set_id(data_set_id)
+    # OpenHexa config, used to launch an external task
     openhexa_config = None
+    # Config used to refresh other dashboards that should be refreshed together with the selected one
     extra_sync_config = None
 
     if dataset_config:

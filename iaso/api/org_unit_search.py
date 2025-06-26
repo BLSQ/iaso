@@ -80,6 +80,14 @@ def build_org_units_queryset(queryset, params, profile):
             except:
                 queryset = queryset.filter(source_ref__in=[])
                 print("Failed parsing refs in search", search)
+        elif search.startswith("codes:"):
+            s = search.replace("codes:", "")
+            try:
+                codes = re.findall("[A-Za-z0-9_-]+", s)
+                queryset = queryset.filter(code__in=codes)
+            except:
+                queryset = queryset.filter(code__in=[])
+                print("Failed parsing codes in search", search)
         else:
             queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
 

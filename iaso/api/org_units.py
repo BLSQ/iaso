@@ -152,6 +152,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         Special Search Formats:
         - ids:search: Search by IDs (e.g. "ids:1,2,3")
         - refs:search: Search by references (e.g. "refs:ref1,ref2")
+        - codes:search: Search by codes (e.g. "codes:code1,code2")
 
         Example Response Formats:
         * Simple JSON (default) -> as_dict_for_mobile

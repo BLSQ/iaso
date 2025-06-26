@@ -31,6 +31,7 @@ export type OrgunitInititialState = {
     source_id?: number;
     parent?: ParentOrgUnit;
     source_ref?: string;
+    code?: string;
     reference_instance_id?: Nullable<number>;
     opening_date?: Date;
     closed_date?: Date;
@@ -54,6 +55,7 @@ export type OrgUnit = {
     name: string;
     short_name: string;
     id: number;
+    code?: string;
     sub_source: string;
     sub_source_id: string | undefined;
     source_ref: string;
@@ -123,6 +125,7 @@ export type OrgUnitState = {
     aliases: FormState<string>;
     source_id: FormState<number>;
     source: FormState<string>;
+    code: FormState<string>;
     parent: FormState<OrgUnit>;
     source_ref: FormState<string>;
     creator: FormStateRequired<Record<string, any>>;

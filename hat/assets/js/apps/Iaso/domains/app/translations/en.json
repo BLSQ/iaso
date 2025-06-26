@@ -928,6 +928,7 @@
     "iaso.orgUnits.addToGroups": "Add to group(s)",
     "iaso.orgUnits.bulkChangeCount": "You are about to change {count} Org units",
     "iaso.orgUnits.closingDate": "Closing date",
+    "iaso.orgUnits.code": "Code",
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
     "iaso.orgUnits.createdBy": "Created By",
     "iaso.orgUnits.createSubUnitTypes": "Sub org units types to create",

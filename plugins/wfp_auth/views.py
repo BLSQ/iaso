@@ -21,6 +21,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template import loader
+from django.template.defaultfilters import slugify
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import HTTPError, RequestException
@@ -131,14 +132,13 @@ class WFP2Adapter(Auth0OAuth2Adapter):
 
         try:
             # user is required, can't use get_or_create
-            socialaccount = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
+            social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
             # update extra data
-            socialaccount.extra_data = extra_data
+            social_account.extra_data = extra_data
         except SocialAccount.DoesNotExist:
-            users = User.objects.filter(iaso_profile__account=account).filter(email=email)
-            user = users.first()
+            user = User.objects.filter(iaso_profile__account=account, email=email).first()
             if not user:
-                prefix = app_id if app_id else account.name
+                prefix = app_id if app_id else slugify(account.name)
                 user = User.objects.create(
                     email=email,
                     # If another user in another account has the same username, an IntegrityError is triggered
@@ -147,18 +147,13 @@ class WFP2Adapter(Auth0OAuth2Adapter):
                     last_name=extra_data.get("family_name"),
                 )
                 user.set_unusable_password()
-                iaso_profile = Profile.objects.create(
-                    account=account,
-                    user=user,
-                )
-                user.iaso_profile = iaso_profile
-                user.save()
+                Profile.objects.create(account=account, user=user)
                 self.send_new_account_email(request, user)
 
-            socialaccount = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
+            social_account = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
 
-        socialaccount.save()
-        return socialaccount
+        social_account.save()
+        return social_account
 
 
 class WFPCallbackView(OAuth2View):

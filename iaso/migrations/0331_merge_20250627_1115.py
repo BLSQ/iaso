@@ -4,12 +4,10 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0329_merge_20250624_1335'),
-        ('iaso', '0329_merge_20250625_1352'),
-        ('iaso', '0330_formversion_md5'),
+        ("iaso", "0329_merge_20250624_1335"),
+        ("iaso", "0329_merge_20250625_1352"),
+        ("iaso", "0330_formversion_md5"),
     ]
 
-    operations = [
-    ]
+    operations = []

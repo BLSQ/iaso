@@ -46,3 +46,8 @@ vcrpy==4.1.1  # https://github.com/kevin1024/vcrpy
 # Sass compiler.
 # ------------------------------------------------------------------------------
 django-sass-processor==1.4.1  # https://github.com/jrief/django-sass-processor/releases/tag/1.4.1
+
+#openhexa
+# ------------------------------------------------------------------------------
+openhexa.sdk==2.0.3
+openhexa.toolbox==2.6.0

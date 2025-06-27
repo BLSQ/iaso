@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import fiona
+
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
 from iaso import models as m
@@ -20,6 +22,7 @@ class GPKGExport(TestCase):
         out2 = m.OrgUnitType.objects.create(name="type2", depth=4)
         out.projects.add(cls.project)
         p = Point(x=1, y=1.5, z=3)
+        cls.ou_code = "code ou 1"
         ou = m.OrgUnit.objects.create(
             name="ou1",
             source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de",
@@ -28,11 +31,19 @@ class GPKGExport(TestCase):
             location=p,
             opening_date="2020-01-01",
             closed_date="2021-12-31",
+            code=cls.ou_code,
         )
         polygon = MultiPolygon([Polygon([(0, 0), (0, 1), (2, 1), (1, 0), (0, 0)])])
         cls.polygon = polygon
+        cls.ou_code2 = "code ou 2"
         ou2 = m.OrgUnit.objects.create(
-            name="ou2", version=cls.version, org_unit_type=out2, parent=ou, geom=polygon, simplified_geom=polygon
+            name="ou2",
+            version=cls.version,
+            org_unit_type=out2,
+            parent=ou,
+            geom=polygon,
+            simplified_geom=polygon,
+            code=cls.ou_code2,
         )
         m.OrgUnit.objects.create(name="ou3", version=cls.version, parent=ou2)  # no orgunit type and no geom
         cls.group1 = m.Group.objects.create(name="group1", source_version=cls.version)
@@ -141,3 +152,14 @@ class GPKGExport(TestCase):
 
         self.assertEqual(orgs.count(), 2)
         org_units_to_gpkg_bytes(orgs)
+
+    def test_export_codes(self):
+        """Test that codes are exported"""
+        gpkg_content = org_units_to_gpkg_bytes(m.OrgUnit.objects.all())
+        with fiona.BytesCollection(gpkg_content) as collection:
+            column_names = collection.schema["properties"].keys()
+            self.assertIn("code", column_names)
+
+        # Check if the code is present in the exported data
+        self.assertIn(self.ou_code.encode("utf-8"), gpkg_content)
+        self.assertIn(self.ou_code2.encode("utf-8"), gpkg_content)

@@ -221,6 +221,7 @@
     "iaso.entities.registrationDate": "Registration date",
     "iaso.entities.seeDuplicate": "See duplicate",
     "iaso.entities.seeDuplicates": "See duplicates",
+    "iaso.entities.selectForm": "Select a form",
     "iaso.entities.title": "Entities",
     "iaso.entities.type": "Type",
     "iaso.entities.typeNotSupported": "Type not supported yet: {type}",

@@ -333,6 +333,26 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
         self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
 
+    def test_org_unit_search_with_code(self):
+        """GET /orgunits/ with a search based on codes"""
+        search_criteria = {
+            "validation_status": "all",
+            "version": self.sw_version_1.id,
+            "search": f"codes: {self.jedi_council_endor.code} {self.jedi_council_corruscant.code} unknown_code",
+        }
+        search_criteria_str = json.dumps(search_criteria)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
+        response_json = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(response_json["count"], 2)
+        org_units = response_json["orgunits"]
+        self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
+
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
 

@@ -110,6 +110,7 @@ class ExportTestCase(TestCase):
             name="None Ref Unit",
             source_ref=None,
             validated=True,
+            code="",
         )
 
         org_unit_empty_ref = m.OrgUnit.objects.create(
@@ -118,6 +119,7 @@ class ExportTestCase(TestCase):
             name="Empty Ref Unit",
             source_ref="",
             validated=True,
+            code="empty_ref",
         )
 
         org_unit_with_ref = m.OrgUnit.objects.create(
@@ -126,6 +128,7 @@ class ExportTestCase(TestCase):
             name="With Ref Unit",
             source_ref="test-ref-123",
             validated=True,
+            code="with_ref",
         )
 
         # Export to gpkg

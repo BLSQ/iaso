@@ -3,6 +3,7 @@ import requests
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 
@@ -17,6 +18,8 @@ class SupersetTokenViewSet(viewsets.ViewSet):
     See:
     https://www.npmjs.com/package/@superset-ui/embedded-sdk
     """
+
+    permission_classes = [AllowAny]
 
     def create(self, request):
         dashboard_id = request.data.get("dashboard_id")
@@ -42,13 +45,22 @@ class SupersetTokenViewSet(viewsets.ViewSet):
         headers["Referer"] = base_url
 
         # Fetch Guest token
-        current_user = request.user
-        payload = {
-            "user": {
+        if hasattr(request, "user") and request.user.is_authenticated:
+            current_user = request.user
+            user_data = {
                 "username": current_user.username,
                 "first_name": current_user.first_name,
                 "last_name": current_user.last_name,
-            },
+            }
+        else:
+            user_data = {
+                "username": "guest",
+                "first_name": "Guest",
+                "last_name": "",
+            }
+
+        payload = {
+            "user": user_data,
             "resources": [{"type": "dashboard", "id": dashboard_id}],
             "rls": [],
         }

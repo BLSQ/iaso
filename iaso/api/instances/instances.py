@@ -280,7 +280,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
-        def get_row(instance, **kwargs):
+        def get_row(instance, reference_instances=set(), **kwargs):
             created_at_timestamp = instance.source_created_at_with_fallback.timestamp()
             updated_at_timestamp = instance.source_updated_at_with_fallback.timestamp()
             org_unit = instance.org_unit
@@ -288,7 +288,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
             instance_values = [
                 instance.id,
-                str(instance.is_reference_instance),
+                str(instance.id in reference_instances),
                 file_content.get("_version") if file_content else None,
                 instance.export_id,
                 instance.location.y if instance.location else None,
@@ -357,6 +357,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
             )
         )
+
+        reference_instances = OrgUnit.objects.filter(reference_instances__form=form).values_list(
+            "reference_instances__id", flat=True
+        )
+        reference_instances = set(reference_instances)
 
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"

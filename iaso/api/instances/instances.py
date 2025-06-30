@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -39,6 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.serializers import ImageOnlySerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
@@ -136,6 +137,7 @@ class InstanceFileSerializer(serializers.Serializer):
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
     file_type = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
 
     def get_file_type(self, obj):
         return get_file_type(obj.file)
@@ -200,14 +202,13 @@ class InstancesViewSet(viewsets.ViewSet):
         instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
         instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
-            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
-        )
+        queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
-        image_only = request.GET.get("image_only", "false").lower() == "true"
-        if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
-            queryset = queryset.filter(file_extension__in=image_extensions)
+        image_only_serializer = ImageOnlySerializer(data=request.query_params)
+        image_only_serializer.is_valid(raise_exception=True)
+        image_only = image_only_serializer.validated_data["image_only"]
+
+        queryset = queryset.filter_image_only(image_only=image_only)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)

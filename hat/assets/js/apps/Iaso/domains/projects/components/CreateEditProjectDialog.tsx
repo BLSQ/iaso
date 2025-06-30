@@ -13,13 +13,13 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import get from 'lodash/get';
 
-import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
-import { FeatureFlag } from '../types/featureFlag';
+import { FeatureFlag, ProjectFeatureFlag } from '../types/featureFlag';
 import { Project } from '../types/project';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 import { ProjectInfos, ProjectForm } from './ProjectInfos';
@@ -101,9 +101,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                     errors: [],
                 },
                 feature_flags: {
-                    value: get(pr, 'feature_flags', [] as FeatureFlag[]).map(
-                        (v: FeatureFlag): number | string => v.id,
-                    ),
+                    value: get(pr, 'feature_flags', [] as FeatureFlag[]),
                     errors: [],
                 },
                 qr_code: {
@@ -180,9 +178,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     const onConfirm = () => {
         const currentProject: Project = {
             id: initialData?.app_id,
-            feature_flags: (featureFlags ?? []).filter(fF =>
-                project.feature_flags.value?.includes(fF.id),
-            ),
+            feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
             name: project.name.value || '',
             old_app_id: initialData?.app_id,
@@ -205,6 +201,21 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
         setProject(initialProject(initialData));
     }, [initialData, initialProject]);
 
+    const validateFeatureFlagsConfiguration = useCallback(() => {
+        return (project.feature_flags.value ?? []).every(pff => {
+            const ff = featureFlags?.find(x => x.id === pff.id);
+            return (
+                ff == null ||
+                ff.configuration_schema == null ||
+                Object.entries(ff.configuration_schema).every(
+                    ([confKey]) =>
+                        pff.configuration?.[confKey] &&
+                        pff.configuration?.[confKey] !== '',
+                )
+            );
+        });
+    }, [project, featureFlags]);
+
     const allowConfirm = useMemo(
         () =>
             project &&
@@ -213,8 +224,9 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             project.app_id &&
             project.app_id.value !== '' &&
             project.app_id.errors.length === 0 &&
-            !isFetchingFeatureFlags,
-        [project, isFetchingFeatureFlags],
+            !isFetchingFeatureFlags &&
+            validateFeatureFlagsConfiguration(),
+        [project, isFetchingFeatureFlags, validateFeatureFlagsConfiguration],
     );
     const titleMessage =
         dialogType === 'create'
@@ -271,13 +283,11 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 )}
                 {tab === 'feature_flags' && (
                     <ProjectFeatureFlags
-                        setFieldValue={(_key, value) =>
+                        onFeatureFlagsChanged={(value: FeatureFlag[]) =>
                             setFieldValue('feature_flags', value)
                         }
-                        projectFeatureFlagsValues={
-                            project.feature_flags.value ?? []
-                        }
-                        featureFlags={featureFlags?.map(featureFlag =>
+                        projectFeatureFlags={project.feature_flags.value ?? []}
+                        featureFlags={(featureFlags ?? [])?.map(featureFlag =>
                             translatedFeatureFlag(featureFlag),
                         )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}

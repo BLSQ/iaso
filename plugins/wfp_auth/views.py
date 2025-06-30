@@ -21,7 +21,6 @@ from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.template import loader
-from django.template.defaultfilters import slugify
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import HTTPError, RequestException
@@ -29,7 +28,7 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.api.query_params import APP_ID
-from iaso.models import Account, Profile, Project
+from iaso.models import Account, Profile, Project, TenantUser
 
 from .provider import WFPProvider
 
@@ -104,20 +103,28 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             )
 
     def complete_login(self, request, app, token: str, response) -> SocialAccount:
-        # simplify the logic from django-allauth a lot so the flow is less flexible but more followable
-        # search if we have a SocialAccount linked to this user
-        # if not create one and connect it to an existing user if there is already one with this email
-        # contrary to the all auth version it return a SocialAccount
-        # Call the userinfo url with the identifying token to get more data on the user
+        """
+        Simplify the logic from django-allauth a lot, so the flow is less flexible but more followable:
+
+        - search if we have a SocialAccount linked to this user
+        - if not create one and connect it to an existing user if there is already one with this email
+
+        Contrary to the all auth version, it returns a SocialAccount.
+        """
+
+        # Call the userinfo url with the identifying token to get more data on the user.
         extra_data_get = requests.get(self.profile_url, params={"access_token": token})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
+
         try:
             email = extra_data["email"].lower().strip()
         except KeyError:
             email = extra_data["sub"].lower().strip()
-        # the sub is the email, wfp verify it so let's trust this
+
+        # The sub is the email, wfp verify it, so let's trust this.
         uid = extra_data["sub"].lower().strip()
+
         # We cannot use `AppIdSerializer` because we are in a method **before** `dispatch` and therefore
         # `self.request.query_params` is not set yet. Using `request.query_params` results in:
         # `'WSGIRequest' object has no attribute 'query_params'`
@@ -131,20 +138,18 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 
         try:
-            # user is required, can't use get_or_create
             social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
-            # update extra data
-            social_account.extra_data = extra_data
+            social_account.extra_data = extra_data  # Update extra data.
         except SocialAccount.DoesNotExist:
             user = User.objects.filter(iaso_profile__account=account, email=email).first()
+
             if not user:
-                prefix = app_id if app_id else slugify(account.name)
-                user = User.objects.create(
+                user = TenantUser.objects.create_user_or_tenant_user(
+                    username=email,
                     email=email,
-                    # If another user in another account has the same username, an IntegrityError is triggered
-                    username=f"{prefix}_{email}",
                     first_name=extra_data.get("given_name"),
                     last_name=extra_data.get("family_name"),
+                    account=account,
                 )
                 user.set_unusable_password()
                 Profile.objects.create(account=account, user=user)

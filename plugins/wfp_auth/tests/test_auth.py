@@ -43,7 +43,7 @@ class WFPAuthTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         new_user = m.User.objects.get(email="john@doe.com")
-        self.assertEqual(new_user.username, "test_app_id_john@doe.com")
+        self.assertEqual(new_user.username, "john@doe.com")
         self.assertEqual(new_user.first_name, "John")
         self.assertEqual(new_user.last_name, "Doe")
 
@@ -58,9 +58,11 @@ class WFPAuthTestCase(APITestCase):
     @patch("requests.get")
     def test_complete_login_ok_with_existing_username(self, mock_get):
         """
+        TODO.
         Avoid an IntegrityError when another user already has the same username.
         """
-        self.create_user_with_profile(username="john@doe.com", email="foo@bar.com", account=self.account)
+        other_account = m.Account.objects.create(name="Other account")
+        self.create_user_with_profile(username="john@doe.com", email="foo@bar.com", account=other_account)
 
         # Mock `requests.get()` response.
         extra_data: ExtraData = {
@@ -83,6 +85,26 @@ class WFPAuthTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        self.assertEqual(m.User.objects.count(), 2)
-        new_user = m.User.objects.get(email="john@doe.com")
-        self.assertEqual(new_user.username, "test_app_id_john@doe.com")
+        # Users.
+        self.assertEqual(m.User.objects.count(), 3)
+        main_user = m.User.objects.get(username="john@doe.com")
+        account_user_1 = m.User.objects.get(username="john@doe.com_other_account")
+        account_user_2 = m.User.objects.get(username="john@doe.com_account")
+
+        # Iaso Profiles.
+        self.assertFalse(hasattr(main_user, "iaso_profile"))
+        self.assertEqual(account_user_1.iaso_profile.account, other_account)
+        self.assertEqual(account_user_2.iaso_profile.account, self.account)
+
+        # Tenant Users.
+        self.assertEqual(m.TenantUser.objects.count(), 2)
+        self.assertEqual(main_user.tenant_users.count(), 2)
+        self.assertEqual(m.TenantUser.objects.filter(account_user=account_user_1).count(), 1)
+        self.assertEqual(m.TenantUser.objects.filter(account_user=account_user_2).count(), 1)
+
+        # Social Account.
+        self.assertEqual(SocialAccount.objects.count(), 1)
+        new_social_account = SocialAccount.objects.get(uid="test_app_id_john@doe.com")
+        self.assertEqual(new_social_account.provider, "wfp")
+        self.assertEqual(new_social_account.extra_data, extra_data)
+        self.assertEqual(new_social_account.user, account_user_2)

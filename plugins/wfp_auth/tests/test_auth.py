@@ -42,6 +42,7 @@ class WFPAuthTestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        self.assertEqual(m.User.objects.count(), 1)
         new_user = m.User.objects.get(email="john@doe.com")
         self.assertEqual(new_user.username, "john@doe.com")
         self.assertEqual(new_user.first_name, "John")
@@ -58,8 +59,8 @@ class WFPAuthTestCase(APITestCase):
     @patch("requests.get")
     def test_complete_login_ok_with_existing_username(self, mock_get):
         """
-        TODO.
         Avoid an IntegrityError when another user already has the same username.
+        Create an entry in `TenantUser` instead.
         """
         other_account = m.Account.objects.create(name="Other account")
         self.create_user_with_profile(username="john@doe.com", email="foo@bar.com", account=other_account)

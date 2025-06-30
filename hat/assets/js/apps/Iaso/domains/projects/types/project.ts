@@ -1,8 +1,8 @@
-import { FeatureFlag } from './featureFlag';
+import { ProjectFeatureFlag } from './featureFlag';
 
 export type Project = {
     app_id: string;
-    feature_flags: Array<FeatureFlag>;
+    feature_flags: ProjectFeatureFlag[];
     name: string;
     id: number | string | null | undefined;
     updated_at?: number;

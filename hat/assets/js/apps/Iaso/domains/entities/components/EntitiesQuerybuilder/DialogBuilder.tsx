@@ -4,69 +4,91 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { Tabs, Tab, Box, useTheme, Button, Paper } from '@mui/material';
-import {
-    JsonLogicTree,
-    JsonLogicResult,
-    Fields,
-} from '@react-awesome-query-builder/mui';
+import { Box, useTheme, Button, Paper } from '@mui/material';
+import { JsonLogicTree } from '@react-awesome-query-builder/mui';
 
 import {
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
-    JsonLogicEditor,
-    QueryBuilder,
 } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { FormBuilder } from './FormBuilder';
 import { TriggerModal } from './TriggerModal';
 
+type FormState = {
+    id?: string;
+    form_id?: string;
+    logic?: JsonLogicTree;
+    not: boolean;
+    operator?: string;
+};
+
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    initialLogic?: JsonLogicTree;
-    fields: Fields;
-    // eslint-disable-next-line no-unused-vars
-    onChange: (logic?: JsonLogicTree) => void;
     InfoPopper?: ReactNode;
 };
 
 const DialogBuilder: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
-    initialLogic,
-    onChange,
     InfoPopper,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [formIds, setFormIds] = useState<(string | undefined)[]>([undefined]);
-    console.log('formIds', formIds);
+    const [formStates, setFormStates] = useState<FormState[]>([
+        {
+            id: undefined,
+            form_id: undefined,
+            logic: undefined,
+            not: false,
+            operator: undefined,
+        },
+    ]);
     const theme = useTheme();
-    const [tab, setTab] = useState<string>('query');
 
     const handleConfirm = () => {
         closeDialog();
         // compute the logic
     };
-    const handleChangeForm = useCallback((newFormId: string, index: number) => {
-        setFormIds(prev => {
-            const updated = [...prev];
-            updated[index] = newFormId;
-            return updated;
-        });
-    }, []);
+
+    // Single generic handler to update any field in FormState
+    const updateFormState = useCallback(
+        <K extends keyof FormState>(
+            index: number,
+            field: K,
+            value: FormState[K],
+        ) => {
+            setFormStates(prev => {
+                const updated = [...prev];
+                updated[index] = { ...updated[index], [field]: value };
+                return updated;
+            });
+        },
+        [],
+    );
 
     const handleDeleteForm = useCallback((index: number) => {
-        setFormIds(prev => {
+        setFormStates(prev => {
             const updated = [...prev];
             updated.splice(index, 1);
             return updated;
         });
     }, []);
-    const handleChangeTab = (newTab: string) => {
-        setTab(newTab);
-    };
+
+    const handleAddForm = useCallback(() => {
+        setFormStates(prev => [
+            ...prev,
+            {
+                id: undefined,
+                form_id: undefined,
+                logic: undefined,
+                not: false,
+                operator: undefined,
+            },
+        ]);
+    }, []);
+
     return (
         <ConfirmCancelModal
             allowConfirm
@@ -85,7 +107,6 @@ const DialogBuilder: FunctionComponent<Props> = ({
             onClose={() => null}
         >
             <Box position="relative">
-                {/* allow to display an popper with informations about the fields used */}
                 {InfoPopper && (
                     <Box
                         position="absolute"
@@ -95,16 +116,6 @@ const DialogBuilder: FunctionComponent<Props> = ({
                         {InfoPopper}
                     </Box>
                 )}
-                {/* <Tabs
-                    value={tab}
-                    onChange={(_, newtab) => handleChangeTab(newtab)}
-                >
-                    <Tab
-                        value="query"
-                        label={formatMessage(MESSAGES.queryTab)}
-                    />
-                    <Tab value="json" label={formatMessage(MESSAGES.jsonTab)} />
-                </Tabs> */}
 
                 <Paper
                     elevation={0}
@@ -116,33 +127,33 @@ const DialogBuilder: FunctionComponent<Props> = ({
                         p: 1,
                     }}
                 >
-                    {Array.from(formIds).map((formId, index) => (
+                    {formStates.map((formState, index) => (
                         <FormBuilder
-                            key={formId || `new-form-${index}`}
-                            formId={formId}
-                            changeForm={newFormId =>
-                                handleChangeForm(newFormId, index)
+                            key={formState.id || `new-form-${index}`}
+                            id={formState.id}
+                            logic={formState.logic}
+                            not={formState.not}
+                            operator={formState.operator}
+                            onChange={(field, value) =>
+                                updateFormState(index, field, value)
                             }
                             deleteForm={() => handleDeleteForm(index)}
-                            deleteDisabled={formIds.length === 1}
+                            deleteDisabled={formStates.length === 1}
                         />
                     ))}
                     <Box display="flex" justifyContent="flex-end">
                         <Button
-                            onClick={() =>
-                                setFormIds(prev => [...prev, undefined])
+                            onClick={handleAddForm}
+                            disabled={
+                                formStates.length > 0 &&
+                                formStates[formStates.length - 1].id ===
+                                    undefined
                             }
                         >
                             + {formatMessage(MESSAGES.addForm)}
                         </Button>
                     </Box>
                 </Paper>
-                {/* {tab === 'json' && (
-                    <JsonLogicEditor
-                        initialLogic={logic}
-                        changeLogic={newLogic => setLogic(newLogic)}
-                    />
-                )} */}
             </Box>
         </ConfirmCancelModal>
     );

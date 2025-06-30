@@ -1,14 +1,13 @@
-import { cloneDeep } from 'lodash';
 import { useMemo } from 'react';
+import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
+import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
 import {
     useGetForm,
     useGetForms,
 } from '../../entities/entityTypes/hooks/requests/forms';
-
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
 
 import { Form, PossibleField } from '../types/forms';
 

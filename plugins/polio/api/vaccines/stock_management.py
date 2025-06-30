@@ -1,6 +1,7 @@
 from datetime import date
 from enum import Enum
 from tempfile import NamedTemporaryFile
+from typing import Optional
 
 from django.db.models import Q
 from django.http import HttpResponse
@@ -33,7 +34,7 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import VaccineStockCalculator
+from plugins.polio.models.base import Round, VaccineStockCalculator
 
 
 class CampaignCategory(str, Enum):
@@ -239,6 +240,20 @@ class VaccineStockSubitemEdit(VaccineStockSubitemBase):
         return Response(serializer.data)
 
 
+def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional[Round]) -> str:
+    if campaign is None:
+        return CampaignCategory.REGULAR
+    if campaign.is_test:
+        return CampaignCategory.TEST_CAMPAIGN
+    if campaign.on_hold:
+        return CampaignCategory.CAMPAIGN_ON_HOLD
+    if not campaign.rounds.exclude(on_hold=True).exists():
+        return CampaignCategory.ALL_ROUNDS_ON_HOLD
+    if round is not None and round.on_hold:
+        return CampaignCategory.ROUND_ON_HOLD
+    return CampaignCategory.REGULAR
+
+
 class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
     # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
@@ -287,18 +302,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         )
 
     def get_campaign_category(self, obj):
-        campaign = obj.campaign
-        if campaign is None:
-            return CampaignCategory.REGULAR
-        if campaign.is_test:
-            return CampaignCategory.TEST_CAMPAIGN
-        if campaign.on_hold:
-            return CampaignCategory.CAMPAIGN_ON_HOLD
-        if not campaign.rounds.exclude(on_hold=True).exists():
-            return CampaignCategory.ALL_ROUNDS_ON_HOLD
-        if obj.round is not None and obj.round.on_hold:
-            return CampaignCategory.ROUND_ON_HOLD
-        return CampaignCategory.REGULAR
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def extract_campaign_data(self, validated_data):
         campaign_data = validated_data.pop("campaign", None)
@@ -528,18 +532,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
         )
 
     def get_campaign_category(self, obj):
-        campaign = obj.campaign
-        if campaign is None:
-            return CampaignCategory.REGULAR
-        if campaign.is_test:
-            return CampaignCategory.TEST_CAMPAIGN
-        if campaign.on_hold:
-            return CampaignCategory.CAMPAIGN_ON_HOLD
-        if not campaign.rounds.exclude(on_hold=True).exists():
-            return CampaignCategory.ALL_ROUNDS_ON_HOLD
-        if obj.round is not None and obj.round.on_hold:
-            return CampaignCategory.ROUND_ON_HOLD
-        return CampaignCategory.REGULAR
+        return compute_category_from_campaign(obj.campaign, obj.round)
 
     def get_campaign(self, obj):
         return obj.campaign.obr_name if obj.campaign else None

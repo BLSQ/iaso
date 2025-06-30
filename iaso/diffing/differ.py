@@ -69,7 +69,7 @@ class Differ:
         field_names=None,
     ):
         if field_names is None:
-            field_names = ["name", "geometry", "parent", "opening_date", "closed_date"]
+            field_names = ["name", "geometry", "parent", "opening_date", "closed_date", "code"]
         elif not isinstance(field_names, list):
             field_names = list(field_names)
 

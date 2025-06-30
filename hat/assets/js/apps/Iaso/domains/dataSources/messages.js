@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.name',
         defaultMessage: 'Name',
     },
+    code: {
+        id: 'iaso.datasources.options.label.code',
+        defaultMessage: 'Code',
+    },
     parent: {
         id: 'iaso.datasources.options.label.parent',
         defaultMessage: 'Parent',

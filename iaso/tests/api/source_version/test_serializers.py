@@ -66,7 +66,7 @@ class DiffSerializerTestCase(BaseSourceVersionSerializerTestCase):
             "source_top_org_unit_id": self.org_unit_1.id,
             "source_org_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
             "source_org_unit_group_id": self.group_1.id,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         serializer = DiffSerializer(data=data, context={"request": self.drf_request})
         self.assertTrue(serializer.is_valid())
@@ -166,7 +166,7 @@ class ExportSerializerTestCase(BaseSourceVersionSerializerTestCase):
             "source_top_org_unit_id": None,
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": None,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         serializer = ExportSerializer(data=data, context={"request": self.drf_request})
         self.assertTrue(serializer.is_valid())
@@ -183,7 +183,7 @@ class ExportSerializerTestCase(BaseSourceVersionSerializerTestCase):
             "source_top_org_unit_id": None,
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": None,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         serializer = ExportSerializer(data=data, context={"request": self.drf_request})
         self.assertFalse(serializer.is_valid())

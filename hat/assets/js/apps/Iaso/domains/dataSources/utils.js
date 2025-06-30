@@ -43,6 +43,7 @@ export const useDefaultSourceVersion = () => {
 
 export const FIELDS_TO_EXPORT = {
     name: 'name',
+    code: 'code',
     parent: 'parent',
     geometry: 'geometry',
     groups: 'groups',
@@ -70,6 +71,7 @@ export const useFieldsToExport = () => {
             value: FIELDS_TO_EXPORT.closedDate,
         },
         { label: formatMessage(MESSAGES.name), value: FIELDS_TO_EXPORT.name },
+        { label: formatMessage(MESSAGES.code), value: FIELDS_TO_EXPORT.code },
         {
             label: formatMessage(MESSAGES.parent),
             value: FIELDS_TO_EXPORT.parent,

@@ -23,7 +23,7 @@ class DumperTestCase(PyramidBaseTest):
         """
         Test `Dumper.as_json()` for a partial update.
         """
-        # Change the name.
+        # Change the name (code is different in setup).
         self.angola_country_to_compare_with.name = "Angola new"
         self.angola_country_to_compare_with.save()
 
@@ -42,7 +42,7 @@ class DumperTestCase(PyramidBaseTest):
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
-            field_names=["name"],
+            field_names=["name", "code"],
         )
 
         dumper = Dumper(test_logger)
@@ -76,7 +76,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
-                    "code": "",
+                    "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
@@ -105,7 +105,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
-                    "code": "",
+                    "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": {
@@ -134,7 +134,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
-                    "code": "",
+                    "code": self.code_angola_to_update,
                     "reference_instances": [],
                 },
                 "status": Differ.STATUS_MODIFIED,
@@ -145,7 +145,14 @@ class DumperTestCase(PyramidBaseTest):
                         "after": "Angola new",
                         "status": Differ.STATUS_MODIFIED,
                         "distance": None,
-                    }
+                    },
+                    {
+                        "field": "code",
+                        "before": self.code_angola_to_update,
+                        "after": self.code_angola_to_compare_with,
+                        "status": Differ.STATUS_MODIFIED,
+                        "distance": None,
+                    },
                 ],
             }
         ]
@@ -209,7 +216,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
-                    "code": "",
+                    "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
                 },
                 "orgunit_ref": {
@@ -238,7 +245,7 @@ class DumperTestCase(PyramidBaseTest):
                     "opening_date": "2022-11-28",
                     "closed_date": "2025-11-28",
                     "default_image": None,
-                    "code": "",
+                    "code": self.code_angola_to_compare_with,
                     "reference_instances": [],
                 },
                 "orgunit_dhis2": None,

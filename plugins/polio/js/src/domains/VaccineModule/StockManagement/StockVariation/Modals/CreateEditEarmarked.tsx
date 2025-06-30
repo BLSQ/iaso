@@ -58,7 +58,11 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     const { setFieldValue, setFieldTouched } = formik;
 
     const { campaignOptions, isFetching, roundNumberOptions } =
-        useCampaignOptions(countryName, formik.values.campaign);
+        useCampaignOptions(
+            countryName,
+            formik.values.campaign,
+            formik.values.round_number,
+        );
 
     const selectedRound = roundNumberOptions.find(
         round => round.value === formik.values.round_number,

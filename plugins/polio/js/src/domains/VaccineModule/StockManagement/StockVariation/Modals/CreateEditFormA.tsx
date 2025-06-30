@@ -90,6 +90,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
         countryName,
         formik.values.campaign,
+        formik.values.round,
     );
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(

@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from 'react';
+import React, { ReactElement, useEffect, useMemo } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Chip, Switch, Tooltip } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -8,7 +8,7 @@ import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
-import { FeatureFlag } from './types/featureFlag';
+import { FeatureFlag, ProjectFeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
 
 export const baseUrl = baseUrls.projects;
@@ -88,7 +88,7 @@ export const useColumns = (
 
 export const useFeatureFlagColumns = (
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
-    featureFlagsValues: (string | number)[],
+    featureFlagsValues: ProjectFeatureFlag[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -142,10 +142,10 @@ export const useFeatureFlagColumns = (
                     return (
                         <Switch
                             data-test="featureFlag-checkbox"
-                            id={`featureFlag-checkbox-${settings.row.original.id}`}
+                            id={`featureFlag-checkbox-${settings.row.original.code}`}
                             checked={Boolean(
-                                featureFlagsValues.includes(
-                                    settings.row.original.id,
+                                featureFlagsValues.find(
+                                    ff => ff.id === settings.row.original.id,
                                 ),
                             )}
                             onChange={e => {
@@ -154,10 +154,22 @@ export const useFeatureFlagColumns = (
                                     e.target.checked,
                                 );
                             }}
-                            name={settings.row.original.id}
+                            name={settings.row.original.code}
                             color="primary"
                         />
                     );
+                },
+            },
+            {
+                Header: '',
+                id: 'expander',
+                width: 1,
+                expander: true,
+                Expander: ({ _, setIsExpanded }) => {
+                    useEffect(() => {
+                        setTimeout(() => setIsExpanded(true), 100);
+                    }, [setIsExpanded]);
+                    return null;
                 },
             },
         ];

@@ -358,24 +358,24 @@ export const useCampaignOptions = (
         return selectedCampaign
             ? selectedCampaign.rounds
                   .filter(r => !r.on_hold || r.number === round)
-                  .map(round => {
+                  .map(rnd => {
                       return {
-                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                          value: round.id,
+                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                          value: rnd.id,
                       };
                   })
             : [];
-    }, [campaignName, data, formatMessage, selectedCampaign]);
+    }, [campaignName, data, formatMessage, selectedCampaign, round]);
 
     const roundNumberOptions = useMemo(() => {
         return selectedCampaign
             ? selectedCampaign.rounds
                   .filter(r => !r.on_hold || r.number === round)
-                  .map(round => {
+                  .map(rnd => {
                       return {
-                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                          value: round.number,
-                          original: round,
+                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                          value: rnd.number,
+                          original: rnd,
                       };
                   })
             : [];
@@ -383,7 +383,7 @@ export const useCampaignOptions = (
 
     const campaignOptions = useMemo(() => {
         const campaignsList = (data ?? [])
-            //@ts-ignore
+            // @ts-ignore
             .filter(
                 c =>
                     (!c.on_hold &&
@@ -405,7 +405,7 @@ export const useCampaignOptions = (
             return defaultList;
         }
         return [];
-    }, [campaignName, data]);
+    }, [campaignName, data, selectedCampaign?.id]);
 
     return useMemo(() => {
         return {

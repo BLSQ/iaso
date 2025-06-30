@@ -27,7 +27,7 @@ export const CampaignNameWithWarning: FunctionComponent<Props> = ({
             display="flex"
             alignItems="center"
             justifyContent="center"
-            gap={theme => theme.spacing(2)}
+            gap={2}
         >
             <Tooltip
                 sx={{

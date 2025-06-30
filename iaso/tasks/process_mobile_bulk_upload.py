@@ -244,7 +244,7 @@ def process_instance_attachments(directory, instance):
 def duplicate_instance_files(new_instance_files):
     count = 0
     for instance_file in new_instance_files:
-        if "serie_id" in instance_file.instance.json:
+        if "serie_id" in instance_file.instance.json and instance_file.instance.json["serie_id"]:
             for i in Instance.objects.filter(json__serie_id=instance_file.instance.json["serie_id"]).exclude(
                 id=instance_file.instance_id,
             ):

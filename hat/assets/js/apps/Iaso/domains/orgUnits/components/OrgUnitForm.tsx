@@ -36,6 +36,7 @@ const initialFormState = (
     source_id: orgUnit?.source_id,
     parent: orgUnit?.parent,
     source_ref: orgUnit?.source_ref,
+    code: orgUnit?.code,
     reference_instance_id: orgUnit?.reference_instance_id,
     opening_date: orgUnit?.opening_date ? orgUnit.opening_date : undefined,
     closed_date: orgUnit?.closed_date ? orgUnit.closed_date : undefined,

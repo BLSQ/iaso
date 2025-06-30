@@ -190,7 +190,7 @@ msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
-msgstr "Une autre unité organisationnelle valide existe déjà avec le code '{}' dans cette version"
+msgstr "Une autre unité d'organisation valide existe déjà avec le code '{}' dans cette version"
 
 #: iaso/api/org_units.py
 msgid "Unauthorized version id"

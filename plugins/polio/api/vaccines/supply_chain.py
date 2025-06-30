@@ -112,7 +112,7 @@ class BasePostPatchSerializer(serializers.ModelSerializer):
 
 
 class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
-    document = serializers.FileField(required=False)
+    file = serializers.FileField(required=False)
 
     class Meta:
         model = VaccinePreAlert
@@ -123,7 +123,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
-            "document",
+            "file",
         ]
 
     def validate(self, attrs: Any) -> Any:
@@ -142,7 +142,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
-    document = serializers.FileField(required=False)
+    file = serializers.FileField(required=False)
     scan_result = serializers.SerializerMethodField()
     scan_timestamp = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
@@ -153,6 +153,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             "can_edit",
             "scan_result",
             "scan_timestamp",
+            "file",
         ]
 
     def validate(self, attrs: Any) -> Any:
@@ -170,24 +171,24 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         # Check if any values are actually different
         is_different = False
         for key in attrs.keys():
-            if key == "document":
+            if key == "file":
                 # Skip if no new document is being uploaded
                 if not attrs[key]:
                     continue
 
                 new_file = attrs[key]
-                old_file = current_obj.document
+                old_file = current_obj.file
 
                 # If there's no existing document but we're uploading one
                 if not old_file:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
                     continue
 
                 # Compare file names and sizes
                 if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -211,12 +212,12 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         )
 
     def get_scan_result(self, obj):
-        return obj.document_scan_status
+        return obj.file_scan_status
 
     def get_scan_timestamp(self, obj):
-        if obj.document_last_scan:
-            return obj.document_last_scan.timestamp()
-        return obj.document_last_scan
+        if obj.file_last_scan:
+            return obj.file_last_scan.timestamp()
+        return obj.file_last_scan
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -271,23 +272,23 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         # Check if any values are actually different
         is_different = False
         for key in attrs.keys():
-            if key == "document":
+            if key == "file":
                 # Skip if no new document is being uploaded
                 if not attrs[key]:
                     continue
 
                 new_file = attrs[key]
-                old_file = current_obj.document
+                old_file = current_obj.file
 
                 # If there's no existing document but we're uploading one
                 if not old_file:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
                     continue
 
                 if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -322,10 +323,10 @@ class PostPreAlertSerializer(serializers.Serializer):
         for item in self.validated_data["pre_alerts"]:
             pre_alert = NestedVaccinePreAlertSerializerForPost(data=item, context=self.context)
             if pre_alert.is_valid():
-                if "document" in pre_alert.validated_data:
-                    result, timestamp = scan_uploaded_file_for_virus(pre_alert.validated_data["document"])
-                    pre_alert.validated_data["document_scan_status"] = result
-                    pre_alert.validated_data["document_last_scan"] = timestamp
+                if "file" in pre_alert.validated_data:
+                    result, timestamp = scan_uploaded_file_for_virus(pre_alert.validated_data["file"])
+                    pre_alert.validated_data["file_scan_status"] = result
+                    pre_alert.validated_data["file_last_scan"] = timestamp
                 pre_alert.save()
                 pre_alerts.append(pre_alert.instance)
 
@@ -346,12 +347,12 @@ class PatchPreAlertSerializer(serializers.Serializer):
                 ar = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if key == "document":
+                    if key == "file":
                         if not item[key]:
                             continue
 
                         new_file = item[key]
-                        old_file = ar.document
+                        old_file = ar.file
 
                         if not old_file or (
                             os.path.basename(old_file.name) != os.path.basename(new_file.name)
@@ -359,9 +360,9 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         ):
                             is_different = True
                             result, timestamp = scan_uploaded_file_for_virus(new_file)
-                            ar.document = new_file
-                            ar.document_scan_status = result
-                            ar.document_last_scan = timestamp
+                            ar.file = new_file
+                            ar.file_scan_status = result
+                            ar.file_last_scan = timestamp
                     elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
@@ -418,18 +419,18 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                 ar = vaccine_request_form.vaccinearrivalreport_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if key == "document":
+                    if key == "file":
                         # Skip if no new document is being uploaded
                         if not item[key]:
                             continue
 
-                        old_file = ar.document
+                        old_file = ar.file
                         new_file = item[key]
 
                         # If there's no existing document but we're uploading one
                         if not old_file:
                             is_different = True
-                            ar.document = new_file
+                            ar.file = new_file
                             continue
 
                         # Compare file names and sizes
@@ -438,7 +439,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                             or old_file.size != new_file.size
                         ):
                             is_different = True
-                            ar.document = new_file
+                            ar.file = new_file
                     elif hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
@@ -477,7 +478,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     rounds = NestedRoundPostSerializer(many=True)
     campaign = serializers.CharField()
-    document = serializers.FileField(required=False)
+    document = serializers.FileField(required=False, source="file")
 
     class Meta:
         model = VaccineRequestForm
@@ -569,7 +570,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     country_id = serializers.IntegerField(source="campaign.country.id")
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
-    document = serializers.FileField(required=False)
+    document = serializers.FileField(required=False, source="file")
     can_edit = serializers.SerializerMethodField()
 
     class Meta:

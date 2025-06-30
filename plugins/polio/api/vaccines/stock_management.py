@@ -234,7 +234,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
     # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
-    document = serializers.FileField(required=False)
+    document = serializers.FileField(required=False, source="file")
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
@@ -380,7 +380,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+    document = serializers.FileField(required=False, source="file")
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
@@ -410,7 +410,7 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+    document = serializers.FileField(required=False, source="file")
     can_edit = serializers.SerializerMethodField()
 
     class Meta:

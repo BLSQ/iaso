@@ -877,15 +877,15 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 report_date=self.now,
                 form_a_reception_date="2023-10-01",
                 usable_vials_used=999,
-                document=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
+                file=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
             )
 
-            self.assertIn("document_path_1", outgoing_stock_movement.document.name)
+            self.assertIn("document_path_1", outgoing_stock_movement.file.name)
 
             # Query the newly created OutgoingStockMovement via ORM
             queried_movement = pm.OutgoingStockMovement.objects.get(pk=outgoing_stock_movement.pk)
             self.assertEqual(queried_movement.usable_vials_used, 999)
-            self.assertIn("document_path_1", queried_movement.document.name)
+            self.assertIn("document_path_1", queried_movement.file.name)
 
             # Query the newly created OutgoingStockMovement via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
@@ -899,18 +899,18 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 date_of_incident_report=self.now - datetime.timedelta(days=2),
                 incident_report_received_by_rrt=self.now - datetime.timedelta(days=1),
                 stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
-                document=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
+                file=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
                 unusable_vials=7,  # 1 vial will be moved from usable to unusable
                 usable_vials=3,
             )
 
-            self.assertIn("document_path_2", incident_report.document.name)
+            self.assertIn("document_path_2", incident_report.file.name)
 
             # Query the newly created IncidentReport via ORM
             queried_incident = pm.IncidentReport.objects.get(pk=incident_report.pk)
             self.assertEqual(queried_incident.unusable_vials, 7)
             self.assertEqual(queried_incident.usable_vials, 3)
-            self.assertIn("document_path_2", queried_incident.document.name)
+            self.assertIn("document_path_2", queried_incident.file.name)
 
             # Query the newly created IncidentReport via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_report.pk}/")
@@ -925,7 +925,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 rrt_destruction_report_reception_date=self.now - datetime.timedelta(days=1),
                 destruction_report_date=self.now,
                 action="Destroyed due to expiration",
-                document=SimpleUploadedFile(
+                file=SimpleUploadedFile(
                     "document_path_3.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -933,13 +933,13 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 unusable_vials_destroyed=3,
             )
 
-            self.assertIn("document_path_3", destruction_report.document.name)
+            self.assertIn("document_path_3", destruction_report.file.name)
 
             # Query the newly created DestructionReport via ORM
             queried_destruction = pm.DestructionReport.objects.get(pk=destruction_report.pk)
             self.assertEqual(queried_destruction.unusable_vials_destroyed, 3)
             self.assertEqual(queried_destruction.action, "Destroyed due to expiration")
-            self.assertIn("document_path_3", queried_destruction.document.name)
+            self.assertIn("document_path_3", queried_destruction.file.name)
 
             # Query the newly created DestructionReport via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_report.pk}/")

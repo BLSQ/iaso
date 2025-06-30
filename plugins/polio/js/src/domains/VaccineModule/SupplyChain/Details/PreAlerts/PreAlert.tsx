@@ -31,8 +31,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
         pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
-    // const [isDosesFocused, setIsDosesFocused] = useState<boolean>(false);
-    // const [isVialsFocused, setIsVialsFocused] = useState<boolean>(false);
 
     // Use refs to track focused state to reduce renders and avoid sluggish UI
     const dosesRef = useRef<boolean>(false);
@@ -139,19 +137,17 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                     onFilesSelect={files => {
                                         if (files.length) {
                                             setFieldTouched(
-                                                `pre_alerts[${index}].document`,
+                                                `pre_alerts[${index}].file`,
                                                 true,
                                             );
                                             setFieldValue(
-                                                `pre_alerts[${index}].document`,
+                                                `pre_alerts[${index}].file`,
                                                 files,
                                             );
                                         }
                                     }}
                                     // @ts-ignore
-                                    document={
-                                        values?.pre_alerts?.[index]?.document
-                                    }
+                                    document={values?.pre_alerts?.[index]?.file}
                                     scanResult={
                                         values?.pre_alerts?.[index]?.scan_result
                                     }

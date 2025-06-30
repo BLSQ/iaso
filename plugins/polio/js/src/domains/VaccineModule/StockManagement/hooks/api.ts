@@ -352,7 +352,7 @@ export const useCampaignOptions = (
     const selectedCampaign = useMemo(
         // @ts-ignore
         () => (data ?? []).find(campaign => campaign.obr_name === campaignName),
-        [data],
+        [data, campaignName],
     );
     const roundOptions = useMemo(() => {
         return selectedCampaign

@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.orgUnits.name',
     },
+    code: {
+        defaultMessage: 'Code',
+        id: 'iaso.orgUnits.code',
+    },
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',

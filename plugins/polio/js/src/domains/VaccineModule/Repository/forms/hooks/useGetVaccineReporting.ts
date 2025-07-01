@@ -2,7 +2,7 @@ import { UseQueryResult } from 'react-query';
 import { useApiParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { VaccineRepositotyForms } from '../../types';
+import { VaccineRepositoryForms } from '../../types';
 
 const getVaccineReporting = params => {
     const apiParams = params.campaignStatus
@@ -23,7 +23,7 @@ export const tableDefaults = {
 type Response = {
     limit: number;
     count: number;
-    results: VaccineRepositotyForms[];
+    results: VaccineRepositoryForms[];
     has_previous: boolean;
     has_next: boolean;
     page: number;

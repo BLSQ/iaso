@@ -33,7 +33,7 @@ export type VRF = {
     target_population?: number;
     comments?: string;
     vrf_type: 'Normal' | 'Missing' | 'Not Required';
-    document?: File;
+    file?: File;
 };
 
 export type VRFFormData = Omit<VRF, 'rounds'> & {

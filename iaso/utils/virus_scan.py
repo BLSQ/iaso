@@ -16,6 +16,13 @@ from rest_framework import serializers
 logger = logging.getLogger(__name__)
 
 
+class VirusScanStatus(models.TextChoices):
+    CLEAN = "CLEAN", _("Clean")
+    PENDING = "PENDING", _("Pending")  # default value + when scanning is not enabled
+    INFECTED = "INFECTED", _("Infected")
+    ERROR = "ERROR", _("Error")  # in case the scan couldn't be done
+
+
 def scan_uploaded_file_for_virus(uploaded_file: InMemoryUploadedFile):
     # We need a temporary file because the library requires sending disk files (not memory files)
     logger.info(f"Scanning InMemoryUploadedFile {uploaded_file.name} for virus")
@@ -79,6 +86,9 @@ def scan_file_and_update(obj, validated_data):
     for key in validated_data.keys():
         if key == "file":
             if not validated_data[key]:
+                print("+" * 50)
+                print("NO FILE FOUND")
+                print("+" * 50)
                 continue
 
             new_file = validated_data[key]
@@ -87,6 +97,9 @@ def scan_file_and_update(obj, validated_data):
             if not old_file or (
                 os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size
             ):
+                print("+" * 50)
+                print("UPDATING")
+                print("+" * 50)
                 has_updated = True
                 result, timestamp = scan_uploaded_file_for_virus(new_file)
                 obj.file = new_file
@@ -98,13 +111,6 @@ def scan_file_and_update(obj, validated_data):
             has_updated = True
             setattr(obj, key, validated_data[key])
     return has_updated
-
-
-class VirusScanStatus(models.TextChoices):
-    CLEAN = "CLEAN", _("Clean")
-    PENDING = "PENDING", _("Pending")  # default value + when scanning is not enabled
-    INFECTED = "INFECTED", _("Infected")
-    ERROR = "ERROR", _("Error")  # in case the scan couldn't be done
 
 
 class ModelWithFile(models.Model):
@@ -143,6 +149,7 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         has_updated = scan_file_and_update(instance, validated_data)
+        print("Has UPDATED", has_updated)
         if has_updated:
             instance.save()
         return super().update(instance, validated_data)

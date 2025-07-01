@@ -22,7 +22,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update
+from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update, scan_uploaded_file_for_virus
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
@@ -205,14 +205,6 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
             read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
-    def get_scan_result(self, obj):
-        return obj.file_scan_status
-
-    def get_scan_timestamp(self, obj):
-        if obj.file_last_scan:
-            return obj.file_last_scan.timestamp()
-        return obj.file_last_scan
-
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
     class Meta:
@@ -317,7 +309,6 @@ class PostPreAlertSerializer(serializers.Serializer):
         for item in self.validated_data["pre_alerts"]:
             pre_alert = NestedVaccinePreAlertSerializerForPost(data=item, context=self.context)
             if pre_alert.is_valid():
-                scan_file(pre_alert.validated_data)
                 pre_alert.save()
                 pre_alerts.append(pre_alert.instance)
 
@@ -333,11 +324,31 @@ class PatchPreAlertSerializer(serializers.Serializer):
         pre_alerts = []
 
         for item in self.validated_data["pre_alerts"]:
+            # The update method of this serializer is not called so we have to scan the file manually in the code below
             pre_alert = NestedVaccinePreAlertSerializerForPatch(data=item, context=self.context)
-
             if pre_alert.is_valid():
                 pa = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
-                is_different = scan_file_and_update(pa, item)
+                is_different = False
+                for key in item.keys():
+                    if key == "file":
+                        if not item[key]:
+                            continue
+
+                        new_file = item[key]
+                        old_file = pa.file
+
+                        if not old_file or (
+                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
+                            or old_file.size != new_file.size
+                        ):
+                            is_different = True
+                            result, timestamp = scan_uploaded_file_for_virus(new_file)
+                            pa.file = new_file
+                            pa.file_scan_status = result
+                            pa.file_last_scan = timestamp
+                    elif hasattr(pa, key) and getattr(pa, key) != item[key]:
+                        is_different = True
+                        setattr(pa, key, item[key])
 
                 if is_different:
                     if can_edit_helper(

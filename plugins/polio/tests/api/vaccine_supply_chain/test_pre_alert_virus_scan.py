@@ -107,14 +107,14 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(len(response_json["pre_alerts"]), 2)
 
         pre_alert_1 = (
-            pm.VaccinePreAlert.objects.get(po_number=new_pre_alert_1_po_number, request_form=request_form.id)
-            # .order_by("-id")
-            # .first()
+            pm.VaccinePreAlert.objects.filter(po_number=new_pre_alert_1_po_number, request_form=request_form.id)
+            .order_by("-id")
+            .first()
         )
         self.assertIsNotNone(pre_alert_1)
         pre_alert_1.refresh_from_db()
-        self.assertEqual(pre_alert_1.file_scan_status, VirusScanStatus.CLEAN)
         self.assertEqual(pre_alert_1.file_last_scan, self.DT)
+        self.assertEqual(pre_alert_1.file_scan_status, VirusScanStatus.CLEAN)
 
         pre_alert_2 = (
             pm.VaccinePreAlert.objects.filter(po_number=new_pre_alert_2_po_number, request_form=request_form.id)

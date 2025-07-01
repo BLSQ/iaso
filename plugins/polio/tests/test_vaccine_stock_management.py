@@ -891,7 +891,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["usable_vials_used"], 999)
-            self.assertIn("document_path_1", response.data["document"])
+            self.assertIn("document_path_1", response.data["file"])
 
             # Test creation and retrieval of IncidentReport with document via ORM
             incident_report = pm.IncidentReport.objects.create(
@@ -917,7 +917,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["unusable_vials"], 7)
             self.assertEqual(response.data["usable_vials"], 3)
-            self.assertIn("document_path_2", response.data["document"])
+            self.assertIn("document_path_2", response.data["file"])
 
             # Test creation and retrieval of DestructionReport with document via ORM
             destruction_report = pm.DestructionReport.objects.create(
@@ -946,7 +946,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["unusable_vials_destroyed"], 3)
             self.assertEqual(response.data["action"], "Destroyed due to expiration")
-            self.assertIn("document_path_3", response.data["document"])
+            self.assertIn("document_path_3", response.data["file"])
 
             # Test creation and retrieval of OutgoingStockMovement with document via API
             data = {
@@ -955,7 +955,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "form_a_reception_date": "2023-10-03",
                 "report_date": "2023-10-04",
                 "usable_vials_used": 999,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_4.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -969,7 +969,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_4", response.data["document"])
+            self.assertIn("document_path_4", response.data["file"])
 
             # Test creation and retrieval of IncidentReport with document via API
             data = {
@@ -979,7 +979,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "stock_correction": pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
                 "unusable_vials": 7,
                 "usable_vials": 3,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_5.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -993,7 +993,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_5", response.data["document"])
+            self.assertIn("document_path_5", response.data["file"])
 
             # Test creation and retrieval of DestructionReport with document via API
             data = {
@@ -1002,7 +1002,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "destruction_report_date": "2023-10-06",
                 "action": "Destroyed due to expiration",
                 "unusable_vials_destroyed": 3,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_6.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -1016,7 +1016,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_6", response.data["document"])
+            self.assertIn("document_path_6", response.data["file"])
 
     def test_check_duplicate_destruction_report(self):
         self.client.force_authenticate(self.user_rw_perms)

@@ -31,19 +31,42 @@ type Props = {
     initialLogic: string;
 };
 
-const getButtonStyles = (isActive: boolean) => ({
-    position: 'relative' as const,
-    top: (theme: any) => theme.spacing(1),
-    p: (theme: any) => theme.spacing(0.5, 1),
-    minWidth: 0,
-    color: isActive ? 'white' : 'inherit',
-    borderColor: isActive ? 'secondary.main' : borderColor,
-    backgroundColor: isActive ? 'error.main' : 'rgb(224, 224, 224)',
-    '&:hover': {
-        borderColor: isActive ? 'secondary.main' : borderColor,
-        color: isActive ? 'error.main' : 'inherit',
-    },
-});
+const getButtonStyles =
+    (isActive: boolean, type: 'not' | 'and' | 'or') => (theme: any) => {
+        const base = {
+            position: 'relative' as const,
+            top: theme.spacing(1),
+            p: theme.spacing(0.5, 1),
+            minWidth: 0,
+        };
+        if (type === 'not') {
+            return {
+                ...base,
+                color: isActive ? 'white' : 'inherit',
+                borderColor: isActive ? 'secondary.main' : borderColor,
+                backgroundColor: isActive
+                    ? theme.palette.error.main
+                    : 'rgb(224, 224, 224)',
+                '&:hover': {
+                    borderColor: isActive ? 'secondary.main' : borderColor,
+                    color: isActive ? theme.palette.error.main : 'inherit',
+                },
+            };
+        }
+        // AND/OR
+        return {
+            ...base,
+            color: isActive ? theme.palette.primary.contrastText : 'inherit',
+            borderColor: isActive ? 'primary.main' : borderColor,
+            backgroundColor: isActive
+                ? theme.palette.primary.main
+                : 'rgb(224, 224, 224)',
+            '&:hover': {
+                borderColor: isActive ? 'primary.main' : borderColor,
+                color: isActive ? theme.palette.primary.main : 'inherit',
+            },
+        };
+    };
 
 const getStyles = () => ({
     buttonGroup: {
@@ -56,10 +79,10 @@ const DialogBuilder: FunctionComponent<Props> = ({
     isOpen,
     InfoPopper,
     onChange,
-    initialLogic: _initialLogic,
+    initialLogic,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // compute the logic from the initialLogic
+    console.log('initialLogic', initialLogic);
     const [not, setNot] = useState<NotState>(false);
     const [activeOperator, setActiveOperator] = useState<LogicOperator | null>(
         'and',
@@ -89,8 +112,30 @@ const DialogBuilder: FunctionComponent<Props> = ({
     }, []);
 
     const handleConfirm = () => {
-        // compute the logic and trigger onchange with the new logic
-        onChange({});
+        const formLogics = formStates
+            .filter(fs => fs.id)
+            .map(fs => ({
+                [fs.operator || 'some']: [
+                    { var: fs.form_id || fs.id },
+                    fs.logic ?? {},
+                ],
+            }));
+
+        let combinedLogic: any = {};
+        if (formLogics.length === 1) {
+            [combinedLogic] = formLogics;
+        } else if (formLogics.length > 1) {
+            combinedLogic = {
+                [activeOperator || 'and']: formLogics,
+            };
+        }
+
+        let finalLogic = combinedLogic;
+        if (not && Object.keys(combinedLogic).length > 0) {
+            finalLogic = { '!': combinedLogic };
+        }
+
+        onChange(finalLogic);
         closeDialog();
     };
 
@@ -188,7 +233,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
                         <Button
                             variant="outlined"
                             size="small"
-                            sx={getButtonStyles(not)}
+                            sx={getButtonStyles(not, 'not')(theme)}
                             onClick={handleNotChange}
                         >
                             NOT
@@ -206,7 +251,10 @@ const DialogBuilder: FunctionComponent<Props> = ({
                                         key={key}
                                         variant="outlined"
                                         size="small"
-                                        sx={getButtonStyles(isActive)}
+                                        sx={getButtonStyles(
+                                            isActive,
+                                            key,
+                                        )(theme)}
                                         onClick={() =>
                                             handleOperatorChange(key)
                                         }

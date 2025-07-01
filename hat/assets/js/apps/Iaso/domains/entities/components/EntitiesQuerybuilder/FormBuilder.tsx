@@ -154,7 +154,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
                         options={formsOperators}
                     />
                 </Grid>
-                <Grid item xs={3} sx={styles.deleteButtonContainer}>
+                <Grid item xs={4} sx={styles.deleteButtonContainer}>
                     <IconButton
                         color="secondary"
                         onClick={deleteForm}

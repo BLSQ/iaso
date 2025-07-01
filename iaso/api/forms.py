@@ -222,6 +222,23 @@ class FormSerializer(DynamicFieldsModelSerializer):
         return form
 
 
+# empty fields then do return true assume it's give me all the fields like the forms page list
+# if specified fields contains :all or field_name then do return True
+# else False
+def is_field_referenced(field_name, requested_fields, order):
+    result = False
+
+    if (
+        not requested_fields
+        or ":all" in requested_fields.split(",")
+        or field_name in requested_fields.split(",")
+        or field_name in order
+    ):
+        result = True
+
+    return result
+
+
 class FormsViewSet(ModelViewSet):
     f"""Forms API
 
@@ -280,22 +297,30 @@ class FormsViewSet(ModelViewSet):
         if projects_ids:
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
-        queryset = queryset.annotate(
-            mapping_count=Count("mapping"),
-            has_mappings=Case(
-                When(mapping_count__gt=0, then=True),
-                default=False,
-                output_field=BooleanField(),
-            ),
-        )
+        requested_fields = self.request.query_params.get("fields")
+        order = self.request.query_params.get("order", "instance_updated_at").split(",")
 
-        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+        if is_field_referenced("has_mappings", requested_fields, order):
+            queryset = queryset.annotate(
+                mapping_count=Count("mapping"),
+                has_mappings=Case(
+                    When(mapping_count__gt=0, then=True),
+                    default=False,
+                    output_field=BooleanField(),
+                ),
+            )
 
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
         else:
             profile = False
-        if not mobile:
+
+        if is_field_referenced("instance_updated_at", requested_fields, order):
+            queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+
+        enable_count = is_field_referenced("instances_count", requested_fields, order)
+
+        if not mobile and enable_count:
             if profile and profile.org_units.exists():
                 orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
                 queryset = queryset.annotate(
@@ -346,6 +371,9 @@ class FormsViewSet(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
 
         # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+        # TODO
+        #  - be smarter cfr is_field_referenced
+        #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
         queryset = queryset.prefetch_related(
             "form_versions",
             "projects",
@@ -361,7 +389,7 @@ class FormsViewSet(ModelViewSet):
         queryset = queryset.with_latest_version()
 
         # TODO: allow this only from a predefined list for security purposes
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+
         queryset = queryset.order_by(*order)
 
         return queryset

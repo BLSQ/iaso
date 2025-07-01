@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.orgUnits.name',
     },
+    code: {
+        defaultMessage: 'Code',
+        id: 'iaso.orgUnits.code',
+    },
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
@@ -571,7 +575,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.searchParams',
         defaultMessage:
             // eslint-disable-next-line max-len
-            'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”',
+            'Use prefix “refs:” for external org unit ID search, “ids:” for internal org unit ID search or “codes:” for org unit code search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd” or “codes: OU420, OU69”',
     },
     textSearch: {
         id: 'iaso.forms.textSearch',

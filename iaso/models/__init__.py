@@ -43,6 +43,7 @@ __all__ = [
     "ImportGPKG",
     "Instance",
     "InstanceFile",
+    "InstanceQuerySet",
     "OrgUnit",
     "OrgUnitChangeRequest",
     "OrgUnitChangeRequestConfiguration",

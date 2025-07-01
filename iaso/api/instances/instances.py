@@ -219,8 +219,7 @@ class InstancesViewSet(viewsets.ViewSet):
         serializer = InstanceFileSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    @staticmethod
-    def list_file_export(filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
@@ -288,7 +287,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
             instance_values = [
                 instance.id,
-                str(instance.is_reference_instance),
+                str(instance.id in self.reference_instances),
                 file_content.get("_version") if file_content else None,
                 instance.export_id,
                 instance.location.y if instance.location else None,
@@ -356,6 +355,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent__parent__parent__parent",
                 queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
             )
+        )
+
+        self.reference_instances = set(
+            OrgUnit.objects.filter(reference_instances__form=form).values_list("reference_instances__id", flat=True)
         )
 
         if file_format == FileFormatEnum.XLSX:

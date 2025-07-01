@@ -1,8 +1,10 @@
 import json
+import uuid
 
 from unittest import mock
 
 from django.core.files import File
+from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
@@ -504,6 +506,48 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response_entity_instance[0]["id"], instance2.uuid)
         self.assertEqual(response_entity_instance[0]["json"], instance2.json)
+
+    def test_get_entities_by_entity_type_empty_list_deleted_instances(self):
+        entity_type = EntityType.objects.create(
+            name="ET", reference_form=self.form_1, account=self.star_wars, code="ET"
+        )
+        deleted_instance_1 = self.create_form_instance(
+            project=self.project,
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            deleted=True,
+        )
+        entity_with_deleted_instance_1 = m.Entity.objects.create(
+            name="e1",
+            entity_type=entity_type,
+            attributes=deleted_instance_1,
+            account=self.star_wars,
+        )
+        deleted_instance_1.entity = entity_with_deleted_instance_1
+        deleted_instance_1.save()
+
+        deleted_instance_2 = self.create_form_instance(
+            project=self.project,
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            uuid=uuid.uuid4(),
+            deleted=True,
+        )
+        entity_with_deleted_instance_2 = m.Entity.objects.create(
+            name="e2",
+            entity_type=entity_type,
+            attributes=deleted_instance_2,
+            account=self.star_wars,
+        )
+        deleted_instance_2.entity = entity_with_deleted_instance_2
+        deleted_instance_2.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}")
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        self.assertEqual(response_json["count"], 0)  # all entities have their reference instance deleted
 
     def test_entity_types_are_account_restricted(self):
         self.client.force_authenticate(self.yoda)

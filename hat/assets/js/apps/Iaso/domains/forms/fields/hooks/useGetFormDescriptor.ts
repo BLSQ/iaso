@@ -35,6 +35,8 @@ export const useGetFormDescriptor = (
         options: {
             enabled: Boolean(formId),
             select: data => processResult(data),
+            staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

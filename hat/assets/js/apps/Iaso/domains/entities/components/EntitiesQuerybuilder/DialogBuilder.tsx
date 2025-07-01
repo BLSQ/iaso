@@ -2,9 +2,10 @@ import React, {
     FunctionComponent,
     ReactNode,
     useCallback,
+    useMemo,
     useState,
 } from 'react';
-import { Box, useTheme, Button, Paper } from '@mui/material';
+import { Box, useTheme, Button, Paper, ButtonGroup } from '@mui/material';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
 
 import {
@@ -12,44 +13,85 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
+
 import MESSAGES from '../../messages';
-import { FormBuilder } from './FormBuilder';
+import { FormBuilder, FormState } from './FormBuilder';
 import { TriggerModal } from './TriggerModal';
 
-type FormState = {
-    id?: string;
-    form_id?: string;
-    logic?: JsonLogicTree;
-    not: boolean;
-    operator?: string;
-};
+const borderColor = 'rgba(0, 0, 0, 0.23)';
+
+type LogicOperator = 'and' | 'or';
+type NotState = boolean;
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     InfoPopper?: ReactNode;
+    onChange: (logic: JsonLogicTree) => void;
+    initialLogic: string;
 };
+
+const getButtonStyles = (isActive: boolean) => ({
+    position: 'relative' as const,
+    top: (theme: any) => theme.spacing(1),
+    p: (theme: any) => theme.spacing(0.5, 1),
+    minWidth: 0,
+    color: isActive ? 'white' : 'inherit',
+    borderColor: isActive ? 'secondary.main' : borderColor,
+    backgroundColor: isActive ? 'error.main' : 'rgb(224, 224, 224)',
+    '&:hover': {
+        borderColor: isActive ? 'secondary.main' : borderColor,
+        color: isActive ? 'error.main' : 'inherit',
+    },
+});
+
+const getStyles = () => ({
+    buttonGroup: {
+        marginBottom: '20px',
+    },
+});
 
 const DialogBuilder: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
     InfoPopper,
+    onChange,
+    initialLogic: _initialLogic,
 }) => {
     const { formatMessage } = useSafeIntl();
+    // compute the logic from the initialLogic
+    const [not, setNot] = useState<NotState>(false);
+    const [activeOperator, setActiveOperator] = useState<LogicOperator | null>(
+        'and',
+    );
     const [formStates, setFormStates] = useState<FormState[]>([
         {
             id: undefined,
             form_id: undefined,
             logic: undefined,
-            not: false,
             operator: undefined,
         },
     ]);
     const theme = useTheme();
 
+    const handleOperatorChange = useCallback((operator: LogicOperator) => {
+        setActiveOperator(prev => {
+            // Toggle if same operator, otherwise set new one
+            if (prev === operator) {
+                return null;
+            }
+            return operator;
+        });
+    }, []);
+
+    const handleNotChange = useCallback(() => {
+        setNot(prev => !prev);
+    }, []);
+
     const handleConfirm = () => {
+        // compute the logic and trigger onchange with the new logic
+        onChange({});
         closeDialog();
-        // compute the logic
     };
 
     // Single generic handler to update any field in FormState
@@ -89,6 +131,21 @@ const DialogBuilder: FunctionComponent<Props> = ({
         ]);
     }, []);
 
+    const styles = useMemo(() => getStyles(), []);
+
+    const operatorButtons = [
+        {
+            key: 'and' as LogicOperator,
+            label: 'AND',
+            alwaysVisible: false,
+        },
+        {
+            key: 'or' as LogicOperator,
+            label: 'OR',
+            alwaysVisible: false,
+        },
+    ];
+
     return (
         <ConfirmCancelModal
             allowConfirm
@@ -127,12 +184,44 @@ const DialogBuilder: FunctionComponent<Props> = ({
                         p: 1,
                     }}
                 >
+                    <ButtonGroup sx={styles.buttonGroup}>
+                        <Button
+                            variant="outlined"
+                            size="small"
+                            sx={getButtonStyles(not)}
+                            onClick={handleNotChange}
+                        >
+                            NOT
+                        </Button>
+                        {operatorButtons.map(
+                            ({ key, label, alwaysVisible }) => {
+                                const isVisible =
+                                    alwaysVisible || formStates.length > 1;
+                                const isActive = activeOperator === key;
+
+                                if (!isVisible) return null;
+
+                                return (
+                                    <Button
+                                        key={key}
+                                        variant="outlined"
+                                        size="small"
+                                        sx={getButtonStyles(isActive)}
+                                        onClick={() =>
+                                            handleOperatorChange(key)
+                                        }
+                                    >
+                                        {label}
+                                    </Button>
+                                );
+                            },
+                        )}
+                    </ButtonGroup>
                     {formStates.map((formState, index) => (
                         <FormBuilder
                             key={formState.id || `new-form-${index}`}
                             id={formState.id}
                             logic={formState.logic}
-                            not={formState.not}
                             operator={formState.operator}
                             onChange={(field, value) =>
                                 updateFormState(index, field, value)

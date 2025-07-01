@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Button, Grid, IconButton, Paper } from '@mui/material';
+import { Box, Grid, IconButton, Paper } from '@mui/material';
 import {
     JsonLogicTree,
     JsonLogicResult,
@@ -10,21 +10,20 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetFormDescriptor } from 'Iaso/domains/forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuildersFields } from 'Iaso/domains/forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
+import { SxStyles } from 'Iaso/types/general';
 import { useGetForms } from '../../entityTypes/hooks/requests/forms';
 import MESSAGES from '../../messages';
 
-type FormState = {
+export type FormState = {
     id?: string;
     form_id?: string;
     logic?: JsonLogicTree;
-    not: boolean;
     operator?: string;
 };
 
 type Props = {
     id?: string;
     logic?: JsonLogicTree;
-    not: boolean;
     operator?: string;
     onChange: <K extends keyof FormState>(
         field: K,
@@ -32,6 +31,39 @@ type Props = {
     ) => void;
     deleteForm: () => void;
     deleteDisabled: boolean;
+};
+
+const styles: SxStyles = {
+    root: {
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'rgba(0, 0, 0, 0.23)',
+        pr: 2,
+        pl: 2,
+        pb: 2,
+        mb: 2,
+    },
+    deleteButtonContainer: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+    },
+    deleteButton: {
+        position: 'relative',
+        top: theme => theme.spacing(1),
+    },
+    loadingContainer: {
+        backgroundColor: 'grey.100',
+        borderRadius: 2,
+        border: '1px solid',
+        borderColor: 'rgba(0, 0, 0, 0.23)',
+        height: 53,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        mt: 2,
+    },
 };
 
 const formsOperators = [
@@ -52,7 +84,6 @@ const formsOperators = [
 export const FormBuilder: FunctionComponent<Props> = ({
     id,
     logic,
-    not,
     operator,
     onChange,
     deleteForm,
@@ -90,10 +121,6 @@ export const FormBuilder: FunctionComponent<Props> = ({
         [onChange, formsList],
     );
 
-    const handleChangeNot = useCallback(() => {
-        onChange('not', !not);
-    }, [onChange, not]);
-
     const formOptions = useMemo(() => {
         return (
             formsList?.map(t => ({
@@ -102,56 +129,9 @@ export const FormBuilder: FunctionComponent<Props> = ({
             })) || []
         );
     }, [formsList]);
-
     return (
-        <Paper
-            elevation={0}
-            sx={{
-                borderRadius: 2,
-                border: '1px solid',
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                pr: 2,
-                pl: 2,
-                pb: 2,
-                mb: 2,
-            }}
-        >
+        <Paper elevation={0} sx={styles.root}>
             <Grid container spacing={2}>
-                <Grid
-                    item
-                    xs={1}
-                    sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                    }}
-                >
-                    <Button
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                            position: 'relative',
-                            top: theme => theme.spacing(1),
-                            color: not ? 'white' : 'inherit',
-                            borderColor: not
-                                ? 'secondary.main'
-                                : 'rgba(0, 0, 0, 0.03)',
-                            p: theme => theme.spacing(0.5, 1),
-                            minWidth: 0,
-                            backgroundColor: not
-                                ? 'error.main'
-                                : 'rgb(224, 224, 224)',
-                            '&:hover': {
-                                borderColor: not
-                                    ? 'secondary.main'
-                                    : 'rgba(0, 0, 0, 0.03)',
-                            },
-                        }}
-                        onClick={handleChangeNot}
-                    >
-                        NOT
-                    </Button>
-                </Grid>
                 <Grid item xs={6}>
                     <InputComponent
                         keyValue="form_id"
@@ -174,43 +154,19 @@ export const FormBuilder: FunctionComponent<Props> = ({
                         options={formsOperators}
                     />
                 </Grid>
-                <Grid
-                    item
-                    xs={3}
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'flex-end',
-                        alignItems: 'center',
-                    }}
-                >
+                <Grid item xs={3} sx={styles.deleteButtonContainer}>
                     <IconButton
                         color="secondary"
                         onClick={deleteForm}
                         disabled={deleteDisabled}
-                        sx={{
-                            position: 'relative',
-                            top: theme => theme.spacing(1),
-                        }}
+                        sx={styles.deleteButton}
                     >
                         <DeleteIcon />
                     </IconButton>
                 </Grid>
             </Grid>
             {isLoading && (
-                <Box
-                    sx={{
-                        backgroundColor: 'grey.100',
-                        borderRadius: 2,
-                        border: '1px solid',
-                        borderColor: 'rgba(0, 0, 0, 0.23)',
-                        height: 53,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: '100%',
-                        mt: 2,
-                    }}
-                >
+                <Box sx={styles.loadingContainer}>
                     <LoadingSpinner
                         size={20}
                         absolute={false}

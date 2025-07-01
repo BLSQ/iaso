@@ -2,39 +2,40 @@
 
 from django.db import migrations, models
 
-from iaso.utils.encryption import calculate_md5
-
 
 def migrate_data_forward(apps, schema_editor):
-    chunk_size = 50
-    version_to_update = []
+    # Unfortunately, this is still too long to succeed in prod…
+    pass
 
-    print("-" * 80)
-    print("Start populating `FormVersion.md5`…")
-
-    FormVersion = apps.get_model("iaso", "FormVersion")
-    versions = FormVersion.objects.iterator(chunk_size=chunk_size)
-
-    for version in versions:
-        try:
-            md5 = calculate_md5(version.file)
-        except FileNotFoundError:
-            continue
-
-        if md5:
-            version.md5 = md5
-            version_to_update.append(version)
-
-            if len(version_to_update) >= chunk_size:
-                print(f"Updating {len(version_to_update)} FormVersions…")
-                FormVersion.objects.bulk_update(version_to_update, ["md5"])
-                version_to_update = []
-
-    if len(version_to_update) > 0:
-        print(f"Updating {len(version_to_update)} FormVersions…")
-        FormVersion.objects.bulk_update(version_to_update, ["md5"])
-
-    print("Done.")
+    # chunk_size = 50
+    # version_to_update = []
+    #
+    # print("-" * 80)
+    # print("Start populating `FormVersion.md5`…")
+    #
+    # FormVersion = apps.get_model("iaso", "FormVersion")
+    # versions = FormVersion.objects.iterator(chunk_size=chunk_size)
+    #
+    # for version in versions:
+    #     try:
+    #         md5 = calculate_md5(version.file)
+    #     except FileNotFoundError:
+    #         continue
+    #
+    #     if md5:
+    #         version.md5 = md5
+    #         version_to_update.append(version)
+    #
+    #         if len(version_to_update) >= chunk_size:
+    #             print(f"Updating {len(version_to_update)} FormVersions…")
+    #             FormVersion.objects.bulk_update(version_to_update, ["md5"])
+    #             version_to_update = []
+    #
+    # if len(version_to_update) > 0:
+    #     print(f"Updating {len(version_to_update)} FormVersions…")
+    #     FormVersion.objects.bulk_update(version_to_update, ["md5"])
+    #
+    # print("Done.")
 
 
 class Migration(migrations.Migration):

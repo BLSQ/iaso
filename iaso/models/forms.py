@@ -23,7 +23,7 @@ from ..utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
-from ..utils.models.virus_scan import VirusScanStatus
+from ..utils.virus_scan import VirusScanStatus
 from .project import Project
 
 

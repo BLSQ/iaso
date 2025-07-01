@@ -15,14 +15,13 @@ import { useGetForms } from '../../entityTypes/hooks/requests/forms';
 import MESSAGES from '../../messages';
 
 export type FormState = {
-    id?: string;
     form_id?: string;
     logic?: JsonLogicTree;
     operator?: string;
 };
 
 type Props = {
-    id?: string;
+    form_id?: string;
     logic?: JsonLogicTree;
     operator?: string;
     onChange: <K extends keyof FormState>(
@@ -82,7 +81,7 @@ const formsOperators = [
 ];
 
 export const FormBuilder: FunctionComponent<Props> = ({
-    id,
+    form_id,
     logic,
     operator,
     onChange,
@@ -90,10 +89,11 @@ export const FormBuilder: FunctionComponent<Props> = ({
     deleteDisabled,
 }) => {
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(true);
+    const id = formsList?.find(t => t.form_id === form_id)?.id;
     const { data: formDescriptor, isFetching: isFetchingFormDescriptor } =
-        useGetFormDescriptor(id ? parseInt(id, 10) : undefined);
+        useGetFormDescriptor(id);
     const { possibleFields, isFetchingForm: isFetchingPossibleFields } =
-        useGetPossibleFields(id ? parseInt(id, 10) : undefined);
+        useGetPossibleFields(id);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
     const isLoading = isFetchingFormDescriptor || isFetchingPossibleFields;
     const handleChangeLogic = useCallback(
@@ -111,21 +111,17 @@ export const FormBuilder: FunctionComponent<Props> = ({
     );
 
     const handleChangeForm = useCallback(
-        (_, newid: string) => {
-            onChange('id', newid);
-            const newFormId = formsList?.find(
-                t => `${t.id}` === `${newid}`,
-            )?.form_id;
-            onChange('form_id', newFormId || '');
+        (_, newFormId: string) => {
+            onChange('form_id', newFormId);
         },
-        [onChange, formsList],
+        [onChange],
     );
 
     const formOptions = useMemo(() => {
         return (
             formsList?.map(t => ({
                 label: t.name,
-                value: t.id,
+                value: t.form_id,
             })) || []
         );
     }, [formsList]);
@@ -138,7 +134,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
                         onChange={handleChangeForm}
                         disabled={isFetchingForms}
                         loading={isFetchingForms}
-                        value={id || null}
+                        value={form_id || null}
                         type="select"
                         options={formOptions}
                         label={MESSAGES.selectForm}
@@ -175,7 +171,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
                     />
                 </Box>
             )}
-            {Object.keys(fields).length > 0 && id && !isLoading && (
+            {Object.keys(fields).length > 0 && form_id && !isLoading && (
                 <Box mt={2}>
                     <QueryBuilder
                         logic={logic}

@@ -82,6 +82,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
     initialLogic,
 }) => {
     const { formatMessage } = useSafeIntl();
+    // eslint-disable-next-line no-console
     console.log('initialLogic', initialLogic);
     const [not, setNot] = useState<NotState>(false);
     const [activeOperator, setActiveOperator] = useState<LogicOperator | null>(
@@ -89,7 +90,6 @@ const DialogBuilder: FunctionComponent<Props> = ({
     );
     const [formStates, setFormStates] = useState<FormState[]>([
         {
-            id: undefined,
             form_id: undefined,
             logic: undefined,
             operator: undefined,
@@ -113,12 +113,9 @@ const DialogBuilder: FunctionComponent<Props> = ({
 
     const handleConfirm = () => {
         const formLogics = formStates
-            .filter(fs => fs.id)
+            .filter(fs => fs.form_id)
             .map(fs => ({
-                [fs.operator || 'some']: [
-                    { var: fs.form_id || fs.id },
-                    fs.logic ?? {},
-                ],
+                [fs.operator || 'some']: [{ var: fs.form_id }, fs.logic ?? {}],
             }));
 
         let combinedLogic: any = {};
@@ -267,8 +264,8 @@ const DialogBuilder: FunctionComponent<Props> = ({
                     </ButtonGroup>
                     {formStates.map((formState, index) => (
                         <FormBuilder
-                            key={formState.id || `new-form-${index}`}
-                            id={formState.id}
+                            key={formState.form_id || `new-form-${index}`}
+                            form_id={formState.form_id}
                             logic={formState.logic}
                             operator={formState.operator}
                             onChange={(field, value) =>
@@ -283,7 +280,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
                             onClick={handleAddForm}
                             disabled={
                                 formStates.length > 0 &&
-                                formStates[formStates.length - 1].id ===
+                                formStates[formStates.length - 1].form_id ===
                                     undefined
                             }
                         >

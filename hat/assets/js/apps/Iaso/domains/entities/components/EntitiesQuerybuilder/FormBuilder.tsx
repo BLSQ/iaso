@@ -13,12 +13,7 @@ import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFie
 import { SxStyles } from 'Iaso/types/general';
 import { useGetForms } from '../../entityTypes/hooks/requests/forms';
 import MESSAGES from '../../messages';
-
-export type FormState = {
-    form_id?: string;
-    logic?: JsonLogicTree;
-    operator?: string;
-};
+import { FormState } from './utils';
 
 type Props = {
     form_id?: string;

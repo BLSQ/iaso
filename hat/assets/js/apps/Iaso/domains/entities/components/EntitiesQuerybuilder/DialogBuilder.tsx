@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useMemo,
     useState,
+    useEffect,
 } from 'react';
 import { Box, useTheme, Button, Paper, ButtonGroup } from '@mui/material';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
@@ -15,13 +16,16 @@ import {
 } from 'bluesquare-components';
 
 import MESSAGES from '../../messages';
-import { FormBuilder, FormState } from './FormBuilder';
+import { FormBuilder } from './FormBuilder';
 import { TriggerModal } from './TriggerModal';
-
-const borderColor = 'rgba(0, 0, 0, 0.23)';
-
-type LogicOperator = 'and' | 'or';
-type NotState = boolean;
+import {
+    LogicOperator,
+    NotState,
+    operatorButtons,
+    parseInitialLogic,
+    FormState,
+    getButtonStyles,
+} from './utils';
 
 type Props = {
     isOpen: boolean;
@@ -30,43 +34,6 @@ type Props = {
     onChange: (logic: JsonLogicTree) => void;
     initialLogic: string;
 };
-
-const getButtonStyles =
-    (isActive: boolean, type: 'not' | 'and' | 'or') => (theme: any) => {
-        const base = {
-            position: 'relative' as const,
-            top: theme.spacing(1),
-            p: theme.spacing(0.5, 1),
-            minWidth: 0,
-        };
-        if (type === 'not') {
-            return {
-                ...base,
-                color: isActive ? 'white' : 'inherit',
-                borderColor: isActive ? 'secondary.main' : borderColor,
-                backgroundColor: isActive
-                    ? theme.palette.error.main
-                    : 'rgb(224, 224, 224)',
-                '&:hover': {
-                    borderColor: isActive ? 'secondary.main' : borderColor,
-                    color: isActive ? theme.palette.error.main : 'inherit',
-                },
-            };
-        }
-        // AND/OR
-        return {
-            ...base,
-            color: isActive ? theme.palette.primary.contrastText : 'inherit',
-            borderColor: isActive ? 'primary.main' : borderColor,
-            backgroundColor: isActive
-                ? theme.palette.primary.main
-                : 'rgb(224, 224, 224)',
-            '&:hover': {
-                borderColor: isActive ? 'primary.main' : borderColor,
-                color: isActive ? theme.palette.primary.main : 'inherit',
-            },
-        };
-    };
 
 const getStyles = () => ({
     buttonGroup: {
@@ -175,18 +142,26 @@ const DialogBuilder: FunctionComponent<Props> = ({
 
     const styles = useMemo(() => getStyles(), []);
 
-    const operatorButtons = [
-        {
-            key: 'and' as LogicOperator,
-            label: 'AND',
-            alwaysVisible: false,
-        },
-        {
-            key: 'or' as LogicOperator,
-            label: 'OR',
-            alwaysVisible: false,
-        },
-    ];
+    useEffect(() => {
+        if (isOpen && initialLogic) {
+            const { parsedNot, mainOperator, parsedFormStates } =
+                parseInitialLogic(initialLogic);
+            setNot(parsedNot);
+            setActiveOperator(mainOperator as LogicOperator);
+            setFormStates(
+                parsedFormStates.length
+                    ? parsedFormStates
+                    : [
+                          {
+                              form_id: undefined,
+                              logic: undefined,
+                              operator: undefined,
+                          },
+                      ],
+            );
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, initialLogic]);
 
     return (
         <ConfirmCancelModal
@@ -250,10 +225,12 @@ const DialogBuilder: FunctionComponent<Props> = ({
                                         size="small"
                                         sx={getButtonStyles(
                                             isActive,
-                                            key,
+                                            key as LogicOperator,
                                         )(theme)}
                                         onClick={() =>
-                                            handleOperatorChange(key)
+                                            handleOperatorChange(
+                                                key as LogicOperator,
+                                            )
                                         }
                                     >
                                         {label}

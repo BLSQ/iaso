@@ -110,7 +110,9 @@ export const useFormATableColumns = (
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp
                                 }
-                                coloredScanResultIcon
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -211,7 +213,9 @@ export const useDestructionTableColumns = (
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp
                                 }
-                                coloredScanResultIcon
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -331,7 +335,9 @@ export const useIncidentTableColumns = (
                                 scanTimestamp={
                                     settings.row.original.scan_timestamp
                                 }
-                                coloredScanResultIcon
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
 
                             <DisplayIfUserHasPerm

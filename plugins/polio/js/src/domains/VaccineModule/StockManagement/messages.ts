@@ -414,6 +414,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.useCustomObrName',
         defaultMessage: 'Use custom campaign name',
     },
+    ALL_ROUNDS_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.ALL_ROUNDS_ON_HOLD',
+        defaultMessage: 'All rounds of this campaign have been put on hold',
+    },
+    ROUND_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.ROUND_ON_HOLD',
+        defaultMessage: 'The attached round has been put on hold',
+    },
+    TEST_CAMPAIGN: {
+        id: 'iaso.polio.tooltip.label.TEST_CAMPAIGN',
+        defaultMessage: 'This campaign has been marked as test campaign',
+    },
+    CAMPAIGN_ON_HOLD: {
+        id: 'iaso.polio.tooltip.label.CAMPAIGN_ON_HOLD',
+        defaultMessage: 'This campaign has been put on hold',
+    },
+    roundsOnHold: {
+        id: 'iaso.polio.tooltip.label.roundsOnHold',
+        defaultMessage: 'The attached round(s) have been put on hold',
+    },
 });
 
 export default MESSAGES;

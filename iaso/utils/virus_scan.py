@@ -149,7 +149,6 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         has_updated = scan_file_and_update(instance, validated_data)
-        print("Has UPDATED", has_updated)
         if has_updated:
             instance.save()
         return super().update(instance, validated_data)

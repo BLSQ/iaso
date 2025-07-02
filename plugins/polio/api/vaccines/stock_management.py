@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from iaso.utils.virus_scan import ModelWithFileSerializer
+from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (

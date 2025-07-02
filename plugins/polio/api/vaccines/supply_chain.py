@@ -461,8 +461,6 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
             "comment",
             "target_population",
             "vrf_type",
-            "scan_result",
-            "scan_timestamp",
             "file",
         ]
 

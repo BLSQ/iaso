@@ -26,7 +26,6 @@ from plugins.polio.api.vaccines.permissions import (
     VaccineStockPermission,
     can_edit_helper,
 )
-from plugins.polio.api.vaccines.supply_chain import scan_file, scan_file_and_update
 from plugins.polio.models import (
     DOSES_PER_VIAL,
     Campaign,

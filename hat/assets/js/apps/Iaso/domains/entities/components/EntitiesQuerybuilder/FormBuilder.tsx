@@ -1,22 +1,33 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Grid, IconButton, Paper } from '@mui/material';
 import {
     JsonLogicTree,
     JsonLogicResult,
 } from '@react-awesome-query-builder/mui';
-import { QueryBuilder, LoadingSpinner } from 'bluesquare-components';
+import {
+    QueryBuilder,
+    LoadingSpinner,
+    QueryBuilderFields,
+} from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetFormDescriptor } from 'Iaso/domains/forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuildersFields } from 'Iaso/domains/forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
+import { Form } from 'Iaso/domains/forms/types/forms';
 import { SxStyles } from 'Iaso/types/general';
-import { useGetForms } from '../../entityTypes/hooks/requests/forms';
 import MESSAGES from '../../messages';
-import { FormState } from './utils';
+import { FormState, formsOperators } from './utils';
 
 type Props = {
     form_id?: string;
+    stateFields?: QueryBuilderFields;
     logic?: JsonLogicTree;
     operator?: string;
     onChange: <K extends keyof FormState>(
@@ -25,6 +36,8 @@ type Props = {
     ) => void;
     deleteForm: () => void;
     deleteDisabled: boolean;
+    formsList: Form[];
+    isFetchingForms: boolean;
 };
 
 const styles: SxStyles = {
@@ -60,30 +73,17 @@ const styles: SxStyles = {
     },
 };
 
-const formsOperators = [
-    {
-        label: 'Some',
-        value: 'some',
-    },
-    {
-        label: 'All',
-        value: 'all',
-    },
-    {
-        label: 'None',
-        value: 'none',
-    },
-];
-
 export const FormBuilder: FunctionComponent<Props> = ({
     form_id,
+    stateFields,
     logic,
     operator,
     onChange,
     deleteForm,
     deleteDisabled,
+    formsList,
+    isFetchingForms,
 }) => {
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms(true);
     const id = formsList?.find(t => t.form_id === form_id)?.id;
     const { data: formDescriptor, isFetching: isFetchingFormDescriptor } =
         useGetFormDescriptor(id);
@@ -108,8 +108,12 @@ export const FormBuilder: FunctionComponent<Props> = ({
     const handleChangeForm = useCallback(
         (_, newFormId: string) => {
             onChange('form_id', newFormId);
+            onChange(
+                'form_name',
+                formsList?.find(t => t.form_id === newFormId)?.name,
+            );
         },
-        [onChange],
+        [onChange, formsList],
     );
 
     const formOptions = useMemo(() => {
@@ -120,6 +124,12 @@ export const FormBuilder: FunctionComponent<Props> = ({
             })) || []
         );
     }, [formsList]);
+
+    useEffect(() => {
+        if (!isEqual(fields, stateFields)) {
+            onChange('fields', fields);
+        }
+    }, [fields, onChange, stateFields]);
     return (
         <Paper elevation={0} sx={styles.root}>
             <Grid container spacing={2}>

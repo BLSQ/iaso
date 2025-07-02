@@ -1,10 +1,9 @@
 import React, {
     FunctionComponent,
     ReactNode,
-    useCallback,
     useMemo,
-    useState,
-    useEffect,
+    Dispatch,
+    SetStateAction,
 } from 'react';
 import { Box, useTheme, Button, Paper, ButtonGroup } from '@mui/material';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
@@ -13,18 +12,19 @@ import {
     useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
+    QueryBuilderFields,
 } from 'bluesquare-components';
 
+import { Form } from 'Iaso/domains/forms/types/forms';
 import MESSAGES from '../../messages';
 import { FormBuilder } from './FormBuilder';
 import { TriggerModal } from './TriggerModal';
 import {
     LogicOperator,
-    NotState,
     operatorButtons,
-    parseInitialLogic,
     FormState,
     getButtonStyles,
+    getAllFields,
 } from './utils';
 
 type Props = {
@@ -32,7 +32,21 @@ type Props = {
     closeDialog: () => void;
     InfoPopper?: ReactNode;
     onChange: (logic: JsonLogicTree) => void;
-    initialLogic: string;
+    setAllFields: Dispatch<SetStateAction<QueryBuilderFields>>;
+    not: boolean;
+    activeOperator: LogicOperator | null;
+    formStates: FormState[];
+    handleOperatorChange: (operator: LogicOperator) => void;
+    handleNotChange: () => void;
+    updateFormState: <K extends keyof FormState>(
+        index: number,
+        field: K,
+        value: FormState[K],
+    ) => void;
+    handleDeleteForm: (index: number) => void;
+    handleAddForm: () => void;
+    formsList: Form[];
+    isFetchingForms: boolean;
 };
 
 const getStyles = () => ({
@@ -46,37 +60,21 @@ const DialogBuilder: FunctionComponent<Props> = ({
     isOpen,
     InfoPopper,
     onChange,
-    initialLogic,
+    setAllFields,
+    not,
+    activeOperator,
+    formStates,
+    handleOperatorChange,
+    handleNotChange,
+    updateFormState,
+    handleDeleteForm,
+    handleAddForm,
+    formsList,
+    isFetchingForms,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // eslint-disable-next-line no-console
-    console.log('initialLogic', initialLogic);
-    const [not, setNot] = useState<NotState>(false);
-    const [activeOperator, setActiveOperator] = useState<LogicOperator | null>(
-        'and',
-    );
-    const [formStates, setFormStates] = useState<FormState[]>([
-        {
-            form_id: undefined,
-            logic: undefined,
-            operator: undefined,
-        },
-    ]);
     const theme = useTheme();
-
-    const handleOperatorChange = useCallback((operator: LogicOperator) => {
-        setActiveOperator(prev => {
-            // Toggle if same operator, otherwise set new one
-            if (prev === operator) {
-                return null;
-            }
-            return operator;
-        });
-    }, []);
-
-    const handleNotChange = useCallback(() => {
-        setNot(prev => !prev);
-    }, []);
+    const styles = useMemo(() => getStyles(), []);
 
     const handleConfirm = () => {
         const formLogics = formStates
@@ -98,70 +96,10 @@ const DialogBuilder: FunctionComponent<Props> = ({
         if (not && Object.keys(combinedLogic).length > 0) {
             finalLogic = { '!': combinedLogic };
         }
-
+        setAllFields(getAllFields(formStates));
         onChange(finalLogic);
         closeDialog();
     };
-
-    // Single generic handler to update any field in FormState
-    const updateFormState = useCallback(
-        <K extends keyof FormState>(
-            index: number,
-            field: K,
-            value: FormState[K],
-        ) => {
-            setFormStates(prev => {
-                const updated = [...prev];
-                updated[index] = { ...updated[index], [field]: value };
-                return updated;
-            });
-        },
-        [],
-    );
-
-    const handleDeleteForm = useCallback((index: number) => {
-        setFormStates(prev => {
-            const updated = [...prev];
-            updated.splice(index, 1);
-            return updated;
-        });
-    }, []);
-
-    const handleAddForm = useCallback(() => {
-        setFormStates(prev => [
-            ...prev,
-            {
-                id: undefined,
-                form_id: undefined,
-                logic: undefined,
-                not: false,
-                operator: undefined,
-            },
-        ]);
-    }, []);
-
-    const styles = useMemo(() => getStyles(), []);
-
-    useEffect(() => {
-        if (isOpen && initialLogic) {
-            const { parsedNot, mainOperator, parsedFormStates } =
-                parseInitialLogic(initialLogic);
-            setNot(parsedNot);
-            setActiveOperator(mainOperator as LogicOperator);
-            setFormStates(
-                parsedFormStates.length
-                    ? parsedFormStates
-                    : [
-                          {
-                              form_id: undefined,
-                              logic: undefined,
-                              operator: undefined,
-                          },
-                      ],
-            );
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isOpen, initialLogic]);
 
     return (
         <ConfirmCancelModal
@@ -243,6 +181,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
                         <FormBuilder
                             key={formState.form_id || `new-form-${index}`}
                             form_id={formState.form_id}
+                            stateFields={formState.fields}
                             logic={formState.logic}
                             operator={formState.operator}
                             onChange={(field, value) =>
@@ -250,6 +189,8 @@ const DialogBuilder: FunctionComponent<Props> = ({
                             }
                             deleteForm={() => handleDeleteForm(index)}
                             deleteDisabled={formStates.length === 1}
+                            formsList={formsList}
+                            isFetchingForms={isFetchingForms}
                         />
                     ))}
                     <Box display="flex" justifyContent="flex-end">

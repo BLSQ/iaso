@@ -1,13 +1,24 @@
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
+import { QueryBuilderFields } from 'bluesquare-components';
 
 export const borderColor = 'rgba(0, 0, 0, 0.23)';
 export type LogicOperator = 'and' | 'or';
 export type NotState = boolean;
 
 export type FormState = {
+    id?: number;
     form_id?: string;
+    form_name?: string;
     logic?: JsonLogicTree;
     operator?: string;
+    fields?: QueryBuilderFields;
+};
+export const defaultFormState: FormState = {
+    id: undefined,
+    form_id: undefined,
+    form_name: undefined,
+    logic: undefined,
+    operator: undefined,
 };
 export const operatorButtons = [
     {
@@ -21,7 +32,7 @@ export const operatorButtons = [
         alwaysVisible: false,
     },
 ];
-export const parseInitialLogic = (logicInput: any) => {
+export const parseInitialLogic = (logicInput: any, formsList: Form[]) => {
     let parsedNot = false;
     let logic = logicInput;
     if (!logic)
@@ -58,14 +69,13 @@ export const parseInitialLogic = (logicInput: any) => {
     const parsedFormStates = formLogics.map(formLogic => {
         const [operator, arr] = Object.entries(formLogic)[0];
         if (!Array.isArray(arr) || arr.length < 2) {
-            return {
-                form_id: undefined,
-                logic: undefined,
-                operator: undefined,
-            };
+            return defaultFormState;
         }
         const [{ var: form_id }, innerLogic] = arr;
+        const form = formsList.find(f => f.form_id === form_id);
         return {
+            id: form?.id,
+            form_name: form?.name,
             form_id,
             logic: innerLogic,
             operator,
@@ -110,3 +120,34 @@ export const getButtonStyles =
             },
         };
     };
+export const formsOperators = [
+    {
+        label: 'Some',
+        value: 'some',
+    },
+    {
+        label: 'All',
+        value: 'all',
+    },
+    {
+        label: 'None',
+        value: 'none',
+    },
+];
+export const getAllFields = (formStates: FormState[]) => {
+    const allFields = {};
+    formStates.forEach(fs => {
+        if (fs.fields && fs.form_id) {
+            allFields[fs.form_id] = {
+                label: fs.form_name || '',
+                type: '!group',
+                mode: 'array',
+                conjunctions: ['AND', 'OR'],
+                operators: ['some', 'all', 'none'],
+                defaultOperator: 'some',
+                subfields: fs.fields,
+            };
+        }
+    });
+    return allFields;
+};

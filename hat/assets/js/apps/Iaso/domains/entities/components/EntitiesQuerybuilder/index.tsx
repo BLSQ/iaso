@@ -9,6 +9,8 @@ import {
     QueryBuilderFields,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
+import { useDynamicFormDescriptors } from 'Iaso/domains/forms/fields/hooks/useGetFormDescriptor';
+import { useDynamicPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
 import { Popper } from '../../../forms/fields/components/Popper';
 import { useGetQueryBuilderListToReplace } from '../../../forms/fields/hooks/useGetQueryBuilderListToReplace';
 import { parseJson } from '../../../instances/utils/jsonLogicParse';
@@ -39,7 +41,12 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         'and',
     );
     const [formStates, setFormStates] = useState<FormState[] | undefined>();
-    console.log('formStates', formStates);
+    const { descriptorsMap, isLoading: isLoadingDescriptors } =
+        useDynamicFormDescriptors(formStates || []);
+    const { possibleFieldsMap, isLoading: isLoadingPossibleFields } =
+        useDynamicPossibleFields(formStates || []);
+    console.log('descriptorsMap', descriptorsMap);
+    console.log('possibleFieldsMap', possibleFieldsMap);
     useEffect(() => {
         if (fieldsSearchJson && formsList && !formStates) {
             const { parsedNot, mainOperator, parsedFormStates } =
@@ -77,10 +84,23 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         },
         [],
     );
+    // Access possible fields by form ID
+    const getPossibleFields = useCallback(
+        (formId: number) => {
+            return possibleFieldsMap.get(formId) || [];
+        },
+        [possibleFieldsMap],
+    );
 
+    // Access descriptors by form ID
+    const getFormDescriptor = useCallback(
+        (formId: number) => {
+            return descriptorsMap.get(formId);
+        },
+        [descriptorsMap],
+    );
     const handleChangeForm = useCallback(
         (newFormId: string, index: number) => {
-            console.log('ICI', newFormId, index);
             const form = formsList?.find(t => t.form_id === newFormId);
             const newFormState = {
                 form: {

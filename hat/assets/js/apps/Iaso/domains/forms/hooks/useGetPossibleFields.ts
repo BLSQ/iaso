@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
 import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
+import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
 import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
 import {
     useGetForm,
@@ -56,6 +57,62 @@ export const useGetPossibleFields = (
     return usePossibleFields(isFetchingForm, currentForm);
 };
 
+export const useDynamicPossibleFields = (formStates: FormState[]) => {
+    // Extract unique form IDs that need possible fields
+    const formIds = useMemo(() => {
+        const uniqueIds = new Set<number>();
+        formStates?.forEach(state => {
+            if (state.form?.id) {
+                uniqueIds.add(state.form.id);
+            }
+        });
+        return Array.from(uniqueIds);
+    }, [formStates]);
+
+    // Build dynamic queries array for possible fields
+    const queries = useMemo(() => {
+        return formIds.map(formId => ({
+            queryKey: ['form', formId, 'possible_fields'],
+            queryFn: () =>
+                getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+            snackErrorMsg: 'Error fetching possible fields',
+            options: {
+                enabled: Boolean(formId),
+                select: (data: any) => {
+                    // Transform possible fields to match the expected format
+                    return (
+                        data?.possible_fields?.map((field: any) => ({
+                            ...field,
+                            fieldKey: field.name.replace('.', ''),
+                        })) || []
+                    );
+                },
+                staleTime: 60000,
+                cacheTime: 1000 * 60 * 5,
+            },
+        }));
+    }, [formIds]);
+
+    // Use useSnackQueries for batch execution
+    const results = useSnackQueries(queries as any);
+
+    // Transform results into a map for easy access
+    const possibleFieldsMap = useMemo(() => {
+        const map = new Map<number, PossibleField[]>();
+        results.forEach((result, index) => {
+            if (result.data && formIds[index]) {
+                map.set(formIds[index], result.data as PossibleField[]);
+            }
+        });
+        return map;
+    }, [results, formIds]);
+
+    return {
+        possibleFieldsMap,
+        isLoading: results.some(result => result.isFetching),
+        isError: results.some(result => result.isError),
+    };
+};
 export const useAllPossibleFields = (
     isFetchingForms: boolean,
     allForms: Form[] = [],

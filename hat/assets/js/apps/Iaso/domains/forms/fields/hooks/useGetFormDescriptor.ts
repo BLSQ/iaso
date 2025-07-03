@@ -1,6 +1,8 @@
+import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
+import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
 import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackQueries, useSnackQuery } from '../../../../libs/apiHooks';
 import { FormDescriptor } from '../../types/forms';
 
 type FormVersions = {
@@ -52,4 +54,51 @@ export const useGetAllFormDescriptors = (): UseQueryResult<
             select: data => processResult(data),
         },
     });
+};
+export const useDynamicFormDescriptors = (formStates: FormState[]) => {
+    // Extract unique form IDs that need descriptors
+    const formIds = useMemo(() => {
+        const uniqueIds = new Set<number>();
+        formStates?.forEach(state => {
+            if (state.form?.id) {
+                uniqueIds.add(state.form.id);
+            }
+        });
+        return Array.from(uniqueIds);
+    }, [formStates]);
+
+    // Build dynamic queries array
+    const queries = useMemo(() => {
+        return formIds.map(formId => ({
+            queryKey: ['formDescriptor', formId],
+            queryFn: () => getVersion(formId), // Import from useGetFormDescriptor
+            snackErrorMsg: 'Error fetching form descriptor',
+            options: {
+                enabled: Boolean(formId),
+                select: data => processResult(data), // Import from useGetFormDescriptor
+                staleTime: 60000,
+                cacheTime: 1000 * 60 * 5,
+            },
+        }));
+    }, [formIds]);
+
+    // Use useSnackQueries for batch execution
+    const results = useSnackQueries(queries as any);
+
+    // Transform results into a map for easy access
+    const descriptorsMap = useMemo(() => {
+        const map = new Map<number, any>();
+        results.forEach((result, index) => {
+            if (result.data && formIds[index]) {
+                map.set(formIds[index], result.data);
+            }
+        });
+        return map;
+    }, [results, formIds]);
+
+    return {
+        descriptorsMap,
+        isLoading: results.some(result => result.isFetching),
+        isError: results.some(result => result.isError),
+    };
 };

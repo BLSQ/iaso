@@ -418,7 +418,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin.register(ProjectFeatureFlags)
 @admin_attr_decorator
-class ProjectAdmin(admin.ModelAdmin):
+class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
     list_display = ("featureflag", "project", "configuration")
     list_filter = ("project",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}

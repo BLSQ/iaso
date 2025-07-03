@@ -6,7 +6,7 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.projects import ProjectSerializer
-from iaso.models import FeatureFlag, Form, Project, ProjectFeatureFlags
+from iaso.models import FeatureFlag, Form, Project
 from iaso.models.project import DEFAULT_PROJECT_COLOR
 
 
@@ -131,12 +131,8 @@ class AppSerializer(ProjectSerializer):
             instance.feature_flags.clear()
             for f_f in feature_flags:
                 f_f_object = FeatureFlag.objects.get(code=f_f["featureflag"]["code"])
-                instance.feature_flags.through.save(
-                    ProjectFeatureFlags(
-                        project=instance,
-                        featureflag=f_f_object,
-                        configuration=f_f.get("configuration", None),
-                    )
+                instance.feature_flags.add(
+                    f_f_object, through_defaults={"configuration": f_f.get("configuration", None)}
                 )
 
     CONFIG_TYPE_INT = "int"

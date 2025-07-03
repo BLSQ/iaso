@@ -586,7 +586,9 @@ class PlanningTestCase(APITestCase):
         cls.form2 = Form.objects.create(name="form2")
         cls.form1.projects.add(project1)
         cls.form2.projects.add(project1)
-        cls.planning = Planning.objects.create(project=project1, name="planning1", team=cls.team1, org_unit=org_unit)
+        cls.planning = Planning.objects.create(
+            project=project1, name="planning1", team=cls.team1, org_unit=org_unit, started_at="2025-01-01"
+        )
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
@@ -621,7 +623,7 @@ class PlanningTestCase(APITestCase):
                 "forms": [],
                 "description": "",
                 "published_at": None,
-                "started_at": None,
+                "started_at": "2025-01-01",
                 "ended_at": None,
             },
             r,
@@ -766,7 +768,7 @@ class AssignmentAPITestCase(APITestCase):
         OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
 
         cls.planning = Planning.objects.create(
-            project=project1, name="planning1", team=cls.team1, org_unit=root_org_unit
+            project=project1, name="planning1", team=cls.team1, org_unit=root_org_unit, started_at="2025-01-01"
         )
         Assignment.objects.create(
             planning=cls.planning,
@@ -953,16 +955,33 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_query_mobile(self):
         p = Planning.objects.create(
-            project=self.project1, name="planning2", team=self.team1, org_unit=self.root_org_unit
+            project=self.project1,
+            name="planning2",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-01",
         )
         p.assignment_set.create(org_unit=self.child1, user=self.user)
         p.assignment_set.create(org_unit=self.child2, user=self.user)
 
-        Planning.objects.create(project=self.project1, name="planning3", team=self.team1, org_unit=self.root_org_unit)
+        # This one should not be returned because started_at is None
+        p4 = Planning.objects.create(
+            project=self.project1, name="planning4", team=self.team1, org_unit=self.root_org_unit
+        )
+        p4.assignment_set.create(org_unit=self.child3, user=self.user)
+        p4.assignment_set.create(org_unit=self.child4, user=self.user)
+
+        Planning.objects.create(
+            project=self.project1,
+            name="planning3",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-01",
+        )
 
         plannings = Planning.objects.filter(assignment__user=self.user).distinct()
         Planning.objects.update(published_at=now())
-        self.assertEqual(plannings.count(), 2)
+        self.assertEqual(plannings.count(), 3)
 
         self.client.force_authenticate(self.user)
 

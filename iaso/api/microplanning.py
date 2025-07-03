@@ -591,6 +591,7 @@ class MobilePlanningViewSet(ModelViewSet):
         return (
             Planning.objects.filter(assignment__user=user)
             .exclude(published_at__isnull=True)
+            .exclude(started_at__isnull=True)
             .filter(deleted_at__isnull=True)
             .distinct()
         )

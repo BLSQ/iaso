@@ -326,12 +326,13 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         return OutgoingStockMovement.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
-        scan_file_and_update(instance, validated_data)
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
         instance.save()
-        return super().update(instance, validated_data)
+        super().update(instance, validated_data)
+        scan_file_and_update(instance, validated_data)
+        return instance
 
 
 class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):

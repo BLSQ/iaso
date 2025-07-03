@@ -44,7 +44,6 @@ import { useFiltersParams } from '../hooks/useFiltersParams';
 import MESSAGES from '../messages';
 import { Filters as FilterType, Params } from '../types/filters';
 import { EntitiesQueryBuilder } from './EntitiesQuerybuilder';
-import { OldQueryBuilder } from './OldQueryBuilder';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

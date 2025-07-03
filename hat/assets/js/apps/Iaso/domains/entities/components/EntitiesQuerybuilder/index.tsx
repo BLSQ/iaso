@@ -44,10 +44,16 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         'and',
     );
     const [formStates, setFormStates] = useState<FormState[] | undefined>();
-    const { descriptorsMap, isLoading: isLoadingDescriptors } =
+    const { descriptorsMap, isFetching: isFetchingDescriptors } =
         useDynamicFormDescriptors(formStates || []);
-    const { possibleFieldsMap, isLoading: isLoadingPossibleFields } =
+    const { possibleFieldsMap, isFetching: isFetchingPossibleFields } =
         useDynamicPossibleFields(formStates || []);
+
+    const isFetching =
+        isFetchingForms ||
+        isFetchingDescriptors ||
+        isFetchingPossibleFields ||
+        formStates?.length !== Object.keys(allFields).length;
     useEffect(() => {
         if (fieldsSearchJson && formsList && !formStates) {
             const { parsedNot, mainOperator, parsedFormStates } =
@@ -124,11 +130,8 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         return newAllFields;
     }, [formStates, descriptorsMap, possibleFieldsMap, formatMessage]);
 
-    // Update allFields only when generatedFields actually changes
     useEffect(() => {
-        // Only update if the fields have actually changed
         setAllFields(prevFields => {
-            // Simple deep comparison - you might want to use lodash.isEqual for more complex objects
             if (
                 JSON.stringify(prevFields) !== JSON.stringify(generatedFields)
             ) {
@@ -174,7 +177,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
 
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
-        allFields,
+        isFetching ? {} : allFields,
         queryBuilderListToReplace,
     );
 
@@ -187,20 +190,11 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         }
     };
     const value = useMemo(() => {
-        if (
-            fieldsSearchJson &&
-            !isLoadingDescriptors &&
-            !isLoadingPossibleFields
-        ) {
+        if (fieldsSearchJson && !isFetching) {
             return getHumanReadableJsonLogic(fieldsSearchJson) as string;
         }
         return '';
-    }, [
-        fieldsSearchJson,
-        getHumanReadableJsonLogic,
-        isLoadingDescriptors,
-        isLoadingPossibleFields,
-    ]);
+    }, [fieldsSearchJson, getHumanReadableJsonLogic, isFetching]);
     if (!formsList) return null;
     return (
         <DialogBuilder

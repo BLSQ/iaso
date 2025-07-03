@@ -42,9 +42,7 @@ export const useGetFormDescriptor = (
         },
     });
 };
-
 export const useDynamicFormDescriptors = (formStates: FormState[]) => {
-    // Extract unique form IDs that need descriptors
     const formIds = useMemo(() => {
         const uniqueIds = new Set<number>();
         formStates?.forEach(state => {
@@ -55,30 +53,27 @@ export const useDynamicFormDescriptors = (formStates: FormState[]) => {
         return Array.from(uniqueIds);
     }, [formStates]);
 
-    // Build dynamic queries array
     const queries = useMemo(() => {
         return formIds.map(formId => ({
             queryKey: ['formDescriptor', formId],
-            queryFn: () => getVersion(formId), // Import from useGetFormDescriptor
+            queryFn: () => getVersion(formId),
             snackErrorMsg: 'Error fetching form descriptor',
             options: {
                 enabled: Boolean(formId),
-                select: data => processResult(data), // Import from useGetFormDescriptor
+                select: data => processResult(data),
                 staleTime: 60000,
                 cacheTime: 1000 * 60 * 5,
             },
         }));
     }, [formIds]);
 
-    // Use useSnackQueries for batch execution
     const results = useSnackQueries(queries as any);
 
-    // Transform results into a map for easy access
     const descriptorsMap = useMemo(() => {
-        const map = new Map<number, any>();
+        const map = new Map<number, FormDescriptor[]>();
         results.forEach((result, index) => {
             if (result.data && formIds[index]) {
-                map.set(formIds[index], result.data);
+                map.set(formIds[index], result.data as FormDescriptor[]);
             }
         });
         return map;
@@ -86,7 +81,7 @@ export const useDynamicFormDescriptors = (formStates: FormState[]) => {
 
     return {
         descriptorsMap,
-        isLoading: results.some(result => result.isFetching),
+        isFetching: results.some(result => result.isFetching),
         isError: results.some(result => result.isError),
     };
 };

@@ -5,10 +5,7 @@ import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder
 import { getRequest } from '../../../libs/Api';
 import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
-import {
-    useGetForm,
-    useGetForms,
-} from '../../entities/entityTypes/hooks/requests/forms';
+import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
 import { Form, PossibleField } from '../types/forms';
 
@@ -109,7 +106,7 @@ export const useDynamicPossibleFields = (formStates: FormState[]) => {
 
     return {
         possibleFieldsMap,
-        isLoading: results.some(result => result.isFetching),
+        isFetching: results.some(result => result.isFetching),
         isError: results.some(result => result.isError),
     };
 };

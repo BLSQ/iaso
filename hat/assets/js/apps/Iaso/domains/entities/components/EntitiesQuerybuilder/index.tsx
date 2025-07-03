@@ -181,12 +181,20 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         queryBuilderListToReplace,
     );
 
+    const handleReset = useCallback(() => {
+        setFormStates(undefined);
+        setAllFields({});
+        setNot(false);
+        setActiveOperator(null);
+        handleChange('fieldsSearch', undefined);
+    }, [handleChange]);
+
     const handleChangeQueryBuilder = value => {
         if (value) {
             const parsedValue = parseJson({ value, fields: allFields });
             handleChange('fieldsSearch', JSON.stringify(parsedValue));
         } else {
-            handleChange('fieldsSearch', undefined);
+            handleReset();
         }
     };
     const value = useMemo(() => {
@@ -203,7 +211,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             iconProps={{
                 label: MESSAGES.queryBuilder,
                 value,
-                onClear: () => handleChange('fieldsSearch', undefined),
+                onClear: handleReset,
             }}
             InfoPopper={<Popper />}
             not={not}

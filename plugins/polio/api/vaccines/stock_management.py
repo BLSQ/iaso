@@ -286,7 +286,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
 
     def validate(self, data):
         # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
-        if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
+        if data.get("campaign", None) and data.get("non_obr_name", None):
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
 
         validated_data = super().validate(data)

@@ -21,8 +21,9 @@ class UsernameAlreadyExistsError(ValidationError):
     pass
 
 
-def slugify_account(name: str) -> str:
-    return name.lower().replace(" ", "_")
+def get_unique_username(username: str, account_name: str) -> str:
+    account_name_slug = account_name.lower().replace(" ", "_")
+    return f"{username}_{account_name_slug}"
 
 
 class TenantUserManager(models.Manager):
@@ -51,7 +52,7 @@ class TenantUserManager(models.Manager):
         # 3) The user doesn't have multiple accounts.
         elif hasattr(existing_user, "iaso_profile"):
             existing_account = existing_user.iaso_profile.account
-            new_username = f"{data.username}_{slugify_account(existing_account.name)}"
+            new_username = get_unique_username(data.username, existing_account.name)
             existing_user.username = new_username
             existing_user.save()
             main_user = User.objects.create(
@@ -66,7 +67,7 @@ class TenantUserManager(models.Manager):
         else:
             main_user = existing_user
 
-        new_username = f"{data.username}_{slugify_account(data.account.name)}"
+        new_username = get_unique_username(data.username, data.account.name)
         user = User.objects.create(
             username=new_username,
             email=data.email,

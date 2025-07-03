@@ -254,6 +254,39 @@ class CreateJsonDiffParametersSerializerTestCase(TestCase):
         self.assertIn("opening_date", data["field_names"])
         self.assertIn("closed_date", data["field_names"])
 
+    def test_deserialize_error_code_in_field_names(self):
+        json_diff_params = {
+            # Version to update.
+            "source_version_to_update_validation_status": OrgUnit.VALIDATION_NEW,
+            "source_version_to_update_top_org_unit": self.source_version_to_update_top_org_unit.pk,
+            "source_version_to_update_org_unit_types": [self.org_unit_type_country.pk, self.org_unit_type_region.pk],
+            "source_version_to_update_org_unit_group": self.group_in_version_to_update.pk,
+            # Version to compare with.
+            "source_version_to_compare_with_validation_status": OrgUnit.VALIDATION_NEW,
+            "source_version_to_compare_with_top_org_unit": self.source_version_to_compare_with_top_org_unit.pk,
+            "source_version_to_compare_with_org_unit_types": [
+                self.org_unit_type_country.pk,
+                self.org_unit_type_region.pk,
+            ],
+            "source_version_to_compare_with_org_unit_group": self.group_in_version_to_compare_with.pk,
+            # Options.
+            "ignore_groups": True,
+            "show_deleted_org_units": False,
+            "field_names": [
+                "name",
+                "parent",
+                "opening_date",
+                "closed_date",
+                "code",  # code is not allowed in pyramid syncs
+            ],
+        }
+        serializer = CreateJsonDiffParametersSerializer(
+            data=json_diff_params, context={"data_source_versions_synchronization": self.data_source_sync}
+        )
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("code", serializer.errors["field_names"][0])
+
     def test_validate_source_version_to_update_top_org_unit(self):
         json_diff_params = {
             "source_version_to_update_top_org_unit": self.source_version_to_compare_with_top_org_unit.pk,

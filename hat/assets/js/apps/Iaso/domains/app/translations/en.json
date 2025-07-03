@@ -165,6 +165,7 @@
     "iaso.dataSources.name": "Data Source name",
     "iaso.datasources.noCredentialsForExport": "Please configure DHIS2 on source to enable export",
     "iaso.dataSources.notDefinedDhis2ConnectionError": "Not defined dhis2 connection error.",
+    "iaso.datasources.options.label.code": "Code",
     "iaso.datasources.options.label.default": "default",
     "iaso.datasources.options.label.geometry": "Geometry",
     "iaso.datasources.options.label.groups": "Groups",

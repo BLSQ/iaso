@@ -61,7 +61,7 @@ class DifferTestCase(PyramidBaseTest):
             # Options.
             ignore_groups=False,
             show_deleted_org_units=False,
-            field_names=["name", "parent", "geometry", "opening_date", "closed_date"],
+            field_names=["name", "parent", "geometry", "opening_date", "closed_date", "code"],
         )
 
         self.assertEqual(len(diffs), 3)
@@ -69,7 +69,7 @@ class DifferTestCase(PyramidBaseTest):
         country_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_country), None)
         self.assertEqual(country_diff.status, Differ.STATUS_MODIFIED)
         country_diff_comparisons = [comparison.as_dict() for comparison in country_diff.comparisons]
-        self.assertEqual(8, len(country_diff_comparisons))
+        self.assertEqual(9, len(country_diff_comparisons))
         self.assertDictEqual(
             country_diff_comparisons[0],
             {
@@ -123,6 +123,16 @@ class DifferTestCase(PyramidBaseTest):
         self.assertDictEqual(
             country_diff_comparisons[5],
             {
+                "field": "code",
+                "before": self.code_angola_to_update,
+                "after": self.code_angola_to_compare_with,
+                "status": Differ.STATUS_MODIFIED,
+                "distance": None,
+            },
+        )
+        self.assertDictEqual(
+            country_diff_comparisons[6],
+            {
                 "field": "group:group-a:Group A",
                 "before": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a1.pk}],
                 "after": [{"id": "group-a", "name": "Group A", "iaso_id": self.group_a2.pk}],
@@ -131,7 +141,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            country_diff_comparisons[6],
+            country_diff_comparisons[7],
             {
                 "field": "group:group-b:Group B",
                 "before": [{"id": "group-b", "name": "Group B", "iaso_id": self.group_b.pk}],
@@ -141,7 +151,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            country_diff_comparisons[7],
+            country_diff_comparisons[8],
             {
                 "field": "group:group-c:Group C",
                 "before": [],
@@ -154,7 +164,7 @@ class DifferTestCase(PyramidBaseTest):
         region_diff = next((diff for diff in diffs if diff.org_unit.org_unit_type == self.org_unit_type_region), None)
         self.assertEqual(region_diff.status, Differ.STATUS_MODIFIED)
         region_diff_comparisons = [comparison.as_dict() for comparison in region_diff.comparisons]
-        self.assertEqual(8, len(region_diff_comparisons))
+        self.assertEqual(9, len(region_diff_comparisons))
         self.assertDictEqual(
             region_diff_comparisons[0],
             {
@@ -208,6 +218,16 @@ class DifferTestCase(PyramidBaseTest):
         self.assertDictEqual(
             region_diff_comparisons[5],
             {
+                "field": "code",
+                "before": self.angola_region_to_update.code,
+                "after": self.angola_region_to_compare_with.code,
+                "status": Differ.STATUS_SAME,
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            region_diff_comparisons[6],
+            {
                 "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
@@ -216,7 +236,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            region_diff_comparisons[6],
+            region_diff_comparisons[7],
             {
                 "field": "group:group-b:Group B",
                 "before": [],
@@ -226,7 +246,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            region_diff_comparisons[7],
+            region_diff_comparisons[8],
             {
                 "field": "group:group-c:Group C",
                 "before": [],
@@ -241,7 +261,7 @@ class DifferTestCase(PyramidBaseTest):
         )
         self.assertEqual(district_diff.status, Differ.STATUS_MODIFIED)
         district_diff_comparisons = [comparison.as_dict() for comparison in district_diff.comparisons]
-        self.assertEqual(8, len(district_diff_comparisons))
+        self.assertEqual(9, len(district_diff_comparisons))
         self.assertDictEqual(
             district_diff_comparisons[0],
             {
@@ -295,6 +315,16 @@ class DifferTestCase(PyramidBaseTest):
         self.assertDictEqual(
             district_diff_comparisons[5],
             {
+                "field": "code",
+                "before": "",
+                "after": "",
+                "status": Differ.STATUS_SAME,
+                "distance": 0,
+            },
+        )
+        self.assertDictEqual(
+            district_diff_comparisons[6],
+            {
                 "field": "group:group-a:Group A",
                 "before": [],
                 "after": [],
@@ -303,7 +333,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            region_diff_comparisons[6],
+            district_diff_comparisons[7],
             {
                 "field": "group:group-b:Group B",
                 "before": [],
@@ -313,7 +343,7 @@ class DifferTestCase(PyramidBaseTest):
             },
         )
         self.assertDictEqual(
-            region_diff_comparisons[7],
+            district_diff_comparisons[8],
             {
                 "field": "group:group-c:Group C",
                 "before": [],
@@ -368,7 +398,7 @@ class DifferTestCase(PyramidBaseTest):
             # Options.
             ignore_groups=True,
             show_deleted_org_units=False,
-            field_names=["name"],
+            field_names=["name", "code"],
         )
 
         self.assertEqual(len(diffs), 1)  # only the country should be returned

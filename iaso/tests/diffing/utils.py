@@ -52,7 +52,7 @@ class PyramidBaseTest(TestCase):
         cls.multi_polygon = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
 
         # Angola pyramid to update.
-
+        cls.code_angola_to_update = "angola-to-update"
         cls.angola_country_to_update = m.OrgUnit.objects.create(
             parent=None,
             version=cls.source_version_to_update,
@@ -63,6 +63,7 @@ class PyramidBaseTest(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
+            code=cls.code_angola_to_update,
         )
         cls.angola_country_to_update.groups.set([cls.group_a1, cls.group_b])
 
@@ -76,6 +77,7 @@ class PyramidBaseTest(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
+            code="region",
         )
 
         cls.angola_district_to_update = m.OrgUnit.objects.create(
@@ -91,7 +93,7 @@ class PyramidBaseTest(TestCase):
         )
 
         # Angola pyramid to compare with.
-
+        cls.code_angola_to_compare_with = "angola-to-compare-with"
         cls.angola_country_to_compare_with = m.OrgUnit.objects.create(
             parent=None,
             version=cls.source_version_to_compare_with,
@@ -102,6 +104,7 @@ class PyramidBaseTest(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
+            code=cls.code_angola_to_compare_with,
         )
         cls.angola_country_to_compare_with.groups.set([cls.group_a2, cls.group_c])
 
@@ -115,6 +118,7 @@ class PyramidBaseTest(TestCase):
             opening_date=datetime.date(2022, 11, 28),
             closed_date=datetime.date(2025, 11, 28),
             geom=cls.multi_polygon,
+            code="region",
         )
 
         cls.angola_district_to_compare_with = m.OrgUnit.objects.create(

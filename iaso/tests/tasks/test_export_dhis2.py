@@ -129,10 +129,12 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
                         {
                             "id": self.angola_country_to_update.source_ref,
                             "name": self.angola_country_to_update.name,
+                            "code": self.code_angola_to_update,
                         },
                         {
                             "id": self.angola_region_to_update.source_ref,
                             "name": self.angola_region_to_update.name,
+                            "code": self.angola_region_to_update.code,
                         },
                     ]
                 }
@@ -146,11 +148,13 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
                         {
                             "id": self.angola_country_to_update.source_ref,
                             "name": new_country_name,
+                            "code": self.code_angola_to_compare_with,
                         },
                         {
                             "id": self.angola_region_to_update.source_ref,
                             "name": self.angola_region_to_update.name,
                             "openingDate": new_region_opening_date.strftime("%Y-%m-%d") + "T00:00:00",
+                            "code": self.angola_region_to_update.code,
                         },
                     ]
                 },
@@ -244,7 +248,7 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
             org_unit_types_ref_ids=None,
             org_unit_group_id=None,
             org_unit_group_ref_id=None,
-            field_names=["name", "geometry", "parent", "opening_date", "closed_date"],
+            field_names=["name", "geometry", "parent", "opening_date", "closed_date", "code"],
             task=self.task,
             _immediate=True,
         )

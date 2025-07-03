@@ -37,6 +37,7 @@ type Props = {
     activeOperator: LogicOperator | null;
     formStates: FormState[];
     handleOperatorChange: (operator: LogicOperator) => void;
+    handleChangeForm: (formId: string, index: number) => void;
     handleNotChange: () => void;
     updateFormState: <K extends keyof FormState>(
         index: number,
@@ -71,6 +72,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
     handleAddForm,
     formsList,
     isFetchingForms,
+    handleChangeForm,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -78,9 +80,12 @@ const DialogBuilder: FunctionComponent<Props> = ({
 
     const handleConfirm = () => {
         const formLogics = formStates
-            .filter(fs => fs.form_id)
+            .filter(fs => fs.form.form_id)
             .map(fs => ({
-                [fs.operator || 'some']: [{ var: fs.form_id }, fs.logic ?? {}],
+                [fs.operator || 'some']: [
+                    { var: fs.form.form_id },
+                    fs.logic ?? {},
+                ],
             }));
 
         let combinedLogic: any = {};
@@ -179,9 +184,12 @@ const DialogBuilder: FunctionComponent<Props> = ({
                     </ButtonGroup>
                     {formStates.map((formState, index) => (
                         <FormBuilder
-                            key={formState.form_id || `new-form-${index}`}
-                            id={formState.id}
-                            form_id={formState.form_id}
+                            key={formState.form.form_id || `new-form-${index}`}
+                            id={formState.form.id}
+                            handleChangeForm={(_, newFormId) =>
+                                handleChangeForm(newFormId, index)
+                            }
+                            form_id={formState.form.form_id}
                             stateFields={formState.fields}
                             logic={formState.logic}
                             operator={formState.operator}
@@ -199,8 +207,8 @@ const DialogBuilder: FunctionComponent<Props> = ({
                             onClick={handleAddForm}
                             disabled={
                                 formStates.length > 0 &&
-                                formStates[formStates.length - 1].form_id ===
-                                    undefined
+                                formStates[formStates.length - 1].form
+                                    .form_id === undefined
                             }
                         >
                             + {formatMessage(MESSAGES.addForm)}

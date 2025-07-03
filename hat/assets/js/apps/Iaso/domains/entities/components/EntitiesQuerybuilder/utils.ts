@@ -6,18 +6,24 @@ export const borderColor = 'rgba(0, 0, 0, 0.23)';
 export type LogicOperator = 'and' | 'or';
 export type NotState = boolean;
 
-export type FormState = {
+export type ShortForm = {
     id?: number;
-    form_id?: string;
     form_name?: string;
+    form_id?: string;
+};
+
+export type FormState = {
+    form: ShortForm;
     logic?: JsonLogicTree;
     operator?: string;
     fields?: QueryBuilderFields;
 };
 export const defaultFormState: FormState = {
-    id: undefined,
-    form_id: undefined,
-    form_name: undefined,
+    form: {
+        id: undefined,
+        form_name: undefined,
+        form_id: undefined,
+    },
     logic: undefined,
     operator: undefined,
 };
@@ -75,9 +81,11 @@ export const parseInitialLogic = (logicInput: any, formsList: Form[]) => {
         const [{ var: form_id }, innerLogic] = arr;
         const form = formsList.find(f => f.form_id === form_id);
         return {
-            id: form?.id,
-            form_name: form?.name,
-            form_id,
+            form: {
+                id: form?.id,
+                form_name: form?.name,
+                form_id,
+            },
             logic: innerLogic,
             operator,
         };
@@ -138,9 +146,9 @@ export const formsOperators = [
 export const getAllFields = (formStates: FormState[]) => {
     const allFields = {};
     formStates.forEach(fs => {
-        if (fs.fields && fs.form_id) {
-            allFields[fs.form_id] = {
-                label: fs.form_name || '',
+        if (fs.fields && fs.form.form_id) {
+            allFields[fs.form.form_id] = {
+                label: fs.form.form_name || '',
                 type: '!group',
                 mode: 'array',
                 conjunctions: ['AND', 'OR'],

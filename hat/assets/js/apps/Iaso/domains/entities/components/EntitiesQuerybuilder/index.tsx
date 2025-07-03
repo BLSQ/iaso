@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 
 import {
     QueryBuilderFields,
@@ -28,20 +33,15 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     handleChange,
 }) => {
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(true);
-    // Load QueryBuilder resources
     const [allFields, setAllFields] = useState<QueryBuilderFields>({});
-
-    // LIFTED STATE
     const [not, setNot] = useState(false);
     const [activeOperator, setActiveOperator] = useState<'and' | 'or' | null>(
         'and',
     );
     const [formStates, setFormStates] = useState<FormState[] | undefined>();
     console.log('formStates', formStates);
-    // LIFTED EFFECT FOR INITIAL LOGIC
     useEffect(() => {
         if (fieldsSearchJson && formsList && !formStates) {
-            console.log('ICI');
             const { parsedNot, mainOperator, parsedFormStates } =
                 parseInitialLogic(fieldsSearchJson, formsList);
             setNot(parsedNot);
@@ -54,8 +54,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         }
     }, [fieldsSearchJson, formsList, formStates]);
 
-    // LIFTED HANDLERS
-    const handleOperatorChange = React.useCallback((operator: 'and' | 'or') => {
+    const handleOperatorChange = useCallback((operator: 'and' | 'or') => {
         setActiveOperator(prev => {
             if (prev === operator) {
                 return null;
@@ -64,11 +63,11 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         });
     }, []);
 
-    const handleNotChange = React.useCallback(() => {
+    const handleNotChange = useCallback(() => {
         setNot(prev => !prev);
     }, []);
 
-    const updateFormState = React.useCallback(
+    const updateFormState = useCallback(
         (index: number, field: string, value: any) => {
             setFormStates(prev => {
                 const updated = [...(prev || [])];
@@ -79,7 +78,30 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         [],
     );
 
-    const handleDeleteForm = React.useCallback((index: number) => {
+    const handleChangeForm = useCallback(
+        (newFormId: string, index: number) => {
+            console.log('ICI', newFormId, index);
+            const form = formsList?.find(t => t.form_id === newFormId);
+            const newFormState = {
+                form: {
+                    id: form?.id,
+                    form_name: form?.name,
+                    form_id: form?.form_id,
+                },
+                logic: undefined,
+                operator: undefined,
+                fields: undefined,
+            };
+            setFormStates(prev => {
+                const updated = [...(prev || [])];
+                updated[index] = newFormState;
+                return updated;
+            });
+        },
+        [formsList],
+    );
+
+    const handleDeleteForm = useCallback((index: number) => {
         setFormStates(prev => {
             const updated = [...(prev || [])];
             updated.splice(index, 1);
@@ -87,7 +109,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         });
     }, []);
 
-    const handleAddForm = React.useCallback(() => {
+    const handleAddForm = useCallback(() => {
         setFormStates(prev => [...(prev || []), defaultFormState]);
     }, []);
 
@@ -129,6 +151,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             handleAddForm={handleAddForm}
             formsList={formsList}
             isFetchingForms={isFetchingForms}
+            handleChangeForm={handleChangeForm}
         />
     );
 };

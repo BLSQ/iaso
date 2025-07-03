@@ -39,6 +39,7 @@ type Props = {
     deleteDisabled: boolean;
     formsList: Form[];
     isFetchingForms: boolean;
+    handleChangeForm: (event: any, formId: string) => void;
 };
 
 const styles: SxStyles = {
@@ -85,6 +86,7 @@ export const FormBuilder: FunctionComponent<Props> = ({
     deleteDisabled,
     formsList,
     isFetchingForms,
+    handleChangeForm,
 }) => {
     const { data: formDescriptor, isFetching: isFetchingFormDescriptor } =
         useGetFormDescriptor(id);
@@ -104,19 +106,6 @@ export const FormBuilder: FunctionComponent<Props> = ({
             onChange('operator', newOperator);
         },
         [onChange],
-    );
-
-    const handleChangeForm = useCallback(
-        (_, newFormId: string) => {
-            const form = formsList?.find(t => t.form_id === newFormId);
-            onChange('form_id', newFormId);
-            onChange('form_name', form?.name);
-            onChange('id', form?.id);
-            onChange('logic', undefined);
-            onChange('operator', undefined);
-            onChange('fields', undefined);
-        },
-        [onChange, formsList],
     );
 
     const formOptions = useMemo(() => {

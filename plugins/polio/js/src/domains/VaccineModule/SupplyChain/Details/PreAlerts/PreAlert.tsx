@@ -37,7 +37,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const vialsRef = useRef<boolean>(false);
 
     const documentErrors = useMemo(() => {
-        return processErrorDocsBase(errors[index]?.document);
+        return processErrorDocsBase(errors[index]?.file);
     }, [errors, index]);
 
     const onDelete = useCallback(() => {

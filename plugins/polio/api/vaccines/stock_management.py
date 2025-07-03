@@ -332,6 +332,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         instance.save()
         super().update(instance, validated_data)
         scan_file_and_update(instance, validated_data)
+        instance.save()
         return instance
 
 

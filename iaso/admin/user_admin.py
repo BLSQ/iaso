@@ -1,9 +1,10 @@
-from django.contrib import messages
+from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.models import User
 from django.contrib.gis import forms
 from django.db import transaction
-from django.db.models import Exists, OuterRef
+from django.db.models import F
+from django.db.models.lookups import Exact
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path
 
@@ -28,9 +29,67 @@ class MultiAccountForm(forms.Form):
         self.fields["accounts"].queryset = Account.objects.exclude(pk__in=account_ids)
 
 
+class IsMultiAccountUserFilter(admin.SimpleListFilter):
+    title = "multi-account user"
+    parameter_name = "is_multi_account_user"
+
+    def lookups(self, request, model_admin):
+        return (("yes", "Yes"), ("no", "No"))
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value == "yes":
+            return queryset.filter(annotated_is_account_user=True)
+        if value == "no":
+            return queryset.filter(annotated_is_account_user=False)
+        return queryset
+
+
+class IsMultiAccountMainUserFilter(admin.SimpleListFilter):
+    title = "multi-account main user"
+    parameter_name = "is_multi_account_main_user"
+
+    def lookups(self, request, model_admin):
+        return (("yes", "Yes"), ("no", "No"))
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value == "yes":
+            return queryset.filter(annotated_is_account_main_user=True)
+        if value == "no":
+            return queryset.filter(annotated_is_account_main_user=False)
+        return queryset
+
+
 @admin_attr_decorator
 class UserAdmin(AuthUserAdmin):
-    list_display = AuthUserAdmin.list_display + ("accounts",)
+    list_display = ("id",) + AuthUserAdmin.list_display + ("is_account_user", "is_account_main_user", "accounts")
+    list_filter = (IsMultiAccountUserFilter, IsMultiAccountMainUserFilter) + AuthUserAdmin.list_filter
+    list_display_links = ("id", "username")
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .select_related("iaso_profile__account", "tenant_user")
+            .prefetch_related("tenant_users")
+            .annotate(annotated_is_account_user=Exact(F("id"), F("tenant_user__account_user_id")))
+            .annotate(annotated_is_account_main_user=Exact(F("id"), F("tenant_user__main_user_id")))
+        )
+
+    def is_account_user(self, obj):
+        return obj.annotated_is_account_user
+
+    is_account_user.boolean = True
+    is_account_user.short_description = "multi-account user"
+    is_account_user.admin_order_field = "annotated_is_account_user"
+
+    def is_account_main_user(self, obj):
+        return obj.annotated_is_account_main_user
+
+    is_account_main_user.boolean = True
+    is_account_main_user.short_description = "multi-account main user"
+    is_account_main_user.admin_order_field = "annotated_is_account_main_user"
 
     def accounts(self, user):
         if user.tenant_users.exists():  # Multi-account user
@@ -40,23 +99,6 @@ class UserAdmin(AuthUserAdmin):
             ]
         # Regular user
         return user.iaso_profile and user.iaso_profile.account
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        queryset = queryset.prefetch_related(
-            "iaso_profile__account",
-            "tenant_users__account_user__iaso_profile__account",
-        )
-
-        # If request is for list, hide the multi-account "account_users".
-        # That way we only show regular + main multi-account users.
-        # Don't filter for edit screen so we can still access via /tenantuser.
-        if request.resolver_match.url_name == "auth_user_changelist":
-            queryset = queryset.annotate(
-                has_tenant_user=Exists(TenantUser.objects.filter(account_user=OuterRef("pk")))
-            ).filter(has_tenant_user=False)
-
-        return queryset
 
     def get_urls(self):
         urls = super().get_urls()

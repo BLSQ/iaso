@@ -9,62 +9,16 @@ from unittest import mock
 
 import pytz
 
-from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
 
 from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
-from iaso.test import APITestCase
+from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
-class EntityAPITestCase(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Account")
-        sw_source = m.DataSource.objects.create(name="Source")
-        cls.sw_source = sw_source
-        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        cls.account.default_version = sw_version
-        cls.account.save()
-        cls.sw_version = sw_version
-
-        cls.anon = AnonymousUser()
-
-        cls.project = m.Project.objects.create(name="Project", app_id="project", account=cls.account)
-
-        cls.yop_solo = cls.create_user_with_profile(
-            username="yop solo", account=m.Account.objects.create(name="Account 2"), permissions=["iaso_entities"]
-        )
-
-        cls.ou_country = m.OrgUnit.objects.create(
-            name="Burkina Faso (validated)", validation_status=m.OrgUnit.VALIDATION_VALID
-        )
-        cls.ou_country_unvalidated = m.OrgUnit.objects.create(name="Burkina Faso (unvalidated)")
-
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_entities"])
-
-        cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=cls.account, permissions=["iaso_entities"]
-        )
-
-        cls.form_1 = m.Form.objects.create(
-            name="Hydroponics study",
-            period_type=m.MONTH,
-            single_per_period=True,
-            form_id="form_1",
-        )
-
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-
-        cls.form_1.projects.add(cls.project)
-
-        cls.entity_type = EntityType.objects.create(name="Type 1", reference_form=cls.form_1, account=cls.account)
-
+class WebEntityAPITestCase(EntityAPITestCase):
     def test_create_single_entity(self):
         self.client.force_authenticate(self.yoda)
 

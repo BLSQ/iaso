@@ -29,7 +29,7 @@ from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.api.query_params import APP_ID
 from iaso.models import Account, Profile, Project, TenantUser
-from iaso.models.tenant_users import UserCreationData
+from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 
 from .provider import WFPProvider
 
@@ -238,14 +238,16 @@ def token_view(request):
                 {"message": "Access token validation failed", "result": "error", "error": "invalid_token"}, status=401
             )
         return JsonResponse(
-            {"result": "error", "message": "error login to auth server", "details": e.response.text}, status=500
+            {"result": "error", "message": "Error login to auth server", "details": e.response.text}, status=500
         )
+    except UsernameAlreadyExistsError as e:
+        return JsonResponse({"result": "error", "message": e.message, "details": e.message}, status=409)
     except Exception as e:
         logger.exception(str(e))
         return JsonResponse(
             {
                 "result": "error",
-                "message": "error login account",
+                "message": "Error login account",
                 "details": str(e),
             },
             status=500,

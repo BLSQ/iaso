@@ -362,8 +362,8 @@ class ProfilesViewSet(viewsets.ViewSet):
                     account=current_account,
                 )
             )
-        except UsernameAlreadyExistsError:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+        except UsernameAlreadyExistsError as e:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
         if password != "":
             user.set_password(password)

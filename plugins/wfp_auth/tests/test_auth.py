@@ -39,7 +39,6 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-
         self.assertEqual(response.status_code, 200)
 
         self.assertEqual(m.User.objects.count(), 1)
@@ -83,7 +82,6 @@ class WFPAuthTestCase(APITestCase):
                     "token": "f4k3-t0k3n",
                 },
             )
-
         self.assertEqual(response.status_code, 200)
 
         # Users.
@@ -109,3 +107,28 @@ class WFPAuthTestCase(APITestCase):
         self.assertEqual(new_social_account.provider, "wfp")
         self.assertEqual(new_social_account.extra_data, extra_data)
         self.assertEqual(new_social_account.user, account_user_2)
+
+    @patch("requests.get")
+    def test_complete_login_fail(self, mock_get):
+        self.create_user_with_profile(username="john@doe.com", email="foo@bar.com", account=self.account)
+
+        # Mock `requests.get()` response.
+        extra_data: ExtraData = {
+            "email": "john@doe.com",
+            "sub": "john@doe.com",
+            "given_name": "John",
+            "family_name": "Doe",
+        }
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+            response = self.client.post(
+                f"/wfp_auth/wfp/token/?app_id={self.project.app_id}&app_version=2501",
+                format="json",
+                data={
+                    "token": "f4k3-t0k3n",
+                },
+            )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()["details"], "Username already exists for this account.")

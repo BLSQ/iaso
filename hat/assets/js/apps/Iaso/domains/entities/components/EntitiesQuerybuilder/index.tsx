@@ -3,13 +3,16 @@ import React, {
     useState,
     useEffect,
     useCallback,
+    useMemo,
 } from 'react';
 
 import {
     QueryBuilderFields,
     useHumanReadableJsonLogic,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { useDynamicFormDescriptors } from 'Iaso/domains/forms/fields/hooks/useGetFormDescriptor';
+import { getQueryBuildersFields } from 'Iaso/domains/forms/fields/hooks/useGetQueryBuildersFields';
 import { useDynamicPossibleFields } from 'Iaso/domains/forms/hooks/useGetPossibleFields';
 import { Popper } from '../../../forms/fields/components/Popper';
 import { useGetQueryBuilderListToReplace } from '../../../forms/fields/hooks/useGetQueryBuilderListToReplace';
@@ -45,8 +48,6 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         useDynamicFormDescriptors(formStates || []);
     const { possibleFieldsMap, isLoading: isLoadingPossibleFields } =
         useDynamicPossibleFields(formStates || []);
-    console.log('descriptorsMap', descriptorsMap);
-    console.log('possibleFieldsMap', possibleFieldsMap);
     useEffect(() => {
         if (fieldsSearchJson && formsList && !formStates) {
             const { parsedNot, mainOperator, parsedFormStates } =
@@ -84,21 +85,59 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         },
         [],
     );
-    // Access possible fields by form ID
-    const getPossibleFields = useCallback(
-        (formId: number) => {
-            return possibleFieldsMap.get(formId) || [];
-        },
-        [possibleFieldsMap],
-    );
+    const { formatMessage } = useSafeIntl();
 
-    // Access descriptors by form ID
-    const getFormDescriptor = useCallback(
-        (formId: number) => {
-            return descriptorsMap.get(formId);
-        },
-        [descriptorsMap],
-    );
+    // Memoize the field generation to prevent infinite loops
+    const generatedFields = useMemo(() => {
+        if (!formStates || formStates.length === 0) return {};
+
+        const newAllFields: QueryBuilderFields = {};
+
+        formStates.forEach(formState => {
+            const formId = formState.form?.id;
+            const formIdString = formState.form?.form_id;
+
+            if (formId && formIdString) {
+                const possibleFields = possibleFieldsMap.get(formId);
+                const formDescriptors = descriptorsMap.get(formId);
+
+                if (possibleFields && formDescriptors) {
+                    const subfields = getQueryBuildersFields(
+                        formatMessage,
+                        formDescriptors,
+                        possibleFields,
+                    );
+
+                    newAllFields[formIdString] = {
+                        label: formState.form.form_name || '',
+                        type: '!group',
+                        mode: 'array',
+                        conjunctions: ['AND', 'OR'],
+                        operators: ['some', 'all', 'none'],
+                        defaultOperator: 'some',
+                        subfields,
+                    };
+                }
+            }
+        });
+
+        return newAllFields;
+    }, [formStates, descriptorsMap, possibleFieldsMap, formatMessage]);
+
+    // Update allFields only when generatedFields actually changes
+    useEffect(() => {
+        // Only update if the fields have actually changed
+        setAllFields(prevFields => {
+            // Simple deep comparison - you might want to use lodash.isEqual for more complex objects
+            if (
+                JSON.stringify(prevFields) !== JSON.stringify(generatedFields)
+            ) {
+                return generatedFields;
+            }
+            return prevFields;
+        });
+    }, [generatedFields]);
+
     const handleChangeForm = useCallback(
         (newFormId: string, index: number) => {
             const form = formsList?.find(t => t.form_id === newFormId);
@@ -147,6 +186,21 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             handleChange('fieldsSearch', undefined);
         }
     };
+    const value = useMemo(() => {
+        if (
+            fieldsSearchJson &&
+            !isLoadingDescriptors &&
+            !isLoadingPossibleFields
+        ) {
+            return getHumanReadableJsonLogic(fieldsSearchJson) as string;
+        }
+        return '';
+    }, [
+        fieldsSearchJson,
+        getHumanReadableJsonLogic,
+        isLoadingDescriptors,
+        isLoadingPossibleFields,
+    ]);
     if (!formsList) return null;
     return (
         <DialogBuilder
@@ -154,13 +208,10 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             setAllFields={setAllFields}
             iconProps={{
                 label: MESSAGES.queryBuilder,
-                value: fieldsSearchJson
-                    ? (getHumanReadableJsonLogic(fieldsSearchJson) as string)
-                    : '',
+                value,
                 onClear: () => handleChange('fieldsSearch', undefined),
             }}
             InfoPopper={<Popper />}
-            // Pass lifted state and handlers
             not={not}
             activeOperator={activeOperator}
             formStates={formStates || []}
@@ -172,6 +223,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             formsList={formsList}
             isFetchingForms={isFetchingForms}
             handleChangeForm={handleChangeForm}
+            allFields={allFields}
         />
     );
 };

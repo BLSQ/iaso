@@ -48,6 +48,7 @@ type Props = {
     handleAddForm: () => void;
     formsList: Form[];
     isFetchingForms: boolean;
+    allFields: QueryBuilderFields;
 };
 
 const getStyles = () => ({
@@ -73,6 +74,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
     formsList,
     isFetchingForms,
     handleChangeForm,
+    allFields,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -185,12 +187,16 @@ const DialogBuilder: FunctionComponent<Props> = ({
                     {formStates.map((formState, index) => (
                         <FormBuilder
                             key={formState.form.form_id || `new-form-${index}`}
-                            id={formState.form.id}
                             handleChangeForm={(_, newFormId) =>
                                 handleChangeForm(newFormId, index)
                             }
                             form_id={formState.form.form_id}
-                            stateFields={formState.fields}
+                            fields={
+                                formState.form.form_id
+                                    ? (allFields[formState.form.form_id] as any)
+                                          ?.subfields
+                                    : undefined
+                            }
                             logic={formState.logic}
                             operator={formState.operator}
                             onChange={(field, value) =>

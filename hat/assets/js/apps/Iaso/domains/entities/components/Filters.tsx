@@ -272,12 +272,6 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             <Box mt={-2}>
                 <Grid container columnSpacing={2}>
                     <Grid item xs={12} sm={6}>
-                        <OldQueryBuilder
-                            fieldsSearchJson={fieldsSearchJson}
-                            handleChange={handleChange}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
                         <EntitiesQueryBuilder
                             fieldsSearchJson={fieldsSearchJson}
                             handleChange={handleChange}

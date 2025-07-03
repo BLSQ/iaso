@@ -43,18 +43,6 @@ export const useGetFormDescriptor = (
     });
 };
 
-export const useGetAllFormDescriptors = (): UseQueryResult<
-    FormDescriptor[] | undefined,
-    Error
-> => {
-    return useSnackQuery({
-        queryKey: ['instanceDescriptors'],
-        queryFn: () => getRequest('/api/formversions/?fields=descriptor'),
-        options: {
-            select: data => processResult(data),
-        },
-    });
-};
 export const useDynamicFormDescriptors = (formStates: FormState[]) => {
     // Extract unique form IDs that need descriptors
     const formIds = useMemo(() => {

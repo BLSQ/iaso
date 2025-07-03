@@ -139,14 +139,6 @@ export const useAllPossibleFields = (
     }, [isFetchingForms, allForms]);
 };
 
-export const useGetAllPossibleFields = (): AllResults => {
-    const { data: allForms, isFetching: isFetchingForms } = useGetForms(true, [
-        'form_id',
-        'possible_fields',
-    ]);
-    return useAllPossibleFields(isFetchingForms, allForms);
-};
-
 type PossibleFieldsDropdown = {
     isFetching: boolean;
     dropdown: DropdownOptions<string>[];

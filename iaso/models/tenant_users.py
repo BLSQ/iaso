@@ -17,13 +17,17 @@ class UserCreationData:
     username: str
 
 
+class UsernameAlreadyExistsError(ValidationError):
+    pass
+
+
 def slugify_account(name: str) -> str:
     return name.lower().replace(" ", "_")
 
 
 class TenantUserManager(models.Manager):
     def create_user_or_tenant_user(self, data: UserCreationData) -> User:
-        existing_user = User.objects.filter(username=data.username).first()
+        existing_user = User.objects.filter(username__iexact=data.username).first()
 
         # 1) No preexisting user, simply create a new one.
         if not existing_user:
@@ -36,7 +40,7 @@ class TenantUserManager(models.Manager):
             return user
 
         if hasattr(existing_user, "iaso_profile") and existing_user.iaso_profile.account == data.account:
-            raise ValidationError("Username already exists for this account.")
+            raise UsernameAlreadyExistsError("Username already exists for this account.")
 
         existing_tenant_user = self.filter(Q(main_user=existing_user) | Q(account_user=existing_user)).first()
 

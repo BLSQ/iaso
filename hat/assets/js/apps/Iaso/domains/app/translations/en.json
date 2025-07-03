@@ -204,6 +204,7 @@
     "iaso.duplicate.messageErrorMissingFields": "No fields to analyse. You can set them up in the entity types page",
     "iaso.duplicate.noAnalysis": "No analysis found",
     "iaso.duplicate.relaunchAnalysis": "Relaunch Analysis",
+    "iaso.entities.addForm": "Add a form",
     "iaso.entities.create": "Create entity",
     "iaso.entities.dialog.deleteTitle": "Are you sure you want to delete this entity?",
     "iaso.entities.female": "Female",

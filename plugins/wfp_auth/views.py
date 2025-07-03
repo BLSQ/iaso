@@ -29,6 +29,7 @@ from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.api.query_params import APP_ID
 from iaso.models import Account, Profile, Project, TenantUser
+from iaso.models.tenant_users import UserCreationData
 
 from .provider import WFPProvider
 
@@ -145,11 +146,13 @@ class WFP2Adapter(Auth0OAuth2Adapter):
 
             if not user:
                 user = TenantUser.objects.create_user_or_tenant_user(
-                    username=email,
-                    email=email,
-                    first_name=extra_data.get("given_name"),
-                    last_name=extra_data.get("family_name"),
-                    account=account,
+                    data=UserCreationData(
+                        username=email,
+                        email=email,
+                        first_name=extra_data.get("given_name"),
+                        last_name=extra_data.get("family_name"),
+                        account=account,
+                    )
                 )
                 user.set_unusable_password()
                 Profile.objects.create(account=account, user=user)

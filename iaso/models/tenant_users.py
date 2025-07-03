@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -6,55 +8,66 @@ from django.db.models import Q
 from iaso.models import Account
 
 
+@dataclass
+class UserCreationData:
+    account: Account
+    email: str
+    first_name: str
+    last_name: str
+    username: str
+
+
 def slugify_account(name: str) -> str:
     return name.lower().replace(" ", "_")
 
 
 class TenantUserManager(models.Manager):
-    def create_user_or_tenant_user(
-        self, username: str, email: str, first_name: str, last_name: str, account: Account
-    ) -> User:
-        existing_user = User.objects.filter(username=username).first()
+    def create_user_or_tenant_user(self, data: UserCreationData) -> User:
+        existing_user = User.objects.filter(username=data.username).first()
 
+        # 1) No preexisting user, simply create a new one.
         if not existing_user:
             user = User.objects.create(
-                username=username,
-                email=email,
-                first_name=first_name,
-                last_name=last_name,
+                username=data.username,
+                email=data.email,
+                first_name=data.first_name,
+                last_name=data.last_name,
             )
             return user
 
-        if hasattr(existing_user, "iaso_profile") and existing_user.iaso_profile.account == account:
+        if hasattr(existing_user, "iaso_profile") and existing_user.iaso_profile.account == data.account:
             raise ValidationError("Username already exists for this account.")
 
         existing_tenant_user = self.filter(Q(main_user=existing_user) | Q(account_user=existing_user)).first()
 
+        # 2) The user already has multiple accounts: add an account.
         if existing_tenant_user:
             main_user = existing_tenant_user.main_user
 
-        elif hasattr(existing_user, "iaso_profile"):  # Insert `existing_user` and its profile into `TenantUser`.
+        # 3) The user doesn't have multiple accounts.
+        elif hasattr(existing_user, "iaso_profile"):
             existing_account = existing_user.iaso_profile.account
-            new_username = f"{username}_{slugify_account(existing_account.name)}"
+            new_username = f"{data.username}_{slugify_account(existing_account.name)}"
             existing_user.username = new_username
             existing_user.save()
             main_user = User.objects.create(
-                username=username,
+                username=data.username,
                 email=existing_user.email,
                 first_name=existing_user.first_name,
                 last_name=existing_user.last_name,
             )
             self.create(main_user=main_user, account_user=existing_user)
 
+        # 4) The user has no profile. This can happen, e.g., for a superuser.
         else:
             main_user = existing_user
 
-        new_username = f"{username}_{slugify_account(account.name)}"
+        new_username = f"{data.username}_{slugify_account(data.account.name)}"
         user = User.objects.create(
             username=new_username,
-            email=email,
-            first_name=first_name,
-            last_name=last_name,
+            email=data.email,
+            first_name=data.first_name,
+            last_name=data.last_name,
         )
         self.create(main_user=main_user, account_user=user)
 

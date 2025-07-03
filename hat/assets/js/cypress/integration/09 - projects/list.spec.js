@@ -220,13 +220,14 @@ describe('Projects', () => {
                 openDialogForIndex(theIndex);
                 const newProject = {
                     id: listFixture.projects[theIndex].app_id,
-                    name: 'superman',
-                    app_id: 'pacman',
                     feature_flags: [
                         listfeatureFlags.featureflags[2],
                         listfeatureFlags.featureflags[3],
                     ],
+                    app_id: 'pacman',
+                    name: 'superman',
                     old_app_id: listFixture.projects[theIndex].app_id,
+                    color: '#1976D2',
                 };
                 const newProjects = [...listFixture.projects];
                 newProjects[theIndex] = {
@@ -286,6 +287,7 @@ describe('Projects', () => {
                         listfeatureFlags.featureflags[0],
                         listfeatureFlags.featureflags[1],
                     ],
+                    color: '#1976D2',
                 };
                 const newList = {
                     ...listFixture,

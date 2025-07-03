@@ -26,6 +26,7 @@ import MESSAGES from '../../messages';
 import { FormState, formsOperators } from './utils';
 
 type Props = {
+    id?: number;
     form_id?: string;
     stateFields?: QueryBuilderFields;
     logic?: JsonLogicTree;
@@ -74,6 +75,7 @@ const styles: SxStyles = {
 };
 
 export const FormBuilder: FunctionComponent<Props> = ({
+    id,
     form_id,
     stateFields,
     logic,
@@ -84,7 +86,6 @@ export const FormBuilder: FunctionComponent<Props> = ({
     formsList,
     isFetchingForms,
 }) => {
-    const id = formsList?.find(t => t.form_id === form_id)?.id;
     const { data: formDescriptor, isFetching: isFetchingFormDescriptor } =
         useGetFormDescriptor(id);
     const { possibleFields, isFetchingForm: isFetchingPossibleFields } =
@@ -107,11 +108,13 @@ export const FormBuilder: FunctionComponent<Props> = ({
 
     const handleChangeForm = useCallback(
         (_, newFormId: string) => {
+            const form = formsList?.find(t => t.form_id === newFormId);
             onChange('form_id', newFormId);
-            onChange(
-                'form_name',
-                formsList?.find(t => t.form_id === newFormId)?.name,
-            );
+            onChange('form_name', form?.name);
+            onChange('id', form?.id);
+            onChange('logic', undefined);
+            onChange('operator', undefined);
+            onChange('fields', undefined);
         },
         [onChange, formsList],
     );

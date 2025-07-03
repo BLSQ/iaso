@@ -1,5 +1,6 @@
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
 import { QueryBuilderFields } from 'bluesquare-components';
+import { Form } from 'Iaso/domains/forms/types/forms';
 
 export const borderColor = 'rgba(0, 0, 0, 0.23)';
 export type LogicOperator = 'and' | 'or';

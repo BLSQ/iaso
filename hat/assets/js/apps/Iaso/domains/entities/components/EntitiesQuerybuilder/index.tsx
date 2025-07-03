@@ -41,6 +41,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     // LIFTED EFFECT FOR INITIAL LOGIC
     useEffect(() => {
         if (fieldsSearchJson && formsList && !formStates) {
+            console.log('ICI');
             const { parsedNot, mainOperator, parsedFormStates } =
                 parseInitialLogic(fieldsSearchJson, formsList);
             setNot(parsedNot);
@@ -109,7 +110,6 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         <DialogBuilder
             onChange={handleChangeQueryBuilder}
             setAllFields={setAllFields}
-            initialLogic={fieldsSearchJson}
             iconProps={{
                 label: MESSAGES.queryBuilder,
                 value: fieldsSearchJson
@@ -120,11 +120,8 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
             InfoPopper={<Popper />}
             // Pass lifted state and handlers
             not={not}
-            setNot={setNot}
             activeOperator={activeOperator}
-            setActiveOperator={setActiveOperator}
             formStates={formStates || []}
-            setFormStates={setFormStates}
             handleOperatorChange={handleOperatorChange}
             handleNotChange={handleNotChange}
             updateFormState={updateFormState}

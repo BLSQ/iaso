@@ -180,6 +180,7 @@ const DialogBuilder: FunctionComponent<Props> = ({
                     {formStates.map((formState, index) => (
                         <FormBuilder
                             key={formState.form_id || `new-form-${index}`}
+                            id={formState.id}
                             form_id={formState.form_id}
                             stateFields={formState.fields}
                             logic={formState.logic}

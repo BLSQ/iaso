@@ -9,3 +9,15 @@ class ImageOnlySerializer(serializers.Serializer):
     """
 
     image_only = serializers.BooleanField(default=False)
+
+
+class VideoOnlySerializer(serializers.Serializer):
+    video_only = serializers.BooleanField(default=False)
+
+
+class DocumentOnlySerializer(serializers.Serializer):
+    document_only = serializers.BooleanField(default=False)
+
+
+class OtherOnlySerializer(serializers.Serializer):
+    other_only = serializers.BooleanField(default=False)

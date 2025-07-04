@@ -1436,12 +1436,65 @@ class InstanceFileQuerySet(models.QuerySet):
     pass
 
 
+#  according to frontend, we need to filter by file extension, see hat/assets/js/apps/Iaso/utils/filesUtils.ts
+image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+video_extensions = ["mp4", "mov"]
+document_extensions = ["pdf", "doc", "docx", "xls", "xlsx", "csv", "txt"]
+
+
 class AnnotatedInstanceFileQuerySet(models.QuerySet):
     def filter_image_only(self, image_only: bool):
         queryset = self
         if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
             queryset = queryset.filter(file_extension__in=image_extensions)
+        return queryset
+
+    def filter_video_only(self, video_only: bool):
+        queryset = self
+        if video_only:
+            queryset = queryset.filter(file_extension__in=video_extensions)
+        return queryset
+
+    def filter_document_only(self, document_only: bool):
+        queryset = self
+        if document_only:
+            queryset = queryset.filter(file_extension__in=document_extensions)
+        return queryset
+
+    def filter_other_only(self, other_only: bool):
+        queryset = self
+        if other_only:
+            queryset = queryset.exclude(file_extension__in=image_extensions + video_extensions + document_extensions)
+        return queryset
+
+    def filter_by_file_types(self, image_only=False, video_only=False, document_only=False, other_only=False):
+        """Apply file type filters with OR logic when multiple filters are active"""
+        queryset = self
+
+        # Build OR conditions for active filters
+        conditions = []
+
+        if image_only:
+            conditions.append(Q(file_extension__in=image_extensions))
+
+        if video_only:
+            conditions.append(Q(file_extension__in=video_extensions))
+
+        if document_only:
+            conditions.append(Q(file_extension__in=document_extensions))
+
+        if other_only:
+            conditions.append(~Q(file_extension__in=image_extensions + video_extensions + document_extensions))
+
+        # Apply OR logic if multiple conditions exist
+        if len(conditions) > 1:
+            combined_condition = conditions[0]
+            for condition in conditions[1:]:
+                combined_condition |= condition
+            queryset = queryset.filter(combined_condition)
+        elif len(conditions) == 1:
+            queryset = queryset.filter(conditions[0])
+
         return queryset
 
 

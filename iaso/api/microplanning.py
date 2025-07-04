@@ -301,6 +301,10 @@ class PlanningSerializer(serializers.ModelSerializer):
         ):
             validation_errors["started_at"] = "startDateAfterEndDate"
             validation_errors["ended_at"] = "EndDateBeforeStartDate"
+
+        if validated_data.get("published_at") and validated_data.get("started_at") is None:
+            validation_errors["started_at"] = "publishedWithoutStartDate"
+
         project = validated_data.get("project", self.instance.project if self.instance else None)
 
         team = validated_data.get("team", self.instance.team if self.instance else None)

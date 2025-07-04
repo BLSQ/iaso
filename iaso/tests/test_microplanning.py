@@ -710,6 +710,31 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(mod.past_value[0]["forms"], [])
         self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
 
+    def test_patch_api__throw_error_if_published_and_no_started_date(self):
+        planning = Planning.objects.create(
+            name="Planning to modify",
+            project=self.project1,
+            org_unit=self.org_unit,
+            team=self.team1,
+        )
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "published_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        print(r)
+        self.assertIsNotNone(r["started_at"])
+        self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
+
     def test_create_api(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]

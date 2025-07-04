@@ -45,6 +45,7 @@ export const useGetFieldValue = (
             case 'calculate':
             case 'integer':
             case 'decimal':
+            case 'barcode':
             case 'note': {
                 return fileContent[fieldKey] || textPlaceholder;
             }

@@ -458,7 +458,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_select_related = ("user", "account")
     list_filter = ("account",)
     list_display = ("id", "user", "account", "language")
-    autocomplete_fields = ["account"]
+    autocomplete_fields = ["account", "user"]
 
 
 @admin.register(ExportRequest)

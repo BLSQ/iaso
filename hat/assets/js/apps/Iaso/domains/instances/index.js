@@ -23,7 +23,7 @@ import { createInstance } from './actions';
 import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { PaginatedInstancesFilesList } from './components/PaginatedInstancesFilesList.tsx';
 import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import MESSAGES from './messages';
 import {
@@ -266,7 +266,7 @@ const Instances = () => {
                     </div>
                 )}
                 {tab === 'files' && (
-                    <PaginatedInstanceFiles
+                    <PaginatedInstancesFilesList
                         params={params}
                         updateParams={onSearch}
                     />

@@ -106,7 +106,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": vrf.date_vrf_reception,
-                "file": vrf.document.url if vrf.document else None,
+                "file": vrf.file.url if vrf.file else None,
                 "is_missing": vrf.vrf_type == VaccineRequestFormType.MISSING,
                 "is_not_required": vrf.vrf_type == VaccineRequestFormType.NOT_REQUIRED,
                 "id": vrf.id,
@@ -123,7 +123,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": pa.date_pre_alert_reception,
-                "file": pa.document.url if pa.document else None,
+                "file": pa.file.url if pa.file else None,
                 "vrf_id": pa.request_form.id,
             }
             for pa in pre_alerts
@@ -136,7 +136,7 @@ class VaccineRepositorySerializer(serializers.Serializer):
         return [
             {
                 "date": fa.form_a_reception_date,
-                "file": fa.document.url if fa.document else None,
+                "file": fa.file.url if fa.file else None,
                 "is_late": (
                     fa.form_a_reception_date > (obj["ended_at"] + timedelta(days=14))
                     if fa.form_a_reception_date and obj["ended_at"]

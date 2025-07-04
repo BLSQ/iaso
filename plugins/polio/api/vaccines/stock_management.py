@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
@@ -254,11 +255,10 @@ def compute_category_from_campaign(campaign: Optional[Campaign], round: Optional
     return CampaignCategory.REGULAR
 
 
-class OutgoingStockMovementSerializer(serializers.ModelSerializer):
+class OutgoingStockMovementSerializer(ModelWithFileSerializer):
     campaign = serializers.CharField(source="campaign.obr_name", required=False)
     # reference to a campaign not managed in iaso. Is used as an alternative to the campaign/obr name used for regular campaigns
     alternative_campaign = serializers.CharField(source="non_obr_name", required=False)
-    document = serializers.FileField(required=False)
     round_number = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
     campaign_category = serializers.SerializerMethodField()
@@ -273,7 +273,9 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "form_a_reception_date",
             "usable_vials_used",
             "lot_numbers",
-            "document",
+            "scan_result",
+            "scan_timestamp",
+            "file",
             "comment",
             "round",
             "round_number",
@@ -284,8 +286,9 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         # The `source` attribute is used as the key in `data` instead of the name of the serializer field.
-        if data.get("campaign", None) is not None and data.get("non_obr_name", None) is not None:
+        if data.get("campaign", None) and data.get("non_obr_name", None):
             raise serializers.ValidationError({"error": "campaign and alternative campaign cannot both be defined"})
+
         validated_data = super().validate(data)
         return validated_data
 
@@ -319,13 +322,18 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
+        scan_file(validated_data)
         return OutgoingStockMovement.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
-        return super().update(instance, validated_data)
+        instance.save()
+        super().update(instance, validated_data)
+        scan_file_and_update(instance, validated_data)
+        instance.save()
+        return instance
 
 
 class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
@@ -406,13 +414,13 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         return response
 
 
-class IncidentReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class IncidentReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = IncidentReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
@@ -436,13 +444,13 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
     ]
 
 
-class DestructionReportSerializer(serializers.ModelSerializer):
-    document = serializers.FileField(required=False)
+class DestructionReportSerializer(ModelWithFileSerializer):
+    file = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
         model = DestructionReport
-        fields = "__all__"
+        exclude = ["file_last_scan", "file_scan_status"]
 
     def get_can_edit(self, obj):
         return can_edit_helper(

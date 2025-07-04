@@ -50,7 +50,7 @@ export type FormAFormValues = {
     usable_vials_used?: number;
 
     vaccine_stock: string;
-    document?: File[] | string;
+    file?: File[] | string;
     comment: string | null;
     alternative_campaign: string | null;
 };
@@ -75,7 +75,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
             vaccine_stock: vaccineStockId,
-            document: formA?.document,
+            file: formA?.file,
             comment: formA?.comment ?? null,
             alternative_campaign: formA?.alternative_campaign ?? null,
         },
@@ -97,9 +97,9 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-    const documentErrors = useMemo(() => {
-        return processErrorDocsBase(formik.errors.document);
-    }, [formik.errors.document]);
+    const fileErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.file);
+    }, [formik.errors.file]);
 
     const resetOnCampaignChange = useCallback(() => {
         setFieldValue('round', undefined);
@@ -234,14 +234,14 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <DocumentUploadWithPreview
-                        errors={documentErrors}
+                        errors={fileErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched('document', true);
-                                formik.setFieldValue('document', files);
+                                formik.setFieldTouched('file', true);
+                                formik.setFieldValue('file', files);
                             }
                         }}
-                        document={formik.values.document}
+                        document={formik.values.file}
                     />
                 </Box>
             </ConfirmCancelModal>

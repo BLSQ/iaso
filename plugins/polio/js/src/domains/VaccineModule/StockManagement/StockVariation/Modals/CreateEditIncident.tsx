@@ -220,15 +220,15 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials || 0,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
-            document: incident?.document,
+            file: incident?.file,
         },
         onSubmit: handleSubmit,
         validationSchema,
     });
 
-    const documentErrors = useMemo(() => {
-        return processErrorDocsBase(formik.errors.document);
-    }, [formik.errors.document]);
+    const fileErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.file);
+    }, [formik.errors.file]);
 
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
@@ -405,14 +405,14 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <DocumentUploadWithPreview
-                        errors={documentErrors}
+                        errors={fileErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched('document', true);
-                                formik.setFieldValue('document', files);
+                                formik.setFieldTouched('file', true);
+                                formik.setFieldValue('file', files);
                             }
                         }}
-                        document={formik.values.document}
+                        document={formik.values.file}
                     />
                 </Box>
             </ConfirmCancelModal>

@@ -429,9 +429,7 @@ const createEditFormA = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -441,10 +439,10 @@ const createEditFormA = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -470,7 +468,7 @@ export const useSaveFormA = (): UseMutationResult<
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
         ],
@@ -488,9 +486,7 @@ const createEditDestruction = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -500,10 +496,10 @@ const createEditDestruction = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -524,7 +520,7 @@ export const useSaveDestruction = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
         ],
     });
 };
@@ -540,9 +536,7 @@ const createEditIncident = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -551,10 +545,10 @@ const createEditIncident = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -575,7 +569,7 @@ export const useSaveIncident = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
         ],

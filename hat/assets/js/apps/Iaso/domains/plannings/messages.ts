@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.startDateAfterEndDate',
         defaultMessage: "Start date can't after end date",
     },
+    publishedWithoutStartDate: {
+        id: 'iaso.error.label.publishedWithoutStartDate',
+        defaultMessage: 'Start date must be set when publishing',
+    },
     formSelectHelperText: {
         id: 'iaso.label.formSelectHelperText',
         defaultMessage: 'You must select a project before selecting a form',

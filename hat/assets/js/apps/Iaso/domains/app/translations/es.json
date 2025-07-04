@@ -233,6 +233,8 @@
     "iaso.error.label.planningAndForms": "La planificación y los formularios deben estar en el mismo proyecto",
     "iaso.error.label.planningAndOrgUnit": "La planificación y la unidad organizativa deben estar en el mismo proyecto",
     "iaso.error.label.planningAndTeams": "La planificación y los equipos deben estar en el mismo proyecto",
+    "iaso.error.label.publishedWithoutStartDate": "La fecha de inicio debe establecerse al publicar",
+
     "iaso.error.label.startDateAfterEndDate": "La fecha de inicio no puede ser posterior a la fecha de fin",
     "iaso.errors.label": "Ocurrió un error",
     "iaso.errors.noPermissions": "No hay permisos asociados a este usuario. Por favor contacte a un administrador para solicitar permiso(s). ¡Gracias!",

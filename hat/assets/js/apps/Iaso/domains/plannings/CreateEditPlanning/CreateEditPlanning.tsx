@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { Box, Grid } from '@mui/material';
 import {
@@ -8,14 +9,11 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
-
-import MESSAGES from '../messages';
 
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import DatesRange from '../../../components/filters/DatesRange';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
@@ -30,6 +28,7 @@ import {
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
 import { usePlanningValidation } from '../hooks/validation';
+import MESSAGES from '../messages';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -155,6 +154,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         isValid,
         handleSubmit,
         resetForm,
+        validateField,
     } = formik;
 
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
@@ -172,6 +172,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
+        // Reset validation from server to not block the user.
+        // If this is not called, even changing a field won't mark the form as valid.
+        validateField(keyValue);
     };
     // converting undefined to null for the API
     const onChangeDate = (keyValue, value) => {

@@ -5,7 +5,6 @@ import { findDescriptorInChildren } from '../../../../utils';
 import { formatLabel } from '../../../instances/utils';
 
 import MESSAGES from '../../../workflows/messages';
-import { PossibleFieldsForForm } from '../../hooks/useGetPossibleFields';
 import { FieldType, FormDescriptor, PossibleField } from '../../types/forms';
 
 import { Field, iasoFields } from '../constants';
@@ -160,34 +159,5 @@ export const useGetQueryBuildersFields = (
                 configFields,
             ),
         [formatMessage, formDescriptors, possibleFields, configFields],
-    );
-};
-
-export const useGetQueryBuilderFieldsForAllForms = (
-    formDescriptors?: FormDescriptor[],
-    allPossibleFields?: PossibleFieldsForForm[],
-): QueryBuilderFields => {
-    const { formatMessage } = useSafeIntl();
-    if (!allPossibleFields || !formDescriptors) return {};
-    const reducedFields: QueryBuilderFields = {};
-    return allPossibleFields.reduce(
-        (fields, { form_id, name, possibleFields }) => ({
-            ...fields,
-            [form_id]: {
-                label: name,
-                type: '!group',
-                mode: 'array',
-                conjunctions: ['AND', 'OR'],
-                operators: ['some', 'all', 'none'],
-                defaultOperator: 'some',
-                subfields: getQueryBuildersFields(
-                    formatMessage,
-                    formDescriptors,
-                    possibleFields,
-                    iasoFields,
-                ),
-            },
-        }),
-        reducedFields,
     );
 };

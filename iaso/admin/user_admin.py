@@ -66,6 +66,7 @@ class UserAdmin(AuthUserAdmin):
     list_display = ("id",) + AuthUserAdmin.list_display + ("is_account_user", "is_account_main_user", "accounts")
     list_filter = (IsMultiAccountUserFilter, IsMultiAccountMainUserFilter) + AuthUserAdmin.list_filter
     list_display_links = ("id", "username")
+    ordering = ("-id",)
 
     def get_queryset(self, request):
         is_main_user = TenantUser.objects.filter(main_user_id=OuterRef("pk"))

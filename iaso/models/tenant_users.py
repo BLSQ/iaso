@@ -23,7 +23,8 @@ class UsernameAlreadyExistsError(ValidationError):
 
 def get_unique_username(username: str, account_name: str) -> str:
     account_name_slug = account_name.lower().replace(" ", "_")
-    return f"{username}_{account_name_slug}"
+    max_length = User._meta.get_field("username").max_length
+    return f"{username}_{account_name_slug}"[0:max_length]
 
 
 class TenantUserManager(models.Manager):

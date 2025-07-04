@@ -19,6 +19,17 @@ class TenantUserModelTestCase(TestCase):
             account=cls.account,
         )
 
+    def test_get_unique_username(self):
+        username = "user"
+        account_name = "account foo"
+        unique_username = get_unique_username(username, account_name)
+        self.assertEqual(unique_username, "user_account_foo")
+
+        username = "x" * m.User._meta.get_field("username").max_length
+        account_name = "too_long"
+        unique_username = get_unique_username(username, account_name)
+        self.assertEqual(len(unique_username), 150)
+
     def test_create_user_or_tenant_user_with_no_preexisting_user(self):
         """
         No preexisting user.

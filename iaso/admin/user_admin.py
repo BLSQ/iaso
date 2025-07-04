@@ -85,7 +85,7 @@ class UserAdmin(AuthUserAdmin):
         ordering="annotated_is_account_user",
     )
     def is_account_user(self, obj):
-        return obj.annotated_is_account_user
+        return bool(obj.annotated_is_account_user)
 
     @admin.display(
         boolean=True,
@@ -93,7 +93,7 @@ class UserAdmin(AuthUserAdmin):
         ordering="annotated_is_account_main_user",
     )
     def is_account_main_user(self, obj):
-        return obj.annotated_is_account_main_user
+        return bool(obj.annotated_is_account_main_user)
 
     def accounts(self, user):
         if user.tenant_users.exists():  # Multi-account user

@@ -3,7 +3,7 @@ from django.contrib.auth.admin import UserAdmin as AuthUserAdmin
 from django.contrib.auth.models import User
 from django.contrib.gis import forms
 from django.db import transaction
-from django.db.models import F
+from django.db.models import Exists, F, OuterRef
 from django.db.models.lookups import Exact
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import path
@@ -68,13 +68,14 @@ class UserAdmin(AuthUserAdmin):
     list_display_links = ("id", "username")
 
     def get_queryset(self, request):
+        is_main_user = TenantUser.objects.filter(main_user_id=OuterRef("pk"))
         return (
             super()
             .get_queryset(request)
             .select_related("iaso_profile__account", "tenant_user")
             .prefetch_related("tenant_users")
             .annotate(annotated_is_account_user=Exact(F("id"), F("tenant_user__account_user_id")))
-            .annotate(annotated_is_account_main_user=Exact(F("id"), F("tenant_user__main_user_id")))
+            .annotate(annotated_is_account_main_user=Exists(is_main_user))
         )
 
     def is_account_user(self, obj):

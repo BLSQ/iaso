@@ -39,37 +39,38 @@ export const operatorButtons = [
         alwaysVisible: false,
     },
 ];
-export const parseInitialLogic = (logicInput: any, formsList: Form[]) => {
-    let parsedNot = false;
-    let logic = logicInput;
-    if (!logic)
-        return {
-            parsedNot,
-            mainOperator: 'and',
-            parsedFormStates: [],
-        };
-    if (typeof logic === 'string') {
-        try {
-            logic = JSON.parse(logic);
-        } catch {
-            return {
-                parsedNot,
-                mainOperator: 'and',
-                parsedFormStates: [],
-            };
-        }
+export const parseInitialLogic = (
+    logicInput: Record<string, any>,
+    formsList: Form[],
+) => {
+    const fallback = {
+        parsedNot: false,
+        mainOperator: 'and',
+        parsedFormStates: [],
+    };
+
+    if (!logicInput) return fallback;
+
+    let logic: any;
+    try {
+        logic =
+            typeof logicInput === 'string'
+                ? JSON.parse(logicInput)
+                : logicInput;
+    } catch {
+        return fallback;
     }
-    if (logic['!']) {
-        parsedNot = true;
-        logic = logic['!'];
-    }
+
+    const parsedNot = Boolean(logic['!']);
+    const logicToUse = logic['!'] || logic;
+
     let mainOperator: LogicOperator = 'and';
     let formLogics: any[] = [];
-    if (logic.and || logic.or) {
-        mainOperator = logic.and ? 'and' : 'or';
-        formLogics = logic[mainOperator];
-    } else if (logic.some || logic.all || logic.none) {
-        formLogics = [logic];
+    if (logicToUse.and || logicToUse.or) {
+        mainOperator = logicToUse.and ? 'and' : 'or';
+        formLogics = logicToUse[mainOperator];
+    } else if (logicToUse.some || logicToUse.all || logicToUse.none) {
+        formLogics = [logicToUse];
     } else {
         return { parsedNot, mainOperator, parsedFormStates: [] };
     }

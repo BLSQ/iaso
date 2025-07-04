@@ -1,9 +1,9 @@
 import React, {
     FunctionComponent,
     ReactNode,
-    useMemo,
     Dispatch,
     SetStateAction,
+    useCallback,
 } from 'react';
 import { Box, useTheme, Button, Paper, ButtonGroup } from '@mui/material';
 import { JsonLogicTree } from '@react-awesome-query-builder/mui';
@@ -51,13 +51,13 @@ type Props = {
     allFields: QueryBuilderFields;
 };
 
-const getStyles = () => ({
+const styles = {
     buttonGroup: {
         marginBottom: '20px',
     },
-});
+};
 
-const DialogBuilder: FunctionComponent<Props> = ({
+const BuilderDialog: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
     InfoPopper,
@@ -78,9 +78,8 @@ const DialogBuilder: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
-    const styles = useMemo(() => getStyles(), []);
 
-    const handleConfirm = () => {
+    const handleConfirm = useCallback(() => {
         const formLogics = formStates
             .filter(fs => fs.form.form_id)
             .map(fs => ({
@@ -99,14 +98,14 @@ const DialogBuilder: FunctionComponent<Props> = ({
             };
         }
 
-        let finalLogic = combinedLogic;
-        if (not && Object.keys(combinedLogic).length > 0) {
-            finalLogic = { '!': combinedLogic };
-        }
+        const finalLogic =
+            not && Object.keys(combinedLogic).length > 0
+                ? { '!': combinedLogic }
+                : combinedLogic;
         setAllFields(getAllFields(formStates));
         onChange(finalLogic);
         closeDialog();
-    };
+    }, [formStates, not, setAllFields, onChange, closeDialog, activeOperator]);
 
     return (
         <ConfirmCancelModal
@@ -193,8 +192,12 @@ const DialogBuilder: FunctionComponent<Props> = ({
                             form_id={formState.form.form_id}
                             fields={
                                 formState.form.form_id
-                                    ? (allFields[formState.form.form_id] as any)
-                                          ?.subfields
+                                    ? ((
+                                          allFields[
+                                              formState.form.form_id
+                                          ] as unknown as QueryBuilderFields
+                                      )
+                                          ?.subfields as unknown as QueryBuilderFields)
                                     : undefined
                             }
                             logic={formState.logic}
@@ -225,6 +228,6 @@ const DialogBuilder: FunctionComponent<Props> = ({
         </ConfirmCancelModal>
     );
 };
-const modalWithButton = makeFullModal(DialogBuilder, TriggerModal);
+const modalWithButton = makeFullModal(BuilderDialog, TriggerModal);
 
-export { modalWithButton as DialogBuilder };
+export { modalWithButton as BuilderDialog };

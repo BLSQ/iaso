@@ -1360,6 +1360,7 @@
     "iaso.snackBar.fetchPeriodsError": "Une erreur est survenue en récupérant la liste des périodes",
     "iaso.snackBar.fetchPermissions": "Une erreur est survenue en récupérant la liste des permissions",
     "iaso.snackBar.fetchPlanningsError": "Une erreur est survenue en récupérant la liste des plannings",
+    "iaso.snackBar.fetchPossibleFieldsError": "Une erreur est survenue lors de la récupération des champs possibles",
     "iaso.snackBar.fetchProfilesError": "Une erreur est survenue en récupérant la liste des profiles",
     "iaso.snackBar.fetchProjectsError": "Une erreur est survenue en récupérant la liste des projects",
     "iaso.snackBar.fetchSourcesError": "Une erreur est survenue en récupérant la liste des sources",

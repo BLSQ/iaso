@@ -19,7 +19,7 @@ import { useGetQueryBuilderListToReplace } from '../../../forms/fields/hooks/use
 import { parseJson } from '../../../instances/utils/jsonLogicParse';
 import { useGetForms } from '../../entityTypes/hooks/requests/forms';
 import MESSAGES from '../../messages';
-import { DialogBuilder } from './DialogBuilder';
+import { BuilderDialog } from './BuilderDialog';
 import {
     parseInitialLogic,
     getAllFields,
@@ -29,7 +29,7 @@ import {
 } from './utils';
 
 type Props = {
-    fieldsSearchJson: string;
+    fieldsSearchJson: Record<string, any>;
     handleChange: (key: string, value?: string) => void;
 };
 
@@ -43,7 +43,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     const [activeOperator, setActiveOperator] = useState<'and' | 'or' | null>(
         'and',
     );
-    const [formStates, setFormStates] = useState<FormState[] | undefined>();
+    const [formStates, setFormStates] = useState<FormState[]>([]);
     const { descriptorsMap, isFetching: isFetchingDescriptors } =
         useDynamicFormDescriptors(formStates || []);
     const { possibleFieldsMap, isFetching: isFetchingPossibleFields } =
@@ -55,7 +55,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         isFetchingPossibleFields ||
         formStates?.length !== Object.keys(allFields).length;
     useEffect(() => {
-        if (fieldsSearchJson && formsList && !formStates) {
+        if (fieldsSearchJson && formsList && formStates.length === 0) {
             const { parsedNot, mainOperator, parsedFormStates } =
                 parseInitialLogic(fieldsSearchJson, formsList);
             setNot(parsedNot);
@@ -81,22 +81,18 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         setNot(prev => !prev);
     }, []);
 
-    const updateFormState = useCallback(
-        (index: number, field: string, value: any) => {
-            setFormStates(prev => {
-                const updated = [...(prev || [])];
-                updated[index] = { ...updated[index], [field]: value };
-                return updated;
-            });
-        },
-        [],
-    );
+    const updateFormState = (index: number, field: string, value: any) => {
+        setFormStates(prev => {
+            const updated = [...(prev || [])];
+            updated[index] = { ...updated[index], [field]: value };
+            return updated;
+        });
+    };
     const { formatMessage } = useSafeIntl();
 
     // Memoize the field generation to prevent infinite loops
     const generatedFields = useMemo(() => {
-        if (!formStates || formStates.length === 0) return {};
-
+        if (!formStates || formStates?.length === 0) return {};
         const newAllFields: QueryBuilderFields = {};
 
         formStates.forEach(formState => {
@@ -131,15 +127,10 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     }, [formStates, descriptorsMap, possibleFieldsMap, formatMessage]);
 
     useEffect(() => {
-        setAllFields(prevFields => {
-            if (
-                JSON.stringify(prevFields) !== JSON.stringify(generatedFields)
-            ) {
-                return generatedFields;
-            }
-            return prevFields;
-        });
-    }, [generatedFields]);
+        if (JSON.stringify(allFields) !== JSON.stringify(generatedFields)) {
+            setAllFields(generatedFields);
+        }
+    }, [generatedFields, allFields]);
 
     const handleChangeForm = useCallback(
         (newFormId: string, index: number) => {
@@ -171,9 +162,9 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
         });
     }, []);
 
-    const handleAddForm = useCallback(() => {
+    const handleAddForm = () => {
         setFormStates(prev => [...(prev || []), defaultFormState]);
-    }, []);
+    };
 
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
@@ -182,21 +173,24 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     );
 
     const handleReset = useCallback(() => {
-        setFormStates(undefined);
+        setFormStates([]);
         setAllFields({});
         setNot(false);
         setActiveOperator(null);
         handleChange('fieldsSearch', undefined);
     }, [handleChange]);
 
-    const handleChangeQueryBuilder = value => {
-        if (value) {
-            const parsedValue = parseJson({ value, fields: allFields });
-            handleChange('fieldsSearch', JSON.stringify(parsedValue));
-        } else {
-            handleReset();
-        }
-    };
+    const handleChangeQueryBuilder = useCallback(
+        value => {
+            if (value) {
+                const parsedValue = parseJson({ value, fields: allFields });
+                handleChange('fieldsSearch', JSON.stringify(parsedValue));
+            } else {
+                handleReset();
+            }
+        },
+        [allFields, handleChange, handleReset],
+    );
     const value = useMemo(() => {
         if (fieldsSearchJson && !isFetching) {
             return getHumanReadableJsonLogic(fieldsSearchJson) as string;
@@ -205,7 +199,7 @@ export const EntitiesQueryBuilder: FunctionComponent<Props> = ({
     }, [fieldsSearchJson, getHumanReadableJsonLogic, isFetching]);
     if (!formsList) return null;
     return (
-        <DialogBuilder
+        <BuilderDialog
             onChange={handleChangeQueryBuilder}
             setAllFields={setAllFields}
             iconProps={{

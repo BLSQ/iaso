@@ -7,6 +7,7 @@ import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
 import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
+import MESSAGES from '../messages';
 import { Form, PossibleField } from '../types/forms';
 
 type Result = {
@@ -54,7 +55,15 @@ export const useGetPossibleFields = (
     return usePossibleFields(isFetchingForm, currentForm);
 };
 
-export const useDynamicPossibleFields = (formStates: FormState[]) => {
+type DynamicPossibleFieldsResult = {
+    possibleFieldsMap: Map<number, PossibleField[]>;
+    isFetching: boolean;
+    isError: boolean;
+};
+
+export const useDynamicPossibleFields = (
+    formStates: FormState[],
+): DynamicPossibleFieldsResult => {
     // Extract unique form IDs that need possible fields
     const formIds = useMemo(() => {
         const uniqueIds = new Set<number>();
@@ -72,7 +81,7 @@ export const useDynamicPossibleFields = (formStates: FormState[]) => {
             queryKey: ['form', formId, 'possible_fields'],
             queryFn: () =>
                 getRequest(`/api/forms/${formId}/?fields=possible_fields`),
-            snackErrorMsg: 'Error fetching possible fields',
+            snackErrorMsg: MESSAGES.fetchPossibleFieldsError,
             options: {
                 enabled: Boolean(formId),
                 select: (data: any) => {
@@ -91,23 +100,33 @@ export const useDynamicPossibleFields = (formStates: FormState[]) => {
     }, [formIds]);
 
     // Use useSnackQueries for batch execution
-    const results = useSnackQueries(queries as any);
+    const results = useSnackQueries<PossibleField[]>(queries as any);
 
     // Transform results into a map for easy access
     const possibleFieldsMap = useMemo(() => {
         const map = new Map<number, PossibleField[]>();
         results.forEach((result, index) => {
             if (result.data && formIds[index]) {
-                map.set(formIds[index], result.data as PossibleField[]);
+                map.set(
+                    formIds[index],
+                    result.data as unknown as PossibleField[],
+                );
             }
         });
         return map;
     }, [results, formIds]);
 
+    const loadingStates = useMemo(
+        () => ({
+            isFetching: results.some(result => result.isFetching),
+            isError: results.some(result => result.isError),
+        }),
+        [results],
+    );
+
     return {
         possibleFieldsMap,
-        isFetching: results.some(result => result.isFetching),
-        isError: results.some(result => result.isError),
+        ...loadingStates,
     };
 };
 export const useAllPossibleFields = (

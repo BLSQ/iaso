@@ -1360,6 +1360,7 @@
     "iaso.snackBar.fetchPeriodsError": "An error occurred while fetching periods list",
     "iaso.snackBar.fetchPermissions": "An error occurred while fetching permissions list",
     "iaso.snackBar.fetchPlanningsError": "An error occurred while fetching plannings list",
+    "iaso.snackBar.fetchPossibleFieldsError": "An error occurred while fetching possible fields",
     "iaso.snackBar.fetchProfilesError": "An error occurred while fetching profiles list",
     "iaso.snackBar.fetchProjectsError": "An error occurred while fetching projects list",
     "iaso.snackBar.fetchSourcesError": "An error occurred while fetching sources list",

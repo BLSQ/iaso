@@ -20,11 +20,14 @@ import { useGetInstancesFiles, useGetInstancesFilesCount } from '../requests';
 import { Instance } from '../types/instance';
 import InstancePopover from './InstancePopoverComponent';
 
-const ExtraInfoComponent = ({
-    instanceDetail,
-}: {
+interface ExtraInfoComponentProps {
     instanceDetail?: Instance;
+}
+
+const ExtraInfoComponent: React.FC<ExtraInfoComponentProps> = ({
+    instanceDetail,
 }) => <InstancePopover instanceDetail={instanceDetail} />;
+
 const minTabHeight = 'calc(100vh - 500px)';
 
 const styles: SxStyles = {
@@ -61,14 +64,15 @@ const TYPES_MAP: Record<
 };
 
 const DEFAULT_FILES_PER_PAGES = 100;
-type Props = {
+
+interface PaginatedInstancesFilesListProps {
     params: Record<string, string>;
     updateParams: (params: Record<string, string | undefined>) => void;
-};
-export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
-    params,
-    updateParams,
-}) => {
+}
+
+export const PaginatedInstancesFilesList: FunctionComponent<
+    PaginatedInstancesFilesListProps
+> = ({ params, updateParams }) => {
     const { formatMessage } = useSafeIntl();
 
     const rowsPerPage = params?.fileRowsPerPage
@@ -77,7 +81,9 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
     const page = params?.filePage ? parseInt(params.filePage, 10) : 0;
 
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
-    const [tab, setTab] = useState('images');
+    const [tab, setTab] = useState<'images' | 'videos' | 'docs' | 'others'>(
+        'images',
+    );
     const [currentInstanceId, setCurrentInstanceId] = useState<
         number | undefined
     >();
@@ -89,13 +95,17 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
     const { data: currentInstance } = useGetInstance(currentInstanceId);
 
     const handleChangePage = useCallback(
-        (_event, newPage) => {
-            updateParams({ ...params, filePage: newPage });
+        (
+            _event: React.MouseEvent<HTMLButtonElement> | null,
+            newPage: number,
+        ) => {
+            updateParams({ ...params, filePage: newPage.toString() });
         },
         [params, updateParams],
     );
+
     const handleChangeRowsPerPage = useCallback(
-        event => {
+        (event: React.ChangeEvent<HTMLInputElement>) => {
             const newRowsPerPage = event.target.value;
             updateParams({
                 ...params,
@@ -105,26 +115,29 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
         },
         [params, updateParams],
     );
+
     const { data: files, isFetching: loadingFiles } = useGetInstancesFiles(
         params,
         rowsPerPage,
         page,
         TYPES_MAP[tab],
     );
+
     const diplayedFiles = useMemo(() => {
         if (loadingFiles) {
             return [];
         }
-        return files?.results;
+        return files?.results || [];
     }, [loadingFiles, files]);
 
     const handleChangeTab = useCallback(
-        (newTab: string) => {
+        (newTab: 'images' | 'videos' | 'docs' | 'others') => {
             updateParams({ ...params, filePage: '0' });
             setTab(newTab);
         },
         [params, updateParams],
     );
+
     const handleSetCurrentIndex = useCallback(
         (fileIndex?: number) => {
             if (fileIndex !== undefined) {
@@ -135,8 +148,9 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
             }
             setCurrentImageIndex(fileIndex);
         },
-        [setCurrentImageIndex, setCurrentInstanceId, diplayedFiles],
+        [diplayedFiles],
     );
+
     const handleOpenLightbox = useCallback(
         (index: number) => {
             handleSetCurrentIndex(index);
@@ -144,10 +158,11 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
         },
         [handleSetCurrentIndex],
     );
+
     const handleCloseLightbox = useCallback(() => {
         handleSetCurrentIndex();
         setViewerIsOpen(false);
-    }, [setViewerIsOpen, handleSetCurrentIndex]);
+    }, [handleSetCurrentIndex]);
 
     return (
         <Box sx={styles.root}>
@@ -155,7 +170,7 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
                 variant="fullWidth"
                 indicatorColor="primary"
                 value={tab}
-                onChange={(_, newTab) => handleChangeTab(newTab)}
+                onChange={(_event, newTab) => handleChangeTab(newTab)}
             >
                 {Object.keys(TYPES_MAP).map(type => (
                     <Tab
@@ -167,8 +182,8 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
                         }}
                         value={type}
                         label={`${formatMessage(
-                            MESSAGES[type],
-                        )} (${instancesFilesCount?.[type] || 0})`}
+                            MESSAGES[type as keyof typeof MESSAGES],
+                        )} (${instancesFilesCount?.[type as keyof typeof instancesFilesCount] || 0})`}
                     />
                 ))}
             </Tabs>
@@ -223,7 +238,7 @@ export const PaginatedInstancesFilesList: FunctionComponent<Props> = ({
                                     closeLightbox={handleCloseLightbox}
                                     setCurrentIndex={handleSetCurrentIndex}
                                     currentIndex={currentImageIndex || 0}
-                                    url={`/forms/submission/instanceId/${diplayedFiles[0].itemId}`}
+                                    url={`/forms/submission/instanceId/${diplayedFiles[0]?.itemId}`}
                                     urlLabel={MESSAGES.formSubmissionLinkLabel}
                                     getExtraInfos={() =>
                                         ExtraInfoComponent({

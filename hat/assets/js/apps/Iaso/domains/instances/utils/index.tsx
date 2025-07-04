@@ -619,7 +619,7 @@ const asBackendStatus = status => {
 };
 
 export const getFilters = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
 ): Record<string, string> => {
     const allFilters = {
         withLocation: params.withLocation,
@@ -685,7 +685,7 @@ export const getExportUrl = (
 };
 
 export const getEndpointUrl = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
     toExport: boolean,
     exportType = 'csv',
     asSmallDict = false,

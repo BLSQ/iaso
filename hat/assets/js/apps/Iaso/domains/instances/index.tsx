@@ -10,21 +10,21 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import snackMessages from '../../components/snackBars/messages';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { baseUrls } from '../../constants/urls.ts';
-import { useSnackQuery } from '../../libs/apiHooks.ts';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import * as Permission from '../../utils/permissions.ts';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
+import { useSnackQuery } from '../../libs/apiHooks';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import * as Permission from '../../utils/permissions';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 import { createInstance } from './actions';
-import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
+import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import { PaginatedInstancesFilesList } from './components/PaginatedInstancesFilesList.tsx';
-import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
+import { InstancesMap } from './components/InstancesMap/InstancesMap';
+import { PaginatedInstancesFilesList } from './components/PaginatedInstancesFilesList';
+import { InstancesTopBar as TopBar } from './components/TopBar';
 import MESSAGES from './messages';
 import {
     fetchFormDetailsForInstance,
@@ -36,7 +36,7 @@ import {
     getExportUrl,
     useGetFilters,
     useSelectionActions,
-} from './utils/index.tsx';
+} from './utils/index';
 
 const baseUrl = baseUrls.instances;
 
@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 
 const Instances = () => {
     const params = useParamsObject(baseUrl);
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const queryClient = useQueryClient();
     const redirectToReplace = useRedirectToReplace();
@@ -62,8 +62,8 @@ const Instances = () => {
     const [formIds, setFormIds] = useState(params.formIds?.split(','));
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
     const showTable = tab === 'list' && tableColumns.length > 0;
-    const { possibleFields, isLoading: isLoadingPossibleFields } =
-        useGetPossibleFields(formId);
+    const { possibleFields, isFetchingForm: isLoadingPossibleFields } =
+        useGetPossibleFields(formId ? parseInt(formId, 10) : undefined);
     const fieldsSearchApi = useMemo(() => {
         let newFieldsSearch = params.fieldsSearch;
 
@@ -89,7 +89,7 @@ const Instances = () => {
         () =>
             fetchInstancesAsSmallDict(
                 `${getEndpointUrl(apiParams, false, '', true)}&limit=${
-                    apiParams.mapResults || 3000
+                    params.mapResults || 3000
                 }`,
             ),
         snackMessages.fetchInstanceLocationError,
@@ -101,7 +101,7 @@ const Instances = () => {
     );
     const { data, isFetching: fetchingList } = useSnackQuery({
         queryKey: ['instances', apiParams, showTable],
-        queryFn: () => fetchInstancesAsDict(getEndpointUrl(apiParams)),
+        queryFn: () => fetchInstancesAsDict(getEndpointUrl(apiParams, false)),
         snackErrorMsg: snackMessages.fetchInstanceDictError,
         options: {
             keepPreviousData: true,
@@ -184,6 +184,7 @@ const Instances = () => {
                                     mb={2}
                                 >
                                     <CreateReAssignDialog
+                                        iconProps={{}}
                                         titleMessage={
                                             MESSAGES.instanceCreationDialogTitle
                                         }
@@ -196,11 +197,9 @@ const Instances = () => {
                                         }}
                                         orgUnitTypes={orgUnitTypes}
                                         onCreateOrReAssign={(
-                                            currentForm,
+                                            _currentForm,
                                             payload,
-                                        ) =>
-                                            createInstance(currentForm, payload)
-                                        }
+                                        ) => createInstance(payload)}
                                     />
                                 </Box>
                             </DisplayIfUserHasPerm>

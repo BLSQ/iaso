@@ -3,6 +3,15 @@ export type FeatureFlag = {
     code: string;
     description: string;
     name: string;
-    created_at: number;
-    updated_at: number;
+    configuration_schema: Record<string, any>;
+    created_at?: number;
+    updated_at?: number;
+};
+
+export type ProjectFeatureFlag = {
+    id: number | string;
+    code: string;
+    description: string;
+    name: string;
+    configuration?: Record<string, any>;
 };

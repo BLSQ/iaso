@@ -79,19 +79,21 @@ class UserAdmin(AuthUserAdmin):
             .annotate(annotated_is_account_main_user=Exists(is_main_user))
         )
 
+    @admin.display(
+        boolean=True,
+        description="multi-account user",
+        ordering="annotated_is_account_user",
+    )
     def is_account_user(self, obj):
         return obj.annotated_is_account_user
 
-    is_account_user.boolean = True
-    is_account_user.short_description = "multi-account user"
-    is_account_user.admin_order_field = "annotated_is_account_user"
-
+    @admin.display(
+        boolean=True,
+        description="multi-account main user",
+        ordering="annotated_is_account_main_user",
+    )
     def is_account_main_user(self, obj):
         return obj.annotated_is_account_main_user
-
-    is_account_main_user.boolean = True
-    is_account_main_user.short_description = "multi-account main user"
-    is_account_main_user.admin_order_field = "annotated_is_account_main_user"
 
     def accounts(self, user):
         if user.tenant_users.exists():  # Multi-account user

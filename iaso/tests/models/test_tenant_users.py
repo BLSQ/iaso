@@ -61,18 +61,20 @@ class TenantUserModelTestCase(TestCase):
         The user already exists and has multiple accounts: add an account.
         """
         main_user = m.User.objects.create(username=self.user_creation_data.username, email="john@doe.com")
+        main_user.set_password("p4ssword")
+        main_user.save()
 
-        other_account_1 = m.Account.objects.create(name="Other Account 1")
-        other_account_user_1 = self.create_user_with_profile(
-            username="john_doe_other_account_1", email="john@doe.com", account=other_account_1
+        account_1 = m.Account.objects.create(name="Account 1")
+        account_user_1 = self.create_user_with_profile(
+            username="john_doe_account_1", email="john@doe.com", account=account_1
         )
-        m.TenantUser.objects.create(main_user=main_user, account_user=other_account_user_1)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_1)
 
-        other_account_2 = m.Account.objects.create(name="Other Account 2")
-        other_account_user_2 = self.create_user_with_profile(
-            username="john_doe_other_account_2", email="john@doe.com", account=other_account_2
+        account_2 = m.Account.objects.create(name="Account 2")
+        account_user_2 = self.create_user_with_profile(
+            username="john_doe_account_2", email="john@doe.com", account=account_2
         )
-        m.TenantUser.objects.create(main_user=main_user, account_user=other_account_user_2)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_2)
 
         self.assertEqual(m.User.objects.count(), 3)
         self.assertEqual(m.TenantUser.objects.count(), 2)
@@ -81,16 +83,31 @@ class TenantUserModelTestCase(TestCase):
 
         # Users.
         self.assertEqual(m.User.objects.count(), 4)
-        new_user = m.User.objects.get(
+        main_user = m.User.objects.get(username="john_doe")
+        account_user_1 = m.User.objects.get(
+            username=get_unique_username(self.user_creation_data.username, account_1.name)
+        )
+        account_user_2 = m.User.objects.get(
+            username=get_unique_username(self.user_creation_data.username, account_2.name)
+        )
+        account_user_3 = new_user = m.User.objects.get(
             username=get_unique_username(self.user_creation_data.username, self.user_creation_data.account.name)
         )
+
         self.assertEqual(new_user.email, self.user_creation_data.email)
         self.assertEqual(new_user.first_name, self.user_creation_data.first_name)
         self.assertEqual(new_user.last_name, self.user_creation_data.last_name)
 
+        self.assertEqual(main_user.check_password("p4ssword"), True)
+        self.assertFalse(new_user.has_usable_password())
+
         # Tenant Users.
         self.assertEqual(m.TenantUser.objects.count(), 3)
-        self.assertEqual(main_user.tenant_users.count(), 3)
+        self.assertCountEqual(
+            main_user.tenant_users.values_list("account_user", flat=True),
+            [account_user_1.pk, account_user_2.pk, account_user_3.pk],
+        )
+
         self.assertEqual(new_user.tenant_user.main_user, main_user)
 
         # Iaso Profiles.
@@ -98,12 +115,14 @@ class TenantUserModelTestCase(TestCase):
 
     def test_create_user_or_tenant_user_for_preexisting_user_without_multiple_account(self):
         """
-        The user already exists and doesn't have multiple accounts.
+        The user already a single account: we switch him into multiple accounts mode.
         """
         other_account = m.Account.objects.create(name="Other Account")
         other_account_user = self.create_user_with_profile(
             username=self.user_creation_data.username, email="john@doe.com", account=other_account
         )
+        other_account_user.set_password("p4ssword")
+        other_account_user.save()
 
         self.assertEqual(m.User.objects.count(), 1)
         self.assertEqual(m.TenantUser.objects.count(), 0)
@@ -112,44 +131,59 @@ class TenantUserModelTestCase(TestCase):
 
         # Users.
         self.assertEqual(m.User.objects.count(), 3)
-        new_user = m.User.objects.get(
+        main_user = m.User.objects.get(username="john_doe")
+        account_user_1 = m.User.objects.get(
+            username=get_unique_username(self.user_creation_data.username, other_account.name)
+        )
+        account_user_2 = new_user = m.User.objects.get(
             username=get_unique_username(self.user_creation_data.username, self.user_creation_data.account.name)
         )
+
         self.assertEqual(new_user.email, self.user_creation_data.email)
         self.assertEqual(new_user.first_name, self.user_creation_data.first_name)
         self.assertEqual(new_user.last_name, self.user_creation_data.last_name)
 
+        self.assertEqual(main_user.check_password("p4ssword"), True)
+        self.assertFalse(account_user_1.has_usable_password())
+        self.assertFalse(account_user_2.has_usable_password())
+
         # Tenant Users.
         self.assertEqual(m.TenantUser.objects.count(), 2)
-        tenant_user_1 = m.TenantUser.objects.get(account_user=other_account_user)
-        tenant_user_2 = m.TenantUser.objects.get(account_user=new_user)
-        self.assertEqual(tenant_user_1.main_user, tenant_user_2.main_user)
+        self.assertCountEqual(
+            main_user.tenant_users.values_list("account_user", flat=True), [account_user_1.pk, account_user_2.pk]
+        )
 
         # Iaso Profiles.
-        self.assertFalse(hasattr(new_user, "iaso_profile"))
-        self.assertFalse(hasattr(tenant_user_1.main_user, "iaso_profile"))
+        self.assertFalse(hasattr(main_user, "iaso_profile"))
+        self.assertTrue(hasattr(account_user_1, "iaso_profile"))
 
     def test_create_user_or_tenant_user_for_preexisting_user_without_profile(self):
         """
         The user already exists and doesn't have a profile.
         """
         user = m.User.objects.create(username=self.user_creation_data.username, email="john@doe.com")
+        user.set_password("p4ssword")
+        user.save()
 
         m.TenantUser.objects.create_user_or_tenant_user(data=self.user_creation_data)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 2)
-        new_user = m.User.objects.get(
+        main_user = m.User.objects.get(id=user.pk)
+        account_user = m.User.objects.get(
             username=get_unique_username(self.user_creation_data.username, self.user_creation_data.account.name)
         )
-        self.assertEqual(new_user.email, self.user_creation_data.email)
-        self.assertEqual(new_user.first_name, self.user_creation_data.first_name)
-        self.assertEqual(new_user.last_name, self.user_creation_data.last_name)
+
+        self.assertEqual(account_user.email, self.user_creation_data.email)
+        self.assertEqual(account_user.first_name, self.user_creation_data.first_name)
+        self.assertEqual(account_user.last_name, self.user_creation_data.last_name)
+
+        self.assertEqual(main_user.check_password("p4ssword"), True)
+        self.assertFalse(account_user.has_usable_password())
 
         # Tenant Users.
         self.assertEqual(m.TenantUser.objects.count(), 1)
-        self.assertEqual(user.tenant_users.count(), 1)
-        self.assertEqual(new_user.tenant_user.main_user, user)
+        self.assertCountEqual(main_user.tenant_users.values_list("account_user", flat=True), [account_user.pk])
 
         # Iaso Profiles.
-        self.assertFalse(hasattr(new_user, "iaso_profile"))
+        self.assertFalse(hasattr(main_user, "iaso_profile"))

@@ -1,3 +1,5 @@
+import copy
+
 from dataclasses import dataclass
 
 from django.contrib.auth.models import User
@@ -50,31 +52,37 @@ class TenantUserManager(models.Manager):
         if existing_tenant_user:
             main_user = existing_tenant_user.main_user
 
-        # 3) The user doesn't have multiple accounts.
+        # 3) The user has a single account: switch him into multiple accounts mode.
         elif hasattr(existing_user, "iaso_profile"):
-            existing_account = existing_user.iaso_profile.account
-            new_username = get_unique_username(data.username, existing_account.name)
-            existing_user.username = new_username
+            password = copy.copy(existing_user.password)
+
+            existing_user.username = get_unique_username(data.username, existing_user.iaso_profile.account.name)
+            existing_user.set_unusable_password()
             existing_user.save()
+
             main_user = User.objects.create(
                 username=data.username,
                 email=existing_user.email,
                 first_name=existing_user.first_name,
                 last_name=existing_user.last_name,
+                password=password,
             )
+
             self.create(main_user=main_user, account_user=existing_user)
 
         # 4) The user has no profile. This can happen, e.g., for a superuser.
         else:
             main_user = existing_user
 
-        new_username = get_unique_username(data.username, data.account.name)
-        user = User.objects.create(
-            username=new_username,
+        user = User(
+            username=get_unique_username(data.username, data.account.name),
             email=data.email,
             first_name=data.first_name,
             last_name=data.last_name,
         )
+        user.set_unusable_password()
+        user.save()
+
         self.create(main_user=main_user, account_user=user)
 
         return user

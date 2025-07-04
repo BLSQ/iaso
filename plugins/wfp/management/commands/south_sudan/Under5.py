@@ -9,6 +9,17 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = [
+    "Anthropometric visit child",
+    "Anthropometric visit child_2",
+]
+ANTHROPOMETRIC_FOLLOWUP_FORMS = [
+    "child_antropometric_followUp_tsfp",
+    "child_antropometric_followUp_otp",
+    "child_antropometric_followUp_tsfp_2",
+    "child_antropometric_followUp_otp_2",
+]
+
 
 class Under5:
     def group_visit_by_entity(self, entities):
@@ -61,15 +72,20 @@ class Under5:
                     current_date = visit.get(
                         "source_created_at",
                         visit.get(
-                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
+                            "_visit_date",
+                            visit.get(
+                                "visit_date",
+                                visit.get("_new_discharged_today", current_date),
+                            ),
                         ),
                     )
 
-                    if form_id == "Anthropometric visit child":
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
-                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                            "source_created_at",
+                            visit.get("_visit_date", visit.get("visit_date", current_date)),
                         )
                         initial_date = visit_date
 
@@ -87,7 +103,8 @@ class Under5:
                     current_record["duration"] = duration
 
                     visit_date = visit.get(
-                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", current_date)),
                     )
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
@@ -112,14 +129,10 @@ class Under5:
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}
-        anthropometric_visit_forms = [
-            "child_antropometric_followUp_tsfp",
-            "child_antropometric_followUp_otp",
-        ]
         visit_nutrition_program = [visit for visit in visits if visit["form_id"] in admission_form]
         if len(visit_nutrition_program) > 0:
             current_journey["nutrition_programme"] = ETL().program_mapper(visit_nutrition_program[0])
-        journey = ETL().entity_journey_mapper(visits, anthropometric_visit_forms, admission_form, current_journey)
+        journey = ETL().entity_journey_mapper(visits, ANTHROPOMETRIC_FOLLOWUP_FORMS, admission_form, current_journey)
         return journey
 
     def save_journey(self, beneficiary, record):
@@ -154,7 +167,10 @@ class Under5:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], ["Anthropometric visit child"])
+            instance["journey"] = self.journeyMapper(
+                instance["visits"],
+                ADMISSION_ANTHROPOMETRIC_FORMS,
+            )
             beneficiary = Beneficiary()
             if (
                 instance["entity_id"] not in existing_beneficiaries

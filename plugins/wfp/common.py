@@ -263,9 +263,11 @@ class ETL:
         if visit["form_id"] in [
             "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
+            "child_assistance_follow_up_2",
             "assistance_admission_otp",
             "assistance_admission_2nd_visit_otp",
             "child_assistance_admission",
+            "child_assistance_admission_2",
             "ethiopia_child_assistance_follow_up",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",

@@ -392,6 +392,9 @@ class FormsViewSet(ModelViewSet):
 
         queryset = queryset.order_by(*order)
 
+        # Ensure duplicates are removed after all joins and annotations
+        queryset = queryset.distinct()
+
         return queryset
 
     def list(self, request: Request, *args, **kwargs):

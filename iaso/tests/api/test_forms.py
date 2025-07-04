@@ -776,3 +776,18 @@ class FormsAPITestCase(APITestCase):
 
         for form_data in response.json()["forms"]:
             self.assertIn("instances_count", form_data)
+
+    def test_forms_list_no_duplicates_when_linked_to_multiple_projects(self):
+        """
+        Ensure that a form linked to multiple projects appears only once in the forms list API response.
+        """
+        self.client.force_authenticate(self.yoda)
+        # Link form_1 to both project_1 and project_2
+        self.project_2.forms.add(self.form_1)
+        self.project_2.save()
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        form_ids = [form["id"] for form in response.json()["forms"]]
+        # Assert that each form id appears only once
+        self.assertEqual(len(form_ids), len(set(form_ids)), "Duplicate forms found in API response!")

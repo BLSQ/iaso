@@ -89,6 +89,22 @@ class TenantUserManager(models.Manager):
 
 
 class TenantUser(models.Model):
+    """
+    Multi tenant (or multiple accounts).
+
+    `main_user` is the user who logs in with `username/password` (or with `email` with the WFP CIAM OAuth protocol).
+
+    There can be a bunch of `account_user` for a given `main_user`.
+
+    When `main_user` logs in, an "under the hood" login is performed so that
+    `main_user` is switched to one of its `account_user`.
+
+    Ideally:
+
+    - `main_user` shouldn't have any profile
+    - `account_user` should have an unusable password to avoid a "direct" login
+    """
+
     main_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tenant_users")
     account_user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="tenant_user")
     created_at = models.DateTimeField(auto_now_add=True)

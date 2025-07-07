@@ -19,7 +19,7 @@ The frontend is getting the list of existing permission from the
 
 from importlib import import_module
 
-from django.conf import LazySettings
+from django.conf import LazySettings, settings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _

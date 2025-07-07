@@ -2639,6 +2639,3 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
         return results
-
-
-from plugins.polio.permissions import PolioPermissionSupport

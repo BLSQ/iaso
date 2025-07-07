@@ -24,10 +24,15 @@ def migrate_permissions(apps, schema_editor):
         "iaso_polio_notifications": "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_admin": "iaso_polio_vaccine_authorizations_admin",
         "iaso_polio_vaccine_authorizations_read_only": "iaso_polio_vaccine_authorizations_read_only",
-        "iaso_polio_vaccine_supply_chain_read": "iaso_polio_vaccine_supply_chain_read",
-        "iaso_polio_vaccine_supply_chain_write": "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_vaccine_stock_earmarks_admin": "iaso_polio_vaccine_stock_earmarks_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin": "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_read_only": "iaso_polio_vaccine_stock_earmarks_read_only",
         "iaso_polio_vaccine_stock_management_read": "iaso_polio_vaccine_stock_management_read",
+        "iaso_polio_vaccine_stock_management_read_only": "iaso_polio_vaccine_stock_management_read_only",
         "iaso_polio_vaccine_stock_management_write": "iaso_polio_vaccine_stock_management_write",
+        "iaso_polio_vaccine_supply_chain_read": "iaso_polio_vaccine_supply_chain_read",
+        "iaso_polio_vaccine_supply_chain_read_only": "iaso_polio_vaccine_supply_chain_read_only",
+        "iaso_polio_vaccine_supply_chain_write": "iaso_polio_vaccine_supply_chain_write",
     }
 
     # For each old permission
@@ -76,7 +81,7 @@ def reverse_migrate_permissions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0218_poliopermissionsupport"),
+        ("polio", "0233_poliopermissionsupport"),
     ]
 
     operations = [

@@ -2,14 +2,14 @@ import csv
 import importlib
 import io
 import typing
-from importlib import import_module
 
+from importlib import import_module
 from unittest import mock
 
-from django.conf import settings
 import numpy as np
 import pandas as pd
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType

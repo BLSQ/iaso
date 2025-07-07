@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-18 15:44+0000\n"
+"POT-Creation-Date: 2025-07-08 09:46+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -185,74 +185,6 @@ msgstr "Écrire page"
 #: hat/menupermissions/models.py
 msgid "Payments page"
 msgstr "Page des paiements"
-
-#: hat/menupermissions/models.py
-msgid "Polio"
-msgstr "Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio config"
-msgstr "Configuration Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio chronogram"
-msgstr "Chronogramme Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio chronogram user (restricted write)"
-msgstr "Utilisateur chronogramme Polio (écriture restreinte)"
-
-#: hat/menupermissions/models.py
-msgid "Polio notifications"
-msgstr "Notifications Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Authorizations Read Only"
-msgstr "Autorisations vaccin Polio (lecture seule)"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Authorizations Admin"
-msgstr "Administration des autorisations vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Supply Chain Read"
-msgstr "Lecture chaîne d'approvisionnement vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Supply Chain Write"
-msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Supply Chain Read Only"
-msgstr "Lecture seule chaîne d'approvisionnement vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Stock Management Read"
-msgstr "Lecture gestion des stocks vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Stock Management Write"
-msgstr "Écriture gestion des stocks vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Stock Management Read Only"
-msgstr "Lecture seule gestion des stocks vaccin Polio"
-
-#: hat/menupermissions/models.py
-#, fuzzy
-#| msgid "Polio Vaccine Authorizations Admin"
-msgid "Polio Vaccine Stock Earmarks Non Admin"
-msgstr "Administration des autorisations vaccin Polio"
-
-#: hat/menupermissions/models.py
-#, fuzzy
-#| msgid "Polio Vaccine Authorizations Admin"
-msgid "Polio Vaccine Stock Earmarks Admin"
-msgstr "Administration des autorisations vaccin Polio"
-
-#: hat/menupermissions/models.py
-msgid "Polio Vaccine Stock Earmarks Read Only"
-msgstr "Lecture seule des réservations de stock de vaccin Polio"
 
 #: hat/menupermissions/models.py
 msgid "Areas"
@@ -522,6 +454,58 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Polio"
+#~ msgstr "Polio"
+
+#~ msgid "Polio config"
+#~ msgstr "Configuration Polio"
+
+#~ msgid "Polio chronogram"
+#~ msgstr "Chronogramme Polio"
+
+#~ msgid "Polio chronogram user (restricted write)"
+#~ msgstr "Utilisateur chronogramme Polio (écriture restreinte)"
+
+#~ msgid "Polio notifications"
+#~ msgstr "Notifications Polio"
+
+#~ msgid "Polio Vaccine Authorizations Read Only"
+#~ msgstr "Autorisations vaccin Polio (lecture seule)"
+
+#~ msgid "Polio Vaccine Authorizations Admin"
+#~ msgstr "Administration des autorisations vaccin Polio"
+
+#~ msgid "Polio Vaccine Supply Chain Read"
+#~ msgstr "Lecture chaîne d'approvisionnement vaccin Polio"
+
+#~ msgid "Polio Vaccine Supply Chain Write"
+#~ msgstr "Écriture chaîne d'approvisionnement vaccin Polio"
+
+#~ msgid "Polio Vaccine Supply Chain Read Only"
+#~ msgstr "Lecture seule chaîne d'approvisionnement vaccin Polio"
+
+#~ msgid "Polio Vaccine Stock Management Read"
+#~ msgstr "Lecture gestion des stocks vaccin Polio"
+
+#~ msgid "Polio Vaccine Stock Management Write"
+#~ msgstr "Écriture gestion des stocks vaccin Polio"
+
+#~ msgid "Polio Vaccine Stock Management Read Only"
+#~ msgstr "Lecture seule gestion des stocks vaccin Polio"
+
+#, fuzzy
+#~| msgid "Polio Vaccine Authorizations Admin"
+#~ msgid "Polio Vaccine Stock Earmarks Non Admin"
+#~ msgstr "Administration des autorisations vaccin Polio"
+
+#, fuzzy
+#~| msgid "Polio Vaccine Authorizations Admin"
+#~ msgid "Polio Vaccine Stock Earmarks Admin"
+#~ msgstr "Administration des autorisations vaccin Polio"
+
+#~ msgid "Polio Vaccine Stock Earmarks Read Only"
+#~ msgstr "Lecture seule des réservations de stock de vaccin Polio"
 
 #~ msgid "Budget Polio"
 #~ msgstr "Budget Polio"

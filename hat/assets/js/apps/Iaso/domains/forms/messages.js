@@ -679,6 +679,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to select at least one project to see the list of available org unit types',
     },
+    fetchPossibleFieldsError: {
+        id: 'iaso.snackBar.fetchPossibleFieldsError',
+        defaultMessage: 'An error occurred while fetching possible fields',
+    },
 });
 
 export default MESSAGES;

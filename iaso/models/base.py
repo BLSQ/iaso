@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -41,7 +41,7 @@ from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.emoji import fix_emoji
-from ..utils.jsonlogic import jsonlogic_to_q
+from ..utils.jsonlogic import instance_jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
@@ -363,6 +363,14 @@ class Task(models.Model):
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
+        self.save()
+
+    def terminate_with_error(self, message=None):
+        self.refresh_from_db()
+        logger.error(f"Task {self} ended in error")
+        self.status = ERRORED
+        self.ended_at = timezone.now()
+        self.result = {"result": ERRORED, "message": message if message else "Error"}
         self.save()
 
 
@@ -941,7 +949,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             queryset = queryset.filter(created_by__id__in=user_ids.split(","))
 
         if json_content:
-            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            q = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
             queryset = queryset.filter(q)
 
         return queryset
@@ -1424,6 +1432,34 @@ class Instance(models.Model):
         return super(Instance, self).save(*args, **kwargs)
 
 
+class InstanceFileQuerySet(models.QuerySet):
+    pass
+
+
+class AnnotatedInstanceFileQuerySet(models.QuerySet):
+    def filter_image_only(self, image_only: bool):
+        queryset = self
+        if image_only:
+            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+            queryset = queryset.filter(file_extension__in=image_extensions)
+        return queryset
+
+
+class AnnotatedInstanceFileManager(models.Manager):
+    def get_queryset(self):
+        """
+        Annotates results with the file extension.
+        """
+        return (
+            super()
+            .get_queryset()
+            .order_by("id")
+            .annotate(
+                file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+            )
+        )
+
+
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
     instance = models.ForeignKey(Instance, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -1432,6 +1468,9 @@ class InstanceFile(models.Model):
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     deleted = models.BooleanField(default=False)
+
+    objects = models.Manager().from_queryset(InstanceFileQuerySet)()
+    objects_with_file_extensions = AnnotatedInstanceFileManager.from_queryset(AnnotatedInstanceFileQuerySet)()
 
     def __str__(self):
         return "%s " % (self.name,)

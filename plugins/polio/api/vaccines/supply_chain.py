@@ -24,6 +24,7 @@ from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from iaso.utils.clamav import scan_uploaded_file_for_virus
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
+from plugins.polio.api.vaccines.stock_management import CampaignCategory
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 
@@ -624,6 +625,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineRequestForm
@@ -645,6 +647,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "updated_at",
             "vrf_type",
             "can_edit",
+            "campaign_category",
         ]
 
     def get_can_edit(self, obj):
@@ -655,6 +658,18 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
             read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        campaign = obj.campaign
+        if campaign.is_test:
+            return CampaignCategory.TEST_CAMPAIGN
+        if campaign.on_hold:
+            return CampaignCategory.CAMPAIGN_ON_HOLD
+        if not campaign.rounds.all().exclude(on_hold=True).exists():
+            return CampaignCategory.ALL_ROUNDS_ON_HOLD
+        if obj.rounds.filter(on_hold=True).exists():
+            return CampaignCategory.ROUND_ON_HOLD
+        return CampaignCategory.REGULAR
 
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB

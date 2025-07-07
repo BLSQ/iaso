@@ -181,7 +181,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_version_id": self.source_version_to_update.id,
             "source_status": "",
             "source_org_unit_type_ids": [],
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
         csv_data = self.assertCsvFileResponse(response, expected_name=self.EXPECTED_FILE_NAME, return_as_str=True)
@@ -211,7 +211,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": self.group_b.id,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
         csv_data = self.assertCsvFileResponse(response, expected_name=self.EXPECTED_FILE_NAME, return_as_str=True)
@@ -316,7 +316,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": self.group_b.id,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
         self.assertContains(
@@ -334,7 +334,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": self.group_b.id,
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}diff.csv/", data=payload)
         self.assertContains(
@@ -366,7 +366,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": "",
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
         self.assertEqual(response.status_code, status.HTTP_200_OK)  # Don't know why it's not 201
@@ -390,7 +390,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": "",
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
         self.assertContains(response, "No valid DHIS2 configured on source", status_code=status.HTTP_400_BAD_REQUEST)
@@ -407,7 +407,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": "",
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
         self.assertContains(
@@ -425,7 +425,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
             "source_status": "",
             "source_org_unit_type_ids": [],
             "source_org_unit_group_id": "",
-            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date"],
+            "fields_to_export": ["name", "parent", "geometry", "groups", "opening_date", "closed_date", "code"],
         }
         response = self.client.post(f"{self.BASE_URL}export_dhis2/", data=payload)
         self.assertContains(

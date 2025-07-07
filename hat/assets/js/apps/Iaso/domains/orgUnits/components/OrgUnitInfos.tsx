@@ -161,6 +161,15 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     label={MESSAGES.groups}
                     disabled={disabled}
                 />
+                <InputComponent
+                    keyValue="code"
+                    type="text"
+                    onChange={onChangeInfo}
+                    value={orgUnitState.code.value}
+                    errors={orgUnitState.code.errors}
+                    label={MESSAGES.code}
+                    disabled={disabled}
+                />
                 <div className={classes.divAliasWrapper}>
                     <InputComponent
                         keyValue="aliases"

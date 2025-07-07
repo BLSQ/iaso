@@ -10,6 +10,7 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.db import IntegrityError
 from django.db.models import Count, IntegerField, Q, Value
 from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -151,6 +152,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         Special Search Formats:
         - ids:search: Search by IDs (e.g. "ids:1,2,3")
         - refs:search: Search by references (e.g. "refs:ref1,ref2")
+        - codes:search: Search by codes (e.g. "codes:code1,code2")
 
         Example Response Formats:
         * Simple JSON (default) -> as_dict_for_mobile
@@ -295,6 +297,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             {"title": "Type", "width": 15},
             {"title": "Latitude", "width": 15},
             {"title": "Longitude", "width": 15},
+            {"title": "Code", "width": 15},
             {"title": "Date d'ouverture", "width": 20},
             {"title": "Date de fermeture", "width": 20},
             {"title": "Date de création", "width": 20},
@@ -346,6 +349,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             "instances_count",
             "opening_date",
             "closed_date",
+            "code",
         )
 
         user_account_name = profile.account.name if profile else ""
@@ -368,12 +372,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 for field_name in parent_source_ref_name
             ]
 
+            code = org_unit.get("code") if org_unit.get("code") != "" else None
+
             org_unit_values = [
                 org_unit.get("id"),
                 org_unit.get("name"),
                 org_unit.get("org_unit_type__name"),
                 location.y if location else None,
                 location.x if location else None,
+                code,
                 (
                     org_unit.get("opening_date").strftime("%Y-%m-%d")
                     if org_unit.get("opening_date") is not None
@@ -512,6 +519,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     }
                 )
 
+        if "code" in request.data:
+            # Warning: this could cause an error with the model constraint when saving below
+            org_unit.code = request.data["code"]
+
         if "geom" in request.data:
             geom = request.data["geom"]
             if geom:
@@ -646,29 +657,41 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.closed_date = self.get_date(request.data.get("closed_date"))
 
         if not errors:
-            org_unit.save()
-            if new_groups is not None:
-                org_unit.groups.set(new_groups)
+            try:
+                org_unit.save()
+                if new_groups is not None:
+                    org_unit.groups.set(new_groups)
 
-            audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
+                audit_models.log_modification(
+                    original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
+                )
 
-            res = org_unit.as_dict_with_parents()
-            res["geo_json"] = None
-            res["catchment"] = None
+                res = org_unit.as_dict_with_parents()
+                res["geo_json"] = None
+                res["catchment"] = None
 
-            if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
-                geo_queryset = self.get_queryset().filter(id=org_unit.id)
+                if org_unit.geom or org_unit.simplified_geom or org_unit.catchment:
+                    geo_queryset = self.get_queryset().filter(id=org_unit.id)
 
-                if can_edit_shape and org_unit.geom:
-                    res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
-                elif org_unit.simplified_geom:
-                    res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
+                    if can_edit_shape and org_unit.geom:
+                        res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="geom")
+                    elif org_unit.simplified_geom:
+                        res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
 
-                if org_unit.catchment:
-                    res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+                    if org_unit.catchment:
+                        res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
 
-            res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
-            return Response(res)
+                res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
+                return Response(res)
+            except IntegrityError:
+                errors.append(
+                    {
+                        "errorKey": "code",
+                        "errorMessage": _(
+                            "Another valid OrgUnit already exists with the code '{}' in this version"
+                        ).format(request.data["code"]),
+                    }
+                )
 
         return Response(errors, status=400)
 
@@ -731,6 +754,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
+        org_unit.code = request.data.get("code", "")  # This could raise an IntegrityError if not unique
 
         opening_date = request.data.get("opening_date", None)
         closed_date = request.data.get("closed_date", None)
@@ -812,7 +836,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        org_unit.save()
+        try:
+            org_unit.save()
+        except IntegrityError:
+            errors.append(
+                {
+                    "errorKey": "code",
+                    "errorMessage": _("Another valid OrgUnit already exists with the code '{}' in this version").format(
+                        org_unit.code
+                    ),
+                }
+            )
+            return Response(errors, status=400)
+
         org_unit.groups.set(new_groups)
 
         if reference_instance_id and org_unit_type:

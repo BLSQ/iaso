@@ -5,6 +5,9 @@ import typing
 
 from unittest import mock
 
+import numpy as np
+import pandas as pd
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -236,6 +239,26 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         if return_as_str:
             return decoded_response.replace("\r\n", "\n").strip()
         return None
+
+    def assertXlsxFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+    ) -> tuple[list, dict]:
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        excel_data = pd.read_excel(content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+
+        return excel_columns, data_dict
 
     def assertValidListData(
         self,

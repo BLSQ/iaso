@@ -161,7 +161,7 @@ class Exporter:
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
     def update_orgunits(self, api: Api, diffs: List[Diff], task=None):
-        support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date")
+        support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date", "code")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
@@ -245,7 +245,7 @@ class Exporter:
 
     def apply_comparison(self, payload, comparison: Comparison):
         # TODO ideally move to FieldTypes in comparisons.py
-        if comparison.field == "name":
+        if comparison.field in ["name", "code"]:
             payload[comparison.field] = comparison.after
             return
 

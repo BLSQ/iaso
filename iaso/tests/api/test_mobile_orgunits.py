@@ -13,6 +13,7 @@ from iaso.models import (
     FormVersion,
     Group,
     Instance,
+    InstanceFile,
     OrgUnit,
     OrgUnitReferenceInstance,
     OrgUnitType,
@@ -292,6 +293,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         instance2 = Instance.objects.create(
             form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
         )
+        instance_file1 = InstanceFile.objects.create(instance=instance2, file="test1.jpg")
         # Mark instances as reference instances.
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
@@ -322,6 +324,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "foo"},
+                        "instance_files": [],
                     },
                     {
                         "id": instance2.pk,
@@ -331,6 +334,16 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "bar"},
+                        "instance_files": [
+                            {
+                                "id": instance_file1.pk,
+                                "instance_id": instance2.pk,
+                                "file": "/media/test1.jpg",
+                                "created_at": 1698310800.0,
+                                "file_type": "image/jpeg",
+                                "name": None,
+                            },
+                        ],
                     },
                 ],
                 "has_next": False,
@@ -361,6 +374,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "created_at": 1698310800.0,
                         "updated_at": 1698310800.0,
                         "json": {"key": "foo"},
+                        "instance_files": [],
                     },
                 ],
                 "has_next": False,

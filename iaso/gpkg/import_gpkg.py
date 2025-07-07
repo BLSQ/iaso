@@ -149,6 +149,10 @@ def create_or_update_orgunit(
     orgunit.source_ref = ref
     orgunit.version = source_version
 
+    # Import code if it exists in properties
+    code = props.get("code", "")
+    orgunit.code = code.strip() if code else ""  # code could be null in gpkg
+
     # Import dates if they exist in properties
 
     apply_date_field("closed_date", props, orgunit, task)

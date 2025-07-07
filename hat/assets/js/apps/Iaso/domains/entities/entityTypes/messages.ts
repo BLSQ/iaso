@@ -117,6 +117,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deprecated',
         defaultMessage: 'deprecated',
     },
+    infosFieldsListView: {
+        id: 'iaso.entityTypes.infosFieldsListView',
+        defaultMessage:
+            'How entities are displayed when they are in a list (both web and mobile)',
+    },
+    infosFieldsDetailInfoView: {
+        id: 'iaso.entityTypes.infosFieldsDetailInfoView',
+        defaultMessage:
+            'Information about the entity displayed in their details screen (both web and mobile)',
+    },
+    infosFieldsDuplicateSearch: {
+        id: 'iaso.entityTypes.infosFieldsDuplicateSearch',
+        defaultMessage:
+            'Entity search fields: Fields that will be compared/searchable when adding a new entity (mobile only)',
+    },
 });
 
 export default MESSAGES;

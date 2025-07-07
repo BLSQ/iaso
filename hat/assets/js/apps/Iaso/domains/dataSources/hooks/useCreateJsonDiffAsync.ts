@@ -88,6 +88,7 @@ const createJsonDiffAsync = async ({
 };
 
 export const useCreateJsonDiffAsync = () => {
+    const ignoreErrorCodes = [400];
     return useSnackMutation<SyncResponse, Error, SyncParams>({
         mutationFn: ({
             id,
@@ -102,5 +103,6 @@ export const useCreateJsonDiffAsync = () => {
                 fieldsToExport,
             }),
         showSucessSnackBar: false,
+        ignoreErrorCodes,
     });
 };

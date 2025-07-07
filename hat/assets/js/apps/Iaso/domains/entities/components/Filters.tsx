@@ -11,9 +11,7 @@ import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    QueryBuilderInput,
     commonStyles,
-    useHumanReadableJsonLogic,
     useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -32,12 +30,6 @@ import {
 } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { Popper } from '../../forms/fields/components/Popper';
-import { useGetAllFormDescriptors } from '../../forms/fields/hooks/useGetFormDescriptor';
-import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace';
-import { useGetQueryBuilderFieldsForAllForms } from '../../forms/fields/hooks/useGetQueryBuildersFields';
-import { useGetAllPossibleFields } from '../../forms/hooks/useGetPossibleFields';
-import { parseJson } from '../../instances/utils/jsonLogicParse';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
@@ -51,6 +43,7 @@ import {
 import { useFiltersParams } from '../hooks/useFiltersParams';
 import MESSAGES from '../messages';
 import { Filters as FilterType, Params } from '../types/filters';
+import { EntitiesQueryBuilder } from './EntitiesQuerybuilder';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -117,30 +110,9 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         sourceVersionId,
     });
 
-    // Load QueryBuilder resources
-    const { allPossibleFields } = useGetAllPossibleFields();
-    const { data: formDescriptors } = useGetAllFormDescriptors();
-    const fields = useGetQueryBuilderFieldsForAllForms(
-        formDescriptors,
-        allPossibleFields,
-    );
-    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
-    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
-        fields,
-        queryBuilderListToReplace,
-    );
     const fieldsSearchJson = filters.fieldsSearch
         ? JSON.parse(filters.fieldsSearch)
         : undefined;
-
-    const handleChangeQueryBuilder = value => {
-        if (value) {
-            const parsedValue = parseJson({ value, fields });
-            handleChange('fieldsSearch', JSON.stringify(parsedValue));
-        } else {
-            handleChange('fieldsSearch', undefined);
-        }
-    };
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -299,20 +271,9 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             <Box mt={-2}>
                 <Grid container columnSpacing={2}>
                     <Grid item xs={12} sm={6}>
-                        <QueryBuilderInput
-                            label={MESSAGES.queryBuilder}
-                            onChange={handleChangeQueryBuilder}
-                            initialLogic={fieldsSearchJson}
-                            fields={fields}
-                            iconProps={{
-                                label: MESSAGES.queryBuilder,
-                                value: getHumanReadableJsonLogic(
-                                    fieldsSearchJson,
-                                ),
-                                onClear: () =>
-                                    handleChange('fieldsSearch', undefined),
-                            }}
-                            InfoPopper={<Popper />}
+                        <EntitiesQueryBuilder
+                            fieldsSearchJson={fieldsSearchJson}
+                            handleChange={handleChange}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>

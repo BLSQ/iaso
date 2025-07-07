@@ -25,6 +25,7 @@ class MetricType(models.Model):
     comments = models.TextField(blank=True)
     legend_type = models.CharField(choices=[(t, t) for t in LEGEND_TYPES], max_length=40, default="threshold")
     legend_config = models.JSONField(blank=True, default=dict)
+    scale = models.JSONField(blank=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

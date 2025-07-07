@@ -422,6 +422,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             orgUnitTypesSelected={
                                 state.orgUnitTypesSelected.value
                             }
+                            map={map}
                             setOrgUnitTypesSelected={outypes => {
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}

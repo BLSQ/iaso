@@ -943,6 +943,7 @@
     "iaso.orgUnits.editGroups": "Edit groups",
     "iaso.orgUnits.editOrgUnitType": "Edit org unit type",
     "iaso.orgUnits.editValidation": "Edit validation",
+    "iaso.orgUnits.fitToFormsBounds": "Fit map to submissions bounds",
     "iaso.orgUnits.fitToOutBounds": "Fit map to children bounds",
     "iaso.orgUnits.forms.noData": "No form",
     "iaso.orgUnits.formsHelperText": "Form submissions",

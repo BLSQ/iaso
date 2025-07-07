@@ -84,7 +84,6 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
     const [orgUnitTypesList, setOrgUnitTypesList] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    // Compute bounds automatically when orgUnitTypesSelected changes
     const computedBounds = useMemo(() => {
         const allOrgUnits = orgUnitTypesSelected.flatMap(
             ot => ot.orgUnits || [],

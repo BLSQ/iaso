@@ -437,6 +437,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}
                                 setFormsSelected={handleFormFilter}
+                                map={map}
                             />
                         </DisplayIfUserHasPerm>
                     </>

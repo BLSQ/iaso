@@ -10,10 +10,8 @@ from plugins.wfp_auth.views import ExtraData
 class WFPAuthTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.data_source = m.DataSource.objects.create(name="Data source")
-        cls.version = m.SourceVersion.objects.create(number=1, data_source=cls.data_source)
-        cls.account = m.Account.objects.create(name="Account", default_version=cls.version)
-        cls.project = m.Project.objects.create(name="Project", account=cls.account, app_id="test_app_id")
+        cls.account, cls.data_source, cls.version, cls.project = cls.create_account_datasource_version_project(
+            source_name="Data source", account_name="Account", project_name="Project")
 
     @patch("requests.get")
     def test_complete_login_ok(self, mock_get):

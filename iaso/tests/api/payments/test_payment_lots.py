@@ -1,6 +1,3 @@
-import numpy as np
-import pandas as pd
-
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
@@ -176,14 +173,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
         with self.assertNumQueries(10):
             response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(
-                response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -205,9 +196,8 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "ID": {
                     0: self.second_payment.id,

@@ -31,6 +31,13 @@ const createJsonDiffAsync = async ({
         );
     }
 
+    if (toUpdateFields.group.value) {
+        params.source_version_to_update_org_unit_group = parseInt(
+            toUpdateFields.group.value,
+            10,
+        );
+    }
+
     if (toUpdateFields.orgUnitTypes.value.length > 0) {
         params.source_version_to_update_org_unit_types =
             toUpdateFields.orgUnitTypes.value.map(outId => parseInt(outId, 10));
@@ -45,6 +52,13 @@ const createJsonDiffAsync = async ({
     if (toCompareWithFields.orgUnit.value) {
         params.source_version_to_compare_with_top_org_unit = parseInt(
             toCompareWithFields.orgUnit.value,
+            10,
+        );
+    }
+
+    if (toCompareWithFields.group.value) {
+        params.source_version_to_compare_with_org_unit_group = parseInt(
+            toCompareWithFields.group.value,
             10,
         );
     }
@@ -74,6 +88,7 @@ const createJsonDiffAsync = async ({
 };
 
 export const useCreateJsonDiffAsync = () => {
+    const ignoreErrorCodes = [400];
     return useSnackMutation<SyncResponse, Error, SyncParams>({
         mutationFn: ({
             id,
@@ -88,5 +103,6 @@ export const useCreateJsonDiffAsync = () => {
                 fieldsToExport,
             }),
         showSucessSnackBar: false,
+        ignoreErrorCodes,
     });
 };

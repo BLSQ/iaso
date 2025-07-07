@@ -22,15 +22,18 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
     def get_queryset(self):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
+        org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id).filter(
+            org_unit_type__projects__app_id=app_id
+        )
 
-        return (
+        change_requests = (
             OrgUnitChangeRequest.objects.filter(
                 org_unit__in=org_units,
                 created_by=self.request.user,
                 # Change requests liked to a `data_source_synchronization` are limited to the web.
                 data_source_synchronization__isnull=True,
             )
+            .filter(Q(new_reference_instances__isnull=True) | Q(new_reference_instances__project__app_id=app_id))
             .select_related("org_unit")
             .prefetch_related(
                 "new_groups",
@@ -43,3 +46,5 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
             )
             .exclude_soft_deleted_new_reference_instances()
         )
+
+        return change_requests

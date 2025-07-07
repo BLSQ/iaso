@@ -31,6 +31,8 @@ class OrgUnitAPIUtilsTestCase(SimpleTestCase):
 
 
 class OrgUnitAPITestCase(APITestCase):
+    ORG_UNIT_CREATE_URL = "/api/orgunits/create_org_unit/"
+
     @classmethod
     def setUpTestData(cls):
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
@@ -83,6 +85,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
+            code="code1",
         )
 
         cls.instance_related_to_reference_form = cls.create_form_instance(
@@ -109,6 +112,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon_empty,
             catchment=mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code2",
         )
 
         # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
@@ -131,6 +135,7 @@ class OrgUnitAPITestCase(APITestCase):
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
+            code="code3",
         )
         cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=jedi_council_endor,
@@ -141,6 +146,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=mock_multipolygon,
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code4",
         )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
@@ -152,6 +158,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=mock_multipolygon,
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            code="code5",
         )
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
@@ -192,6 +199,37 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit=jedi_council_corruscant,
             project=project,
         )
+
+    def setUp(self):
+        self.old_counts = self.counts()
+
+    def counts(self) -> dict:
+        return {
+            m.OrgUnit: m.OrgUnit.objects.count(),
+            m.OrgUnitType: m.OrgUnitType.objects.count(),
+            Modification: Modification.objects.count(),
+        }
+
+    def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
+        self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
+        for org_unit_data in list_data["orgUnits"]:
+            self.assertValidOrgUnitData(org_unit_data)
+
+    def assertValidOrgUnitData(self, org_unit_data: typing.Mapping):
+        self.assertHasField(org_unit_data, "id", int)
+        self.assertHasField(org_unit_data, "name", str)
+
+    def assertNoCreation(self):
+        self.assertEqual(self.old_counts, self.counts())
+
+    def assertCreated(self, createds: dict):
+        new_counts = self.counts()
+        diff = {}
+
+        for model in new_counts.keys():
+            diff[model] = new_counts[model] - self.old_counts[model]
+
+        self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
     def test_org_unit_search_with_ids(self):
         """GET /orgunits/ with a search based on refs"""
@@ -294,6 +332,26 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
         self.assertEqual(org_units[1]["source_ref"], jedi_counsil_endor_source_ref)
         self.assertEqual(org_units[2]["id"], self.jedi_squad_endor.id)
+
+    def test_org_unit_search_with_code(self):
+        """GET /orgunits/ with a search based on codes"""
+        search_criteria = {
+            "validation_status": "all",
+            "version": self.sw_version_1.id,
+            "search": f"codes: {self.jedi_council_endor.code} {self.jedi_council_corruscant.code} unknown_code",
+        }
+        search_criteria_str = json.dumps(search_criteria)
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{search_criteria_str}]&limit=50"
+        )
+        response_json = self.assertJSONResponse(response, 200)
+
+        self.assertEqual(response_json["count"], 2)
+        org_units = response_json["orgunits"]
+        self.assertEqual(org_units[0]["id"], self.jedi_council_corruscant.id)
+        self.assertEqual(org_units[1]["id"], self.jedi_council_endor.id)
 
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name"""
@@ -735,7 +793,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        response = self.client.get("/api/orgunits/?csv=true")
+        response = self.client.get("/api/orgunits/?order=id&csv=true")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
@@ -744,44 +802,107 @@ class OrgUnitAPITestCase(APITestCase):
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
+
+        headers = data[0]
+        self.assertEqual(
+            headers,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
+
         first_row = data[1]
         first_row_name = first_row[1]
-        self.assertEqual(first_row_name, self.jedi_council_brussels.name)
+        self.assertEqual(first_row_name, self.jedi_council_corruscant.name)
 
-    def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
-        self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
-        for org_unit_data in list_data["orgUnits"]:
-            self.assertValidOrgUnitData(org_unit_data)
+        first_row_code = first_row[5]
+        self.assertEqual(first_row_code, self.jedi_council_corruscant.code)
 
-    def assertValidOrgUnitData(self, org_unit_data: typing.Mapping):
-        self.assertHasField(org_unit_data, "id", int)
-        self.assertHasField(org_unit_data, "name", str)
+    def test_can_retrieve_org_units_list_in_xlsx_format(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/orgunits/?&order=id&xlsx=true")
+        columns, excel_data = self.assertXlsxFileResponse(response)
 
-    def setUp(self):
-        self.old_counts = self.counts()
+        self.assertEqual(
+            columns,
+            [
+                "ID",
+                "Nom",
+                "Type",
+                "Latitude",
+                "Longitude",
+                "Code",
+                "Date d'ouverture",
+                "Date de fermeture",
+                "Date de création",
+                "Date de modification",
+                "Créé par",
+                "Source",
+                "Validé",
+                "Référence externe",
+                "parent 1",
+                "parent 2",
+                "parent 3",
+                "parent 4",
+                "Ref Ext parent 1",
+                "Ref Ext parent 2",
+                "Ref Ext parent 3",
+                "Ref Ext parent 4",
+                "Total de soumissions",
+                self.elite_group.name,
+            ],
+        )
 
-    def counts(self) -> dict:
-        return {
-            m.OrgUnit: m.OrgUnit.objects.count(),
-            m.OrgUnitType: m.OrgUnitType.objects.count(),
-            Modification: Modification.objects.count(),
-        }
+        ids = excel_data["ID"]
+        self.assertEqual(
+            ids,
+            {
+                0: self.jedi_council_corruscant.id,
+                1: self.jedi_council_endor.id,
+                2: self.jedi_squad_endor.id,
+                3: self.jedi_squad_endor_2.id,
+                4: self.jedi_council_brussels.id,
+            },
+        )
 
-    def assertNoCreation(self):
-        self.assertEqual(self.old_counts, self.counts())
-
-    def assertCreated(self, createds: dict):
-        new_counts = self.counts()
-        diff = {}
-
-        for model in new_counts.keys():
-            diff[model] = new_counts[model] - self.old_counts[model]
-
-        self.assertTrue(set(createds.items()).issubset(set(diff.items())))
+        codes = excel_data["Code"]
+        self.assertEqual(
+            codes,
+            {
+                0: self.jedi_council_corruscant.code,
+                1: self.jedi_council_endor.code,
+                2: self.jedi_squad_endor.code,
+                3: self.jedi_squad_endor_2.code,
+                4: self.jedi_council_brussels.code,
+            },
+        )
 
     def set_up_org_unit_creation(self):
         return self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "id": None,
@@ -796,6 +917,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "source_ref": "",
                 "creation_source": "dashboard",
                 "opening_date": "01-01-2024",
+                "code": "very-nice",
             },
         )
 
@@ -840,7 +962,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "id": None,
@@ -863,7 +985,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_minimal(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -888,7 +1010,7 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -904,7 +1026,7 @@ class OrgUnitAPITestCase(APITestCase):
         # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -920,7 +1042,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -939,7 +1061,7 @@ class OrgUnitAPITestCase(APITestCase):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -959,7 +1081,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_2 = m.Group.objects.create(name="bla2", source_version=self.star_wars.default_version)
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "name": "Test ou",
@@ -985,7 +1107,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "id": None,
@@ -1011,7 +1133,7 @@ class OrgUnitAPITestCase(APITestCase):
     def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            "/api/orgunits/create_org_unit/",
+            self.ORG_UNIT_CREATE_URL,
             format="json",
             data={
                 "id": None,
@@ -1033,6 +1155,239 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.reference_instances.count(), 0)
+
+    def test_create_org_unit_with_blank_code_valid_status(self):
+        blank_code = ""
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=blank_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_VALID,
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertEqual(new_org_unit.validation_status, existing_org_unit.validation_status)
+        self.assertEqual(new_org_unit.code, existing_org_unit.code)
+        self.assertEqual(new_org_unit.code, blank_code)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 existing + 1 new
+
+    def test_create_org_unit_with_blank_code_other_status(self):
+        blank_code = ""
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=blank_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_NEW,  # Change here - status does not create any conflict
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertNotEqual(new_org_unit.validation_status, existing_org_unit.validation_status)
+        self.assertEqual(new_org_unit.code, existing_org_unit.code)
+        self.assertEqual(new_org_unit.code, blank_code)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 existing + 1 new
+
+    def test_create_org_unit_with_new_code_valid_status(self):
+        code = "code"
+        new_code = "new code"
+
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_VALID,
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+                "code": new_code,  # Change here - code does not create any conflict
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertEqual(new_org_unit.validation_status, existing_org_unit.validation_status)
+        self.assertNotEqual(new_org_unit.code, existing_org_unit.code)
+        self.assertEqual(new_org_unit.code, new_code)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 existing + 1 new
+
+    def test_create_org_unit_with_new_code_other_status(self):
+        old_code = "old code"
+        new_code = "new code"
+
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=old_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_NEW,  # Change here - status does not create any conflict
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+                "code": new_code,  # Change here - code does not create any conflict
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertNotEqual(new_org_unit.validation_status, existing_org_unit.validation_status)
+        self.assertNotEqual(new_org_unit.code, existing_org_unit.code)
+        self.assertEqual(new_org_unit.code, new_code)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 existing + 1 new
+
+    def test_create_org_unit_with_existing_code_valid_status(self):
+        existing_code = "*Gandalf vibing while listening to epic sax guy*"
+        m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=existing_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_VALID,
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+                "code": existing_code,  # Change here - this will create a conflict
+            },
+        )
+        json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)[0]
+        self.assertEqual(json["errorKey"], "code")
+        self.assertEqual(
+            json["errorMessage"],
+            f"Another valid OrgUnit already exists with the code '{existing_code}' in this version",
+        )
+        self.assertEqual(m.OrgUnit.objects.count(), 6)  # 5 in setup + 1 existing (no new org unit created)
+
+    def test_create_org_unit_with_existing_code_other_status(self):
+        existing_code = "*Gandalf vibing while listening to epic sax guy*"
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=existing_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_NEW,  # Change here - status does not create any conflict
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+                "code": existing_code,
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertNotEqual(new_org_unit.validation_status, existing_org_unit.validation_status)
+        self.assertEqual(new_org_unit.code, existing_org_unit.code)
+        self.assertEqual(new_org_unit.code, existing_code)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 existing + 1 new
+
+    def test_create_org_unit_with_existing_code_from_another_version_valid_status(self):
+        existing_code = "*Gandalf vibing while listening to epic sax guy*"
+        other_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_2,  # version 2
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=existing_code,
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(  # this will create in version 1 (default version)
+            self.ORG_UNIT_CREATE_URL,
+            format="json",
+            data={
+                "name": "New org unit",
+                "org_unit_type_id": self.jedi_council.pk,
+                "validation_status": m.OrgUnit.VALIDATION_VALID,
+                "parent_id": "",
+                "source_ref": "",
+                "opening_date": "01-01-2024",
+                "code": existing_code,  # Change here - this will create a conflict
+            },
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+        new_org_unit = m.OrgUnit.objects.get(id=jr["id"])
+
+        self.assertEqual(new_org_unit.validation_status, other_org_unit.validation_status)
+        self.assertEqual(new_org_unit.code, other_org_unit.code)
+        self.assertEqual(new_org_unit.code, existing_code)
+        self.assertNotEqual(new_org_unit.version_id, other_org_unit.version_id)
+        self.assertEqual(m.OrgUnit.objects.count(), 7)  # 5 in setup + 1 other + 1 new
 
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
@@ -1514,6 +1869,240 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.as_dict()["latitude"], form_latitude)
         self.assertEqual(ou.as_dict()["longitude"], form_longitude)
         self.assertEqual(ou.as_dict()["altitude"], form_altitude)
+
+    def test_partial_update_org_unit_with_blank_code_valid_status(self):
+        blank_code = ""
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=blank_code,
+        )
+
+        org_unit = self.jedi_squad_endor
+        org_unit.code = "old code"
+        org_unit.save()
+
+        new_name = "new name"
+        data = {
+            "code": blank_code,
+            "name": new_name,
+        }
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, blank_code)
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(existing_org_unit.code, org_unit.code)
+        self.assertEqual(existing_org_unit.version_id, org_unit.version_id)
+
+    def test_partial_update_org_unit_with_blank_code_other_status(self):
+        blank_code = ""
+        existing_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=blank_code,
+        )
+
+        org_unit = self.jedi_squad_endor
+        org_unit.code = "old code"
+        org_unit.save()
+
+        new_name = "new name"
+        data = {
+            "code": blank_code,
+            "name": new_name,
+            "validation_status": m.OrgUnit.VALIDATION_NEW,
+        }
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, blank_code)
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_NEW)
+        self.assertEqual(existing_org_unit.code, org_unit.code)
+        self.assertNotEqual(existing_org_unit.validation_status, org_unit.validation_status)
+        self.assertEqual(existing_org_unit.version_id, org_unit.version_id)
+
+    def test_partial_update_org_unit_with_new_code_valid_status(self):
+        old_code = "old code"
+        org_unit = self.jedi_squad_endor
+        org_unit.code = old_code
+        org_unit.save()
+
+        new_name = "new name"
+        new_code = "new code"
+        data = {
+            "code": new_code,
+            "name": new_name,
+            "validation_status": m.OrgUnit.VALIDATION_VALID,
+        }
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, new_code)
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
+
+    def test_partial_update_org_unit_with_new_code_other_status(self):
+        old_code = "old code"
+        org_unit = self.jedi_squad_endor
+        org_unit.code = old_code
+        org_unit.save()
+
+        new_name = "new name"
+        new_code = "new code"
+        data = {
+            "code": new_code,
+            "name": new_name,
+            "validation_status": m.OrgUnit.VALIDATION_NEW,
+        }
+
+        self.jedi_council_corruscant.code = new_code
+        self.jedi_council_corruscant.save()
+        self.jedi_council_corruscant.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.code, new_code)
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_NEW)
+        self.assertEqual(self.jedi_council_corruscant.code, org_unit.code)
+        self.assertNotEqual(self.jedi_council_corruscant.validation_status, org_unit.validation_status)
+        self.assertEqual(self.jedi_council_corruscant.version_id, org_unit.version_id)
+
+    def test_partial_update_org_unit_with_existing_code_valid_status(self):
+        new_name = "new name"
+        new_code = "new code"
+        data = {
+            "code": new_code,
+            "name": new_name,
+        }
+
+        self.jedi_council_corruscant.code = new_code
+        self.jedi_council_corruscant.save()
+        self.jedi_council_corruscant.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_squad_endor
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+
+        json = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)[0]
+        self.assertEqual(json["errorKey"], "code")
+        self.assertEqual(
+            json["errorMessage"], f"Another valid OrgUnit already exists with the code '{new_code}' in this version"
+        )
+        self.assertNotEqual(org_unit.name, new_name)
+        self.assertNotEqual(org_unit.code, new_code)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
+        self.assertEqual(org_unit.validation_status, self.jedi_council_corruscant.validation_status)
+        self.assertEqual(org_unit.version_id, self.jedi_council_corruscant.version_id)
+        self.assertNotEqual(org_unit.code, self.jedi_council_corruscant.code)
+
+    def test_partial_update_org_unit_with_existing_code_other_status(self):
+        new_name = "new name"
+        new_code = "new code"
+        data = {
+            "code": new_code,
+            "name": new_name,
+            "validation_status": m.OrgUnit.VALIDATION_NEW,
+        }
+
+        self.jedi_council_corruscant.code = new_code
+        self.jedi_council_corruscant.save()
+        self.jedi_council_corruscant.refresh_from_db()
+
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_squad_endor
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(org_unit.code, new_code)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_NEW)
+        self.assertNotEqual(org_unit.validation_status, self.jedi_council_corruscant.validation_status)
+        self.assertEqual(org_unit.code, self.jedi_council_corruscant.code)
+        self.assertEqual(org_unit.version_id, self.jedi_council_corruscant.version_id)
+
+    def test_partial_update_org_unit_with_existing_code_from_other_version_valid_status(self):
+        existing_code = "*Gandalf vibing while listening to epic sax guy*"
+        other_org_unit = m.OrgUnit.objects.create(
+            name="Existing org unit",
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_2,  # version 2
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            code=existing_code,
+        )
+
+        new_name = "new name"
+        data = {
+            "code": existing_code,
+            "name": new_name,
+            "validation_status": m.OrgUnit.VALIDATION_VALID,
+        }
+        self.client.force_authenticate(self.yoda)
+        org_unit = self.jedi_squad_endor
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, status.HTTP_200_OK)
+        self.assertValidOrgUnitData(jr)
+
+        org_unit.refresh_from_db()
+        self.assertEqual(org_unit.name, new_name)
+        self.assertEqual(org_unit.code, existing_code)
+        self.assertEqual(org_unit.validation_status, m.OrgUnit.VALIDATION_VALID)
+        self.assertEqual(org_unit.validation_status, other_org_unit.validation_status)
+        self.assertEqual(org_unit.code, other_org_unit.code)
+        self.assertNotEqual(org_unit.version_id, other_org_unit.version_id)
 
     def test_create_org_unit_from_different_level_from_mobile(self):
         self.client.force_authenticate(self.yoda)

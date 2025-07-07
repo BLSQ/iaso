@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.name',
         defaultMessage: 'Name',
     },
+    code: {
+        id: 'iaso.datasources.options.label.code',
+        defaultMessage: 'Code',
+    },
     parent: {
         id: 'iaso.datasources.options.label.parent',
         defaultMessage: 'Parent',
@@ -233,6 +237,10 @@ const MESSAGES = defineMessages({
     status: {
         id: 'iaso.datasources.label.status',
         defaultMessage: 'Status',
+    },
+    group: {
+        id: 'iaso.datasources.label.groups',
+        defaultMessage: 'Group',
     },
     fieldsToExport: {
         id: 'iaso.datasources.label.fieldsToExport',

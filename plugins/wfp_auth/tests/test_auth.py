@@ -11,7 +11,7 @@ class WFPAuthTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account, cls.data_source, cls.version, cls.project = cls.create_account_datasource_version_project(
-            source_name="Data source", account_name="Account", project_name="Project"
+            source_name="Data source", account_name="Account", project_name="Project", app_id="test_app_id"
         )
 
     @patch("requests.get")

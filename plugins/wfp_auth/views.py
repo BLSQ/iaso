@@ -145,7 +145,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             user = User.objects.filter(iaso_profile__account=account, email=email).first()
 
             if not user:
-                user = TenantUser.objects.create_user_or_tenant_user(
+                new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
                     data=UserCreationData(
                         username=email,
                         email=email,
@@ -154,6 +154,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
                         account=account,
                     )
                 )
+                user = new_user or tenant_account_user
                 user.set_unusable_password()
                 Profile.objects.create(account=account, user=user)
                 self.send_new_account_email(request, user)

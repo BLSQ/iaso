@@ -34,20 +34,25 @@ class TenantUserModelTestCase(TestCase):
         """
         No preexisting user.
         """
-        m.TenantUser.objects.create_user_or_tenant_user(data=self.user_creation_data)
+        new_user, tenant_main_user, tenant_account_user = m.TenantUser.objects.create_user_or_tenant_user(
+            data=self.user_creation_data
+        )
+        self.assertIsNotNone(new_user)
+        self.assertIsNone(tenant_main_user)
+        self.assertIsNone(tenant_account_user)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 1)
-        user = m.User.objects.get(username=self.user_creation_data.username)
-        self.assertEqual(user.email, self.user_creation_data.email)
-        self.assertEqual(user.first_name, self.user_creation_data.first_name)
-        self.assertEqual(user.last_name, self.user_creation_data.last_name)
+        self.assertEqual(new_user.username, self.user_creation_data.username)
+        self.assertEqual(new_user.email, self.user_creation_data.email)
+        self.assertEqual(new_user.first_name, self.user_creation_data.first_name)
+        self.assertEqual(new_user.last_name, self.user_creation_data.last_name)
 
         # Tenant Users.
         self.assertEqual(m.TenantUser.objects.count(), 0)
 
         # Iaso Profiles.
-        self.assertFalse(hasattr(user, "iaso_profile"))
+        self.assertFalse(hasattr(new_user, "iaso_profile"))
 
     def test_create_user_or_tenant_user_with_preexisting_user_for_same_account(self):
         self.create_user_with_profile(
@@ -79,7 +84,12 @@ class TenantUserModelTestCase(TestCase):
         self.assertEqual(m.User.objects.count(), 3)
         self.assertEqual(m.TenantUser.objects.count(), 2)
 
-        m.TenantUser.objects.create_user_or_tenant_user(data=self.user_creation_data)
+        new_user, tenant_main_user, tenant_account_user = m.TenantUser.objects.create_user_or_tenant_user(
+            data=self.user_creation_data
+        )
+        self.assertIsNone(new_user)
+        self.assertIsNotNone(tenant_main_user)
+        self.assertIsNotNone(tenant_account_user)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 4)
@@ -127,7 +137,12 @@ class TenantUserModelTestCase(TestCase):
         self.assertEqual(m.User.objects.count(), 1)
         self.assertEqual(m.TenantUser.objects.count(), 0)
 
-        m.TenantUser.objects.create_user_or_tenant_user(data=self.user_creation_data)
+        new_user, tenant_main_user, tenant_account_user = m.TenantUser.objects.create_user_or_tenant_user(
+            data=self.user_creation_data
+        )
+        self.assertIsNone(new_user)
+        self.assertIsNotNone(tenant_main_user)
+        self.assertIsNotNone(tenant_account_user)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 3)
@@ -165,7 +180,12 @@ class TenantUserModelTestCase(TestCase):
         user.set_password("p4ssword")
         user.save()
 
-        m.TenantUser.objects.create_user_or_tenant_user(data=self.user_creation_data)
+        new_user, tenant_main_user, tenant_account_user = m.TenantUser.objects.create_user_or_tenant_user(
+            data=self.user_creation_data
+        )
+        self.assertIsNone(new_user)
+        self.assertIsNotNone(tenant_main_user)
+        self.assertIsNotNone(tenant_account_user)
 
         # Users.
         self.assertEqual(m.User.objects.count(), 2)

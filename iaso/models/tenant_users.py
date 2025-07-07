@@ -1,6 +1,7 @@
 import copy
 
 from dataclasses import dataclass
+from typing import Optional
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -30,7 +31,15 @@ def get_unique_username(username: str, account_name: str) -> str:
 
 
 class TenantUserManager(models.Manager):
-    def create_user_or_tenant_user(self, data: UserCreationData) -> User:
+    def create_user_or_tenant_user(self, data: UserCreationData) -> tuple[User, Optional[User], Optional[User]]:
+        """
+        Creates a user or a tenant user.
+
+        Returns a tuple of (new_user, main_user, account_user) specifying which objects were created:
+
+        - (new_user, None, None) when a user was created
+        - (None, main_user, account_user) when a tenant user was created
+        """
         existing_user = User.objects.filter(username__iexact=data.username).first()
 
         # 1) No preexisting user, simply create a new one.
@@ -41,7 +50,7 @@ class TenantUserManager(models.Manager):
                 first_name=data.first_name,
                 last_name=data.last_name,
             )
-            return user
+            return (user, None, None)
 
         if hasattr(existing_user, "iaso_profile") and existing_user.iaso_profile.account == data.account:
             raise UsernameAlreadyExistsError("Username already exists for this account.")
@@ -74,18 +83,18 @@ class TenantUserManager(models.Manager):
         else:
             main_user = existing_user
 
-        user = User(
+        account_user = User(
             username=get_unique_username(data.username, data.account.name),
             email=data.email,
             first_name=data.first_name,
             last_name=data.last_name,
         )
-        user.set_unusable_password()
-        user.save()
+        account_user.set_unusable_password()
+        account_user.save()
 
-        self.create(main_user=main_user, account_user=user)
+        self.create(main_user=main_user, account_user=account_user)
 
-        return user
+        return (None, main_user, account_user)
 
 
 class TenantUser(models.Model):

@@ -353,7 +353,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
 
         try:
-            user = TenantUser.objects.create_user_or_tenant_user(
+            new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
                 data=UserCreationData(
                     username=username,
                     email=email,
@@ -365,7 +365,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         except UsernameAlreadyExistsError as e:
             return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
-        if password != "":
+        user = new_user or tenant_account_user
+
+        if new_user and password != "":
             user.set_password(password)
             user.save()
 

@@ -10,8 +10,7 @@ class MetricType(models.Model):
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [
-            ["account", "name"],
-            # ["account", "code"], TODO
+            ["account", "code"],
         ]
 
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
@@ -40,7 +39,8 @@ class MetricValue(models.Model):
     metric_type = models.ForeignKey(MetricType, on_delete=models.PROTECT)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
-    value = models.FloatField()
+    value = models.FloatField(null=True)
+    string_value = models.TextField(null=True)
 
     def __str__(self):
         return "%s %s %s %s" % (self.metric_type, self.org_unit, self.year, self.value)

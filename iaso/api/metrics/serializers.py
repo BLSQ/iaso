@@ -32,7 +32,7 @@ class MetricTypeSerializer(serializers.ModelSerializer):
 class MetricValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetricValue
-        fields = ["id", "metric_type", "org_unit", "year", "value"]
+        fields = ["id", "metric_type", "org_unit", "year", "value", "string_value"]
         read_only_fields = fields
 
 

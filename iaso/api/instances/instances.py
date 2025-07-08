@@ -39,12 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
-from iaso.api.instances.serializers import (
-    DocumentOnlySerializer,
-    ImageOnlySerializer,
-    OtherOnlySerializer,
-    VideoOnlySerializer,
-)
+from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
@@ -204,30 +199,21 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""
-        instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
+        instances = self.get_queryset().for_filters(**filters)
         queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
-        image_only_serializer = ImageOnlySerializer(data=request.query_params)
-        image_only_serializer.is_valid(raise_exception=True)
-        video_only_serializer = VideoOnlySerializer(data=request.query_params)
-        video_only_serializer.is_valid(raise_exception=True)
-        document_only_serializer = DocumentOnlySerializer(data=request.query_params)
-        document_only_serializer.is_valid(raise_exception=True)
-        other_only_serializer = OtherOnlySerializer(data=request.query_params)
-        other_only_serializer.is_valid(raise_exception=True)
-        image_only = image_only_serializer.validated_data["image_only"]
-        video_only = video_only_serializer.validated_data["video_only"]
-        document_only = document_only_serializer.validated_data["document_only"]
-        other_only = other_only_serializer.validated_data["other_only"]
+        file_type_serializer = FileTypeSerializer(data=request.query_params)
+        file_type_serializer.is_valid(raise_exception=True)
 
-        # Use the new method that supports OR logic for combined filters
-        queryset = queryset.filter_by_file_types(
-            image_only=image_only, video_only=video_only, document_only=document_only, other_only=other_only
+        image_only = file_type_serializer.validated_data["image_only"]
+        video_only = file_type_serializer.validated_data["video_only"]
+        document_only = file_type_serializer.validated_data["document_only"]
+        other_only = file_type_serializer.validated_data["other_only"]
+
+        return queryset.filter_by_file_types(
+            image=image_only, video=video_only, document=document_only, other=other_only
         )
-
-        return queryset
 
     @action(["GET"], detail=False)
     def attachments(self, request):
@@ -247,22 +233,17 @@ class InstancesViewSet(viewsets.ViewSet):
         """Return counts of attachments per file type (images, videos, docs, others)"""
         queryset = self._get_filtered_attachments_queryset(request)
 
-        # Get counts for each file type
-        from iaso.models.base import document_extensions, image_extensions, video_extensions
-
         # Count images
-        images_count = queryset.filter(file_extension__in=image_extensions).count()
+        images_count = queryset.filter_image().count()
 
         # Count videos
-        videos_count = queryset.filter(file_extension__in=video_extensions).count()
+        videos_count = queryset.filter_video().count()
 
         # Count documents
-        docs_count = queryset.filter(file_extension__in=document_extensions).count()
+        docs_count = queryset.filter_document().count()
 
         # Count others (files not in images, videos, or documents)
-        others_count = queryset.exclude(
-            file_extension__in=image_extensions + video_extensions + document_extensions
-        ).count()
+        others_count = queryset.filter_other().count()
 
         return Response(
             {

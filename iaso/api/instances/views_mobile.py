@@ -4,7 +4,7 @@ from rest_framework.permissions import BasePermission
 
 from iaso.api.common import ModelViewSet
 from iaso.api.instances.instances import HasInstancePermission, InstanceFileSerializer
-from iaso.api.instances.serializers import ImageOnlySerializer
+from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.models import (
     Instance,
     InstanceQuerySet,
@@ -43,9 +43,9 @@ class InstancesMobileViewSet(ModelViewSet):
         except Instance.DoesNotExist:
             instance = get_object_or_404(self.get_queryset(), pk=uuid)
 
-        image_only_serializer = ImageOnlySerializer(data=request.query_params)
-        image_only_serializer.is_valid(raise_exception=True)
-        image_only = image_only_serializer.validated_data["image_only"]
+        file_type_serializer = FileTypeSerializer(data=request.query_params)
+        file_type_serializer.is_valid(raise_exception=True)
+        image_only = file_type_serializer.validated_data["image_only"]
 
         queryset = instance.instancefile_set(manager="objects_with_file_extensions").all()
 

@@ -37,7 +37,7 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
     """
 
     file = serializers.FileField(required=False)
-    scan_result = serializers.SerializerMethodField()
+    scan_result = serializers.CharField(read_only=True, source="file_scan_status")
     scan_timestamp = serializers.SerializerMethodField()
 
     class Meta:
@@ -99,18 +99,6 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         if has_updated:
             instance.save()
         return super().update(instance, validated_data)
-
-    def get_scan_result(self, obj):
-        """
-        Get the scan result for serialization.
-
-        Args:
-            obj: The model instance.
-
-        Returns:
-            str: The scan status (CLEAN, INFECTED, PENDING, ERROR).
-        """
-        return obj.file_scan_status
 
     def get_scan_timestamp(self, obj):
         """

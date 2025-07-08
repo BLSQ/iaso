@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useState } from 'react';
 import UpdateIcon from '@mui/icons-material/Update';
 import {
     AddButton,
@@ -5,7 +6,6 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
@@ -19,7 +19,7 @@ type Props = {
     confirmMessage: any;
     cancelMessage: any;
     formType: {
-        id: number;
+        id: number | string;
         periodType: string;
     };
     currentInstance?: {

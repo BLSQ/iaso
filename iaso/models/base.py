@@ -1432,36 +1432,83 @@ class Instance(models.Model):
         return super(Instance, self).save(*args, **kwargs)
 
 
-class InstanceFileQuerySet(models.QuerySet):
-    pass
+class InstanceFileExtensionQuerySet(models.QuerySet):
+    def filter_image(self):
+        return self.filter(annotated_file_extension__in=self.model.IMAGE_EXTENSIONS)
 
+    def filter_video(self):
+        return self.filter(annotated_file_extension__in=self.model.VIDEO_EXTENSIONS)
 
-class AnnotatedInstanceFileQuerySet(models.QuerySet):
-    def filter_image_only(self, image_only: bool):
+    def filter_document(self):
+        return self.filter(annotated_file_extension__in=self.model.DOCUMENT_EXTENSIONS)
+
+    def filter_other(self):
+        return self.filter(
+            ~Q(
+                annotated_file_extension__in=self.model.IMAGE_EXTENSIONS
+                + self.model.VIDEO_EXTENSIONS
+                + self.model.DOCUMENT_EXTENSIONS
+            )
+        )
+
+    def filter_by_file_types(self, image=False, video=False, document=False, other=False):
+        """Apply file type filters with OR logic when multiple filters are active"""
         queryset = self
-        if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
-            queryset = queryset.filter(file_extension__in=image_extensions)
+
+        # Build OR conditions for active filters
+        conditions = []
+
+        if image:
+            conditions.append(Q(annotated_file_extension__in=self.model.IMAGE_EXTENSIONS))
+
+        if video:
+            conditions.append(Q(annotated_file_extension__in=self.model.VIDEO_EXTENSIONS))
+
+        if document:
+            conditions.append(Q(annotated_file_extension__in=self.model.DOCUMENT_EXTENSIONS))
+
+        if other:
+            conditions.append(
+                ~Q(
+                    annotated_file_extension__in=self.model.IMAGE_EXTENSIONS
+                    + self.model.VIDEO_EXTENSIONS
+                    + self.model.DOCUMENT_EXTENSIONS
+                )
+            )
+
+        # Apply OR logic if multiple conditions exist
+        if len(conditions) > 1:
+            combined_condition = conditions[0]
+            for condition in conditions[1:]:
+                combined_condition |= condition
+            queryset = queryset.filter(combined_condition)
+        elif len(conditions) == 1:
+            queryset = queryset.filter(conditions[0])
+
         return queryset
 
 
-class AnnotatedInstanceFileManager(models.Manager):
+class InstanceFileExtensionManager(models.Manager):
     def get_queryset(self):
-        """
-        Annotates results with the file extension.
-        """
         return (
             super()
             .get_queryset()
-            .order_by("id")
             .annotate(
-                file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+                annotated_file_extension=Func(
+                    F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')"
+                )
             )
         )
 
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
+
+    #  According to frontend, we need to filter by file extension, see hat/assets/js/apps/Iaso/utils/filesUtils.ts
+    IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+    VIDEO_EXTENSIONS = ["mp4", "mov"]
+    DOCUMENT_EXTENSIONS = ["pdf", "doc", "docx", "xls", "xlsx", "csv", "txt"]
+
     instance = models.ForeignKey(Instance, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1469,8 +1516,8 @@ class InstanceFile(models.Model):
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
-    objects = models.Manager().from_queryset(InstanceFileQuerySet)()
-    objects_with_file_extensions = AnnotatedInstanceFileManager.from_queryset(AnnotatedInstanceFileQuerySet)()
+    objects = models.Manager()
+    objects_with_file_extensions = InstanceFileExtensionManager.from_queryset(InstanceFileExtensionQuerySet)()
 
     def __str__(self):
         return "%s " % (self.name,)

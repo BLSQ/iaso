@@ -39,7 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
-from iaso.api.instances.serializers import ImageOnlySerializer
+from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
@@ -197,18 +197,27 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
         return queryset
 
-    @action(["GET"], detail=False)
-    def attachments(self, request):
-        instances = self.get_queryset()
+    def _get_filtered_attachments_queryset(self, request):
+        """Helper method to get filtered attachments queryset with common logic"""
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
+        instances = self.get_queryset().for_filters(**filters)
         queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
-        image_only_serializer = ImageOnlySerializer(data=request.query_params)
-        image_only_serializer.is_valid(raise_exception=True)
-        image_only = image_only_serializer.validated_data["image_only"]
+        file_type_serializer = FileTypeSerializer(data=request.query_params)
+        file_type_serializer.is_valid(raise_exception=True)
 
-        queryset = queryset.filter_image_only(image_only=image_only)
+        image_only = file_type_serializer.validated_data["image_only"]
+        video_only = file_type_serializer.validated_data["video_only"]
+        document_only = file_type_serializer.validated_data["document_only"]
+        other_only = file_type_serializer.validated_data["other_only"]
+
+        return queryset.filter_by_file_types(
+            image=image_only, video=video_only, document=document_only, other=other_only
+        )
+
+    @action(["GET"], detail=False)
+    def attachments(self, request):
+        queryset = self._get_filtered_attachments_queryset(request)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
@@ -218,6 +227,33 @@ class InstancesViewSet(viewsets.ViewSet):
 
         serializer = InstanceFileSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(["GET"], detail=False)
+    def attachments_count(self, request):
+        """Return counts of attachments per file type (images, videos, docs, others)"""
+        queryset = self._get_filtered_attachments_queryset(request)
+
+        # Count images
+        images_count = queryset.filter_image().count()
+
+        # Count videos
+        videos_count = queryset.filter_video().count()
+
+        # Count documents
+        docs_count = queryset.filter_document().count()
+
+        # Count others (files not in images, videos, or documents)
+        others_count = queryset.filter_other().count()
+
+        return Response(
+            {
+                "images": images_count,
+                "videos": videos_count,
+                "docs": docs_count,
+                "others": others_count,
+                "total": images_count + videos_count + docs_count + others_count,
+            }
+        )
 
     def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""

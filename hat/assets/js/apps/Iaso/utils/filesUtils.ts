@@ -1,6 +1,14 @@
 import { ShortFile } from '../domains/instances/types/instance';
 
-const imgExtensions: string[] = ['jpg', 'jpeg', 'JPG', 'png', 'webp'];
+const imgExtensions: string[] = [
+    'jpg',
+    'jpeg',
+    'png',
+    'gif',
+    'bmp',
+    'tiff',
+    'webp',
+];
 const videoExtensions: string[] = ['mp4', 'mov'];
 const documentExtensions: string[] = [
     'pdf',

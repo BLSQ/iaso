@@ -10,6 +10,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from hat import settings
+from iaso.test import MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
@@ -37,12 +38,12 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
         mock_scanner.scan.side_effect = [
-            MockResults(
+            MockClamavScanResults(
                 state="OK",
                 details=None,
                 passed=True,
             ),
-            MockResults(
+            MockClamavScanResults(
                 state="FOUND",
                 details="Virus found :(",
                 passed=False,
@@ -318,7 +319,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def test_update_pre_alert_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -381,7 +382,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def test_update_pre_alert_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -550,10 +551,3 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(pre_alert_clean.file_scan_status, VirusScanStatus.ERROR)
         self.assertIsNone(pre_alert_clean.file_last_scan)
         self.assertEqual(pre_alert_clean.doses_shipped, 20)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

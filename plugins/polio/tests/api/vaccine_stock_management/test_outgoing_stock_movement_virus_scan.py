@@ -9,6 +9,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from hat import settings
+from iaso.test import MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.test_vaccine_stock_management import VaccineStockManagementAPITestCase
@@ -28,7 +29,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
     def test_create_outgoing_stock_movement_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -74,7 +75,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
     def test_create_outgoing_stock_movement_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -291,7 +292,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
     def test_update_outgoing_stock_movement_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -347,7 +348,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
     def test_update_outgoing_stock_movement_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -495,10 +496,3 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
         self.assertEqual(outgoing_stock_movement_clean.file_scan_status, VirusScanStatus.ERROR)
         self.assertIsNone(outgoing_stock_movement_clean.file_last_scan)
         self.assertEqual(outgoing_stock_movement_clean.usable_vials_used, 15)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

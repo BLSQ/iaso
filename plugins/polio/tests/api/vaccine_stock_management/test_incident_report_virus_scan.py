@@ -9,6 +9,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from hat import settings
+from iaso.test import MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.test_vaccine_stock_management import VaccineStockManagementAPITestCase
@@ -28,7 +29,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
     def test_create_incident_report_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -76,7 +77,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
     def test_create_incident_report_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -299,7 +300,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
     def test_update_incident_report_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -360,7 +361,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
     def test_update_incident_report_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -524,10 +525,3 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
         self.assertEqual(incident_report_clean.unusable_vials, 10)
         self.assertEqual(incident_report_clean.usable_vials, 5)
         self.assertEqual(incident_report_clean.stock_correction, pm.IncidentReport.StockCorrectionChoices.BROKEN)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

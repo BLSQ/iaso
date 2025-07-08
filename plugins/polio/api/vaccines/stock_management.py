@@ -322,18 +322,15 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
-        self.scan_file(validated_data)
-        return OutgoingStockMovement.objects.create(**validated_data)
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
 
     def update(self, instance, validated_data):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             instance.campaign = campaign
-        instance.save()
-        super().update(instance, validated_data)
-        self.scan_file_and_update(instance, validated_data)
-        instance.save()
-        return instance
+        self.scan_file_if_exists(validated_data, instance)
+        return super().update(instance, validated_data)
 
 
 class OutgoingStockMovementStrictSerializer(OutgoingStockMovementSerializer):
@@ -431,6 +428,14 @@ class IncidentReportSerializer(ModelWithFileSerializer):
             read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
 
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
+
 
 class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
@@ -460,6 +465,14 @@ class DestructionReportSerializer(ModelWithFileSerializer):
             non_admin_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ,
             read_only_perm=permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class DestructionReportViewSet(VaccineStockSubitemBase):

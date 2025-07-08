@@ -107,13 +107,7 @@ class NestedRoundPostSerializer(serializers.ModelSerializer):
         fields = ["number"]
 
 
-class BasePostPatchSerializer(serializers.ModelSerializer):
-    def save(self, **kwargs):
-        vaccine_request_form = self.context["vaccine_request_form"]
-        return super().save(**kwargs, request_form=vaccine_request_form)
-
-
-class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer, ModelWithFileSerializer):
+class NestedVaccinePreAlertSerializerForPost(ModelWithFileSerializer):
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -134,6 +128,16 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer, ModelWithF
             raise serializers.ValidationError("PO number should not be prefixed")
 
         return validated_data
+
+    def create(self, validated_data):
+        validated_data["request_form"] = self.context["vaccine_request_form"]
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data["request_form"] = self.context["vaccine_request_form"]
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
@@ -208,7 +212,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         )
 
 
-class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
+class NestedVaccineArrivalReportSerializerForPost(serializers.ModelSerializer):
     class Meta:
         model = VaccineArrivalReport
         fields = [
@@ -226,6 +230,10 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
         return validated_data
+
+    def save(self, **kwargs):
+        vaccine_request_form = self.context["vaccine_request_form"]
+        return super().save(**kwargs, request_form=vaccine_request_form)
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
@@ -490,12 +498,13 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
 
     def create(self, validated_data):
         validate_rounds_and_campaign(validated_data, self.context["request"].user)
-
         rounds = validated_data.pop("rounds")
-        campaign = validated_data.pop("campaign")
-        self.scan_file(validated_data)
-        request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
+        request_form = VaccineRequestForm.objects.create(**validated_data)
         request_form.rounds.set(rounds)
+        if self.scan_file_if_exists(validated_data):
+            request_form.file_last_scan = validated_data["file_last_scan"]
+            request_form.file_scan_status = validated_data["file_scan_status"]
+            request_form.save()
         return request_form
 
     def update(self, instance, validated_data):
@@ -506,22 +515,15 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
             force_campaign=False,
         )
         rounds = validated_data.pop("rounds", None)
-        campaign = validated_data.pop("campaign", None)
+        self.scan_file_if_exists(validated_data, instance)
+        super().update(instance, validated_data)
 
-        modified = self.scan_file_and_update(instance, validated_data)
-
+        # Multiple nested serializers need to be handled manually
         if rounds:
             instance_rounds = set(instance.rounds.all())
             if set(rounds) != instance_rounds:
                 instance.rounds.set(rounds)
-                modified = True
 
-        if campaign and instance.campaign != campaign:
-            instance.campaign = campaign
-            modified = True
-
-        if modified:
-            instance.save()
         return instance
 
 
@@ -572,6 +574,14 @@ class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
             non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
             read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):

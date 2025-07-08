@@ -517,7 +517,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        return self.queryset.filter_for_user(user).select_related("user", "team", "org_unit", "org_unit__org_unit_type")
 
     @action(methods=["POST"], detail=False)
     def bulk_create_assignments(self, request):

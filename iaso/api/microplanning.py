@@ -556,31 +556,20 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
 
     def get_assignments(self, planning: Planning):
         user = self.context["request"].user
-
-        planning_form_ids = set(planning.forms.values_list("id", flat=True))
-
-        org_unit_types_with_forms = OrgUnitType.objects.filter(
-            projects__account=user.iaso_profile.account
-        ).prefetch_related("reference_forms")
-
+        r = []
+        planning_form_set = set(planning.forms.values_list("id", flat=True))
         forms_per_ou_type = {}
-        for out in org_unit_types_with_forms:
-            intersection_form_ids = list(
-                out.reference_forms.filter(id__in=planning_form_ids).values_list("id", flat=True)
+        for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
+            out_set = set(out.form_set.values_list("id", flat=True))
+            intersection = out_set.intersection(planning_form_set)
+            forms_per_ou_type[out.id] = (
+                intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
             )
-            forms_per_ou_type[out.id] = intersection_form_ids
 
-        assignments = planning.assignment_set.filter(deleted_at__isnull=True, user=user).select_related(
-            "org_unit", "org_unit__org_unit_type"
-        )
-
-        result = []
-        for assignment in assignments:
-            org_unit_type_id = assignment.org_unit.org_unit_type_id
-            form_ids = forms_per_ou_type.get(org_unit_type_id, [])
-            result.append({"org_unit_id": assignment.org_unit_id, "form_ids": form_ids})
-
-        return result
+        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
+            # TODO: investigate type error on next line
+            r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
+        return r
 
 
 class MobilePlanningViewSet(ModelViewSet):

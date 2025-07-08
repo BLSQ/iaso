@@ -9,7 +9,7 @@ from django.test import override_settings
 from rest_framework import status
 
 from hat import settings
-from iaso.utils.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
 

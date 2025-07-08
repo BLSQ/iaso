@@ -18,7 +18,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
-from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update
+from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
 from plugins.polio.api.vaccines.permissions import (
@@ -322,7 +322,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
         campaign = self.extract_campaign_data(validated_data)
         if campaign:
             validated_data["campaign"] = campaign
-        scan_file(validated_data)
+        self.scan_file(validated_data)
         return OutgoingStockMovement.objects.create(**validated_data)
 
     def update(self, instance, validated_data):
@@ -331,7 +331,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             instance.campaign = campaign
         instance.save()
         super().update(instance, validated_data)
-        scan_file_and_update(instance, validated_data)
+        self.scan_file_and_update(instance, validated_data)
         instance.save()
         return instance
 

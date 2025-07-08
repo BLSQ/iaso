@@ -3,7 +3,7 @@ import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-from iaso.utils.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
 from plugins.polio.tests.api.test import PolioTestCaseMixin

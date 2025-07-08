@@ -10,7 +10,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 from iaso.models import OrgUnitType
-from iaso.utils.virus_scan import scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
 from plugins.polio.api.notifications.serializers import NotificationImportSerializer, NotificationSerializer

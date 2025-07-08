@@ -22,7 +22,8 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from iaso.utils.virus_scan import ModelWithFileSerializer, scan_file, scan_file_and_update, scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
 from plugins.polio.api.vaccines.stock_management import CampaignCategory
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
@@ -492,7 +493,7 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
 
         rounds = validated_data.pop("rounds")
         campaign = validated_data.pop("campaign")
-        scan_file(validated_data)
+        self.scan_file(validated_data)
         request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
         request_form.rounds.set(rounds)
         return request_form
@@ -507,7 +508,7 @@ class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
         rounds = validated_data.pop("rounds", None)
         campaign = validated_data.pop("campaign", None)
 
-        modified = scan_file_and_update(instance, validated_data)
+        modified = self.scan_file_and_update(instance, validated_data)
 
         if rounds:
             instance_rounds = set(instance.rounds.all())

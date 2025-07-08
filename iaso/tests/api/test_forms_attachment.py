@@ -16,7 +16,7 @@ from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.test import APITestCase
-from iaso.utils.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import VirusScanStatus
 
 
 BASE_URL = "/api/formattachments/"

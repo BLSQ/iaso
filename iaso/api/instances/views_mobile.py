@@ -47,9 +47,10 @@ class InstancesMobileViewSet(ModelViewSet):
         image_only_serializer.is_valid(raise_exception=True)
         image_only = image_only_serializer.validated_data["image_only"]
 
-        queryset = instance.instancefile_set(manager="objects_with_file_extensions").filter_image_only(
-            image_only=image_only
-        )
+        queryset = instance.instancefile_set(manager="objects_with_file_extensions").all()
+
+        if image_only:
+            queryset = queryset.filter_image()
 
         self.paginator.results_key = "attachments"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10

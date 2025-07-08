@@ -204,9 +204,8 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def _get_filtered_attachments_queryset(self, request):
         """Helper method to get filtered attachments queryset with common logic"""
-        instances = self.get_queryset()
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
+        instances = self.get_queryset().for_filters(**filters)
         queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
 
         image_only_serializer = ImageOnlySerializer(data=request.query_params)
@@ -224,7 +223,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         # Use the new method that supports OR logic for combined filters
         queryset = queryset.filter_by_file_types(
-            image_only=image_only, video_only=video_only, document_only=document_only, other_only=other_only
+            image=image_only, video=video_only, document=document_only, other=other_only
         )
 
         return queryset
@@ -247,22 +246,17 @@ class InstancesViewSet(viewsets.ViewSet):
         """Return counts of attachments per file type (images, videos, docs, others)"""
         queryset = self._get_filtered_attachments_queryset(request)
 
-        # Get counts for each file type
-        from iaso.models.base import document_extensions, image_extensions, video_extensions
-
         # Count images
-        images_count = queryset.filter(file_extension__in=image_extensions).count()
+        images_count = queryset.filter_image().count()
 
         # Count videos
-        videos_count = queryset.filter(file_extension__in=video_extensions).count()
+        videos_count = queryset.filter_video().count()
 
         # Count documents
-        docs_count = queryset.filter(file_extension__in=document_extensions).count()
+        docs_count = queryset.filter_document().count()
 
         # Count others (files not in images, videos, or documents)
-        others_count = queryset.exclude(
-            file_extension__in=image_extensions + video_extensions + document_extensions
-        ).count()
+        others_count = queryset.filter_other().count()
 
         return Response(
             {

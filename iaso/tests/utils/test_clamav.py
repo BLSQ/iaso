@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.test import override_settings
 
 from hat import settings
-from iaso.test import TestCase, MockClamavScanResults
+from iaso.test import MockClamavScanResults, TestCase
 from iaso.utils.virus_scan.clamav import VirusScanStatus, scan_disk_file_for_virus, scan_uploaded_file_for_virus
 
 

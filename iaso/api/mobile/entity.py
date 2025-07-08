@@ -17,7 +17,6 @@ def filter_for_mobile_entity(queryset, request):
             queryset = queryset.filter_for_mobile_entity(
                 request.query_params.get("limit_date"), request.query_params.get("json_content")
             )
-            queryset = queryset.filter(attributes__deleted=False)
         except InvalidLimitDateError as e:
             raise ParseError(e.message)
         except InvalidJsonContentError as e:

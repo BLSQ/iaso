@@ -46,4 +46,11 @@ class Migration(migrations.Migration):
             name="configuration",
             field=models.JSONField(null=True, default=None),
         ),
+        migrations.AlterField(
+            model_name="project",
+            name="feature_flags",
+            field=models.ManyToManyField(
+                blank=True, related_name="+", through="iaso.ProjectFeatureFlags", to="iaso.featureflag"
+            ),
+        ),
     ]

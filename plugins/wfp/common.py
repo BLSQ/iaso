@@ -410,6 +410,7 @@ class ETL:
         current_step = Step()
         current_step.assistance_type = assistance.get("type", "")
         current_step.quantity_given = assistance.get("quantity", 0)
+        current_step.ration_size = assistance.get("ration_size")
         current_step.visit = visit
         current_step.instance_id = instance_id
         return current_step
@@ -423,6 +424,7 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
+        ration_size = ""
         if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
             step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
         ):
@@ -485,9 +487,11 @@ class ETL:
 
             if step.get("ration_to_distribute") is not None:
                 ration_type = step.get("ration_to_distribute")
-            elif step.get("ration") is not None:
-                ration_type = step.get("ration")
-            assistance = {"type": ration_type, "quantity": quantity}
+            assistance = {
+                "type": ration_type,
+                "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
+            }
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:
@@ -497,6 +501,7 @@ class ETL:
             assistance = {
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
             }
             given_assistance.append(assistance)
         elif step.get("ration_type_otp") is not None:
@@ -508,17 +513,38 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
-        elif step.get("ration_type") is not None and step.get("ration_type") != "":
+        elif (
+            (step.get("ration_type") is not None and step.get("ration_type") != "")
+            or (step.get("ration") is not None and step.get("ration") != "")
+            or (step.get("ration_type_tsfp") is not None and step.get("ration_type_tsfp") != "")
+            or (step.get("ration_type_otp") is not None and step.get("ration_type_otp") != "")
+        ):
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
                 quantity = step.get("_csb_packets", 0)
             elif step.get("ration_type") == "lndf":
                 quantity = step.get("_lndf_kgs", 0)
+            elif (
+                step.get(
+                    "ration_type_tsfp",
+                    step.get(
+                        "ration",
+                        step.get(
+                            "ration_type",
+                            step.get("ration_type_otp"),
+                        ),
+                    ),
+                )
+                == "cbt"
+            ):
+                quantity = 0
+                ration_size = step.get("ration_size", step.get("ration_limit"))
             else:
                 if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
                     quantity = 0
             assistance = {
-                "type": step.get("ration_type"),
+                "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,
+                "ration_size": ration_size,
             }
             given_assistance.append(assistance)
 
@@ -705,6 +731,8 @@ class ETL:
         monthly_Statistic.given_sachet_rusf = monthly_journey.get("given_sachet_rusf")
         monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
         monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
+        monthly_Statistic.given_ration_cbt = monthly_journey.get("given_ration_cbt")
+
         monthly_Statistic.exit_type = monthly_journey.get("exit_type")
         monthly_Statistic.account = account
 
@@ -723,6 +751,7 @@ class ETL:
                 "assistance_type",
                 "instance_id",
                 "quantity_given",
+                "ration_size",
                 "visit",
                 "visit__id",
                 "visit__date",
@@ -750,7 +779,12 @@ class ETL:
 
         for org_unit, journeys in data_by_journey:
             visits_by_period = groupby(journeys, key=itemgetter("period"))
-            assistance = {"rutf_quantity": 0, "rusf_quantity": 0, "csb_quantity": 0}
+            assistance = {
+                "rutf_quantity": 0,
+                "rusf_quantity": 0,
+                "csb_quantity": 0,
+                "cbt_ration": "",
+            }
             aggregated_journeys = AggregatedJourney().group_by_period(
                 visits_by_period, org_unit, aggregated_journeys, assistance
             )

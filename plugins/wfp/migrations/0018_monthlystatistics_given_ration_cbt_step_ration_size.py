@@ -4,20 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wfp', '0017_delete_yearlystatistics'),
+        ("wfp", "0017_delete_yearlystatistics"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='monthlystatistics',
-            name='given_ration_cbt',
+            model_name="monthlystatistics",
+            name="given_ration_cbt",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name='step',
-            name='ration_size',
-            field=models.CharField(blank=True, choices=[('full', 'Full'), ('partial', 'Partial'), ('none', 'None'), ('More', 'More')], max_length=50, null=True),
+            model_name="step",
+            name="ration_size",
+            field=models.CharField(
+                blank=True,
+                choices=[("full", "Full"), ("partial", "Partial"), ("none", "None"), ("More", "More")],
+                max_length=50,
+                null=True,
+            ),
         ),
     ]

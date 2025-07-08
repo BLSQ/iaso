@@ -4,15 +4,19 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('wfp', '0018_monthlystatistics_given_ration_cbt_step_ration_size'),
+        ("wfp", "0018_monthlystatistics_given_ration_cbt_step_ration_size"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='monthlystatistics',
-            name='given_ration_cbt',
-            field=models.CharField(blank=True, choices=[('full', 'Full'), ('partial', 'Partial'), ('none', 'None'), ('More', 'More')], max_length=255, null=True),
+            model_name="monthlystatistics",
+            name="given_ration_cbt",
+            field=models.CharField(
+                blank=True,
+                choices=[("full", "Full"), ("partial", "Partial"), ("none", "None"), ("More", "More")],
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

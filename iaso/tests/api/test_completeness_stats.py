@@ -3,6 +3,9 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+import csv
+
+from io import StringIO
 from typing import Any
 
 from django.contrib.auth.models import Permission, User
@@ -344,6 +347,11 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "parent_org_unit": None,
                     "has_children": False,
                 },
+            ],
+            "forms": [
+                {"id": self.form_hs_1.id, "name": "Hydroponics study 1", "slug": f"form_{self.form_hs_1.id}"},
+                {"id": self.form_hs_2.id, "name": "Hydroponics study 2", "slug": f"form_{self.form_hs_2.id}"},
+                {"id": self.form_hs_4.id, "name": "Hydroponics study 4", "slug": f"form_{self.form_hs_4.id}"},
             ],
         }
 
@@ -892,3 +900,36 @@ class CompletenessStatsAPITestCase(APITestCase):
             # check that the result have effectly zero submission
             ou = r["org_unit"]["id"]
             self.assertEqual(Instance.objects.filter(form=self.form_hs_4, org_unit_id=ou).count(), 0)
+
+    def test_completeness_stats_csv_export(self):
+        self.client.force_authenticate(self.user)
+        # Use multiple forms to check column generation
+        form_ids = f"{self.form_hs_1.id},{self.form_hs_2.id},{self.form_hs_4.id}"
+        response = self.client.get(f"/api/v2/completeness_stats.csv?form_id={form_ids}&limit=10")
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        reader = csv.reader(StringIO(content))
+        header = next(reader)
+        # Check that the header contains the expected columns
+        expected_columns = [
+            f"{self.form_hs_1.name} - Descendants Numerator",
+            f"{self.form_hs_1.name} - Descendants Denominator",
+            f"{self.form_hs_1.name} - Descendants Percentage",
+            f"{self.form_hs_2.name} - Descendants Numerator",
+            f"{self.form_hs_2.name} - Descendants Denominator",
+            f"{self.form_hs_2.name} - Descendants Percentage",
+            f"{self.form_hs_4.name} - Descendants Numerator",
+            f"{self.form_hs_4.name} - Descendants Denominator",
+            f"{self.form_hs_4.name} - Descendants Percentage",
+            "has_children",
+            "id",
+            "name",
+            "org_unit_name",
+            "org_unit_type_name",
+            "parent_org_unit_name",
+        ]
+        for col in expected_columns:
+            self.assertIn(col, header)
+        # Optionally, check the data rows for expected values
+        for row in reader:
+            self.assertEqual(len(row), len(header))

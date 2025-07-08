@@ -61,6 +61,53 @@ from ..periods import Period
 from .common import HasPermission
 
 
+class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
+    """Custom CSV renderer for completeness stats that properly formats form data"""
+
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if not data or not isinstance(data, dict):
+            return super().render(data, accepted_media_type, renderer_context)
+
+        # Handle paginated response
+        if "results" in data:
+            results = data["results"]
+            forms = data.get("forms", [])
+        else:
+            results = data
+            forms = []
+
+        if not results:
+            return super().render(data, accepted_media_type, renderer_context)
+
+        transformed_data = []
+
+        for row in results:
+            transformed_row = {
+                "name": row.get("name", ""),
+                "id": row.get("id", ""),
+                "org_unit_name": row.get("org_unit", {}).get("name", "") if row.get("org_unit") else "",
+                "org_unit_type_name": row.get("org_unit_type", {}).get("name", "") if row.get("org_unit_type") else "",
+                "parent_org_unit_name": row.get("parent_org_unit", {}).get("name", "")
+                if row.get("parent_org_unit")
+                else "",
+                "has_children": row.get("has_children", False),
+            }
+
+            form_stats = row.get("form_stats", {})
+            for form in forms:
+                form_slug = form.get("slug", "")
+                form_name = form.get("name", "")
+                form_stats_data = form_stats.get(form_slug, {})
+
+                transformed_row[f"{form_name} - Descendants Numerator"] = form_stats_data.get("descendants_ok", 0)
+                transformed_row[f"{form_name} - Descendants Denominator"] = form_stats_data.get("descendants", 0)
+                transformed_row[f"{form_name} - Descendants Percentage"] = form_stats_data.get("percent", 0)
+
+            transformed_data.append(transformed_row)
+
+        return super().render(transformed_data, accepted_media_type, renderer_context)
+
+
 class OrgUnitTypeSerializer(ModelSerializer):
     class Meta:
         model = OrgUnitType
@@ -239,7 +286,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     renderer_classes = [
         rest_framework.renderers.JSONRenderer,
         rest_framework.renderers.BrowsableAPIRenderer,
-        rest_framework_csv.renderers.PaginatedCSVRenderer,
+        CompletenessStatsCSVRenderer,
     ]
     serializer_class = ParamSerializer
 
@@ -490,7 +537,19 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         else:
             if ou_with_stats.count() > 0:
                 object_list = with_parent([to_dict(ou) for ou in ou_with_stats], True)
-        return Response({"results": object_list})
+        return Response(
+            {
+                "results": object_list,
+                "forms": [
+                    {
+                        "id": form.id,
+                        "name": form.name,
+                        "slug": f"form_{form.id}",
+                    }
+                    for form in form_qs
+                ],
+            }
+        )
 
     @action(methods=["GET"], detail=False)
     def types_for_version_ou(self, request):

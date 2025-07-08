@@ -144,7 +144,7 @@ jobs:
                   RDS_USERNAME: postgres
                   CACHE: false
                   DEV_SERVER: true
-                  PLUGINS: polio,wfp
+                  PLUGINS: polio,wfp,wfp_auth
             - name: Django tests
               run: |
                   . ./venv/bin/activate &&  python manage.py migrate
@@ -164,7 +164,7 @@ jobs:
                   RDS_USERNAME: postgres
                   CACHE: false
                   DEV_SERVER: true
-                  PLUGINS: polio,wfp
+                  PLUGINS: polio,wfp,wfp_auth
                   AWS_STORAGE_BUCKET_NAME: iaso-dev
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}

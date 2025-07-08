@@ -125,12 +125,13 @@ class IasoTestCaseMixin:
         return [user, anon, user_no_perms]
 
     @staticmethod
-    def create_account_datasource_version_project(source_name, account_name, project_name):
+    def create_account_datasource_version_project(source_name, account_name, project_name, app_id=None):
         """Create a project and all related data: account, data source, source version"""
         data_source = m.DataSource.objects.create(name=source_name)
         source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
         account = m.Account.objects.create(name=account_name, default_version=source_version)
-        project = m.Project.objects.create(name=project_name, app_id=f"{project_name}.app", account=account)
+        app_id = app_id or f"{project_name}.app"
+        project = m.Project.objects.create(name=project_name, app_id=app_id, account=account)
         data_source.projects.set([project])
 
         return [account, data_source, source_version, project]

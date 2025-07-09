@@ -23,7 +23,6 @@ from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
-from iaso.utils.clamav import scan_uploaded_file_for_virus
 from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
 from plugins.polio.api.vaccines.stock_management import CampaignCategory

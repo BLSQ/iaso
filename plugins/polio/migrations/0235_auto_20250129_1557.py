@@ -10,7 +10,7 @@ def migrate_permissions(apps, schema_editor):
 
     # Get content types
     old_ct = ContentType.objects.get(app_label="menupermissions", model="custompermissionsupport")
-    new_ct = ContentType.objects.get_or_create(app_label="polio", model="poliopermissionsupport")
+    new_ct, _ = ContentType.objects.get_or_create(app_label="polio", model="poliopermissionsupport")
     print(f"Found content types - Old: {old_ct}, New: {new_ct}")
 
     # Map old permission codenames to new ones
@@ -81,7 +81,7 @@ def reverse_migrate_permissions(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0233_poliopermissionsupport"),
+        ("polio", "0234_poliopermissionsupport"),
     ]
 
     operations = [

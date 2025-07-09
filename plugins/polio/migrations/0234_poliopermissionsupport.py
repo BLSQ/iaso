@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0232_outgoingstockmovement_non_obr_name_and_more"),
+        ("polio", "0233_rename_document_destructionreport_file_and_more"),
     ]
 
     operations = [

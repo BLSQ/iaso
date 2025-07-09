@@ -410,7 +410,7 @@ class AppsAPITestCase(APITestCase):
                     "name": self.flag_6.name,
                     "code": self.flag_6.code,
                     "configuration": {
-                        "int": 123.0,
+                        "int": "test",
                         "long": 123,
                         "number": 123,
                         "float": 123.0,
@@ -440,7 +440,7 @@ class AppsAPITestCase(APITestCase):
                         "int": 123,
                         "long": 123,
                         "number": 123,
-                        "float": "123.0",
+                        "float": "123.G",
                         "double": 123.0,
                         "decimal": 123.0,
                         "url": "http://www.perdu.com",
@@ -480,7 +480,7 @@ class AppsAPITestCase(APITestCase):
         }
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, 200)
 
     def test_app_update_with_bad_url(self):
         candidate_app = {

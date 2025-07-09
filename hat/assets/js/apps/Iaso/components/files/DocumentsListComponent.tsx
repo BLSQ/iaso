@@ -1,9 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { Grid } from '@mui/material';
+import { displayDateFromTimestamp } from 'bluesquare-components';
 
+import { ShortFile } from '../../domains/instances/types/instance';
 import { getFileName } from '../../utils/filesUtils';
 import DocumentsItem from './DocumentsItemComponent';
-import { ShortFile } from '../../domains/instances/types/instance';
 
 const styles = {
     root: {
@@ -26,7 +27,10 @@ const DocumentsListComponent: FunctionComponent<Props> = ({ docsList }) => {
                     md={1}
                     key={`${file.itemId}-${getFileName(file.path).name}`}
                 >
-                    <DocumentsItem file={file} />
+                    <DocumentsItem
+                        filePath={file.path}
+                        fileInfo={displayDateFromTimestamp(file.createdAt)}
+                    />
                 </Grid>
             ))}
         </Grid>

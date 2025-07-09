@@ -133,7 +133,7 @@ const useStyles = makeStyles(theme => ({
 
 /**
  * Slugification function that matches Django's slugify_underscore behavior
- * Replaces spaces with underscores and converts accented characters to ASCII
+ * Replaces spaces with underscores, converts accented characters to ASCII, and removes parentheses and commas
  * @param value - The string to slugify
  * @returns The slugified string
  */
@@ -141,6 +141,7 @@ const slugifyValue = (value: string): string => {
     return value
         .normalize('NFD') // Decompose characters into base + accent
         .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
+        .replace(/[(),]/g, '') // Remove parentheses and commas
         .replace(/\s+/g, '_'); // Replace spaces with underscores
 };
 

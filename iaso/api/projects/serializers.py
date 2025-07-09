@@ -24,6 +24,13 @@ class ProjectFeatureFlagSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, required=False, source="featureflag.created_at")
     updated_at = TimestampField(read_only=True, required=False, source="featureflag.updated_at")
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        # old versions of the mobile app do not expect a null value here
+        if rep.get("configuration") is None:
+            rep.pop("configuration")
+        return rep
+
 
 class FeatureFlagSerializer(serializers.Serializer):
     class Meta:

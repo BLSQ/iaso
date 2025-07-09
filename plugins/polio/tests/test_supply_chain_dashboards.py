@@ -1,10 +1,10 @@
 from datetime import date
 
-from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.models.base import Account
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import (
     Campaign,
     DestructionReport,
@@ -32,7 +32,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             username="authorized_read",
             account=cls.account,
             permissions=[
-                permission._POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ,
             ],
         )
         cls.unauthorized_user = cls.create_user_with_profile(

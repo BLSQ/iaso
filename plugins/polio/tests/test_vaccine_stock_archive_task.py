@@ -3,11 +3,9 @@ import datetime
 from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now
 
-import hat.menupermissions.models as permissions
-
 from iaso import models as m
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
-from plugins.polio import models as pm
+from plugins.polio import models as pm, permissions as polio_permissions
 
 
 class TestVaccineStockArchive(TaskAPITestCase):
@@ -40,7 +38,9 @@ class TestVaccineStockArchive(TaskAPITestCase):
         cls.anon = AnonymousUser()
 
         cls.user = cls.create_user_with_profile(
-            username="user_2", account=cls.account, permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE]
+            username="user_2",
+            account=cls.account,
+            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=[])
 

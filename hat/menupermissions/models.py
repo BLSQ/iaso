@@ -19,7 +19,7 @@ The frontend is getting the list of existing permission from the
 
 from importlib import import_module
 
-from django.conf import LazySettings, settings
+from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -141,13 +141,13 @@ PLANNING_READ = _PREFIX + _PLANNING_READ
 
 
 # Import from plugins
-for plugin in settings.PLUGINS:
-    try:
-        exported_permissions = import_module(f"plugins.{plugin}.permissions").exported_permissions
-        for permission_name, permission_value in exported_permissions.items():
-            globals()[permission_name] = permission_value
-    except ImportError:
-        print(f"{plugin} plugin has no permission support")
+# for plugin in settings.PLUGINS:
+#     try:
+#         exported_permissions = import_module(f"plugins.{plugin}.permissions").exported_permissions
+#         for permission_name, permission_value in exported_permissions.items():
+#             globals()[permission_name] = permission_value
+#     except ImportError:
+#         print(f"{plugin} plugin has no permission support")
 
 
 PROJECTS = _PREFIX + _PROJECTS

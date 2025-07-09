@@ -98,7 +98,7 @@ class ModelWithFileSerializer(serializers.ModelSerializer):
         return needs_scanning
 
     def _check_if_file_exists_and_needs_scanning(self, validated_data, obj):
-        """ "
+        """
         Determines if a file exists in validated_data and if it needs scanning.
         Files are always scanned during creation. Files are scanned during update only if they have changed.
         """

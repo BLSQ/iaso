@@ -1,6 +1,6 @@
 import django_filters
 
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, F, Prefetch, Q
 from rest_framework import filters, viewsets
 from rest_framework.mixins import ListModelMixin
 
@@ -33,7 +33,20 @@ class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet)
                 # Change requests liked to a `data_source_synchronization` are limited to the web.
                 data_source_synchronization__isnull=True,
             )
-            .filter(Q(new_reference_instances__isnull=True) | Q(new_reference_instances__project__app_id=app_id))
+            .annotate(
+                total_new_reference_instances=Count("new_reference_instances", distinct=True),
+                total_new_reference_instances_in_project=Count(
+                    "new_reference_instances", Q(new_reference_instances__project__app_id=app_id), distinct=True
+                ),
+                total_new_reference_instances__form_in_project=Count(
+                    "new_reference_instances", Q(new_reference_instances__form__projects__app_id=app_id), distinct=True
+                ),
+            )
+            .filter(
+                Q(new_reference_instances__isnull=True)
+                | Q(total_new_reference_instances=F("total_new_reference_instances_in_project"))
+                & Q(total_new_reference_instances=F("total_new_reference_instances__form_in_project"))
+            )
             .select_related("org_unit")
             .prefetch_related(
                 "new_groups",

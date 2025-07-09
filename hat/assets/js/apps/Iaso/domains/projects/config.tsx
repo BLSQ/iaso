@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import { Box, Chip, Switch, Tooltip } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -158,18 +158,6 @@ export const useFeatureFlagColumns = (
                             color="primary"
                         />
                     );
-                },
-            },
-            {
-                Header: '',
-                id: 'expander',
-                width: 1,
-                expander: true,
-                Expander: ({ _, setIsExpanded }) => {
-                    useEffect(() => {
-                        setTimeout(() => setIsExpanded(true), 100);
-                    }, [setIsExpanded]);
-                    return null;
                 },
             },
         ];

@@ -167,11 +167,12 @@ class AppSerializer(ProjectSerializer):
                 raise ValidationError(f"{key} is a required configuration")
 
             key_type = f_f_object.configuration_schema[key]["type"]
-            value_type = type(value)
-            # If the key_type is not found in the mapping, we want the app to crash, no try/catch
-
-            if TYPE_MAPPING[key_type] is not value_type:
-                raise ValidationError(f"Value for {key} is supposed to be {key_type} but {value_type} provided")
+            try:
+                value = TYPE_MAPPING[key_type](value)
+            except ValueError:
+                raise ValidationError(
+                    f"Value '{value}' for {key} is supposed to be {key_type} but {type(value)} provided"
+                )
 
             if key_type == "url":
                 if urlparse(value).scheme not in ["http", "https"]:

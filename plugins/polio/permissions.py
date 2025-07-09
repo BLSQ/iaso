@@ -46,6 +46,87 @@ POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_REA
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
 
 
+read_edit_permissions = {
+    "iaso_polio_budget_permissions": {
+        "read": "iaso_polio_budget",
+        "write": "iaso_polio_budget_admin",
+    },
+    "iaso_polio_chronogram_permissions": {
+        "read": "iaso_polio_chronogram_restricted_write",
+        "write": "iaso_polio_chronogram",
+    },
+    "iaso_polio_vaccine_supply_chain_permissions": {
+        "read_only": "iaso_polio_vaccine_supply_chain_read_only",
+        "no_admin": "iaso_polio_vaccine_supply_chain_read",
+        "admin": "iaso_polio_vaccine_supply_chain_write",
+    },
+    "iaso_polio_vaccine_stock_management_permissions": {
+        "read_only": "iaso_polio_vaccine_stock_management_read_only",
+        "no_admin": "iaso_polio_vaccine_stock_management_read",
+        "admin": "iaso_polio_vaccine_stock_management_write",
+    },
+    "iaso_polio_vaccine_authorization_permissions": {
+        "no_admin": "iaso_polio_vaccine_authorizations_read_only",
+        "admin": "iaso_polio_vaccine_authorizations_admin",
+    },
+    "iaso_polio_vaccine_stock_earmarks_permissions": {
+        "read_only": "iaso_polio_vaccine_stock_earmarks_read_only",
+        "no_admin": "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "admin": "iaso_polio_vaccine_stock_earmarks_admin",
+    },
+}
+
+permissions_presentation = {
+    "polio": [
+        "iaso_polio_config",
+        "iaso_polio",
+        "iaso_polio_budget_admin",
+        "iaso_polio_budget",
+        "iaso_polio_chronogram",
+        "iaso_polio_chronogram_restricted_write",
+        "iaso_polio_vaccine_supply_chain_read",
+        "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_vaccine_supply_chain_read_only",
+        "iaso_polio_vaccine_stock_management_read",
+        "iaso_polio_vaccine_stock_management_write",
+        "iaso_polio_vaccine_stock_management_read_only",
+        "iaso_polio_notifications",
+        "iaso_polio_vaccine_authorizations_read_only",
+        "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
+        "iaso_polio_vaccine_stock_earmarks_read_only",
+    ],
+}
+
+modules = [
+    {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
+]
+
+module_permissions = {
+    "POLIO_PROJECT": [
+        "iaso_polio_config",
+        "iaso_polio",
+        "iaso_polio_budget_admin",
+        "iaso_polio_budget",
+        "iaso_polio_chronogram",
+        "iaso_polio_chronogram_restricted_write",
+        "iaso_polio_vaccine_supply_chain_read",
+        "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_vaccine_supply_chain_read_only",
+        "iaso_polio_vaccine_stock_management_read",
+        "iaso_polio_vaccine_stock_management_write",
+        "iaso_polio_vaccine_stock_management_read_only",
+        "iaso_polio_notifications",
+        "iaso_polio_vaccine_authorizations_read_only",
+        "iaso_polio_vaccine_authorizations_admin",
+        "iaso_polio_vaccine_stock_earmarks_nonadmin",
+        "iaso_polio_vaccine_stock_earmarks_admin",
+        "iaso_polio_vaccine_stock_earmarks_read_only",
+    ],
+}
+
+
 class PolioPermissionSupport(models.Model):
     class Meta:
         managed = False

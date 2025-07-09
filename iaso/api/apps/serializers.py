@@ -135,30 +135,6 @@ class AppSerializer(ProjectSerializer):
                     f_f_object, through_defaults={"configuration": f_f.get("configuration", None)}
                 )
 
-    CONFIG_TYPE_INT = "int"
-    CONFIG_TYPE_LONG = "long"
-    CONFIG_TYPE_NUMBER = "number"
-    CONFIG_TYPE_FLOAT = "float"
-    CONFIG_TYPE_DOUBLE = "double"
-    CONFIG_TYPE_DECIMAL = "decimal"
-    CONFIG_TYPE_URL = "url"
-    CONFIG_TYPE_TEXT = "text"
-    CONFIG_TYPE_STR = "str"
-    CONFIG_TYPE_STRING = "string"
-
-    TYPE_MAPPING = {
-        CONFIG_TYPE_INT: int,
-        CONFIG_TYPE_LONG: int,
-        CONFIG_TYPE_NUMBER: int,
-        CONFIG_TYPE_FLOAT: float,
-        CONFIG_TYPE_DOUBLE: float,
-        CONFIG_TYPE_DECIMAL: float,
-        CONFIG_TYPE_URL: str,
-        CONFIG_TYPE_TEXT: str,
-        CONFIG_TYPE_STR: str,
-        CONFIG_TYPE_STRING: str,
-    }
-
     @staticmethod
     def validate_configuration(f_f, f_f_object: FeatureFlag) -> None:
         if f_f_object.configuration_schema is None:
@@ -168,6 +144,19 @@ class AppSerializer(ProjectSerializer):
             configuration = f_f["configuration"]
         except KeyError:
             raise ValidationError(f"A configuration must be provided for feature flag {f_f_object.code}")
+
+        TYPE_MAPPING = {
+            "int": int,
+            "long": int,
+            "number": int,
+            "float": float,
+            "double": float,
+            "decimal": float,
+            "url": str,
+            "text": str,
+            "str": str,
+            "string": str,
+        }
         for key in f_f_object.configuration_schema:
             try:
                 value = configuration[key]
@@ -180,9 +169,10 @@ class AppSerializer(ProjectSerializer):
             key_type = f_f_object.configuration_schema[key]["type"]
             value_type = type(value)
             # If the key_type is not found in the mapping, we want the app to crash, no try/catch
-            if AppSerializer.TYPE_MAPPING[key_type] is not value_type:
+
+            if TYPE_MAPPING[key_type] is not value_type:
                 raise ValidationError(f"Value for {key} is supposed to be {key_type} but {value_type} provided")
 
-            if key_type == AppSerializer.CONFIG_TYPE_URL:
+            if key_type == "url":
                 if urlparse(value).scheme not in ["http", "https"]:
                     raise ValidationError(f"Value for {key} is supposed to be an URL, '{value}' is not a valid URL")

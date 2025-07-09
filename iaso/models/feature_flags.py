@@ -50,7 +50,7 @@ class FeatureFlag(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
-    configuration_schema = models.JSONField(null=True, default=None)
+    configuration_schema = models.JSONField(null=True, blank=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

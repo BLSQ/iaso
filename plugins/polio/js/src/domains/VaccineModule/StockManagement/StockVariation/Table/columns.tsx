@@ -105,7 +105,14 @@ export const useFormATableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -201,7 +208,14 @@ export const useDestructionTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
                             <DisplayIfUserHasPerm
                                 permissions={[
@@ -316,7 +330,14 @@ export const useIncidentTableColumns = (
                     return (
                         <>
                             <PdfPreview
-                                pdfUrl={settings.row.original.document}
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
+                                }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
 
                             <DisplayIfUserHasPerm

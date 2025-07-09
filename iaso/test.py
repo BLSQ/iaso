@@ -351,3 +351,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
                 self.assertTrue(any(isinstance(data[field], t) for t in expected_type))
             else:
                 self.assertIsInstance(data[field], expected_type)
+
+
+class MockClamavScanResults:
+    def __init__(self, state, details, passed):
+        self.state = state
+        self.details = details
+        self.passed = passed

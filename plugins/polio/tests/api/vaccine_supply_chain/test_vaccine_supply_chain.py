@@ -3,7 +3,7 @@ import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
 from plugins.polio.tests.api.test import PolioTestCaseMixin
@@ -597,15 +597,15 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             doses_shipped=1000,
             po_number="DOC-TEST-123",
             lot_numbers=["LOT-1234", "LOT-5678"],
-            document=test_document,
+            file=test_document,
         )
 
         # Get the pre-alert ID
         pre_alert_id = pre_alert.id
 
         # Store the original document name and size for comparison
-        original_document_name = pre_alert.document.name if pre_alert.document else None
-        original_document_size = pre_alert.document.size if pre_alert.document else None
+        original_document_name = pre_alert.file.name if pre_alert.file else None
+        original_document_size = pre_alert.file.size if pre_alert.file else None
 
         # Update the pre-alert with a different field but not the document
         update_data = {
@@ -630,8 +630,8 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
 
         # Verify that the document field was not modified
         # Check that the document name and size are the same as before
-        self.assertEqual(updated_pre_alert.document.name, original_document_name)
-        self.assertEqual(updated_pre_alert.document.size, original_document_size)
+        self.assertEqual(updated_pre_alert.file.name, original_document_name)
+        self.assertEqual(updated_pre_alert.file.size, original_document_size)
 
     def test_vrf_cannot_be_created_for_round_without_scope(self):
         campaign, rnd1, _, _, _, _ = self.create_campaign(

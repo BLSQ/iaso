@@ -102,8 +102,8 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const isNormalType = values?.vrf?.vrf_type === 'Normal';
 
     const documentErrors = useMemo(() => {
-        return processErrorDocsBase(errors.document);
-    }, [errors.document]);
+        return processErrorDocsBase(errors.file);
+    }, [errors.file]);
     return (
         <Box className={className} mb={3}>
             <Box mb={2}>
@@ -325,11 +325,11 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             onFilesSelect={files => {
                                                 if (files.length) {
                                                     setFieldTouched(
-                                                        'vrf.document',
+                                                        'vrf.file',
                                                         true,
                                                     );
                                                     setFieldValue(
-                                                        'vrf.document',
+                                                        'vrf.file',
                                                         files,
                                                     );
                                                 }
@@ -337,7 +337,14 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                             disabled={isFieldDisabledEdit(
                                                 vrfData,
                                             )}
-                                            document={values?.vrf?.document}
+                                            document={values?.vrf?.file}
+                                            scanResult={
+                                                values?.vrf?.scan_result
+                                            }
+                                            scanTimestamp={
+                                                values?.vrf?.scan_timestamp
+                                            }
+                                            coloredScanResultIcon
                                         />
                                     </Box>
                                 </Grid>

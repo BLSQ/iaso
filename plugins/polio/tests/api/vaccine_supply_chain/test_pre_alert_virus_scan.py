@@ -10,7 +10,8 @@ from django.test import override_settings
 from rest_framework import status
 
 from hat import settings
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.test import MockClamavScanResults
+from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.tests.api.vaccine_supply_chain.base import BaseVaccineSupplyChainAPITestCase
 
@@ -23,7 +24,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def _format_multi_part_data(self, data_to_format):
         # Flatten the list into a bracketed dict e.g.
         # pre_alerts[0].date_pre_alert_reception: 2021-01-01
-        # pre_alerts[1].document: <document_bytes>
+        # pre_alerts[1].file: <document_bytes>
         data = OrderedDict()
         for index, alert in enumerate(data_to_format):
             for key, value in alert.items():
@@ -37,12 +38,12 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
         mock_scanner.scan.side_effect = [
-            MockResults(
+            MockClamavScanResults(
                 state="OK",
                 details=None,
                 passed=True,
             ),
-            MockResults(
+            MockClamavScanResults(
                 state="FOUND",
                 details="Virus found :(",
                 passed=False,
@@ -73,7 +74,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                         "doses_per_vial": 50,
                         "vials_shipped": 1,
                         "po_number": new_pre_alert_1_po_number,
-                        "document": SimpleUploadedFile(
+                        "file": SimpleUploadedFile(
                             name="safe_file.pdf",
                             content=safe_file_content,
                             content_type="application/pdf",
@@ -86,7 +87,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                         "doses_per_vial": 50,
                         "vials_shipped": 1,
                         "po_number": new_pre_alert_2_po_number,
-                        "document": SimpleUploadedFile(
+                        "file": SimpleUploadedFile(
                             name="infected_file.pdf",
                             content=infected_file_content,
                             content_type="application/pdf",
@@ -102,9 +103,8 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     headers={"accept": "application/json"},
                 )
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response_json = self.assertJSONResponse(response, 201)
 
-        response_json = response.json()
         self.assertEqual(len(response_json["pre_alerts"]), 2)
 
         pre_alert_1 = (
@@ -113,17 +113,19 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
             .first()
         )
         self.assertIsNotNone(pre_alert_1)
-        self.assertEqual(pre_alert_1.document_scan_status, VirusScanStatus.CLEAN)
-        self.assertEqual(pre_alert_1.document_last_scan, self.DT)
+        pre_alert_1.refresh_from_db()
+        self.assertEqual(pre_alert_1.file_last_scan, self.DT)
+        self.assertEqual(pre_alert_1.file_scan_status, VirusScanStatus.CLEAN)
 
         pre_alert_2 = (
             pm.VaccinePreAlert.objects.filter(po_number=new_pre_alert_2_po_number, request_form=request_form.id)
             .order_by("-id")
             .first()
         )
+        pre_alert_2.refresh_from_db()
         self.assertIsNotNone(pre_alert_2)
-        self.assertEqual(pre_alert_2.document_scan_status, VirusScanStatus.INFECTED)
-        self.assertEqual(pre_alert_2.document_last_scan, self.DT)
+        self.assertEqual(pre_alert_2.file_scan_status, VirusScanStatus.INFECTED)
+        self.assertEqual(pre_alert_2.file_last_scan, self.DT)
 
     def test_create_pre_alert_without_scanning(self):
         # Use a non-admin user
@@ -144,7 +146,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
                     "po_number": new_pre_alert_po_number,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="infected_file.pdf",
                         content=infected_file_content,
                         content_type="application/pdf",
@@ -171,8 +173,8 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
             .first()
         )
         self.assertIsNotNone(pre_alert)
-        self.assertEqual(pre_alert.document_scan_status, VirusScanStatus.PENDING)
-        self.assertIsNone(pre_alert.document_last_scan)
+        self.assertEqual(pre_alert.file_scan_status, VirusScanStatus.PENDING)
+        self.assertIsNone(pre_alert.file_last_scan)
 
     @override_settings(
         CLAMAV_ACTIVE=True,
@@ -201,7 +203,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
                     "po_number": new_pre_alert_po_number,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="infected_file.pdf",
                         content=infected_file_content,
                         content_type="application/pdf",
@@ -228,8 +230,8 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
             .first()
         )
         self.assertIsNotNone(pre_alert)
-        self.assertEqual(pre_alert.document_scan_status, VirusScanStatus.ERROR)
-        self.assertIsNone(pre_alert.document_last_scan)
+        self.assertEqual(pre_alert.file_scan_status, VirusScanStatus.ERROR)
+        self.assertIsNone(pre_alert.file_last_scan)
 
     def test_retrieve_pre_alerts_with_various_statuses(self):
         request_form = pm.VaccineRequestForm.objects.first()
@@ -242,9 +244,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="1",
-                document_scan_status=VirusScanStatus.CLEAN,
-                document_last_scan=self.DT,
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.CLEAN,
+                file_last_scan=self.DT,
+                file=SimpleUploadedFile(
                     name="safe_file.pdf",
                     content=file_content,
                     content_type="application/pdf",
@@ -254,9 +256,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="2",
-                document_scan_status=VirusScanStatus.INFECTED,
-                document_last_scan=self.DT,
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.INFECTED,
+                file_last_scan=self.DT,
+                file=SimpleUploadedFile(
                     name="infected_file.pdf",
                     content=file_content,
                     content_type="application/pdf",
@@ -266,9 +268,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="3",
-                document_scan_status=VirusScanStatus.PENDING,
-                document_last_scan=self.DT,
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.PENDING,
+                file_last_scan=self.DT,
+                file=SimpleUploadedFile(
                     name="pending_file.pdf",
                     content=file_content,
                     content_type="application/pdf",
@@ -278,9 +280,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="4",
-                document_scan_status=VirusScanStatus.ERROR,
-                document_last_scan=self.DT,
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.ERROR,
+                file_last_scan=self.DT,
+                file=SimpleUploadedFile(
                     name="error_file.pdf",
                     content=file_content,
                     content_type="application/pdf",
@@ -317,7 +319,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def test_update_pre_alert_with_safe_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -334,9 +336,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="1",
-                document_scan_status=VirusScanStatus.INFECTED,
-                document_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.INFECTED,
+                file_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
+                file=SimpleUploadedFile(
                     name="infected_file.pdf",
                     content=infected_file_content,
                     content_type="application/pdf",
@@ -352,7 +354,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_shipped": 20,
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="safe_file.pdf",
                         content=safe_file_content,
                         content_type="application/pdf",
@@ -370,8 +372,8 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         pre_alert_infected.refresh_from_db()
-        self.assertEqual(pre_alert_infected.document_scan_status, VirusScanStatus.CLEAN)
-        self.assertEqual(pre_alert_infected.document_last_scan, self.DT)
+        self.assertEqual(pre_alert_infected.file_scan_status, VirusScanStatus.CLEAN)
+        self.assertEqual(pre_alert_infected.file_last_scan, self.DT)
         self.assertEqual(pre_alert_infected.doses_shipped, 20)
 
     @time_machine.travel(DT, tick=False)
@@ -380,7 +382,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
     def test_update_pre_alert_with_infected_file(self, mock_get_scanner):
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Virus found :(",
             passed=False,
@@ -397,9 +399,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="1",
-                document_scan_status=VirusScanStatus.CLEAN,
-                document_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.CLEAN,
+                file_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
+                file=SimpleUploadedFile(
                     name="clean_file.pdf",
                     content=safe_file_content,
                     content_type="application/pdf",
@@ -415,7 +417,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_shipped": 20,
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="infected_file.pdf",
                         content=infected_file_content,
                         content_type="application/pdf",
@@ -433,8 +435,8 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         pre_alert_clean.refresh_from_db()
-        self.assertEqual(pre_alert_clean.document_scan_status, VirusScanStatus.INFECTED)
-        self.assertEqual(pre_alert_clean.document_last_scan, self.DT)
+        self.assertEqual(pre_alert_clean.file_scan_status, VirusScanStatus.INFECTED)
+        self.assertEqual(pre_alert_clean.file_last_scan, self.DT)
         self.assertEqual(pre_alert_clean.doses_shipped, 20)
 
     def test_update_pre_alert_without_scanning(self):
@@ -448,9 +450,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="1",
-                document_scan_status=VirusScanStatus.CLEAN,
-                document_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.CLEAN,
+                file_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
+                file=SimpleUploadedFile(
                     name="clean_file.pdf",
                     content=safe_file_content,
                     content_type="application/pdf",
@@ -466,7 +468,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_shipped": 20,
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="infected_file.pdf",
                         content=infected_file_content,
                         content_type="application/pdf",
@@ -481,11 +483,14 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
             format="multipart",
             headers={"accept": "application/json"},
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        response = self.assertJSONResponse(response, 200)
 
         pre_alert_clean.refresh_from_db()
-        self.assertEqual(pre_alert_clean.document_scan_status, VirusScanStatus.PENDING)
-        self.assertIsNone(pre_alert_clean.document_last_scan)
+
+        self.assertEqual(response["pre_alerts"][0]["scan_result"], VirusScanStatus.PENDING)
+        self.assertEqual(pre_alert_clean.file_scan_status, VirusScanStatus.PENDING)
+        self.assertIsNone(pre_alert_clean.file_last_scan)
         self.assertEqual(pre_alert_clean.doses_shipped, 20)
 
     @override_settings(
@@ -507,9 +512,9 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                 request_form=request_form,
                 date_pre_alert_reception="2021-10-09",
                 po_number="1",
-                document_scan_status=VirusScanStatus.CLEAN,
-                document_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
-                document=SimpleUploadedFile(
+                file_scan_status=VirusScanStatus.CLEAN,
+                file_last_scan=datetime.datetime(2021, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc),
+                file=SimpleUploadedFile(
                     name="clean_file.pdf",
                     content=safe_file_content,
                     content_type="application/pdf",
@@ -525,7 +530,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     "doses_shipped": 20,
                     "doses_per_vial": 50,
                     "vials_shipped": 1,
-                    "document": SimpleUploadedFile(
+                    "file": SimpleUploadedFile(
                         name="infected_file.pdf",
                         content=infected_file_content,
                         content_type="application/pdf",
@@ -543,13 +548,6 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         pre_alert_clean.refresh_from_db()
-        self.assertEqual(pre_alert_clean.document_scan_status, VirusScanStatus.ERROR)
-        self.assertIsNone(pre_alert_clean.document_last_scan)
+        self.assertEqual(pre_alert_clean.file_scan_status, VirusScanStatus.ERROR)
+        self.assertIsNone(pre_alert_clean.file_last_scan)
         self.assertEqual(pre_alert_clean.doses_shipped, 20)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

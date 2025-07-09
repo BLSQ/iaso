@@ -132,6 +132,23 @@ const useStyles = makeStyles(theme => ({
 }));
 
 /**
+ * Slugification function that matches Django's slugify_underscore behavior
+ * Converts to lowercase, removes special characters, and replaces spaces with underscores
+ * @param value - The string to slugify
+ * @returns The slugified string
+ */
+const slugifyValue = (value: string): string => {
+    return value
+        .normalize('NFD') // Decompose characters into base + accent (matches Django's Unicode handling)
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
+        .toLowerCase() // Convert to lowercase
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .replace(/_+/g, '_') // Replace multiple underscores with single underscore
+        .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+};
+
+/**
  * Translate the provided label if it is translatable
  * If the locale language matches the user language, we display it
  * if not, we display it in English by default
@@ -261,7 +278,7 @@ const PhotoField: FunctionComponent<PhotoFieldProps> = ({
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
-            const slugifiedValue = value.replace(/\s/g, '_'); // Replace spaces with underscores
+            const slugifiedValue = slugifyValue(value);
             return files.find(f => f.includes(slugifiedValue));
         }
         return null;
@@ -301,7 +318,7 @@ const FileField: FunctionComponent<FileFieldProps> = ({
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
-            const slugifiedValue = value.replace(/\s/g, '_'); // Replace spaces with underscores
+            const slugifiedValue = slugifyValue(value);
             return files.find(f => f.includes(slugifiedValue));
         }
         return null;

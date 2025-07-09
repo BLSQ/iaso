@@ -19,7 +19,7 @@ import get from 'lodash/get';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';
-import { FeatureFlag, ProjectFeatureFlag } from '../types/featureFlag';
+import { FeatureFlag } from '../types/featureFlag';
 import { Project } from '../types/project';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 import { ProjectInfos, ProjectForm } from './ProjectInfos';

@@ -1,4 +1,4 @@
-import React, { ReactElement, useEffect, useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import { Box, Chip, Switch } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
@@ -177,18 +177,6 @@ export const useFeatureFlagColumns = (
                     ) : (
                         ''
                     );
-                },
-            },
-            {
-                Header: '',
-                id: 'expander',
-                width: 1,
-                expander: true,
-                Expander: ({ _, setIsExpanded }) => {
-                    useEffect(() => {
-                        setTimeout(() => setIsExpanded(true), 100);
-                    }, [setIsExpanded]);
-                    return null;
                 },
             },
         ];

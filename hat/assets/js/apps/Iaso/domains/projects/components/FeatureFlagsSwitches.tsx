@@ -184,6 +184,17 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
             return acc;
         }, [] as any[]);
     }, [featureFlags, visibleFeatureGroups]);
+    const expanded = useMemo(() => {
+        const expandedFf = {};
+        featureFlags.forEach(featureFlag => {
+            expandedFf[featureFlag.code] =
+                featureFlag.configuration_schema != null &&
+                projectFeatureFlags.find(
+                    pff => pff.code === featureFlag.code,
+                ) != null;
+        });
+        return expandedFf;
+    }, [featureFlags, projectFeatureFlags]);
 
     return (
         <Box className={classes.container}>
@@ -191,6 +202,8 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
             <Table
                 columns={columns}
                 data={featureFlagsData}
+                expanded={expanded}
+                getObjectId={ff => ff.code}
                 showPagination={false}
                 countOnTop={false}
                 marginTop={false}

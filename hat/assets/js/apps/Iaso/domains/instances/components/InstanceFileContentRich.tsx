@@ -133,19 +133,15 @@ const useStyles = makeStyles(theme => ({
 
 /**
  * Slugification function that matches Django's slugify_underscore behavior
- * Converts to lowercase, removes special characters, and replaces spaces with underscores
+ * Replaces spaces with underscores and converts accented characters to ASCII
  * @param value - The string to slugify
  * @returns The slugified string
  */
 const slugifyValue = (value: string): string => {
     return value
-        .normalize('NFD') // Decompose characters into base + accent (matches Django's Unicode handling)
+        .normalize('NFD') // Decompose characters into base + accent
         .replace(/[\u0300-\u036f]/g, '') // Remove diacritics (accents)
-        .toLowerCase() // Convert to lowercase
-        .replace(/[^a-z0-9\s]/g, '') // Remove special characters except spaces
-        .replace(/\s+/g, '_') // Replace spaces with underscores
-        .replace(/_+/g, '_') // Replace multiple underscores with single underscore
-        .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+        .replace(/\s+/g, '_'); // Replace spaces with underscores
 };
 
 /**
@@ -316,6 +312,7 @@ const FileField: FunctionComponent<FileFieldProps> = ({
 }) => {
     const classes = useStyles();
     const value = data[descriptor.name];
+
     const fileUrl = useMemo(() => {
         if (value && files.length > 0) {
             const slugifiedValue = slugifyValue(value);

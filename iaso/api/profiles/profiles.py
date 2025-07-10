@@ -513,7 +513,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_permissions,
         editable_org_unit_types,
     ):
-        if not TenantUser.is_multi_account_user(user):
+        if TenantUser.is_multi_account_user(user):
+            # Update the password of the `main_user`. This should be replaced by a dedicated UI.
+            self.update_password(user.tenant_user, request)
+        else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
             user.username = request.data.get("user_name")

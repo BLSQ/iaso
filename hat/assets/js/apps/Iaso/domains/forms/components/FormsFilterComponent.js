@@ -1,5 +1,5 @@
 /* eslint-disable react/function-component-definition */
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 
 import { Box, Typography, Grid } from '@mui/material';
 
@@ -66,14 +66,14 @@ export const FormsFilterComponent = ({
     }, [formsSelected]);
 
     const canFitToBounds = computedBounds && map && map.current;
-    const triggerFitBounds = () => {
+    const triggerFitBounds = useCallback(() => {
         if (canFitToBounds) {
             map.current.fitBounds(computedBounds, {
                 padding: [10, 10],
                 maxZoom: 18,
             });
         }
-    };
+    }, [canFitToBounds, computedBounds, map]);
 
     return (
         <Box m={4}>

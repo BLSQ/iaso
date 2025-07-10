@@ -9,14 +9,13 @@ type Props = {
     ancestorWithGeoJson?: OrgUnit;
 };
 
-export const useGetBounds = ({
+export const getBounds = ({
     orgUnit,
     locationGroup,
     catchmentGroup,
     ancestorWithGeoJson,
 }: Props): Bounds | undefined => {
     const groups: Record<string, any>[] = [];
-    const locations: Record<string, any>[] = [];
 
     // Initialize with undefined - we'll build bounds progressively
     let finalBounds: L.LatLngBounds | undefined;
@@ -31,18 +30,6 @@ export const useGetBounds = ({
             }
         } catch (error) {
             console.warn('Error parsing ancestor geo JSON:', error);
-        }
-    }
-
-    // Handle locations bounds - only if we have actual locations
-    if (locations.length > 0) {
-        const locationsBounds = L.latLngBounds(locations);
-        if (locationsBounds && locationsBounds.isValid()) {
-            if (finalBounds) {
-                finalBounds = finalBounds.extend(locationsBounds);
-            } else {
-                finalBounds = locationsBounds;
-            }
         }
     }
 

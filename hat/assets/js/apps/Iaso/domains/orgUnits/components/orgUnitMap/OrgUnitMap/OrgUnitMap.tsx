@@ -47,11 +47,11 @@ import OrgUnitTypeFilterComponent from '../OrgUnitTypeFilterComponent';
 import { buttonsInitialState } from './constants';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { FormsMarkers } from './FormsMarkers';
+import { getBounds } from './getBounds';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
 import { SelectedMarkers } from './SelectedMarkers';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
 import { MappedOrgUnit } from './types';
-import { useGetBounds } from './useGetBounds';
 import { getAncestorWithGeojson, initialState } from './utils';
 
 export const zoom = 5;
@@ -139,12 +139,21 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-    const bounds = useGetBounds({
-        orgUnit: currentOrgUnit,
-        locationGroup: state.locationGroup.value,
-        catchmentGroup: state.catchmentGroup.value,
-        ancestorWithGeoJson: state.ancestorWithGeoJson.value,
-    });
+    const bounds = useMemo(
+        () =>
+            getBounds({
+                orgUnit: currentOrgUnit,
+                locationGroup: state.locationGroup.value,
+                catchmentGroup: state.catchmentGroup.value,
+                ancestorWithGeoJson: state.ancestorWithGeoJson.value,
+            }),
+        [
+            currentOrgUnit,
+            state.locationGroup.value,
+            state.catchmentGroup.value,
+            state.ancestorWithGeoJson.value,
+        ],
+    );
 
     const toggleEditShape = useCallback(
         keyName => {

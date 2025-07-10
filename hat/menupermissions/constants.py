@@ -1,3 +1,8 @@
+from importlib import import_module
+
+from django.conf import settings
+
+
 MODULE_PERMISSIONS = {
     "DATA_COLLECTION_FORMS": [
         "iaso_forms",
@@ -37,26 +42,6 @@ MODULE_PERMISSIONS = {
     ],
     "EXTERNAL_STORAGE": ["iaso_storages"],
     "PLANNING": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
-    "POLIO_PROJECT": [
-        "iaso_polio_config",
-        "iaso_polio",
-        "iaso_polio_budget_admin",
-        "iaso_polio_budget",
-        "iaso_polio_chronogram",
-        "iaso_polio_chronogram_restricted_write",
-        "iaso_polio_vaccine_supply_chain_read",
-        "iaso_polio_vaccine_supply_chain_write",
-        "iaso_polio_vaccine_supply_chain_read_only",
-        "iaso_polio_vaccine_stock_management_read",
-        "iaso_polio_vaccine_stock_management_write",
-        "iaso_polio_vaccine_stock_management_read_only",
-        "iaso_polio_notifications",
-        "iaso_polio_vaccine_authorizations_read_only",
-        "iaso_polio_vaccine_authorizations_admin",
-        "iaso_polio_vaccine_stock_earmarks_nonadmin",
-        "iaso_polio_vaccine_stock_earmarks_admin",
-        "iaso_polio_vaccine_stock_earmarks_read_only",
-    ],
     "REGISTRY": [
         "iaso_registry_write",
         "iaso_registry_read",
@@ -127,7 +112,11 @@ MODULES = [
         "fr_name": "Stockage externe",
     },
     {"name": "Planning", "codename": "PLANNING", "fr_name": "Planification"},
-    {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
+    {
+        "name": "Polio project",
+        "codename": "POLIO_PROJECT",
+        "fr_name": "Projet Polio",
+    },  # can't be extracted yet because it generates migrations
     {"name": "Registry", "codename": "REGISTRY", "fr_name": "Registre"},
     {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
     {
@@ -202,26 +191,6 @@ PERMISSIONS_PRESENTATION = {
     "external_storage": ["iaso_storages"],
     "planning": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
     "embedded_links": ["iaso_pages", "iaso_page_write"],
-    "polio": [
-        "iaso_polio_config",
-        "iaso_polio",
-        "iaso_polio_budget_admin",
-        "iaso_polio_budget",
-        "iaso_polio_chronogram",
-        "iaso_polio_chronogram_restricted_write",
-        "iaso_polio_vaccine_supply_chain_read",
-        "iaso_polio_vaccine_supply_chain_write",
-        "iaso_polio_vaccine_supply_chain_read_only",
-        "iaso_polio_vaccine_stock_management_read",
-        "iaso_polio_vaccine_stock_management_write",
-        "iaso_polio_vaccine_stock_management_read_only",
-        "iaso_polio_notifications",
-        "iaso_polio_vaccine_authorizations_read_only",
-        "iaso_polio_vaccine_authorizations_admin",
-        "iaso_polio_vaccine_stock_earmarks_nonadmin",
-        "iaso_polio_vaccine_stock_earmarks_admin",
-        "iaso_polio_vaccine_stock_earmarks_read_only",
-    ],
     "trypelim": [
         "iaso_trypelim_anonymous",
         "iaso_trypelim_case_analysis",
@@ -300,32 +269,20 @@ READ_EDIT_PERMISSIONS = {
         "write": "iaso_planning_write",
     },
     "iaso_page_permissions": {"read": "iaso_pages", "write": "iaso_page_write"},
-    "iaso_polio_budget_permissions": {
-        "read": "iaso_polio_budget",
-        "write": "iaso_polio_budget_admin",
-    },
-    "iaso_polio_chronogram_permissions": {
-        "read": "iaso_polio_chronogram_restricted_write",
-        "write": "iaso_polio_chronogram",
-    },
-    "iaso_polio_vaccine_supply_chain_permissions": {
-        "read_only": "iaso_polio_vaccine_supply_chain_read_only",
-        "no_admin": "iaso_polio_vaccine_supply_chain_read",
-        "admin": "iaso_polio_vaccine_supply_chain_write",
-    },
-    "iaso_polio_vaccine_stock_management_permissions": {
-        "read_only": "iaso_polio_vaccine_stock_management_read_only",
-        "no_admin": "iaso_polio_vaccine_stock_management_read",
-        "admin": "iaso_polio_vaccine_stock_management_write",
-    },
-    "iaso_polio_vaccine_authorization_permissions": {
-        "no_admin": "iaso_polio_vaccine_authorizations_read_only",
-        "admin": "iaso_polio_vaccine_authorizations_admin",
-    },
-    "iaso_polio_vaccine_stock_earmarks_permissions": {
-        "read_only": "iaso_polio_vaccine_stock_earmarks_read_only",
-        "no_admin": "iaso_polio_vaccine_stock_earmarks_nonadmin",
-        "admin": "iaso_polio_vaccine_stock_earmarks_admin",
-    },
     "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
 }
+
+for plugin in settings.PLUGINS:
+    try:
+        plugin_permissions = import_module(f"plugins.{plugin}.permissions")
+        read_edit_permissions = plugin_permissions.read_edit_permissions
+        permissions_presentation = plugin_permissions.permissions_presentation
+        # modules = plugin_permissions.modules
+        module_permissions = plugin_permissions.module_permissions
+
+        READ_EDIT_PERMISSIONS = READ_EDIT_PERMISSIONS | read_edit_permissions
+        PERMISSIONS_PRESENTATION = PERMISSIONS_PRESENTATION | permissions_presentation
+        # MODULES = MODULES + modules
+        MODULE_PERMISSIONS = MODULE_PERMISSIONS | module_permissions
+    except ImportError:
+        print(f"{plugin} plugin has no permission support")

@@ -2,9 +2,9 @@ import datetime
 
 import time_machine
 
-from hat.menupermissions import models as iaso_permission
 from iaso import models as m
 from iaso.test import APITestCase
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
 from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
 
@@ -29,7 +29,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM],
         )
         cls.user_with_restricted_write_perms = cls.create_user_with_profile(
             email="kevin@polio.org",
@@ -37,7 +37,7 @@ class ChronogramTaskViewSetTestCase(APITestCase):
             first_name="Kevin",
             last_name="Walsh",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
         )
 
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
@@ -190,7 +190,7 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM],
         )
         cls.user_with_restricted_write_perms = cls.create_user_with_profile(
             email="kevin@polio.org",
@@ -198,7 +198,7 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
             first_name="Kevin",
             last_name="Walsh",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
         )
         cls.chronogram_template_task = ChronogramTemplateTask.objects.create(
             account=cls.account,
@@ -317,7 +317,7 @@ class ChronogramViewSetTestCase(APITestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM],
         )
         cls.user_with_restricted_write_perms = cls.create_user_with_profile(
             email="kevin@polio.org",
@@ -325,7 +325,7 @@ class ChronogramViewSetTestCase(APITestCase):
             first_name="Kevin",
             last_name="Walsh",
             account=cls.account,
-            permissions=[iaso_permission._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
+            permissions=[polio_permissions._POLIO_CHRONOGRAM_RESTRICTED_WRITE],
         )
 
         cls.campaign = Campaign.objects.create(

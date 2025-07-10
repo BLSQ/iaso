@@ -7,11 +7,9 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-import hat.menupermissions.models as permissions
-
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm
+from plugins.polio import models as pm, permissions as polio_permissions
 from plugins.polio.models import OutgoingStockMovement
 
 
@@ -43,20 +41,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-                permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
             username="user_ro_perms",
             account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
+            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
         )
         cls.user_read_only_perms = cls.create_user_with_profile(
             username="user_read_only_perms",
             account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
+            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=cls.account, permissions=[])
 

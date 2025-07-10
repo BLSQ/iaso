@@ -164,3 +164,7 @@ class TenantUser(models.Model):
             "main_user_id": self.main_user_id,
             "account": account_dict,
         }
+
+    @classmethod
+    def is_multi_account_user(cls, user: User) -> bool:
+        return hasattr(user, "tenant_user")

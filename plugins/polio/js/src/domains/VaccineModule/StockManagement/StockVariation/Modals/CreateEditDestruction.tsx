@@ -56,7 +56,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
-            document: destruction?.document,
+            file: destruction?.file,
             comment: destruction?.comment ?? null,
         },
         onSubmit: values => save(values),
@@ -83,9 +83,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         titleMessage,
     )} ${formatMessage(MESSAGES.destructionReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-    const documentErrors = useMemo(() => {
-        return processErrorDocsBase(formik.errors.document);
-    }, [formik.errors.document]);
+    const fileErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.file);
+    }, [formik.errors.file]);
 
     return (
         <FormikProvider value={formik}>
@@ -154,14 +154,14 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 </Box> */}
                 <Box mb={2}>
                     <DocumentUploadWithPreview
-                        errors={documentErrors}
+                        errors={fileErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched('document', true);
-                                formik.setFieldValue('document', files);
+                                formik.setFieldTouched('file', true);
+                                formik.setFieldValue('file', files);
                             }
                         }}
-                        document={formik.values.document}
+                        document={formik.values.file}
                     />
                 </Box>
                 {hasDuplicatesData?.duplicate_exists && (

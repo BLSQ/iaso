@@ -28,7 +28,8 @@ from rest_framework.decorators import api_view, authentication_classes, permissi
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.api.query_params import APP_ID
-from iaso.models import Account, Profile, Project
+from iaso.models import Account, Profile, Project, TenantUser
+from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
 
 from .provider import WFPProvider
 
@@ -103,20 +104,28 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             )
 
     def complete_login(self, request, app, token: str, response) -> SocialAccount:
-        # simplify the logic from django-allauth a lot so the flow is less flexible but more followable
-        # search if we have a SocialAccount linked to this user
-        # if not create one and connect it to an existing user if there is already one with this email
-        # contrary to the all auth version it return a SocialAccount
-        # Call the userinfo url with the identifying token to get more data on the user
+        """
+        Simplify the logic from django-allauth a lot, so the flow is less flexible but more followable:
+
+        - search if we have a SocialAccount linked to this user
+        - if not create one and connect it to an existing user if there is already one with this email
+
+        Contrary to the all auth version, it returns a SocialAccount.
+        """
+
+        # Call the userinfo url with the identifying token to get more data on the user.
         extra_data_get = requests.get(self.profile_url, headers={"Authorization": f"Bearer {token}"})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
+
         try:
             email = extra_data["email"].lower().strip()
         except KeyError:
             email = extra_data["sub"].lower().strip()
-        # the sub is the email, wfp verify it so let's trust this
+
+        # The sub is the email, wfp verify it, so let's trust this.
         uid = extra_data["sub"].lower().strip()
+
         # We cannot use `AppIdSerializer` because we are in a method **before** `dispatch` and therefore
         # `self.request.query_params` is not set yet. Using `request.query_params` results in:
         # `'WSGIRequest' object has no attribute 'query_params'`
@@ -130,33 +139,30 @@ class WFP2Adapter(Auth0OAuth2Adapter):
             account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
 
         try:
-            # user is required, can't use get_or_create
-            socialaccount = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
-            # update extra data
-            socialaccount.extra_data = extra_data
+            social_account = SocialAccount.objects.get(uid=uid, provider=self.provider_id)
+            social_account.extra_data = extra_data  # Update extra data.
         except SocialAccount.DoesNotExist:
-            users = User.objects.filter(iaso_profile__account=account).filter(email=email)
-            user = users.first()
+            user = User.objects.filter(iaso_profile__account=account, email=email).first()
+
             if not user:
-                user = User.objects.create(
-                    email=email,
-                    username=email,
-                    first_name=extra_data.get("given_name"),
-                    last_name=extra_data.get("family_name"),
+                new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
+                    data=UserCreationData(
+                        username=email,
+                        email=email,
+                        first_name=extra_data.get("given_name"),
+                        last_name=extra_data.get("family_name"),
+                        account=account,
+                    )
                 )
+                user = new_user or tenant_account_user
                 user.set_unusable_password()
-                iaso_profile = Profile.objects.create(
-                    account=account,
-                    user=user,
-                )
-                user.iaso_profile = iaso_profile
-                user.save()
+                Profile.objects.create(account=account, user=user)
                 self.send_new_account_email(request, user)
 
-            socialaccount = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
+            social_account = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
 
-        socialaccount.save()
-        return socialaccount
+        social_account.save()
+        return social_account
 
 
 class WFPCallbackView(OAuth2View):
@@ -233,11 +239,20 @@ def token_view(request):
                 {"message": "Access token validation failed", "result": "error", "error": "invalid_token"}, status=401
             )
         return JsonResponse(
-            {"result": "error", "message": "error login to auth server", "details": e.response.text}, status=500
+            {"result": "error", "message": "Error login to auth server", "details": e.response.text}, status=500
         )
+    except UsernameAlreadyExistsError as e:
+        return JsonResponse({"result": "error", "message": e.message, "details": e.message}, status=409)
     except Exception as e:
         logger.exception(str(e))
-        return JsonResponse({"result": "error", "message": "error login account"})
+        return JsonResponse(
+            {
+                "result": "error",
+                "message": "Error login account",
+                "details": str(e),
+            },
+            status=500,
+        )
     user = social_account.user
 
     # from https://django-rest-framework-simplejwt.readthedocs.io/en/latest/creating_tokens_manually.html

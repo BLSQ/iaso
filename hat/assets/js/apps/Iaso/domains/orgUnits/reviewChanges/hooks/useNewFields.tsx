@@ -98,7 +98,7 @@ const getLocationValue = (
         <MarkerMap
             longitude={location.longitude}
             latitude={location.latitude}
-            maxZoom={8}
+            maxZoom={16}
             mapHeight={300}
             parent={parent}
         />

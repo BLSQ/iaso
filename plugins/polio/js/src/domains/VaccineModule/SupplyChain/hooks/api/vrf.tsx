@@ -147,7 +147,7 @@ export const useCampaignDropDowns = ({
     campaign,
     vaccine,
     rounds: rndsParams,
-}): CampaignDropdowns => {
+}: UseCampaignDropdownsParams): CampaignDropdowns => {
     const options: Options = {
         enabled: Boolean(countryId),
         countries: Number.isSafeInteger(countryId) ? `${countryId}` : undefined,
@@ -274,7 +274,7 @@ const createFormDataRequest = (
     if (Object.keys(fileData).length > 0) {
         Object.entries(fileData).forEach(([key, value]) => {
             if (key === 'files' && Array.isArray(value) && value.length > 0) {
-                formData.append('document', value[0]); // Use 'document' key
+                formData.append('file', value[0]); // Use 'file' key
             } else if (Array.isArray(value)) {
                 value.forEach((blob, index) => {
                     formData.append(`${key}[${index}]`, blob);
@@ -303,9 +303,7 @@ export const saveVrf = (
         ? Object.fromEntries(
               Object.entries(vrf).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -323,10 +321,10 @@ export const saveVrf = (
         data: filteredParams,
     };
 
-    if (vrf?.document) {
+    if (vrf?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: vrf.document };
+        const fileData = { files: vrf.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }

@@ -206,7 +206,24 @@ ZONES_SHAPES_EDIT = _PREFIX + _ZONES_SHAPES_EDIT
 
 
 class CustomPermissionSupport(models.Model):
-    """Model used to hold our custom permission."""
+    """
+    Model used to hold our custom permission.
+
+    The standard way to create custom permissions in Django is to use
+    the `Meta.permissions` attribute for a given model.
+    https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#custom-permissions
+
+    Instead of adding permissions to each and every model, we use this single
+    model with `managed = False` to regroup all permissions.
+    https://docs.djangoproject.com/en/4.2/ref/models/options/#managed
+
+    After adding a permission here, you need to generate a migration (`makemigrations`)
+    and run it (`migrate`). Django will then detect the change in `Meta.permissions`
+    and insert the new permission in the `auth_permission` model.
+
+    You'll then be able to use the permission as any other Django permission.
+    https://docs.djangoproject.com/en/4.2/topics/auth/default/#topic-authorization
+    """
 
     @staticmethod
     def get_full_permission_list():

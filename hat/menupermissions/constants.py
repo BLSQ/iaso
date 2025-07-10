@@ -112,6 +112,11 @@ MODULES = [
         "fr_name": "Stockage externe",
     },
     {"name": "Planning", "codename": "PLANNING", "fr_name": "Planification"},
+    {
+        "name": "Polio project",
+        "codename": "POLIO_PROJECT",
+        "fr_name": "Projet Polio",
+    },  # can't be extracted yet because it generates migrations
     {"name": "Registry", "codename": "REGISTRY", "fr_name": "Registre"},
     {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
     {
@@ -272,12 +277,12 @@ for plugin in settings.PLUGINS:
         plugin_permissions = import_module(f"plugins.{plugin}.permissions")
         read_edit_permissions = plugin_permissions.read_edit_permissions
         permissions_presentation = plugin_permissions.permissions_presentation
-        modules = plugin_permissions.modules
+        # modules = plugin_permissions.modules
         module_permissions = plugin_permissions.module_permissions
 
         READ_EDIT_PERMISSIONS = READ_EDIT_PERMISSIONS | read_edit_permissions
         PERMISSIONS_PRESENTATION = PERMISSIONS_PRESENTATION | permissions_presentation
-        MODULES = MODULES + modules
+        # MODULES = MODULES + modules
         MODULE_PERMISSIONS = MODULE_PERMISSIONS | module_permissions
     except ImportError:
         print(f"{plugin} plugin has no permission support")

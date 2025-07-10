@@ -99,9 +99,10 @@ permissions_presentation = {
     ],
 }
 
-modules = [
-    {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
-]
+# can't be defined here yet, because it is used in Account and generates new migrations
+# modules = [
+#     {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
+# ]
 
 module_permissions = {
     "POLIO_PROJECT": [

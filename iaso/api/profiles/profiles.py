@@ -514,8 +514,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         editable_org_unit_types,
     ):
         if TenantUser.is_multi_account_user(user):
-            # Update the password of the `main_user`. This should be replaced by a dedicated UI.
-            self.update_password(user.tenant_user, request)
+            # In multi-tenant mode, `main_user` is the user who logs in.
+            self.update_password(user.tenant_user.main_user, request)
         else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")

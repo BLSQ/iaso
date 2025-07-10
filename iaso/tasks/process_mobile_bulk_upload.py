@@ -39,6 +39,7 @@ from plugins.trypelim.common.form_utils import (
     get_population_form,
     get_population_instances,
 )
+from plugins.trypelim.common.utils import sns_notify
 
 
 INSTANCES_JSON = "instances.json"
@@ -139,9 +140,16 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     api_import.has_problem = False
     api_import.exception = ""
     api_import.save()
-    the_task.report_success_with_result(
-        message=result_message(user, project, start_date, start_time, stats),
-    )
+
+    message = result_message(user, project, start_date, start_time, stats)
+    the_task.report_success_with_result(message=message)
+
+    # Trypelim-specific
+    try:
+        logger.info("Notifying SNS topic of new bulk upload.")
+        sns_notify(message)
+    except Exception as e:
+        logger.exception("Failed to publish to SNS" + str(e))
 
 
 def read_json_file_from_zip(zip_ref, filename):

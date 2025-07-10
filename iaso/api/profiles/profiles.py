@@ -30,7 +30,7 @@ from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
-from iaso.utils import is_mobile_request, is_multi_account_user
+from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -513,7 +513,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_permissions,
         editable_org_unit_types,
     ):
-        if not is_multi_account_user(user):
+        if not TenantUser.is_multi_account_user(user):
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
             user.username = request.data.get("user_name")
@@ -593,7 +593,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return response
 
     def validate_user_name(self, request, user):
-        if is_multi_account_user(user):
+        if TenantUser.is_multi_account_user(user):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")

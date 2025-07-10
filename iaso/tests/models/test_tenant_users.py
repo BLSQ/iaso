@@ -10,6 +10,37 @@ class TenantUserModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.account_1 = m.Account.objects.create(name="Account 1")
+        cls.account_2 = m.Account.objects.create(name="Account 2")
+
+        cls.single_user = cls.create_user_with_profile(username="john", email="john@doe.com", account=cls.account_1)
+
+        cls.multi_main_user = m.User.objects.create(username="main_user", email="main_user@health.org")
+        cls.multi_main_user.set_password("p4ssword")
+        cls.multi_main_user.save()
+        cls.multi_account_user_1 = cls.create_user_with_profile(
+            username="user_1", email="user_1@health.org", account=cls.account_1
+        )
+        cls.multi_account_user_2 = cls.create_user_with_profile(
+            username="user_2", email="user_2@health.org", account=cls.account_2
+        )
+        m.TenantUser.objects.create(main_user=cls.multi_main_user, account_user=cls.multi_account_user_1)
+        m.TenantUser.objects.create(main_user=cls.multi_main_user, account_user=cls.multi_account_user_2)
+
+    def test_is_multi_account_user(self):
+        self.assertFalse(m.TenantUser.is_multi_account_user(self.single_user))
+        self.assertFalse(m.TenantUser.is_multi_account_user(self.multi_main_user))
+        self.assertTrue(m.TenantUser.is_multi_account_user(self.multi_account_user_1))
+        self.assertTrue(m.TenantUser.is_multi_account_user(self.multi_account_user_2))
+
+
+class TenantUserManagerTestCase(TestCase):
+    """
+    Test `TenantUserManager` model's manager.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="Account")
         cls.user_creation_data = UserCreationData(
             username="john_doe",

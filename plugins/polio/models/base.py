@@ -1880,7 +1880,6 @@ class NotificationImport(ModelWithFile):
     file = models.FileField(
         null=False,
         blank=False,
-        storage=CustomPublicStorage(),
         upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/",
     )
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)

@@ -131,12 +131,10 @@ class TenantUser(models.Model):
         ]
 
     def __str__(self):
-        account_name = "Unknown"
         try:
-            if self.account_user.iaso_profile:
-                account_name = self.account_user.iaso_profile.account
+            account_name = self.account_user.iaso_profile.account.name
         except User.iaso_profile.RelatedObjectDoesNotExist:
-            pass
+            account_name = "Unknown"
         return f"{self.main_user} -- {self.account_user} ({account_name})"
 
     def get_all_account_users(self):

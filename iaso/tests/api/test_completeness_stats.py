@@ -906,12 +906,20 @@ class CompletenessStatsAPITestCase(APITestCase):
         # Use multiple forms to check column generation
         form_ids = f"{self.form_hs_1.id},{self.form_hs_2.id},{self.form_hs_4.id}"
         response = self.client.get(f"/api/v2/completeness_stats.csv?form_id={form_ids}&limit=10")
+
         self.assertEqual(response.status_code, 200)
         content = response.content.decode("utf-8")
         reader = csv.reader(StringIO(content))
-        header = next(reader)
-        # Check that the header contains the expected columns
+        csv_data = list(reader)
+
+        # Check that the header contains the expected columns in the correct order
+        header = csv_data[0]
         expected_columns = [
+            "id",
+            "org_unit_name",
+            "org_unit_type_name",
+            "parent_org_unit_name",
+            "has_children",
             f"{self.form_hs_1.name} - Descendants Numerator",
             f"{self.form_hs_1.name} - Descendants Denominator",
             f"{self.form_hs_1.name} - Descendants Percentage",
@@ -921,15 +929,8 @@ class CompletenessStatsAPITestCase(APITestCase):
             f"{self.form_hs_4.name} - Descendants Numerator",
             f"{self.form_hs_4.name} - Descendants Denominator",
             f"{self.form_hs_4.name} - Descendants Percentage",
-            "has_children",
-            "id",
-            "name",
-            "org_unit_name",
-            "org_unit_type_name",
-            "parent_org_unit_name",
         ]
-        for col in expected_columns:
-            self.assertIn(col, header)
+        self.assertEqual(header, expected_columns)
         # Optionally, check the data rows for expected values
-        for row in reader:
+        for row in csv_data[1:]:  # Skip header row
             self.assertEqual(len(row), len(header))

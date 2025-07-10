@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="featureflag",
             name="configuration_schema",
-            field=models.JSONField(null=True, default=None),
+            field=models.JSONField(null=True, blank=True, default=None),
         ),
         migrations.AddField(
             model_name="ProjectFeatureFlags",

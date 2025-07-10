@@ -683,6 +683,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchPossibleFieldsError',
         defaultMessage: 'An error occurred while fetching possible fields',
     },
+    fitToFormsBounds: {
+        id: 'iaso.orgUnits.fitToFormsBounds',
+        defaultMessage: 'Fit map to submissions bounds',
+    },
 });
 
 export default MESSAGES;

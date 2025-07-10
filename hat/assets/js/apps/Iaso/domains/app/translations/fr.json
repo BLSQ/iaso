@@ -943,6 +943,8 @@
     "iaso.orgUnits.editGroups": "Modifier les groupes",
     "iaso.orgUnits.editOrgUnitType": "Modifier le type d'unité d'organisation",
     "iaso.orgUnits.editValidation": "Modifier la validation",
+    "iaso.orgUnits.fitToFormsBounds": "Ajuster la carte aux soumissions",
+    "iaso.orgUnits.fitToOutBounds": "Ajuster la carte aux enfants",
     "iaso.orgUnits.forms.noData": "Aucun formulaire",
     "iaso.orgUnits.formsHelperText": "Soumissions du formulaire",
     "iaso.orgUnits.GPSWarning": "Les coordonnées GPS ne seront PAS mises à jour pour les unités d'org qui ont déjà des données géographiques",

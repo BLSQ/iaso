@@ -122,6 +122,13 @@ function TopBar(props) {
                             variant="h6"
                             color="inherit"
                             id="top-bar-title"
+                            sx={{
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                maxWidth: '80%',
+                                display: 'block',
+                            }}
                         >
                             {title}
                         </Typography>

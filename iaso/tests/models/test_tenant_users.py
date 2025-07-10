@@ -24,8 +24,23 @@ class TenantUserModelTestCase(TestCase):
         cls.multi_account_user_2 = cls.create_user_with_profile(
             username="user_2", email="user_2@health.org", account=cls.account_2
         )
-        m.TenantUser.objects.create(main_user=cls.multi_main_user, account_user=cls.multi_account_user_1)
-        m.TenantUser.objects.create(main_user=cls.multi_main_user, account_user=cls.multi_account_user_2)
+
+        cls.tenant_user_1 = m.TenantUser.objects.create(
+            main_user=cls.multi_main_user, account_user=cls.multi_account_user_1
+        )
+        cls.tenant_user_2 = m.TenantUser.objects.create(
+            main_user=cls.multi_main_user, account_user=cls.multi_account_user_2
+        )
+
+    def test_str(self):
+        user_without_profile = m.User.objects.create(username="no_profile", email="no_profile@health.org")
+        tenant_user_without_profile = m.TenantUser.objects.create(
+            main_user=self.multi_main_user, account_user=user_without_profile
+        )
+
+        self.assertEqual(str(tenant_user_without_profile), "main_user -- no_profile (Unknown)")
+        self.assertEqual(str(self.tenant_user_1), "main_user -- user_1 (Account 1)")
+        self.assertEqual(str(self.tenant_user_2), "main_user -- user_2 (Account 2)")
 
     def test_is_multi_account_user(self):
         self.assertFalse(m.TenantUser.is_multi_account_user(self.single_user))

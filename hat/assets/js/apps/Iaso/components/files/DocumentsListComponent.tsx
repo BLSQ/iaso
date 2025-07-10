@@ -15,16 +15,20 @@ const styles = {
 
 type Props = {
     docsList: ShortFile[];
+    maxWidth?: number;
 };
 
-const DocumentsListComponent: FunctionComponent<Props> = ({ docsList }) => {
+const DocumentsListComponent: FunctionComponent<Props> = ({
+    docsList,
+    maxWidth = 1,
+}) => {
     return (
         <Grid container spacing={2} sx={styles.root}>
             {docsList.map(file => (
                 <Grid
                     item
                     sm={2}
-                    md={1}
+                    md={maxWidth}
                     key={`${file.itemId}-${getFileName(file.path).name}`}
                 >
                     <DocumentsItem

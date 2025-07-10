@@ -173,12 +173,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
             )}
             {tab === 'docs' && (
                 <div className={classes.tabContainer}>
-                    <DocumentsList docsList={sortedFiles.docs} />
+                    <DocumentsList docsList={sortedFiles.docs} maxWidth={3} />
                 </div>
             )}
             {tab === 'others' && (
                 <div className={classes.tabContainer}>
-                    <DocumentsList docsList={sortedFiles.others} />
+                    <DocumentsList docsList={sortedFiles.others} maxWidth={3} />
                 </div>
             )}
             {viewerIsOpen && (

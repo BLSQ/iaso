@@ -365,14 +365,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         except UsernameAlreadyExistsError as e:
             return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
+        user_who_logs_in = new_user or tenant_main_user
+        if password != "":
+            user_who_logs_in.set_password(password)
+            user_who_logs_in.save()
+
         user = new_user or tenant_account_user
 
-        if new_user and password != "":
-            user.set_password(password)
-            user.save()
-
-        # Create an Iaso profile for the new user and attach it to the same account
-        # as the currently authenticated user
         user.profile = Profile.objects.create(
             user=user,
             account=current_account,
@@ -381,17 +380,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             organization=request.data.get("organization", None),
         )
 
-        profile = get_object_or_404(Profile, id=user.profile.pk)
-
         try:
             user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, profile)
+            org_units = self.validate_org_units(request, user.profile)
             user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            projects = self.validate_projects(request, user.profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
-            profile.delete()
+            user.profile.delete()
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -399,7 +396,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         profile = self.update_user_profile(
             request=request,
-            profile=profile,
+            profile=user.profile,
             user=user,
             user_permissions=user_permissions,
             org_units=org_units,

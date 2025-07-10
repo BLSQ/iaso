@@ -9,8 +9,8 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.models import Form, FormAttachment, Project
 from iaso.utils.encryption import calculate_md5
+from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 
-from ..utils.clamav import scan_uploaded_file_for_virus
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID

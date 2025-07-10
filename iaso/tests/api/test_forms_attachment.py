@@ -15,8 +15,8 @@ from rest_framework import status
 from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
-from iaso.test import APITestCase
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.test import APITestCase, MockClamavScanResults
+from iaso.utils.virus_scan.model import VirusScanStatus
 
 
 BASE_URL = "/api/formattachments/"
@@ -173,7 +173,7 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="OK",
             details=None,
             passed=True,
@@ -205,7 +205,7 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         # Mocking ClamAV scanner
         mock_scanner = MagicMock()
-        mock_scanner.scan.return_value = MockResults(
+        mock_scanner.scan.return_value = MockClamavScanResults(
             state="FOUND",
             details="Eicar-Signature",
             passed=False,
@@ -462,10 +462,3 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         response = self.client.get(signed_url)
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
-
-
-class MockResults:
-    def __init__(self, state, details, passed):
-        self.state = state
-        self.details = details
-        self.passed = passed

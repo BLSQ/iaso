@@ -48,7 +48,7 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
             "name": name,
         }
 
-        response = c.post("/api/orgunits/?app_id=com.example.testproject", data=[unit_body], format="json")
+        response = c.post(f"/api/orgunits/?app_id={self.project.app_id}", data=[unit_body], format="json")
         self.assertJSONResponse(response, 200)
         org_unit_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
@@ -71,7 +71,7 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/instances/?app_id=com.example.testproject", data=instance_body, format="json")
+        response = c.post(f"/api/instances/?app_id={self.project.app_id}", data=instance_body, format="json")
         self.assertEqual(response.status_code, 200)
 
         instance = Instance.objects.get(uuid=uuid)
@@ -109,7 +109,7 @@ class AutoChangeRequestForInstanceFormTestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/instances/?app_id=com.example.testproject", data=instance_body, format="json")
+        response = c.post(f"/api/instances/?app_id={self.project.app_id}", data=instance_body, format="json")
 
         self.assertEqual(response.status_code, 200)
 

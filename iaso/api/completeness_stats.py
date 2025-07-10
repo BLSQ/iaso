@@ -30,6 +30,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
+from collections import OrderedDict
 from typing import Any, List, Mapping, Optional, TypedDict, Union
 
 import rest_framework.fields
@@ -79,20 +80,41 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
         if not results:
             return super().render(data, accepted_media_type, renderer_context)
 
+        # Build the header in the desired order
+        header = ["id", "org_unit_name", "org_unit_type_name", "parent_org_unit_name", "has_children"]
+
+        # Add form-specific columns to the header
+        for form in forms:
+            form_name = form.get("name", "")
+            header.extend(
+                [
+                    f"{form_name} - Descendants Numerator",
+                    f"{form_name} - Descendants Denominator",
+                    f"{form_name} - Descendants Percentage",
+                ]
+            )
+
         transformed_data = []
 
         for row in results:
-            transformed_row = {
-                "name": row.get("name", ""),
-                "id": row.get("id", ""),
-                "org_unit_name": row.get("org_unit", {}).get("name", "") if row.get("org_unit") else "",
-                "org_unit_type_name": row.get("org_unit_type", {}).get("name", "") if row.get("org_unit_type") else "",
-                "parent_org_unit_name": row.get("parent_org_unit", {}).get("name", "")
-                if row.get("parent_org_unit")
-                else "",
-                "has_children": row.get("has_children", False),
-            }
+            # Start with base columns for better user experience
+            transformed_row = OrderedDict(
+                [
+                    ("id", row.get("id", "")),
+                    ("org_unit_name", row.get("org_unit", {}).get("name", "") if row.get("org_unit") else ""),
+                    (
+                        "org_unit_type_name",
+                        row.get("org_unit_type", {}).get("name", "") if row.get("org_unit_type") else "",
+                    ),
+                    (
+                        "parent_org_unit_name",
+                        row.get("parent_org_unit", {}).get("name", "") if row.get("parent_org_unit") else "",
+                    ),
+                    ("has_children", row.get("has_children", False)),
+                ]
+            )
 
+            # Add form-specific columns after the base columns
             form_stats = row.get("form_stats", {})
             for form in forms:
                 form_slug = form.get("slug", "")
@@ -104,6 +126,9 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
                 transformed_row[f"{form_name} - Descendants Percentage"] = form_stats_data.get("percent", 0)
 
             transformed_data.append(transformed_row)
+
+        # Set the header to control column order
+        self.header = header
 
         return super().render(transformed_data, accepted_media_type, renderer_context)
 

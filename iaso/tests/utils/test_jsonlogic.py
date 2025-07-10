@@ -16,7 +16,7 @@ class JsonLogicTests(TestCase):
         filters = {"==": [{"var": 22}, 1]}
         expectedQuerySet = (
             'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
-            '"iaso_metricvalue"."year", "iaso_metricvalue"."value" '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
             'FROM "iaso_metricvalue" '
             "WHERE EXISTS("
             'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1.0) LIMIT 1)'
@@ -32,7 +32,7 @@ class JsonLogicTests(TestCase):
         filters = {"and": [{">=": [{"var": "23"}, 900]}, {"==": [{"var": "22"}, 700]}]}
         expectedQuerySet = (
             'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
-            '"iaso_metricvalue"."year", "iaso_metricvalue"."value" '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
             'FROM "iaso_metricvalue" '
             "WHERE ("
             'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '
@@ -48,7 +48,7 @@ class JsonLogicTests(TestCase):
         filters = {"or": [{">=": [{"var": "23"}, 900]}, {"==": [{"var": "22"}, 700]}]}
         expectedQuerySet = (
             'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
-            '"iaso_metricvalue"."year", "iaso_metricvalue"."value" '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
             'FROM "iaso_metricvalue" '
             "WHERE ("
             'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '
@@ -71,7 +71,7 @@ class JsonLogicTests(TestCase):
         }
         expectedQuerySet = (
             'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", '
-            '"iaso_metricvalue"."org_unit_id", "iaso_metricvalue"."year", "iaso_metricvalue"."value" '
+            '"iaso_metricvalue"."org_unit_id", "iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
             'FROM "iaso_metricvalue" '
             "WHERE ("
             'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '

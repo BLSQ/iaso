@@ -208,6 +208,148 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
+    def test_list_entities_search_uuid_filter(self):
+        """
+        Test the 'uuids:' search filter of /api/entities with comma-separated UUIDs
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Create multiple entities with different UUIDs
+        instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 1", "age": 25},
+        )
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 2", "age": 30},
+        )
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance3 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 3", "age": 35},
+        )
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        # Test single UUID search
+        response = self.client.get(f"/api/entities/?search=uuids:{entity1.uuid}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+        # Test multiple UUIDs search with comma separation
+        uuids = f"{entity1.uuid},{entity2.uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids}", format="json")
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity2.id, result_ids)
+
+        # Test with spaces around commas
+        uuids_with_spaces = f"{entity1.uuid} , {entity3.uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_spaces}", format="json")
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity3.id, result_ids)
+
+        # Test with non-existent UUID mixed in
+        fake_uuid = "8872aafb-651f-4b0f-89af-35f0a06d9b44"
+        uuids_with_fake = f"{entity1.uuid},{fake_uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_fake}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+    def test_list_entities_search_ids_filter(self):
+        """
+        Test the 'ids:' search filter of /api/entities with comma-separated IDs
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Create multiple entities
+        instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 1", "age": 25},
+        )
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 2", "age": 30},
+        )
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance3 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 3", "age": 35},
+        )
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        # Test single ID search
+        response = self.client.get(f"/api/entities/?search=ids:{entity1.id}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+        # Test multiple IDs search with comma separation
+        ids = f"{entity1.id},{entity2.id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids}", format="json")
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity2.id, result_ids)
+
+        # Test with spaces around commas
+        ids_with_spaces = f"{entity1.id} , {entity3.id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids_with_spaces}", format="json")
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity3.id, result_ids)
+
+        # Test with non-existent ID mixed in
+        fake_id = 99999
+        ids_with_fake = f"{entity1.id},{fake_id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids_with_fake}", format="json")
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
     def test_list_entities_filter_by_date(self):
         """
         Test the date filters of /api/entities

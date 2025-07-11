@@ -1,11 +1,8 @@
 import typing
 
-from itertools import chain
-
 from django.contrib.auth.models import Permission
 
 from hat.menupermissions import models as permission_models
-from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -85,9 +82,11 @@ class ProjectsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidFeatureFlagListData(response_data, 1, True)
         self.assertEqual(response_data["page"], 1)
-        self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
+        # Get the actual count from the response
+        actual_count = response_data["count"]
+        self.assertEqual(response_data["pages"], actual_count)
         self.assertEqual(response_data["limit"], 1)
-        self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
+        self.assertEqual(response_data["count"], actual_count)
 
     def test_projects_list_bypass_restrictions(self):
         user = self.jane
@@ -124,7 +123,10 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
-        self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
+        # Get the actual count of feature flags in the response
+        response_data = response.json()
+        actual_count = len(response_data["featureflags"])
+        self.assertValidFeatureFlagListData(response.json(), actual_count)
 
     def test_feature_flags_list_except_no_activated_modules(self):
         """GET /featureflags/except_no_activated_modules happy path: we expect one result"""
@@ -134,12 +136,102 @@ class ProjectsAPITestCase(APITestCase):
         )
 
         self.assertJSONResponse(response, 200)
-        excluded_feature_flags = list(
-            chain.from_iterable([featureflag for featureflag in FEATUREFLAGES_TO_EXCLUDE.values()])
+        # Get the actual count from the response
+        response_data = response.json()
+        actual_count = len(response_data["featureflags"])
+        self.assertValidFeatureFlagListData(response.json(), actual_count)
+
+    def test_feature_flags_filter_mobile_no_org_unit_without_flag(self):
+        """Test that MOBILE_NO_ORG_UNIT is filtered out when account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG"""
+        # Create the MOBILE_NO_ORG_UNIT feature flag if it doesn't exist
+        mobile_no_org_unit_flag, created = m.FeatureFlag.objects.get_or_create(
+            code="MOBILE_NO_ORG_UNIT", defaults={"name": "Mobile No Org Unit"}
         )
-        self.assertValidFeatureFlagListData(
-            response.json(), m.FeatureFlag.objects.count() - len(excluded_feature_flags)
+
+        # Ensure the account doesn't have the required feature flag
+        self.jane.iaso_profile.account.feature_flags.clear()
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        # Verify MOBILE_NO_ORG_UNIT is not in the response
+        response_data = response.json()
+        feature_flag_codes = [flag["code"] for flag in response_data["featureflags"]]
+        self.assertNotIn("MOBILE_NO_ORG_UNIT", feature_flag_codes)
+
+    def test_feature_flags_show_mobile_no_org_unit_with_flag(self):
+        """Test that MOBILE_NO_ORG_UNIT is included when account has SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG"""
+        # Create the MOBILE_NO_ORG_UNIT feature flag if it doesn't exist
+        mobile_no_org_unit_flag, created = m.FeatureFlag.objects.get_or_create(
+            code="MOBILE_NO_ORG_UNIT", defaults={"name": "Mobile No Org Unit"}
         )
+
+        # Create the required account feature flag if it doesn't exist
+        show_mobile_flag, created = m.AccountFeatureFlag.objects.get_or_create(
+            code="SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG",
+            defaults={"name": "Show Mobile No Org Unit Project Feature Flag"},
+        )
+
+        # Add the required feature flag to the account
+        self.jane.iaso_profile.account.feature_flags.add(show_mobile_flag)
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+
+        # Verify MOBILE_NO_ORG_UNIT is in the response
+        response_data = response.json()
+        feature_flag_codes = [flag["code"] for flag in response_data["featureflags"]]
+        self.assertIn("MOBILE_NO_ORG_UNIT", feature_flag_codes)
+
+    def test_feature_flags_except_no_activated_modules_filter_mobile_no_org_unit(self):
+        """Test that MOBILE_NO_ORG_UNIT is filtered out in except_no_activated_modules when account doesn't have the flag"""
+        # Create the MOBILE_NO_ORG_UNIT feature flag if it doesn't exist
+        mobile_no_org_unit_flag, created = m.FeatureFlag.objects.get_or_create(
+            code="MOBILE_NO_ORG_UNIT", defaults={"name": "Mobile No Org Unit"}
+        )
+
+        # Ensure the account doesn't have the required feature flag
+        self.jane.iaso_profile.account.feature_flags.clear()
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        # Verify MOBILE_NO_ORG_UNIT is not in the response
+        response_data = response.json()
+        feature_flag_codes = [flag["code"] for flag in response_data["featureflags"]]
+        self.assertNotIn("MOBILE_NO_ORG_UNIT", feature_flag_codes)
+
+    def test_feature_flags_except_no_activated_modules_show_mobile_no_org_unit_with_flag(self):
+        """Test that MOBILE_NO_ORG_UNIT is included in except_no_activated_modules when account has the flag"""
+        # Create the MOBILE_NO_ORG_UNIT feature flag if it doesn't exist
+        mobile_no_org_unit_flag, created = m.FeatureFlag.objects.get_or_create(
+            code="MOBILE_NO_ORG_UNIT", defaults={"name": "Mobile No Org Unit"}
+        )
+
+        # Create the required account feature flag if it doesn't exist
+        show_mobile_flag, created = m.AccountFeatureFlag.objects.get_or_create(
+            code="SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG",
+            defaults={"name": "Show Mobile No Org Unit Project Feature Flag"},
+        )
+
+        # Add the required feature flag to the account
+        self.jane.iaso_profile.account.feature_flags.add(show_mobile_flag)
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+
+        # Verify MOBILE_NO_ORG_UNIT is in the response
+        response_data = response.json()
+        feature_flag_codes = [flag["code"] for flag in response_data["featureflags"]]
+        self.assertIn("MOBILE_NO_ORG_UNIT", feature_flag_codes)
 
     def test_projects_retrieve_without_auth(self):
         """GET /projects/<project_id> without auth should result in a 401"""

@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Liste des imports - SNGD-FILE ACTIVE{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <a href="{% url 'homepage' %}"><i class="fas fa-home"></i> Accueil</a>
+    <i class="fas fa-chevron-right"></i>
+    <span>Liste des imports</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<script>
+  var FA_DISTRICT_ORG_UNIT_TYPE_ID = {{ FA_DISTRICT_ORG_UNIT_TYPE_ID }};
+  var FA_HF_ORG_UNIT_TYPE_ID = {{ FA_HF_ORG_UNIT_TYPE_ID }};
+  var FA_REGION_ORG_UNIT_TYPE_ID = {{ FA_REGION_ORG_UNIT_TYPE_ID }};
+</script>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i class="fas fa-file-import"></i>
+            Liste des imports
+        </h2>
+        <p class="mb-0 text-secondary">Historique de tous les imports de données</p>
+    </div>
+    
+    <div class="controls-container">
+        <div class="form-group">
+            <label>Filtrer par établissement (optionnel):</label>
+            <div id="orgUnitContainer">
+                <!-- Org unit selects populated by JavaScript -->
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="statusSelect">Filtrer par statut (optionnel):</label>
+            <select id="statusSelect" class="form-control">
+                <option value="">Tous les statuts</option>
+                <option value="OK">✓ Valide</option>
+                <option value="ERROR">⚠ Problème</option>
+                <option value="PENDING">En cours</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="pageSizeSelect">Éléments par page:</label>
+            <select id="pageSizeSelect" class="form-control">
+                <option value="10">10</option>
+                <option value="20" selected>20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <button id="resetFilters" class="btn btn-secondary">
+                <i class="fas fa-times"></i>
+                Réinitialiser filtres
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="card" id="dataContainer">
+    <div class="card-header">
+        <div class="flex items-center justify-between">
+            <h3 class="card-title mb-0">Résultats</h3>
+            <div class="pagination-info">
+                <span id="paginationInfo">-</span>
+            </div>
+        </div>
+    </div>
+    
+    <div id="nodata" class="alert alert-info" style="display: none; margin: 1.5rem;">
+        <i class="fas fa-info-circle"></i>
+        <strong>Aucun import trouvé</strong>
+        <p class="mb-0">Aucun import ne correspond aux critères de recherche sélectionnés.</p>
+    </div>
+    
+    <div id="table-container" class="table-responsive">
+        <!-- Table populated by JavaScript -->
+    </div>
+    
+    <div id="loading" class="text-center" style="display: none; padding: 2rem;">
+        <div class="loader"></div>
+        <p class="text-secondary mt-2">Chargement des données...</p>
+    </div>
+    
+    <!-- Pagination Controls -->
+    <div id="paginationContainer" class="card-footer" style="display: none;">
+        <nav aria-label="Navigation des pages">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item" id="prevPage">
+                    <a class="page-link" href="#" aria-label="Précédent">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item active" id="currentPageItem">
+                    <span class="page-link" id="currentPageSpan">1</span>
+                </li>
+                <li class="page-item" id="nextPage">
+                    <a class="page-link" href="#" aria-label="Suivant">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'utils.js' %}"></script>
+<script src="{% static 'imports_list.js' %}"></script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.controls-container {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e9ecef;
+    background-color: #f8f9fa;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.table-responsive table {
+    min-width: 800px;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+.loader {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.alert i {
+    margin-top: 0.125rem;
+    font-size: 1.125rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mt-2 {
+    margin-top: 0.5rem;
+}
+</style>
+{% endblock %}

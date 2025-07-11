@@ -359,8 +359,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_3, instance=instance_3)
 
-        self.assertEqual(org_unit.reference_instances.count(), 3)
-        self.assertCountEqual(org_unit.reference_instances.all(), [instance_1, instance_2, instance_3])
+        expected_reference_instances = [instance_1, instance_2, instance_3]
+        self.assertCountEqual(org_unit.reference_instances.all(), expected_reference_instances)
 
         # Change the reference instance of `form_1` from `instance_1` to `instance_1_bis`.
 
@@ -373,7 +373,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             org_unit=org_unit,
             requested_fields=["new_reference_instances"],
         )
-        change_request.new_groups.set([self.new_group1, self.new_group2])
         change_request.new_reference_instances.set([instance_1_bis])
         change_request.approve(user=self.user, approved_fields=["new_reference_instances"])
 
@@ -392,7 +391,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             org_unit=org_unit,
             requested_fields=["new_reference_instances"],
         )
-        change_request.new_groups.set([self.new_group1, self.new_group2])
         change_request.new_reference_instances.set([instance_2_bis])
         change_request.approve(user=self.user, approved_fields=["new_reference_instances"])
 

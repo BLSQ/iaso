@@ -6,28 +6,29 @@ from iaso.api.org_units import import_data as import_units
 
 
 class Command(BaseCommand):
-    help = "reimport failed orgunit imports"
+    help = "reimport failed org unit and instance imports"
 
     def handle(self, *args, **options):
         failed_org_units_imports = APIImport.objects.filter(has_problem=True).filter(import_type="orgUnit")
         unit_count = 0
         for i in failed_org_units_imports:
             try:
-                import_units(i.json_body, i.user, i)
+                import_units(i.json_body, i.user, i.headers["QUERY_STRING"][7:].split("&")[0])
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1
             except Exception as e:
                 print("An error happened", e)
 
-        failed_instance_imports = APIImport.objects.filter(has_problem=True).filter(import_type="instance")
+                failed_instance_imports = APIImport.objects.filter(has_problem=True).filter(import_type="instance")
         instance_count = 0
         for i in failed_instance_imports:
             try:
-                import_instances(i.json_body, i)
+                import_instances(i.json_body, i.user, i.headers["QUERY_STRING"][7:].split("&")[0])
                 i.has_problem = False
                 i.save()
                 instance_count = instance_count + 1
+                print(i)
             except Exception as e:
                 print("An error happened", e)
 

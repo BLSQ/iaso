@@ -3,6 +3,7 @@ import datetime
 import io
 import json
 import math
+import re
 
 from time import gmtime, strftime
 from typing import Any, List, Union
@@ -165,9 +166,27 @@ class EntityViewSet(ModelViewSet):
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
-            )
+            if search.startswith("ids:"):
+                ids_str = search.replace("ids:", "")
+                try:
+                    ids = re.findall("[A-Za-z0-9_-]+", ids_str)
+                    queryset = queryset.filter(id__in=ids)
+                except:
+                    queryset = queryset.filter(id__in=[])
+                    print("Failed parsing ids in search", search)
+            elif search.startswith("uuids:"):
+                uuid_str = search.replace("uuids:", "")
+                try:
+                    # Split by comma and clean up each UUID
+                    uuids = [uuid.strip() for uuid in uuid_str.split(",") if uuid.strip()]
+                    queryset = queryset.filter(uuid__in=uuids)
+                except:
+                    queryset = queryset.filter(uuid__in=[])
+                    print("Failed parsing uuids in search", search)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+                )
         if by_uuid:
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:

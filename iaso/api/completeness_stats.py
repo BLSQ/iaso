@@ -81,7 +81,7 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
             return super().render(data, accepted_media_type, renderer_context)
 
         # Build the header in the desired order
-        header = ["id", "org_unit_name", "org_unit_type_name", "parent_org_unit_name", "has_children"]
+        header = ["id", "org_unit_name", "org_unit_type_name", "parent_org_unit_name"]
 
         # Add form-specific columns to the header
         for form in forms:
@@ -91,6 +91,7 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
                     f"{form_name} - Descendants Numerator",
                     f"{form_name} - Descendants Denominator",
                     f"{form_name} - Descendants Percentage",
+                    f"{form_name} - Itself Target",
                 ]
             )
 
@@ -110,7 +111,6 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
                         "parent_org_unit_name",
                         row.get("parent_org_unit", {}).get("name", "") if row.get("parent_org_unit") else "",
                     ),
-                    ("has_children", row.get("has_children", False)),
                 ]
             )
 
@@ -121,9 +121,36 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
                 form_name = form.get("name", "")
                 form_stats_data = form_stats.get(form_slug, {})
 
-                transformed_row[f"{form_name} - Descendants Numerator"] = form_stats_data.get("descendants_ok", 0)
-                transformed_row[f"{form_name} - Descendants Denominator"] = form_stats_data.get("descendants", 0)
-                transformed_row[f"{form_name} - Descendants Percentage"] = form_stats_data.get("percent", 0)
+                descendants = form_stats_data.get("descendants", 0)
+                descendants_ok = form_stats_data.get("descendants_ok", 0)
+                itself_target = form_stats_data.get("itself_target", 0)
+                itself_has_instances = form_stats_data.get("itself_has_instances", 0)
+                percent = form_stats_data.get("percent", 0)
+
+                # If the form doesn't apply to this org unit (no descendants and not itself targeted), show N/A
+                if descendants == 0 and itself_target == 0:
+                    transformed_row[f"{form_name} - Descendants Numerator"] = "N/A"
+                    transformed_row[f"{form_name} - Descendants Denominator"] = "N/A"
+                    transformed_row[f"{form_name} - Descendants Percentage"] = "N/A"
+                    transformed_row[f"{form_name} - Itself Target"] = "N/A"
+                else:
+                    transformed_row[f"{form_name} - Descendants Numerator"] = descendants_ok
+                    transformed_row[f"{form_name} - Descendants Denominator"] = descendants
+                    transformed_row[f"{form_name} - Descendants Percentage"] = percent
+
+                    # Itself Target logic:
+                    # - itself_target = 0 => N/A
+                    # - itself_target = 1 and itself_has_instances = 0 => false
+                    # - itself_target = 1 and itself_has_instances = 1 => true
+                    if itself_target == 0:
+                        transformed_row[f"{form_name} - Itself Target"] = "N/A"
+                    elif itself_target == 1 and itself_has_instances == 0:
+                        transformed_row[f"{form_name} - Itself Target"] = "false"
+                    elif itself_target == 1 and itself_has_instances == 1:
+                        transformed_row[f"{form_name} - Itself Target"] = "true"
+                    else:
+                        # Fallback for unexpected values
+                        transformed_row[f"{form_name} - Itself Target"] = "N/A"
 
             transformed_data.append(transformed_row)
 

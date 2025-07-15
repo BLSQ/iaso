@@ -919,18 +919,18 @@ class CompletenessStatsAPITestCase(APITestCase):
             "org_unit_name",
             "org_unit_type_name",
             "parent_org_unit_name",
+            f"{self.form_hs_1.name} - Direct",
             f"{self.form_hs_1.name} - Descendants Numerator",
             f"{self.form_hs_1.name} - Descendants Denominator",
             f"{self.form_hs_1.name} - Descendants Percentage",
-            f"{self.form_hs_1.name} - Itself Target",
+            f"{self.form_hs_2.name} - Direct",
             f"{self.form_hs_2.name} - Descendants Numerator",
             f"{self.form_hs_2.name} - Descendants Denominator",
             f"{self.form_hs_2.name} - Descendants Percentage",
-            f"{self.form_hs_2.name} - Itself Target",
+            f"{self.form_hs_4.name} - Direct",
             f"{self.form_hs_4.name} - Descendants Numerator",
             f"{self.form_hs_4.name} - Descendants Denominator",
             f"{self.form_hs_4.name} - Descendants Percentage",
-            f"{self.form_hs_4.name} - Itself Target",
         ]
         self.assertEqual(header, expected_columns)
 
@@ -944,38 +944,38 @@ class CompletenessStatsAPITestCase(APITestCase):
             # because it has descendants=0 and itself_target=0 (form doesn't apply)
             if org_unit_id == 9:
                 # Find the index of form_hs_2 columns
+                form_hs_2_direct_idx = header.index(f"{self.form_hs_2.name} - Direct")
                 form_hs_2_numerator_idx = header.index(f"{self.form_hs_2.name} - Descendants Numerator")
                 form_hs_2_denominator_idx = header.index(f"{self.form_hs_2.name} - Descendants Denominator")
                 form_hs_2_percentage_idx = header.index(f"{self.form_hs_2.name} - Descendants Percentage")
-                form_hs_2_itself_idx = header.index(f"{self.form_hs_2.name} - Itself Target")
 
                 # Check that these columns show N/A for org unit 9 (form doesn't apply)
+                self.assertEqual(row[form_hs_2_direct_idx], "N/A")
                 self.assertEqual(row[form_hs_2_numerator_idx], "N/A")
                 self.assertEqual(row[form_hs_2_denominator_idx], "N/A")
                 self.assertEqual(row[form_hs_2_percentage_idx], "N/A")
-                self.assertEqual(row[form_hs_2_itself_idx], "N/A")
 
-                # Check form_hs_4 for org unit 9 - it should show itself_target as "false"
+                # Check form_hs_4 for org unit 9 - it should show direct as "false"
                 # because form_hs_4 has itself_target=1 but itself_has_instances=0
-                form_hs_4_itself_idx = header.index(f"{self.form_hs_4.name} - Itself Target")
-                self.assertEqual(row[form_hs_4_itself_idx], "false")
+                form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
+                self.assertEqual(row[form_hs_4_direct_idx], "false")
 
             # For "LaLaland" (id=1), form_hs_2 should show 0 values
             # because it has descendants=1 and itself_target=0 (form applies but no submissions)
             elif org_unit_id == 1:
                 # Find the index of form_hs_2 columns
+                form_hs_2_direct_idx = header.index(f"{self.form_hs_2.name} - Direct")
                 form_hs_2_numerator_idx = header.index(f"{self.form_hs_2.name} - Descendants Numerator")
                 form_hs_2_denominator_idx = header.index(f"{self.form_hs_2.name} - Descendants Denominator")
                 form_hs_2_percentage_idx = header.index(f"{self.form_hs_2.name} - Descendants Percentage")
-                form_hs_2_itself_idx = header.index(f"{self.form_hs_2.name} - Itself Target")
 
                 # Check that these columns show 0 for org unit 1 (form applies but no submissions)
+                self.assertEqual(row[form_hs_2_direct_idx], "N/A")
                 self.assertEqual(row[form_hs_2_numerator_idx], "0")
                 self.assertEqual(row[form_hs_2_denominator_idx], "1")
                 self.assertEqual(row[form_hs_2_percentage_idx], "0")
-                self.assertEqual(row[form_hs_2_itself_idx], "N/A")
 
-                # Check form_hs_4 for org unit 1 - it should show itself_target as "false"
+                # Check form_hs_4 for org unit 1 - it should show direct as "false"
                 # because form_hs_4 has itself_target=1 but itself_has_instances=0
-                form_hs_4_itself_idx = header.index(f"{self.form_hs_4.name} - Itself Target")
-                self.assertEqual(row[form_hs_4_itself_idx], "false")
+                form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
+                self.assertEqual(row[form_hs_4_direct_idx], "false")

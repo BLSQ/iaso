@@ -88,10 +88,10 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
             form_name = form.get("name", "")
             header.extend(
                 [
+                    f"{form_name} - Direct",
                     f"{form_name} - Descendants Numerator",
                     f"{form_name} - Descendants Denominator",
                     f"{form_name} - Descendants Percentage",
-                    f"{form_name} - Itself Target",
                 ]
             )
 
@@ -129,28 +129,28 @@ class CompletenessStatsCSVRenderer(rest_framework_csv.renderers.CSVRenderer):
 
                 # If the form doesn't apply to this org unit (no descendants and not itself targeted), show N/A
                 if descendants == 0 and itself_target == 0:
+                    transformed_row[f"{form_name} - Direct"] = "N/A"
                     transformed_row[f"{form_name} - Descendants Numerator"] = "N/A"
                     transformed_row[f"{form_name} - Descendants Denominator"] = "N/A"
                     transformed_row[f"{form_name} - Descendants Percentage"] = "N/A"
-                    transformed_row[f"{form_name} - Itself Target"] = "N/A"
                 else:
-                    transformed_row[f"{form_name} - Descendants Numerator"] = descendants_ok
-                    transformed_row[f"{form_name} - Descendants Denominator"] = descendants
-                    transformed_row[f"{form_name} - Descendants Percentage"] = percent
-
-                    # Itself Target logic:
+                    # Direct logic:
                     # - itself_target = 0 => N/A
                     # - itself_target = 1 and itself_has_instances = 0 => false
                     # - itself_target = 1 and itself_has_instances = 1 => true
                     if itself_target == 0:
-                        transformed_row[f"{form_name} - Itself Target"] = "N/A"
+                        transformed_row[f"{form_name} - Direct"] = "N/A"
                     elif itself_target == 1 and itself_has_instances == 0:
-                        transformed_row[f"{form_name} - Itself Target"] = "false"
+                        transformed_row[f"{form_name} - Direct"] = "false"
                     elif itself_target == 1 and itself_has_instances == 1:
-                        transformed_row[f"{form_name} - Itself Target"] = "true"
+                        transformed_row[f"{form_name} - Direct"] = "true"
                     else:
                         # Fallback for unexpected values
-                        transformed_row[f"{form_name} - Itself Target"] = "N/A"
+                        transformed_row[f"{form_name} - Direct"] = "N/A"
+
+                    transformed_row[f"{form_name} - Descendants Numerator"] = descendants_ok
+                    transformed_row[f"{form_name} - Descendants Denominator"] = descendants
+                    transformed_row[f"{form_name} - Descendants Percentage"] = percent
 
             transformed_data.append(transformed_row)
 

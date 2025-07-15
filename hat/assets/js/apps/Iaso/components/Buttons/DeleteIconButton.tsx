@@ -19,7 +19,7 @@ type Props = {
 export const DeleteIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
-    color,
+    color = 'inherit',
 }) => {
     return (
         <IconButton

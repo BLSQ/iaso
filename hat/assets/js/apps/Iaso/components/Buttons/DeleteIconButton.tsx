@@ -13,17 +13,20 @@ const messages = defineMessages({
 type Props = {
     onClick: () => void;
     message?: IntlMessage;
+    color: string;
 };
 
 export const DeleteIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
+    color = 'inherit',
 }) => {
     return (
         <IconButton
             onClick={onClick}
             overrideIcon={DeleteIcon}
             tooltipMessage={message ?? messages.delete}
+            color={color}
         />
     );
 };

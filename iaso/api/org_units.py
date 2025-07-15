@@ -54,26 +54,21 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if obj.version.data_source.public and request.method == "GET":
             return True
 
-        if not (
-            request.user.is_authenticated
-            and (
-                request.user.has_perm(permission.FORMS)
-                or request.user.has_perm(permission.ORG_UNITS)
-                or request.user.has_perm(permission.ORG_UNITS_READ)
-                or request.user.has_perm(permission.SUBMISSIONS)
-                or request.user.has_perm(permission.REGISTRY_WRITE)
-                or request.user.has_perm(permission.REGISTRY_READ)
-            )
-        ):
-            return False
-
-        # Split polio checks from previous block - run only if polio plugin is enabled
+        required_perms = [
+            request.user.has_perm(permission.FORMS),
+            request.user.has_perm(permission.ORG_UNITS),
+            request.user.has_perm(permission.ORG_UNITS_READ),
+            request.user.has_perm(permission.SUBMISSIONS),
+            request.user.has_perm(permission.REGISTRY_WRITE),
+            request.user.has_perm(permission.REGISTRY_READ),
+        ]
         if "polio" in settings.PLUGINS:
             from plugins.polio import permissions as polio_permissions
 
-            has_polio_perm = request.user.has_perm(polio_permissions.POLIO)
-            if not (request.user.is_authenticated and has_polio_perm):
-                return False
+            required_perms.append(request.user.has_perm(polio_permissions.POLIO))
+
+        if not (request.user.is_authenticated and any(required_perms)):
+            return False
 
         read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
         if (read_only or obj.version.data_source.read_only) and request.method != "GET":

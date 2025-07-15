@@ -253,7 +253,7 @@
     "iaso.error.label.planningAndOrgUnit": "Planning et unité d'org. doivent faire partie du même projet",
     "iaso.error.label.planningAndTeams": "Planning et équipes doivent faire partie du même projet",
     "iaso.error.label.publishedWithoutStartDate": "La date de début doit être définie lors de la publication",
-    "iaso.error.label.publishedWithoutEndDate": "End date must be set when publishing",
+    "iaso.error.label.publishedWithoutEndDate": "La date de fin doit être définie lors de la publication",
     "iaso.error.label.startDateAfterEndDate": "La date de début ne peut être après la date de fin",
     "iaso.errors.label": "Une erreur est survenue.",
     "iaso.errors.noPermissions": "Aucune permission n'est associée à cet utilisateur. Veuillez contacter un administrateur pour demander la(les) permission(s). Merci !",

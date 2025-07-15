@@ -63,10 +63,17 @@ class HasOrgUnitPermission(permissions.BasePermission):
                 or request.user.has_perm(permission.SUBMISSIONS)
                 or request.user.has_perm(permission.REGISTRY_WRITE)
                 or request.user.has_perm(permission.REGISTRY_READ)
-                or request.user.has_perm(permission.POLIO)
             )
         ):
             return False
+
+        # Split polio checks from previous block - run only if polio plugin is enabled
+        if "polio" in settings.PLUGINS:
+            from plugins.polio import permissions as polio_permissions
+
+            has_polio_perm = request.user.has_perm(polio_permissions.POLIO)
+            if not (request.user.is_authenticated and has_polio_perm):
+                return False
 
         read_only = request.user.has_perm(permission.ORG_UNITS_READ) and not request.user.has_perm(permission.ORG_UNITS)
         if (read_only or obj.version.data_source.read_only) and request.method != "GET":

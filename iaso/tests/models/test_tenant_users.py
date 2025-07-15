@@ -42,6 +42,25 @@ class TenantUserModelTestCase(TestCase):
         self.assertEqual(str(self.tenant_user_1), "main_user -- user_1 (Account 1)")
         self.assertEqual(str(self.tenant_user_2), "main_user -- user_2 (Account 2)")
 
+    def test_account(self):
+        """
+        Test the `account` property.
+        """
+        self.assertEqual(self.tenant_user_1.account, self.account_1)
+        self.assertEqual(self.tenant_user_2.account, self.account_2)
+
+    def test_get_other_accounts(self):
+        self.assertQuerysetEqual(self.tenant_user_1.get_other_accounts(), [self.account_2])
+        self.assertQuerysetEqual(self.tenant_user_2.get_other_accounts(), [self.account_1])
+
+    def test_get_all_account_users(self):
+        self.assertCountEqual(
+            self.tenant_user_1.get_all_account_users(), [self.multi_account_user_1, self.multi_account_user_2]
+        )
+        self.assertCountEqual(
+            self.tenant_user_2.get_all_account_users(), [self.multi_account_user_1, self.multi_account_user_2]
+        )
+
     def test_is_multi_account_user(self):
         self.assertFalse(m.TenantUser.is_multi_account_user(self.single_user))
         self.assertFalse(m.TenantUser.is_multi_account_user(self.multi_main_user))

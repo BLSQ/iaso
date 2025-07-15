@@ -253,6 +253,7 @@
     "iaso.error.label.planningAndTeams": "Planning and teams must be in the same project",
     "iaso.error.label.startDateAfterEndDate": "Start date can't after end date",
     "iaso.error.label.publishedWithoutStartDate": "Start date must be set when publishing",
+    "iaso.error.label.publishedWithoutEndDate": "End date must be set when publishing",
     "iaso.errors.label": "An error occurred",
     "iaso.errors.noPermissions": "There is no permission associated to this user. Please contact an administrator to request permission(s). Thank you!",
     "iaso.errors.noPermissionsTitle": "Awaiting Access Permissions",

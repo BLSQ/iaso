@@ -353,6 +353,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
 
         try:
+            # Currently, the `account` is always the same in the UI.
+            # This means that we'll never get back a `tenant_main_user` here - at least for the moment.
+            # Yet we keep `create_user_or_tenant_user()` here to avoid repeating part of its logic.
             new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
                 data=UserCreationData(
                     username=username,

@@ -253,6 +253,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Test single UUID search
         response = self.client.get(f"/api/entities/?search=uuids:{entity1.uuid}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 

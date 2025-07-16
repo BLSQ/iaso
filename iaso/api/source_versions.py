@@ -3,7 +3,8 @@ from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.models import DataSource, SourceVersion
 
 from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
@@ -79,8 +80,8 @@ class SourceVersionsDropdownSerializer(serializers.ModelSerializer):
 class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
-    This API is restricted to authenticated users having at least one of the "{permission.MAPPINGS}",
-    "{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}", and "{permission.LINKS}" permissions
+    This API is restricted to authenticated users having at least one of the "{core_permissions.MAPPINGS}",
+    "{core_permissions.ORG_UNITS}","{core_permissions.ORG_UNITS_READ}", and "{core_permissions.LINKS}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
@@ -101,7 +102,11 @@ class SourceVersionViewSet(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(
-            permission.MAPPINGS, permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.LINKS, permission.SOURCES
+            core_permissions.MAPPINGS,
+            core_permissions.ORG_UNITS,
+            core_permissions.ORG_UNITS_READ,
+            core_permissions.LINKS,
+            core_permissions.SOURCES,
         ),  # type: ignore
     ]
     serializer_class = SourceVersionSerializer

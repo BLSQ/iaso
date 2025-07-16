@@ -1,53 +1,10 @@
 from importlib import import_module
+from types import ModuleType
 
 from django.conf import settings
 
 
 MODULE_PERMISSIONS = {
-    "DATA_COLLECTION_FORMS": [
-        "iaso_forms",
-        "iaso_forms_stats",
-        "iaso_update_submission",
-        "iaso_submissions",
-        "iaso_completeness_stats",
-    ],
-    "DEFAULT": [
-        "iaso_org_units",
-        "iaso_org_units_read",
-        "iaso_org_unit_types",
-        "iaso_org_unit_groups",
-        "iaso_org_units_history",
-        "iaso_sources",
-        "iaso_sources_can_change_default_version",
-        "iaso_write_sources",
-        "iaso_links",
-        "iaso_data_tasks",
-        "iaso_reports",
-        "iaso_projects",
-        "iaso_users",
-        "iaso_users_managed",
-        "iaso_user_roles",
-        "iaso_teams",
-        "iaso_modules",
-        "iaso_mobile_app_offline_setup",
-    ],
-    "DHIS2_MAPPING": ["iaso_mappings"],
-    "EMBEDDED_LINKS": ["iaso_pages", "iaso_page_write"],
-    "ENTITIES": [
-        "iaso_entities",
-        "iaso_workflows",
-        "iaso_entity_duplicates_write",
-        "iaso_entity_duplicates_read",
-        "iaso_entity_type_write",
-    ],
-    "EXTERNAL_STORAGE": ["iaso_storages"],
-    "PLANNING": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
-    "REGISTRY": [
-        "iaso_registry_write",
-        "iaso_registry_read",
-    ],
-    "PAYMENTS": ["iaso_payments"],
-    "COMPLETENESS_PER_PERIOD": ["iaso_completeness"],
     "TRYPELIM_PROJECT": [
         "iaso_trypelim_anonymous",
         "iaso_trypelim_case_analysis",
@@ -85,10 +42,6 @@ MODULE_PERMISSIONS = {
         "iaso_trypelim_stats_reports",
         "iaso_trypelim_vectorcontrol",
         "iaso_trypelim_vectorcontrolupload",
-    ],
-    "DATA_VALIDATION": [
-        "iaso_org_unit_change_request_review",
-        "iaso_org_unit_change_request_configurations",
     ],
 }
 
@@ -156,41 +109,6 @@ DEFAULT_ACCOUNT_FEATURE_FLAGS = [
 ]
 
 PERMISSIONS_PRESENTATION = {
-    "forms": [
-        "iaso_forms",
-        "iaso_forms_stats",
-        "iaso_update_submission",
-        "iaso_submissions",
-        "iaso_completeness",
-        "iaso_completeness_stats",
-    ],
-    "org_units": [
-        "iaso_org_units",
-        "iaso_org_units_read",
-        "iaso_org_unit_types",
-        "iaso_org_unit_groups",
-        "iaso_org_units_history",
-    ],
-    "data_validation": [
-        "iaso_org_unit_change_request_review",
-        "iaso_org_unit_change_request_configurations",
-    ],
-    "registry": [
-        "iaso_registry_read",
-        "iaso_registry_write",
-    ],
-    "entities": [
-        "iaso_entities",
-        "iaso_workflows",
-        "iaso_entity_duplicates_write",
-        "iaso_entity_duplicates_read",
-        "iaso_entity_type_write",
-    ],
-    "payments": ["iaso_payments"],
-    "dhis2_mapping": ["iaso_mappings"],
-    "external_storage": ["iaso_storages"],
-    "planning": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
-    "embedded_links": ["iaso_pages", "iaso_page_write"],
     "trypelim": [
         "iaso_trypelim_anonymous",
         "iaso_trypelim_case_analysis",
@@ -229,60 +147,29 @@ PERMISSIONS_PRESENTATION = {
         "iaso_trypelim_vectorcontrol",
         "iaso_trypelim_vectorcontrolupload",
     ],
-    "admin": [
-        "iaso_data_tasks",
-        "iaso_reports",
-        "iaso_projects",
-        "iaso_users",
-        "iaso_users_managed",
-        "iaso_user_roles",
-        "iaso_teams",
-        "iaso_modules",
-        "iaso_mobile_app_offline_setup",
-        "iaso_sources",
-        "iaso_sources_can_change_default_version",
-        "iaso_write_sources",
-        "iaso_links",
-    ],
 }
 
-READ_EDIT_PERMISSIONS = {
-    "iaso_submission_permissions": {
-        "read": "iaso_submissions",
-        "write": "iaso_update_submission",
-    },
-    "iaso_org_unit_permissions": {
-        "read": "iaso_org_units_read",
-        "write": "iaso_org_units",
-    },
-    "iaso_registry_permissions": {
-        "read": "iaso_registry_read",
-        "write": "iaso_registry_write",
-    },
-    "iaso_source_permissions": {"read": "iaso_sources", "write": "iaso_write_sources"},
-    "iaso_entity_duplicate_permissions": {
-        "read": "iaso_entity_duplicates_read",
-        "write": "iaso_entity_duplicates_write",
-    },
-    "iaso_planning_permissions": {
-        "read": "iaso_planning_read",
-        "write": "iaso_planning_write",
-    },
-    "iaso_page_permissions": {"read": "iaso_pages", "write": "iaso_page_write"},
-    "iaso_user_permissions": {"geo_limited": "iaso_users_managed", "all": "iaso_users"},
-}
+READ_EDIT_PERMISSIONS = {}
+
+
+def load_permissions_from_permissions_module(permissions_module: ModuleType):
+    read_edit_permissions = permissions_module.read_edit_permissions
+    permissions_presentation = permissions_module.permissions_presentation
+    module_permissions = permissions_module.module_permissions
+
+    global READ_EDIT_PERMISSIONS, PERMISSIONS_PRESENTATION, MODULE_PERMISSIONS
+    READ_EDIT_PERMISSIONS = READ_EDIT_PERMISSIONS | read_edit_permissions
+    PERMISSIONS_PRESENTATION = PERMISSIONS_PRESENTATION | permissions_presentation
+    MODULE_PERMISSIONS = MODULE_PERMISSIONS | module_permissions
+
+
+# load stuff from core
+core_permissions = import_module("iaso.permissions")
+load_permissions_from_permissions_module(core_permissions)
 
 for plugin in settings.PLUGINS:
     try:
         plugin_permissions = import_module(f"plugins.{plugin}.permissions")
-        read_edit_permissions = plugin_permissions.read_edit_permissions
-        permissions_presentation = plugin_permissions.permissions_presentation
-        # modules = plugin_permissions.modules
-        module_permissions = plugin_permissions.module_permissions
-
-        READ_EDIT_PERMISSIONS = READ_EDIT_PERMISSIONS | read_edit_permissions
-        PERMISSIONS_PRESENTATION = PERMISSIONS_PRESENTATION | permissions_presentation
-        # MODULES = MODULES + modules
-        MODULE_PERMISSIONS = MODULE_PERMISSIONS | module_permissions
+        load_permissions_from_permissions_module(plugin_permissions)
     except ImportError:
         print(f"{plugin} plugin has no permission support")

@@ -8,7 +8,8 @@ from django.core import mail
 from django.test import override_settings
 from rest_framework import status
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.models import Profile
@@ -195,16 +196,16 @@ class ProfileAPITestCase(APITestCase):
 
         # Users.
         cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[permission._FORMS]
+            username="janedoe", account=cls.account, permissions=[core_permissions._FORMS]
         )
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[permission._FORMS, permission._USERS_ADMIN]
+            username="jim", account=cls.account, permissions=[core_permissions._FORMS, core_permissions._USERS_ADMIN]
         )
         cls.jam = cls.create_user_with_profile(
             username="jam",
             account=cls.account,
-            permissions=[permission._USERS_MANAGED],
+            permissions=[core_permissions._USERS_MANAGED],
             language="en",
         )
         cls.jom = cls.create_user_with_profile(username="jom", account=cls.account, permissions=[], language="fr")
@@ -214,7 +215,7 @@ class ProfileAPITestCase(APITestCase):
         cls.user_managed_geo_limit = cls.create_user_with_profile(
             username="managedGeoLimit",
             account=cls.account,
-            permissions=[permission._USERS_MANAGED],
+            permissions=[core_permissions._USERS_MANAGED],
             org_units=[cls.org_unit_from_parent_type],
         )
         cls.team1 = Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
@@ -679,7 +680,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
-            ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            ["<Permission: iaso | core permission support | Formulaires>"],
             transform=repr,
         )
         org_units = profile.org_units.all()
@@ -757,7 +758,7 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertQuerySetEqual(
             user.user_permissions.all(),
-            ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            ["<Permission: iaso | core permission support | Formulaires>"],
             transform=repr,
         )
         org_units = profile.org_units.all()
@@ -960,7 +961,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "unittest_password",
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -975,7 +976,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         jum.refresh_from_db()
@@ -989,14 +990,18 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED, permission._USERS_ADMIN],
+            "user_permissions": [
+                core_permissions._FORMS,
+                core_permissions._USERS_MANAGED,
+                core_permissions._USERS_ADMIN,
+            ],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=permission._USERS_ADMIN)])
+        group.permissions.set([Permission.objects.get(codename=core_permissions._USERS_ADMIN)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1011,7 +1016,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=permission._FORMS)])
+        group.permissions.set([Permission.objects.get(codename=core_permissions._FORMS)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1092,8 +1097,8 @@ class ProfileAPITestCase(APITestCase):
         user = self.jam
         user.iaso_profile.org_units.set([self.org_unit_from_sub_type])
 
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
+        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
 
         profile_to_modify = Profile.objects.get(user=self.jum)
         profile_to_modify.org_units.set([self.org_unit_from_sub_type])
@@ -1112,7 +1117,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             response.data["detail"],
             (
-                f"User with menupermissions.iaso_users_managed cannot assign an OrgUnit outside "
+                f"User with iaso.iaso_users_managed cannot assign an OrgUnit outside "
                 f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
             ),
         )
@@ -1124,8 +1129,8 @@ class ProfileAPITestCase(APITestCase):
         """
         user = self.jam
 
-        self.assertTrue(user.has_perm(permission.USERS_MANAGED))
-        self.assertFalse(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
+        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
 
         user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
@@ -1375,10 +1380,10 @@ class ProfileAPITestCase(APITestCase):
         )
 
         # An "admin" user with `projects` restrictions can assign projects outside his range.
-        user.user_permissions.add(Permission.objects.get(codename=permission._USERS_ADMIN))
+        user.user_permissions.add(Permission.objects.get(codename=core_permissions._USERS_ADMIN))
         del user._perm_cache
         del user._user_perm_cache
-        self.assertTrue(user.has_perm(permission.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
         user.iaso_profile.projects.set([self.project])
         response = self.client.patch(
             f"/api/profiles/{profile_to_edit.id}/",
@@ -1398,8 +1403,8 @@ class ProfileAPITestCase(APITestCase):
         project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
 
         user_admin = self.jim
-        self.assertFalse(user_admin.has_perm(permission.USERS_MANAGED))
-        self.assertTrue(user_admin.has_perm(permission.USERS_ADMIN))
+        self.assertFalse(user_admin.has_perm(core_permissions.USERS_MANAGED))
+        self.assertTrue(user_admin.has_perm(core_permissions.USERS_ADMIN))
 
         profile_to_edit = user_admin.iaso_profile
         profile_to_edit.projects.set([project_1])

@@ -3,11 +3,13 @@ import importlib
 import io
 import typing
 
+from importlib import import_module
 from unittest import mock
 
 import numpy as np
 import pandas as pd
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission
 from django.contrib.contenttypes.models import ContentType
@@ -43,8 +45,18 @@ class IasoTestCaseMixin:
         m.Profile.objects.create(user=user, account=account)
 
         if permissions is not None:
-            content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-            user.user_permissions.set(Permission.objects.filter(codename__in=permissions, content_type=content_type))
+            content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+
+            for plugin in settings.PLUGINS:
+                try:
+                    permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
+                    content_types.append(ContentType.objects.get_for_model(permission_model))
+                except ImportError:
+                    pass
+
+            user.user_permissions.set(
+                Permission.objects.filter(codename__in=permissions, content_type__in=content_types)
+            )
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)

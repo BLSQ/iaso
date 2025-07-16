@@ -196,10 +196,9 @@ const Instances = () => {
                                             id: params.formIds,
                                         }}
                                         orgUnitTypes={orgUnitTypes}
-                                        onCreateOrReAssign={(
-                                            _currentForm,
-                                            payload,
-                                        ) => createInstance(payload)}
+                                        onCreateOrReAssign={payload =>
+                                            createInstance(payload)
+                                        }
                                     />
                                 </Box>
                             </DisplayIfUserHasPerm>

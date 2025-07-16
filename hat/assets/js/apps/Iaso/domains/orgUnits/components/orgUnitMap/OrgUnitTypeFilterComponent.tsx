@@ -1,14 +1,25 @@
-import { Box, Typography } from '@mui/material';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useEffect,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
+import { Box, Grid, Typography } from '@mui/material';
 
-import PropTypes from 'prop-types';
+import {
+    Select,
+    renderTags,
+    useSafeIntl,
+    IconButton,
+} from 'bluesquare-components';
 
-import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
-
-import MESSAGES from '../../messages';
-import { getRequest } from '../../../../libs/Api';
 import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../../constants/snackBars';
+import { getRequest } from '../../../../libs/Api';
+import { getOrgUnitsBounds } from '../../../../utils/map/mapUtils';
+import MESSAGES from '../../messages';
+import { padding } from './OrgUnitMap/OrgUnitMap';
 
 const fetchSubOrgUnitsByType = (params, orgUnitType) => {
     return getRequest(`/api/orgunits/?${params}`)
@@ -24,7 +35,7 @@ const fetchSubOrgUnitsByType = (params, orgUnitType) => {
 
 const getSubOrgunits = (
     orgUnit,
-    orgUnitTypes,
+    orgUnitTypes = [] as any[],
     orgUnitTypesList = [] as any[],
 ) => {
     if (orgUnit?.sub_unit_types.length > 0) {
@@ -59,6 +70,7 @@ type Props = {
     setOrgUnitTypesSelected: any;
     orgUnitTypes: any;
     currentOrgUnit: any;
+    map: any;
 };
 
 const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
@@ -66,11 +78,27 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
     setOrgUnitTypesSelected,
     orgUnitTypes,
     currentOrgUnit,
+    map,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [orgUnitTypesList, setOrgUnitTypesList] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const computedBounds = useMemo(() => {
+        const allOrgUnits = orgUnitTypesSelected.flatMap(
+            ot => ot.orgUnits || [],
+        );
+        return getOrgUnitsBounds(allOrgUnits);
+    }, [orgUnitTypesSelected]);
+    const canFitToBounds =
+        computedBounds && computedBounds.isValid() && map.current;
+    const triggerFitBounds = useCallback(() => {
+        if (canFitToBounds) {
+            map.current.fitBounds(computedBounds, {
+                padding,
+            });
+        }
+    }, [computedBounds, map, canFitToBounds]);
     const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
         const promisesArray: Promise<any>[] = [];
         const oldOrgUnitsTypes: any[] = [];
@@ -135,39 +163,44 @@ const OrgUnitTypeFilterComponent: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.ouTypesHelperText)}:
                 </Typography>
             </Box>
-            <Select
-                keyValue="ou-types"
-                label={formatMessage(MESSAGES.org_unit_type)}
-                disabled={orgUnitTypesList.length === 0}
-                clearable
-                loading={isLoading}
-                multi
-                value={orgUnitTypesSelected}
-                getOptionLabel={option => option && option.name}
-                getOptionSelected={(option, val) => {
-                    return val && option.id === val.id;
-                }}
-                options={orgUnitTypesList}
-                returnFullObject
-                onChange={newValue => {
-                    hanldeOnChange(newValue);
-                }}
-                renderTags={renderTags(o => o.short_name || o.name)}
-            />
+            <Grid container spacing={2}>
+                <Grid item xs={10}>
+                    <Select
+                        keyValue="ou-types"
+                        label={formatMessage(MESSAGES.org_unit_type)}
+                        disabled={orgUnitTypesList.length === 0}
+                        clearable
+                        loading={isLoading}
+                        multi
+                        value={orgUnitTypesSelected}
+                        getOptionLabel={option => option && option.name}
+                        getOptionSelected={(option, val) => {
+                            return val && option.id === val.id;
+                        }}
+                        options={orgUnitTypesList}
+                        returnFullObject
+                        onChange={newValue => {
+                            hanldeOnChange(newValue);
+                        }}
+                        renderTags={renderTags(o => o.short_name || o.name)}
+                    />
+                </Grid>
+                <Grid
+                    item
+                    xs={2}
+                    display="flex"
+                    justifyContent="flex-start"
+                    alignItems="center"
+                >
+                    <IconButton
+                        onClick={triggerFitBounds}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.fitToOutBounds}
+                        disabled={!canFitToBounds}
+                    />
+                </Grid>
+            </Grid>
         </Box>
     );
 };
-
-OrgUnitTypeFilterComponent.defaultProps = {
-    orgUnitTypesSelected: [],
-    orgUnitTypes: [],
-};
-
-OrgUnitTypeFilterComponent.propTypes = {
-    orgUnitTypes: PropTypes.array,
-    orgUnitTypesSelected: PropTypes.array,
-    setOrgUnitTypesSelected: PropTypes.func.isRequired,
-    currentOrgUnit: PropTypes.object.isRequired,
-};
-
 export default OrgUnitTypeFilterComponent;

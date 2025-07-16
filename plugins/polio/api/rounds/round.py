@@ -5,8 +5,8 @@ from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     RoundDateHistoryEntryForRoundSerializer,
@@ -143,7 +143,7 @@ class LqasDistrictsUpdateSerializer(serializers.Serializer):
 class RoundViewSet(ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]
-    permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [HasPermission(polio_permissions.POLIO, polio_permissions.POLIO_CONFIG)]  # type: ignore
     serializer_class = RoundSerializer
     model = Round
 

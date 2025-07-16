@@ -1,6 +1,6 @@
 import { ShortFile } from '../domains/instances/types/instance';
 
-const imgExtensions: string[] = [
+export const imgExtensions: string[] = [
     'jpg',
     'jpeg',
     'png',
@@ -9,8 +9,8 @@ const imgExtensions: string[] = [
     'tiff',
     'webp',
 ];
-const videoExtensions: string[] = ['mp4', 'mov'];
-const documentExtensions: string[] = [
+export const videoExtensions: string[] = ['mp4', 'mov'];
+export const documentExtensions: string[] = [
     'pdf',
     'doc',
     'docx',
@@ -52,6 +52,19 @@ export type SortedFiles = {
     videos: ShortFile[];
     docs: ShortFile[];
     others: ShortFile[];
+};
+
+export const getFileType = (fileName: FileName): string => {
+    if (imgExtensions.includes(fileName.extension)) {
+        return 'image';
+    }
+    if (videoExtensions.includes(fileName.extension)) {
+        return 'video';
+    }
+    if (documentExtensions.includes(fileName.extension)) {
+        return 'document';
+    }
+    return 'other';
 };
 
 export const sortFilesType = (files: ShortFile[]): SortedFiles => {

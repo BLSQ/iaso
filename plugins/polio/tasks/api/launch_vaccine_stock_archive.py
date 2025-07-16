@@ -1,9 +1,9 @@
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.tasks.archive_vaccine_stock_for_rounds import archive_vaccine_stock_for_rounds
 
 
@@ -15,7 +15,10 @@ class ArchiveVaccineStockSerializer(serializers.Serializer):
 
 
 class ArchiveVaccineStockViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(polio_permissions.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE),
+    ]  # type: ignore
     serializer_class = ArchiveVaccineStockSerializer
 
     def create(self, request):

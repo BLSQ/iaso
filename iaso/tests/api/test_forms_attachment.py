@@ -6,7 +6,9 @@ from unittest.mock import MagicMock, patch
 
 import time_machine
 
+from django.conf import settings
 from django.core.files import File
+from django.db import connection, reset_queries
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now
@@ -24,9 +26,6 @@ MANIFEST_MOBILE_URL = "/api/forms/{form_id}/manifest/"
 MANIFEST_ENKETO_URL = "/api/forms/{form_id}/manifest_enketo/"
 SAFE_FILE_PATH = "iaso/tests/fixtures/clamav/safe.jpg"
 EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
-
-from django.conf import settings
-from django.test import override_settings
 
 
 enketo_test_settings = {
@@ -377,8 +376,10 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         return response.content
 
+    @override_settings(DEBUG=True)
     def test_manifest_anonymous_app_id(self):
         f"""GET {BASE_URL} via app id"""
+        reset_queries()
 
         response = self.client.get(
             MANIFEST_MOBILE_URL.format(form_id=self.form_2.id),
@@ -386,6 +387,13 @@ class FormAttachmentsAPITestCase(APITestCase):
             data={"app_id": self.project_1.app_id},
         )
         self.assertXMLResponse(response, 200)
+
+        # to ensure performance we clearly don't want to hit iaso_instance
+        sql_queries = [q["sql"] for q in connection.queries]
+        self.assertEqual(len(sql_queries), 8, f"should have collected queries {sql_queries}")
+        matching = [q for q in sql_queries if "iaso_instance" in q.lower()]
+
+        self.assertEqual(len(matching), 0, f"'iaso_instance' found in queries: {matching}")
 
     def test_manifest_anonymous_app_id_project_with_authentication(self):
         f"""GET {BASE_URL} via app id"""

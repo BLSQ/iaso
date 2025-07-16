@@ -188,23 +188,27 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Case 1: search by entity name
         response = self.client.get("/api/entities/?search=Client", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 2: search by entity name - make sure it's case-insensitive
         response = self.client.get("/api/entities/?search=cLiEnT", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 3: search by entity UUID
         response = self.client.get(f"/api/entities/?search={newly_added_entity.uuid}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 4: search by JSON attribute
         response = self.client.get("/api/entities/?search=age", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
@@ -260,6 +264,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test multiple UUIDs search with comma separation
         uuids = f"{entity1.uuid},{entity2.uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -268,6 +273,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test with spaces around commas
         uuids_with_spaces = f"{entity1.uuid} , {entity3.uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_spaces}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -277,6 +283,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         fake_uuid = "8872aafb-651f-4b0f-89af-35f0a06d9b44"
         uuids_with_fake = f"{entity1.uuid},{fake_uuid}"
         response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_fake}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
@@ -333,12 +340,14 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Test single ID search
         response = self.client.get(f"/api/entities/?search=ids:{entity1.id}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
         # Test multiple IDs search with comma separation
         ids = f"{entity1.id},{entity2.id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -347,6 +356,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         # Test with spaces around commas
         ids_with_spaces = f"{entity1.id} , {entity3.id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids_with_spaces}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertIn(entity1.id, result_ids)
@@ -356,6 +366,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         fake_id = 99999
         ids_with_fake = f"{entity1.id},{fake_id}"
         response = self.client.get(f"/api/entities/?search=ids:{ids_with_fake}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
@@ -391,6 +402,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on specific date
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date1_str}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
@@ -398,21 +410,25 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on date range
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date2_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 2)
         self.assertEqual([r["id"] for r in results], [entity1.id, entity2.id])
 
         # Search on only from date
         response = self.client.get(f"/api/entities/?dateFrom={date2_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity2.id)
         response = self.client.get(f"/api/entities/?dateFrom={date3_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 0)
 
         # Search on only to date
         response = self.client.get(f"/api/entities/?dateTo={date1_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity1.id)
@@ -480,6 +496,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent1.id)
@@ -489,6 +506,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Bujumbura")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 0)
 
         # gender f OR SOME residence Kinshasa
@@ -496,6 +514,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("or", "some", "F", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertEqual(sorted(result_ids), sorted([ent1.id, ent2.id]))
@@ -505,6 +524,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent2.id)
@@ -514,6 +534,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "all", "M", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 0)
 
     def _generate_json_filter(self, operator, some_or_all, gender, residence):
@@ -813,6 +834,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(0, entity_in_first_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={self.project.app_id}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(0, response.data["count"])
 
         # The list should be restricted to the other project.
@@ -821,6 +843,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(2, entity_in_other_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={other_project.app_id}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(2, response.data["count"])
         for item in response.data["results"]:
             self.assertEqual(item["entity_type_id"], str(entity_type_civilian.pk))
@@ -1013,6 +1036,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response_json = response.json()
 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["entity_type_id"], str(self.entity_type.id))
 

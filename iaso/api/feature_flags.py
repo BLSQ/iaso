@@ -39,6 +39,16 @@ class FeatureFlagViewSet(ModelViewSet):
 
     def get_queryset(self):
         featureflags = FeatureFlag.objects.all()
+
+        # Filter out MOBILE_NO_ORG_UNIT if account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG
+        request = self.request
+        if request and request.user.is_authenticated:
+            user_account = request.user.iaso_profile.account
+            account_feature_flags = user_account.feature_flags.values_list("code", flat=True)
+
+            if "SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG" not in account_feature_flags:
+                featureflags = featureflags.exclude(code="MOBILE_NO_ORG_UNIT")
+
         return featureflags.order_by("name")
 
     @action(methods=["GET"], detail=False)

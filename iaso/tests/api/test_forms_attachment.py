@@ -376,7 +376,10 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         return response.content
 
-    @override_settings(DEBUG=True)
+    @override_settings(
+        MIDDLEWARE=[mw for mw in settings.MIDDLEWARE if "querycount.middleware.QueryCountMiddleware" not in mw],
+        DEBUG=True,
+    )
     def test_manifest_anonymous_app_id(self):
         f"""GET {BASE_URL} via app id"""
         reset_queries()

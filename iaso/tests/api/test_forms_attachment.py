@@ -29,7 +29,16 @@ from django.conf import settings
 from django.test import override_settings
 
 
-@override_settings(ENKETO_SIGNING_SECRET="supersecret")
+enketo_test_settings = {
+    "ENKETO_API_TOKEN": "ENKETO_API_TOKEN_TEST",
+    "ENKETO_URL": "https://enketo_url.host.test",
+    "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
+    "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
+    "ENKETO_SIGNING_SECRET": "supersecret",
+}
+
+
+@override_settings(ENKETO=enketo_test_settings)
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
@@ -395,7 +404,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         """Test that signed anonymous URLs can be used to fetch manifests (enketo use case)"""
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
         signed_url = generate_signed_url(
-            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+            path, settings.ENKETO.get("ENKETO_SIGNING_SECRET"), extra_params={APP_ID: self.project_1.app_id}
         )
 
         response = self.client.get(signed_url)
@@ -430,7 +439,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         # Rebuilding the signed URL with the app_id
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
         signed_url = generate_signed_url(
-            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+            path, settings.ENKETO.get("ENKETO_SIGNING_SECRET"), extra_params={APP_ID: self.project_1.app_id}
         )
 
         response = self.client.get(signed_url)
@@ -457,7 +466,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         """Test that an invalid signed anonymous URL generates an error"""
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
         signed_url = generate_signed_url(
-            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+            path, settings.ENKETO.get("ENKETO_SIGNING_SECRET"), extra_params={APP_ID: self.project_1.app_id}
         )
 
         response = self.client.get(f"{signed_url}error")
@@ -470,7 +479,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         """Test that a signed anonymous URL generates an error when querying an unknown form"""
         path = MANIFEST_ENKETO_URL.format(form_id=123456789)
         signed_url = generate_signed_url(
-            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+            path, settings.ENKETO.get("ENKETO_SIGNING_SECRET"), extra_params={APP_ID: self.project_1.app_id}
         )
 
         response = self.client.get(signed_url)

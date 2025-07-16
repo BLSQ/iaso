@@ -144,7 +144,11 @@ const UsersInfos = ({
                             initialData ? isInitialDataEmpty : MESSAGES.password
                         }
                         required={!initialData}
-                        disabled={passwordDisabled || isMultiAccountUser}
+                        disabled={
+                            passwordDisabled ||
+                            (isMultiAccountUser &&
+                                loggedUser.id !== currentUser.id.value)
+                        }
                     />
                 </Grid>
                 <Grid item sm={12} md={6}>

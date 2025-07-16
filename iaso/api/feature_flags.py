@@ -66,10 +66,5 @@ class FeatureFlagViewSet(ModelViewSet):
         if featureflags_to_exclude:
             featureflags = featureflags.exclude(code__in=featureflags_to_exclude)
 
-        # Additional filtering: Remove MOBILE_NO_ORG_UNIT if account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG
-        account_feature_flags = current_account.feature_flags.values_list("code", flat=True)
-        if "SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG" not in account_feature_flags:
-            featureflags = featureflags.exclude(code="MOBILE_NO_ORG_UNIT")
-
         serializer = FeatureFlagsSerializer(featureflags, many=True)
         return Response({self.get_results_key(): serializer.data})

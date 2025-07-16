@@ -1,8 +1,11 @@
 import typing
 
+from itertools import chain
+
 from django.contrib.auth.models import Permission
 
 from hat.menupermissions import models as permission_models
+from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -21,6 +24,17 @@ class ProjectsAPITestCase(APITestCase):
         flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
         cls.project_1.feature_flags.set([flag])
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
+
+    def setUp(self):
+        """Clean up any feature flags created by previous tests to ensure isolation"""
+        # Clean up MOBILE_NO_ORG_UNIT feature flag if it exists
+        m.FeatureFlag.objects.filter(code="MOBILE_NO_ORG_UNIT").delete()
+
+        # Clean up SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG account feature flag if it exists
+        m.AccountFeatureFlag.objects.filter(code="SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG").delete()
+
+        # Clear any account feature flags that might have been added
+        self.jane.iaso_profile.account.feature_flags.clear()
 
     def test_projects_list_without_auth(self):
         """GET /projects/ without auth should result in a 401"""
@@ -82,11 +96,9 @@ class ProjectsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidFeatureFlagListData(response_data, 1, True)
         self.assertEqual(response_data["page"], 1)
-        # Get the actual count from the response
-        actual_count = response_data["count"]
-        self.assertEqual(response_data["pages"], actual_count)
+        self.assertEqual(response_data["pages"], m.FeatureFlag.objects.count())
         self.assertEqual(response_data["limit"], 1)
-        self.assertEqual(response_data["count"], actual_count)
+        self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
 
     def test_projects_list_bypass_restrictions(self):
         user = self.jane
@@ -123,10 +135,7 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
-        # Get the actual count of feature flags in the response
-        response_data = response.json()
-        actual_count = len(response_data["featureflags"])
-        self.assertValidFeatureFlagListData(response.json(), actual_count)
+        self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
 
     def test_feature_flags_list_except_no_activated_modules(self):
         """GET /featureflags/except_no_activated_modules happy path: we expect one result"""
@@ -136,10 +145,12 @@ class ProjectsAPITestCase(APITestCase):
         )
 
         self.assertJSONResponse(response, 200)
-        # Get the actual count from the response
-        response_data = response.json()
-        actual_count = len(response_data["featureflags"])
-        self.assertValidFeatureFlagListData(response.json(), actual_count)
+        excluded_feature_flags = list(
+            chain.from_iterable([featureflag for featureflag in FEATUREFLAGES_TO_EXCLUDE.values()])
+        )
+        self.assertValidFeatureFlagListData(
+            response.json(), m.FeatureFlag.objects.count() - len(excluded_feature_flags)
+        )
 
     def test_feature_flags_filter_mobile_no_org_unit_without_flag(self):
         """Test that MOBILE_NO_ORG_UNIT is filtered out when account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG"""

@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
@@ -9,15 +10,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
-import MESSAGES from '../messages';
-import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
-import { AddTask } from './AddTaskComponent';
-import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
+import MESSAGES from '../messages';
 import {
     getSortedSourceVersions,
     getTablePages,
@@ -25,6 +21,9 @@ import {
     handleSort,
     handleTableParamsChange,
 } from '../utils';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
+import { AddTask } from './AddTaskComponent';
+import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {
@@ -161,7 +160,6 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     )}
                     sourceId={source.id}
                     sourceName={source.name}
-                    projects={source.projects.flat()}
                 />
 
                 <AddNewEmptyVersion

@@ -1854,7 +1854,10 @@ class ProfileAPITestCase(APITestCase):
         main_user.set_password("p4ssword")
         main_user.save()
         account_user = self.create_user_with_profile(
-            username="user_1", email="user_1@health.org", account=self.account, permissions=[permission._USERS_ADMIN]
+            username="user_1",
+            email="user_1@health.org",
+            account=self.account,
+            permissions=[core_permissions._USERS_ADMIN],
         )
         m.TenantUser.objects.create(main_user=main_user, account_user=account_user)
 

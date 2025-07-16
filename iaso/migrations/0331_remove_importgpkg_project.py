@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0330_formversion_md5'),
+        ("iaso", "0330_formversion_md5"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='importgpkg',
-            name='project',
+            model_name="importgpkg",
+            name="project",
         ),
     ]

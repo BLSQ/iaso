@@ -284,7 +284,9 @@ class WebEntityAPITestCase(EntityAPITestCase):
         invalid_uuids = "8872wwfb-651f 4b0f-89af 35f0a06d9b44"
         response = self.client.get(f"/api/entities/?search=uuids:{invalid_uuids}", format="json")
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"])
+        self.assertEqual(
+            response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"]
+        )
 
     def test_list_entities_search_ids_filter(self):
         """

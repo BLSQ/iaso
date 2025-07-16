@@ -137,11 +137,21 @@ class GroupsViewSet(ModelViewSet):
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
         version = self.request.query_params.get("version", None)
+        version_ids = self.request.query_params.get(
+            "versionIds", None
+        )  # Added to keep backward compatibility with version
         data_source_id = self.request.GET.get("dataSource", None)
+        data_source_ids = self.request.GET.get(
+            "dataSourceIds", None
+        )  # Added to keep backward compatibility with dataSource
         if version:
             queryset = queryset.filter(source_version=version)
+        elif version_ids:
+            queryset = queryset.filter(source_version__in=version_ids.split(","))
         elif data_source_id:
             queryset = queryset.filter(source_version__data_source__id=data_source_id)
+        elif data_source_ids:
+            queryset = queryset.filter(source_version__data_source__id__in=data_source_ids.split(","))
         # if allow_anon is True, versions and projects are handled manually outside of this method
         elif not allow_anon:
             default_version = self.request.GET.get("defaultVersion", None)
@@ -187,7 +197,10 @@ class GroupsViewSet(ModelViewSet):
 
         else:
             # this check if project need auth
-            project = Project.objects.get_for_user_and_app_id(user, app_id)
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("No project found for the given app_id")
             default_version_id = project.account.default_version.id
             versions = SourceVersion.objects.filter(data_source__projects=project)
 

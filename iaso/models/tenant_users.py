@@ -6,7 +6,7 @@ from typing import Optional
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 
 from iaso.models import Account
 
@@ -31,7 +31,9 @@ def get_unique_username(username: str, account_name: str) -> str:
 
 
 class TenantUserManager(models.Manager):
-    def create_user_or_tenant_user(self, data: UserCreationData) -> tuple[User, Optional[User], Optional[User]]:
+    def create_user_or_tenant_user(
+        self, data: UserCreationData
+    ) -> tuple[Optional[User], Optional[User], Optional[User]]:
         """
         Creates a user or a tenant user.
 
@@ -50,7 +52,7 @@ class TenantUserManager(models.Manager):
                 first_name=data.first_name,
                 last_name=data.last_name,
             )
-            return (user, None, None)
+            return user, None, None
 
         if hasattr(existing_user, "iaso_profile") and existing_user.iaso_profile.account == data.account:
             raise UsernameAlreadyExistsError("Username already exists for this account.")
@@ -94,7 +96,7 @@ class TenantUserManager(models.Manager):
 
         self.create(main_user=main_user, account_user=account_user)
 
-        return (None, main_user, account_user)
+        return None, main_user, account_user
 
 
 class TenantUser(models.Model):
@@ -131,36 +133,28 @@ class TenantUser(models.Model):
         ]
 
     def __str__(self):
-        account_name = "Unknown"
         try:
-            if self.account_user.iaso_profile:
-                account_name = self.account_user.iaso_profile.account
+            account_name = self.account_user.iaso_profile.account.name
         except User.iaso_profile.RelatedObjectDoesNotExist:
-            pass
+            account_name = "Unknown"
         return f"{self.main_user} -- {self.account_user} ({account_name})"
 
     @property
-    def account(self):
+    def account(self) -> Optional[Account]:
         try:
-            return self.account_user.iaso_profile.account if self.account_user.iaso_profile else None
+            return self.account_user.iaso_profile.account
         except User.iaso_profile.RelatedObjectDoesNotExist:
             return None
 
-    def get_all_account_users(self):
+    def get_other_accounts(self) -> QuerySet[Account]:
+        account_ids = self.main_user.tenant_users.exclude(pk=self.pk).values_list(
+            "account_user__iaso_profile__account_id", flat=True
+        )
+        return Account.objects.filter(id__in=account_ids)
+
+    def get_all_account_users(self) -> list[User]:
         return [tu.account_user for tu in self.main_user.tenant_users.all()]
 
-    def get_other_accounts(self):
-        return [tu.account for tu in self.main_user.tenant_users.exclude(pk=self.pk) if tu.account]
-
-    def as_dict(self):
-        account_dict = None
-        try:
-            if self.account_user.iaso_profile:
-                account_dict = self.account_user.iaso_profile.account.as_dict()
-        except User.iaso_profile.RelatedObjectDoesNotExist:
-            pass
-        return {
-            "id": self.id,
-            "main_user_id": self.main_user_id,
-            "account": account_dict,
-        }
+    @classmethod
+    def is_multi_account_user(cls, user: User) -> bool:
+        return hasattr(user, "tenant_user")

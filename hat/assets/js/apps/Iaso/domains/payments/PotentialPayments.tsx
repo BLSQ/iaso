@@ -1,22 +1,22 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
+import { Box, useTheme } from '@mui/material';
 import {
     commonStyles,
     selectionInitialState,
     useSafeIntl,
     setTableSelection,
 } from 'bluesquare-components';
-import { Box, useTheme } from '@mui/material';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { PotentialPaymentParams, PotentialPayment } from './types';
-import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { PotentialPaymentsFilters } from './components/CreatePaymentLot/PotentialPaymentsFilters';
-import { usePaymentColumns } from './hooks/config/usePaymentColumns';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { Selection } from '../orgUnits/types/selection';
 import { AddPaymentLotDialog } from './components/CreatePaymentLot/PaymentLotDialog';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { PotentialPaymentsFilters } from './components/CreatePaymentLot/PotentialPaymentsFilters';
+import { usePaymentColumns } from './hooks/config/usePaymentColumns';
+import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
+import MESSAGES from './messages';
+import { PotentialPaymentParams, PotentialPayment } from './types';
 
 const baseUrl = baseUrls.potentialPayments;
 export const PotentialPayments: FunctionComponent = () => {
@@ -52,10 +52,16 @@ export const PotentialPayments: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
-                <PotentialPaymentsFilters params={params} />
+                <PotentialPaymentsFilters
+                    params={params}
+                    setSelection={setSelection}
+                />
                 <Box display="flex" justifyContent="flex-end">
                     <AddPaymentLotDialog
-                        iconProps={{ disabled: multiEditDisabled }}
+                        iconProps={{
+                            disabled:
+                                multiEditDisabled || data?.results.length === 0,
+                        }}
                         selection={selection}
                         titleMessage={formatMessage(MESSAGES.createLot)}
                         params={params}

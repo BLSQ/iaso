@@ -227,16 +227,19 @@ class PaymentLotsViewSet(ModelViewSet):
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
-        # with transaction.atomic():
-        # Extract user, name, comment, and potential_payments IDs from request data
         user = self.request.user
         name = request.data.get("name")
         comment = request.data.get("comment")
-        potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
-        potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
-        # TODO move this in valdate method
+        potential_payment_ids = request.data.getlist("potential_payments")  # Expecting a list of IDs
+
+        try:
+            potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
+        except ValueError:
+            raise ValidationError("Expecting `potential_payments` to be a list of IDs.")
+
         if not potential_payment_ids:
-            raise ValidationError("At least one potential payment required")
+            raise ValidationError("At least one potential payment required.")
+
         potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
         task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
         # Assign task to potential payments to avoid racing condition when calling potential payments API

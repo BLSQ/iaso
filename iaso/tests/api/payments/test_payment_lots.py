@@ -92,14 +92,39 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_create_payment_lot(self):
         self.client.force_authenticate(self.user)
-        response = self.client.post(
-            "/api/payments/lots/", {"name": "New Payment Lot", "potential_payments": [self.potential_payment.pk]}
-        )
 
+        # Invalid format for `potential_payments`.
+        data = {"name": "New Payment Lot", "potential_payments": "foo"}
+        response = self.client.post("/api/payments/lots/", data)
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(response.json(), ["Expecting `potential_payments` to be a list of IDs."])
+
+        # No `potential_payments`.
+        data = {"name": "New Payment Lot"}
+        response = self.client.post("/api/payments/lots/", data)
+        self.assertJSONResponse(response, 400)
+        self.assertEqual(response.json(), ["At least one potential payment required."])
+
+        # `potential_payments` is a list of multiple IDs.
+        potential_payment_ids = [self.potential_payment.pk, self.potential_payment_with_task.pk]
+        data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
+        response = self.client.post("/api/payments/lots/", data)
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
         self.assertEqual(task.launcher, self.user)
+        self.assertCountEqual(task.params["kwargs"]["potential_payment_ids"], potential_payment_ids)
+        self.runAndValidateTask(task, "ERRORED")
+
+        # `potential_payments` is a list containing only one ID.
+        potential_payment_ids = [self.potential_payment.pk]
+        data = {"name": "New Payment Lot", "potential_payments": potential_payment_ids}
+        response = self.client.post("/api/payments/lots/", data)
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="create_payment_lot")
+        self.assertEqual(task.launcher, self.user)
+        self.assertCountEqual(task.params["kwargs"]["potential_payment_ids"], potential_payment_ids)
 
         # Run the task
         self.runAndValidateTask(task, "SUCCESS")

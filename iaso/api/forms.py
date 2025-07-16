@@ -298,7 +298,11 @@ class FormsViewSet(ModelViewSet):
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
         requested_fields = self.request.query_params.get("fields")
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+
+        is_request_from_manifest = self.request.path.endswith("/manifest/")
+        default_order = "id" if is_request_from_manifest else "instance_updated_at"
+
+        order = self.request.query_params.get("order", default_order).split(",")
 
         if is_field_referenced("has_mappings", requested_fields, order):
             queryset = queryset.annotate(
@@ -315,10 +319,10 @@ class FormsViewSet(ModelViewSet):
         else:
             profile = False
 
-        if is_field_referenced("instance_updated_at", requested_fields, order):
+        if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
             queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 
-        enable_count = is_field_referenced("instances_count", requested_fields, order)
+        enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
 
         if not mobile and enable_count:
             if profile and profile.org_units.exists():
@@ -370,20 +374,23 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
-        # TODO
-        #  - be smarter cfr is_field_referenced
-        #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
-        queryset = queryset.prefetch_related(
-            "form_versions",
-            "projects",
-            "projects__feature_flags",
-            "reference_of_org_unit_types",
-            "org_unit_types",
-            "org_unit_types__reference_forms",
-            "org_unit_types__sub_unit_types",
-            "org_unit_types__allow_creating_sub_unit_types",
-        )
+        # spare 8 or more sql when not needed
+        if not is_request_from_manifest:
+            # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+            # TODO
+            #  - be smarter cfr is_field_referenced
+            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
+
+            queryset = queryset.prefetch_related(
+                "form_versions",
+                "projects",
+                "projects__feature_flags",
+                "reference_of_org_unit_types",
+                "org_unit_types",
+                "org_unit_types__reference_forms",
+                "org_unit_types__sub_unit_types",
+                "org_unit_types__allow_creating_sub_unit_types",
+            )
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()

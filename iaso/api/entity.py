@@ -173,14 +173,11 @@ class EntityViewSet(ModelViewSet):
                     raise ValidationError(f"Failed parsing ids in search '{search}'")
                 queryset = queryset.filter(id__in=ids)
             elif search.startswith("uuids:"):
-                uuid_str = search.replace("uuids:", "")
-                try:
-                    # Split by comma and clean up each UUID
-                    uuids = [uuid.strip() for uuid in uuid_str.split(",") if uuid.strip()]
-                    queryset = queryset.filter(uuid__in=uuids)
-                except:
-                    queryset = queryset.filter(uuid__in=[])
-                    print("Failed parsing uuids in search", search)
+                uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                uuids = re.findall(uuids_re, search)
+                if not uuids:
+                    raise ValidationError(f"Failed parsing uuids in search '{search}'")
+                queryset = queryset.filter(uuid__in=uuids)
             else:
                 queryset = queryset.filter(
                     Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)

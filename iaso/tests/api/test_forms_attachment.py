@@ -25,7 +25,11 @@ MANIFEST_ENKETO_URL = "/api/forms/{form_id}/manifest_enketo/"
 SAFE_FILE_PATH = "iaso/tests/fixtures/clamav/safe.jpg"
 EICAR_FILE_PATH = "iaso/tests/fixtures/clamav/eicar.txt"
 
+from django.conf import settings
+from django.test import override_settings
 
+
+@override_settings(ENKETO_SIGNING_SECRET="supersecret")
 class FormAttachmentsAPITestCase(APITestCase):
     project_1: m.Project
     DT = datetime.datetime(2024, 10, 9, 16, 45, 27, tzinfo=datetime.timezone.utc)
@@ -285,6 +289,7 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_manifest_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
         response = self.client.get(MANIFEST_MOBILE_URL.format(form_id=self.form_2.id))
+
         self.assertJSONResponse(response, 404)
 
     def test_manifest_form_not_found(self):
@@ -389,7 +394,9 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_enketo_manifest_anonymous_with_signed_url(self):
         """Test that signed anonymous URLs can be used to fetch manifests (enketo use case)"""
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
-        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+        signed_url = generate_signed_url(
+            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+        )
 
         response = self.client.get(signed_url)
         self.assertXMLResponse(response, status.HTTP_200_OK)
@@ -422,7 +429,9 @@ class FormAttachmentsAPITestCase(APITestCase):
 
         # Rebuilding the signed URL with the app_id
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
-        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+        signed_url = generate_signed_url(
+            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+        )
 
         response = self.client.get(signed_url)
         self.assertXMLResponse(response, status.HTTP_200_OK)  # 200 even without authentication
@@ -447,7 +456,9 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_enketo_manifest_anonymous_with_invalid_signed_url(self):
         """Test that an invalid signed anonymous URL generates an error"""
         path = MANIFEST_ENKETO_URL.format(form_id=self.form_2.id)
-        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+        signed_url = generate_signed_url(
+            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+        )
 
         response = self.client.get(f"{signed_url}error")
         self.assertXMLResponse(response, status.HTTP_400_BAD_REQUEST)
@@ -458,7 +469,9 @@ class FormAttachmentsAPITestCase(APITestCase):
     def test_enketo_manifest_anonymous_with_signed_url_error_unknown_form(self):
         """Test that a signed anonymous URL generates an error when querying an unknown form"""
         path = MANIFEST_ENKETO_URL.format(form_id=123456789)
-        signed_url = generate_signed_url(path, None, extra_params={APP_ID: self.project_1.app_id})
+        signed_url = generate_signed_url(
+            path, settings.ENKETO_SIGNING_SECRET, extra_params={APP_ID: self.project_1.app_id}
+        )
 
         response = self.client.get(signed_url)
         self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)

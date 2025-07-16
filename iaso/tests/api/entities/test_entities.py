@@ -279,6 +279,12 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
+        # Test invalid UUIDs
+        invalid_uuids = "8872wwfb-651f 4b0f-89af 35f0a06d9b44"
+        response = self.client.get(f"/api/entities/?search=uuids:{invalid_uuids}", format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"])
+
     def test_list_entities_search_ids_filter(self):
         """
         Test the 'ids:' search filter of /api/entities with comma-separated IDs

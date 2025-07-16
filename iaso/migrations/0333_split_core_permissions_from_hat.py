@@ -105,8 +105,12 @@ def reverse_migrate_permissions(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    """
+    This is the equivalent of the 0235 migration in the polio plugin.
+    """
+
     dependencies = [
-        ("iaso", "0331_corepermissionsupport"),
+        ("iaso", "0332_corepermissionsupport"),
         ("menupermissions", "0074_alter_custompermissionsupport_options"),
     ]
 

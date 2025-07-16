@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0330_formversion_md5"),
+        ("iaso", "0331_add_account_feature_flag_and_auto_assign"),
     ]
 
     operations = [

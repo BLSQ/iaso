@@ -14,9 +14,9 @@ from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
-from rest_framework.request import Request
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
@@ -24,7 +24,8 @@ import iaso.models.base as base
 import iaso.permissions as core_permissions
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
-from iaso.api.common import HasPermission, Paginator
+
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
@@ -395,11 +396,13 @@ duplicate_detail_entities_param = openapi.Parameter(
 )
 
 
-class EntityDuplicateViewSet(viewsets.GenericViewSet):
-    """Entity Duplicates API
-    GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
-    GET /api/entityduplicates/<pk>/ : Provides an API to retrieve details about a potential duplicate
-    POST /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
+class EntityDuplicateViewSet(ModelViewSet):
+    """
+    Entity Duplicates API.
+
+    - `GET /api/entityduplicates/` retrieve potentially duplicated entities
+    - `GET /api/entityduplicates/<pk>/` retrieve details about a potential duplicate
+    - `POST /api/entityduplicates/` merge duplicate entities or ignore the match
     """
 
     filter_backends = [
@@ -420,38 +423,23 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         # filters.OrderingFilter,
     ]
 
-    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
-    remove_results_key_if_paginated = False
-    results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]  # type: ignore
-    serializer_class = EntityDuplicateSerializer
     model = EntityDuplicate
-    pagination_class = Paginator
-
-    def list(self, request: Request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response(data={self.results_key: serializer.data}, content_type="application/json")
-        return Response(data=serializer.data, content_type="application/json")
+    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
+    serializer_class = EntityDuplicateSerializer
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        initial_queryset = EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
-        return initial_queryset
+        return EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
 
     @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
     def detail_view(self, request):
         """
-        GET /api/entityduplicates/detail/?entities=A,B
-        Provides an API to retrieve details about a potential duplicate
+        Retrieve details about a potential duplicate.
+
+        `GET /api/entityduplicates/detail/?entities=A,B`
+
         For all the 'fields' of the analyzis it will return
         {
         "the_field": {
@@ -474,31 +462,34 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         So basically it returns an array of those objects
         """
         try:
-            entities = request.GET.get("entities", None)
-            if entities is None:
-                raise ValueError("entities parameter is required")
-            entities = entities.split(",")
-            duplicate = (
-                self.get_queryset()
-                .filter(
-                    Q(entity1__pk=entities[0], entity2__pk=entities[1])
-                    | Q(entity1__pk=entities[1], entity2__pk=entities[0])
-                )
-                .first()
+            entities = request.GET.get("entities", "").split(",")
+            entity1_id = int(entities[0])
+            entity2_id = int(entities[1])
+        except ValueError:
+            raise ValidationError(
+                "Entities parameter is required and must be a comma separated list of 2 entities IDs."
             )
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
+
+        duplicate = (
+            self.get_queryset()
+            .filter(
+                Q(entity1__pk=entity1_id, entity2__pk=entity2_id) | Q(entity1__pk=entity2_id, entity2__pk=entity1_id)
+            )
+            .first()
+        )
+
+        if not duplicate:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "Entity duplicate not found."})
 
         # we need to create the expected answer from all the fields
         # we need to get the fields from the analyze
         analyze = duplicate.analyze
-        fields = analyze.metadata["fields"]
         entity_type_id = analyze.metadata["entity_type_id"]
 
         try:
             et = EntityType.objects.get(pk=int(entity_type_id))
         except EntityType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entitytype not found"})
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "EntityType not found."})
 
         fields_data = []
 
@@ -515,17 +506,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
                     continue
                 if is_UUID(e1_val):
                     continue
-                e1_type = type(e1_val).__name__
             except:
                 e1_val = "Not Found"
-                e1_type = "Not Found"
 
             try:
                 e2_val = e2_json[the_q["name"]]
-                e2_type = type(e2_val).__name__
             except:
                 e2_val = "Not Found"
-                e2_type = "Not Found"
 
             fields_data.append(
                 {
@@ -551,13 +538,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
 
-        if version1 is None:
+        if not version1:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
             )
 
-        if version2 is None:
+        if not version2:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},

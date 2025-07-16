@@ -375,7 +375,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_detail_of_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
-        response = self.client.post(
+        resp = self.client.get("/api/entityduplicates/detail/?entities=foo,bar")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), ["Entities parameter is required and must be a comma separated list of 2 entities IDs."]
+        )
+
+        self.client.post(
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
@@ -394,8 +400,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         duplicate = m.EntityDuplicate.objects.first()
 
         resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
-
-        self.assertEqual(resp.status_code, 200)  # check if response status is OK
+        self.assertEqual(resp.status_code, 200)
 
         resp_data = resp.json()
 

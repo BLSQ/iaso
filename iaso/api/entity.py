@@ -167,13 +167,10 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
             if search.startswith("ids:"):
-                ids_str = search.replace("ids:", "")
-                try:
-                    ids = re.findall("[A-Za-z0-9_-]+", ids_str)
-                    queryset = queryset.filter(id__in=ids)
-                except:
-                    queryset = queryset.filter(id__in=[])
-                    print("Failed parsing ids in search", search)
+                ids = re.findall("\d+", search)
+                if not ids:
+                    raise ValidationError(f"Failed parsing ids in search '{search}'")
+                queryset = queryset.filter(id__in=ids)
             elif search.startswith("uuids:"):
                 uuid_str = search.replace("uuids:", "")
                 try:

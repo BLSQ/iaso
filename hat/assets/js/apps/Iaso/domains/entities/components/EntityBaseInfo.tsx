@@ -62,7 +62,7 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
 
     const openMigratedToInstance = () => {
         window.open(
-            `/old-trypelim-dashboard/datas/register/detail/patient_id/${beneficiary.migration_source}/order/last_name/pageSize/50/page/1`,
+            `/old-trypelim-dashboard/datas/register/detail/patient_id/${entity.migration_source}/order/last_name/pageSize/50/page/1`,
             '_blank',
         );
     };
@@ -95,7 +95,7 @@ export const EntityBaseInfo: FunctionComponent<Props> = ({
             <WidgetPaper className={classes.infoPaper} title={title}>
                 {widgetContents}
             </WidgetPaper>
-            {beneficiary.migration_source && (
+            {entity.migration_source && (
                 <Button
                     variant="contained"
                     color="primary"

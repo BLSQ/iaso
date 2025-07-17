@@ -90,7 +90,11 @@ export const PreparednessConfig: FunctionComponent<Props> = ({
 
     const refreshData = () => {
         previewMutation.mutate(
-            { googleSheetUrl: preparedness_spreadsheet_url, campaignName },
+            {
+                googleSheetUrl: preparedness_spreadsheet_url,
+                campaignName,
+                campaignId,
+            },
             {
                 onSuccess: data => {
                     setFieldValue(lastKey, data);

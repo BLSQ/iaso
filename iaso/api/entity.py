@@ -3,6 +3,7 @@ import datetime
 import io
 import json
 import math
+import re
 
 from time import gmtime, strftime
 from typing import Any, List, Union
@@ -18,6 +19,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -165,9 +167,21 @@ class EntityViewSet(ModelViewSet):
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
-            )
+            if search.startswith("ids:"):
+                ids = re.findall("\d+", search)
+                if not ids:
+                    raise ValidationError(f"Failed parsing ids in search '{search}'")
+                queryset = queryset.filter(id__in=ids)
+            elif search.startswith("uuids:"):
+                uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                uuids = re.findall(uuids_re, search)
+                if not uuids:
+                    raise ValidationError(f"Failed parsing uuids in search '{search}'")
+                queryset = queryset.filter(uuid__in=uuids)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+                )
         if by_uuid:
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:

@@ -8,7 +8,6 @@ from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_
 class JsonLogicTests(TestCase):
     def setUp(self):
         self.id_field_name = "metric_type_id"
-        self.value_field_name = "value"
         self.group_by_field_name = "org_unit_id"
 
     def test_jsonlogic_to_exists_q_clauses__simple(self) -> None:
@@ -21,9 +20,22 @@ class JsonLogicTests(TestCase):
             "WHERE EXISTS("
             'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1.0) LIMIT 1)'
         )
-        q = jsonlogic_to_exists_q_clauses(
-            filters, MetricValue.objects, self.id_field_name, self.value_field_name, self.group_by_field_name
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__simple_string_value(self) -> None:
+        """Test a simple JsonLogic query to ensure it returns a Q object."""
+        filters = {"==": [{"var": 22}, "coucou"]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."string_value" = coucou) LIMIT 1)'
         )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
 
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
@@ -40,7 +52,7 @@ class JsonLogicTests(TestCase):
             'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 700.0) LIMIT 1)'
             ")"
         )
-        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "value", "org_unit_id")
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
 
@@ -56,7 +68,7 @@ class JsonLogicTests(TestCase):
             'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 700.0) LIMIT 1)'
             ")"
         )
-        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "value", "org_unit_id")
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
         self.assertIsInstance(q, Q)
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
@@ -84,7 +96,7 @@ class JsonLogicTests(TestCase):
             ")"
             ")"
         )
-        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "value", "org_unit_id")
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
 

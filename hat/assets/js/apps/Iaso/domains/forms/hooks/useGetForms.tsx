@@ -64,6 +64,7 @@ type FormResponse = {
 export const useGetForms = (
     params,
     defaults = tableDefaults,
+    enabled = false,
 ): UseQueryResult<FormResponse, Error> => {
     const safeParams = useApiParams(params, defaults);
     if (safeParams?.accountId) {
@@ -76,6 +77,7 @@ export const useGetForms = (
             staleTime: 60000,
             cacheTime: 60000,
             keepPreviousData: true,
+            enabled,
         },
     });
 };

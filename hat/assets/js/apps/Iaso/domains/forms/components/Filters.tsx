@@ -3,8 +3,13 @@ import React, { useState, FunctionComponent, useCallback } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
 
+import { baseUrls } from 'Iaso/constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 
@@ -26,21 +31,22 @@ type Props = {
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const redirectTo = useRedirectTo();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params, withPagination: false });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const [showDeleted, setShowDeleted] = useState<boolean>(
-        filters.showDeleted === 'true',
-    );
-    const [showInstancesCount, setShowInstancesCount] = useState<boolean>(
-        filters.showInstancesCount === 'true',
-    );
+    const onSearch = useCallback(() => {
+        redirectTo(baseUrls.forms, {
+            ...params,
+            isSearchActive: 'true',
+        });
+        handleSearch();
+    }, [params, redirectTo, handleSearch]);
     const handleShowDeleted = useCallback(
         (key, value) => {
             // converting false to undefined to be able to compute `filtersUpdated` correctly
             const valueForParam = value || undefined;
             handleChange(key, valueForParam);
-            setShowDeleted(value);
         },
         [handleChange],
     );
@@ -48,7 +54,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         (key, value) => {
             const valueForParam = value || undefined;
             handleChange(key, valueForParam);
-            setShowInstancesCount(value);
         },
         [handleChange],
     );
@@ -60,7 +65,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
-
     return (
         <Grid container>
             <Grid container item xs={12} spacing={2}>
@@ -120,7 +124,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={handleShowDeleted}
-                        value={showDeleted}
+                        value={filters.showDeleted === 'true'}
                         type="checkbox"
                         label={MESSAGES.showDeleted}
                     />
@@ -129,7 +133,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     <InputComponent
                         keyValue="showInstancesCount"
                         onChange={handleShowInstancesCount}
-                        value={showInstancesCount}
+                        value={filters.showInstancesCount === 'true'}
                         type="checkbox"
                         label={MESSAGES.showInstancesCount}
                     />
@@ -143,13 +147,13 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         <Button
                             data-test="search-button"
                             disabled={
-                                (!showDeleted && !filtersUpdated) ||
-                                textSearchError
+                                (!filtersUpdated || textSearchError) &&
+                                params?.isSearchActive === 'true'
                             }
                             variant="contained"
                             className={classes.button}
                             color="primary"
-                            onClick={() => handleSearch()}
+                            onClick={onSearch}
                         >
                             <SearchIcon className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}

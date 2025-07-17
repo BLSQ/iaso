@@ -70,7 +70,7 @@ class ModulesViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = []
         for module in MODULES:
-            permissions = MODULE_PERMISSIONS[module["codename"]]
+            permissions = MODULE_PERMISSIONS.get(module["codename"], [])
             name = module["name"]
             codename = module["codename"]
             fr_name = module["fr_name"]

@@ -230,7 +230,7 @@ class PaymentLotsViewSet(ModelViewSet):
         user = self.request.user
         name = request.data.get("name")
         comment = request.data.get("comment")
-        potential_payment_ids = request.POST.getlist("potential_payments")  # Expecting a list of IDs
+        potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
 
         try:
             potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]

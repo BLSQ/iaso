@@ -1,5 +1,5 @@
-import { ApiParams, UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { ApiParams, UrlParams } from 'bluesquare-components';
 import { cleanupParams } from '../utils/requests';
 
 export type FormattedApiParams = ApiParams & Record<string, any>;

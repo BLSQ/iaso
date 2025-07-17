@@ -1,33 +1,23 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
 
+import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import SearchIcon from '@mui/icons-material/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { baseUrl } from '../config';
+import { Params } from '../index';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    showDeleted?: string;
-    planning?: string;
-    projectsIds?: string;
-};
 
 type Props = {
     params: Params;
@@ -42,12 +32,23 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
+    const [showInstancesCount, setShowInstancesCount] = useState<boolean>(
+        filters.showInstancesCount === 'true',
+    );
     const handleShowDeleted = useCallback(
         (key, value) => {
             // converting false to undefined to be able to compute `filtersUpdated` correctly
             const valueForParam = value || undefined;
             handleChange(key, valueForParam);
             setShowDeleted(value);
+        },
+        [handleChange],
+    );
+    const handleShowInstancesCount = useCallback(
+        (key, value) => {
+            const valueForParam = value || undefined;
+            handleChange(key, valueForParam);
+            setShowInstancesCount(value);
         },
         [handleChange],
     );
@@ -124,7 +125,16 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.showDeleted}
                     />
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="showInstancesCount"
+                        onChange={handleShowInstancesCount}
+                        value={showInstancesCount}
+                        type="checkbox"
+                        label={MESSAGES.showInstancesCount}
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
                     <Box
                         mt={isLargeLayout ? 3 : 0}
                         display="flex"

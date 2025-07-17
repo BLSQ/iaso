@@ -1,5 +1,5 @@
-import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
@@ -90,7 +90,11 @@ const getActionsColWidth = user => {
     return width;
 };
 
-export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
+export const useFormsTableColumns = ({
+    orgUnitId,
+    showDeleted,
+    showInstancesCount,
+}) => {
     const user = useCurrentUser();
     const { formatMessage } = useSafeIntl();
 
@@ -131,10 +135,6 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                         .join(', '),
             },
             {
-                Header: formatMessage(MESSAGES.records),
-                accessor: 'instances_count',
-            },
-            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
@@ -152,6 +152,12 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 },
             },
         ];
+        if (showInstancesCount) {
+            cols.splice(6, 0, {
+                Header: formatMessage(MESSAGES.records),
+                accessor: 'instances_count',
+            });
+        }
         if (showDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
@@ -160,7 +166,7 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
             });
         }
         return cols;
-    }, [formatMessage, orgUnitId, showDeleted, user]);
+    }, [formatMessage, orgUnitId, showDeleted, user, showInstancesCount]);
 };
 
 export const requiredFields = [

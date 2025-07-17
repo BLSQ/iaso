@@ -1,11 +1,48 @@
 import { UseQueryResult } from 'react-query';
+import { useApiParams } from '../../../hooks/useApiParams';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { Form } from '../types/forms';
-import { useApiParams } from '../../../hooks/useApiParams';
+
+const FIELDS_PARAMS = [
+    'id',
+    'name',
+    'form_id',
+    'device_field',
+    'location_field',
+    'org_unit_types',
+    'org_unit_type_ids',
+    'projects',
+    'project_ids',
+    'period_type',
+    'single_per_period',
+    'periods_before_allowed',
+    'periods_after_allowed',
+    'latest_form_version',
+    'instance_updated_at',
+    'created_at',
+    'updated_at',
+    'deleted_at',
+    'derived',
+    'label_keys',
+    'possible_fields',
+    'legend_threshold',
+    'has_mappings',
+];
 
 const getForms = params => {
-    const queryString = new URLSearchParams(params).toString();
+    const fieldsParams = {
+        fields: FIELDS_PARAMS.join(','),
+    };
+
+    if (params.showInstancesCount === 'true') {
+        fieldsParams.fields += ',instances_count';
+    }
+
+    const queryString = new URLSearchParams({
+        ...params,
+        ...fieldsParams,
+    }).toString();
     return getRequest(`/api/forms/?${queryString}`);
 };
 

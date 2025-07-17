@@ -155,7 +155,9 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_update_payment_lot_mark_payments_as_sent(self):
         self.client.force_authenticate(self.user)
-        response = self.client.patch(f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true")
+        response = self.client.patch(
+            f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true", format="json"
+        )
         self.assertJSONResponse(response, 201)
         data = response.json()
         task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="mark_payments_as_read")
@@ -174,13 +176,13 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_retrieve_payment_lot(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/")
+        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/", format="json")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["name"], self.payment_lot.name)
 
     def test_retrieve_payment_lot_to_csv(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true")
+        response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?csv=true", format="json")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
         response_csv = response.getvalue().decode("utf-8")
@@ -197,7 +199,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         extra_change_request.new_reference_instances.set([self.instance1, self.instance2, self.instance3])
 
         with self.assertNumQueries(10):
-            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true")
+            response = self.client.get(f"/api/payments/lots/{self.payment_lot.id}/?xlsx=true", format="json")
             excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
         self.assertEqual(
@@ -296,6 +298,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "name": "New Payment Lot",
                 "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk],
             },
+            format="json",
         )
 
         self.assertJSONResponse(response, 201)
@@ -316,6 +319,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
                 "name": "New Payment Lot",
                 "potential_payments": [self.potential_payment.pk, self.potential_payment_with_task.pk + 100],
             },
+            format="json",
         )
 
         self.assertJSONResponse(response, 201)
@@ -330,7 +334,7 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
 
     def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
         self.client.force_authenticate(self.geo_limited_user)
-        response = self.client.get("/api/payments/lots/")
+        response = self.client.get("/api/payments/lots/", format="json")
         self.assertJSONResponse(response, 200)
         data = response.json()
         results = data["results"]

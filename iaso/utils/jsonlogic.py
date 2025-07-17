@@ -399,7 +399,7 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str) -> Q:
 
 
 def jsonlogic_to_exists_q_clauses(
-    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, value_field_name: str, group_by_field_name: str
+    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, group_by_field_name: str
 ) -> Q:
     """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
     This is used to filter entities based on the existence of certain conditions
@@ -416,16 +416,16 @@ def jsonlogic_to_exists_q_clauses(
     ]
     :param entities: The Django model manager for the entities to filter. Should be a QuerySet or Manager.
     :param id_field_name: The name of the field in the entities that corresponds to the "var" in the JsonLogic query.
-    :param value_field_name: The name of the field in the entities that corresponds to the value being compared in the JsonLogic query.
     :param group_by_field_name: The name of the field used to group the entities in the Exists clause.
     :return: A Django Q object.
     """
+    print(f"jsonlogic_to_exists_q_clauses: {jsonlogic}")
     if "and" in jsonlogic:
         sub_query = Q()
         for lookup in jsonlogic["and"]:
             sub_query = operator.and_(
                 sub_query,
-                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, group_by_field_name),
             )
         return sub_query
     if "or" in jsonlogic:
@@ -433,13 +433,11 @@ def jsonlogic_to_exists_q_clauses(
         for lookup in jsonlogic["or"]:
             sub_query = operator.or_(
                 sub_query,
-                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, value_field_name, group_by_field_name),
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, group_by_field_name),
             )
         return sub_query
     if "!" in jsonlogic:
-        return ~jsonlogic_to_exists_q_clauses(
-            jsonlogic["!"], queryset, id_field_name, value_field_name, group_by_field_name
-        )
+        return ~jsonlogic_to_exists_q_clauses(jsonlogic["!"], queryset, id_field_name, group_by_field_name)
 
     if not jsonlogic.keys():
         return Q()
@@ -450,6 +448,8 @@ def jsonlogic_to_exists_q_clauses(
     field_position = 1 if op == "in" else 0
     field = params[field_position]
     value = params[0] if op == "in" else params[1]
+    # This break flexibility, maybe we can two parameters "value_field_name" and "string_value_field_name"
+    value_field_name = "value" if floatTryParse(value) else "string_value"
     q = Q(
         Exists(
             queryset.filter(
@@ -528,3 +528,11 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
 
 def matches_all(field_value, expected_list):
     return sorted(field_value.split()) == sorted(expected_list)
+
+
+def floatTryParse(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False

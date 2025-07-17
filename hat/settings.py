@@ -60,6 +60,15 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
+
+# Storage provider configuration
+STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
+if USE_S3:
+    STORAGE_PROVIDER = "s3"
+elif USE_AZURE_STORAGE:
+    STORAGE_PROVIDER = "azure"
+
 # Specifying the `STATIC_URL` means that the assets are available at that URL
 #
 # Currently WFP is deploying this way, where the assets are put on a
@@ -479,6 +488,54 @@ if USE_S3:
         print(" MEDIA_URL", MEDIA_URL)
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+elif USE_AZURE_STORAGE:
+    # Azure Blob Storage Configuration
+    #
+    # Environment variables needed for Azure Storage:
+    # - AZURE_STORAGE_ACCOUNT_NAME: Your Azure Storage account name
+    # - AZURE_STORAGE_ACCOUNT_KEY: Your Azure Storage account key
+    # - AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
+    # - AZURE_CONTAINER_NAME: Container name for general storage (default: "iaso")
+    # - AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
+    # - STATIC_URL: CDN URL for static files (optional, overrides Azure URLs)
+    #
+    # Storage containers will be created automatically:
+    # - "static": For static files (JS, CSS, images)
+    # - "media": For user-uploaded files
+    #
+    # URL patterns:
+    # - With custom domain: https://yourdomain.com/static/ and https://yourdomain.com/media/
+    # - Without custom domain: https://account.blob.core.windows.net/static/ and https://account.blob.core.windows.net/media/
+    # - With CDN: Uses STATIC_URL environment variable
+
+    AZURE_STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
+    AZURE_STORAGE_ACCOUNT_KEY = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
+    AZURE_CONTAINER_NAME = os.environ.get("AZURE_CONTAINER_NAME", "iaso")
+    AZURE_CONNECTION_STRING = os.environ.get("AZURE_CONNECTION_STRING")
+    AZURE_CUSTOM_DOMAIN = os.environ.get("AZURE_CUSTOM_DOMAIN")
+
+    # Azure storage settings
+    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
+    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY
+    AZURE_CONNECTION_STRING = AZURE_CONNECTION_STRING
+    AZURE_CUSTOM_DOMAIN = AZURE_CUSTOM_DOMAIN
+
+    # Static files configuration
+    if CDN_URL:
+        # Use CDN URL if provided
+        STATIC_URL = "//%s/static/" % (CDN_URL)
+    elif AZURE_CUSTOM_DOMAIN:
+        # Use custom domain if provided
+        STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/static/"
+        MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
+    else:
+        # Use Azure Blob Storage URLs
+        STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/static/"
+        MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+
+    # Storage backends
+    STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"
+    DEFAULT_FILE_STORAGE = "iaso.storage.AzureMediaStorage"
 else:
     SERVER_URL = os.environ.get("SERVER_URL", "")
     MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX

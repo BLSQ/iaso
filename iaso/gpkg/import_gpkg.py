@@ -259,13 +259,10 @@ def validate_property(props: Dict[str, str], property_name: str, orgunit_name: s
 
 
 @transaction.atomic
-def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
+def import_gpkg_file(filename, source_name, version_number, validation_status, description):
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")
-    # this will cause issue if another tenant use the same source name as we will attach an existing source
-    # to our project via the tenant.
-    source.projects.add(project_id)
     import_gpkg_file2(
         filename, source, version_number, validation_status, user=None, description=description, task=None
     )

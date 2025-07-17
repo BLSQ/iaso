@@ -19,7 +19,11 @@ DB_READONLY_USERNAME
 DB_READONLY_PASSWORD
 ```
 
-## AWS related
+## Storage related
+
+Iaso supports multiple storage providers for static assets and user-uploaded files:
+
+### AWS S3 (Default production storage)
 
 Storing the various files like
 
@@ -27,12 +31,28 @@ Storing the various files like
 - raw forms (xlsform), submissions (xml and media),... is done in s3 (or an s3 compatible api like minio)
 
 ```
+USE_S3=true
 AWS_ACCESS_KEY_ID:
 AWS_SECRET_ACCESS_KEY:
 AWS_S3_REGION_NAME
 AWS_STORAGE_BUCKET_NAME:
 AWS_S3_ENDPOINT_URL: (used to for ex to point to minio)
 ```
+
+### Azure Blob Storage
+
+Alternative cloud storage option using Azure Blob Storage:
+
+```
+USE_AZURE_STORAGE=true
+AZURE_STORAGE_ACCOUNT_NAME: Your Azure Storage account name
+AZURE_STORAGE_ACCOUNT_KEY: Your Azure Storage account key
+AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
+AZURE_CONTAINER_NAME: Container name (default: "iaso")
+AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
+```
+
+For detailed Azure Storage configuration, see [Azure Storage Configuration](../azure-storage-configuration.md).
 
 for async task
 

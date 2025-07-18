@@ -158,9 +158,9 @@ def load_permissions_from_permissions_module(permissions_module: ModuleType):
     module_permissions = permissions_module.module_permissions
 
     global READ_EDIT_PERMISSIONS, PERMISSIONS_PRESENTATION, MODULE_PERMISSIONS
-    READ_EDIT_PERMISSIONS = READ_EDIT_PERMISSIONS | read_edit_permissions
-    PERMISSIONS_PRESENTATION = PERMISSIONS_PRESENTATION | permissions_presentation
-    MODULE_PERMISSIONS = MODULE_PERMISSIONS | module_permissions
+    READ_EDIT_PERMISSIONS.update(read_edit_permissions)
+    PERMISSIONS_PRESENTATION.update(permissions_presentation)
+    MODULE_PERMISSIONS.update(module_permissions)
 
 
 # load stuff from core

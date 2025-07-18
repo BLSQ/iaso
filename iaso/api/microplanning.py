@@ -301,6 +301,12 @@ class PlanningSerializer(serializers.ModelSerializer):
         ):
             validation_errors["started_at"] = "startDateAfterEndDate"
             validation_errors["ended_at"] = "EndDateBeforeStartDate"
+
+        if validated_data.get("published_at") and validated_data.get("started_at") is None:
+            validation_errors["started_at"] = "publishedWithoutStartDate"
+        if validated_data.get("published_at") and validated_data.get("ended_at") is None:
+            validation_errors["ended_at"] = "publishedWithoutEndDate"
+
         project = validated_data.get("project", self.instance.project if self.instance else None)
 
         team = validated_data.get("team", self.instance.team if self.instance else None)
@@ -591,6 +597,8 @@ class MobilePlanningViewSet(ModelViewSet):
         return (
             Planning.objects.filter(assignment__user=user)
             .exclude(published_at__isnull=True)
+            .exclude(started_at__isnull=True)
+            .exclude(ended_at__isnull=True)
             .filter(deleted_at__isnull=True)
             .distinct()
         )

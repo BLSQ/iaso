@@ -62,7 +62,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.completenessStats.itselfColumnTitle',
     },
     itselfColumnLabel: {
-        defaultMessage: 'Itself',
+        defaultMessage: 'Direct',
         id: 'iaso.completenessStats.itselfColumnLabel',
     },
     itselfSubmissionCount: {

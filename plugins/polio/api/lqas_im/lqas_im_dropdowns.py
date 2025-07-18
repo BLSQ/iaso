@@ -8,10 +8,10 @@ from django.db.models import Q, QuerySet
 from rest_framework import permissions, serializers
 from rest_framework.exceptions import ValidationError
 
-from hat.menupermissions import models as iaso_permission
 from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.org_unit import OrgUnit
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
 
@@ -19,14 +19,14 @@ from plugins.polio.models import Campaign, Round
 class HasPolioPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(iaso_permission.POLIO) or request.user.is_superuser
+            request.user.has_perm(polio_permissions.POLIO) or request.user.is_superuser
         )
 
 
 class HasPolioAdminPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(iaso_permission.POLIO_CONFIG) or request.user.is_superuser
+            request.user.has_perm(polio_permissions.POLIO_CONFIG) or request.user.is_superuser
         )
 
 

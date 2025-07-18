@@ -601,6 +601,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchLinksError',
         defaultMessage: 'An error occurred while fetching links list',
     },
+    fitToOutBounds: {
+        id: 'iaso.orgUnits.fitToOutBounds',
+        defaultMessage: 'Fit map to children bounds',
+    },
 });
 
 export default MESSAGES;

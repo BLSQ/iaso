@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
 from iaso.api.common import EtlModelViewset, HasPermission
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.budget.models import BudgetProcess
 from plugins.polio.models import Round
 
@@ -39,7 +39,7 @@ class BudgetDashboardViewSet(EtlModelViewset):
     """
 
     http_method_names = ["get"]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_BUDGET)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(polio_permissions.POLIO_BUDGET)]
     model = BudgetProcess
     serializer_class = BudgetDashboardSerializer
 

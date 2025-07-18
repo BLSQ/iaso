@@ -2,7 +2,7 @@ import os
 import random
 import uuid
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from dict2xml import dict2xml
 from fake import fake_person
@@ -69,7 +69,7 @@ def instance_by_LLIN_campaign_form(form, instance_id, orgunit=None):
     random_year = random.randint(1, 5)
     random_date = (datetime.now() - timedelta(days=(random_year * 365.25))).date()
     beneficiary_name = generate_name(style="capital")
-    registration_date = datetime.now()
+    registration_date = datetime.now(timezone(timedelta(hours=2))).isoformat()
     code = random.randint(1000000000, 9999999999)
     ticket_number = random.randint(10000, 99999)
     instance_json = None

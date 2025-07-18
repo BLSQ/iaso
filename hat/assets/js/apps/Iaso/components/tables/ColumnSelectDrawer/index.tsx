@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import { InView } from 'react-intersection-observer';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Close from '@mui/icons-material/Close';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 import {
     Drawer,
     IconButton,
@@ -11,14 +13,12 @@ import {
     Button,
     Box,
 } from '@mui/material';
-import Close from '@mui/icons-material/Close';
-import ArrowBack from '@mui/icons-material/ArrowBack';
-import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { InView } from 'react-intersection-observer';
 
-import { MESSAGES } from './messages';
 import { ColumnDrawerSwitch } from './ColumnDrawerSwitch';
+import { MESSAGES } from './messages';
 
 import { useStyles } from './styles';
 
@@ -130,7 +130,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
             {(!disabled || (disabled && !disabledMessage)) && (
                 <Button
                     disabled={disabled}
-                    variant="contained"
+                    variant="outlined"
                     color="primary"
                     onClick={toggleDrawer(true)}
                     id="ColumnsSelectDrawer-toggleDrawer"

@@ -687,6 +687,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.fitToFormsBounds',
         defaultMessage: 'Fit map to submissions bounds',
     },
+    showInstancesCount: {
+        id: 'iaso.forms.showInstancesCount',
+        defaultMessage: 'Show instances count',
+    },
 });
 
 export default MESSAGES;

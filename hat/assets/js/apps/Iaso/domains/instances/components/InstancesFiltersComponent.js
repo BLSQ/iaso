@@ -132,11 +132,12 @@ const InstancesFiltersComponent = ({
         queryBuilderListToReplace,
     );
     const handleSearch = useCallback(() => {
-        if (isInstancesFilterUpdated) {
+        if (isInstancesFilterUpdated || params?.isSearchActive !== 'true') {
             setIsInstancesFilterUpdated(false);
             const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
+                isSearchActive: 'true',
                 page: 1,
             };
             // removing columns params to refetch correct columns
@@ -563,7 +564,11 @@ const InstancesFiltersComponent = ({
                             </Box>
                         )}
                         <Button
-                            disabled={textSearchError || isSearchDisabled}
+                            disabled={
+                                textSearchError ||
+                                (params?.isSearchActive === 'true' &&
+                                    isSearchDisabled)
+                            }
                             variant="contained"
                             className={classes.button}
                             color="primary"

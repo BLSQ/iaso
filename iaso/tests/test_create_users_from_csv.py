@@ -119,7 +119,10 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(org_unit_ids, [9999])
 
     def test_upload_valid_csv_with_perms(self):
-        with self.assertNumQueries(92):
+        correct_query_num = 92
+        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
+            correct_query_num += 12
+        with self.assertNumQueries(correct_query_num):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])
 

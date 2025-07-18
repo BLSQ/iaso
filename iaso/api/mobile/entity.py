@@ -63,9 +63,9 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
             "json",
         ]
 
-    form_id = serializers.IntegerField(read_only=True, source="form.id")
+    form_id = serializers.IntegerField(read_only=True)
     id = serializers.CharField(read_only=True, source="uuid")
-    org_unit_id = serializers.CharField(read_only=True, source="org_unit.id")
+    org_unit_id = serializers.CharField(read_only=True)
     form_version_id = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
@@ -161,14 +161,14 @@ class MobileEntityViewSet(ModelViewSet):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         user = self.request.user
-        possible_form_versions = FormVersion.objects.filter(
-            form__projects__account=user.iaso_profile.account
-        ).distinct()
-        possible_form_versions_dict = {}
-        for version in possible_form_versions:
-            key = "%s|%s" % (version.version_id, str(version.form_id))
-            possible_form_versions_dict[key] = version.id
-        context["possible_form_versions"] = possible_form_versions_dict
+
+        qs = FormVersion.objects.filter(form__projects__account=user.iaso_profile.account).values_list(
+            "version_id", "form_id", "id"
+        )
+
+        context["possible_form_versions"] = {
+            f"{version_id}|{form_id}": version_pk for version_id, form_id, version_pk in qs
+        }
 
         return context
 
@@ -185,12 +185,8 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = filter_on_user_and_app_id(queryset, user, app_id)
         queryset = filter_for_mobile_entity(queryset, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
+        queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
+
         return queryset.order_by("id")
 
 

@@ -110,7 +110,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ("iaso", "0332_corepermissionsupport"),
+        ("iaso", "0333_corepermissionsupport"),
         ("menupermissions", "0074_alter_custompermissionsupport_options"),
     ]
 

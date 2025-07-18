@@ -1,3 +1,5 @@
+from unittest import skip
+
 from django.contrib.gis.geos import Point
 from django.db import IntegrityError, InternalError, connections
 from django.db.models import Q

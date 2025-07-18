@@ -233,7 +233,10 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Org unit was created
         ou = m.OrgUnit.objects.get(name="New Org Unit")
         self.assertIsNotNone(ou)
-        self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+        if "trypelim" in settings.PLUGINS:
+            self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_VALID)
+        else:
+            self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
 
         # Instances (Submissions) + Entity were created
         self.assertEqual(m.Entity.objects.count(), 2)
@@ -297,7 +300,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Org unit doesn't exist. The job will fail, then verify that
         # nothing was created.
         INCORRECT_FILES_FOR_ZIP = ["instances.json"]
-        with zipfile.ZipFile(f"/tmp/{CATT_TABLET_DIR}.zip", "w", zipfile.ZIP_DEFLATED) as zipf:
+        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
             add_to_zip(
                 zipf,
                 zip_fixture_dir(CATT_TABLET_DIR),

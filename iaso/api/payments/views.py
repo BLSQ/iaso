@@ -14,10 +14,11 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
-from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
@@ -78,7 +79,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -428,7 +429,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -581,7 +582,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

@@ -24,6 +24,7 @@ from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 from hat.api_import.models import APIImport
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
+from iaso.permissions import CorePermissionSupport
 
 
 class IasoTestCaseMixin:
@@ -46,6 +47,7 @@ class IasoTestCaseMixin:
 
         if permissions is not None:
             content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+            content_types.append(ContentType.objects.get_for_model(CorePermissionSupport))
 
             for plugin in settings.PLUGINS:
                 try:

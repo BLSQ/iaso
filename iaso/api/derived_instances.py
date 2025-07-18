@@ -2,7 +2,8 @@ import typing
 
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
 from iaso.models import DERIVED, ExportRequest, Form
 
@@ -48,12 +49,12 @@ class DerivedInstanceSerializer(serializers.Serializer):
 class DerivedInstancesViewSet(ModelViewSet):
     f"""Derived instances API
 
-    This API is restricted to authenticated users having the "{permission.COMPLETENESS}" permission
+    This API is restricted to authenticated users having the "{core_permissions.COMPLETENESS}" permission
 
     POST /api/derivedinstances/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.COMPLETENESS)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.COMPLETENESS)]  # type: ignore
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()

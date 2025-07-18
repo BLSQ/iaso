@@ -10,7 +10,8 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.tasks.filters import (
     StartEndDateFilterBackend,
@@ -42,7 +43,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.DATA_TASKS),
+        HasPermission(core_permissions.DATA_TASKS),
     ]  # type: ignore
     filter_backends = [
         filters.OrderingFilter,
@@ -81,7 +82,7 @@ class TaskSourceViewSet(ModelViewSet):
         task = self.get_object()
         current_user = request.user
 
-        if current_user.has_perm(permission.DATA_TASKS) or task.created_by == request.user:
+        if current_user.has_perm(core_permissions.DATA_TASKS) or task.created_by == request.user:
             serializer = self.get_serializer(task)
             return Response(serializer.data)
         return Response(status=status.HTTP_403_FORBIDDEN)
@@ -108,7 +109,7 @@ class TaskSourceViewSet(ModelViewSet):
         task = get_object_or_404(Task, pk=pk)
         current_user = request.user
 
-        if current_user.has_perm(permission.DATA_TASKS) or task.created_by == request.user:
+        if current_user.has_perm(core_permissions.DATA_TASKS) or task.created_by == request.user:
             if task.status != ERRORED:
                 raise serializers.ValidationError({"status": f"You cannot relaunch a task with status {task.status}."})
 

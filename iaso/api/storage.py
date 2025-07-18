@@ -13,8 +13,9 @@ from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import Entity, Instance, OrgUnit, StorageDevice, StorageLogEntry
@@ -219,7 +220,7 @@ def device_generate_export(
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.STORAGE)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.STORAGE)]  # type: ignore
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -479,7 +480,7 @@ def logs_for_device_generate_export(
 
 
 @api_view()
-@permission_classes([IsAuthenticated, HasPermission(permission.STORAGE)])  # type: ignore
+@permission_classes([IsAuthenticated, HasPermission(core_permissions.STORAGE)])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
 

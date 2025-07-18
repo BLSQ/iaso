@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0318_session_instance_session"),
         ("iaso", "0330_formversion_md5"),

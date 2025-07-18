@@ -110,6 +110,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateFrom',
             'sentDateTo',
             'projectIds',
+            'isSearchActive',
         ],
     },
     instanceDetail: {

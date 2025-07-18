@@ -31,6 +31,9 @@ export const useApiParams = (
         if (formattedParams.accountId) {
             delete formattedParams.accountId;
         }
+        if (formattedParams.isSearchActive) {
+            delete formattedParams.isSearchActive;
+        }
         return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
 };

@@ -1,5 +1,6 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
 
+import Add from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -10,6 +11,8 @@ import {
 } from 'bluesquare-components';
 
 import { baseUrls } from 'Iaso/constants/urls';
+import * as Permission from 'Iaso/utils/permissions';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 
@@ -33,26 +36,24 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
-    const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const onSearch = useCallback(() => {
-        redirectTo(baseUrls.forms, {
-            ...params,
-            isSearchActive: 'true',
+        useFilterState({
+            baseUrl,
+            params,
+            withPagination: false,
+            searchActive: 'isSearchActive',
+            searchAlwaysEnabled: true,
         });
-        handleSearch();
-    }, [params, redirectTo, handleSearch]);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const handleShowDeleted = useCallback(
         (key, value) => {
-            // converting false to undefined to be able to compute `filtersUpdated` correctly
-            const valueForParam = value || undefined;
+            const valueForParam = value ? 'true' : undefined;
             handleChange(key, valueForParam);
         },
         [handleChange],
     );
     const handleShowInstancesCount = useCallback(
         (key, value) => {
-            const valueForParam = value || undefined;
+            const valueForParam = value ? 'true' : undefined;
             handleChange(key, valueForParam);
         },
         [handleChange],
@@ -65,6 +66,12 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+
+    const handleAddForm = useCallback(() => {
+        redirectTo(baseUrls.formDetail, {
+            formId: '0',
+        });
+    }, [redirectTo]);
     return (
         <Grid container>
             <Grid container item xs={12} spacing={2}>
@@ -144,16 +151,32 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         display="flex"
                         justifyContent="flex-end"
                     >
+                        <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
+                            <Button
+                                variant="outlined"
+                                className={classes.button}
+                                color="primary"
+                                onClick={handleAddForm}
+                                data-test="add-form-button"
+                                sx={{
+                                    mr: 2,
+                                }}
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.addForm)}
+                            </Button>
+                        </DisplayIfUserHasPerm>
                         <Button
                             data-test="search-button"
                             disabled={
-                                (!filtersUpdated || textSearchError) &&
-                                params?.isSearchActive === 'true'
+                                (!filtersUpdated &&
+                                    params?.isSearchActive === 'true') ||
+                                textSearchError
                             }
                             variant="contained"
                             className={classes.button}
                             color="primary"
-                            onClick={onSearch}
+                            onClick={handleSearch}
                         >
                             <SearchIcon className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}

@@ -1,19 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    useSafeIntl,
-    commonStyles,
-    AddButton,
-    useRedirectTo,
-} from 'bluesquare-components';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import { baseUrls } from '../../constants/urls';
 import { useQueryString } from '../../hooks/useApiParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import * as Permission from '../../utils/permissions';
 import { Filters } from './components/Filters';
 import { FormsTable } from './components/FormsTable';
 import { tableDefaults, useGetForms } from './hooks/useGetForms';
@@ -42,7 +35,6 @@ const Forms: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as Params;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const redirectTo = useRedirectTo();
 
     const isSearchActive = params?.isSearchActive === 'true';
     // This doesn't duplicate API calls as long as
@@ -56,7 +48,6 @@ const Forms: FunctionComponent = () => {
         { ...params, all: 'true' },
         tableDefaults,
     );
-
     const csvUrl = `${dwnldBaseUrl}/?${downloadQueryString}&csv=true`;
     const xlsxUrl = `${dwnldBaseUrl}/?${downloadQueryString}&xlsx=true`;
 
@@ -67,18 +58,9 @@ const Forms: FunctionComponent = () => {
                 <Filters params={params} />
                 <Box mt={4}>
                     <Grid container spacing={2} justifyContent="flex-end">
-                        <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
-                            <AddButton
-                                dataTestId="add-form-button"
-                                onClick={() => {
-                                    redirectTo(baseUrls.formDetail, {
-                                        formId: '0',
-                                    });
-                                }}
-                            />
-                        </DisplayIfUserHasPerm>
                         {isSearchActive && (
                             <DownloadButtonsComponent
+                                variant="outlined"
                                 xlsxUrl={xlsxUrl}
                                 csvUrl={csvUrl}
                                 disabled={

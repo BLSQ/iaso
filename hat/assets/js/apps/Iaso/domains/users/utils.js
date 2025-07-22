@@ -115,12 +115,12 @@ export const getFirstAllowedUrl = (
  * @return {Boolean} - Returns true if user account has specified module, otherwise false.
  */
 export const userHasAccessToModule = (module, user) => {
-    const { modules } = user.account;
     if (!user) {
         return false;
     }
-    if (modules.includes(module)) {
+    if (user?.account?.modules.includes(module)) {
         return true;
     }
+
     return false;
 };

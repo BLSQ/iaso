@@ -1,3 +1,4 @@
+from . import levenshtein as levenshtein
 from .base import DeduplicationAlgorithm
 
 

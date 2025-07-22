@@ -36,12 +36,11 @@ class ValueAndTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         json_filter = request.query_params.get("json_filter")
         group_by_field_name = "org_unit_id"
-
         if not json_filter:
             return queryset.values(group_by_field_name).distinct().values_list(group_by_field_name, flat=True)
 
         q = jsonlogic_to_exists_q_clauses(
-            json.loads(json_filter), MetricValue.objects, "metric_type_id", "value", group_by_field_name
+            json.loads(json_filter), MetricValue.objects, "metric_type_id", group_by_field_name
         )
 
         qs = queryset.filter(q).values_list(group_by_field_name, flat=True).distinct()

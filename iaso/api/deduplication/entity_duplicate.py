@@ -420,7 +420,6 @@ class EntityDuplicateViewSet(ModelViewSet):
         dedup_filters.StartEndDateFilterBackend,
         dedup_filters.CustomOrderingFilter,
         DjangoFilterBackend,
-        # filters.OrderingFilter,
     ]
 
     model = EntityDuplicate

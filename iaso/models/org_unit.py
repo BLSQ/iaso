@@ -873,12 +873,14 @@ class OrgUnitChangeRequest(SoftDeletableModel):
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
+                current_reference_instances = list(self.org_unit.reference_instances.all())
+
                 self.org_unit.reference_instances.clear()
 
                 new_reference_instances = list(self.new_reference_instances.all())
                 new_reference_forms_ids = self.new_reference_instances.values_list("form_id", flat=True)
 
-                for instance in self.old_reference_instances.all():
+                for instance in current_reference_instances:
                     if instance.form_id not in new_reference_forms_ids:
                         new_reference_instances.append(instance)
 

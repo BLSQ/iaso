@@ -18,7 +18,6 @@ import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
-import MESSAGES from '../messages';
 import {
     getSortedSourceVersions,
     getTablePages,

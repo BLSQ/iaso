@@ -1,10 +1,14 @@
-import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import {
+    userHasAccessToModule,
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../users/utils';
 import { FormActions } from '../components/FormActions.tsx';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
@@ -92,6 +96,8 @@ const getActionsColWidth = user => {
 
 export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
     const user = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
+
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
@@ -147,6 +153,7 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                             orgUnitId={orgUnitId}
                             baseUrls={baseUrls}
                             showDeleted={showDeleted}
+                            hasDhis2Module={hasDhis2Module}
                         />
                     );
                 },
@@ -160,7 +167,7 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
             });
         }
         return cols;
-    }, [formatMessage, orgUnitId, showDeleted, user]);
+    }, [formatMessage, hasDhis2Module, orgUnitId, showDeleted, user]);
 };
 
 export const requiredFields = [

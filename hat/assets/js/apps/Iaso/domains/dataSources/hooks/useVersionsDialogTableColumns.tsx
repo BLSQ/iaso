@@ -9,8 +9,12 @@ import { CopySourceVersion } from '../components/CopySourceVersion/CopySourceVer
 import { ImportGeoPkgDialog } from '../components/ImportGeoPkgDialog';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
-export const useVersionsDialogTableColumns = (source): Column[] => {
+export const useVersionsDialogTableColumns = (
+    source,
+    hasDhis2Module,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
+
     return useMemo(
         () => [
             {
@@ -78,22 +82,24 @@ export const useVersionsDialogTableColumns = (source): Column[] => {
                                 }
                                 dataSourceId={source.id}
                             />
-                            <AddTask
-                                renderTrigger={({ openDialog }) => (
-                                    <IconButton
-                                        onClick={openDialog}
-                                        icon="dhis"
-                                        tooltipMessage={
-                                            MESSAGES.updateFromDhis2
-                                        }
-                                    />
-                                )}
-                                sourceId={source.id}
-                                sourceVersionNumber={
-                                    settings.row.original.number
-                                }
-                                sourceCredentials={source.credentials ?? {}}
-                            />
+                            {hasDhis2Module && (
+                                <AddTask
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButton
+                                            onClick={openDialog}
+                                            icon="dhis"
+                                            tooltipMessage={
+                                                MESSAGES.updateFromDhis2
+                                            }
+                                        />
+                                    )}
+                                    sourceId={source.id}
+                                    sourceVersionNumber={
+                                        settings.row.original.number
+                                    }
+                                    sourceCredentials={source.credentials ?? {}}
+                                />
+                            )}
                             <ImportGeoPkgDialog
                                 renderTrigger={({ openDialog }) => (
                                     <IconButton

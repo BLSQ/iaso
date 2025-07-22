@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import connection
 
-from ..common import PotentialDuplicate  # type: ignore
+from ..common import PotentialDuplicate
 from .base import DeduplicationAlgorithm
 from .finalize import finalize_from_task
 
@@ -151,8 +151,7 @@ def _build_query(params):
     )
 
 
-@DeduplicationAlgorithm.register("levenshtein")
-class InverseAlgorithm(DeduplicationAlgorithm):
+class LevenshteinAlgorithm(DeduplicationAlgorithm):
     """
     This algorithm has the following custom parameters:
     levenshtein_max_distance: the maximum distance for the levenshtein algorithm (defaults to LEVENSHTEIN_MAX_DISTANCE)

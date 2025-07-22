@@ -3,7 +3,7 @@ from typing import List
 from django.apps import apps
 from django.utils.timezone import now
 
-from iaso.api.deduplication.common import PotentialDuplicate  # type: ignore
+from iaso.api.deduplication.common import PotentialDuplicate
 from iaso.models.base import Task
 
 

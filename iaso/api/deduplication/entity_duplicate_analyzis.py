@@ -9,9 +9,8 @@ import iaso.permissions as core_permissions
 
 from iaso.api.common import HasPermission, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
+from iaso.models.deduplication import POSSIBLE_ALGORITHMS
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
-
-from .algos import POSSIBLE_ALGORITHMS  # type: ignore
 
 
 def field_exists(f: Form, field_name: str) -> bool:

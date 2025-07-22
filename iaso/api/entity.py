@@ -298,7 +298,6 @@ class EntityViewSet(ModelViewSet):
         entities = queryset.annotate(
             last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
         )
-        result_list = []
         columns_list: List[Any] = []
 
         # -- Allow ordering by the field inside the Entity.
@@ -336,55 +335,65 @@ class EntityViewSet(ModelViewSet):
             num_pages = math.ceil(total_count / limit_int)
             entities = entities[start_int:end_int]
 
-        for entity in entities:
-            attributes = entity.attributes
-            attributes_pk = None
-            attributes_ou = None
-            attributes_latitude = None
-            attributes_longitude = None
-            file_content = None
-            if attributes is not None and entity.attributes is not None:
-                file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
-                attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None  # type: ignore
-                attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
-                attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
-            name = None
-            if file_content is not None:
-                name = file_content.get("name")
-            duplicates = []
-            # invokes many SQL queries and not needed for map display
-            if not as_location and not is_export:
-                duplicates = _get_duplicates(entity)
-            result = {
-                "id": entity.id,
-                "uuid": entity.uuid,
-                "name": name,
-                "created_at": entity.created_at,
-                "updated_at": entity.updated_at,
-                "attributes": attributes_pk,
-                "entity_type": entity.entity_type.name,
-                "last_saved_instance": entity.last_saved_instance,
-                "org_unit": attributes_ou,
-                "duplicates": duplicates,
-                "latitude": attributes_latitude,
-                "longitude": attributes_longitude,
-            }
-            if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
-                columns_list = []
-                possible_fields_list = entity.entity_type.reference_form.possible_fields or []
-                for items in possible_fields_list:
-                    for k, v in items.items():
-                        if k == "name" and v in entity.entity_type.fields_list_view:
-                            columns_list.append(items)
+        # if exactly one type of entity specified, add columns for that type of entity
+        columns_list = []
+        if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
+            entity_type = EntityType.objects.get(id=int(entity_type_ids))
+            possible_fields_list = entity_type.reference_form.possible_fields or []
+            for items in possible_fields_list:
+                for k, v in items.items():
+                    if k == "name" and v in entity_type.fields_list_view:
+                        columns_list.append(items)
+            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+            columns_list = [c for c in columns_list if len(c) > 2]
+        columns_set = {k["name"] for k in columns_list}
+
+        def entities_as_dict_gen(entity_qs, columns_set):
+            for entity in entity_qs:
+                attributes = entity.attributes
+                attributes_pk = None
+                attributes_ou = None
+                attributes_latitude = None
+                attributes_longitude = None
+                file_content = None
+                if attributes is not None and entity.attributes is not None:
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                    attributes_pk = attributes.pk
+                    attributes_ou = (
+                        entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None
+                    )  # type: ignore
+                    attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
+                    attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
+                name = None
+                if file_content is not None:
+                    name = file_content.get("name")
+                duplicates = []
+                # invokes many SQL queries and not needed for map display
+                if not as_location and not is_export:
+                    duplicates = _get_duplicates(entity)
+                result = {
+                    "id": entity.id,
+                    "uuid": entity.uuid,
+                    "name": name,
+                    "created_at": entity.created_at,
+                    "updated_at": entity.updated_at,
+                    "attributes": attributes_pk,
+                    "entity_type": entity.entity_type.name,
+                    "last_saved_instance": entity.last_saved_instance,
+                    "org_unit": attributes_ou,
+                    "duplicates": duplicates,
+                    "latitude": attributes_latitude,
+                    "longitude": attributes_longitude,
+                }
                 if attributes is not None and attributes.json is not None:
                     for k, v in entity.attributes.json.items():
-                        if k in list(entity.entity_type.fields_list_view):
+                        if k in columns_set:
                             result[k] = v
-                columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-                columns_list = [c for c in columns_list if len(c) > 2]
-            result_list.append(result)
+                yield result
+
         if is_export:
+            # chunk_size needs to be set explicitly when using prefetch_related() on the qs
+            results = entities_as_dict_gen(entities.iterator(chunk_size=4000), columns_set)
             columns = [
                 {"title": "ID", "width": 20},
                 {"title": "UUID", "width": 20},
@@ -394,6 +403,7 @@ class EntityViewSet(ModelViewSet):
                 {"title": "HC ID", "width": 20},
                 {"title": "Last update", "width": 20},
             ]
+            # entity type-specific columns
             for col in columns_list:
                 columns.append({"title": col["label"]})
 
@@ -426,23 +436,24 @@ class EntityViewSet(ModelViewSet):
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx("Entities", columns, result_list, get_row),
+                    generate_xlsx("Entities", columns, results, get_row),
                     content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)),
+                    streaming_content=(iter_items(results, Echo(), columns, get_row)),
                     content_type=CONTENT_TYPE_CSV,
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+        results = entities_as_dict_gen(entities, columns_set)
         if as_location:
             return Response(
                 {
                     "limit": limit_int,
-                    "result": result_list,
+                    "result": list(results),
                 }
             )
         if limit:
@@ -455,11 +466,11 @@ class EntityViewSet(ModelViewSet):
                     "pages": num_pages,
                     "limit": limit_int,
                     "columns": columns_list,
-                    "result": result_list,
+                    "result": list(results),
                 }
             )
 
-        res = {"columns": columns_list, "result": result_list}
+        res = {"columns": columns_list, "result": list(results)}
         return Response(res)
 
     def destroy(self, request, pk=None):

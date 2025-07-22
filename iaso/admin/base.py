@@ -1073,34 +1073,33 @@ class TenantUserAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         return urls
 
+    @admin.display(
+        description="Account",
+        ordering="account_user__iaso_profile__account",
+    )
     def account(self, obj):
         return obj.account
 
-    account.admin_order_field = "account_user__iaso_profile__account"
-    account.short_description = "Account"
-
+    @admin.display(description="Total Accounts")
     def all_accounts_count(self, obj):
         return obj.main_user.tenant_users.count()
 
-    all_accounts_count.short_description = "Total Accounts"
-
+    @admin.display(
+        description="Self Account",
+        boolean=True,
+    )
     def is_self_account(self, obj):
         return obj.main_user == obj.account_user
 
-    is_self_account.boolean = True
-    is_self_account.short_description = "Self Account"
-
+    @admin.display(description="All Account Users")
     def all_account_users(self, obj):
         users = obj.get_all_account_users()
         return format_html("<br>".join(user.username for user in users))
 
-    all_account_users.short_description = "All Account Users"
-
+    @admin.display(description="Other Accounts")
     def other_accounts(self, obj):
         accounts = obj.get_other_accounts()
-        return format_html("<br>".join(str(account) for account in accounts))
-
-    other_accounts.short_description = "Other Accounts"
+        return format_html("<br>".join(account.name for account in accounts))
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")

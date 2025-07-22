@@ -94,6 +94,7 @@ export const useSaveCampaign = (): UseMutationResult<any, any, any> => {
             queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries(['subActivities']);
             queryClient.invalidateQueries(['calendar-campaigns']);
+            queryClient.invalidateQueries(['lqasCountries']);
         },
     });
 };

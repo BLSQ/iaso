@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
@@ -9,7 +10,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
@@ -18,6 +18,7 @@ import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
+import MESSAGES from '../messages';
 import {
     getSortedSourceVersions,
     getTablePages,
@@ -168,7 +169,6 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     )}
                     sourceId={source.id}
                     sourceName={source.name}
-                    projects={source.projects.flat()}
                 />
 
                 <AddNewEmptyVersion

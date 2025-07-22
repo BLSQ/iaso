@@ -62,9 +62,12 @@ class GPKGExport(TestCase):
         source_to_gpkg(self.filename, self.version)
         # import in a new version and project
         new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="project_2")
+
+        # Ensure the DataSource is configured with the new project
+        self.source.projects.add(new_project)
+
         import_gpkg_file(
             "/tmp/temporary_test.gpkg",
-            project_id=new_project.id,
             source_name=self.source_name,
             version_number=2,
             validation_status="new",
@@ -122,9 +125,11 @@ class GPKGExport(TestCase):
         source_to_gpkg(self.filename, self.version)
         new_project = m.Project.objects.create(name="Project 3", account=self.account, app_id="project_3")
 
+        # Ensure the DataSource is configured with the new project
+        self.source.projects.add(new_project)
+
         import_gpkg_file(
             "/tmp/temporary_test.gpkg",
-            project_id=new_project.id,
             source_name=self.source_name,
             version_number=2,
             validation_status="new",

@@ -133,7 +133,7 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        campaigns = Campaign.objects.filter_for_user(user).filter(is_test=False)
         return campaigns
 
 

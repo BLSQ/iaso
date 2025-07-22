@@ -106,3 +106,21 @@ export const getFirstAllowedUrl = (
     if (untestedPermissions.length === 0) return undefined;
     return getFirstAllowedUrl(rootPermissions, untestedPermissions, routes);
 };
+
+/**
+ * Check if user account has access to specified module.
+ *
+ * @param {String} module
+ * @param {Object} user
+ * @return {Boolean} - Returns true if user account has specified module, otherwise false.
+ */
+export const userHasAccessToModule = (module, user) => {
+    const { modules } = user.account;
+    if (!user) {
+        return false;
+    }
+    if (modules.includes(module)) {
+        return true;
+    }
+    return false;
+};

@@ -1,7 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from iaso.api.deduplication.algos import DEFAULT_ALGORITHM, POSSIBLE_ALGORITHMS  # type: ignore
+
+POSSIBLE_ALGORITHMS = [["levenshtein", "levenshtein"]]
 
 
 class ValidationStatus(models.TextChoices):
@@ -17,7 +18,7 @@ class TypeOfRelation(models.TextChoices):
 
 
 class EntityDuplicateAnalyzis(models.Model):
-    algorithm = models.CharField(max_length=20, choices=POSSIBLE_ALGORITHMS, default=DEFAULT_ALGORITHM)
+    algorithm = models.CharField(max_length=20, choices=POSSIBLE_ALGORITHMS, default="levenshtein")
     created_at = models.DateTimeField(auto_now_add=True)
     metadata = models.JSONField(default=dict)
     task = models.ForeignKey(

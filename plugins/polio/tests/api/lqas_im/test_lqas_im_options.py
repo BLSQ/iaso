@@ -181,6 +181,48 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 0)
 
+    def test_ignore_countries_with_only_test_campaigns(self):
+        test_campaign, test_rnd1, test_rnd2, test_rnd3, cameroon, north_east = self.create_campaign(
+            "Test Campaign",
+            self.account,
+            self.source_version_1,
+            self.ou_type_country,
+            self.ou_type_district,
+            "CAMEROON",
+            "NORTH EAST",
+        )
+        test_rnd2.lqas_ended_at = self.rdc_round_2.lqas_ended_at
+        test_rnd2.save()
+        test_rnd3.lqas_ended_at = self.rdc_round_3.lqas_ended_at
+        test_rnd3.save()
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        labels = [result["label"] for result in results]
+        values = [result["value"] for result in results]
+        self.assertTrue(cameroon.name in labels)
+        self.assertTrue(cameroon.id in values)
+        self.assertTrue(self.rdc.name in labels)
+        self.assertTrue(self.rdc.id in values)
+
+        test_campaign.is_test = True
+        test_campaign.save()
+
+        #  test when lqas end = last day of month
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 1)
+        result = results[0]
+        self.assertNotEqual(result["label"], cameroon.name)
+        self.assertNotEqual(result["value"], cameroon.id)
+        self.assertEqual(result["label"], self.rdc.name)
+        self.assertEqual(result["value"], self.rdc.id)
+
     def test_use_date_fallback_if_no_lqas_end_date(self):
         self.client.force_authenticate(self.user)
 
@@ -265,7 +307,7 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 2)
         campaign_ids = [result["value"] for result in results]
-        self.assertFalse(self.emro_campaign.id in campaign_ids)
+        self.assertFalse(str(self.emro_campaign.id) in campaign_ids)
 
         response = self.client.get(
             f"{self.endpoint}?month=03-2021"
@@ -273,6 +315,34 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
         self.assertEqual(len(results), 0)
+
+    def test_filter_out_test_campaigns(self):
+        test_campaign, _, _, _, _, _ = self.create_campaign(
+            "test_campaign",
+            self.account,
+            self.source_version_1,
+            self.ou_type_country,
+            self.ou_type_district,
+            "RDC1",
+            "BAS UELE",
+        )
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(self.endpoint)
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 3)
+        campaign_ids = [result["value"] for result in results]
+        self.assertTrue(str(test_campaign.id) in campaign_ids)
+
+        test_campaign.is_test = True
+        test_campaign.save()
+        response = self.client.get(self.endpoint)
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        campaign_ids = [result["value"] for result in results]
+        self.assertFalse(str(test_campaign.id) in campaign_ids)
 
     def test_get_without_params(self):
         self.client.force_authenticate(self.user)

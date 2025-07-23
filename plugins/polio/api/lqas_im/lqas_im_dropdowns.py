@@ -134,7 +134,8 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user).filter(is_test=False)
+        # Sometimes filter_for_user will return duplicate campaigns but fixing this at the queryset manager level introduces a whole loit of new bugs
+        campaigns = Campaign.objects.filter_for_user(user).filter(is_test=False).distinct("obr_name")
         return campaigns
 
 

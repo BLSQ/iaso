@@ -82,7 +82,7 @@ classDiagram
         change_subcription_plan(subscription, new_plan, payment_id, payment_provider) None
         cancel_subscription(subscription) None
     }
-    note for SubscriptionTracker "* update_submission_metrics() could log an error or trigger some kind of notification when limits are exceeded\n* create one SubscriptionTracker for all existing accounts + create a LEGACY plan?\n* if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
+    note for SubscriptionTracker "update_submission_metrics() could log an error or trigger some kind of notification when limits are exceeded\n create one SubscriptionTracker for all existing accounts + create a LEGACY plan?\n if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
     
     Account "1" *-- "1" SubscriptionTracker
     
@@ -105,7 +105,7 @@ classDiagram
         CANCELLED
         PLANNED
     }
-    note for Subscription "* payment data could be stored on its own if required, it could be interesting if Stripe is not the only provider\n* a cron should update status every night\n* status should be a nested enum\n* we should probably have logs on this class"
+    note for Subscription "payment data could be stored on its own if required, it could be interesting if Stripe is not the only provider\n a cron should update status every night\n status should be a nested enum\n we should probably have logs on this class"
     
     SubscriptionTracker "1" -- "0..n" Subscription : tracks >
     
@@ -123,7 +123,7 @@ classDiagram
         CUSTOM
         LEGACY ?
     }
-    note for SubscriptionPlan "* name should be a nested enum\n* create a migration file to create all plans"
+    note for SubscriptionPlan "name should be a nested enum\n create a migration file to create all plans"
 
     Subscription "0..n" -- "1" SubscriptionPlan : has >
 ```

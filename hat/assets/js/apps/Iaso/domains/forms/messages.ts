@@ -689,7 +689,7 @@ const MESSAGES = defineMessages({
     },
     showInstancesCount: {
         id: 'iaso.forms.showInstancesCount',
-        defaultMessage: 'Show instances count',
+        defaultMessage: 'Show instance count',
     },
 });
 

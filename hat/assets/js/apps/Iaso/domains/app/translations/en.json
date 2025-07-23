@@ -349,7 +349,7 @@
     "iaso.forms.viewForm": "View form",
     "iaso.forms.viewInstance": "View submission",
     "iaso.forms.viewInstances": "View submission(s)",
-    "iaso.forms.showInstancesCount": "Show instances count",
+    "iaso.forms.showInstancesCount": "Show instance count",
     "iaso.forms.yes": "Yes",
     "iaso.formversions.chronologicalPeriodError": "Start period should be before end period",
     "iaso.formversions.create": "Create version",

@@ -135,7 +135,12 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         # Sometimes filter_for_user will return duplicate campaigns but fixing this at the queryset manager level introduces a whole loit of new bugs
-        campaigns = Campaign.objects.filter_for_user(user).filter(is_test=False).distinct("obr_name")
+        campaigns = (
+            Campaign.polio_objects.filter_for_user(user)
+            .filter(is_test=False)
+            .filter(on_hold=False)
+            .distinct("obr_name")
+        )
         return campaigns
 
 
@@ -187,4 +192,4 @@ class LqasImRoundOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Round.objects.filter_for_user(user)
+        return Round.objects.filter_for_user(user).filter(on_hold=False)

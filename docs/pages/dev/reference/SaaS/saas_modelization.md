@@ -25,16 +25,16 @@ title: SaaS use cases
 
 flowchart LR
     U["fa:fa-user User"]
-    UC1(1. Create a new subscription)
+    UC1(1 - Create a new subscription)
     UC1Comment[/"fa:fa-info there is no existing account - done through a setuper action"/]
-    UC2(2. Start a new subscription)
+    UC2(2 - Start a new subscription)
     UC2Comment[/"fa:fa-info there already is an account - done through a dedicated endpoint"/]
-    UC3(3. Renew a subscription)
-    UC4(4. Cancel a subscription)
-    UC5(5. Change subscription)
+    UC3(3 - Renew a subscription)
+    UC4(4 - Cancel a subscription)
+    UC5(5 - Change subscription)
     UC5Comment[/"fa:fa-info upgrade? downgrade? what happens to the existing plan?"/]
-    UC6(6. See information about current subscription)
-    UC7(7. See information about other existing subscriptions)
+    UC6(6 - See information about current subscription)
+    UC7(7 - See information about other existing subscriptions)
     U --> UC1
     UC1 -.- UC1Comment
     U --> UC2
@@ -83,8 +83,8 @@ classDiagram
         cancel_subscription(subscription) None
     }
     note for SubscriptionTracker "- update_submission_metrics() could log an error or trigger some kind of notification when limits are exceeded
-    - create one SubscriptionTracker for all existing accounts + create a LEGACY plan?
-    - if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
+    \n- create one SubscriptionTracker for all existing accounts + create a LEGACY plan?
+    \n- if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
     
     Account "1" *-- "1" SubscriptionTracker
     
@@ -108,9 +108,9 @@ classDiagram
         PLANNED
     }
     note for Subscription "- payment data could be stored on its own if required, it could be interesting if Stripe is not the only provider
-    - a cron should update status every night
-    - status should be a nested enum
-    - we should probably have logs on this class"
+    \n- a cron should update status every night
+    \n- status should be a nested enum
+    \n- we should probably have logs on this class"
     
     SubscriptionTracker "1" -- "0..n" Subscription : tracks >
     
@@ -129,7 +129,7 @@ classDiagram
         LEGACY ?
     }
     note for SubscriptionPlan "- name should be a nested enum
-    - create a migration file to create all plans"
+    \n- create a migration file to create all plans"
 
     Subscription "0..n" -- "1" SubscriptionPlan : has >
 ```

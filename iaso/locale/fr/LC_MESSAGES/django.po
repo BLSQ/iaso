@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-26 09:39+0000\n"
+"POT-Creation-Date: 2025-07-23 09:15+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -190,7 +190,9 @@ msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
-msgstr "Une autre unité d'organisation valide existe déjà avec le code '{}' dans cette version"
+msgstr ""
+"Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
+"cette version"
 
 #: iaso/api/org_units.py
 msgid "Unauthorized version id"
@@ -286,12 +288,12 @@ msgid "Nom d'utilisateur requis"
 msgstr "Nom d'utilisateur requis"
 
 #: iaso/api/profiles/profiles.py
-msgid "Nom d'utilisateur existant"
-msgstr "Nom d'utilisateur existant"
-
-#: iaso/api/profiles/profiles.py
 msgid "Mot de passe requis"
 msgstr "Mot de passe requis"
+
+#: iaso/api/profiles/profiles.py
+msgid "Nom d'utilisateur existant"
+msgstr "Nom d'utilisateur existant"
 
 #: iaso/api/profiles/profiles.py
 msgid "Both phone number and country code must be provided"
@@ -458,8 +460,12 @@ msgstr ""
 msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
 
+#: iaso/models/deduplication.py
+msgid "Levenshtein"
+msgstr "Levenshtein"
+
 #: iaso/models/deduplication.py iaso/models/payments.py
-#: iaso/utils/models/virus_scan.py
+#: iaso/utils/virus_scan/model.py
 msgid "Pending"
 msgstr "En attente"
 
@@ -646,18 +652,6 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
-#: iaso/utils/models/virus_scan.py
-msgid "Clean"
-msgstr "Aucun virus détecté"
-
-#: iaso/utils/models/virus_scan.py
-msgid "Infected"
-msgstr "Virus détecté"
-
-#: iaso/utils/models/virus_scan.py
-msgid "Error"
-msgstr "Erreur lors de l'analyse"
-
 #: iaso/utils/serializer/id_or_uuid_field.py
 msgid "This field is required."
 msgstr "Ce champ est requis."
@@ -676,3 +670,15 @@ msgstr ""
 #: iaso/utils/serializer/three_dim_point_field.py
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
+
+#: iaso/utils/virus_scan/model.py
+msgid "Clean"
+msgstr "Aucun virus détecté"
+
+#: iaso/utils/virus_scan/model.py
+msgid "Infected"
+msgstr "Virus détecté"
+
+#: iaso/utils/virus_scan/model.py
+msgid "Error"
+msgstr "Erreur lors de l'analyse"

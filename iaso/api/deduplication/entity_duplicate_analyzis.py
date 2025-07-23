@@ -1,13 +1,13 @@
 from django.contrib.auth.models import User
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers, status, viewsets
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.response import Response
 
 import iaso.models.base as base
 import iaso.permissions as core_permissions
 
-from iaso.api.common import HasPermission, Paginator
+from iaso.api.common import HasPermission, ModelViewSet, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
 from iaso.models.deduplication import PossibleAlgorithms
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
@@ -93,14 +93,15 @@ class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
-    """Entity Duplicates API
+class EntityDuplicateAnalyzisViewSet(ModelViewSet):
+    """
+    Entity Duplicates API
+
     GET /api/entityduplicates/analyzes : Provides an API to retrieve the list of running and finished analyzes
     POST /api/entityduplicates/analyzes : Provides an API to launch a duplicate analyzes
     GET /api/entityduplicates/analyzes/{id} : Provides an API to retrieve the status of an analyze
     PATCH /api/entityduplicates/analyzes/{id} : Provides an API to change the status of an analyze
     DELETE /api/entityduplicates/analyzes/{id} : Provides an API to delete the possible duplicates of an analyze
-
     """
 
     filter_backends = [
@@ -109,76 +110,22 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     ]
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
-    serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account)
+        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task__created_by")
 
-    def list(self, request, *args, **kwargs):
-        """
-        GET /api/entityduplicates_analyzes/
-        Provides an API to retrieve the list of running and finished analyzes
-        """
-        queryset = self.filter_queryset(self.get_queryset())
+    def get_permissions(self):
+        permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
+        if self.action in ["partial_update", "destroy", "create"]:
+            permission_classes += [HasPermission(core_permissions.ENTITIES_DUPLICATE_WRITE)]
+        return [permission() for permission in permission_classes]
 
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = EntityDuplicateAnalyzisSerializer(queryset, many=True)
-        return Response(data={self.results_key: serializer.data})
-
-    def retrieve(self, request, pk=None, *args, **kwargs):
-        """
-        GET /api/entityduplicates_analyzes/{id}/
-        Provides an API to retrieve the status of an analyze
-
-        ## Possible responses
-
-        ### 200 - OK
-
-        ```javascript
-        {
-            "id": Int,
-            "status": "queued", "running", "failed", "success", "canceled",
-            "started_at": DateTime?,
-            "created_by": {}, // simple user object
-            "algorithm": "namesim", "invert", "levenshtein" //See [Algorithms]
-            "entity_type_id": String,
-            "fields": String[],
-            "parameters": {}, // dictionary
-            "finished_at": DateTime?,
-            "created_at": DateTime,
-            "updated_at": DateTime,
-        }
-        ```
-
-
-        ### 401 - Unauthorized
-
-        The user has not provided a correct authentication token
-
-        ### 403 - Forbidden
-
-        The user has provided a correct authentication token with insufficient rights
-
-        ### 404 - Not found
-
-        - When the provided `id` is not found
-
-        """
-        try:
-            obj = EntityDuplicateAnalyzis.objects.get(pk=pk)
-
-        except EntityDuplicateAnalyzis.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = EntityDuplicateAnalyzisDetailSerializer(obj)
-        return Response(serializer.data)
+    def get_serializer_class(self):
+        if self.action == "retrieve":
+            return EntityDuplicateAnalyzisDetailSerializer
+        return EntityDuplicateAnalyzisSerializer
 
     def partial_update(self, request, pk=None, *args, **kwargs):
         """

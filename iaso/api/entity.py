@@ -12,7 +12,7 @@ import pytz
 import xlsxwriter  # type: ignore
 
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Q, Prefetch
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -34,7 +34,7 @@ from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.models import Entity, EntityType, Instance, OrgUnit
+from iaso.models import Entity, EntityType, EntityDuplicate, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
@@ -292,6 +292,17 @@ class EntityViewSet(ModelViewSet):
         order_columns = request.GET.get("order_columns", None)
         as_location = request.GET.get("asLocation", None)
 
+        # we don't need duplicates for map display or exports
+        fetch_duplicates = not as_location and not is_export
+        if fetch_duplicates:
+            qs1 = EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
+            qs2 = EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
+
+            queryset = queryset.prefetch_related(
+                Prefetch("duplicates1", queryset=qs1, to_attr="pending_duplicates1"),
+                Prefetch("duplicates2", queryset=qs2, to_attr="pending_duplicates2"),
+            )
+
         queryset = queryset.order_by(*orders)
 
         # annotate with last instance on Entity, to allow ordering by it
@@ -368,9 +379,11 @@ class EntityViewSet(ModelViewSet):
                 if file_content is not None:
                     name = file_content.get("name")
                 duplicates = []
-                # invokes many SQL queries and not needed for map display
-                if not as_location and not is_export:
-                    duplicates = _get_duplicates(entity)
+                # not needed for map display or exports
+                if fetch_duplicates:
+                    duplicates.extend(d.entity2_id for d in entity.pending_duplicates1)
+                    duplicates.extend(d.entity1_id for d in entity.pending_duplicates2)
+
                 result = {
                     "id": entity.id,
                     "uuid": entity.uuid,

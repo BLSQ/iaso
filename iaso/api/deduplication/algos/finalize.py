@@ -8,11 +8,13 @@ from iaso.models import EntityDuplicate
 from iaso.models.base import Task
 
 
-def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDuplicate]):
-    eda = the_task.entity_duplicate_analyzis.first()
+def create_entity_duplicates(task: Task, potential_duplicates: List[PotentialDuplicate]) -> None:
+    eda = task.entity_duplicate_analyzis.first()
 
     if not eda:
-        raise Exception("No entity duplicate analyze found for task %s" % the_task)
+        raise Exception("No entity duplicate analyze found for task %s" % task)
+
+    task.report_progress_and_stop_if_killed(progress_message="Started creation of entity duplicates")
 
     batch_size = 100
 
@@ -34,3 +36,5 @@ def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDupli
 
     eda.finished_at = now()
     eda.save()
+
+    task.report_progress_and_stop_if_killed(progress_message="Ended creation of entity duplicates")

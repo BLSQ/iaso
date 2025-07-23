@@ -109,7 +109,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     ]
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
     serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
@@ -265,10 +265,9 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
             "fields": data["fields"],
             "parameters": {param["name"]: param["value"] for param in data["parameters"]},
         }
-        the_task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
+        task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
 
-        # Create an EntityDuplicateAnalyzis object
-        analyze = EntityDuplicateAnalyzis.objects.create(algorithm=algo_name, metadata=algo_params, task=the_task)
+        analyze = EntityDuplicateAnalyzis.objects.create(algorithm=algo_name, metadata=algo_params, task=task)
         analyze.save()
 
         return Response({"analyze_id": analyze.pk}, status=status.HTTP_201_CREATED)

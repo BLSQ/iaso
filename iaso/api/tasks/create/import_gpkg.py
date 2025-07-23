@@ -27,15 +27,8 @@ logger = logging.getLogger(__name__)
 class ImportGpkgSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImportGPKG
-        fields = ["id", "file", "project", "data_source", "version_number", "description", "created_at", "updated_at"]
+        fields = ["id", "file", "data_source", "version_number", "description", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_project(self, project):
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        if project not in account.project_set.all():
-            raise ValidationError("Unauthorized project")
-        return project
 
     def validate_data_source(self, data_source):
         user = self.context["request"].user

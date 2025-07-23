@@ -159,13 +159,7 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
     """
 
     def run(self, params, task=None) -> List[PotentialDuplicate]:
-        count = 100
-
-        task.report_progress_and_stop_if_killed(
-            progress_value=0,
-            end_value=count,
-            progress_message="Started Levenshtein Algorithm",
-        )
+        task.report_progress_and_stop_if_killed(progress_message="Started Levenshtein Algorithm")
 
         cursor = connection.cursor()
         potential_duplicates = []
@@ -174,8 +168,6 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
 
             # Log the generated query and parameters just before execution
             task.report_progress_and_stop_if_killed(
-                progress_value=10,
-                end_value=count,
                 progress_message="=== SQL Query ===\n"
                 + the_query
                 + "\n=== Parameters ===\n"
@@ -196,11 +188,7 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
         finally:
             cursor.close()
 
-        task.report_progress_and_stop_if_killed(
-            progress_value=100,
-            end_value=count,
-            progress_message="Ended Levenshtein Algorithm",
-        )
+        task.report_progress_and_stop_if_killed(progress_message="Ended Levenshtein Algorithm")
 
         finalize_from_task(task, potential_duplicates)
 

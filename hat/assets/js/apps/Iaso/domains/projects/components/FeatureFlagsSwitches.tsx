@@ -66,7 +66,7 @@ const translateType = (type: string): InputComponentType => {
     }
 };
 
-export const useFeatureFlagConfiguration = (
+export const featureFlagConfiguration = (
     ff: FeatureFlag,
     onFeatureFlagChanged: (changed: ProjectFeatureFlag) => void,
     pff?: ProjectFeatureFlag,
@@ -214,7 +214,7 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
                         const pff = projectFeatureFlags.find(
                             f => f.id === ff.id,
                         );
-                        return useFeatureFlagConfiguration(
+                        return featureFlagConfiguration(
                             ff,
                             changed => {
                                 onFeatureFlagsChanged(

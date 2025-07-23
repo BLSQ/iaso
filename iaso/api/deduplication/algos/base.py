@@ -1,11 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import List
 
+from iaso.models.base import Task
+
 from ..common import PotentialDuplicate
 
 
 class DeduplicationAlgorithm(ABC):
     @abstractmethod
-    def run(self, params, task=None) -> List[PotentialDuplicate]:
+    def run(self, params: dict, task: Task) -> List[PotentialDuplicate]:
         # Code for running the algorithm (empty implementation).
         pass

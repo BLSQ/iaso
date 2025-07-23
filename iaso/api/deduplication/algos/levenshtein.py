@@ -2,9 +2,11 @@ from typing import List
 
 from django.db import connection
 
+from iaso.models.base import Task
+
 from ..common import PotentialDuplicate
 from .base import DeduplicationAlgorithm
-from .finalize import finalize_from_task
+from .finalize import create_entity_duplicates
 
 
 LEVENSHTEIN_MAX_DISTANCE = 3
@@ -158,7 +160,7 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
     above_score_display: the minimum score to display (defaults to ABOVE_SCORE_DISPLAY)
     """
 
-    def run(self, params, task=None) -> List[PotentialDuplicate]:
+    def run(self, params: dict, task: Task) -> List[PotentialDuplicate]:
         task.report_progress_and_stop_if_killed(progress_message="Started Levenshtein Algorithm")
 
         cursor = connection.cursor()
@@ -190,6 +192,6 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
 
         task.report_progress_and_stop_if_killed(progress_message="Ended Levenshtein Algorithm")
 
-        finalize_from_task(task, potential_duplicates)
+        create_entity_duplicates(task, potential_duplicates)
 
         return potential_duplicates

@@ -1,6 +1,4 @@
-import csv
 import datetime
-import io
 import json
 import math
 import re
@@ -9,10 +7,9 @@ from time import gmtime, strftime
 from typing import Any, List, Union
 
 import pytz
-import xlsxwriter  # type: ignore
 
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q, Prefetch
+from django.db.models import Exists, Max, OuterRef, Prefetch, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -34,7 +31,7 @@ from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.models import Entity, EntityType, EntityDuplicate, Instance, OrgUnit
+from iaso.models import Entity, EntityDuplicate, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q

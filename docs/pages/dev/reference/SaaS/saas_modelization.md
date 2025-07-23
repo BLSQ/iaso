@@ -107,7 +107,10 @@ classDiagram
         CANCELLED
         PLANNED
     }
-    note for Subscription "payment data could be stored on its own if required, it could be interesting if Stripe is not the only provider\n a cron should update status every night\n status should be a nested enum\n we should probably have logs on this class"
+    note for Subscription "payment data could be stored on its own if required, it could be interesting if Stripe is not the only provider
+    a cron should update status every night
+    status should be a nested enum
+    we should probably have logs on this class"
     
     SubscriptionTracker "1" -- "0..n" Subscription : tracks >
     
@@ -125,7 +128,8 @@ classDiagram
         CUSTOM
         LEGACY ?
     }
-    note for SubscriptionPlan "name should be a nested enum\n create a migration file to create all plans"
+    note for SubscriptionPlan "name should be a nested enum
+    create a migration file to create all plans"
 
     Subscription "0..n" -- "1" SubscriptionPlan : has >
 ```

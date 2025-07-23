@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Case, Count, Exists, F, FilteredRelation, Func, OuterRef, Q, When
+from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone

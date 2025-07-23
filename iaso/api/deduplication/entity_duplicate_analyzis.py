@@ -9,7 +9,7 @@ import iaso.models.base as base
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
-from iaso.models.deduplication import POSSIBLE_ALGORITHMS
+from iaso.models.deduplication import PossibleAlgorithms
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 
@@ -25,7 +25,7 @@ def field_exists(f: Form, field_name: str) -> bool:
 
 
 class AnalyzePostBodySerializer(serializers.Serializer):
-    algorithm = serializers.ChoiceField(choices=POSSIBLE_ALGORITHMS)
+    algorithm = serializers.ChoiceField(choices=PossibleAlgorithms.choices)
     entity_type_id = serializers.CharField()
     fields = serializers.ListField(child=serializers.CharField())  # type: ignore
     parameters = serializers.ListField(child=serializers.DictField())

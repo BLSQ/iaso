@@ -6,6 +6,7 @@ from beanstalk_worker import task_decorator
 from iaso.api.deduplication.algos.levenshtein import LevenshteinAlgorithm
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import EntityType
+from iaso.models.deduplication import PossibleAlgorithms
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ def run_deduplication_algo(algo_name=None, algo_params=None, task=None):
     """Background Task to run deduplication algo."""
     started_at = datetime.now()
 
-    if algo_name == "levenshtein":
+    if algo_name == PossibleAlgorithms.LEVENSHTEIN.value:
         algo = LevenshteinAlgorithm()
     else:
         raise ValueError(f"Unknown algorithm {algo_name}")

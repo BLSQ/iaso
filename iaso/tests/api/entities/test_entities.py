@@ -747,6 +747,81 @@ class WebEntityAPITestCase(EntityAPITestCase):
         ]
         self.assertEqual(row_to_test, expected_row)
 
+    @mock.patch(
+        "iaso.api.entity.gmtime",
+        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
+    )
+    def test_export_entities_extra_columns(self):
+        self.client.force_authenticate(self.yoda)
+
+        # We expect the intersection of the form's possible_fields
+        # and the entity type's field_list_view
+        # to show up as columns in the export. Other propreties to be ignored.
+
+        possible_fields = [
+            {"name": "first_name", "type": "text", "label": "First Name"},
+            {"name": "middle_name", "type": "text", "label": "Middle Name"},
+            {"name": "last_name", "type": "text", "label": "Last Name"},
+            {"name": "foobar", "type": "text", "label": "Not supposed to be here"},
+        ]
+
+        form_2 = m.Form.objects.create(
+            name="Another study",
+            period_type=m.MONTH,
+            single_per_period=True,
+            form_id="form_2",
+            possible_fields=possible_fields,
+        )
+
+        form_2.projects.add(self.project)
+        entity_type_2 = m.EntityType.objects.create(
+            name="Type 2",
+            reference_form=form_2,
+            account=self.account,
+            fields_list_view=["first_name", "middle_name", "last_name", "mayonnaise"],
+        )
+
+        instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=form_2,
+            json={
+                "first_name": "Jean",
+                "middle_name": "M.",
+                "last_name": "Dupont",
+                "mayonnaise": "yes",
+                "foobar": "snafu",
+            },
+        )
+        entity = Entity.objects.create(
+            entity_type=entity_type_2,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        # export specific entity type as csv
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
+        row_to_test = data[len(data) - 1]
+
+        expected_row = [
+            str(entity.id),
+            str(entity.uuid),
+            entity.entity_type.name,
+            entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+            instance.org_unit.name,
+            str(instance.org_unit.id),
+            "",
+            "Jean",
+            "M.",
+            "Dupont",
+        ]
+        self.assertEqual(row_to_test, expected_row)
+
     def test_handle_export_entity_type_empty_field_list(self):
         self.client.force_authenticate(self.yoda)
 

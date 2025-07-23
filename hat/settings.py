@@ -530,8 +530,8 @@ elif USE_AZURE_STORAGE:
         MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
     else:
         # Use Azure Blob Storage URLs
-        STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/static/"
-        MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/media/"
+        STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/static/"
+        MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/media/"
 
     # Storage backends
     STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"

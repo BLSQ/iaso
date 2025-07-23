@@ -248,7 +248,7 @@ const InstancesFiltersComponent = ({
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
-    const isSearchDisabled =
+    const hasNoChangesToSearch =
         !isInstancesFilterUpdated ||
         periodError ||
         startPeriodError ||
@@ -566,8 +566,10 @@ const InstancesFiltersComponent = ({
                         <Button
                             disabled={
                                 textSearchError ||
+                                // Disable search button if a search is already active AND there are no new changes to search for
+                                // This prevents unnecessary duplicate searches when filters haven't changed
                                 (params?.isSearchActive === 'true' &&
-                                    isSearchDisabled)
+                                    hasNoChangesToSearch)
                             }
                             variant="contained"
                             className={classes.button}

@@ -82,7 +82,9 @@ classDiagram
         change_subcription_plan(subscription, new_plan, payment_id, payment_provider) None
         cancel_subscription(subscription) None
     }
-    note for SubscriptionTracker "update_submission_metrics() could log an error or trigger some kind of notification when limits are exceeded\n create one SubscriptionTracker for all existing accounts + create a LEGACY plan?\n if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
+    note for SubscriptionTracker "update_submission_metrics() could log an error or trigger some kind of notification when limits are exceeded
+    create one SubscriptionTracker for all existing accounts + create a LEGACY plan?
+    if at some point a plan does not last 1 year, renew_subscription() should receive start and end date"
     
     Account "1" *-- "1" SubscriptionTracker
     

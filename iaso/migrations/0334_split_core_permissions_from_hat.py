@@ -10,7 +10,7 @@ def migrate_permissions(apps, schema_editor):
 
     # Get content types
     old_ct = ContentType.objects.get(app_label="menupermissions", model="custompermissionsupport")
-    new_ct = ContentType.objects.get(app_label="iaso", model="corepermissionsupport")
+    new_ct, _ = ContentType.objects.get_or_create(app_label="iaso", model="corepermissionsupport")
     print(f"Found content types - Old: {old_ct}, New: {new_ct}")
 
     # Map old permission codenames to new ones

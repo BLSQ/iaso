@@ -132,11 +132,12 @@ const InstancesFiltersComponent = ({
         queryBuilderListToReplace,
     );
     const handleSearch = useCallback(() => {
-        if (isInstancesFilterUpdated) {
+        if (isInstancesFilterUpdated || params?.isSearchActive !== 'true') {
             setIsInstancesFilterUpdated(false);
             const searchParams = {
                 ...params,
                 ...getInstancesFilterValues(formState),
+                isSearchActive: 'true',
                 page: 1,
             };
             // removing columns params to refetch correct columns
@@ -247,7 +248,7 @@ const InstancesFiltersComponent = ({
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
-    const isSearchDisabled =
+    const hasNoChangesToSearch =
         !isInstancesFilterUpdated ||
         periodError ||
         startPeriodError ||
@@ -563,7 +564,13 @@ const InstancesFiltersComponent = ({
                             </Box>
                         )}
                         <Button
-                            disabled={textSearchError || isSearchDisabled}
+                            disabled={
+                                textSearchError ||
+                                // Disable search button if a search is already active AND there are no new changes to search for
+                                // This prevents unnecessary duplicate searches when filters haven't changed
+                                (params?.isSearchActive === 'true' &&
+                                    hasNoChangesToSearch)
+                            }
                             variant="contained"
                             className={classes.button}
                             color="primary"

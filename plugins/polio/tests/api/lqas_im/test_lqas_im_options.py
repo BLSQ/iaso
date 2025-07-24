@@ -194,7 +194,7 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 0)
 
-    def test_ignore_countries_with_only_test_campaigns(self):
+    def test_ignore_countries_with_no_active_polio_campaigns(self):
         test_campaign, test_rnd1, test_rnd2, test_rnd3, cameroon, north_east = self.create_campaign(
             "Test Campaign",
             self.account,
@@ -204,14 +204,16 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
             "CAMEROON",
             "NORTH EAST",
         )
+        test_campaign.campaign_types.add(self.polio_type)
+        test_campaign.refresh_from_db()
+
         test_rnd2.lqas_ended_at = self.rdc_round_2.lqas_ended_at
         test_rnd2.save()
         test_rnd3.lqas_ended_at = self.rdc_round_3.lqas_ended_at
         test_rnd3.save()
-        test_campaign.campaign_types.add(self.polio_type)
-        test_campaign.refresh_from_db()
-        self.client.force_authenticate(self.user)
 
+        self.client.force_authenticate(self.user)
+        # Return test campaign if active
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -225,9 +227,39 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
 
         test_campaign.is_test = True
         test_campaign.save()
-        test_campaign.refresh_from_db()
 
-        #  test when lqas end = last day of month
+        #  Ignore test campaign
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 1)
+        result = results[0]
+        self.assertNotEqual(result["label"], cameroon.name)
+        self.assertNotEqual(result["value"], cameroon.id)
+        self.assertEqual(result["label"], self.rdc.name)
+        self.assertEqual(result["value"], self.rdc.id)
+
+        test_campaign.is_test = False
+        test_campaign.on_hold = True
+        test_campaign.save()
+
+        #  ingnore campaign on hold
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 1)
+        result = results[0]
+        self.assertNotEqual(result["label"], cameroon.name)
+        self.assertNotEqual(result["value"], cameroon.id)
+        self.assertEqual(result["label"], self.rdc.name)
+        self.assertEqual(result["value"], self.rdc.id)
+
+        test_campaign.on_hold = False
+        test_campaign.save()
+        test_rnd3.on_hold = True
+        test_rnd3.save()
+
+        #  ingnore if round for selected period is on hold
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -331,8 +363,9 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 0)
 
-    def test_filter_out_test_campaigns(self):
-        test_campaign, _, _, _, _, _ = self.create_campaign(
+    def test_only_return_active_polio_campaigns(self):
+        self.client.force_authenticate(self.user)
+        test_campaign, _, _, test_rnd3, _, _ = self.create_campaign(
             "test_campaign",
             self.account,
             self.source_version_1,
@@ -344,7 +377,7 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         test_campaign.campaign_types.add(self.polio_type)
         test_campaign.refresh_from_db()
 
-        self.client.force_authenticate(self.user)
+        # Normal case, return test campaign        self.client.force_authenticate(self.user)
         response = self.client.get(self.endpoint)
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -352,8 +385,47 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
         campaign_ids = [result["value"] for result in results]
         self.assertTrue(str(test_campaign.id) in campaign_ids)
 
+        # exclude test campaign
         test_campaign.is_test = True
         test_campaign.save()
+        response = self.client.get(self.endpoint)
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        campaign_ids = [result["value"] for result in results]
+        self.assertFalse(str(test_campaign.id) in campaign_ids)
+
+        # exclude test campaign on hold
+        test_campaign.is_test = False
+        test_campaign.on_hold = True
+        test_campaign.save()
+        response = self.client.get(self.endpoint)
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        campaign_ids = [result["value"] for result in results]
+        self.assertFalse(str(test_campaign.id) in campaign_ids)
+
+        # # exclude test campaign if relevant round is on hold
+        test_campaign.is_test = False
+        test_campaign.on_hold = False
+        test_campaign.save()
+        test_rnd3.lqas_ended_at = self.rdc_round_3.lqas_ended_at
+        test_rnd3.on_hold = True
+        test_rnd3.save()
+        response = self.client.get(f"{self.endpoint}?month=04-2021")
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(
+            len(results), 1
+        )  # One result less because we filtered on date to target the round specifically
+        campaign_ids = [result["value"] for result in results]
+
+        # exclude test campaign if not polio type
+        test_campaign.is_test = False
+        test_campaign.on_hold = False
+        test_campaign.save()
+        test_campaign.campaign_types.set([self.measles_type])
         response = self.client.get(self.endpoint)
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -512,13 +584,53 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 6)  # 2 campaigns * 3 rounds
 
-    def filter_by_campaign(self):
+    def test_filter_by_campaign(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.endpoint}?campaign_id={self.rdc_campaign.id}")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
+        self.assertEqual(len(results), 3)
+        round_numbers = [result["value"] for result in results]
+        self.assertTrue(str(self.rdc_round_1.number) in round_numbers)
+        self.assertTrue(str(self.rdc_round_2.number) in round_numbers)
+        self.assertTrue(str(self.rdc_round_3.number) in round_numbers)
+
+    def test_filter_out_rounds_on_hold(self):
+        self.client.force_authenticate(self.user)
+        test_campaign, _, test_rnd2, _, _, _ = self.create_campaign(
+            "test_campaign",
+            self.account,
+            self.source_version_1,
+            self.ou_type_country,
+            self.ou_type_district,
+            "RDC1",
+            "BAS UELE",
+        )
+        test_campaign.campaign_types.add(self.polio_type)
+        test_campaign.refresh_from_db()
+        test_rnd2.lqas_ended_at = self.rdc_round_3.lqas_ended_at
+        test_rnd2.save()
+
+        # return test round 3
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
+        self.assertEqual(len(results), 2)
+        round_numbers = [result["value"] for result in results]
+        self.assertTrue(str(test_rnd2.number) in round_numbers)
+        self.assertTrue(str(self.rdc_round_3.number) in round_numbers)
+
+        # exclude test round 3 if on hold
+
+        test_rnd2.on_hold = True
+        test_rnd2.save()
+        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
+        json_response = self.assertJSONResponse(response, 200)
+        results = json_response["results"]
         self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["value"], str(self.rdc_campaign.id))
+        round_numbers = [result["value"] for result in results]
+        self.assertFalse(str(test_rnd2.number) in round_numbers)
+        self.assertTrue(str(self.rdc_round_3.number) in round_numbers)
 
     def test_return_rounds_with_lqasend_date_within_month_param(self):
         self.client.force_authenticate(self.user)

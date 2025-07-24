@@ -58,6 +58,7 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
         countries_with_lqas = (
             Round.objects.filter(campaign__country__in=queryset)
             .filter(campaign__is_test=False)
+            .filter(campaign__on_hold=False)
             .filter(on_hold=False)
             .filter(with_lqas_end_date | without_lqas_end_date)
             .values_list("campaign__country__id")

@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { Chip } from '@mui/material';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@mui/icons-material';
-import MESSAGES from './messages';
+import { Chip } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { userHasAccessToModule } from '../users/utils.js';
+import MESSAGES from './messages';
 
 /**
  * get the first defaultSource and defaultVersion of an user account
@@ -265,7 +266,13 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     };
 
     const fields = [];
-
+    const hasDhis2Module = userHasAccessToModule(
+        'DHIS2_MAPPING',
+        useCurrentUser(),
+    );
+    if (!hasDhis2Module) {
+        delete dataSource?.url;
+    }
     Object.entries(dataSource).forEach(([key, source]) => {
         const label = formatMessage(MESSAGES[translations[key]]);
         if (keys.includes(key)) {

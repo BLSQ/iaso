@@ -1,8 +1,8 @@
+import React, { FunctionComponent, useState } from 'react';
 import { Download } from '@mui/icons-material';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { Menu, MenuItem } from '@mui/material';
 import { IconButton } from 'bluesquare-components';
-import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
@@ -36,7 +36,7 @@ export const FormActions: FunctionComponent<Props> = ({
         setAnchorEl(null);
     };
     // Url to instances
-    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
+    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}/isSearchActive/true`;
     if (orgUnitId) {
         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
     }

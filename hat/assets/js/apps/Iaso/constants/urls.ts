@@ -62,6 +62,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
+            'showInstancesCount',
+            'isSearchActive',
             ...paginationPathParams,
         ],
     },
@@ -108,6 +110,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateFrom',
             'sentDateTo',
             'projectIds',
+            'isSearchActive',
         ],
     },
     instanceDetail: {

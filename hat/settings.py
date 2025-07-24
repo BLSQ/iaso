@@ -499,13 +499,14 @@ elif USE_AZURE_STORAGE:
     # - AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
     # - STATIC_URL: CDN URL for static files (optional, overrides Azure URLs)
     #
-    # Storage containers will be created automatically:
-    # - "static": For static files (JS, CSS, images)
-    # - "media": For user-uploaded files
+    # Storage container and folder structure:
+    # - Single container: "iaso" (or AZURE_CONTAINER_NAME)
+    # - Static files: stored in "static/" folder within the container
+    # - Media files: stored in "media/" folder within the container
     #
     # URL patterns:
     # - With custom domain: https://yourdomain.com/static/ and https://yourdomain.com/media/
-    # - Without custom domain: https://account.blob.core.windows.net/static/ and https://account.blob.core.windows.net/media/
+    # - Without custom domain: https://account.blob.core.windows.net/iaso/static/ and https://account.blob.core.windows.net/iaso/media/
     # - With CDN: Uses STATIC_URL environment variable
 
     AZURE_STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
@@ -529,7 +530,7 @@ elif USE_AZURE_STORAGE:
         STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/static/"
         MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
     else:
-        # Use Azure Blob Storage URLs
+        # Use Azure Blob Storage URLs (single container with folders)
         STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/static/"
         MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/media/"
 

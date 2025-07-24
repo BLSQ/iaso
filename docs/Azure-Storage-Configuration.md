@@ -40,11 +40,14 @@ AZURE_CUSTOM_DOMAIN=static.yourdomain.com
 STATIC_URL=https://your-cdn.com/static/
 ```
 
-## Storage Containers
+## Storage Container Structure
 
-The system will automatically use two containers:
-- **`static`**: For static files (JS, CSS, images)
-- **`media`**: For user-uploaded files
+The system uses a single container with folder organization:
+- **Container**: `iaso` (or `AZURE_CONTAINER_NAME`)
+- **`static/` folder**: For static files (JS, CSS, images)
+- **`media/` folder**: For user-uploaded files
+
+This approach is more efficient and follows Azure Storage best practices.
 
 ## URL Patterns
 
@@ -58,8 +61,8 @@ Media files: https://yourdomain.com/media/
 
 ### Without Custom Domain
 ```
-Static files: https://your_storage_account.blob.core.windows.net/static/
-Media files: https://your_storage_account.blob.core.windows.net/media/
+Static files: https://your_storage_account.blob.core.windows.net/iaso/static/
+Media files: https://your_storage_account.blob.core.windows.net/iaso/media/
 ```
 
 ### With CDN
@@ -76,15 +79,16 @@ Media files: https://your_storage_account.blob.core.windows.net/media/
 2. Create a new Storage Account
 3. Note down the account name and access key
 
-### 2. Create Containers
+### 2. Create Container
 
-The containers will be created automatically when first accessed, but you can create them manually:
+The container will be created automatically when first accessed, but you can create it manually:
 
 ```bash
 # Using Azure CLI
-az storage container create --name static --account-name your_account_name
-az storage container create --name media --account-name your_account_name
+az storage container create --name iaso --account-name your_account_name
 ```
+
+The `static/` and `media/` folders will be created automatically when files are uploaded.
 
 ### 3. Configure Environment Variables
 
@@ -122,7 +126,7 @@ If you're migrating from AWS S3 to Azure Storage:
 ### Common Issues
 
 1. **Authentication Errors**: Verify your account name and key are correct
-2. **Container Not Found**: Containers are created automatically, but ensure your account has proper permissions
+2. **Container Not Found**: The container is created automatically, but ensure your account has proper permissions
 3. **CORS Issues**: Configure CORS settings in Azure Storage if accessing from web browsers
 
 ### CORS Configuration

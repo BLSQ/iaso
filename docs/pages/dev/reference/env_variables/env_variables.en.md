@@ -41,7 +41,7 @@ AWS_S3_ENDPOINT_URL: (used to for ex to point to minio)
 
 ### Azure Blob Storage
 
-Alternative cloud storage option using Azure Blob Storage:
+Alternative cloud storage option using Azure Blob Storage with a single container and folder structure:
 
 ```
 USE_AZURE_STORAGE=true
@@ -51,6 +51,11 @@ AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
 AZURE_CONTAINER_NAME: Container name (default: "iaso")
 AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
 ```
+
+**Container Structure:**
+- Single container: `iaso` (or `AZURE_CONTAINER_NAME`)
+- Static files: stored in `static/` folder
+- Media files: stored in `media/` folder
 
 For detailed Azure Storage configuration, see [Azure Storage Configuration](../azure-storage-configuration.md).
 

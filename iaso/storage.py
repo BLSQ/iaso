@@ -8,11 +8,13 @@ class StaticStorage(S3Boto3Storage):
 
 
 class AzureStaticStorage(AzureStorage):
-    azure_container = "static"
+    azure_container = "iaso"
+    location = "static"
     expiration_secs = None
     default_acl = "public-read"
 
 
 class AzureMediaStorage(AzureStorage):
-    azure_container = "media"
+    azure_container = "iaso"
+    location = "media"
     expiration_secs = None

@@ -22,13 +22,21 @@ def run_deduplication_algo(algo_name=None, algo_params=None, task=None):
     else:
         raise ValueError(f"Unknown algorithm {algo_name}")
 
+    # Map requested `fields` to `EntityType.reference_form.possible_fields`.
+    #
+    # ['Prenom', 'Nom', 'age__int__']
+    # =>
+    # [
+    #     {'name': 'Prenom', 'type': 'text', 'label': "{'English': 'Prenom'}"},
+    #     {'name': 'Nom', 'type': 'text', 'label': "{'English': 'Nom'}"},
+    #     {'name': 'age__int__', 'type': 'calculate', 'label': "{'English': 'Age (Months)'}"},
+    # ]
     possible_fields = EntityType.objects.values_list("reference_form__possible_fields", flat=True).get(
         id=algo_params["entity_type_id"]
     )
+    reference_form_fields = [find_question_by_name(field, possible_fields) for field in algo_params.get("fields", [])]
 
-    updated_fields = [find_question_by_name(field, possible_fields) for field in algo_params.get("fields", [])]
-
-    algo_params["fields"] = updated_fields
+    algo_params["fields"] = reference_form_fields
 
     algo.run(algo_params, task)
 

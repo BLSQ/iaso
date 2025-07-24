@@ -2,6 +2,7 @@ import datetime
 
 from iaso.test import APITestCase
 from plugins.polio.models import Round
+from plugins.polio.models.base import CampaignType
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -37,6 +38,8 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
         cls.district_type2 = cls.create_org_unit_type(
             name="OTHER_DISTRICT", projects=[cls.another_project], category="DISTRICT"
         )
+        cls.polio_type, _ = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        cls.measles_type, _ = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
 
         cls.rdc_obr_name = "DRC-DS-XXXX-TEST"
         # RDC, campaign with "default" settings
@@ -48,7 +51,9 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
             cls.ou_type_district,
             "RDC",
             "KATANGA",
+            cls.polio_type,
         )
+        cls.rdc_campaign.campaign_types.add(cls.polio_type)
         cls.rdc_round_2.lqas_ended_at = datetime.date(2021, 2, 28)  # check last day of month
         cls.rdc_round_2.save()
         cls.rdc_round_3.lqas_ended_at = datetime.date(2021, 4, 1)  # check first day of month
@@ -66,6 +71,8 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
                 "KANDI",
             )
         )
+        cls.benin_campaign.campaign_types.add(cls.polio_type)
+        cls.benin_campaign.save()
         # set the round 1 date 10 days before dec 31, no lqas end date
         cls.benin_round_1.ended_at = datetime.date(2020, 12, 21)
         cls.benin_round_1.save()
@@ -91,6 +98,12 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
                 "MUMBAI",
             )
         )
+        cls.emro_campaign.campaign_types.add(cls.polio_type)
+        cls.emro_campaign.save()
+
+        cls.rdc_campaign.refresh_from_db()
+        cls.benin_campaign.refresh_from_db()
+        cls.emro_campaign.refresh_from_db()
 
     def test_get_without_auth(self):
         if not self.endpoint:
@@ -195,7 +208,8 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
         test_rnd2.save()
         test_rnd3.lqas_ended_at = self.rdc_round_3.lqas_ended_at
         test_rnd3.save()
-
+        test_campaign.campaign_types.add(self.polio_type)
+        test_campaign.refresh_from_db()
         self.client.force_authenticate(self.user)
 
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
@@ -211,6 +225,7 @@ class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
 
         test_campaign.is_test = True
         test_campaign.save()
+        test_campaign.refresh_from_db()
 
         #  test when lqas end = last day of month
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
@@ -326,6 +341,8 @@ class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
             "RDC1",
             "BAS UELE",
         )
+        test_campaign.campaign_types.add(self.polio_type)
+        test_campaign.refresh_from_db()
 
         self.client.force_authenticate(self.user)
         response = self.client.get(self.endpoint)

@@ -1,33 +1,31 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
 
+import Add from '@mui/icons-material/Add';
+import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
 
+import { baseUrls } from 'Iaso/constants/urls';
+import * as Permission from 'Iaso/utils/permissions';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
 
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { baseUrl } from '../config';
+import { Params } from '../index';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-    showDeleted?: string;
-    planning?: string;
-    projectsIds?: string;
-};
 
 type Props = {
     params: Params;
@@ -36,18 +34,27 @@ type Props = {
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const redirectTo = useRedirectTo();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+        useFilterState({
+            baseUrl,
+            params,
+            withPagination: false,
+            searchActive: 'isSearchActive',
+            searchAlwaysEnabled: true,
+        });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
-    const [showDeleted, setShowDeleted] = useState<boolean>(
-        filters.showDeleted === 'true',
-    );
     const handleShowDeleted = useCallback(
         (key, value) => {
-            // converting false to undefined to be able to compute `filtersUpdated` correctly
-            const valueForParam = value || undefined;
+            const valueForParam = value ? 'true' : undefined;
             handleChange(key, valueForParam);
-            setShowDeleted(value);
+        },
+        [handleChange],
+    );
+    const handleShowInstancesCount = useCallback(
+        (key, value) => {
+            const valueForParam = value ? 'true' : undefined;
+            handleChange(key, valueForParam);
         },
         [handleChange],
     );
@@ -60,6 +67,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
+    const handleAddForm = useCallback(() => {
+        redirectTo(baseUrls.formDetail, {
+            formId: '0',
+        });
+    }, [redirectTo]);
     return (
         <Grid container>
             <Grid container item xs={12} spacing={2}>
@@ -119,27 +131,52 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     <InputComponent
                         keyValue="showDeleted"
                         onChange={handleShowDeleted}
-                        value={showDeleted}
+                        value={filters.showDeleted === 'true'}
                         type="checkbox"
                         label={MESSAGES.showDeleted}
                     />
                 </Grid>
-                <Grid item xs={12} md={9}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="showInstancesCount"
+                        onChange={handleShowInstancesCount}
+                        value={filters.showInstancesCount === 'true'}
+                        type="checkbox"
+                        label={MESSAGES.showInstancesCount}
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
                     <Box
                         mt={isLargeLayout ? 3 : 0}
                         display="flex"
                         justifyContent="flex-end"
                     >
+                        <DisplayIfUserHasPerm permissions={[Permission.FORMS]}>
+                            <Button
+                                variant="outlined"
+                                className={classes.button}
+                                color="primary"
+                                onClick={handleAddForm}
+                                data-test="add-form-button"
+                                sx={{
+                                    mr: 2,
+                                }}
+                            >
+                                <Add className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.addForm)}
+                            </Button>
+                        </DisplayIfUserHasPerm>
                         <Button
                             data-test="search-button"
                             disabled={
-                                (!showDeleted && !filtersUpdated) ||
+                                (!filtersUpdated &&
+                                    params?.isSearchActive === 'true') ||
                                 textSearchError
                             }
                             variant="contained"
                             className={classes.button}
                             color="primary"
-                            onClick={() => handleSearch()}
+                            onClick={handleSearch}
                         >
                             <SearchIcon className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}

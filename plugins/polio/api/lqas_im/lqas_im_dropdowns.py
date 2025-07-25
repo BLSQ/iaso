@@ -57,6 +57,7 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
         )
         countries_with_lqas = (
             Round.objects.filter(campaign__country__in=queryset)
+            .filter(campaign__is_test=False)
             .filter(with_lqas_end_date | without_lqas_end_date)
             .values_list("campaign__country__id")
         )
@@ -133,7 +134,8 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        # Sometimes filter_for_user will return duplicate campaigns but fixing this at the queryset manager level introduces a whole loit of new bugs
+        campaigns = Campaign.objects.filter_for_user(user).filter(is_test=False).distinct("obr_name")
         return campaigns
 
 

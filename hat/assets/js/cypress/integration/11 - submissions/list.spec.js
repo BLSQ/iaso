@@ -157,6 +157,8 @@ const getActionCol = (index = 0) => {
 describe('Submissions', () => {
     it('Api should be called with base params', () => {
         goToPage(superUser, {}, emptyFixture);
+
+        cy.get('[data-test="search-button"]').click();
         cy.wait('@getSubmissions').then(() => {
             cy.wrap(interceptFlag).should('eq', true);
         });
@@ -177,6 +179,8 @@ describe('Submissions', () => {
         cy.intercept('GET', '/api/orgunits/3/', {
             fixture: 'orgunits/details.json',
         });
+
+        cy.get('[data-test="search-button"]').click();
         cy.wait(['@getSubmissions', '@getOrgunittypes']).then(() => {
             interceptFlag = false;
             cy.intercept(
@@ -224,8 +228,7 @@ describe('Submissions', () => {
             beforeEach(() => {
                 goToPage();
             });
-
-            testSearchField(search, searchWithForbiddenChars);
+            testSearchField(search, searchWithForbiddenChars, 'instances');
         });
     });
     describe('Table', () => {
@@ -243,15 +246,17 @@ describe('Submissions', () => {
             columns: 9,
             withVisit: false,
             apiKey: 'instances',
+            searchButton: '[data-test="search-button"]',
         });
         testPagination({
             baseUrl,
             apiPath: '/api/instances/**',
             apiKey: 'instances',
-            withSearch: false,
+            withSearch: true,
             fixture: listFixture,
         });
         it('should render correct row infos', () => {
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getSubmissions').then(() => {
                 testRowContent(0);
                 testRowContent(1);
@@ -260,6 +265,7 @@ describe('Submissions', () => {
 
         describe('Action columns', () => {
             it('should display correct amount of buttons', () => {
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getSubmissions').then(() => {
                     getActionCol(7);
                     cy.get('@actionCol')
@@ -269,6 +275,7 @@ describe('Submissions', () => {
             });
             // This test is flakey
             it('buttons should link to submission', () => {
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getSubmissions').then(() => {
                     getActionCol(7);
                     cy.get('@actionCol')
@@ -283,6 +290,7 @@ describe('Submissions', () => {
                 });
             });
             it('form name should link to submission link', () => {
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getSubmissions').then(() => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(1);
@@ -298,6 +306,7 @@ describe('Submissions', () => {
             });
         });
         it('sort should deep link and call api with correct params', () => {
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getSubmissions').then(() => {
                 const sorts = [
                     {
@@ -346,6 +355,7 @@ describe('Submissions', () => {
             fixture: 'profiles/ids/69-999.json',
         });
         goToPage();
+        cy.get('[data-test="search-button"]').click();
         cy.wait('@getSubmissions').then(() => {
             interceptFlag = false;
             cy.intercept(
@@ -406,6 +416,7 @@ describe('Submissions', () => {
 
     it('period picker should correctly deep link changes and call api with correct params', () => {
         goToPage();
+        cy.get('[data-test="search-button"]').click();
         const fillPeriodPicker = (id, optionId, defaultValueIndex = 0) => {
             cy.get(id).as('multiSelect');
             cy.get('@multiSelect').click();
@@ -473,6 +484,8 @@ describe('Submissions', () => {
 
     it('advanced settings should filter correctly', () => {
         goToPage();
+
+        cy.get('[data-test="search-button"]').click();
         cy.get('[data-test="advanced-settings"]').click({ force: true });
         cy.get('[data-test="modificationDate"]').find(
             '[data-test="start-date"]',
@@ -556,6 +569,8 @@ describe('Submissions', () => {
             listFixture,
             `${siteBaseUrl}/dashboard/forms/submissions/formIds/1/tab/list/mapResults/3000`,
         );
+
+        cy.get('[data-test="search-button"]').click();
         cy.wait('@getSubmissions').then(() => {
             cy.get('#ColumnsSelectDrawer-toggleDrawer').click();
             cy.get('#ColumnsSelectDrawer-list')

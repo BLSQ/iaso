@@ -94,7 +94,11 @@ const getActionsColWidth = user => {
     return width;
 };
 
-export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
+export const useFormsTableColumns = ({
+    orgUnitId,
+    showDeleted,
+    showInstancesCount,
+}) => {
     const user = useCurrentUser();
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
 
@@ -137,10 +141,6 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                         .join(', '),
             },
             {
-                Header: formatMessage(MESSAGES.records),
-                accessor: 'instances_count',
-            },
-            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
@@ -159,6 +159,12 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                 },
             },
         ];
+        if (showInstancesCount) {
+            cols.splice(6, 0, {
+                Header: formatMessage(MESSAGES.records),
+                accessor: 'instances_count',
+            });
+        }
         if (showDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
@@ -167,7 +173,14 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
             });
         }
         return cols;
-    }, [formatMessage, hasDhis2Module, orgUnitId, showDeleted, user]);
+    }, [
+        formatMessage,
+        hasDhis2Module,
+        orgUnitId,
+        showDeleted,
+        user,
+        showInstancesCount,
+    ]);
 };
 
 export const requiredFields = [

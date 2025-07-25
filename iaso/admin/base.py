@@ -820,6 +820,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    raw_id_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):

@@ -48,7 +48,7 @@ def enable_capture_queries(executed_queries=[]):
     return executed_queries
 
 
-def dump_executed_queries(executed_queries, threshold_duration=0.4, auto_explain=False):
+def dump_executed_queries(executed_queries, threshold_duration=0.4, auto_explain=False, full_stack=False):
     for i, q in enumerate(executed_queries):
         if q["duration"] > threshold_duration:
             print(f"\n--- SQL #{i + 1} ---")
@@ -56,8 +56,12 @@ def dump_executed_queries(executed_queries, threshold_duration=0.4, auto_explain
             print(q["sql"])
             print("Traceback:")
             for line in q["stack"].splitlines():
-                # production or docker place for "our" code
-                if "/var/app/current/" in line or "/opt/app/iaso" in line:
+                if full_stack:
+                    print(line)
+                elif (
+                    "/var/app/current/" in line or "/opt/app/iaso" in line
+                ) and "iaso/management/commands/explain_request.py" not in line:
+                    # production or docker place for "our" code
                     print(line)
 
             if auto_explain and q["sql"].strip().lower().startswith("select"):
@@ -160,6 +164,7 @@ class Command(BaseCommand):
 
         parser.add_argument("--explain", type=bool, help="launch explain plan if sql is logged", default=True)
         parser.add_argument("--print-response", type=bool, help="print the response json/text", default=False)
+        parser.add_argument("--full-stack", type=bool, help="print the full stack of originating sql", default=False)
 
     def log(self, *args):
         print(*args)
@@ -170,6 +175,8 @@ class Command(BaseCommand):
         threshold_duration = options.get("threshold_duration")
         auto_explain = options.get("explain")
         print_response = options.get("print_response")
+
+        full_stack = options.get("full_stack")
 
         executed_queries = enable_capture_queries(executed_queries=[])
 
@@ -198,7 +205,9 @@ class Command(BaseCommand):
 
         duration = time.perf_counter() - start
 
-        dump_executed_queries(executed_queries, threshold_duration=threshold_duration, auto_explain=auto_explain)
+        dump_executed_queries(
+            executed_queries, threshold_duration=threshold_duration, auto_explain=auto_explain, full_stack=full_stack
+        )
         self.log(f"Headers: {response.headers}")
         self.log(f"Status: {response.status_code}")
 

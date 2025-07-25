@@ -461,6 +461,19 @@ class DefaultGroupManager(models.Manager):
         return queryset
 
 
+class AllGroupManager(models.Manager):
+    def filter_for_user(self, user: User):
+        profile = user.iaso_profile
+        queryset = self
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=profile.account)
+            .values_list("id", flat=True)
+            .distinct()
+        )
+        queryset = queryset.filter(source_version_id__in=version_ids)
+        return queryset
+
+
 class DomainGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(domain__isnull=False)
@@ -485,7 +498,7 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultGroupManager()
-    all_objects = models.Manager()
+    all_objects = AllGroupManager()
     domain_objects = DomainGroupManager()
 
     class Meta:

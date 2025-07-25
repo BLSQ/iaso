@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-08 09:46+0000\n"
+"POT-Creation-Date: 2025-07-16 15:51+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -19,172 +19,25 @@ msgstr ""
 "X-Generator: Poedit 3.5\n"
 
 #: hat/menupermissions/models.py
-msgid "Formulaires"
-msgstr "Formulaires"
+msgid "Plannings"
+msgstr "Planifications"
+
+#: hat/templates/iaso/forgot_password.html
+#: hat/templates/iaso/reset_password_confirmation.html
+msgid "Submit"
+msgstr "Envoyer"
 
 #: hat/menupermissions/models.py
-msgid "Statistiques pour les formulaires"
-msgstr "Statistiques pour les formulaires"
+msgid "Devices"
+msgstr "Appareils"
 
-#: hat/menupermissions/models.py
-msgid "Correspondances avec DHIS2"
-msgstr "Correspondances avec DHIS2"
+#: hat/templates/iaso/login.html
+msgid "Please login to see this page."
+msgstr "Veuillez vous connecter pour voir cette page."
 
-#: hat/menupermissions/models.py
-msgid "modules"
-msgstr "modules"
-
-#: hat/menupermissions/models.py
-msgid "Complétude des données"
-msgstr "Complétude des données"
-
-#: hat/menupermissions/models.py
-msgid "Unités d'organisations"
-msgstr "Unités d'organisations"
-
-#: hat/menupermissions/models.py
-msgid "Historique des unités d'organisation"
-msgstr "Historique des unités d'organisation"
-
-#: hat/menupermissions/models.py
-msgid "Lire les unités d'organisations"
-msgstr "Lire les unités d'organisations"
-
-#: hat/menupermissions/models.py
-msgid "Editer le Registre"
-msgstr "Editer le Registre"
-
-#: hat/menupermissions/models.py
-msgid "Lire le Registre"
-msgstr "Lire le Registre"
-
-#: hat/menupermissions/models.py
-msgid "Correspondances sources"
-msgstr "Correspondances sources"
-
-#: hat/menupermissions/models.py
-msgid "Users"
-msgstr "Utilisateurs"
-
-#: hat/menupermissions/models.py
-msgid "Users managed"
-msgstr "Utilisateurs gérés"
-
-#: hat/menupermissions/models.py
-msgid "Pages"
-msgstr "Pages"
-
-#: hat/menupermissions/models.py
-msgid "Projets"
-msgstr "Projets"
-
-#: hat/menupermissions/models.py
-msgid "Sources"
-msgstr "Sources"
-
-#: hat/menupermissions/models.py
-msgid "Can change the default version of a data source"
-msgstr "Peut modifier la version par défaut d'une source de données"
-
-#: hat/menupermissions/models.py
-msgid "Tâches"
-msgstr "Tâches"
-
-#: hat/menupermissions/models.py
-msgid "Soumissions"
-msgstr "Soumissions"
-
-#: hat/menupermissions/models.py
-msgid "Editer soumissions"
-msgstr "Editer soumissions"
-
-#: hat/menupermissions/models.py
-msgid "Editer le planning"
-msgstr "Editer le planning"
-
-#: hat/menupermissions/models.py
-msgid "Lire le planning"
-msgstr "Lire le planning"
-
-#: hat/menupermissions/models.py
-msgid "Reports"
-msgstr "Rapports"
-
-#: hat/menupermissions/models.py
-msgid "Equipes"
-msgstr "Equipes"
-
-#: hat/menupermissions/models.py
-msgid "Attributions"
-msgstr "Attributions"
-
-#: hat/menupermissions/models.py
-msgid "Entities"
-msgstr "Entités"
-
-#: hat/menupermissions/models.py
-msgid "Write entity type"
-msgstr "Écrire type d'entité"
-
-#: hat/menupermissions/models.py
-msgid "Storages"
-msgstr "Stockages"
-
-#: hat/menupermissions/models.py
-msgid "Completeness stats"
-msgstr "Statistiques de complétude"
-
-#: hat/menupermissions/models.py
-msgid "Workflows"
-msgstr "Flux de travail"
-
-#: hat/menupermissions/models.py
-msgid "Read Entity duplicates"
-msgstr "Lire les doublons d'entités"
-
-#: hat/menupermissions/models.py
-msgid "Write Entity duplicates"
-msgstr "Écrire les doublons d'entités"
-
-#: hat/menupermissions/models.py
-msgid "Manage user roles"
-msgstr "Gérer les rôles utilisateurs"
-
-#: hat/menupermissions/models.py
-msgid "Read data store"
-msgstr "Lire le stockage de données"
-
-#: hat/menupermissions/models.py
-msgid "Write data store"
-msgstr "Écrire dans le stockage de données"
-
-#: hat/menupermissions/models.py
-msgid "Org unit types"
-msgstr "Types d'unités d'organisation"
-
-#: hat/menupermissions/models.py
-msgid "Org unit groups"
-msgstr "Groupes d'unités d'organisation"
-
-#: hat/menupermissions/models.py
-msgid "Org unit change request review"
-msgstr "Révision des demandes de modification d'unités d'organisation"
-
-#: hat/menupermissions/models.py
-msgid "Org unit change request configurations"
-msgstr "Configurations des demandes de modification d'unités d'organisation"
-
-#: hat/menupermissions/models.py
-msgid "Write data source"
-msgstr "Écrire source de données"
-
-#: hat/menupermissions/models.py
-msgid "Write page"
-msgstr "Écrire page"
-
-#: hat/menupermissions/models.py
-msgid "Payments page"
-msgstr "Page des paiements"
+#: hat/templates/iaso/login.html
+msgid "Login"
+msgstr "Connexion"
 
 #: hat/menupermissions/models.py
 msgid "Areas"
@@ -209,10 +62,6 @@ msgstr "Analyse des cas"
 #: hat/menupermissions/models.py
 msgid "Coordinations"
 msgstr "Coordinations"
-
-#: hat/menupermissions/models.py
-msgid "Devices"
-msgstr "Appareils"
 
 #: hat/menupermissions/models.py
 msgid "Téléchargement de données"
@@ -255,10 +104,6 @@ msgid "Modifications"
 msgstr "Modifications"
 
 #: hat/menupermissions/models.py
-msgid "Plannings"
-msgstr "Planifications"
-
-#: hat/menupermissions/models.py
 msgid "Plannings template"
 msgstr "Modèle de planifications"
 
@@ -279,6 +124,10 @@ msgid "Graphs"
 msgstr "Graphiques"
 
 #: hat/menupermissions/models.py
+msgid "Reports"
+msgstr "Rapports"
+
+#: hat/menupermissions/models.py
 msgid "Upload of cases files"
 msgstr "Téléversement des fichiers de cas"
 
@@ -289,6 +138,10 @@ msgstr "Téléversement des fichiers de villages"
 #: hat/menupermissions/models.py
 msgid "Teams"
 msgstr "Équipes"
+
+#: hat/menupermissions/models.py
+msgid "Users"
+msgstr "Utilisateurs"
 
 #: hat/menupermissions/models.py
 msgid "Vector control"
@@ -327,11 +180,6 @@ msgid "English"
 msgstr "Anglais"
 
 #: hat/templates/iaso/forgot_password.html
-#: hat/templates/iaso/reset_password_confirmation.html
-msgid "Submit"
-msgstr "Envoyer"
-
-#: hat/templates/iaso/forgot_password.html
 #: hat/templates/iaso/forgot_password_confirmation.html
 msgid "Go back to login"
 msgstr "Retour à la connexion"
@@ -363,16 +211,8 @@ msgstr ""
 "          "
 
 #: hat/templates/iaso/login.html
-msgid "Please login to see this page."
-msgstr "Veuillez vous connecter pour voir cette page."
-
-#: hat/templates/iaso/login.html
 msgid "Your username and password didn't match. Please try again."
 msgstr "Nom d'utilisateur ou mot de passe incorrect."
-
-#: hat/templates/iaso/login.html
-msgid "Login"
-msgstr "Connexion"
 
 #: hat/templates/iaso/login.html
 msgid "Learn more"
@@ -454,6 +294,126 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Formulaires"
+#~ msgstr "Formulaires"
+
+#~ msgid "Statistiques pour les formulaires"
+#~ msgstr "Statistiques pour les formulaires"
+
+#~ msgid "Correspondances avec DHIS2"
+#~ msgstr "Correspondances avec DHIS2"
+
+#~ msgid "modules"
+#~ msgstr "modules"
+
+#~ msgid "Complétude des données"
+#~ msgstr "Complétude des données"
+
+#~ msgid "Unités d'organisations"
+#~ msgstr "Unités d'organisations"
+
+#~ msgid "Historique des unités d'organisation"
+#~ msgstr "Historique des unités d'organisation"
+
+#~ msgid "Lire les unités d'organisations"
+#~ msgstr "Lire les unités d'organisations"
+
+#~ msgid "Editer le Registre"
+#~ msgstr "Editer le Registre"
+
+#~ msgid "Lire le Registre"
+#~ msgstr "Lire le Registre"
+
+#~ msgid "Correspondances sources"
+#~ msgstr "Correspondances sources"
+
+#~ msgid "Users managed"
+#~ msgstr "Utilisateurs gérés"
+
+#~ msgid "Pages"
+#~ msgstr "Pages"
+
+#~ msgid "Projets"
+#~ msgstr "Projets"
+
+#~ msgid "Sources"
+#~ msgstr "Sources"
+
+#~ msgid "Can change the default version of a data source"
+#~ msgstr "Peut modifier la version par défaut d'une source de données"
+
+#~ msgid "Tâches"
+#~ msgstr "Tâches"
+
+#~ msgid "Soumissions"
+#~ msgstr "Soumissions"
+
+#~ msgid "Editer soumissions"
+#~ msgstr "Editer soumissions"
+
+#~ msgid "Editer le planning"
+#~ msgstr "Editer le planning"
+
+#~ msgid "Lire le planning"
+#~ msgstr "Lire le planning"
+
+#~ msgid "Equipes"
+#~ msgstr "Equipes"
+
+#~ msgid "Attributions"
+#~ msgstr "Attributions"
+
+#~ msgid "Entities"
+#~ msgstr "Entités"
+
+#~ msgid "Write entity type"
+#~ msgstr "Écrire type d'entité"
+
+#~ msgid "Storages"
+#~ msgstr "Stockages"
+
+#~ msgid "Completeness stats"
+#~ msgstr "Statistiques de complétude"
+
+#~ msgid "Workflows"
+#~ msgstr "Flux de travail"
+
+#~ msgid "Read Entity duplicates"
+#~ msgstr "Lire les doublons d'entités"
+
+#~ msgid "Write Entity duplicates"
+#~ msgstr "Écrire les doublons d'entités"
+
+#~ msgid "Manage user roles"
+#~ msgstr "Gérer les rôles utilisateurs"
+
+#~ msgid "Read data store"
+#~ msgstr "Lire le stockage de données"
+
+#~ msgid "Write data store"
+#~ msgstr "Écrire dans le stockage de données"
+
+#~ msgid "Org unit types"
+#~ msgstr "Types d'unités d'organisation"
+
+#~ msgid "Org unit groups"
+#~ msgstr "Groupes d'unités d'organisation"
+
+#~ msgid "Org unit change request review"
+#~ msgstr "Révision des demandes de modification d'unités d'organisation"
+
+#~ msgid "Org unit change request configurations"
+#~ msgstr "Configurations des demandes de modification d'unités d'organisation"
+
+#~ msgid "Write data source"
+#~ msgstr "Écrire source de données"
+
+#~ msgid "Write page"
+#~ msgstr "Écrire page"
+
+#~ msgid "Payments page"
+#~ msgstr "Page des paiements"
 
 #~ msgid "Polio"
 #~ msgstr "Polio"

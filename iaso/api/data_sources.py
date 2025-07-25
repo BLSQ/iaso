@@ -10,7 +10,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.models import DataSource, ExternalCredentials, OrgUnit
 
 from ..dhis2.url_helper import clean_url
@@ -127,7 +128,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
             source_version = get_object_or_404(data_source.versions, id=default_version_id)
 
             new_default_version: bool = data_source.default_version_id != source_version.id
-            if new_default_version and not request.user.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
+            if new_default_version and not request.user.has_perm(core_permissions.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
                 raise serializers.ValidationError(
                     "User doesn't have the permission to change the default version of a data source."
                 )
@@ -217,13 +218,13 @@ class DataSourcePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # see permission logic on view
         read_perms = (
-            permission.MAPPINGS,
-            permission.ORG_UNITS,
-            permission.ORG_UNITS_READ,
-            permission.LINKS,
-            permission.SOURCES,
+            core_permissions.MAPPINGS,
+            core_permissions.ORG_UNITS,
+            core_permissions.ORG_UNITS_READ,
+            core_permissions.LINKS,
+            core_permissions.SOURCES,
         )
-        write_perms = (permission.SOURCE_WRITE,)
+        write_perms = (core_permissions.SOURCE_WRITE,)
 
         if (
             request.method in permissions.SAFE_METHODS
@@ -247,9 +248,9 @@ class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 
     This API is restricted to authenticated users:
-    Read permission are restricted to user with at least one of the "{permission.SOURCES}",
-        "{permission.MAPPINGS}","{permission.ORG_UNITS}","{permission.ORG_UNITS_READ}" and "{permission.LINKS}" permissions
-    Write permission are restricted to user having the "{permission.SOURCES}" permissions.
+    Read permission are restricted to user with at least one of the "{core_permissions.SOURCES}",
+        "{core_permissions.MAPPINGS}","{core_permissions.ORG_UNITS}","{core_permissions.ORG_UNITS_READ}" and "{core_permissions.LINKS}" permissions
+    Write permission are restricted to user having the "{core_permissions.SOURCES}" permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>

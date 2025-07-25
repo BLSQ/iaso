@@ -11,9 +11,10 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
-from hat.menupermissions import models as permission
 from iaso.models import Form, Instance, OrgUnit
 from iaso.models.base import Profile
 from iaso.models.org_unit import OrgUnitChangeRequest
@@ -27,17 +28,17 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
         return (
-            user.has_perm(permission.SUBMISSIONS) or user.has_perm(permission.SUBMISSIONS_UPDATE)
+            user.has_perm(core_permissions.SUBMISSIONS) or user.has_perm(core_permissions.SUBMISSIONS_UPDATE)
         ) and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return forms.filter(id=obj.id).exists()
     if isinstance(obj, PaymentLot):
         payment_lots = PaymentLot.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
-        return payment_lots.filter(id=obj.id).exists() and user.has_perm(permission.PAYMENTS)
+        return payment_lots.filter(id=obj.id).exists() and user.has_perm(core_permissions.PAYMENTS)
     if isinstance(obj, Payment):
         payments = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
-        return payments.filter(id=obj.id).exists() and user.has_perm(permission.PAYMENTS)
+        return payments.filter(id=obj.id).exists() and user.has_perm(core_permissions.PAYMENTS)
     if isinstance(obj, OrgUnitChangeRequest):
         change_requests = OrgUnitChangeRequest.objects.filter(
             created_by__iaso_profile__account=user.iaso_profile.account
@@ -45,7 +46,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return change_requests.filter(id=obj.id).exists()
     if isinstance(obj, Profile):
         profiles = Profile.objects.filter(account=user.iaso_profile.account)
-        return profiles.filter(id=obj.id).exists() and user.has_perm(permission.USERS_ADMIN)
+        return profiles.filter(id=obj.id).exists() and user.has_perm(core_permissions.USERS_ADMIN)
 
     # Now checking models that are part of plugins
     plugins = settings.PLUGINS

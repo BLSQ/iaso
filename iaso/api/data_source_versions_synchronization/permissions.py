@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-from hat.menupermissions import models as iaso_permission
+import iaso.permissions as core_permissions
 
 
 class DataSourceVersionsSynchronizationPermission(permissions.BasePermission):
@@ -9,8 +9,8 @@ class DataSourceVersionsSynchronizationPermission(permissions.BasePermission):
             return True
         return request.user.is_authenticated and all(
             [
-                request.user.has_perm(iaso_permission.SOURCE_WRITE),
-                request.user.has_perm(iaso_permission.ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS),
-                request.user.has_perm(iaso_permission.ORG_UNITS),
+                request.user.has_perm(core_permissions.SOURCE_WRITE),
+                request.user.has_perm(core_permissions.ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS),
+                request.user.has_perm(core_permissions.ORG_UNITS),
             ]
         )

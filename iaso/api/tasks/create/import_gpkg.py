@@ -13,7 +13,8 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource, Task
@@ -40,7 +41,7 @@ class ImportGpkgSerializer(serializers.ModelSerializer):
 
 # noinspection PyMethodMayBeStatic
 class ImportGPKGViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.SOURCES)]  # type: ignore
     serializer_class = ImportGpkgSerializer
 
     def create(self, request):

@@ -4,7 +4,8 @@ from itertools import chain
 
 from django.contrib.auth.models import Permission
 
-from hat.menupermissions import models as permission_models
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
 from iaso.test import APITestCase
@@ -107,7 +108,7 @@ class ProjectsAPITestCase(APITestCase):
 
         # Projects list should be restricted by default.
         user.iaso_profile.projects.set([project])
-        self.assertFalse(user.has_perm(permission_models.USERS_ADMIN))
+        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
         response = self.client.get("/api/projects/")
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 1)
@@ -115,15 +116,13 @@ class ProjectsAPITestCase(APITestCase):
         # You should NOT be able to bypass restrictions if you're not an admin.
         response = self.client.get("/api/projects/?bypass_restrictions=1")
         json_response = self.assertJSONResponse(response, 403)
-        self.assertEqual(
-            json_response, {"detail": "menupermissions.iaso_users permission is required to access all projects."}
-        )
+        self.assertEqual(json_response, {"detail": "iaso.iaso_users permission is required to access all projects."})
 
         # You should be able to bypass restrictions if you're admin.
-        user.user_permissions.add(Permission.objects.get(codename=permission_models._USERS_ADMIN))
+        user.user_permissions.add(Permission.objects.get(codename=core_permissions._USERS_ADMIN))
         del user._perm_cache
         del user._user_perm_cache
-        self.assertTrue(user.has_perm(permission_models.USERS_ADMIN))
+        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
         response = self.client.get("/api/projects/?bypass_restrictions=1")
         self.assertJSONResponse(response, 200)
         total_projects_for_account = m.Project.objects.filter(account=user.iaso_profile.account).count()

@@ -620,7 +620,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertTrue(str(test_rnd2.number) in round_numbers)
         self.assertTrue(str(self.rdc_round_3.number) in round_numbers)
 
-        # exclude test round 3 if on hold
+        # exclude test round 2 if on hold
 
         test_rnd2.on_hold = True
         test_rnd2.save()

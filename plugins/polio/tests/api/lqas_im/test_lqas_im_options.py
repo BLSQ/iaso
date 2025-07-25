@@ -611,7 +611,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         test_rnd2.lqas_ended_at = self.rdc_round_3.lqas_ended_at
         test_rnd2.save()
 
-        # return test round 3
+        # return test round 2
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]

@@ -17,7 +17,6 @@ on:
       - main
 
 
-
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -59,9 +58,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.13.1'
+          cache: 'npm'
+          npm-version: '10.5.2'
       - name: upgrade npm
         run: |
           npm install --global npm@10.5.2
+      - name: Cache npm cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:

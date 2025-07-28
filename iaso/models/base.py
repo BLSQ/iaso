@@ -440,15 +440,7 @@ class Link(models.Model):
         }
 
 
-GROUP_DOMAIN = [
-    ("POLIO", _("Polio")),
-]
-
-
-class DefaultGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain=None)
-
+class GroupQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
         queryset = self
@@ -459,24 +451,6 @@ class DefaultGroupManager(models.Manager):
         )
         queryset = queryset.filter(source_version_id__in=version_ids)
         return queryset
-
-
-class AllGroupManager(models.Manager):
-    def filter_for_user(self, user: User):
-        profile = user.iaso_profile
-        queryset = self
-        version_ids = (
-            SourceVersion.objects.filter(data_source__projects__account=profile.account)
-            .values_list("id", flat=True)
-            .distinct()
-        )
-        queryset = queryset.filter(source_version_id__in=version_ids)
-        return queryset
-
-
-class DomainGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain__isnull=False)
 
 
 class Group(models.Model):
@@ -487,7 +461,6 @@ class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
-    domain = models.CharField(max_length=10, choices=GROUP_DOMAIN, null=True, blank=True)
     block_of_countries = models.BooleanField(
         default=False
     )  # This field is used to mark a group containing only countries
@@ -497,12 +470,7 @@ class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultGroupManager()
-    all_objects = AllGroupManager()
-    domain_objects = DomainGroupManager()
-
-    class Meta:
-        base_manager_name = "all_objects"
+    objects = models.Manager.from_queryset(GroupQuerySet)()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

@@ -9,7 +9,7 @@ from typing import Any, List, Union
 import pytz
 
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Prefetch, Q
+from django.db.models import Exists, Max, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -31,7 +31,7 @@ from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.models import Entity, EntityDuplicate, EntityType, Instance, OrgUnit
+from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
@@ -292,13 +292,7 @@ class EntityViewSet(ModelViewSet):
         # we don't need duplicates for map display or exports
         fetch_duplicates = not as_location and not is_export
         if fetch_duplicates:
-            qs1 = EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
-            qs2 = EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING)
-
-            queryset = queryset.prefetch_related(
-                Prefetch("duplicates1", queryset=qs1, to_attr="pending_duplicates1"),
-                Prefetch("duplicates2", queryset=qs2, to_attr="pending_duplicates2"),
-            )
+            queryset = queryset.with_duplicates()
 
         queryset = queryset.order_by(*orders)
 
@@ -378,8 +372,7 @@ class EntityViewSet(ModelViewSet):
                 duplicates = []
                 # not needed for map display or exports
                 if fetch_duplicates:
-                    duplicates.extend(d.entity2_id for d in entity.pending_duplicates1)
-                    duplicates.extend(d.entity1_id for d in entity.pending_duplicates2)
+                    duplicates.extend(entity.duplicate_ids)
 
                 result = {
                     "id": entity.id,

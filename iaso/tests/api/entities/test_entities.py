@@ -2,12 +2,10 @@ import csv
 import datetime
 import io
 import json
-import time
 import uuid
 
-from unittest import mock
-
 import pytz
+import time_machine
 
 from django.core.files import File
 
@@ -241,10 +239,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(result[0]["id"], entities[0].id)
         self.assertEqual(result[0]["duplicates"], [entities[1].id])
 
-    @mock.patch(
-        "iaso.api.entity.gmtime",
-        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
-    )
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):
         """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
 
@@ -812,10 +807,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @mock.patch(
-        "iaso.api.entity.gmtime",
-        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
-    )
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
 

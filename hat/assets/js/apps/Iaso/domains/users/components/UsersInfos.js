@@ -10,6 +10,7 @@ import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import { userHasAccessToModule } from '../utils.js';
 
 import MESSAGES from '../messages.ts';
 
@@ -152,14 +153,17 @@ const UsersInfos = ({
                     />
                 </Grid>
                 <Grid item sm={12} md={6}>
-                    <InputComponent
-                        keyValue="dhis2_id"
-                        onChange={(key, value) => setFieldValue(key, value)}
-                        value={currentUser.dhis2_id.value}
-                        errors={currentUser.dhis2_id.errors}
-                        type="text"
-                        label={MESSAGES.dhis2_id}
-                    />
+                    {userHasAccessToModule('DHIS2_MAPPING', loggedUser) && (
+                        <InputComponent
+                            keyValue="dhis2_id"
+                            onChange={(key, value) => setFieldValue(key, value)}
+                            value={currentUser.dhis2_id.value}
+                            errors={currentUser.dhis2_id.errors}
+                            type="text"
+                            label={MESSAGES.dhis2_id}
+                        />
+                    )}
+
                     <InputComponent
                         keyValue="organization"
                         onChange={(key, value) => setFieldValue(key, value)}

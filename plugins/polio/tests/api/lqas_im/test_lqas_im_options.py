@@ -613,7 +613,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         test_rnd2.lqas_ended_at = self.rdc_round_3.lqas_ended_at
         test_rnd2.save()
 
-        # return test round 3
+        # return test round 2
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -622,7 +622,7 @@ class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
         self.assertTrue(str(test_rnd2.number) in round_numbers)
         self.assertTrue(str(self.rdc_round_3.number) in round_numbers)
 
-        # exclude test round 3 if on hold
+        # exclude test round 2 if on hold
 
         test_rnd2.on_hold = True
         test_rnd2.save()

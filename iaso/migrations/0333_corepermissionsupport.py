@@ -4,8 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    atomic = False  # Prevent the migration from running in a transaction.
-
     dependencies = [
         ("iaso", "0332_merge_20250717_1033"),
     ]

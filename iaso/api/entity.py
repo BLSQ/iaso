@@ -340,7 +340,7 @@ class EntityViewSet(ModelViewSet):
         # if exactly one type of entity specified, add columns for that type of entity
         columns_list = []
         if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
-            entity_type = EntityType.objects.get(id=int(entity_type_ids))
+            entity_type = EntityType.objects.select_related("reference_form").get(id=int(entity_type_ids))
             possible_fields_list = entity_type.reference_form.possible_fields or []
             for items in possible_fields_list:
                 for k, v in items.items():

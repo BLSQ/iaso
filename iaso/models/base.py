@@ -445,10 +445,7 @@ GROUP_DOMAIN = [
 ]
 
 
-class DefaultGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain=None)
-
+class GroupManager(models.Manager):
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
         queryset = self
@@ -484,12 +481,9 @@ class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultGroupManager()
+    objects = GroupManager()
     all_objects = models.Manager()
     domain_objects = DomainGroupManager()
-
-    class Meta:
-        base_manager_name = "all_objects"
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)

@@ -4,7 +4,11 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import {
+    userHasAccessToModule,
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../users/utils';
 import { FormActions } from '../components/FormActions.tsx';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
@@ -96,6 +100,8 @@ export const useFormsTableColumns = ({
     showInstancesCount,
 }) => {
     const user = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
+
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
@@ -147,6 +153,7 @@ export const useFormsTableColumns = ({
                             orgUnitId={orgUnitId}
                             baseUrls={baseUrls}
                             showDeleted={showDeleted}
+                            hasDhis2Module={hasDhis2Module}
                         />
                     );
                 },
@@ -166,7 +173,14 @@ export const useFormsTableColumns = ({
             });
         }
         return cols;
-    }, [formatMessage, orgUnitId, showDeleted, user, showInstancesCount]);
+    }, [
+        formatMessage,
+        hasDhis2Module,
+        orgUnitId,
+        showDeleted,
+        user,
+        showInstancesCount,
+    ]);
 };
 
 export const requiredFields = [

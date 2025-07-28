@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
+from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -41,7 +41,7 @@ from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.emoji import fix_emoji
-from ..utils.jsonlogic import jsonlogic_to_q
+from ..utils.jsonlogic import instance_jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
 from .project import Project
@@ -363,6 +363,14 @@ class Task(models.Model):
         self.status = SUCCESS
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
+        self.save()
+
+    def terminate_with_error(self, message=None):
+        self.refresh_from_db()
+        logger.error(f"Task {self} ended in error")
+        self.status = ERRORED
+        self.ended_at = timezone.now()
+        self.result = {"result": ERRORED, "message": message if message else "Error"}
         self.save()
 
 
@@ -941,7 +949,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
             queryset = queryset.filter(created_by__id__in=user_ids.split(","))
 
         if json_content:
-            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            q = instance_jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
             queryset = queryset.filter(q)
 
         return queryset
@@ -1115,12 +1123,12 @@ class Instance(models.Model):
         f = field_name
         if f is None:
             f = self.form.location_field
-
             location = self.json.get(f, None)
             if location:
-                latitude, longitude, altitude, accuracy = [float(x) for x in location.split(" ")]
+                coords = [float(x) for x in location.split(" ")]
+                latitude, longitude, altitude = coords[:3]
                 self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-                self.accuracy = accuracy
+                self.accuracy = coords[3] if len(coords) > 3 else None
                 self.save()
 
     def convert_device(self):
@@ -1424,14 +1432,92 @@ class Instance(models.Model):
         return super(Instance, self).save(*args, **kwargs)
 
 
+class InstanceFileExtensionQuerySet(models.QuerySet):
+    def filter_image(self):
+        return self.filter(annotated_file_extension__in=self.model.IMAGE_EXTENSIONS)
+
+    def filter_video(self):
+        return self.filter(annotated_file_extension__in=self.model.VIDEO_EXTENSIONS)
+
+    def filter_document(self):
+        return self.filter(annotated_file_extension__in=self.model.DOCUMENT_EXTENSIONS)
+
+    def filter_other(self):
+        return self.filter(
+            ~Q(
+                annotated_file_extension__in=self.model.IMAGE_EXTENSIONS
+                + self.model.VIDEO_EXTENSIONS
+                + self.model.DOCUMENT_EXTENSIONS
+            )
+        )
+
+    def filter_by_file_types(self, image=False, video=False, document=False, other=False):
+        """Apply file type filters with OR logic when multiple filters are active"""
+        queryset = self
+
+        # Build OR conditions for active filters
+        conditions = []
+
+        if image:
+            conditions.append(Q(annotated_file_extension__in=self.model.IMAGE_EXTENSIONS))
+
+        if video:
+            conditions.append(Q(annotated_file_extension__in=self.model.VIDEO_EXTENSIONS))
+
+        if document:
+            conditions.append(Q(annotated_file_extension__in=self.model.DOCUMENT_EXTENSIONS))
+
+        if other:
+            conditions.append(
+                ~Q(
+                    annotated_file_extension__in=self.model.IMAGE_EXTENSIONS
+                    + self.model.VIDEO_EXTENSIONS
+                    + self.model.DOCUMENT_EXTENSIONS
+                )
+            )
+
+        # Apply OR logic if multiple conditions exist
+        if len(conditions) > 1:
+            combined_condition = conditions[0]
+            for condition in conditions[1:]:
+                combined_condition |= condition
+            queryset = queryset.filter(combined_condition)
+        elif len(conditions) == 1:
+            queryset = queryset.filter(conditions[0])
+
+        return queryset
+
+
+class InstanceFileExtensionManager(models.Manager):
+    def get_queryset(self):
+        return (
+            super()
+            .get_queryset()
+            .annotate(
+                annotated_file_extension=Func(
+                    F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')"
+                )
+            )
+        )
+
+
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
+
+    #  According to frontend, we need to filter by file extension, see hat/assets/js/apps/Iaso/utils/filesUtils.ts
+    IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
+    VIDEO_EXTENSIONS = ["mp4", "mov"]
+    DOCUMENT_EXTENSIONS = ["pdf", "doc", "docx", "xls", "xlsx", "csv", "txt"]
+
     instance = models.ForeignKey(Instance, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     deleted = models.BooleanField(default=False)
+
+    objects = models.Manager()
+    objects_with_file_extensions = InstanceFileExtensionManager.from_queryset(InstanceFileExtensionQuerySet)()
 
     def __str__(self):
         return "%s " % (self.name,)

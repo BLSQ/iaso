@@ -1032,7 +1032,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(12):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )
@@ -1978,6 +1978,75 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data), 1)
         self.assertTrue(data[0]["file"].endswith(".jpg"))
 
+    def test_attachments_filter_video_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test2.mov")
+        m.InstanceFile.objects.create(instance=instance, file="test3.jpg")
+
+        response = self.client.get("/api/instances/attachments/?video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".mp4", ".mov")) for file in data))
+
+    def test_attachments_filter_document_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test2.doc")
+        m.InstanceFile.objects.create(instance=instance, file="test3.xlsx")
+        m.InstanceFile.objects.create(instance=instance, file="test4.jpg")
+
+        response = self.client.get("/api/instances/attachments/?document_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 3)
+        self.assertTrue(all(file["file"].endswith((".pdf", ".doc", ".xlsx")) for file in data))
+
+    def test_attachments_filter_other_only(self):
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.unknown")
+        m.InstanceFile.objects.create(instance=instance, file="test2.xyz")
+        m.InstanceFile.objects.create(instance=instance, file="test3.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+
+        response = self.client.get("/api/instances/attachments/?other_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".unknown", ".xyz")) for file in data))
+
+    def test_attachments_filter_combined_filters(self):
+        """Test that multiple filters work together correctly"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test3.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test4.unknown")
+
+        # Test image and video filters together
+        response = self.client.get("/api/instances/attachments/?image_only=true&video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".jpg", ".mp4")) for file in data))
+
+        # Test document and other filters together
+        response = self.client.get("/api/instances/attachments/?document_only=true&other_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(len(data), 2)
+        self.assertTrue(all(file["file"].endswith((".pdf", ".unknown")) for file in data))
+
     def test_attachments_pagination(self):
         self.client.force_authenticate(self.yoda)
         instance = self.create_form_instance(form=self.form_1, project=self.project)
@@ -1991,6 +2060,63 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertEqual(len(data["results"]), 30)
         self.assertFalse(data["has_next"])
         self.assertFalse(data["has_previous"])
+
+    def test_attachments_count(self):
+        """Test the attachments_count endpoint returns correct counts per file type"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+
+        # Create files of different types
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.png")
+        m.InstanceFile.objects.create(instance=instance, file="test3.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+        m.InstanceFile.objects.create(instance=instance, file="test5.doc")
+        m.InstanceFile.objects.create(instance=instance, file="test6.txt")
+        m.InstanceFile.objects.create(instance=instance, file="test7.unknown")
+
+        response = self.client.get("/api/instances/attachments_count/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 2)  # jpg, png
+        self.assertEqual(data["videos"], 1)  # mp4
+        self.assertEqual(data["docs"], 3)  # pdf, doc, txt
+        self.assertEqual(data["others"], 1)  # unknown
+        self.assertEqual(data["total"], 7)
+
+    def test_attachments_count_with_filters(self):
+        """Test the attachments_count endpoint with file type filters"""
+        self.client.force_authenticate(self.yoda)
+        instance = self.create_form_instance(form=self.form_1, project=self.project)
+
+        # Create files of different types
+        m.InstanceFile.objects.create(instance=instance, file="test1.jpg")
+        m.InstanceFile.objects.create(instance=instance, file="test2.png")
+        m.InstanceFile.objects.create(instance=instance, file="test3.mp4")
+        m.InstanceFile.objects.create(instance=instance, file="test4.pdf")
+
+        # Test with image_only filter
+        response = self.client.get("/api/instances/attachments_count/?image_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 2)  # jpg, png
+        self.assertEqual(data["videos"], 0)
+        self.assertEqual(data["docs"], 0)
+        self.assertEqual(data["others"], 0)
+        self.assertEqual(data["total"], 2)
+
+        # Test with video_only filter
+        response = self.client.get("/api/instances/attachments_count/?video_only=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertEqual(data["images"], 0)
+        self.assertEqual(data["videos"], 1)  # mp4
+        self.assertEqual(data["docs"], 0)
+        self.assertEqual(data["others"], 0)
+        self.assertEqual(data["total"], 1)
 
     def test_instance_retrieve_with_related_change_requests(self):
         self.client.force_authenticate(self.yoda)

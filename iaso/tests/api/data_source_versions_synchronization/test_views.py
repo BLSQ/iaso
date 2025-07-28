@@ -3,6 +3,7 @@ import datetime
 import time_machine
 
 from django.contrib.auth.models import Permission
+from rest_framework import status
 
 from hat.menupermissions import models as iaso_permission
 from iaso import models as m
@@ -52,6 +53,17 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             source_version_to_compare_with=cls.source_3,
             account=cls.account,
             created_by=cls.user,
+        )
+
+        cls.group_1 = m.Group.objects.create(
+            name="Group 1",
+            source_ref="group-1",
+            source_version=cls.source_1,
+        )
+        cls.group_2 = m.Group.objects.create(
+            name="Group 2",
+            source_ref="group-2",
+            source_version=cls.source_2,
         )
 
     def test_list_without_auth(self):
@@ -138,6 +150,8 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         json_diff_params = {
             "source_version_to_update_validation_status": m.OrgUnit.VALIDATION_NEW,
             "source_version_to_compare_with_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_update_org_unit_group": self.group_1.id,
+            "source_version_to_compare_with_org_unit_group": self.group_2.id,
             "ignore_groups": True,
             "show_deleted_org_units": False,
             "field_names": ["name"],
@@ -156,16 +170,41 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             "'validation_status': 'NEW', "
             "'top_org_unit': None, "
             "'org_unit_types': None, "
+            f"'org_unit_group': {self.group_1.pk}, "
             f"'version_ref': {self.source_2.pk}, "
             "'validation_status_ref': 'NEW', "
             "'top_org_unit_ref': None, "
             "'org_unit_types_ref': None, "
+            f"'org_unit_group_ref': {self.group_2.pk}, "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': {'name'}"
             "}"
         )
         self.assertEqual(self.data_source_sync_1.diff_config, expected_diff_config_str)
+
+    def test_create_json_diff_error_code_in_field_names(self):
+        self.client.force_authenticate(self.user)
+
+        self.assertIsNone(self.data_source_sync_1.json_diff)
+
+        json_diff_params = {
+            "source_version_to_update_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_compare_with_validation_status": m.OrgUnit.VALIDATION_NEW,
+            "source_version_to_update_org_unit_group": self.group_1.id,
+            "source_version_to_compare_with_org_unit_group": self.group_2.id,
+            "ignore_groups": True,
+            "show_deleted_org_units": False,
+            "field_names": ["name", "code"],
+        }
+        response = self.client.patch(
+            f"/api/datasources/sync/{self.data_source_sync_1.id}/create_json_diff/", data=json_diff_params
+        )
+        json_response = self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('"code" is not a valid choice', json_response["field_names"][0])
+
+        self.data_source_sync_1.refresh_from_db()
+        self.assertIsNone(self.data_source_sync_1.json_diff)
 
     def test_synchronize_source_versions_async_without_perms(self):
         self.client.force_authenticate(self.user)

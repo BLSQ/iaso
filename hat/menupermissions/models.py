@@ -17,6 +17,8 @@ The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
 
+from importlib import import_module
+
 from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -68,27 +70,7 @@ _USERS_MANAGED = "iaso_users_managed"
 _USERS_ROLES = "iaso_user_roles"
 _WORKFLOW = "iaso_workflows"
 
-# Polio
-_POLIO = "iaso_polio"
-_POLIO_BUDGET = "iaso_polio_budget"
-_POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
-_POLIO_CONFIG = "iaso_polio_config"
-_POLIO_CHRONOGRAM = "iaso_polio_chronogram"
-_POLIO_CHRONOGRAM_RESTRICTED_WRITE = "iaso_polio_chronogram_restricted_write"
-_POLIO_NOTIFICATIONS = "iaso_polio_notifications"
-_POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
-_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
-_POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"  # This is actually NONADMIN permission
-_POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"  # This is actually ADMIN permission
-_POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = "iaso_polio_vaccine_supply_chain_read_only"
-_POLIO_VACCINE_STOCK_MANAGEMENT_READ = (
-    "iaso_polio_vaccine_stock_management_read"  # This is actually NONADMIN permission
-)
-_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"  # This is actually ADMIN permission
-_POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY = "iaso_polio_vaccine_stock_management_read_only"
-_POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = "iaso_polio_vaccine_stock_earmarks_nonadmin"
-_POLIO_VACCINE_STOCK_EARMARKS_ADMIN = "iaso_polio_vaccine_stock_earmarks_admin"
-_POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY = "iaso_polio_vaccine_stock_earmarks_read_only"
+
 # Trypelim
 _ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
 _AREAS = "iaso_trypelim_management_areas"
@@ -156,24 +138,18 @@ PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING_WRITE = _PREFIX + _PLANNING_WRITE
 PLANNING_READ = _PREFIX + _PLANNING_READ
-POLIO = _PREFIX + _POLIO
-POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
-POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
-POLIO_CHRONOGRAM = _PREFIX + _POLIO_CHRONOGRAM
-POLIO_CHRONOGRAM_RESTRICTED_WRITE = _PREFIX + _POLIO_CHRONOGRAM_RESTRICTED_WRITE
-POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
-POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
-POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
-POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
-POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
-POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY
-POLIO_VACCINE_STOCK_MANAGEMENT_READ = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_READ
-POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
-POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY
-POLIO_VACCINE_STOCK_EARMARKS_NONADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN
-POLIO_VACCINE_STOCK_EARMARKS_ADMIN = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_ADMIN
-POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY = _PREFIX + _POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY
+
+
+# Import from plugins
+# for plugin in settings.PLUGINS:
+#     try:
+#         exported_permissions = import_module(f"plugins.{plugin}.permissions").exported_permissions
+#         for permission_name, permission_value in exported_permissions.items():
+#             globals()[permission_name] = permission_value
+#     except ImportError:
+#         print(f"{plugin} plugin has no permission support")
+
+
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
 REGISTRY_READ = _PREFIX + _REGISTRY_READ
@@ -230,7 +206,24 @@ ZONES_SHAPES_EDIT = _PREFIX + _ZONES_SHAPES_EDIT
 
 
 class CustomPermissionSupport(models.Model):
-    """Model used to hold our custom permission."""
+    """
+    Model used to hold our custom permission.
+
+    The standard way to create custom permissions in Django is to use
+    the `Meta.permissions` attribute for a given model.
+    https://docs.djangoproject.com/en/4.2/topics/auth/customizing/#custom-permissions
+
+    Instead of adding permissions to each and every model, we use this single
+    model with `managed = False` to regroup all permissions.
+    https://docs.djangoproject.com/en/4.2/ref/models/options/#managed
+
+    After adding a permission here, you need to generate a migration (`makemigrations`)
+    and run it (`migrate`). Django will then detect the change in `Meta.permissions`
+    and insert the new permission in the `auth_permission` model.
+
+    You'll then be able to use the permission as any other Django permission.
+    https://docs.djangoproject.com/en/4.2/topics/auth/default/#topic-authorization
+    """
 
     @staticmethod
     def get_full_permission_list():
@@ -284,13 +277,11 @@ class CustomPermissionSupport(models.Model):
             (_REPORTS, _("Reports")),
             (_TEAMS, _("Equipes")),
             (_ASSIGNMENTS, _("Attributions")),
-            (_POLIO_BUDGET, _("Budget Polio")),
             (_ENTITIES, _("Entities")),
             (_ENTITY_TYPE_WRITE, _("Write entity type")),
             (_STORAGE, _("Storages")),
             (_COMPLETENESS_STATS, _("Completeness stats")),
             (_WORKFLOW, _("Workflows")),
-            (_POLIO_BUDGET_ADMIN, _("Budget Polio Admin")),
             (_ENTITIES_DUPLICATE_READ, _("Read Entity duplicates")),
             (_ENTITIES_DUPLICATE_WRITE, _("Write Entity duplicates")),
             (_USERS_ROLES, _("Manage user roles")),
@@ -307,53 +298,6 @@ class CustomPermissionSupport(models.Model):
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),
             (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
-            # Polio
-            (_POLIO, _("Polio")),
-            (_POLIO_CONFIG, _("Polio config")),
-            (_POLIO_CHRONOGRAM, _("Polio chronogram")),
-            (
-                _POLIO_CHRONOGRAM_RESTRICTED_WRITE,
-                _("Polio chronogram user (restricted write)"),
-            ),
-            (_POLIO_NOTIFICATIONS, _("Polio notifications")),
-            (
-                _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY,
-                _("Polio Vaccine Authorizations Read Only"),
-            ),
-            (
-                _POLIO_VACCINE_AUTHORIZATIONS_ADMIN,
-                _("Polio Vaccine Authorizations Admin"),
-            ),
-            (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),
-            (_POLIO_VACCINE_SUPPLY_CHAIN_WRITE, _("Polio Vaccine Supply Chain Write")),
-            (
-                _POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
-                _("Polio Vaccine Supply Chain Read Only"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                _("Polio Vaccine Stock Management Read"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-                _("Polio Vaccine Stock Management Write"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY,
-                _("Polio Vaccine Stock Management Read Only"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
-                _("Polio Vaccine Stock Earmarks Non Admin"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-                _("Polio Vaccine Stock Earmarks Admin"),
-            ),
-            (
-                _POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
-                _("Polio Vaccine Stock Earmarks Read Only"),
-            ),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),
             (_AREAS, _("Areas")),
@@ -395,20 +339,23 @@ class CustomPermissionSupport(models.Model):
 
     @staticmethod
     def filter_permissions(permissions, modules_permissions, settings: LazySettings):
-        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
+        content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+
+        for plugin in settings.PLUGINS:
+            try:
+                permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
+                content_types.append(ContentType.objects.get_for_model(permission_model))
+            except ImportError:
+                print(f"{plugin} plugin has no permission support")
+
         permissions = (
-            permissions.filter(content_type=content_type)
+            permissions.filter(content_type__in=content_types)
             .filter(codename__startswith="iaso_")
             .filter(codename__in=modules_permissions)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")
         )
-        #  in future filter this on a feature flags, so we can disable it by account
-        if "polio" not in settings.PLUGINS:
-            permissions = permissions.exclude(codename__startswith="iaso_polio")
-        if "trypelim" not in settings.PLUGINS:
-            permissions = permissions.exclude(codename__startswith="iaso_trypelim")
 
         return permissions
 

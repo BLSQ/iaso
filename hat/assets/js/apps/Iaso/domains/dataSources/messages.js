@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.options.label.name',
         defaultMessage: 'Name',
     },
+    code: {
+        id: 'iaso.datasources.options.label.code',
+        defaultMessage: 'Code',
+    },
     parent: {
         id: 'iaso.datasources.options.label.parent',
         defaultMessage: 'Parent',
@@ -204,7 +208,7 @@ const MESSAGES = defineMessages({
     syncMessage: {
         id: 'iaso.datasources.title.syncMessage',
         defaultMessage:
-            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry will not be synchronized.',
+            'This might create a lot of changes requests to align the two versions. This dialog will stay frozen until the preview is done. Geometry and code will not be synchronized.',
     },
     default: {
         id: 'iaso.datasources.options.label.default',
@@ -233,6 +237,10 @@ const MESSAGES = defineMessages({
     status: {
         id: 'iaso.datasources.label.status',
         defaultMessage: 'Status',
+    },
+    group: {
+        id: 'iaso.datasources.label.groups',
+        defaultMessage: 'Group',
     },
     fieldsToExport: {
         id: 'iaso.datasources.label.fieldsToExport',

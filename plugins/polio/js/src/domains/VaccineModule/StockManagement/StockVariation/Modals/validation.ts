@@ -37,10 +37,9 @@ yup.addMethod(
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        campaign: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        campaign: yup.string().nullable(),
+        alternative_campaign: yup.string().nullable(),
+        round: yup.number().nullable(),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -72,7 +71,7 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        document: yup.mixed().nullable(),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -106,7 +105,7 @@ export const useDestructionValidation = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
-        document: yup.mixed().nullable(),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -148,7 +147,7 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        document: yup.mixed().nullable(),
+        file: yup.mixed().nullable(),
     });
 };
 

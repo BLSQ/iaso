@@ -14,4 +14,5 @@ export type Search = {
     dateFrom?: string;
     dateTo?: string;
     color?: string;
+    isAdded?: boolean;
 };

@@ -91,8 +91,11 @@ export const useSaveCampaign = (): UseMutationResult<any, any, any> => {
     const queryClient = useQueryClient();
     return useMutation('save-campaigns', save, {
         onSuccess: () => {
+            queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries(['subActivities']);
             queryClient.invalidateQueries(['calendar-campaigns']);
+            queryClient.invalidateQueries('lqasCountries');
+            queryClient.invalidateQueries('lqasCampaigns');
         },
     });
 };

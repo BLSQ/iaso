@@ -3,7 +3,7 @@ import datetime
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-from iaso.utils.models.virus_scan import VirusScanStatus
+from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio import models as pm
 from plugins.polio.api.vaccines.supply_chain import AR_SET, PA_SET
 from plugins.polio.tests.api.test import PolioTestCaseMixin
@@ -426,13 +426,13 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         # Get the first request form
         request_form = pm.VaccineRequestForm.objects.first()
 
-        arrival_report = pm.VaccineArrivalReport.objects.create(
+        pm.VaccineArrivalReport.objects.create(
             request_form=request_form,
             arrival_report_date="2022-01-01",
             doses_received=2000,
         )
 
-        pre_alert = pm.VaccinePreAlert.objects.create(
+        pm.VaccinePreAlert.objects.create(
             request_form=request_form,
             date_pre_alert_reception="2021-01-01",
             estimated_arrival_time="2021-01-02",
@@ -597,15 +597,15 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             doses_shipped=1000,
             po_number="DOC-TEST-123",
             lot_numbers=["LOT-1234", "LOT-5678"],
-            document=test_document,
+            file=test_document,
         )
 
         # Get the pre-alert ID
         pre_alert_id = pre_alert.id
 
         # Store the original document name and size for comparison
-        original_document_name = pre_alert.document.name if pre_alert.document else None
-        original_document_size = pre_alert.document.size if pre_alert.document else None
+        original_document_name = pre_alert.file.name if pre_alert.file else None
+        original_document_size = pre_alert.file.size if pre_alert.file else None
 
         # Update the pre-alert with a different field but not the document
         update_data = {
@@ -630,8 +630,8 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
 
         # Verify that the document field was not modified
         # Check that the document name and size are the same as before
-        self.assertEqual(updated_pre_alert.document.name, original_document_name)
-        self.assertEqual(updated_pre_alert.document.size, original_document_size)
+        self.assertEqual(updated_pre_alert.file.name, original_document_name)
+        self.assertEqual(updated_pre_alert.file.size, original_document_size)
 
     def test_vrf_cannot_be_created_for_round_without_scope(self):
         campaign, rnd1, _, _, _, _ = self.create_campaign(
@@ -677,3 +677,271 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             format="json",
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_round_id_filter(self):
+        """Test that filtering by round_id returns only vaccine request forms associated with that round"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get a round ID from one of our test vaccine request forms
+        test_round = self.vaccine_request_form_rdc_1.rounds.first()
+
+        response = self.client.get(f"{self.BASE_URL}?round_id={test_round.id}")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        # Verify each returned form includes the specified round
+        for form in results:
+            round_ids = [r["id"] for r in form["rounds"]]
+            self.assertIn(test_round.id, round_ids)
+
+        # Verify we don't get forms that don't include this round
+        forms_without_round = pm.VaccineRequestForm.objects.exclude(rounds=test_round)
+        for form in forms_without_round:
+            form_ids = [f["id"] for f in results]
+            self.assertNotIn(form.id, form_ids)
+
+    def test_multiple_filters(self):
+        """Test that multiple filters can be combined"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        test_form = self.vaccine_request_form_rdc_1
+        test_country = test_form.campaign.country
+
+        test_start_date = test_form.rounds.filter(number=1).first().started_at
+
+        # Apply multiple filters
+        response = self.client.get(
+            f"{self.BASE_URL}?campaign__country={test_country.id}&rounds__started_at={test_start_date}"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        results = response.data["results"]
+
+        # Verify results match all filter criteria
+        for form in results:
+            self.assertEqual(form["country"]["id"], test_country.id)
+            # The form's start_date should match our test date since we filtered on rounds__started_at
+            self.assertEqual(str(test_start_date), str(form["start_date"]))
+
+    def test_response_shape(self):
+        """Test that the response data has the expected structure"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        response = self.client.get(f"{self.BASE_URL}")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        self.assertTrue(len(results) > 0, "Response should contain at least one result")
+
+        # Test shape of first result
+        result = results[0]
+
+        # Required fields
+        self.assertIn("id", result)
+        self.assertIsInstance(result["id"], int)
+
+        self.assertIn("country", result)
+        self.assertIsInstance(result["country"], dict)
+        self.assertIn("name", result["country"])
+        self.assertIn("id", result["country"])
+
+        self.assertIn("vaccine_type", result)
+        self.assertIsInstance(result["vaccine_type"], str)
+
+        self.assertIn("obr_name", result)
+        self.assertIsInstance(result["obr_name"], str)
+
+        self.assertIn("rounds", result)
+        self.assertIsInstance(result["rounds"], list)
+        if result["rounds"]:
+            round_data = result["rounds"][0]
+            self.assertIn("number", round_data)
+            self.assertIn("id", round_data)
+
+        self.assertIn("quantities_ordered_in_doses", result)
+        self.assertIsInstance(result["quantities_ordered_in_doses"], (int, type(None)))
+
+        self.assertIn("start_date", result)
+        self.assertIn("end_date", result)
+
+        self.assertIn("doses_shipped", result)
+        self.assertIsInstance(result["doses_shipped"], int)
+
+        self.assertIn("doses_received", result)
+        self.assertIsInstance(result["doses_received"], int)
+
+        self.assertIn("eta", result)
+        self.assertIsInstance(result["eta"], str)
+
+        self.assertIn("var", result)
+        self.assertIsInstance(result["var"], str)
+
+        self.assertIn("created_at", result)
+        self.assertIn("updated_at", result)
+
+        self.assertIn("vrf_type", result)
+        self.assertIsInstance(result["vrf_type"], str)
+
+        self.assertIn("can_edit", result)
+        self.assertIsInstance(result["can_edit"], bool)
+
+    def test_vaccine_request_form_api_includes_campaign_category(self):
+        """Test that the VaccineRequestForm API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Test list endpoint
+        response = self.client.get(self.BASE_URL)
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+    def test_campaign_category_values_for_different_campaign_states(self):
+        """Test that campaign_category returns correct values for different campaign states in VRF"""
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Create test campaign
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create VRF for test campaign
+        test_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=test_campaign,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        test_vrf.rounds.set([test_round])
+
+        # Create campaign on hold
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create VRF for campaign on hold
+        hold_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_on_hold,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        hold_vrf.rounds.set([round_on_hold])
+
+        # Create campaign with all rounds on hold
+        campaign_all_rounds_hold = pm.Campaign.objects.create(
+            obr_name="All Rounds On Hold VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+        round1_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=True,
+        )
+        round2_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+
+        # Create VRF for campaign with all rounds on hold
+        all_rounds_hold_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_all_rounds_hold,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        all_rounds_hold_vrf.rounds.set([round1_all_hold, round2_all_hold])
+
+        # Create campaign with mixed rounds (some on hold, some not)
+        campaign_mixed_rounds = pm.Campaign.objects.create(
+            obr_name="Mixed Rounds VRF",
+            country=self.org_unit_DRC,
+            account=self.account,
+        )
+        round1_active = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=False,
+        )
+        round2_hold = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+
+        # Create VRF for campaign with mixed rounds
+        mixed_rounds_vrf = pm.VaccineRequestForm.objects.create(
+            campaign=campaign_mixed_rounds,
+            vaccine_type=pm.VACCINES[0][0],
+            date_vrf_reception=self.now - datetime.timedelta(days=30),
+            date_vrf_signature=self.now - datetime.timedelta(days=20),
+            date_dg_approval=self.now - datetime.timedelta(days=10),
+            quantities_ordered_in_doses=500,
+        )
+        mixed_rounds_vrf.rounds.set([round1_active, round2_hold])
+
+        # Test API responses
+        response = self.client.get(self.BASE_URL)
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+
+        # Find our test VRFs in the response
+        test_vrf_data = next((item for item in results if item["id"] == test_vrf.id), None)
+        hold_vrf_data = next((item for item in results if item["id"] == hold_vrf.id), None)
+        all_rounds_hold_vrf_data = next((item for item in results if item["id"] == all_rounds_hold_vrf.id), None)
+        mixed_rounds_vrf_data = next((item for item in results if item["id"] == mixed_rounds_vrf.id), None)
+
+        # Verify campaign categories
+        self.assertIsNotNone(test_vrf_data)
+        self.assertIsNotNone(hold_vrf_data)
+        self.assertIsNotNone(all_rounds_hold_vrf_data)
+        self.assertIsNotNone(mixed_rounds_vrf_data)
+
+        self.assertEqual(test_vrf_data["campaign_category"], "TEST_CAMPAIGN")
+        self.assertEqual(hold_vrf_data["campaign_category"], "CAMPAIGN_ON_HOLD")
+        self.assertEqual(all_rounds_hold_vrf_data["campaign_category"], "ALL_ROUNDS_ON_HOLD")
+        self.assertEqual(mixed_rounds_vrf_data["campaign_category"], "ROUND_ON_HOLD")

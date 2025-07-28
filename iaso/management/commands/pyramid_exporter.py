@@ -42,6 +42,18 @@ class Command(BaseCommand):
         parser.add_argument(
             "--org_unit_types_ref", type=str, help="Org unit types ids, separated by a comma, for ref", required=False
         )
+        parser.add_argument(
+            "--org_unit_group",
+            type=int,
+            help="Org unit group id (filter out pyramid for org units that have this group)",
+            required=False,
+        )
+        parser.add_argument(
+            "--org_unit_group_ref",
+            type=int,
+            help="Org unit group id, for ref (filter out pyramid for org units that have this group)",
+            required=False,
+        )
 
         parser.add_argument("--export", action="store_true", help="really export to dhis2 or only dry run")
         parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
@@ -71,6 +83,8 @@ class Command(BaseCommand):
         top_org_unit_ref = options.get("top_org_unit_ref")
         org_unit_types = options.get("org_unit_types")
         org_unit_types_ref = options.get("org_unit_types_ref")
+        org_unit_group = options.get("org_unit_group")
+        org_unit_group_ref = options.get("org_unit_group_ref")
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
@@ -94,6 +108,8 @@ class Command(BaseCommand):
             top_org_unit_ref=top_org_unit_ref,
             org_unit_types=org_unit_types,
             org_unit_types_ref=org_unit_types_ref,
+            org_unit_group=org_unit_group,
+            org_unit_group_ref=org_unit_group_ref,
         )
         dumper = Dumper(iaso_logger)
         stats = dumper.dump_stats(diffs)

@@ -1,8 +1,8 @@
+import React, { FunctionComponent } from 'react';
+import PublicIcon from '@mui/icons-material/Public';
 import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import PublicIcon from '@mui/icons-material/Public';
 import { ExcellSvg, CsvSvg } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
 
 export const useDownloadButtonStyles = makeStyles(theme => ({
     button: {
@@ -23,6 +23,7 @@ type Props = {
     xlsxUrl?: string;
     gpkgUrl?: string;
     disabled?: boolean;
+    variant?: 'contained' | 'outlined';
 };
 
 const DownloadButtonsComponent: FunctionComponent<Props> = ({
@@ -30,6 +31,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
     xlsxUrl,
     gpkgUrl,
     disabled = false,
+    variant = 'outlined',
 }) => {
     const classes = useDownloadButtonStyles();
     return (
@@ -37,7 +39,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
             {csvUrl && typeof csvUrl === 'string' && (
                 <Button
                     data-test="csv-export-button"
-                    variant="contained"
+                    variant={variant}
                     className={classes.button}
                     color="primary"
                     href={csvUrl}
@@ -50,7 +52,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
             {xlsxUrl && typeof xlsxUrl === 'string' && (
                 <Button
                     data-test="xlsx-export-button"
-                    variant="contained"
+                    variant={variant}
                     className={classes.button}
                     color="primary"
                     href={xlsxUrl}
@@ -63,7 +65,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
             {gpkgUrl && typeof gpkgUrl === 'string' && (
                 <Button
                     data-test="gpkg-export-button"
-                    variant="contained"
+                    variant={variant}
                     className={classes.button}
                     color="primary"
                     href={gpkgUrl}

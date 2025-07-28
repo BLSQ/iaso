@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { useSnackQuery } from 'Iaso/libs/apiHooks';
 // @ts-ignore
 import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
@@ -16,6 +16,8 @@ import MESSAGES from '../../messages';
 const queryParamsMap = new Map([
     ['dataSourceId', 'dataSource'],
     ['sourceVersionId', 'version'],
+    ['dataSourceIds', 'dataSourceIds'],
+    ['sourceVersionIds', 'versionIds'],
     ['blockOfCountries', 'blockOfCountries'],
     ['appId', 'app_id'],
     ['projectIds', 'projectIds'],
@@ -25,6 +27,8 @@ const queryParamsMap = new Map([
 type ApiParams = {
     dataSource?: number;
     version?: number;
+    dataSourceIds?: string;
+    versionIds?: string;
     blockOfCountries?: string;
     app_id?: string;
     defaultVersion?: string;
@@ -32,7 +36,9 @@ type ApiParams = {
 };
 type Params = {
     dataSourceId?: number;
+    dataSourceIds?: string;
     sourceVersionId?: number;
+    sourceVersionIds?: string;
     blockOfCountries?: string | boolean;
     appId?: string;
     defaultVersion?: string;
@@ -40,6 +46,7 @@ type Params = {
 };
 export const useGetGroupDropdown = (
     params: Params,
+    enabled = true,
 ): UseQueryResult<
     DropdownOptionsWithOriginal<
         number,
@@ -56,6 +63,8 @@ export const useGetGroupDropdown = (
     if (
         !queryParams.version &&
         !queryParams.dataSource &&
+        !queryParams.dataSourceIds &&
+        !queryParams.versionIds &&
         !queryParams.defaultVersion
     ) {
         queryParams.defaultVersion = 'true';
@@ -69,6 +78,7 @@ export const useGetGroupDropdown = (
         queryFn: () => getRequest(`/api/groups/dropdown/?${queryString}`),
         snackErrorMsg: MESSAGES.fetchGroupsError,
         options: {
+            enabled,
             staleTime,
             select: data => {
                 if (!data) return [];

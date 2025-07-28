@@ -22,6 +22,7 @@ from iaso.models import Group, OrgUnit, SourceVersion
 OUT_COLUMNS = [
     "name",
     "ref",
+    "code",
     "geography",
     "parent",
     "parent_ref",
@@ -46,6 +47,7 @@ ORG_UNIT_COLUMNS = [
     "id",
     "name",
     "source_ref",
+    "code",
     "parent__name",
     "parent__source_ref",
     "parent__id",
@@ -85,7 +87,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     )
     # fill parent ref with alternative if we don't have one.
     df["parent_ref"] = df["parent__source_ref"].fillna(df["alt_parent_ref"])
-    df["ref"] = df["source_ref"].fillna("iaso:" + df["id"].astype(str))
+    df["ref"] = df["source_ref"].fillna("").mask(df["source_ref"].fillna("") == "", "iaso:" + df["id"].astype(str))
     df["geography"] = df["geom"].fillna(df["simplified_geom"].fillna(df["location"]))
     df["depth"] = df["depth"].fillna(999)
     df["depth"] = df["depth"].astype(int)

@@ -111,7 +111,7 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
 * `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.
 
 They are usually generated via `AlgorithmRun`, or the matching is done in a Notebook and uploaded via the API.
-  
+
 
 Development environment
 =======================
@@ -178,15 +178,29 @@ In a separate bash (without closing yet the started db), launch the migrations
 ``` bash
 docker compose run --rm iaso manage migrate
 ```
-(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
+(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using
 ``` bash
 psql -h localhost -p 5433 -U postgres
 ```
-then type 
+then type
 ``` sql
-create database iaso; 
+create database iaso;
 ```
 to create the missing database.)
+
+(If you get a message saying that /opt/app/entrypoint.sh does not exist, you need to disable auto crlf from github, more details: https://stackoverflow.com/questions/38905135/why-wont-my-docker-entrypoint-sh-execute)
+``` bash
+git config --global core.autocrlf input
+git rm --cached -r .
+git reset --hard
+```
+
+Then rebuild & migration
+
+``` bash
+docker compose build
+docker compose run --rm iaso manage migrate
+```
 
 ### 5. Start the server
 
@@ -310,7 +324,7 @@ You can do so by adding the following line in your root .env:
 PLUGINS=polio
 ```
 
- 
+
 Run commands inside the docker
 -------------------------------
 
@@ -361,7 +375,7 @@ You can also have a dhis2 and db_dhis2 docker, refer to section below.
 Run launch a new docker container, Exec launch a command in the existing container.
 
 So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that it is faster
-but the containers must already be running (launched manually) 
+but the containers must already be running (launched manually)
 
 `run` will launch the entrypoint.sh script but exec will take a bash command to run which is why if you want
 to run the django manage.py you will need to use `run iaso manage` but `exec iaso ./manage.py`
@@ -372,7 +386,7 @@ disk space and need to be cleaned occasionally with `docker compose rm` to recla
 Enketo
 ------
 
-To submit and edit existing form submission from the browser, an Enketo service is needed. 
+To submit and edit existing form submission from the browser, an Enketo service is needed.
 
 To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker compose with both files.
 ```
@@ -398,7 +412,7 @@ The dumpfile will be created on your host. The `-Fc` meant it will use an optimi
 
 ### To restore a dump file that you made or that somebody sent you
 0. Ensure the database server is running but not the rest. Close your docker compose, ensure it is down with `docker compose down`
-1. Launch the database server with `docker compose up db` 
+1. Launch the database server with `docker compose up db`
 2. Choose a name for you database. In this example  it will be `iaso5`
    You can list existing databases using `docker compose exec db psql -U postgres -l`
 3. Create the database `docker compose exec db psql -U postgres -c "create database iaso5"`
@@ -555,7 +569,7 @@ So that it becomes like :
 SSO with DHIS2
 --------------------------
 You can use DHIS2 as identity provider to login on Iaso. It requires a little configuration on DHIS2 and Iaso in order
-to achieve that. 
+to achieve that.
 
 ### 1 - Setup OAuth2 clients in DHIS2
 In DHIS2 settings you must set up your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
@@ -567,8 +581,8 @@ Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_client
 For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/
 
 ### 2 - Configure the OAuth2 connection in Iaso
-In iaso you must set up your dhis2 server credentials. 
-To do so, go to ```/admin``` and setup as follows :  
+In iaso you must set up your dhis2 server credentials.
+To do so, go to ```/admin``` and setup as follows :
 
 * Name: {your_dhis2_client_id} ( It must be exactly as it is in your DHIS2 client_id and DHIS2 Redirect URIs)
 * Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )
@@ -668,7 +682,30 @@ SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
 >
 > Those settings are optional and are using a default value if nothing is provided
 
+## Superset Dashboard Integration
 
+Iaso supports embedding [Superset](https://superset.apache.org/) dashboards for advanced analytics and reporting. To configure this integration, you need to set up the following environment variables:
+
+``` bash
+SUPERSET_URL="https://your-superset-instance.com"
+SUPERSET_ADMIN_USERNAME="admin_username"
+SUPERSET_ADMIN_PASSWORD="admin_password"
+```
+
+These credentials must be for an **admin** user of your Superset instance, as they are used by `iaso/api/superset.py` to create guest tokens for dashboard embedding.
+
+### Creating Embedded Superset Pages
+
+Once the environment variables are configured, you can create embedded Superset dashboards through the Django admin interface (for the moment, setting it up via the `/dashboard/pages` is not fully supported yet):
+
+1. Go to `/admin/iaso/page/` in your Iaso instance
+2. Create a new Page with:
+   - **Type**: "Superset dashboard"
+   - **Superset dashboard ID**: The ID of the dashboard in your Superset instance
+   - **Superset dashboard UI config**: Optional JSON configuration for UI customization (you can find examples [in the embedded SDK documentation](https://www.npmjs.com/package/@superset-ui/embedded-sdk))
+   - **Slug**: A unique URL slug for accessing the embedded dashboard
+
+The embedded dashboard will be accessible at `/pages/{your-slug}/` and will use guest token authentication for secure access.
 
 
 Contributing
@@ -709,7 +746,7 @@ Code reloading
 --------------
 
 In development the servers will reload when they detect a file
-change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section. 
+change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section.
 
 Troubleshooting
 ---------------
@@ -787,13 +824,13 @@ the url. When setting a new server, got to the admin and modify the example.com
 site to point to your server url.
 You can do so at `/admin/sites/site/1/change/`
 
-Some part of the code use DNS_DOMAIN environment variable, please fill it 
+Some part of the code use DNS_DOMAIN environment variable, please fill it
 with the same value.
 
 Please also check the `# Email configuration` section in settings.py and check
 everything is set correctly. Notably the sending address. See the
 [sending email](https://docs.djangoproject.com/en/4.1/topics/email/) section
-in the Django documentation for the possible backends and tweak. 
+in the Django documentation for the possible backends and tweak.
 
 Deployment on AWS Elastic Beanstalk
 ====================================

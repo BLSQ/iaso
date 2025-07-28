@@ -12,7 +12,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
-from django.db.models import Count, F, Func, Prefetch, Q, QuerySet
+from django.db.models import Count, Prefetch, Q, QuerySet
 from django.http import Http404, HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
@@ -39,6 +39,7 @@ from iaso.api.common import (
     safe_api_import,
 )
 from iaso.api.instances.instance_filters import get_form_from_instance_filters, parse_instance_filters
+from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
@@ -136,6 +137,7 @@ class InstanceFileSerializer(serializers.Serializer):
     file = serializers.FileField(use_url=True)
     created_at = TimestampField(read_only=True)
     file_type = serializers.SerializerMethodField()
+    name = serializers.CharField(read_only=True)
 
     def get_file_type(self, obj):
         return get_file_type(obj.file)
@@ -195,19 +197,27 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
         return queryset
 
-    @action(["GET"], detail=False)
-    def attachments(self, request):
-        instances = self.get_queryset()
+    def _get_filtered_attachments_queryset(self, request):
+        """Helper method to get filtered attachments queryset with common logic"""
         filters = parse_instance_filters(request.GET)
-        instances = instances.for_filters(**filters)
-        queryset = InstanceFile.objects.filter(instance__in=instances).annotate(
-            file_extension=Func(F("file"), function="LOWER", template="SUBSTRING(%(expressions)s, '\.([^\.]+)$')")
+        instances = self.get_queryset().for_filters(**filters)
+        queryset = InstanceFile.objects_with_file_extensions.filter(instance__in=instances)
+
+        file_type_serializer = FileTypeSerializer(data=request.query_params)
+        file_type_serializer.is_valid(raise_exception=True)
+
+        image_only = file_type_serializer.validated_data["image_only"]
+        video_only = file_type_serializer.validated_data["video_only"]
+        document_only = file_type_serializer.validated_data["document_only"]
+        other_only = file_type_serializer.validated_data["other_only"]
+
+        return queryset.filter_by_file_types(
+            image=image_only, video=video_only, document=document_only, other=other_only
         )
 
-        image_only = request.GET.get("image_only", "false").lower() == "true"
-        if image_only:
-            image_extensions = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
-            queryset = queryset.filter(file_extension__in=image_extensions)
+    @action(["GET"], detail=False)
+    def attachments(self, request):
+        queryset = self._get_filtered_attachments_queryset(request)
 
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
@@ -218,8 +228,34 @@ class InstancesViewSet(viewsets.ViewSet):
         serializer = InstanceFileSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    @staticmethod
-    def list_file_export(filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
+    @action(["GET"], detail=False)
+    def attachments_count(self, request):
+        """Return counts of attachments per file type (images, videos, docs, others)"""
+        queryset = self._get_filtered_attachments_queryset(request)
+
+        # Count images
+        images_count = queryset.filter_image().count()
+
+        # Count videos
+        videos_count = queryset.filter_video().count()
+
+        # Count documents
+        docs_count = queryset.filter_document().count()
+
+        # Count others (files not in images, videos, or documents)
+        others_count = queryset.filter_other().count()
+
+        return Response(
+            {
+                "images": images_count,
+                "videos": videos_count,
+                "docs": docs_count,
+                "others": others_count,
+                "total": images_count + videos_count + docs_count + others_count,
+            }
+        )
+
+    def list_file_export(self, filters: Dict[str, Any], queryset: "QuerySet[Instance]", file_format: FileFormatEnum):
         """WIP: Helper function to divide the huge list method"""
         columns = [
             {"title": "ID du formulaire", "width": 20},
@@ -287,7 +323,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
             instance_values = [
                 instance.id,
-                str(instance.is_reference_instance),
+                str(instance.id in self.reference_instances),
                 file_content.get("_version") if file_content else None,
                 instance.export_id,
                 instance.location.y if instance.location else None,
@@ -355,6 +391,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 "org_unit__parent__parent__parent__parent",
                 queryset=OrgUnit.objects.only("name", "parent_id", "source_ref"),
             )
+        )
+
+        self.reference_instances = set(
+            OrgUnit.objects.filter(reference_instances__form=form).values_list("reference_instances__id", flat=True)
         )
 
         if file_format == FileFormatEnum.XLSX:

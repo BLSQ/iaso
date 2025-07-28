@@ -83,7 +83,7 @@ def create_submission_with_picture(account_name, iaso_client):
         iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
         form_versions = iaso_client.get("/api/formversions/")["form_versions"]
         form_version = [form_version for form_version in form_versions if form_version["form_id"] == form_id]
-
+        health_facility_electricity = random.choice(["yes", "no"])
         instance_json = {
             "start": "2022-09-07T17:54:55.805+02:00",
             "end": "2022-09-07T17:55:31.192+02:00",
@@ -103,9 +103,32 @@ def create_submission_with_picture(account_name, iaso_client):
                 "photo_fosa": picture,
             },
             "equipment_group": {
-                "HFR_CS_16": random.choice(["yes", "no"]),
-                "HFR_CS_17": random.choice(["pub", "gr_elect", "syst_sol", "autre"]),
-                "HFR_CS_18": random.choice(["res_pub", "forage", "puit", "puit_non_prot"]),
+                "HFR_CS_16": health_facility_electricity,
+                "HFR_CS_17": (
+                    random.choice(
+                        [
+                            "pub gr_elect syst_sol",
+                            "pub gr_elect syst_sol autre",
+                            "gr_elect syst_sol autre",
+                            "syst_sol autre",
+                            "gr_elect",
+                            "syst_sol autre",
+                            "autre",
+                        ]
+                    )
+                    if health_facility_electricity == "yes"
+                    else None
+                ),
+                "HFR_CS_18": random.choice(
+                    [
+                        "res_pub forage puit puit_non_prot",
+                        "forage",
+                        "forage puit puit_non_prot",
+                        "puit puit_non_prot",
+                        "puit",
+                        "puit_non_prot",
+                    ]
+                ),
             },
             "services_group": {
                 "HFR_CS_26": random.choice(["yes", "no"]),

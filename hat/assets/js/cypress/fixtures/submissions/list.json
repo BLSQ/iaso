@@ -47,7 +47,8 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": true
         },
         {
             "uuid": "uuid_2",
@@ -94,7 +95,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_3",
@@ -141,7 +144,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_4",
@@ -188,7 +193,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_5",
@@ -235,7 +242,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_5",
@@ -282,7 +291,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_6",
@@ -329,7 +340,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_7",
@@ -376,7 +389,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_8",
@@ -423,7 +438,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_9",
@@ -470,7 +487,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         },
         {
             "uuid": "uuid_10",
@@ -517,7 +536,9 @@
             "altitude": 0.0,
             "period": "2021Q1",
             "status": "READY",
-            "correlation_id": null
+            "correlation_id": null,
+            "is_reference_instance": false,
+            "project_name": "Main Project"
         }
     ],
     "has_next": true,

@@ -257,6 +257,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.queryBuilder',
         defaultMessage: 'Search in submitted fields',
     },
+    confirm: {
+        id: 'blsq.queryBuilder.confirm',
+        defaultMessage: 'Confirm',
+    },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    selectForm: {
+        id: 'iaso.entities.selectForm',
+        defaultMessage: 'Select a form',
+    },
+    addForm: {
+        id: 'iaso.entities.addForm',
+        defaultMessage: 'Add a form',
+    },
 });
 
 export default MESSAGES;

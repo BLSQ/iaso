@@ -4,12 +4,12 @@ from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import ERRORED, RUNNING, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
+from plugins.polio import permissions as polio_permissions
 
 
 LQAS_TASK_NAME = "Refresh LQAS data"
@@ -93,7 +93,10 @@ class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
 
 
 class RefreshLQASIMDataViewset(ExternalTaskModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(polio_permissions.POLIO, polio_permissions.POLIO_CONFIG),
+    ]  # type: ignore
     http_method_names = ["get", "post", "patch"]
     model = Task
     filter_backends = [

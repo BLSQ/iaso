@@ -112,6 +112,9 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         api_import.save()
         raise e
 
+    api_import.has_problem = False
+    api_import.exception = ""
+    api_import.save()
     the_task.report_success_with_result(
         message=result_message(user, project, start_date, start_time, stats),
     )
@@ -183,7 +186,12 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
     IF the incoming timestamp is more recent.
     """
     entity = instance.entity
-    if not (entity.deleted_at and entity.merged_to):
+
+    if entity is None:
+        return
+
+    is_soft_deleted_merged_entity = entity.deleted_at and entity.merged_to
+    if not is_soft_deleted_merged_entity:
         return
 
     active_entity = entity.merged_to
@@ -238,11 +246,17 @@ def duplicate_instance_files(new_instance_files):
 
 
 def result_message(user, project, start_date, start_time, stats):
-    return f"""
-Mobile bulk import successful for user {user.username} and project {project.name}.
-Started: {start_date!s}, time spent: {time.time() - start_time} sec
-Number of imported org units: {stats["new_org_units"]}
-Number of imported form submissions: {stats["new_instances"]}
-Number of imported submission attachments: {stats["new_instance_files"]}
-Number of imported org unit change requests: {stats["new_change_requests"]}
-    """
+    if user:
+        msg = f"Mobile bulk import successful for user {user.username} and project {project.name}."
+    else:
+        msg = f"Mobile bulk import successful for project {project.name}."
+
+    msg += f"""
+    Started: {start_date!s}, time spent: {time.time() - start_time} sec
+    Number of imported org units: {stats["new_org_units"]}
+    Number of imported form submissions: {stats["new_instances"]}
+    Number of imported submission attachments: {stats["new_instance_files"]}
+    Number of imported org unit change requests: {stats["new_change_requests"]}
+            """
+
+    return msg

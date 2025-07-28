@@ -263,19 +263,28 @@ class ETL:
         if visit["form_id"] in [
             "child_assistance_2nd_visit_tsfp",
             "child_assistance_follow_up",
-            "child_assistance_admission",
-            "wfp_coda_pbwg_assistance",
-            "wfp_coda_pbwg_assistance_followup",
+            "child_assistance_follow_up_2",
             "assistance_admission_otp",
             "assistance_admission_2nd_visit_otp",
+            "child_assistance_admission",
+            "child_assistance_admission_2",
+            "ethiopia_child_assistance_follow_up",
+            "wfp_coda_pbwg_assistance",
+            "wfp_coda_pbwg_assistance_followup",
         ]:
-            if visit.get("next_visit__date__", None) is not None and visit.get("next_visit__date__", None) != "":
+            if visit.get("next_visit__date__") is not None and visit.get("next_visit__date__", None) != "":
                 next_visit_date = visit.get("next_visit__date__", None)
             elif (
                 visit.get("new_next_visit__date__", None) is not None
                 and visit.get("new_next_visit__date__", None) != ""
             ):
                 next_visit_date = visit.get("new_next_visit__date__", None)
+
+            elif (
+                visit.get("next_visit_date__date__", None) is not None
+                and visit.get("next_visit_date__date__", None) != ""
+            ):
+                next_visit_date = visit.get("next_visit_date__date__", None)
 
             if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
                 next_visit_days = visit.get("next_visit_days", None)
@@ -307,6 +316,12 @@ class ETL:
                 and visit.get("otp_next_visit") != "--"
             ):
                 next_visit_days = visit.get("otp_next_visit", None)
+            elif (
+                visit.get("number_of_days__int__") is not None
+                and visit.get("number_of_days__int__") != ""
+                and visit.get("number_of_days__int__") != "--"
+            ):
+                next_visit_days = visit.get("number_of_days__int__", None)
 
             if next_visit_date is not None and next_visit_date != "":
                 nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
@@ -349,7 +364,8 @@ class ETL:
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
             current_journey["visits"].append(visit)
-        followup_forms.append(default_admission_form)
+        if default_admission_form is not None:
+            followup_forms.append(default_admission_form)
         exit = None
 
         if visit["form_id"] in followup_forms:
@@ -367,6 +383,7 @@ class ETL:
         admission form(previous form) and next visit date in the antropometric followup visit form.
         When it's Anthropometric admission form, it means we still in the admission visit(visit 0).
         Otherwise, it's Anthropometric followup form which is a start of first follow up visit(visit 1) """
+
         if visit["form_id"] in default_anthropometric_followup_forms:
             index = index - 1
             exit = self.exit_by_defaulter(visits, visits[index], followup_forms)
@@ -375,13 +392,17 @@ class ETL:
 
         if (
             exit is not None
-            and current_journey.get("exit_type", None) is None
+            and exit.get("exit_type") is not None
+            and current_journey.get("exit_type") is None
             and current_journey.get("start_date") is not None
         ):
             current_journey["exit_type"] = exit["exit_type"]
             current_journey["end_date"] = exit["end_date"]
             duration = (
-                datetime.strptime(datetime.strftime(exit["end_date"], "%Y-%m-%d"), "%Y-%m-%d")
+                datetime.strptime(
+                    datetime.strftime(exit["end_date"], "%Y-%m-%d"),
+                    "%Y-%m-%d",
+                )
                 - datetime.strptime(current_journey["start_date"], "%Y-%m-%d")
             ).days
             current_journey["duration"] = duration
@@ -391,6 +412,7 @@ class ETL:
         current_step = Step()
         current_step.assistance_type = assistance.get("type", "")
         current_step.quantity_given = assistance.get("quantity", 0)
+        current_step.ration_size = assistance.get("ration_size")
         current_step.visit = visit
         current_step.instance_id = instance_id
         return current_step
@@ -404,6 +426,7 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
+        ration_size = ""
         if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
             step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
         ):
@@ -466,9 +489,11 @@ class ETL:
 
             if step.get("ration_to_distribute") is not None:
                 ration_type = step.get("ration_to_distribute")
-            elif step.get("ration") is not None:
-                ration_type = step.get("ration")
-            assistance = {"type": ration_type, "quantity": quantity}
+            assistance = {
+                "type": ration_type,
+                "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
+            }
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:
@@ -478,6 +503,7 @@ class ETL:
             assistance = {
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
+                "ration_size": step.get("ration_size", step.get("ration_limit")),
             }
             given_assistance.append(assistance)
         elif step.get("ration_type_otp") is not None:
@@ -489,17 +515,38 @@ class ETL:
                 "quantity": quantity,
             }
             given_assistance.append(assistance)
-        elif step.get("ration_type") is not None and step.get("ration_type") != "":
+        elif (
+            (step.get("ration_type") is not None and step.get("ration_type") != "")
+            or (step.get("ration") is not None and step.get("ration") != "")
+            or (step.get("ration_type_tsfp") is not None and step.get("ration_type_tsfp") != "")
+            or (step.get("ration_type_otp") is not None and step.get("ration_type_otp") != "")
+        ):
             if step.get("ration_type") in ["csb", "csb1", "csb2"]:
                 quantity = step.get("_csb_packets", 0)
             elif step.get("ration_type") == "lndf":
                 quantity = step.get("_lndf_kgs", 0)
+            elif (
+                step.get(
+                    "ration_type_tsfp",
+                    step.get(
+                        "ration",
+                        step.get(
+                            "ration_type",
+                            step.get("ration_type_otp"),
+                        ),
+                    ),
+                )
+                == "cbt"
+            ):
+                quantity = 0
+                ration_size = step.get("ration_size", step.get("ration_limit"))
             else:
                 if step.get("_total_number_of_sachets_rutf") == "" or step.get("_total_number_of_sachets") == "":
                     quantity = 0
             assistance = {
-                "type": step.get("ration_type"),
+                "type": step.get("ration_type", step.get("ration")),
                 "quantity": quantity,
+                "ration_size": ration_size,
             }
             given_assistance.append(assistance)
 
@@ -611,7 +658,7 @@ class ETL:
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
                 current_journey["weight_loss"] = visit.get("weight_loss", None)
-                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                if visit.get("duration") is not None and visit.get("duration") != "":
                     current_journey["duration"] = visit.get("duration")
 
                 current_journey = ETL().journey_Formatter(
@@ -643,7 +690,9 @@ class ETL:
             elif weight_difference < 0:
                 weight_loss = abs(weight_difference)
         return {
-            "initial_weight": (float(initial_weight) if initial_weight is not None else initial_weight),
+            "initial_weight": (
+                float(initial_weight) if initial_weight is not None and initial_weight != "" else initial_weight
+            ),
             "discharge_weight": (
                 float(current_weight) if current_weight is not None and current_weight != "" else current_weight
             ),
@@ -684,6 +733,8 @@ class ETL:
         monthly_Statistic.given_sachet_rusf = monthly_journey.get("given_sachet_rusf")
         monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
         monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
+        monthly_Statistic.given_ration_cbt = monthly_journey.get("given_ration_cbt")
+
         monthly_Statistic.exit_type = monthly_journey.get("exit_type")
         monthly_Statistic.account = account
 
@@ -702,6 +753,7 @@ class ETL:
                 "assistance_type",
                 "instance_id",
                 "quantity_given",
+                "ration_size",
                 "visit",
                 "visit__id",
                 "visit__date",
@@ -729,7 +781,12 @@ class ETL:
 
         for org_unit, journeys in data_by_journey:
             visits_by_period = groupby(journeys, key=itemgetter("period"))
-            assistance = {"rutf_quantity": 0, "rusf_quantity": 0, "csb_quantity": 0}
+            assistance = {
+                "rutf_quantity": 0,
+                "rusf_quantity": 0,
+                "csb_quantity": 0,
+                "cbt_ration": "",
+            }
             aggregated_journeys = AggregatedJourney().group_by_period(
                 visits_by_period, org_unit, aggregated_journeys, assistance
             )

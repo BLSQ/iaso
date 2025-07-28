@@ -23,8 +23,10 @@ import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 from requests.exceptions import HTTPError
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk.integrations.redis import RedisIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
@@ -115,6 +117,7 @@ ENKETO = {
     "ENKETO_DEV": os.getenv("ENKETO_DEV"),
     "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
     "ENKETO_URL": os.getenv("ENKETO_URL"),
+    "ENKETO_SIGNING_SECRET": os.getenv("ENKETO_SIGNING_SECRET", os.getenv("SECRET_KEY")),
     "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
@@ -239,7 +242,8 @@ ROOT_URLCONF = "hat.urls"
 
 if ENABLE_CORS:
     CORS_ORIGIN_ALLOW_ALL = True
-    CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+    # name used in the new version of django-cors-header, for forward compat
+    CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [
@@ -316,7 +320,8 @@ elif os.environ.get("DB_READONLY_USERNAME"):
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
+        # type: ignore
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
@@ -455,9 +460,13 @@ if USE_S3:
     else:
         STATIC_LOCATION = "iasostatics"
         STATICFILES_STORAGE = "iaso.storage.StaticStorage"
-        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (
+            AWS_STORAGE_BUCKET_NAME,
+            STATIC_LOCATION,
+        )
 
-    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
+    # subdirectories will depend on field
+    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
     if S3_ENDPOINT_URL:
         AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
@@ -530,8 +539,10 @@ if SENTRY_URL:
         if op == "http.server":
             path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
             # Monitoring endpoints
-            if path.startswith("/_health"):
+            if path and path.startswith("/_health"):
                 return 0
+
+        return traces_sample_rate  # Return default sample rate
 
     ignore_logger("django.security.DisallowedHost")
 
@@ -550,12 +561,23 @@ if SENTRY_URL:
         except (IndexError, KeyError, TypeError):
             return errors_sample_rate
 
+    # Build integrations list conditionally
+    integrations = [DjangoIntegration()]
+
+    if USE_CELERY:
+        integrations.append(CeleryIntegration(monitor_beat_tasks=True))
+
+    # Add Redis integration if using Redis for cache or Celery
+    if CACHE_BACKEND == "django_redis.cache.RedisCache" or USE_CELERY:
+        integrations.append(RedisIntegration())
+
     sentry_sdk.init(
         SENTRY_URL,
+        environment=ENVIRONMENT,  # Use the ENVIRONMENT variable
         traces_sample_rate=traces_sample_rate,
         traces_sampler=sentry_tracer_sampler,
         error_sampler=sentry_error_sampler,
-        integrations=[DjangoIntegration()],
+        integrations=integrations,
         send_default_pii=True,
         release=VERSION,
     )
@@ -580,7 +602,8 @@ elif BACKGROUND_BACKEND == "SQS":
     BEANSTALK_WORKER = IS_BACKGROUND_WORKER  # Used to expose extra URLs
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
     BEANSTALK_SQS_URL = os.environ.get(
-        "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
+        "BEANSTALK_SQS_URL",
+        "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue",
     )
     BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 else:
@@ -627,7 +650,8 @@ CODE_CHALLENGE = generate_pkce()
 SOCIALACCOUNT_PROVIDERS = {}
 
 WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
-ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False  # for now, only WFP uses social_accounts
+# for now, only WFP uses social_accounts
+ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False
 if WFP_AUTH_CLIENT_ID:
     # Activate WFP login
     # activate the wfp_auth plugin only if needed

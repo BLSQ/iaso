@@ -19,10 +19,14 @@ from rest_framework.response import Response
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.instances.instances import InstanceFileSerializer
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
 from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+
+
+SHAPE_RESULTS_MAX = 1000
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -32,6 +36,14 @@ class MobileOrgUnitsSetPagination(Paginator):
 
     def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
+
+    def get_page_size(self, request):
+        page_size = super().get_page_size(request)
+        if request.query_params.get("shapes", "false").lower() == "true":
+            if page_size and page_size > SHAPE_RESULTS_MAX:
+                return SHAPE_RESULTS_MAX
+
+        return super().get_page_size(request)
 
 
 class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
@@ -45,6 +57,7 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True, source="source_created_at_with_fallback")
     updated_at = TimestampField(read_only=True, source="source_updated_at_with_fallback")
+    instance_files = InstanceFileSerializer(many=True, read_only=True, source="instancefile_set")
 
     class Meta:
         model = Instance
@@ -56,6 +69,7 @@ class ReferenceInstancesSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "json",
+            "instance_files",
         ]
 
 
@@ -218,6 +232,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
             queryset = queryset.annotate(geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom))::json", []))
+
         return queryset
 
     def get_serializer_context(self) -> Dict[str, Any]:
@@ -311,7 +326,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
         except ValueError:
             org_unit = get_object_or_404(authorized_org_units, uuid=pk)
 
-        reference_instances = org_unit.reference_instances(manager="non_deleted_objects").all().order_by("id")
+        reference_instances = (
+            org_unit.reference_instances(manager="non_deleted_objects")
+            .prefetch_related("instancefile_set")
+            .order_by("id")
+        )
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
@@ -389,7 +408,7 @@ def import_data(org_units, user, app_id):
                 org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
             else:
                 org_unit_db.updated_at = org_unit.get("created_at", None)
-            if not user.is_anonymous:
+            if user and not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"
             if org_unit_location:

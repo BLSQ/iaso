@@ -11,13 +11,13 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from hat.menupermissions import models as permission
 from iaso.api.common import (
     CSVExportMixin,
     DeletionFilterBackend,
     HasPermission,
     ModelViewSet,
 )
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.budget.filters import BudgetProcessFilter
 from plugins.polio.budget.models import (
     BudgetProcess,
@@ -50,7 +50,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
 
     exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(polio_permissions.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
     http_method_names = ["delete", "get", "head", "patch", "post"]
     filter_backends = [
@@ -118,7 +118,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         detail=False,
         methods=["POST"],
         serializer_class=TransitionOverrideSerializer,
-        permission_classes=[HasPermission(permission.POLIO_BUDGET_ADMIN)],
+        permission_classes=[HasPermission(polio_permissions.POLIO_BUDGET_ADMIN)],
     )
     def override(self, request):
         """
@@ -203,7 +203,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(polio_permissions.POLIO_BUDGET)]  # type: ignore
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
@@ -270,7 +270,7 @@ class WorkflowViewSet(ViewSet):
     This endpoint is currently used to show the possible state in the filter
     """
 
-    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    permission_classes = [HasPermission(polio_permissions.POLIO_BUDGET)]  # type: ignore
 
     # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
     # to keep the design simple, change if/when we want to support multiple workflow.

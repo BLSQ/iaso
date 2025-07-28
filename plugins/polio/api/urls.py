@@ -27,8 +27,12 @@ from plugins.polio.api.dashboards.supply_chain import (
 from plugins.polio.api.dashboards.vaccine_stock_history import VaccineStockHistoryDashboardViewSet
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
-from plugins.polio.api.lqas_im.lqas_im_countries import LqasImCountriesViewset
 from plugins.polio.api.lqas_im.lqas_im_country import LQASIMCountryViewset
+from plugins.polio.api.lqas_im.lqas_im_dropdowns import (
+    LqasImCampaignOptionsViewset,
+    LqasImCountriesOptionsViewset,
+    LqasImRoundOptionsViewset,
+)
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
 from plugins.polio.api.notifications.views import NotificationViewSet
@@ -57,6 +61,7 @@ from plugins.polio.tasks.api.refresh_im_data import (
     RefreshIMOutOfHouseholdDataViewset,
 )
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
+from plugins.polio.tasks.api.refresh_preparedness_dashboard_data import RefreshPreparednessDataViewset
 from plugins.polio.tasks.api.refresh_vrf_dashboard_data import RefreshVrfDataViewset
 
 
@@ -82,7 +87,9 @@ router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basena
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
 router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
-router.register(r"polio/lqasim/countriesoptions", LqasImCountriesViewset, basename="lqasimcountriesoptions")
+router.register(r"polio/lqasim/countriesoptions", LqasImCountriesOptionsViewset, basename="lqasimcountriesoptions")
+router.register(r"polio/lqasim/campaignoptions", LqasImCampaignOptionsViewset, basename="lqasimcampaignoptions")
+router.register(r"polio/lqasim/roundoptions", LqasImRoundOptionsViewset, basename="lqasimroundoptions")
 router.register(r"polio/lqasimmap/country", LQASIMCountryViewset, basename="lqasimcountry")
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
@@ -92,6 +99,7 @@ router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="
 router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshvrf", RefreshVrfDataViewset, basename="refreshvrf")
+router.register(r"polio/tasks/refreshpreparedness", RefreshPreparednessDataViewset, basename="refreshpreparedness")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
 router.register(r"polio/tasks/refreshim/hh", RefreshIMHouseholdDataViewset, basename="refreshimhh")
 router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset, basename="refreshimohh")

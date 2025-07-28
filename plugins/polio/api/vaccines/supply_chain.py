@@ -3,12 +3,15 @@ import os
 from logging import getLogger
 from typing import Any
 
+import django_filters
+
 from django import forms
 from django.db import IntegrityError
 from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django.utils.translation import gettext_lazy as _
+from django_filters.rest_framework import DjangoFilterBackend
 from nested_multipart_parser.drf import DrfNestedParser
 from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
@@ -16,11 +19,13 @@ from rest_framework.filters import SearchFilter
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, parse_comma_separated_numeric_values
 from iaso.models import OrgUnit
-from iaso.utils.clamav import scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
+from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.vaccines.permissions import VaccineStockPermission, can_edit_helper
+from plugins.polio.api.vaccines.stock_management import CampaignCategory
 from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 
@@ -102,15 +107,7 @@ class NestedRoundPostSerializer(serializers.ModelSerializer):
         fields = ["number"]
 
 
-class BasePostPatchSerializer(serializers.ModelSerializer):
-    def save(self, **kwargs):
-        vaccine_request_form = self.context["vaccine_request_form"]
-        return super().save(**kwargs, request_form=vaccine_request_form)
-
-
-class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
-    document = serializers.FileField(required=False)
-
+class NestedVaccinePreAlertSerializerForPost(ModelWithFileSerializer):
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -120,7 +117,9 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
-            "document",
+            "file",
+            "scan_timestamp",
+            "scan_result",
         ]
 
     def validate(self, attrs: Any) -> Any:
@@ -129,6 +128,16 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             raise serializers.ValidationError("PO number should not be prefixed")
 
         return validated_data
+
+    def create(self, validated_data):
+        validated_data["request_form"] = self.context["vaccine_request_form"]
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data["request_form"] = self.context["vaccine_request_form"]
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
@@ -139,17 +148,12 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
-    document = serializers.FileField(required=False)
-    scan_result = serializers.SerializerMethodField()
-    scan_timestamp = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + [
             "id",
             "can_edit",
-            "scan_result",
-            "scan_timestamp",
         ]
 
     def validate(self, attrs: Any) -> Any:
@@ -167,24 +171,24 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         # Check if any values are actually different
         is_different = False
         for key in attrs.keys():
-            if key == "document":
+            if key == "file":
                 # Skip if no new document is being uploaded
                 if not attrs[key]:
                     continue
 
                 new_file = attrs[key]
-                old_file = current_obj.document
+                old_file = current_obj.file
 
                 # If there's no existing document but we're uploading one
                 if not old_file:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
                     continue
 
                 # Compare file names and sizes
                 if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -202,21 +206,13 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
-    def get_scan_result(self, obj):
-        return obj.document_scan_status
 
-    def get_scan_timestamp(self, obj):
-        if obj.document_last_scan:
-            return obj.document_last_scan.timestamp()
-        return obj.document_last_scan
-
-
-class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
+class NestedVaccineArrivalReportSerializerForPost(serializers.ModelSerializer):
     class Meta:
         model = VaccineArrivalReport
         fields = [
@@ -234,6 +230,10 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
         if "PO" in validated_data.get("po_number", "") or "po" in validated_data.get("po_number", ""):
             raise serializers.ValidationError("PO number should not be prefixed")
         return validated_data
+
+    def save(self, **kwargs):
+        vaccine_request_form = self.context["vaccine_request_form"]
+        return super().save(**kwargs, request_form=vaccine_request_form)
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
@@ -268,23 +268,23 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         # Check if any values are actually different
         is_different = False
         for key in attrs.keys():
-            if key == "document":
+            if key == "file":
                 # Skip if no new document is being uploaded
                 if not attrs[key]:
                     continue
 
                 new_file = attrs[key]
-                old_file = current_obj.document
+                old_file = current_obj.file
 
                 # If there's no existing document but we're uploading one
                 if not old_file:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
                     continue
 
                 if os.path.basename(old_file.name) != os.path.basename(new_file.name) or old_file.size != new_file.size:
                     is_different = True
-                    current_obj.document = new_file
+                    current_obj.file = new_file
             elif hasattr(current_obj, key) and getattr(current_obj, key) != attrs[key]:
                 is_different = True
                 break
@@ -302,9 +302,9 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
 
 
@@ -319,10 +319,6 @@ class PostPreAlertSerializer(serializers.Serializer):
         for item in self.validated_data["pre_alerts"]:
             pre_alert = NestedVaccinePreAlertSerializerForPost(data=item, context=self.context)
             if pre_alert.is_valid():
-                if "document" in pre_alert.validated_data:
-                    result, timestamp = scan_uploaded_file_for_virus(pre_alert.validated_data["document"])
-                    pre_alert.validated_data["document_scan_status"] = result
-                    pre_alert.validated_data["document_last_scan"] = timestamp
                 pre_alert.save()
                 pre_alerts.append(pre_alert.instance)
 
@@ -332,23 +328,24 @@ class PostPreAlertSerializer(serializers.Serializer):
 class PatchPreAlertSerializer(serializers.Serializer):
     pre_alerts = NestedVaccinePreAlertSerializerForPatch(many=True)
 
+    # Not a ModelSerializer, so we can use create to PATCH
     def create(self, validated_data, **kwargs):
         vaccine_request_form = self.context["vaccine_request_form"]
         pre_alerts = []
 
         for item in self.validated_data["pre_alerts"]:
+            # The update method of this serializer is not called so we have to scan the file manually in the code below
             pre_alert = NestedVaccinePreAlertSerializerForPatch(data=item, context=self.context)
-
             if pre_alert.is_valid():
-                ar = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
+                pa = vaccine_request_form.vaccineprealert_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if key == "document":
+                    if key == "file":
                         if not item[key]:
                             continue
 
                         new_file = item[key]
-                        old_file = ar.document
+                        old_file = pa.file
 
                         if not old_file or (
                             os.path.basename(old_file.name) != os.path.basename(new_file.name)
@@ -356,29 +353,29 @@ class PatchPreAlertSerializer(serializers.Serializer):
                         ):
                             is_different = True
                             result, timestamp = scan_uploaded_file_for_virus(new_file)
-                            ar.document = new_file
-                            ar.document_scan_status = result
-                            ar.document_last_scan = timestamp
-                    elif hasattr(ar, key) and getattr(ar, key) != item[key]:
+                            pa.file = new_file
+                            pa.file_scan_status = result
+                            pa.file_last_scan = timestamp
+                    elif hasattr(pa, key) and getattr(pa, key) != item[key]:
                         is_different = True
-                        setattr(ar, key, item[key])
+                        setattr(pa, key, item[key])
 
                 if is_different:
                     if can_edit_helper(
                         self.context["request"].user,
-                        ar.created_at,
-                        admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-                        non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+                        pa.created_at,
+                        admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+                        non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
-                            ar.save()
+                            pa.save()
                         except IntegrityError as e:
                             raise serializers.ValidationError(str(e))
                     else:
-                        raise serializers.ValidationError(f"You are not allowed to edit the pre-alert with id {ar.id}")
+                        raise serializers.ValidationError(f"You are not allowed to edit the pre-alert with id {pa.id}")
 
-                pre_alerts.append(ar)
+                pre_alerts.append(pa)
 
             else:
                 logger.error(pre_alert.errors)
@@ -415,28 +412,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                 ar = vaccine_request_form.vaccinearrivalreport_set.get(id=item.get("id"))
                 is_different = False
                 for key in item.keys():
-                    if key == "document":
-                        # Skip if no new document is being uploaded
-                        if not item[key]:
-                            continue
-
-                        old_file = ar.document
-                        new_file = item[key]
-
-                        # If there's no existing document but we're uploading one
-                        if not old_file:
-                            is_different = True
-                            ar.document = new_file
-                            continue
-
-                        # Compare file names and sizes
-                        if (
-                            os.path.basename(old_file.name) != os.path.basename(new_file.name)
-                            or old_file.size != new_file.size
-                        ):
-                            is_different = True
-                            ar.document = new_file
-                    elif hasattr(ar, key) and getattr(ar, key) != item[key]:
+                    if hasattr(ar, key) and getattr(ar, key) != item[key]:
                         is_different = True
                         setattr(ar, key, item[key])
 
@@ -444,9 +420,9 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                     if can_edit_helper(
                         self.context["request"].user,
                         ar.created_at,
-                        admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-                        non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-                        read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+                        admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+                        non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                        read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
                     ):
                         try:
                             ar.save()
@@ -471,10 +447,9 @@ class NestedCountrySerializer(serializers.ModelSerializer):
         fields = ["name", "id"]
 
 
-class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
+class VaccineRequestFormPostSerializer(ModelWithFileSerializer):
     rounds = NestedRoundPostSerializer(many=True)
     campaign = serializers.CharField()
-    document = serializers.FileField(required=False)
 
     class Meta:
         model = VaccineRequestForm
@@ -496,7 +471,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "comment",
             "target_population",
             "vrf_type",
-            "document",
+            "file",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
@@ -523,11 +498,13 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validate_rounds_and_campaign(validated_data, self.context["request"].user)
-
         rounds = validated_data.pop("rounds")
-        campaign = validated_data.pop("campaign")
-        request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
+        request_form = VaccineRequestForm.objects.create(**validated_data)
         request_form.rounds.set(rounds)
+        if self.scan_file_if_exists(validated_data):
+            request_form.file_last_scan = validated_data["file_last_scan"]
+            request_form.file_scan_status = validated_data["file_scan_status"]
+            request_form.save()
         return request_form
 
     def update(self, instance, validated_data):
@@ -538,35 +515,23 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             force_campaign=False,
         )
         rounds = validated_data.pop("rounds", None)
-        campaign = validated_data.pop("campaign", None)
-        modified = False
+        self.scan_file_if_exists(validated_data, instance)
+        super().update(instance, validated_data)
 
-        for attr, value in validated_data.items():
-            if getattr(instance, attr) != value:
-                setattr(instance, attr, value)
-                modified = True
-
+        # Multiple nested serializers need to be handled manually
         if rounds:
             instance_rounds = set(instance.rounds.all())
             if set(rounds) != instance_rounds:
                 instance.rounds.set(rounds)
-                modified = True
 
-        if campaign and instance.campaign != campaign:
-            instance.campaign = campaign
-            modified = True
-
-        if modified:
-            instance.save()
         return instance
 
 
-class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
+class VaccineRequestFormDetailSerializer(ModelWithFileSerializer):
     country_name = serializers.CharField(source="campaign.country.name")
     country_id = serializers.IntegerField(source="campaign.country.id")
     obr_name = serializers.CharField(source="campaign.obr_name")
     rounds = NestedRoundSerializer(many=True)
-    document = serializers.FileField(required=False)
     can_edit = serializers.SerializerMethodField()
 
     class Meta:
@@ -595,7 +560,9 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "obr_name",
             "target_population",
             "vrf_type",
-            "document",
+            "scan_result",
+            "scan_timestamp",
+            "file",
             "can_edit",
         ]
 
@@ -603,10 +570,18 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
+
+    def create(self, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        self.scan_file_if_exists(validated_data)
+        return super().update(instance, validated_data)
 
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
@@ -621,6 +596,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     eta = serializers.SerializerMethodField()
     var = serializers.SerializerMethodField()
     can_edit = serializers.SerializerMethodField()
+    campaign_category = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineRequestForm
@@ -642,16 +618,29 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "updated_at",
             "vrf_type",
             "can_edit",
+            "campaign_category",
         ]
 
     def get_can_edit(self, obj):
         return can_edit_helper(
             self.context["request"].user,
             obj.created_at,
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
+
+    def get_campaign_category(self, obj):
+        campaign = obj.campaign
+        if campaign.is_test:
+            return CampaignCategory.TEST_CAMPAIGN
+        if campaign.on_hold:
+            return CampaignCategory.CAMPAIGN_ON_HOLD
+        if not campaign.rounds.all().exclude(on_hold=True).exists():
+            return CampaignCategory.ALL_ROUNDS_ON_HOLD
+        if obj.rounds.filter(on_hold=True).exists():
+            return CampaignCategory.ROUND_ON_HOLD
+        return CampaignCategory.REGULAR
 
     def get_prefetched_data(self, obj):
         # Prefetch vaccine pre_alert and vaccinearrival_report to reduce the number of queries in the DB
@@ -818,6 +807,20 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
         return ""
 
 
+class VaccineRequestFormFilterSet(django_filters.FilterSet):
+    round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))
+
+    class Meta:
+        model = VaccineRequestForm
+        fields = {
+            "campaign__obr_name": ["exact"],
+            "campaign__country": ["exact"],
+            "vaccine_type": ["exact"],
+            "rounds__started_at": ["exact", "gte", "lte", "range"],
+            "rounds__ended_at": ["exact", "gte", "lte", "range"],
+        }
+
+
 class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
@@ -827,6 +830,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
     - rounds__ended_at : Use a date in the format YYYY-MM-DD
+    - round_id : Filter by a specific round ID
 
     Available ordering:
     - country
@@ -866,9 +870,9 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     permission_classes = [
         lambda: VaccineStockPermission(
-            admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
-            non_admin_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            read_only_perm=permission.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
+            admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            non_admin_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ,
+            read_only_perm=polio_permissions.POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY,
         )
     ]
     http_method_names = ["get", "post", "delete", "patch"]
@@ -879,15 +883,11 @@ class VaccineRequestFormViewSet(ModelViewSet):
         NoFormDjangoFilterBackend,
         VRFCustomOrderingFilter,
         VRFCustomFilter,
+        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
-    filterset_fields = {
-        "campaign__obr_name": ["exact"],
-        "campaign__country": ["exact"],
-        "vaccine_type": ["exact"],
-        "rounds__started_at": ["exact", "gte", "lte", "range"],
-        "rounds__ended_at": ["exact", "gte", "lte", "range"],
-    }
+    filterset_class = VaccineRequestFormFilterSet
+
     ordering_fields = ["created_at", "updated_at"]
     search_fields = [
         "campaign__obr_name",

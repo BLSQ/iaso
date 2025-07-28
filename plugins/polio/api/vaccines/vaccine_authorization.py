@@ -11,7 +11,6 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import (
     Custom403Exception,
     DeletionFilterBackend,
@@ -21,6 +20,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import OrgUnit
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
 
@@ -111,8 +111,8 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
 
 class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-    write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+    read_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+    write_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])

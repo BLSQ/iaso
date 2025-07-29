@@ -273,4 +273,4 @@ class LqasImCountryBlockOptionsViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Group.all_objects.filter_for_user(user).filter(block_of_countries=True)
+        return Group.objects.filter_for_user(user).filter(block_of_countries=True)

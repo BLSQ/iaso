@@ -83,7 +83,7 @@ export type Form = {
     periods_before_allowed: number;
     periods_after_allowed: number;
     latest_form_version: string;
-    instances_count: number;
+    instances_count?: number;
     instance_updated_at: string;
     created_at: string;
     updated_at: string;

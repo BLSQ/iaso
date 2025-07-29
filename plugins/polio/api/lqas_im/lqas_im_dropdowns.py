@@ -57,6 +57,9 @@ class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):
         )
         countries_with_lqas = (
             Round.objects.filter(campaign__country__in=queryset)
+            .filter(campaign__is_test=False)
+            .filter(campaign__on_hold=False)
+            .filter(on_hold=False)
             .filter(with_lqas_end_date | without_lqas_end_date)
             .values_list("campaign__country__id")
         )
@@ -109,7 +112,7 @@ class LqasImCampaignOptionsFilter(django_filters.rest_framework.FilterSet):
             ended_at__lte=last_day - timedelta(days=10),  # same logic a s above
         )
 
-        rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date)
+        rounds_with_lqas = Round.objects.filter(with_lqas_end_date | without_lqas_end_date).filter(on_hold=False)
 
         return queryset.filter(rounds__in=rounds_with_lqas)
 
@@ -133,7 +136,13 @@ class LqasImCampaignOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        # Sometimes filter_for_user will return duplicate campaigns but fixing this at the queryset manager level introduces a whole loit of new bugs
+        campaigns = (
+            Campaign.polio_objects.filter_for_user(user)
+            .filter(is_test=False)
+            .filter(on_hold=False)
+            .distinct("obr_name")
+        )
         return campaigns
 
 
@@ -172,7 +181,7 @@ class LqasImRoundOptionsFilter(django_filters.rest_framework.FilterSet):
             ended_at__gte=first_day - timedelta(days=10),
             ended_at__lte=last_day - timedelta(days=10),
         )
-        return queryset.filter(with_lqas_end_date | without_lqas_end_date)
+        return queryset.filter(with_lqas_end_date | without_lqas_end_date).filter(on_hold=False)
 
 
 class LqasImRoundOptionsViewset(ModelViewSet):
@@ -185,4 +194,4 @@ class LqasImRoundOptionsViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Round.objects.filter_for_user(user)
+        return Round.objects.filter_for_user(user).filter(on_hold=False)

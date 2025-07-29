@@ -1038,7 +1038,7 @@ const MESSAGES = defineMessages({
     },
     noScope: {
         id: 'iaso.polio.label.noScope',
-        defaultMessage: 'Plese select a scope for the campaign',
+        defaultMessage: 'No scope',
     },
     districtsNeedMatching: {
         id: 'iaso.polio.label.districtsNeedMatching',
@@ -1046,7 +1046,7 @@ const MESSAGES = defineMessages({
     },
     noScopeFound: {
         id: 'iaso.polio.label.noScopeFound',
-        defaultMessage: 'No scope found',
+        defaultMessage: 'No scope was encoded for the selected round',
     },
     childrenNfmAbsent: {
         id: 'iaso.polio.label.childrenNfmAbsent',

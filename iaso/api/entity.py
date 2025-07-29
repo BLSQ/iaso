@@ -1,14 +1,12 @@
-import csv
 import datetime
-import io
 import json
 import math
+import re
 
 from time import gmtime, strftime
 from typing import Any, List, Union
 
 import pytz
-import xlsxwriter  # type: ignore
 
 from django.core.paginator import Paginator
 from django.db.models import Exists, Max, OuterRef, Q
@@ -18,6 +16,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -165,9 +164,21 @@ class EntityViewSet(ModelViewSet):
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
-            )
+            if search.startswith("ids:"):
+                ids = re.findall("\d+", search)
+                if not ids:
+                    raise ValidationError(f"Failed parsing ids in search '{search}'")
+                queryset = queryset.filter(id__in=ids)
+            elif search.startswith("uuids:"):
+                uuids_re = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+                uuids = re.findall(uuids_re, search)
+                if not uuids:
+                    raise ValidationError(f"Failed parsing uuids in search '{search}'")
+                queryset = queryset.filter(uuid__in=uuids)
+            else:
+                queryset = queryset.filter(
+                    Q(name__icontains=search) | Q(uuid__icontains=search) | Q(attributes__json__icontains=search)
+                )
         if by_uuid:
             queryset = queryset.filter(uuid=by_uuid)
         if entity_type:
@@ -278,13 +289,17 @@ class EntityViewSet(ModelViewSet):
         order_columns = request.GET.get("order_columns", None)
         as_location = request.GET.get("asLocation", None)
 
+        # we don't need duplicates for map display or exports
+        fetch_duplicates = not as_location and not is_export
+        if fetch_duplicates:
+            queryset = queryset.with_duplicates()
+
         queryset = queryset.order_by(*orders)
 
         # annotate with last instance on Entity, to allow ordering by it
         entities = queryset.annotate(
             last_saved_instance=Max(Coalesce("instances__source_created_at", "instances__created_at"))
         )
-        result_list = []
         columns_list: List[Any] = []
 
         # -- Allow ordering by the field inside the Entity.
@@ -322,55 +337,66 @@ class EntityViewSet(ModelViewSet):
             num_pages = math.ceil(total_count / limit_int)
             entities = entities[start_int:end_int]
 
-        for entity in entities:
-            attributes = entity.attributes
-            attributes_pk = None
-            attributes_ou = None
-            attributes_latitude = None
-            attributes_longitude = None
-            file_content = None
-            if attributes is not None and entity.attributes is not None:
-                file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
-                attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None  # type: ignore
-                attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
-                attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
-            name = None
-            if file_content is not None:
-                name = file_content.get("name")
-            duplicates = []
-            # invokes many SQL queries and not needed for map display
-            if not as_location and not is_export:
-                duplicates = _get_duplicates(entity)
-            result = {
-                "id": entity.id,
-                "uuid": entity.uuid,
-                "name": name,
-                "created_at": entity.created_at,
-                "updated_at": entity.updated_at,
-                "attributes": attributes_pk,
-                "entity_type": entity.entity_type.name,
-                "last_saved_instance": entity.last_saved_instance,
-                "org_unit": attributes_ou,
-                "duplicates": duplicates,
-                "latitude": attributes_latitude,
-                "longitude": attributes_longitude,
-            }
-            if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
-                columns_list = []
-                possible_fields_list = entity.entity_type.reference_form.possible_fields or []
-                for items in possible_fields_list:
-                    for k, v in items.items():
-                        if k == "name" and v in entity.entity_type.fields_list_view:
-                            columns_list.append(items)
+        # if exactly one type of entity specified, add columns for that type of entity
+        columns_list = []
+        if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
+            entity_type = EntityType.objects.select_related("reference_form").get(id=int(entity_type_ids))
+            possible_fields_list = entity_type.reference_form.possible_fields or []
+            for items in possible_fields_list:
+                for k, v in items.items():
+                    if k == "name" and v in entity_type.fields_list_view:
+                        columns_list.append(items)
+            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+            columns_list = [c for c in columns_list if len(c) > 2]
+        columns_set = {k["name"] for k in columns_list}
+
+        def entities_as_dict_gen(entity_qs, columns_set):
+            for entity in entity_qs:
+                attributes = entity.attributes
+                attributes_pk = None
+                attributes_ou = None
+                attributes_latitude = None
+                attributes_longitude = None
+                file_content = None
+                if attributes is not None and entity.attributes is not None:
+                    file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                    attributes_pk = attributes.pk
+                    attributes_ou = (
+                        entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None
+                    )  # type: ignore
+                    attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
+                    attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
+                name = None
+                if file_content is not None:
+                    name = file_content.get("name")
+                duplicates = []
+                # not needed for map display or exports
+                if fetch_duplicates:
+                    duplicates.extend(entity.duplicate_ids)
+
+                result = {
+                    "id": entity.id,
+                    "uuid": entity.uuid,
+                    "name": name,
+                    "created_at": entity.created_at,
+                    "updated_at": entity.updated_at,
+                    "attributes": attributes_pk,
+                    "entity_type": entity.entity_type.name,
+                    "last_saved_instance": entity.last_saved_instance,
+                    "org_unit": attributes_ou,
+                    "duplicates": duplicates,
+                    "latitude": attributes_latitude,
+                    "longitude": attributes_longitude,
+                }
                 if attributes is not None and attributes.json is not None:
                     for k, v in entity.attributes.json.items():
-                        if k in list(entity.entity_type.fields_list_view):
+                        if k in columns_set:
                             result[k] = v
-                columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-                columns_list = [c for c in columns_list if len(c) > 2]
-            result_list.append(result)
+                yield result
+
         if is_export:
+            # chunk_size needs to be set explicitly when using prefetch_related() on the qs
+            results = entities_as_dict_gen(entities.iterator(chunk_size=4000), columns_set)
             columns = [
                 {"title": "ID", "width": 20},
                 {"title": "UUID", "width": 20},
@@ -380,6 +406,7 @@ class EntityViewSet(ModelViewSet):
                 {"title": "HC ID", "width": 20},
                 {"title": "Last update", "width": 20},
             ]
+            # entity type-specific columns
             for col in columns_list:
                 columns.append({"title": col["label"]})
 
@@ -412,23 +439,24 @@ class EntityViewSet(ModelViewSet):
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx("Entities", columns, result_list, get_row),
+                    generate_xlsx("Entities", columns, results, get_row),
                     content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(result_list, Echo(), columns, get_row)),
+                    streaming_content=(iter_items(results, Echo(), columns, get_row)),
                     content_type=CONTENT_TYPE_CSV,
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+        results = entities_as_dict_gen(entities, columns_set)
         if as_location:
             return Response(
                 {
                     "limit": limit_int,
-                    "result": result_list,
+                    "result": list(results),
                 }
             )
         if limit:
@@ -441,11 +469,11 @@ class EntityViewSet(ModelViewSet):
                     "pages": num_pages,
                     "limit": limit_int,
                     "columns": columns_list,
-                    "result": result_list,
+                    "result": list(results),
                 }
             )
 
-        res = {"columns": columns_list, "result": result_list}
+        res = {"columns": columns_list, "result": list(results)}
         return Response(res)
 
     def destroy(self, request, pk=None):
@@ -457,78 +485,3 @@ class EntityViewSet(ModelViewSet):
         )
 
         return Response(EntitySerializer(entity, many=False).data)
-
-    @action(detail=False, methods=["GET"])
-    def export_entity_submissions_list(self, request):
-        entity_id = request.GET.get("id", None)
-        entity = get_object_or_404(Entity, pk=entity_id)
-        instances = Instance.objects.filter(entity=entity)
-        xlsx = request.GET.get("xlsx", None)
-        csv_exp = request.GET.get("csv", None)
-        fields = [
-            "Submissions for the form",
-            "Created",
-            "Last Sync",
-            "Org Unit",
-            "Submitter",
-            "Actions",
-        ]
-        date = datetime.datetime.now().strftime("%Y-%m-%d")
-
-        if xlsx:
-            mem_file = io.BytesIO()
-            workbook = xlsxwriter.Workbook(mem_file)
-            worksheet = workbook.add_worksheet("entity")
-            worksheet.set_column(0, 100, 30)
-            row = 0
-            col = 0
-
-            for f in fields:
-                worksheet.write(row, col, f)
-                col += 1
-
-            for i in instances:
-                row += 1
-                col = 0
-                data = [
-                    i.form.name,
-                    i.source_created_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_created_at else None,
-                    i.source_updated_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_updated_at else None,
-                    i.org_unit.name,
-                    i.created_by.username,
-                    "",
-                ]
-                for d in data:
-                    worksheet.write(row, col, d)
-                    col += 1
-            filename = f"{entity}_details_list_{date}.xlsx"
-            workbook.close()
-            mem_file.seek(0)
-            response = HttpResponse(mem_file, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
-
-        if csv_exp:
-            filename = f"{entity}_details_list_{date}.csv"
-            response = HttpResponse(
-                content_type="txt/csv",
-                headers={"Content-Disposition": f"attachment; filename={filename}"},
-            )
-
-            writer = csv.writer(response)
-            writer.writerow(fields)
-
-            for i in instances:
-                data_list = [
-                    i.form.name,
-                    i.source_created_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_created_at else None,
-                    i.source_updated_at.strftime(EXPORTS_DATETIME_FORMAT) if i.source_updated_at else None,
-                    i.org_unit.name,
-                    i.created_by.username,
-                    "",
-                ]
-                writer.writerow(data_list)
-
-            return response
-
-        return super().list(request)

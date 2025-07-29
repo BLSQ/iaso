@@ -20,13 +20,15 @@ import uuid
 from copy import copy
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Prefetch
+from django.db.models import Case, F, Prefetch, Q, When
 
 from hat.audit.models import log_modification
 from iaso.models import Account, Form, Instance, OrgUnit, Project
+from iaso.models.deduplication import ValidationStatus
 from iaso.utils.jsonlogic import jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -161,6 +163,26 @@ class EntityQuerySet(models.QuerySet):
     ):
         return self.filter_for_user(user).filter_for_app_id(user, app_id)
 
+    def with_duplicates(self):
+        return self.annotate(
+            duplicate_ids=ArrayAgg(
+                Case(
+                    When(
+                        Q(duplicates1__validation_status=ValidationStatus.PENDING),
+                        then=F("duplicates1__entity2__id"),
+                    ),
+                    When(
+                        Q(duplicates2__validation_status=ValidationStatus.PENDING),
+                        then=F("duplicates2__entity1__id"),
+                    ),
+                    output_field=models.IntegerField(),
+                ),
+                distinct=True,
+                filter=Q(duplicates1__validation_status=ValidationStatus.PENDING)
+                | Q(duplicates2__validation_status=ValidationStatus.PENDING),
+            )
+        )
+
 
 class Entity(SoftDeletableModel):
     """An entity represents a physical object or person with a known Entity Type
@@ -248,7 +270,7 @@ class Entity(SoftDeletableModel):
         self.delete()  # soft delete
         log_modification(original, self, audit_source, user=user)
 
-        for instance in set([self.attributes] + list(self.instances.all())):
+        for instance in set(filter(None, [self.attributes] + list(self.instances.all()))):
             original = copy(instance)
             instance.soft_delete()
             log_modification(original, instance, audit_source, user=user)

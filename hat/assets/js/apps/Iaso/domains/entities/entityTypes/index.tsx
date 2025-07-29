@@ -69,7 +69,9 @@ export const EntityTypes: FunctionComponent = () => {
                         currentUser,
                     ) && (
                         <AddEntityTypesDialog
-                            iconProps={{}}
+                            iconProps={{
+                                dataTestId: 'add-entity-button',
+                            }}
                             titleMessage={MESSAGES.create}
                             saveEntityType={saveEntityType}
                         />

@@ -562,6 +562,7 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
+        "id",
         "uuid",
         "account__name",
         "entity_type__name",
@@ -820,6 +821,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):
@@ -843,6 +845,7 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    search_fields = ("id",)
 
 
 @admin.register(OrgUnitChangeRequest)

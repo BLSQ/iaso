@@ -12,6 +12,7 @@ import {
     Dialog,
     DialogActions,
     DialogContent,
+    DialogTitle,
     IconButton,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -41,6 +42,7 @@ type PdfPreviewProps = {
     scanResult?: string | undefined;
     scanTimestamp?: number | undefined;
     coloredScanResultIcon?: boolean;
+    fileInfo?: string;
 };
 
 const styles: SxStyles = {
@@ -85,6 +87,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
     scanResult,
     scanTimestamp,
     coloredScanResultIcon,
+    fileInfo,
 }) => {
     const [open, setOpen] = useState(false);
     const [numPages, setNumPages] = useState<number | null>(null);
@@ -148,6 +151,7 @@ export const PdfPreview: FunctionComponent<PdfPreviewProps> = ({
                     onClose={handleClose}
                 >
                     <DialogContent sx={styles.dialogContent}>
+                        {fileInfo && <DialogTitle>{fileInfo}</DialogTitle>}
                         <FileScanHeader
                             scanResult={scanResult}
                             scanTimestamp={scanTimestamp}

@@ -1,5 +1,6 @@
 from typing import Union
 
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
@@ -45,11 +46,18 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Profile):
         profiles = Profile.objects.filter(account=user.iaso_profile.account)
         return profiles.filter(id=obj.id).exists() and user.has_perm(permission.USERS_ADMIN)
-    # FIXME Hotfix to prevent an error when loading the app without the polio plugins
-    from plugins.polio.models import Campaign
 
-    if isinstance(obj, Campaign):
-        return user.has_perm(permission.POLIO) and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
+    # Now checking models that are part of plugins
+    plugins = settings.PLUGINS
+    if "polio" in plugins:
+        from plugins.polio import permissions as polio_permissions
+        from plugins.polio.models import Campaign
+
+        if isinstance(obj, Campaign):
+            return (
+                user.has_perm(polio_permissions.POLIO)
+                and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
+            )
     return False
 
 

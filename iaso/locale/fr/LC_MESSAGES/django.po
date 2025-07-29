@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-04-16 13:27+0000\n"
+"POT-Creation-Date: 2025-06-26 09:39+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -99,6 +99,10 @@ msgid "Groups IDs (comma-separated)"
 msgstr "IDs des groupes (séparés par des virgules)"
 
 #: iaso/api/org_unit_change_requests/filters.py
+msgid "Soft deleted"
+msgstr "Suppression réversible"
+
+#: iaso/api/org_unit_change_requests/filters.py
 msgid "Data source synchronization ID"
 msgstr "ID de synchronisation de source de données"
 
@@ -169,6 +173,10 @@ msgid "Can't parse geom"
 msgstr "Impossible d'analyser la géométrie"
 
 #: iaso/api/org_units.py
+msgid "Can't parse geo_json"
+msgstr "Impossible d'analyser le champ geo_json"
+
+#: iaso/api/org_units.py
 msgid "You cannot create an Org Unit without a parent"
 msgstr "Vous ne pouvez pas créer une unité organisationnelle sans parent"
 
@@ -179,6 +187,10 @@ msgstr "Le groupe doit être dans la même version source"
 #: iaso/api/org_units.py
 msgid "InstanceFile with id {} does not exist"
 msgstr "Le fichier d'instance avec l'id {} n'existe pas"
+
+#: iaso/api/org_units.py
+msgid "Another valid OrgUnit already exists with the code '{}' in this version"
+msgstr "Une autre unité d'organisation valide existe déjà avec le code '{}' dans cette version"
 
 #: iaso/api/org_units.py
 msgid "Unauthorized version id"

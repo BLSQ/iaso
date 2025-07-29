@@ -1,8 +1,6 @@
 import typing
 
 import jsonschema
-import numpy as np
-import pandas as pd
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group, Permission
@@ -382,12 +380,8 @@ class ProfileAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/?xlsx=true")
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
 
-        excel_data = pd.read_excel(response.content, engine="openpyxl")
-
-        excel_columns = list(excel_data.columns.ravel())
         self.assertEqual(
             excel_columns,
             [
@@ -409,10 +403,8 @@ class ProfileAPITestCase(APITestCase):
             ],
         )
 
-        data_dict = excel_data.replace({np.nan: None}).to_dict()
-
         self.assertDictEqual(
-            data_dict,
+            excel_data,
             {
                 "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum", 6: "managedGeoLimit"},
                 "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
@@ -1832,3 +1824,41 @@ class ProfileAPITestCase(APITestCase):
         # Should only include the user once despite being in multiple levels
         self.assertEqual(len(profiles), 1)
         self.assertEqual(profiles[0]["user_name"], "janedoe")
+
+    def test_update_password_for_single_user(self):
+        single_user = self.jim
+        single_user.set_password("p4ssword")
+        single_user.save()
+
+        self.client.force_authenticate(single_user)
+        new_data = {
+            "user_name": single_user.username,
+            "password": "new_p4ssword",
+        }
+        response = self.client.patch(f"/api/profiles/{single_user.iaso_profile.pk}/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        single_user.refresh_from_db()
+        self.assertEqual(single_user.check_password("new_p4ssword"), True)
+
+    def test_update_password_for_multi_user(self):
+        """
+        For tenant users, changing the password of an `account_user`
+        should update the password of the `main_user`.
+        """
+        main_user = m.User.objects.create(username="main_user", email="main_user@health.org")
+        main_user.set_password("p4ssword")
+        main_user.save()
+        account_user = self.create_user_with_profile(
+            username="user_1", email="user_1@health.org", account=self.account, permissions=[permission._USERS_ADMIN]
+        )
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user)
+
+        self.client.force_authenticate(account_user)
+        new_data = {
+            "user_name": account_user.username,
+            "password": "new_p4ssword",
+        }
+        response = self.client.patch(f"/api/profiles/{account_user.iaso_profile.pk}/", data=new_data, format="json")
+        self.assertJSONResponse(response, 200)
+        main_user.refresh_from_db()
+        self.assertEqual(main_user.check_password("new_p4ssword"), True)

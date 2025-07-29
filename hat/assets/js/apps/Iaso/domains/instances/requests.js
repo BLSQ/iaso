@@ -1,7 +1,7 @@
+import snackMessages from '../../components/snackBars/messages';
 import { getRequest } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
-import { getFileUrl } from './utils';
-import snackMessages from '../../components/snackBars/messages';
+import { getFileUrl, getFileCountUrl } from './utils';
 
 export const fetchFormDetailsForInstance = formId =>
     getRequest(
@@ -12,10 +12,10 @@ export const fetchInstancesAsDict = url => getRequest(url);
 
 export const fetchInstancesAsSmallDict = url => getRequest(url);
 
-export const useGetInstancesFiles = (params, rowsPerPage, page) =>
+export const useGetInstancesFiles = (params, rowsPerPage, page, type) =>
     useSnackQuery(
-        ['instances', 'files', params],
-        () => getRequest(getFileUrl(params, rowsPerPage, page)),
+        ['instances', 'files', params, type],
+        () => getRequest(getFileUrl(params, rowsPerPage, page, type)),
         snackMessages.fetchInstanceLocationError,
         {
             // enabled: params.tab === 'files',
@@ -38,3 +38,15 @@ export const useGetInstancesFiles = (params, rowsPerPage, page) =>
             },
         },
     );
+
+export const useGetInstancesFilesCount = params =>
+    useSnackQuery({
+        queryKey: ['instances', 'files', 'count', params],
+        queryFn: () => getRequest(getFileCountUrl(params)),
+        snackMessage: snackMessages.fetchInstanceLocationError,
+        options: {
+            keepPreviousData: true,
+            cacheTime: 60000,
+            staleTime: 60000,
+        },
+    });

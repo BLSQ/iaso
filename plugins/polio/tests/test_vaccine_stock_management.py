@@ -7,11 +7,10 @@ from django.contrib.auth.models import AnonymousUser
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
-import hat.menupermissions.models as permissions
-
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm
+from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio.models import OutgoingStockMovement
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -42,19 +41,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
             username="user_ro_perms",
             account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
+            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
         )
         cls.user_read_only_perms = cls.create_user_with_profile(
             username="user_read_only_perms",
             account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
+            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=cls.account, permissions=[])
 
@@ -255,6 +255,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             update_data,
             format="json",
         )
+
         self.assertEqual(response.status_code, 200)
 
         # Simulate passage of 8 days
@@ -875,21 +876,21 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 report_date=self.now,
                 form_a_reception_date="2023-10-01",
                 usable_vials_used=999,
-                document=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
+                file=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
             )
 
-            self.assertIn("document_path_1", outgoing_stock_movement.document.name)
+            self.assertIn("document_path_1", outgoing_stock_movement.file.name)
 
             # Query the newly created OutgoingStockMovement via ORM
             queried_movement = pm.OutgoingStockMovement.objects.get(pk=outgoing_stock_movement.pk)
             self.assertEqual(queried_movement.usable_vials_used, 999)
-            self.assertIn("document_path_1", queried_movement.document.name)
+            self.assertIn("document_path_1", queried_movement.file.name)
 
             # Query the newly created OutgoingStockMovement via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{outgoing_stock_movement.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["usable_vials_used"], 999)
-            self.assertIn("document_path_1", response.data["document"])
+            self.assertIn("document_path_1", response.data["file"])
 
             # Test creation and retrieval of IncidentReport with document via ORM
             incident_report = pm.IncidentReport.objects.create(
@@ -897,25 +898,25 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 date_of_incident_report=self.now - datetime.timedelta(days=2),
                 incident_report_received_by_rrt=self.now - datetime.timedelta(days=1),
                 stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
-                document=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
+                file=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
                 unusable_vials=7,  # 1 vial will be moved from usable to unusable
                 usable_vials=3,
             )
 
-            self.assertIn("document_path_2", incident_report.document.name)
+            self.assertIn("document_path_2", incident_report.file.name)
 
             # Query the newly created IncidentReport via ORM
             queried_incident = pm.IncidentReport.objects.get(pk=incident_report.pk)
             self.assertEqual(queried_incident.unusable_vials, 7)
             self.assertEqual(queried_incident.usable_vials, 3)
-            self.assertIn("document_path_2", queried_incident.document.name)
+            self.assertIn("document_path_2", queried_incident.file.name)
 
             # Query the newly created IncidentReport via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}incident_report/{incident_report.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["unusable_vials"], 7)
             self.assertEqual(response.data["usable_vials"], 3)
-            self.assertIn("document_path_2", response.data["document"])
+            self.assertIn("document_path_2", response.data["file"])
 
             # Test creation and retrieval of DestructionReport with document via ORM
             destruction_report = pm.DestructionReport.objects.create(
@@ -923,7 +924,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 rrt_destruction_report_reception_date=self.now - datetime.timedelta(days=1),
                 destruction_report_date=self.now,
                 action="Destroyed due to expiration",
-                document=SimpleUploadedFile(
+                file=SimpleUploadedFile(
                     "document_path_3.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -931,20 +932,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 unusable_vials_destroyed=3,
             )
 
-            self.assertIn("document_path_3", destruction_report.document.name)
+            self.assertIn("document_path_3", destruction_report.file.name)
 
             # Query the newly created DestructionReport via ORM
             queried_destruction = pm.DestructionReport.objects.get(pk=destruction_report.pk)
             self.assertEqual(queried_destruction.unusable_vials_destroyed, 3)
             self.assertEqual(queried_destruction.action, "Destroyed due to expiration")
-            self.assertIn("document_path_3", queried_destruction.document.name)
+            self.assertIn("document_path_3", queried_destruction.file.name)
 
             # Query the newly created DestructionReport via API
             response = self.client.get(f"{BASE_URL_SUB_RESOURCES}destruction_report/{destruction_report.pk}/")
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.data["unusable_vials_destroyed"], 3)
             self.assertEqual(response.data["action"], "Destroyed due to expiration")
-            self.assertIn("document_path_3", response.data["document"])
+            self.assertIn("document_path_3", response.data["file"])
 
             # Test creation and retrieval of OutgoingStockMovement with document via API
             data = {
@@ -953,7 +954,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "form_a_reception_date": "2023-10-03",
                 "report_date": "2023-10-04",
                 "usable_vials_used": 999,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_4.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -967,7 +968,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_4", response.data["document"])
+            self.assertIn("document_path_4", response.data["file"])
 
             # Test creation and retrieval of IncidentReport with document via API
             data = {
@@ -977,7 +978,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "stock_correction": pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
                 "unusable_vials": 7,
                 "usable_vials": 3,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_5.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -991,7 +992,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_5", response.data["document"])
+            self.assertIn("document_path_5", response.data["file"])
 
             # Test creation and retrieval of DestructionReport with document via API
             data = {
@@ -1000,7 +1001,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "destruction_report_date": "2023-10-06",
                 "action": "Destroyed due to expiration",
                 "unusable_vials_destroyed": 3,
-                "document": SimpleUploadedFile(
+                "file": SimpleUploadedFile(
                     "document_path_6.pdf",
                     pdf_file_content,
                     content_type="application/pdf",
@@ -1014,7 +1015,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             )
 
             self.assertEqual(response.status_code, 201)
-            self.assertIn("document_path_6", response.data["document"])
+            self.assertIn("document_path_6", response.data["file"])
 
     def test_check_duplicate_destruction_report(self):
         self.client.force_authenticate(self.user_rw_perms)
@@ -1308,3 +1309,335 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("results", data)
+
+    def test_outgoing_stock_movement_without_campaign(self):
+        """Test that an OutgoingStockMovement can be created without a campaign"""
+        FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        VIALS_COUNT = 1831  # using a remarkable number to avoid ambiguity in test result
+        ALT_CAMPAIGN_NAME = "Alternative campaign"
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # no campaign and no alternative campaign - Expect 400
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": VIALS_COUNT,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+        }
+
+        response = self.client.post(f"{FORMA_URL}", data=data)
+        self.assertEqual(response.status_code, 400)
+
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": VIALS_COUNT,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+            "alternative_campaign": ALT_CAMPAIGN_NAME,
+        }
+
+        response = self.client.post(f"{FORMA_URL}", data=data)
+
+        self.assertEqual(response.status_code, 201)
+
+        # Verify the movement was created
+        movement = OutgoingStockMovement.objects.get(id=response.json()["id"])
+        self.assertIsNone(movement.campaign)
+        self.assertIsNone(movement.round)
+        self.assertEqual(movement.usable_vials_used, VIALS_COUNT)
+        self.assertEqual(movement.non_obr_name, ALT_CAMPAIGN_NAME)
+
+        # Verify it appears in usable vials list
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
+        data = self.assertJSONResponse(response, 200)
+
+        results = data["results"]
+        forma = [result for result in results if result["vials_out"] == VIALS_COUNT]
+        self.assertTrue(len(forma) == 1)  # There's only the one we created
+        self.assertTrue(forma[0]["action"] == "Form A - Vials Used")
+
+    def test_create_outgoiing_stock_cannot_have_both_campaign_and_alt_campaign(self):
+        forma_url = "/api/polio/vaccine/stock/outgoing_stock_movement/"
+        alt_campaign_name = "Alternative campaign"
+
+        self.client.force_authenticate(user=self.user_rw_perms)
+        # Cannot have both campaign and alternate_campaign --> expect 400
+        data = {
+            "vaccine_stock": self.vaccine_stock.id,
+            "report_date": "2023-01-01",
+            "form_a_reception_date": "2023-01-02",
+            "usable_vials_used": 1000,
+            "lot_numbers": ["123", "456"],
+            "comment": "Test without campaign",
+            "alternative_campaign": alt_campaign_name,
+            "campaign": self.campaign.obr_name,
+        }
+
+        response = self.client.post(f"{forma_url}", data=data)
+
+        res = self.assertJSONResponse(response, 400)
+        self.assertEqual(res["error"][0], "campaign and alternative campaign cannot both be defined")
+
+    def test_campaign_category_enum_and_get_campaign_category_method(self):
+        """Test the CampaignCategory enum and get_campaign_category method"""
+        from plugins.polio.api.vaccines.stock_management import CampaignCategory, OutgoingStockMovementSerializer
+
+        # Test serializer method with different campaign scenarios
+        serializer = OutgoingStockMovementSerializer()
+
+        # Test with None campaign but with non_obr_name (should return REGULAR)
+        obj_without_campaign = pm.OutgoingStockMovement.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+            non_obr_name="Test Campaign Name",  # Required by constraint
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_without_campaign), CampaignCategory.REGULAR)
+
+        # Test with test campaign
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign Enum",
+            country=self.country,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+        obj_test_campaign = pm.OutgoingStockMovement.objects.create(
+            campaign=test_campaign,
+            round=test_round,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_test_campaign), CampaignCategory.TEST_CAMPAIGN)
+
+        # Test with campaign on hold
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold Enum",
+            country=self.country,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+        obj_campaign_on_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_on_hold,
+            round=round_on_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_campaign_on_hold), CampaignCategory.CAMPAIGN_ON_HOLD)
+
+        # Test with all rounds on hold
+        campaign_all_rounds_hold = pm.Campaign.objects.create(
+            obr_name="All Rounds On Hold Enum",
+            country=self.country,
+            account=self.account,
+        )
+        round1_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=True,
+        )
+        round2_all_hold = pm.Round.objects.create(
+            campaign=campaign_all_rounds_hold,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+        obj_all_rounds_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_all_rounds_hold,
+            round=round1_all_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_all_rounds_hold), CampaignCategory.ALL_ROUNDS_ON_HOLD)
+
+        # Test with specific round on hold
+        campaign_mixed_rounds = pm.Campaign.objects.create(
+            obr_name="Mixed Rounds Enum",
+            country=self.country,
+            account=self.account,
+        )
+        round1_active = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+            on_hold=False,
+        )
+        round2_hold = pm.Round.objects.create(
+            campaign=campaign_mixed_rounds,
+            started_at=datetime.date(2021, 2, 1),
+            ended_at=datetime.date(2021, 2, 28),
+            number=2,
+            on_hold=True,
+        )
+        obj_round_on_hold = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_mixed_rounds,
+            round=round2_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_round_on_hold), CampaignCategory.ROUND_ON_HOLD)
+
+        # Test with regular campaign (no holds)
+        obj_regular = pm.OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            round=self.campaign_round_1,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+        self.assertEqual(serializer.get_campaign_category(obj_regular), CampaignCategory.REGULAR)
+
+    def test_outgoing_stock_movement_api_includes_campaign_category(self):
+        """Test that the OutgoingStockMovement API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Test list endpoint
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+        # Test detail endpoint
+        movement_id = results[0]["id"]
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/{movement_id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("campaign_category", response.data)
+        self.assertIsInstance(response.data["campaign_category"], str)
+
+    def test_earmarked_stock_api_includes_campaign_category(self):
+        """Test that the EarmarkedStock API includes campaign_category field"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Create an earmarked stock for testing
+        earmarked_stock = pm.EarmarkedStock.objects.create(
+            campaign=self.campaign,
+            round=self.campaign_round_1,
+            vaccine_stock=self.vaccine_stock,
+            vials_earmarked=5,
+            doses_earmarked=100,
+        )
+
+        # Test list endpoint
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/")
+        self.assertEqual(response.status_code, 200)
+
+        # Check that campaign_category is present in the response
+        results = response.data["results"]
+        self.assertGreater(len(results), 0)
+
+        for item in results:
+            self.assertIn("campaign_category", item)
+            self.assertIsInstance(item["campaign_category"], str)
+            self.assertIn(
+                item["campaign_category"],
+                ["TEST_CAMPAIGN", "CAMPAIGN_ON_HOLD", "ALL_ROUNDS_ON_HOLD", "ROUND_ON_HOLD", "REGULAR"],
+            )
+
+        # Test detail endpoint
+        stock_id = results[0]["id"]
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/{stock_id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("campaign_category", response.data)
+        self.assertIsInstance(response.data["campaign_category"], str)
+
+    def test_campaign_category_values_for_different_scenarios(self):
+        """Test that campaign_category returns correct values for different campaign states"""
+        self.client.force_authenticate(user=self.user_rw_perms)
+
+        # Create test campaigns with different states
+        test_campaign = pm.Campaign.objects.create(
+            obr_name="Test Campaign API",
+            country=self.country,
+            account=self.account,
+            is_test=True,
+        )
+        test_round = pm.Round.objects.create(
+            campaign=test_campaign,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        campaign_on_hold = pm.Campaign.objects.create(
+            obr_name="Campaign On Hold API",
+            country=self.country,
+            account=self.account,
+            on_hold=True,
+        )
+        round_on_hold = pm.Round.objects.create(
+            campaign=campaign_on_hold,
+            started_at=datetime.date(2021, 1, 1),
+            ended_at=datetime.date(2021, 1, 31),
+            number=1,
+        )
+
+        # Create movements for each campaign
+        test_movement = pm.OutgoingStockMovement.objects.create(
+            campaign=test_campaign,
+            round=test_round,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+
+        hold_movement = pm.OutgoingStockMovement.objects.create(
+            campaign=campaign_on_hold,
+            round=round_on_hold,
+            vaccine_stock=self.vaccine_stock,
+            report_date=self.now - datetime.timedelta(days=3),
+            form_a_reception_date=self.now - datetime.timedelta(days=2),
+            usable_vials_used=10,
+        )
+
+        # Test API responses
+        response = self.client.get(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/")
+        self.assertEqual(response.status_code, 200)
+
+        results = response.data["results"]
+        test_movement_data = next((item for item in results if item["id"] == test_movement.id), None)
+        hold_movement_data = next((item for item in results if item["id"] == hold_movement.id), None)
+
+        self.assertIsNotNone(test_movement_data)
+        self.assertIsNotNone(hold_movement_data)
+        self.assertEqual(test_movement_data["campaign_category"], "TEST_CAMPAIGN")
+        self.assertEqual(hold_movement_data["campaign_category"], "CAMPAIGN_ON_HOLD")

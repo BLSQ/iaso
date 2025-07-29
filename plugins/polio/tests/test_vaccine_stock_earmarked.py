@@ -5,11 +5,9 @@ import time_machine
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 
-import hat.menupermissions.models as permissions
-
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm
+from plugins.polio import models as pm, permissions as polio_permissions
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -39,10 +37,10 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                permissions._POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-                permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             ],
         )
 
@@ -450,8 +448,8 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="non_admin",
             account=self.account,
             permissions=[
-                permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
+                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
             ],
         )
         self.client.force_authenticate(non_admin)

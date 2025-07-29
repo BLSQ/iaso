@@ -28,7 +28,7 @@ services:
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '20.x'
+    versionSpec: '20.18.3'
   displayName: 'Install Node.js'
 
 - script: |
@@ -116,6 +116,7 @@ steps:
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
     DISABLE_PASSWORD_LOGINS: true
     USE_CELERY: true
+
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:

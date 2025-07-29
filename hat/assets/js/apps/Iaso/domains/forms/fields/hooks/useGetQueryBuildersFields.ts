@@ -1,10 +1,10 @@
+import { useMemo } from 'react';
 import { QueryBuilderFields, useSafeIntl } from 'bluesquare-components';
 
 import { findDescriptorInChildren } from '../../../../utils';
 import { formatLabel } from '../../../instances/utils';
 
 import MESSAGES from '../../../workflows/messages';
-import { PossibleFieldsForForm } from '../../hooks/useGetPossibleFields';
 import { FieldType, FormDescriptor, PossibleField } from '../../types/forms';
 
 import { Field, iasoFields } from '../constants';
@@ -112,11 +112,12 @@ export const getQueryBuildersFields = (
                         formDescriptor,
                     );
                     if (descriptor?.children) {
-                        const listValues =
-                            descriptor.children.map(child => ({
-                                value: child.name,
-                                title: formatLabel(child),
-                            })) || [];
+                        const listValues = Object.fromEntries(
+                            (descriptor.children || []).map(child => [
+                                child.name,
+                                formatLabel(child),
+                            ]),
+                        );
                         // @ts-ignore
                         fields[fieldCopy.fieldKey].fieldSettings = {
                             listValues,
@@ -149,38 +150,14 @@ export const useGetQueryBuildersFields = (
     configFields: Field[] = iasoFields,
 ): QueryBuilderFields => {
     const { formatMessage } = useSafeIntl();
-    return getQueryBuildersFields(
-        formatMessage,
-        formDescriptors,
-        possibleFields,
-        configFields,
-    );
-};
-
-export const useGetQueryBuilderFieldsForAllForms = (
-    formDescriptors?: FormDescriptor[],
-    allPossibleFields?: PossibleFieldsForForm[],
-): QueryBuilderFields => {
-    const { formatMessage } = useSafeIntl();
-    if (!allPossibleFields || !formDescriptors) return {};
-    return allPossibleFields.reduce(
-        (fields, { form_id, name, possibleFields }) => ({
-            ...fields,
-            [form_id]: {
-                label: name,
-                type: '!group',
-                mode: 'array',
-                conjunctions: ['AND', 'OR'],
-                operators: ['some', 'all', 'none'],
-                defaultOperator: 'some',
-                subfields: getQueryBuildersFields(
-                    formatMessage,
-                    formDescriptors,
-                    possibleFields,
-                    iasoFields,
-                ),
-            },
-        }),
-        {} as QueryBuilderFields,
+    return useMemo(
+        () =>
+            getQueryBuildersFields(
+                formatMessage,
+                formDescriptors,
+                possibleFields,
+                configFields,
+            ),
+        [formatMessage, formDescriptors, possibleFields, configFields],
     );
 };

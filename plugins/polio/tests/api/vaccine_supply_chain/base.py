@@ -3,11 +3,9 @@ import datetime
 from django.contrib.auth.models import AnonymousUser
 from django.utils.timezone import now
 
-import hat.menupermissions.models as permissions
-
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm
+from plugins.polio import models as pm, permissions as polio_permissions
 
 
 class BaseVaccineSupplyChainAPITestCase(APITestCase):
@@ -44,10 +42,13 @@ class BaseVaccineSupplyChainAPITestCase(APITestCase):
         cls.user_rw_perm = cls.create_user_with_profile(
             username="user_1",
             account=cls.account,
-            permissions=[permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ, permissions._POLIO_VACCINE_SUPPLY_CHAIN_WRITE],
+            permissions=[
+                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ,
+                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+            ],
         )
         cls.user_ro_perm = cls.create_user_with_profile(
-            username="user_2", account=cls.account, permissions=[permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ]
+            username="user_2", account=cls.account, permissions=[polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ]
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=[])
 

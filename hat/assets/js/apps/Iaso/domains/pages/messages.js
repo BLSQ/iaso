@@ -126,6 +126,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.superset_dashboard_id',
         defaultMessage: 'Dashboard ID',
     },
+    supersetDashboardIdRequired: {
+        id: 'iaso.pages.superset_dashboard_id_required',
+        defaultMessage: 'Dashboard ID is required',
+    },
     needsAuthentication: {
         id: 'iaso.label.needsAuthentication',
         defaultMessage: 'Authentification required',

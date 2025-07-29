@@ -74,6 +74,27 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit, form=cls.form, instance=cls.new_instance1)
 
     @time_machine.travel(DT, tick=False)
+    def test_delete_soft_and_hard(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            uuid=uuid.uuid4(),
+            org_unit=self.org_unit,
+            new_name="New name",
+            requested_fields=["new_name"],
+            created_by=self.user,
+        )
+        self.assertIsNone(change_request.deleted_at)
+
+        # Soft delete.
+        change_request.delete()
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.deleted_at, self.DT)
+        self.assertEqual(1, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
+
+        # Hard delete.
+        change_request.delete_hard()
+        self.assertEqual(0, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
+
+    @time_machine.travel(DT, tick=False)
     def test_create(self):
         kwargs = {
             "uuid": "018480e4-b0a7-4be8-96b7-d237f131716e",

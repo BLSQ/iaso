@@ -149,6 +149,10 @@ def create_or_update_orgunit(
     orgunit.source_ref = ref
     orgunit.version = source_version
 
+    # Import code if it exists in properties
+    code = props.get("code", "")
+    orgunit.code = code.strip() if code else ""  # code could be null in gpkg
+
     # Import dates if they exist in properties
 
     apply_date_field("closed_date", props, orgunit, task)
@@ -282,6 +286,9 @@ def import_gpkg_file2(
     if not source.default_version:
         source.default_version = version
         source.save()
+
+    if not created:
+        version.save()
 
     # TODO: check: what if the source has no projects? Or the project has no account?
     account = source.projects.first().account  # type: ignore

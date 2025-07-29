@@ -183,7 +183,12 @@ def update_merged_entity_ref_form_if_needed(instance, incoming_updated_at, file,
     IF the incoming timestamp is more recent.
     """
     entity = instance.entity
-    if not (entity.deleted_at and entity.merged_to):
+
+    if entity is None:
+        return
+
+    is_soft_deleted_merged_entity = entity.deleted_at and entity.merged_to
+    if not is_soft_deleted_merged_entity:
         return
 
     active_entity = entity.merged_to

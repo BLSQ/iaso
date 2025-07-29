@@ -301,6 +301,12 @@ class PlanningSerializer(serializers.ModelSerializer):
         ):
             validation_errors["started_at"] = "startDateAfterEndDate"
             validation_errors["ended_at"] = "EndDateBeforeStartDate"
+
+        if validated_data.get("published_at") and validated_data.get("started_at") is None:
+            validation_errors["started_at"] = "publishedWithoutStartDate"
+        if validated_data.get("published_at") and validated_data.get("ended_at") is None:
+            validation_errors["ended_at"] = "publishedWithoutEndDate"
+
         project = validated_data.get("project", self.instance.project if self.instance else None)
 
         team = validated_data.get("team", self.instance.team if self.instance else None)
@@ -517,7 +523,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        return self.queryset.filter_for_user(user).select_related("user", "team", "org_unit", "org_unit__org_unit_type")
 
     @action(methods=["POST"], detail=False)
     def bulk_create_assignments(self, request):
@@ -591,6 +597,8 @@ class MobilePlanningViewSet(ModelViewSet):
         return (
             Planning.objects.filter(assignment__user=user)
             .exclude(published_at__isnull=True)
+            .exclude(started_at__isnull=True)
+            .exclude(ended_at__isnull=True)
             .filter(deleted_at__isnull=True)
             .distinct()
         )

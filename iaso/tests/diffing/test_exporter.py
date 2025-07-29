@@ -34,7 +34,7 @@ class ExporterTestCase(PyramidBaseTest):
             version_ref=self.source_version_to_compare_with,
         )
 
-        to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
+        to_create_diffs = list(filter(lambda x: x.status == Differ.STATUS_NEW, diffs))
         assign_dhis2_ids(to_create_diffs)
 
         self.angola_country_to_compare_with.refresh_from_db()

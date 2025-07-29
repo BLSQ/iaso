@@ -126,7 +126,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.type',
     },
     records: {
-        defaultMessage: 'Submissions',
+        defaultMessage: 'Submission(s)',
         id: 'iaso.forms.records',
     },
     instance_updated_at: {
@@ -678,6 +678,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.projectsInfo',
         defaultMessage:
             'You need to select at least one project to see the list of available org unit types',
+    },
+    fetchPossibleFieldsError: {
+        id: 'iaso.snackBar.fetchPossibleFieldsError',
+        defaultMessage: 'An error occurred while fetching possible fields',
+    },
+    fitToFormsBounds: {
+        id: 'iaso.orgUnits.fitToFormsBounds',
+        defaultMessage: 'Fit map to submissions bounds',
     },
 });
 

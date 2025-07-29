@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -22,6 +28,7 @@ import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 
 type Props = {
     formA?: any;
@@ -31,6 +38,21 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+};
+
+export type FormAFormValues = {
+    id?: number;
+    campaign?: string;
+    round?: number;
+
+    report_date?: string;
+    form_a_reception_date?: string;
+    usable_vials_used?: number;
+
+    vaccine_stock: string;
+    file?: File[] | string;
+    comment: string | null;
+    alternative_campaign: string | null;
 };
 
 export const CreateEditFormA: FunctionComponent<Props> = ({
@@ -44,42 +66,65 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
     const validationSchema = useFormAValidation();
-    const formik = useFormik<any>({
+    const formik = useFormik<FormAFormValues>({
         initialValues: {
             id: formA?.id,
             campaign: formA?.campaign,
             round: formA?.round,
-            // lot_numbers: formA?.lot_numbers ?? '',
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
-            // unusable_vials: formA?.unusable_vials,
             vaccine_stock: vaccineStockId,
-            document: formA?.document,
+            file: formA?.file,
             comment: formA?.comment ?? null,
+            alternative_campaign: formA?.alternative_campaign ?? null,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
-    const { setFieldValue } = formik;
+    const { setFieldValue, setValues } = formik;
+    const [withCustomObr, setWithCustomObr] = useState<boolean>(
+        Boolean(formA?.alternative_campaign),
+    );
 
     const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
         countryName,
         formik.values.campaign,
+        formik.values.round,
     );
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
-    const documentErrors = useMemo(() => {
-        return processErrorDocsBase(formik.errors.document);
-    }, [formik.errors.document]);
+    const fileErrors = useMemo(() => {
+        return processErrorDocsBase(formik.errors.file);
+    }, [formik.errors.file]);
 
     const resetOnCampaignChange = useCallback(() => {
         setFieldValue('round', undefined);
     }, [setFieldValue]);
 
+    // Make sure the form does not have values for both campaign(+round) and alternative_campaign
+    useEffect(() => {
+        if (withCustomObr && formik.values.campaign) {
+            setValues({
+                ...formik.values,
+                campaign: undefined,
+                round: undefined,
+            });
+        }
+        if (!withCustomObr && formik.values.alternative_campaign) {
+            setFieldValue('alternative_campaign', undefined);
+        }
+    }, [
+        withCustomObr,
+        setFieldValue,
+        setValues,
+        formik.values,
+        formik.values.campaign,
+        formik.values.alternative_campaign,
+    ]);
     useSkipEffectUntilValue(formik.values.campaign, resetOnCampaignChange);
 
     return (
@@ -99,30 +144,65 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.campaign)}
-                        name="campaign"
-                        component={SingleSelect}
-                        required
-                        options={campaignOptions}
-                        withMarginTop
-                        isLoading={isFetching}
-                        disabled={!countryName}
-                    />
-                </Box>
-                <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.round)}
-                        name="round"
-                        component={SingleSelect}
-                        required
-                        options={roundOptions}
-                        withMarginTop
-                        isLoading={isFetching}
-                        disabled={!formik.values.campaign}
-                    />
-                </Box>
+                {!withCustomObr && (
+                    <>
+                        <Box mb={2} mt={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.campaign)}
+                                name="campaign"
+                                component={SingleSelect}
+                                options={campaignOptions}
+                                withMarginTop
+                                isLoading={isFetching}
+                                disabled={!countryName}
+                            />
+                            {!Boolean(formA?.campaign) && (
+                                <InputComponent
+                                    type="checkbox"
+                                    keyValue={''}
+                                    onChange={() => setWithCustomObr(true)}
+                                    labelString={formatMessage(
+                                        MESSAGES.useCustomObrName,
+                                    )}
+                                    withMarginTop={false}
+                                    value={withCustomObr}
+                                />
+                            )}
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.round)}
+                                name="round"
+                                component={SingleSelect}
+                                options={roundOptions}
+                                withMarginTop
+                                isLoading={isFetching}
+                                disabled={!formik.values.campaign}
+                            />
+                        </Box>
+                    </>
+                )}
+                {withCustomObr && (
+                    <Box mb={2} mt={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.customObrName)}
+                            name="alternative_campaign"
+                            component={TextInput}
+                        />
+                        {!Boolean(formA?.alternative_campaign) && (
+                            <InputComponent
+                                type="checkbox"
+                                keyValue={''}
+                                onChange={() => setWithCustomObr(false)}
+                                labelString={formatMessage(
+                                    MESSAGES.useCustomObrName,
+                                )}
+                                withMarginTop={false}
+                                value={withCustomObr}
+                            />
+                        )}
+                    </Box>
+                )}
                 <Field
                     label={formatMessage(MESSAGES.report_date)}
                     name="report_date"
@@ -154,14 +234,14 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <DocumentUploadWithPreview
-                        errors={documentErrors}
+                        errors={fileErrors}
                         onFilesSelect={files => {
                             if (files.length) {
-                                formik.setFieldTouched('document', true);
-                                formik.setFieldValue('document', files);
+                                formik.setFieldTouched('file', true);
+                                formik.setFieldValue('file', files);
                             }
                         }}
-                        document={formik.values.document}
+                        document={formik.values.file}
                     />
                 </Box>
             </ConfirmCancelModal>

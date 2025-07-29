@@ -48,6 +48,12 @@ ADMISSION_TYPES = [
     ("transfer_from_other_tsfp", _("Transfer from other TSFP")),
 ]
 
+RATION_SIZE = [
+    ("full", _("Full")),
+    ("partial", _("Partial")),
+    ("none", _("None")),
+    ("More", _("More")),
+]
 
 # WFP Models
 
@@ -87,6 +93,7 @@ class Visit(models.Model):
 class Step(models.Model):
     assistance_type = models.CharField(max_length=255)
     quantity_given = models.FloatField()
+    ration_size = models.CharField(max_length=50, choices=RATION_SIZE, null=True, blank=True)
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
@@ -106,3 +113,4 @@ class MonthlyStatistics(models.Model):
     given_sachet_rusf = models.FloatField(null=True, blank=True)
     given_sachet_rutf = models.FloatField(null=True, blank=True)
     given_quantity_csb = models.FloatField(null=True, blank=True)
+    given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)

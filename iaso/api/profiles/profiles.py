@@ -1,5 +1,3 @@
-import copy
-
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
@@ -31,7 +29,8 @@ from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
-from iaso.utils import is_mobile_request, is_multi_account_user
+from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
+from iaso.utils import is_mobile_request
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -340,66 +339,42 @@ class ProfilesViewSet(viewsets.ViewSet):
         current_profile = request.user.iaso_profile
         current_account = current_profile.account
 
-        username = request.data.get("user_name")
+        email = request.data.get("email", "")
+        first_name = request.data.get("first_name", "")
+        last_name = request.data.get("last_name", "")
         password = request.data.get("password", "")
         send_email_invitation = request.data.get("send_email_invitation")
+        username = request.data.get("user_name")
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        existing_user = User.objects.filter(username__iexact=username)
-        if existing_user:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+
         if not password and not send_email_invitation:
             return JsonResponse({"errorKey": "password", "errorMessage": _("Mot de passe requis")}, status=400)
-        main_user = None
+
         try:
-            existing_user = User.objects.get(username__iexact=username)
-            user_in_same_account = False
-            try:
-                if existing_user.iaso_profile and existing_user.iaso_profile.account == current_account:
-                    user_in_same_account = True
-            except User.iaso_profile.RelatedObjectDoesNotExist:
-                # User doesn't have an iaso_profile, so they're not in the same account
-                pass
-
-            if user_in_same_account:
-                return JsonResponse(
-                    {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400
+            # Currently, the `account` is always the same in the UI.
+            # This means that we'll never get back a `tenant_main_user` here - at least for the moment.
+            # Yet we keep `create_user_or_tenant_user()` here to avoid repeating part of its logic.
+            new_user, tenant_main_user, tenant_account_user = TenantUser.objects.create_user_or_tenant_user(
+                data=UserCreationData(
+                    username=username,
+                    email=email,
+                    first_name=first_name,
+                    last_name=last_name,
+                    account=current_account,
                 )
-            # TODO: invitation
-            # TODO what if already main user?
-            old_username = username
-            username = f"{username}_{current_account.name.lower().replace(' ', '_')}"
+            )
+        except UsernameAlreadyExistsError as e:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": e.message}, status=400)
 
-            # duplicate existing_user into main user and account user
-            main_user = copy.copy(existing_user)
-
-            existing_user.username = f"{old_username}_{'unknown' if not hasattr(existing_user, 'iaso_profile') else existing_user.iaso_profile.account.name.lower().replace(' ', '_')}"
-            existing_user.set_unusable_password()
-            existing_user.save()
-
-            main_user.pk = None
-            main_user.save()
-
-            TenantUser.objects.create(main_user=main_user, account_user=existing_user)
-        except User.DoesNotExist:
-            pass  # no existing user, simply create a new user
-
-        user = User()
-        user.first_name = request.data.get("first_name", "")
-        user.last_name = request.data.get("last_name", "")
-        user.username = username
-        user.email = request.data.get("email", "")
-
+        user_who_logs_in = new_user or tenant_main_user
         if password != "":
-            user.set_password(password)
-        user.save()
+            user_who_logs_in.set_password(password)
+            user_who_logs_in.save()
 
-        if main_user:
-            TenantUser.objects.create(main_user=main_user, account_user=user)
+        user = new_user or tenant_account_user
 
-        # Create an Iaso profile for the new user and attach it to the same account
-        # as the currently authenticated user
         user.profile = Profile.objects.create(
             user=user,
             account=current_account,
@@ -408,17 +383,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             organization=request.data.get("organization", None),
         )
 
-        profile = get_object_or_404(Profile, id=user.profile.pk)
-
         try:
             user_permissions = self.validate_user_permissions(request, current_account)
-            org_units = self.validate_org_units(request, profile)
+            org_units = self.validate_org_units(request, user.profile)
             user_roles_data = self.validate_user_roles(request)
-            projects = self.validate_projects(request, profile)
-            editable_org_unit_types = self.validate_editable_org_unit_types(request, profile)
+            projects = self.validate_projects(request, user.profile)
+            editable_org_unit_types = self.validate_editable_org_unit_types(request, user.profile)
         except ProfileError as error:
             # Delete profile if error since we're creating a new user
-            profile.delete()
+            user.profile.delete()
             return JsonResponse(
                 {"errorKey": error.field, "errorMessage": error.detail},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -426,7 +399,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         profile = self.update_user_profile(
             request=request,
-            profile=profile,
+            profile=user.profile,
             user=user,
             user_permissions=user_permissions,
             org_units=org_units,
@@ -543,7 +516,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_permissions,
         editable_org_unit_types,
     ):
-        if not is_multi_account_user(user):
+        if TenantUser.is_multi_account_user(user):
+            # In multi-tenant mode, `main_user` is the user who logs in.
+            self.update_password(user.tenant_user.main_user, request)
+        else:
             user.first_name = request.data.get("first_name", "")
             user.last_name = request.data.get("last_name", "")
             user.username = request.data.get("user_name")
@@ -623,7 +599,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         return response
 
     def validate_user_name(self, request, user):
-        if is_multi_account_user(user):
+        if TenantUser.is_multi_account_user(user):
             return  # username cannot be updated for multi-account users
 
         username = request.data.get("user_name")

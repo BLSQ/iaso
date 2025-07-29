@@ -619,7 +619,7 @@ const asBackendStatus = status => {
 };
 
 export const getFilters = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
 ): Record<string, string> => {
     const allFilters = {
         withLocation: params.withLocation,
@@ -685,7 +685,7 @@ export const getExportUrl = (
 };
 
 export const getEndpointUrl = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
     toExport: boolean,
     exportType = 'csv',
     asSmallDict = false,
@@ -707,16 +707,35 @@ export const getEndpointUrl = (
     );
 };
 
+type FileType = 'image_only' | 'video_only' | 'document_only' | 'other_only';
+
 export const getFileUrl = (
     params: Record<string, string>,
     rowsPerPage: number,
     page: number,
+    type: FileType,
 ): string => {
-    const urlParams = {
-        limit: rowsPerPage,
+    const urlParams: Record<string, string> = {
+        limit: `${rowsPerPage}`,
         // Django pagination start at 1 but Material UI at 0
-        page: page + 1,
+        page: `${page + 1}`,
         ...getFilters(params),
     };
+    if (type === 'image_only') {
+        urlParams.image_only = 'true';
+    } else if (type === 'video_only') {
+        urlParams.video_only = 'true';
+    } else if (type === 'document_only') {
+        urlParams.document_only = 'true';
+    } else if (type === 'other_only') {
+        urlParams.other_only = 'true';
+    }
     return getTableUrl('instances/attachments', urlParams);
+};
+
+export const getFileCountUrl = (params: Record<string, string>): string => {
+    const urlParams = {
+        ...getFilters(params),
+    };
+    return getTableUrl('instances/attachments_count', urlParams);
 };

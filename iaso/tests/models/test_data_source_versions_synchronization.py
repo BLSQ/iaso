@@ -274,10 +274,86 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
             f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit': None, "
             f"'org_unit_types': [{self.org_unit_type_country.pk}], "
+            "'org_unit_group': None, "
             f"'version_ref': {self.source_version_to_compare_with.pk}, "
             f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
             "'top_org_unit_ref': None, "
             f"'org_unit_types_ref': [{self.org_unit_type_country.pk}], "
+            "'org_unit_group_ref': None, "
+            "'ignore_groups': True, "
+            "'show_deleted_org_units': False, "
+            "'field_names': ['name']"
+            "}"
+        )
+        self.assertEqual(data_source_sync.diff_config, expected_diff_config)
+
+        self.assertEqual(data_source_sync.count_create, 0)
+        self.assertEqual(data_source_sync.count_update, 1)
+
+    def test_create_json_diff_with_group_filtering(self):
+        """
+        Test that `create_json_diff()` works as expected when filtering with group ids.
+        """
+        # Change the name.
+        self.angola_country_to_compare_with.name = "Angola new"
+        self.angola_country_to_compare_with.save()
+
+        # Make other changes that will not be picked up by the differ.
+        self.angola_region_to_compare_with.name = "new name"
+        self.angola_region_to_compare_with.save()
+        self.angola_district_to_compare_with.name = "new name"
+        self.angola_district_to_compare_with.save()
+
+        # Make sure only the country is using the group_a2.
+        self.angola_district_to_compare_with.groups.set([])
+
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="New synchronization",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            account=self.account,
+            created_by=self.user,
+        )
+        self.assertIsNone(data_source_sync.json_diff)
+        self.assertEqual(data_source_sync.diff_config, "")
+
+        data_source_sync.create_json_diff(
+            source_version_to_update_validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_version_to_update_org_unit_group=self.group_a1,
+            source_version_to_compare_with_validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_version_to_compare_with_org_unit_group=self.group_a2,
+            ignore_groups=True,
+            field_names=["name"],
+        )
+        data_source_sync.refresh_from_db()
+
+        json_diff = json.loads(data_source_sync.json_diff)
+
+        comparisons = json_diff[0]["comparisons"]
+        expected_comparisons = [
+            {
+                "field": "name",
+                "before": "Angola",
+                "after": "Angola new",
+                "status": "modified",
+                "distance": None,
+            }
+        ]
+        self.assertEqual(comparisons, expected_comparisons)
+
+        expected_diff_config = (
+            "{"
+            f"'version': {self.source_version_to_update.pk}, "
+            f"'validation_status': '{m.OrgUnit.VALIDATION_VALID}', "
+            "'top_org_unit': None, "
+            "'org_unit_types': None, "
+            f"'org_unit_group': {self.group_a1.pk}, "
+            f"'version_ref': {self.source_version_to_compare_with.pk}, "
+            f"'validation_status_ref': '{m.OrgUnit.VALIDATION_VALID}', "
+            "'top_org_unit_ref': None, "
+            "'org_unit_types_ref': None, "
+            f"'org_unit_group_ref': {self.group_a2.pk}, "
             "'ignore_groups': True, "
             "'show_deleted_org_units': False, "
             "'field_names': ['name']"

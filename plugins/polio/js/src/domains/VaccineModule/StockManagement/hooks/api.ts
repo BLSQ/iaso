@@ -30,6 +30,7 @@ import {
     StockManagementListParams,
     StockVariationParams,
 } from '../types';
+import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
 
 const defaults = {
     order: 'country',
@@ -327,6 +328,7 @@ type UseCampaignOptionsResult = {
 export const useCampaignOptions = (
     countryName: string,
     campaignName?: string,
+    round?: number,
 ): UseCampaignOptionsResult => {
     const { formatMessage } = useSafeIntl();
     const queryOptions = {
@@ -339,53 +341,62 @@ export const useCampaignOptions = (
         cacheTime: 1000 * 60 * 5,
     };
     const { data, isFetching } = useGetCampaigns(
-        { show_test: false, on_hold: true },
+        // Show on hold and test campaigns to avoid missing forms
+        // whose campaign has been changed after creation
+        { show_test: true, on_hold: true },
         CAMPAIGNS_ENDPOINT,
         undefined,
         queryOptions,
     );
 
+    const selectedCampaign = useMemo(
+        // @ts-ignore
+        () => (data ?? []).find(campaign => campaign.obr_name === campaignName),
+        [data, campaignName],
+    );
     const roundOptions = useMemo(() => {
-        const selectedCampaign = (data ?? []).find(
-            campaign => campaign.obr_name === campaignName,
-        );
         return selectedCampaign
             ? selectedCampaign.rounds
-                  .filter(r => !r.on_hold)
-                  .map(round => {
+                  .filter(r => !r.on_hold || r.number === round)
+                  .map(rnd => {
                       return {
-                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                          value: round.id,
+                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                          value: rnd.id,
                       };
                   })
             : [];
-    }, [campaignName, data, formatMessage]);
+    }, [campaignName, data, formatMessage, selectedCampaign, round]);
 
     const roundNumberOptions = useMemo(() => {
-        const selectedCampaign = (data ?? []).find(
-            campaign => campaign.obr_name === campaignName,
-        );
-
         return selectedCampaign
             ? selectedCampaign.rounds
-                  .filter(r => !r.on_hold)
-                  .map(round => {
+                  .filter(r => !r.on_hold || r.number === round)
+                  .map(rnd => {
                       return {
-                          label: `${formatMessage(MESSAGES.round)} ${round.number}`,
-                          value: round.number,
-                          original: round,
+                          label: `${formatMessage(MESSAGES.round)} ${rnd.number}`,
+                          value: rnd.number,
+                          original: rnd,
                       };
                   })
             : [];
-    }, [campaignName, data, formatMessage]);
+    }, [campaignName, data, formatMessage, selectedCampaign]);
 
     const campaignOptions = useMemo(() => {
-        const campaignsList = (data ?? []).map(c => {
-            return {
-                label: c.obr_name,
-                value: c.obr_name,
-            };
-        });
+        const campaignsList = (data ?? [])
+            // @ts-ignore
+            .filter(
+                c =>
+                    (!c.on_hold &&
+                        !c.is_test &&
+                        !c.rounds.every(rnd => rnd.on_hold)) ||
+                    c.id === selectedCampaign?.id,
+            )
+            .map(c => {
+                return {
+                    label: c.obr_name,
+                    value: c.obr_name,
+                };
+            });
         const defaultList = [{ label: campaignName, value: campaignName }];
         if ((campaignsList ?? []).length > 0) {
             return campaignsList;
@@ -394,7 +405,7 @@ export const useCampaignOptions = (
             return defaultList;
         }
         return [];
-    }, [campaignName, data]);
+    }, [campaignName, data, selectedCampaign?.id]);
 
     return useMemo(() => {
         return {
@@ -418,9 +429,7 @@ const createEditFormA = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -430,10 +439,10 @@ const createEditFormA = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -445,7 +454,12 @@ const createEditFormA = async (body: any) => {
     return postRequest2(requestBody);
 };
 
-export const useSaveFormA = () => {
+export const useSaveFormA = (): UseMutationResult<
+    FormAFormValues,
+    any,
+    any,
+    any
+> => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
         invalidateQueryKey: [
@@ -454,7 +468,7 @@ export const useSaveFormA = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
         ],
@@ -472,9 +486,7 @@ const createEditDestruction = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -484,10 +496,10 @@ const createEditDestruction = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -508,7 +520,7 @@ export const useSaveDestruction = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
         ],
     });
 };
@@ -524,9 +536,7 @@ const createEditIncident = async (body: any) => {
         ? Object.fromEntries(
               Object.entries(copy).filter(
                   ([key, value]) =>
-                      value !== undefined &&
-                      value !== null &&
-                      key !== 'document',
+                      value !== undefined && value !== null && key !== 'file',
               ),
           )
         : {};
@@ -535,10 +545,10 @@ const createEditIncident = async (body: any) => {
         data: filteredParams,
     };
 
-    if (copy?.document) {
+    if (copy?.file) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
         const { files, ...data } = filteredParams;
-        const fileData = { files: copy.document };
+        const fileData = { files: copy.file };
         requestBody.data = data;
         requestBody.fileData = fileData;
     }
@@ -559,7 +569,7 @@ export const useSaveIncident = () => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
-            'document',
+            'file',
             'earmarked',
             'earmarked-list',
         ],

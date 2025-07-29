@@ -27,6 +27,13 @@ class NameFieldType(FieldType):
         return org_unit.name
 
 
+class CodeFieldType(FieldType):
+    def access(self, org_unit):
+        if org_unit is None:
+            return None  # code is not nullable, but we return None to differentiate a blank code from a missing orgunit
+        return org_unit.code
+
+
 class GeometryFieldType(FieldType):
     def access(self, org_unit):
         if org_unit is None:
@@ -121,6 +128,8 @@ def as_field_types(field_names):
     for field_name in field_names:
         if field_name == "name":
             field_types.append(NameFieldType(field_name))
+        elif field_name == "code":
+            field_types.append(CodeFieldType(field_name))
         elif field_name == "geometry":
             field_types.append(GeometryFieldType(field_name))
         elif field_name == "parent":

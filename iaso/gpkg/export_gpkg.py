@@ -22,6 +22,7 @@ from iaso.models import Group, OrgUnit, SourceVersion
 OUT_COLUMNS = [
     "name",
     "ref",
+    "code",
     "geography",
     "parent",
     "parent_ref",
@@ -46,6 +47,7 @@ ORG_UNIT_COLUMNS = [
     "id",
     "name",
     "source_ref",
+    "code",
     "parent__name",
     "parent__source_ref",
     "parent__id",

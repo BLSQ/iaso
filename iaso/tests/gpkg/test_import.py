@@ -37,6 +37,7 @@ class GPKGImport(TestCase):
         self.assertEqual(root.groups.all().count(), 0)
         self.assertEqual(root.opening_date.strftime("%Y-%m-%d"), "2020-01-01")
         self.assertEqual(root.closed_date.strftime("%Y-%m-%d"), "2021-12-31")
+        self.assertEqual(root.code, "")  # null in .gpkg
 
         self.assertEqual(root.orgunit_set.all().count(), 1)
         self.assertEqual(str(root.path), f"{root.pk}")
@@ -57,12 +58,14 @@ class GPKGImport(TestCase):
         self.assertEqual(c.geom.geom_type, "MultiPolygon")
         self.assertEqual(c.geom.num_coords, 2108)
         self.assertEqual(c.simplified_geom.num_coords, 592)
+        self.assertEqual(c.code, "")  # blank string in .gpkg
         self.assertEqual(c.groups.all().count(), 0)
 
         c2 = c.orgunit_set.first()
         self.assertEqual(c2.name, "CSI de Garga-Sarali")
         self.assertEqual(c2.org_unit_type.name, "FOSA")
         self.assertEqual(c2.parent, c)
+        self.assertEqual(c2.code, "ES0025")  # from .gpkg
         self.assertEqual(str(c2.path), f"{root.pk}.{c.pk}.{c2.pk}")
         self.assertEqual(c2.geom, None)
         self.assertEqual(c2.simplified_geom, None)
@@ -103,6 +106,10 @@ class GPKGImport(TestCase):
         self.assertEqual(ou2.groups.first().name, "Previous name of group B")
         self.assertEqual(ou2.groups.first().source_version, version)
 
+        # Store the version's updated_at before import
+        version.refresh_from_db()
+        updated_at_before = version.updated_at
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
             project_id=self.project.id,
@@ -111,6 +118,10 @@ class GPKGImport(TestCase):
             validation_status="new",
             description="",
         )
+
+        # Verify that updated_at has been updated
+        version.refresh_from_db()
+        self.assertGreater(version.updated_at, updated_at_before)
 
         self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)
@@ -225,6 +236,30 @@ class GPKGImport(TestCase):
         )
         ou = OrgUnit.objects.get(source_ref="empty_geom")
         self.assertEqual(ou.name, "empty_geom")
+
+    def test_import_orgunit_without_code(self):
+        # The "code" column does not exist in this GPKG
+        import_gpkg_file(
+            "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
+            project_id=self.project.id,
+            source_name="test",
+            version_number=1,
+            validation_status="new",
+            description="",
+        )
+        self.assertEqual(OrgUnitType.objects.count(), 3)
+        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(Group.objects.all().count(), 2)
+
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(
+            2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
+        )
+
+        # there is no crash on import, all the codes are set to default blank string
+        org_unit_codes = OrgUnit.objects.values_list("code", flat=True)
+        for code in org_unit_codes:
+            self.assertEqual(code, "")
 
     def test_import_orgunit_existing_orgunit_type(self):
         """A similar (same name and depth) OUT already exists for the same account, so we reuse this one"""

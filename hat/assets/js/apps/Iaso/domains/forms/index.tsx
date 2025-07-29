@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Skeleton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
@@ -12,9 +12,7 @@ import { FormsTable } from './components/FormsTable';
 import { tableDefaults, useGetForms } from './hooks/useGetForms';
 import MESSAGES from './messages';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-}));
+const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
 const dwnldBaseUrl = '/api/forms';
 
@@ -70,9 +68,12 @@ const Forms: FunctionComponent = () => {
                         )}
                     </Grid>
                 </Box>
-                {isSearchActive && (
-                    <FormsTable baseUrl={baseUrl} params={params} />
-                )}
+
+                <FormsTable
+                    baseUrl={baseUrl}
+                    params={params}
+                    isSearchActive={isSearchActive}
+                />
             </Box>
         </>
     );

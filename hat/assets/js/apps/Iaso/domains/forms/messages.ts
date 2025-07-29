@@ -691,6 +691,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.showInstancesCount',
         defaultMessage: 'Show instance count',
     },
+    searchToSeeForms: {
+        id: 'iaso.forms.searchToSeeForms',
+        defaultMessage: 'Click "Search" button to see forms',
+    },
 });
 
 export default MESSAGES;

@@ -22,6 +22,7 @@ from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models.instances import instance_file_upload_to, instance_upload_to
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
+from iaso.test import TestCase
 
 
 CATT_TABLET_DIR = "catt_one_test_with_image"
@@ -57,97 +58,104 @@ DISASI_MAKULO_INSTANCE_FILE_NAME = (
 DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME = "a5362052-408f-44f8-8abc-2a520c01ea10/1712326156339.webp"
 
 
-def zip_fixture_dir(subdir=""):
-    return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
-
-
-def add_to_zip(zipf, directory, subset):
-    for root, _dirs, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            relative_path = os.path.relpath(file_path, directory)
-            dir_path = os.path.dirname(relative_path)
-            if relative_path in subset or any(dir_path.startswith(path) for path in subset):
-                zipf.write(file_path, relative_path)
-
-
-def save_file_to_api_import(api_import, file_path):
-    assert os.path.exists(file_path)
-    with open(file_path, "rb") as f:
-        api_import.file = File(f, name=os.path.basename(file_path))
-        api_import.save()
-
-
-def create_entity_with_registration(
-    self,
-    name,
-    uuid,
-    creation_timestamp=DEFAULT_CREATED_AT,
-    deleted=False,
-):
-    entity = m.Entity.objects.create(
-        name=name,
-        uuid=uuid,
-        entity_type=self.default_entity_type,
-        account=m.Account.objects.first(),
-    )
-    if deleted:
-        entity.deleted_at = datetime.datetime.now(pytz.UTC)
-
-    with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
-        instance = m.Instance.objects.create(
-            uuid=uuid,
-            entity=entity,
-            form=self.form_registration,
-            deleted=deleted,
-            file=File(form_instance_file),
-            json={"some": "thing"},
-            source_created_at=creation_timestamp,
-            source_updated_at=creation_timestamp,
-        )
-    entity.attributes = instance
-    entity.save()
-
-    return entity
-
-
-class ProcessMobileBulkUploadTest(TestCase):
+class ProcessMobileBulkUploadTestCase(TestCase):
     fixtures = ["user.yaml", "orgunit.yaml", "forms"]
 
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = User.objects.first()
+        cls.project = m.Project.objects.first()
+        cls.account = m.Account.objects.first()
+        # Create 2 forms: Registration + CATT
+        cls.form_registration = m.Form.objects.get(form_id="trypelim_registration")
+        cls.form_catt = m.Form.objects.get(form_id="trypelim_CATT")
+        cls.default_entity_type = m.EntityType.objects.create(
+            id=1, name="Participant", reference_form=cls.form_registration
+        )
+
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+
+    @staticmethod
+    def zip_fixture_dir(subdir=""):
+        return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
+
+    @classmethod
+    def create_zip_file(cls, api_import):
+        # Create the zip file: we create it on the fly to be able to clearly
+        # see the contents in our repo. We then mock the file download method
+        # to return the filepath to this zip.
+        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
+        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            cls.add_to_zip(zipf, cls.zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        cls.save_file_to_api_import(api_import, zip_path)
+
+    @staticmethod
+    def add_to_zip(zipf, directory, subset):
+        for root, _dirs, files in os.walk(directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                relative_path = os.path.relpath(file_path, directory)
+                dir_path = os.path.dirname(relative_path)
+                if relative_path in subset or any(dir_path.startswith(path) for path in subset):
+                    zipf.write(file_path, relative_path)
+
+    @staticmethod
+    def save_file_to_api_import(api_import, file_path):
+        assert os.path.exists(file_path)
+        with open(file_path, "rb") as f:
+            api_import.file = File(f, name=os.path.basename(file_path))
+            api_import.save()
+
+    @classmethod
+    def create_entity_with_registration(
+        cls,
+        name,
+        uuid,
+        creation_timestamp=DEFAULT_CREATED_AT,
+        deleted=False,
+    ):
+        entity = m.Entity.objects.create(
+            name=name,
+            uuid=uuid,
+            entity_type=cls.default_entity_type,
+            account=m.Account.objects.first(),
+        )
+        if deleted:
+            entity.deleted_at = datetime.datetime.now(pytz.UTC)
+
+        with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_instance_file:
+            instance = m.Instance.objects.create(
+                uuid=uuid,
+                entity=entity,
+                form=cls.form_registration,
+                deleted=deleted,
+                file=File(form_instance_file),
+                json={"some": "thing"},
+                source_created_at=creation_timestamp,
+                source_updated_at=creation_timestamp,
+            )
+        entity.attributes = instance
+        entity.save()
+
+        return entity
+
+
+class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
     def setUp(self):
-        self.user = User.objects.first()
-        self.project = m.Project.objects.first()
         self.api_import = APIImport.objects.create(
             user=self.user,
             import_type="bulk",
             json_body={},
         )
-        self.account = m.Account.objects.first()
         self.task = m.Task.objects.create(
             name="process_mobile_bulk_upload",
             launcher=self.user,
             account=self.account,
         )
 
-        # Create 2 forms: Registration + CATT
-        self.form_registration = m.Form.objects.get(form_id="trypelim_registration")
-        self.form_catt = m.Form.objects.get(form_id="trypelim_CATT")
-
-        self.default_entity_type = m.EntityType.objects.create(
-            id=1, name="Participant", reference_form=self.form_registration
-        )
-
-        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
-        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
-
     def _create_zip_file(self):
-        # Create the zip file: we create it on the fly to be able to clearly
-        # see the contents in our repo. We then mock the file download method
-        # to return the filepath to this zip.
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+        return self.create_zip_file(self.api_import)
 
     def test_success(self):
         self._create_zip_file()
@@ -323,12 +331,12 @@ class ProcessMobileBulkUploadTest(TestCase):
         INCORRECT_FILES_FOR_ZIP = ["instances.json"]
         zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(
+            self.add_to_zip(
                 zipf,
-                zip_fixture_dir(CATT_TABLET_DIR),
+                self.zip_fixture_dir(CATT_TABLET_DIR),
                 INCORRECT_FILES_FOR_ZIP,
             )
-        save_file_to_api_import(self.api_import, zip_path)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -390,8 +398,8 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         labo_zip_path = f"/tmp/{LABO_TABLET_DIR}.zip"
         with zipfile.ZipFile(labo_zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        save_file_to_api_import(api_import, labo_zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(LABO_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        self.save_file_to_api_import(api_import, labo_zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=api_import.id,
@@ -441,8 +449,7 @@ class ProcessMobileBulkUploadTest(TestCase):
 
     def test_soft_deleted_entity(self):
         # Create soft-deleted entity Disasi with only registration form
-        ent_disasi = create_entity_with_registration(
-            self,
+        ent_disasi = self.create_entity_with_registration(
             name="Disasi",
             uuid=DISASI_MAKULO_REGISTRATION,
             deleted=True,
@@ -495,8 +502,8 @@ class ProcessMobileBulkUploadTest(TestCase):
     def test_merged_entity(self):
         # Setup: Create entity Disasi (with uuid as in bulk upload), along with a
         # duplicate, then merge them.
-        ent_disasi_A = create_entity_with_registration(self, name="Disasi A", uuid=DISASI_MAKULO_REGISTRATION)
-        ent_disasi_B = create_entity_with_registration(self, name="Disasi B", uuid=uuid.uuid4())
+        ent_disasi_A = self.create_entity_with_registration(name="Disasi A", uuid=DISASI_MAKULO_REGISTRATION)
+        ent_disasi_B = self.create_entity_with_registration(name="Disasi B", uuid=uuid.uuid4())
 
         ent_disasi_C = merge_entities(ent_disasi_A, ent_disasi_B, {}, self.user)
         ent_disasi_C.name = "Disasi C"
@@ -506,8 +513,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Only add data for Disasi to avoid confusion
         zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         for ent in [ent_disasi_A, ent_disasi_B, ent_disasi_C]:
             self.assertEqual(
@@ -583,9 +590,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         # B --                X-- Merged 2
         # C ------------------
         # Now when we receive data for A, it should end up on Merged 2.
-        ent_disasi_A = create_entity_with_registration(self, name="Disasi A", uuid=DISASI_MAKULO_REGISTRATION)
-        ent_disasi_B = create_entity_with_registration(self, name="Disasi B", uuid=uuid.uuid4())
-        ent_disasi_C = create_entity_with_registration(self, name="Disasi C", uuid=uuid.uuid4())
+        ent_disasi_A = self.create_entity_with_registration(name="Disasi A", uuid=DISASI_MAKULO_REGISTRATION)
+        ent_disasi_B = self.create_entity_with_registration(name="Disasi B", uuid=uuid.uuid4())
+        ent_disasi_C = self.create_entity_with_registration(name="Disasi C", uuid=uuid.uuid4())
 
         ent_disasi_merged_1 = merge_entities(ent_disasi_A, ent_disasi_B, {}, self.user)
         ent_disasi_merged_1.name = "Disasi Merged 1"
@@ -606,8 +613,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Only add data for Disasi to avoid confusion
         zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         all_entities = [
             ent_disasi_A,
@@ -686,9 +693,9 @@ class ProcessMobileBulkUploadTest(TestCase):
     # - More than 1 active, n deleted -> take an active one, log Sentry exception
     def test_duplicate_uuids_1_active_1_deleted(self):
         # Create active + soft-deleted entity Disasi with same uuid
-        ent_active = create_entity_with_registration(self, name="Disasi Active", uuid=DISASI_MAKULO_REGISTRATION)
+        ent_active = self.create_entity_with_registration(name="Disasi Active", uuid=DISASI_MAKULO_REGISTRATION)
         # create it with a different uuid to avoid clash on instance uuid
-        ent_deleted = create_entity_with_registration(self, name="Disasi Deleted", uuid=uuid.uuid4(), deleted=True)
+        ent_deleted = self.create_entity_with_registration(name="Disasi Deleted", uuid=uuid.uuid4(), deleted=True)
         # then set it to same uuid as active entity
         ent_deleted.uuid = DISASI_MAKULO_REGISTRATION
         ent_deleted.save()
@@ -696,8 +703,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Only add data for Disasi to avoid confusion
         zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -719,8 +726,8 @@ class ProcessMobileBulkUploadTest(TestCase):
     def test_duplicate_uuids_0_active_2_deleted(self):
         # Create two soft-deleted entities Disasi with same uuid.
         # Make the 1st one the more "correct" one.
-        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION, deleted=True)
-        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4(), deleted=True)
+        ent1 = self.create_entity_with_registration(name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION, deleted=True)
+        ent2 = self.create_entity_with_registration(name="Disasi 2", uuid=uuid.uuid4(), deleted=True)
         ent2.uuid = DISASI_MAKULO_REGISTRATION
         ent2.save()
         attrs = ent2.attributes
@@ -730,8 +737,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         # Only add data for Disasi to avoid confusion
         zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -753,16 +760,16 @@ class ProcessMobileBulkUploadTest(TestCase):
     @mock.patch("iaso.api.instances.instances.logger")
     def test_duplicate_uuids_multiple_active(self, mock_logger):
         # Create two active Disasi with same uuid
-        ent1 = create_entity_with_registration(self, name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
-        ent2 = create_entity_with_registration(self, name="Disasi 2", uuid=uuid.uuid4())
+        ent1 = self.create_entity_with_registration(name="Disasi 1", uuid=DISASI_MAKULO_REGISTRATION)
+        ent2 = self.create_entity_with_registration(name="Disasi 2", uuid=uuid.uuid4())
         ent2.uuid = DISASI_MAKULO_REGISTRATION
         ent2.save()
 
         # Only add data for Disasi to avoid confusion
         zip_path = f"/tmp/{DISASI_ONLY_TABLET_DIR}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(DISASI_ONLY_TABLET_DIR), CORRECT_FILES_FOR_DISASI_ONLY_ZIP)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         process_mobile_bulk_upload(
             api_import_id=self.api_import.id,
@@ -791,8 +798,8 @@ class ProcessMobileBulkUploadTest(TestCase):
         ]
         zip_path = f"/tmp/{entity_uuid}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir("storage_logs"), files_for_zip)
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir("storage_logs"), files_for_zip)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -839,8 +846,8 @@ class ProcessMobileBulkUploadTest(TestCase):
     def test_change_requests(self):
         zip_path = "/tmp/change_request.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            add_to_zip(zipf, zip_fixture_dir(), ["changeRequests.json"])
-        save_file_to_api_import(self.api_import, zip_path)
+            self.add_to_zip(zipf, self.zip_fixture_dir(), ["changeRequests.json"])
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.OrgUnitChangeRequest.objects.count(), 0)
 
@@ -888,7 +895,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
                 zipf.writestr("standalone-instance-uuid-1234/standalone_instance.xml", xml_file.read())
 
-        save_file_to_api_import(self.api_import, zip_path)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         self.assertEqual(m.Entity.objects.count(), 0)
         self.assertEqual(m.Instance.objects.count(), 0)
@@ -955,7 +962,7 @@ class ProcessMobileBulkUploadTest(TestCase):
             with open("iaso/fixtures/instance_form_1_1.xml", "rb") as xml_file:
                 zipf.writestr("no-entity-instance-uuid/no_entity_instance_updated.xml", xml_file.read())
 
-        save_file_to_api_import(self.api_import, zip_path)
+        self.save_file_to_api_import(self.api_import, zip_path)
 
         # This should work without AttributeError after our fix
         process_mobile_bulk_upload(

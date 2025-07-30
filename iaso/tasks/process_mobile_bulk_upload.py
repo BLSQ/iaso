@@ -16,6 +16,7 @@ import time
 import uuid
 import zipfile
 
+from collections import defaultdict
 from copy import copy
 from datetime import datetime
 from traceback import format_exc
@@ -40,6 +41,7 @@ from plugins.trypelim.common.form_utils import (
     get_population_instances,
 )
 from plugins.trypelim.common.utils import sns_notify
+from plugins.trypelim.import_export.bulk_upload import notify_coordinations, positive_instance_qs
 
 
 INSTANCES_JSON = "instances.json"
@@ -70,8 +72,29 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     user = api_import.user
 
     try:
+        # Trypelim-specific
+        # To avoid concurrency issues, we acquire a mutex with a max duration of 10 minutes.
+        acquire_lock(
+            key=TASK_LOCK_KEY,
+            max_retries=TASK_LOCK_MAX_RETRIES,
+            retry_interval=TASK_LOCK_RETRY_INTERVAL,
+            max_duration=TASK_LOCK_MAX_DURATION,
+            progress_callback=lambda num_attempt: the_task.report_progress_and_stop_if_killed(
+                progress_message=f"Acquiring task lock (attempt {num_attempt} of {TASK_LOCK_MAX_RETRIES})",
+                progress_value=10,
+                end_value=100,
+            ),
+        )
+
+        the_task.report_progress_and_stop_if_killed(
+            progress_message="Lock acquired, processing upload",
+            progress_value=20,
+            end_value=100,
+        )
+
         project = Project.objects.get(id=project_id)
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
+        created_objects_ids = defaultdict(list)
 
         with zipfile.ZipFile(api_import.file, "r") as zip_ref:
             with transaction.atomic():
@@ -101,6 +124,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         instance = process_instance_xml(uuid, instance_data, zip_ref, user)
                         stats["new_instances"] += 1
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
+                        created_objects_ids["instance"].append(instance.id)
 
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count
@@ -160,11 +184,25 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     the_task.report_success_with_result(message=message)
 
     # Trypelim-specific
+    # Notify a SNS topic with basic import stats
     try:
         logger.info("Notifying SNS topic of new bulk upload.")
         sns_notify(message)
     except Exception as e:
         logger.exception("Failed to publish to SNS" + str(e))
+
+    # Trypelim-specific
+    # Trigger a task to notify relevant coordinations of confirmed cases
+    if instance_ids := created_objects_ids["instance"]:
+        logger.info("Checking for confirmed cases in bulk upload.")
+
+        confirmation_ids = (
+            positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
+        )
+
+        logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
+        if confirmation_ids and user:
+            notify_coordinations(user, confirmation_ids)
 
 
 def read_json_file_from_zip(zip_ref, filename):

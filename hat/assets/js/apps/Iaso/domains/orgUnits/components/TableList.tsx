@@ -133,6 +133,7 @@ export const TableList: FunctionComponent<Props> = ({
                         handleTableSelection(selectionType, items, totalCount)
                     }
                     getIsSelectionDisabled={getIsSelectionDisabled}
+                    noDataMessage={MESSAGES.searchToSeeOrgUnits}
                 />
             </Box>
         </>

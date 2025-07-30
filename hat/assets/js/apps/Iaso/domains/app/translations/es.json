@@ -225,6 +225,7 @@
     "iaso.entityTypes.fieldsDuplicateSearch": "Móvil: Campos de búsqueda de entidad",
     "iaso.entityTypes.fieldsListView": "Campos de lista",
     "iaso.entityTypes.label": "Tipo de entidad",
+    "iaso.entityTypes.preventAddIfDuplicateFound": "Evitar añadir si la búsqueda arroja un resultado",
     "iaso.entityTypes.referenceForm": "Formulario de referencia",
     "iaso.entityTypes.selectReferenceForm": "Seleccione primero un formulario de referencia",
     "iaso.entityTypes.title": "Tipos de entidad",

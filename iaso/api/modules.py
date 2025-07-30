@@ -30,11 +30,13 @@ class AccountSerializer(serializers.ModelSerializer):
 class ModuleSerializer(serializers.Serializer):
     name = serializers.CharField()
     codename = serializers.CharField()
+    fr_name = serializers.CharField()
+    es_name = serializers.CharField()
     permissions = serializers.SerializerMethodField("get_permissions")
     account = serializers.SerializerMethodField("get_account")
 
     class Meta:
-        fields = ["name", "codename", "permissions", "account"]
+        fields = ["name", "codename", "fr_name", "es_name", "permissions", "account"]
 
     def get_permissions(self, obj):
         return PermissionSerializer(Permission.objects.filter(codename__in=obj["permissions"]), many=True).data
@@ -74,7 +76,10 @@ class ModulesViewSet(ModelViewSet):
             name = module["name"]
             codename = module["codename"]
             fr_name = module["fr_name"]
-            queryset.append({"name": name, "codename": codename, "permissions": permissions, "fr_name": fr_name})
+            es_name = module.get("es_name", name)  # Fallback to English name if Spanish not available
+            queryset.append(
+                {"name": name, "codename": codename, "permissions": permissions, "fr_name": fr_name, "es_name": es_name}
+            )
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "name").split(",")
 
@@ -82,7 +87,9 @@ class ModulesViewSet(ModelViewSet):
             queryset = [
                 module
                 for module in queryset
-                if search.lower() in module["name"].lower() or search.lower() in module["fr_name"].lower()
+                if search.lower() in module["name"].lower()
+                or search.lower() in module["fr_name"].lower()
+                or search.lower() in module["es_name"].lower()
             ]
         if orders:
             order_key = ("").join(orders)

@@ -76,7 +76,7 @@ DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
-AVAILABLE_LANGUAGES = os.environ.get("AVAILABLE_LANGUAGES", "en,fr")
+AVAILABLE_LANGUAGES = os.environ.get("AVAILABLE_LANGUAGES", "en,fr,es")
 
 PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", "")
 
@@ -370,6 +370,7 @@ LANGUAGE_CODE = "en"
 LANGUAGES = (
     ("fr", _("French")),
     ("en", _("English")),
+    ("es", _("Spanish")),
 )
 
 LOCALE_PATHS = [

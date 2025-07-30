@@ -936,7 +936,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         test_campaign.on_hold = True
         test_campaign.save()
 
-        #  ingnore campaign on hold
+        #  ignore campaign on hold
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]

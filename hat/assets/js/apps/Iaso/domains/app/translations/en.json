@@ -243,6 +243,7 @@
     "iaso.entityTypes.infosFieldsDuplicateSearch": "Entity search fields: Fields that will be compared/searchable when adding a new entity (mobile only)",
     "iaso.entityTypes.infosFieldsListView": "How entities are displayed when they are in a list (both web and mobile)",
     "iaso.entityTypes.label": "Entity type",
+    "iaso.entityTypes.preventAddIfDuplicateFound": "Prevent adding if the search yields a result",
     "iaso.entityTypes.referenceForm": "Reference form",
     "iaso.entityTypes.selectReferenceForm": "Select a reference form first",
     "iaso.entityTypes.title": "Entity types",

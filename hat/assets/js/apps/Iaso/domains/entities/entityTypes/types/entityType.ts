@@ -9,4 +9,5 @@ export type EntityType = {
     fields_duplicate_search?: string[];
     entities_count: number;
     instances_count: number;
+    prevent_add_if_duplicate_found: boolean;
 };

@@ -245,6 +245,7 @@
     "iaso.entityTypes.infosFieldsDuplicateSearch": "Champs de recherche d'entité : Champs qui seront comparés/recherchables lors de l'ajout d'une nouvelle entité (mobile uniquement)",
     "iaso.entityTypes.infosFieldsListView": "Comment les entités sont affichées lorsqu'elles sont dans une liste (web et mobile)",
     "iaso.entityTypes.label": "Type d'entité",
+    "iaso.entityTypes.preventAddIfDuplicateFound": "Empêcher l’ajout si la recherche donne un résultat",
     "iaso.entityTypes.referenceForm": "Formulaire de référence",
     "iaso.entityTypes.selectReferenceForm": "Sélectionnez un formulaire de référence d'abord",
     "iaso.entityTypes.title": "Types d'entités",

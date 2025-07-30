@@ -132,6 +132,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Entity search fields: Fields that will be compared/searchable when adding a new entity (mobile only)',
     },
+    preventAddIfDuplicateFound: {
+        id: 'iaso.entityTypes.preventAddIfDuplicateFound',
+        defaultMessage: 'Prevent adding if the search yields a result',
+    },
 });
 
 export default MESSAGES;

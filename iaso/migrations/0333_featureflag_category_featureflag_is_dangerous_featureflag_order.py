@@ -31,4 +31,9 @@ class Migration(migrations.Migration):
             name="is_dangerous",
             field=models.BooleanField(default=False),
         ),
+        migrations.AddField(
+            model_name="featureflag",
+            name="order",
+            field=models.IntegerField(default=0),
+        ),
     ]

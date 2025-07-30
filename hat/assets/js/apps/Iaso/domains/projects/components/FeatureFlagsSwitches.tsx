@@ -1,7 +1,7 @@
+import React, { useCallback } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, Table } from 'bluesquare-components';
-import React, { useCallback } from 'react';
 import { useFeatureFlagColumns } from '../config';
 import { FeatureFlag } from '../types/featureFlag';
 

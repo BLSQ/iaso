@@ -33,6 +33,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Feature flags',
         id: 'iaso.label.featureFlags',
     },
+    featureFlag_DCO: {
+        defaultMessage: 'Data collection options',
+        id: 'iaso.projects.featureFlagCategory.DCO',
+    },
+    featureFlag_REO: {
+        defaultMessage: 'Refresh options',
+        id: 'iaso.projects.featureFlagCategory.REO',
+    },
+    featureFlag_GEO: {
+        defaultMessage: 'Geographic options',
+        id: 'iaso.projects.featureFlagCategory.GEO',
+    },
+    featureFlag_DAV: {
+        defaultMessage: 'Data validation',
+        id: 'iaso.projects.featureFlagCategory.DAV',
+    },
+    featureFlag_ENT: {
+        defaultMessage: 'Entities',
+        id: 'iaso.projects.featureFlagCategory.ENT',
+    },
+    featureFlag_PLA: {
+        defaultMessage: 'Planning',
+        id: 'iaso.projects.featureFlagCategory.PLA',
+    },
+    featureFlag_SPO: {
+        defaultMessage: 'Specific options',
+        id: 'iaso.projects.featureFlagCategory.SPO',
+    },
+    featureFlag_NA: {
+        defaultMessage: 'Generics',
+        id: 'iaso.projects.featureFlagCategory.NA',
+    },
     updateProject: {
         defaultMessage: 'Update project',
         id: 'iaso.projects.update',

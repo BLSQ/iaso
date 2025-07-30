@@ -952,7 +952,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         test_rnd3.on_hold = True
         test_rnd3.save()
 
-        #  ingnore if round for selected period is on hold
+        #  ignore if round for selected period is on hold
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]

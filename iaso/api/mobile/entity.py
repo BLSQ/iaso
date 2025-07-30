@@ -189,6 +189,8 @@ class MobileEntityViewSet(ModelViewSet):
 
         queryset = queryset.distinct("id")
 
+        return queryset.order_by("id")
+
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):
     class Meta:

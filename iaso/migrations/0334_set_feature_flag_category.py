@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0333_featureflag_category_featureflag_is_dangerous"),
+        ("iaso", "0333_featureflag_category_featureflag_is_dangerous_featureflag_order"),
     ]
 
     def set_feature_flag_category_and_is_dangerous(apps, schema_editor):
@@ -43,12 +43,47 @@ class Migration(migrations.Migration):
             "MOBILE_ORG_UNIT_DEEP_SEARCH": "NA",
         }
 
+        feature_flag_code_to_order = {
+            "REQUIRE_AUTHENTICATION": 1,
+            "FORMS_AUTO_UPLOAD": 2,
+            "TAKE_GPS_ON_FORM": 3,
+            "DATA_COLLECTION": 4,
+            "MOBILE_FINALIZED_FORM_ARE_READ": 5,
+            "MOBILE_SUBMISSION_INCOMPLETE_BY_DEFAULT": 6,
+            "LIMIT_OU_DOWNLOAD_TO_ROOTS": 7,
+            "MOBILE_FORCE_OU_UPDATE": 8,
+            "MOBILE_FORCE_FORMS_UPDATE": 9,
+            "MOBILE_CHECK_OU_UPDATE": 10,
+            "MOBILE_CHECK_FORMS_UPDATE": 11,
+            "SHOW_DETAIL_MAP_ON_MOBILE": 12,
+            "CHECK_POSITION_FOR_FORMS": 13,
+            "MOBILE_SELECT_CLOSEST_ORG_UNIT": 14,
+            "MOBILE_CHANGE_REQUESTS_TAB": 15,
+            "MOBILE_ORG_UNIT_REGISTRY": 16,
+            "SHOW_LINK_INSTANCE_REFERENCE": 17,
+            "ENTITY": 18,
+            "MOBILE_ENTITY_NO_CREATION": 19,
+            "MOBILE_ENTITY_WARN_WHEN_FOUND": 20,
+            "MOBILE_ENTITY_LIMITED_SEARCH": 21,
+            "WRITE_ON_NFC_CARDS": 22,
+            "PLANNING": 23,
+            "TRANSPORT_TRACKING": 24,
+            "GPS_TRACKING": 25,
+            "MOBILE_HIDE_CLOSED_ORG_UNIT": 26,
+            "MOBILE_USE_ETHIOPIC_CALENDAR": 27,
+            "MOBILE_NO_ORG_UNIT": 28,
+            "REPORTS": 29,
+            "MOBILE_ORG_UNIT_DEEP_SEARCH": 30,
+        }
+
         FeatureFlag = apps.get_model("iaso", "FeatureFlag")
         all_feature_flags = FeatureFlag.objects.all()
         for flag in all_feature_flags:
             code = flag.code
             category = feature_flag_code_to_category.get(code)
+            order = feature_flag_code_to_order.get(code)
             flag.category = category
+            flag.order = order
             flag.is_dangerous = True if category == "SPO" else False
             flag.save()
 

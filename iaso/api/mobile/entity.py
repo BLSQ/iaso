@@ -186,9 +186,8 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = filter_for_mobile_entity(queryset, self.request)
 
         queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
-        queryset = queryset.distinct()
 
-        return queryset.order_by("id")
+        queryset = queryset.distinct("id")
 
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):

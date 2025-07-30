@@ -98,11 +98,6 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
         [featureFlags],
     );
 
-    const featureTabs = useMemo(
-        () => (groupedFeatureFlags ? [...groupedFeatureFlags.keys()] : []),
-        [groupedFeatureFlags],
-    );
-
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(
@@ -261,7 +256,6 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                     classes={{
                         root: classes.tabs,
                     }}
-                    variant="scrollable"
                     onChange={(_event, newtab) => setTab(newtab)}
                 >
                     <Tab
@@ -271,15 +265,13 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                         value="infos"
                         label={formatMessage(MESSAGES.infos)}
                     />
-                    {featureTabs.map(t => (
-                        <Tab
-                            classes={{
-                                root: classes.tab,
-                            }}
-                            value={t}
-                            label={formatMessage(MESSAGES[`featureFlag_${t}`])}
-                        />
-                    ))}
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="feature_flags"
+                        label={formatMessage(MESSAGES.featureFlags)}
+                    />
                 </Tabs>
                 {tab === 'infos' && (
                     <ProjectInfos
@@ -287,7 +279,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                         currentProject={project}
                     />
                 )}
-                {groupedFeatureFlags?.get(tab) && (
+                {tab === 'feature_flags' && (
                     <ProjectFeatureFlags
                         setFieldValue={(_key, value) =>
                             setFieldValue('feature_flags', value)
@@ -295,11 +287,9 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                         projectFeatureFlagsValues={
                             project.feature_flags.value ?? []
                         }
-                        featureFlags={groupedFeatureFlags
-                            ?.get(tab)
-                            ?.map(featureFlag =>
-                                translatedFeatureFlag(featureFlag),
-                            )}
+                        featureFlags={featureFlags?.map(featureFlag =>
+                            translatedFeatureFlag(featureFlag),
+                        )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}
                     />
                 )}

@@ -1,5 +1,6 @@
 import React, { ReactElement, useMemo } from 'react';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { Box, Chip, Switch, Tooltip } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
@@ -116,7 +117,11 @@ export const useFeatureFlagColumns = (
                                 placement="left-start"
                                 arrow
                             >
-                                <HelpOutlineIcon color="primary" />
+                                {settings.row.original.is_dangerous ? (
+                                    <WarningAmberIcon color="warning" />
+                                ) : (
+                                    <HelpOutlineIcon color="primary" />
+                                )}
                             </Tooltip>
                         </Box>
                     );

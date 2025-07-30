@@ -851,7 +851,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 2)
 
-    def test_return_blocks_with_lqasend_date_within_month_param(self):
+    def test_return_blocks_with_lqas_end_date_within_month_param(self):
         self.client.force_authenticate(self.user)
 
         #  test when lqas end = last day of month

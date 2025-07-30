@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import { Box, Switch } from '@mui/material';
 import {
     IconButton,
     IntlFormatMessage,
@@ -12,6 +12,7 @@ import {
     DndSelect,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
+import { size } from 'lodash';
 import isEqual from 'lodash/isEqual';
 import * as yup from 'yup';
 
@@ -72,6 +73,7 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
         fields_detail_info_view: undefined,
         fields_list_view: undefined,
         fields_duplicate_search: undefined,
+        prevent_add_if_duplicate_found: false,
     },
     saveEntityType,
 }) => {
@@ -103,6 +105,7 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
                     .array()
                     .of(yup.string())
                     .nullable(),
+                prevent_add_if_duplicate_found: yup.boolean(),
             }),
         );
 
@@ -329,6 +332,23 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
                                         keyValue="fields_duplicate_search"
                                     />
                                 </InputWithInfos>
+                            </Box>
+
+                            <Box sx={styles.inputWithInfos}>
+                                <InputComponent
+                                    label={MESSAGES.preventAddIfDuplicateFound}
+                                    value={
+                                        values.prevent_add_if_duplicate_found
+                                    }
+                                    onChange={onChange}
+                                    type="checkbox"
+                                    disabled={
+                                        !values.reference_form ||
+                                        size(values.fields_duplicate_search) ===
+                                            0
+                                    }
+                                    keyValue="prevent_add_if_duplicate_found"
+                                />
                             </Box>
                         </>
                     )}

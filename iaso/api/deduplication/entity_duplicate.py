@@ -21,9 +21,9 @@ from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
+import iaso.permissions as core_permissions
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
@@ -423,7 +423,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     remove_results_key_if_paginated = False
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     model = EntityDuplicate
     pagination_class = Paginator

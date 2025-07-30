@@ -25,50 +25,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import PermissionDenied
 
-
-_ASSIGNMENTS = "iaso_assignments"
-_COMPLETENESS = "iaso_completeness"
-_COMPLETENESS_STATS = "iaso_completeness_stats"
-_DATASTORE_READ = "iaso_datastore_read"
-_DATASTORE_WRITE = "iaso_datastore_write"
-_DATA_TASKS = "iaso_data_tasks"
-_ENTITIES = "iaso_entities"
-_ENTITY_TYPE_WRITE = "iaso_entity_type_write"
-_ENTITIES_DUPLICATE_READ = "iaso_entity_duplicates_read"
-_ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
-_FORMS = "iaso_forms"
-_FORMS_STATS = "iaso_forms_stats"
-_LINKS = "iaso_links"
-_MAPPINGS = "iaso_mappings"
-_MOBILE_APP_OFFLINE_SETUP = "iaso_mobile_app_offline_setup"
-_MODULES = "iaso_modules"
-_ORG_UNITS = "iaso_org_units"
-_ORG_UNITS_HISTORY = "iaso_org_units_history"
-_ORG_UNITS_READ = "iaso_org_units_read"
-_ORG_UNITS_TYPES = "iaso_org_unit_types"
-_ORG_UNITS_GROUPS = "iaso_org_unit_groups"
-_ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
-_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS = "iaso_org_unit_change_request_configurations"
-_PAGES = "iaso_pages"
-_PAGE_WRITE = "iaso_page_write"
-_PAYMENTS = "iaso_payments"
-_PLANNING_WRITE = "iaso_planning_write"
-_PLANNING_READ = "iaso_planning_read"
-_PROJECTS = "iaso_projects"
-_REGISTRY_WRITE = "iaso_registry_write"
-_REGISTRY_READ = "iaso_registry_read"
-_REPORTS = "iaso_reports"
-_SOURCE_WRITE = "iaso_write_sources"
-_SOURCES = "iaso_sources"
-_SOURCES_CAN_CHANGE_DEFAULT_VERSION = "iaso_sources_can_change_default_version"
-_STORAGE = "iaso_storages"
-_SUBMISSIONS = "iaso_submissions"
-_SUBMISSIONS_UPDATE = "iaso_update_submission"
-_TEAMS = "iaso_teams"
-_USERS_ADMIN = "iaso_users"
-_USERS_MANAGED = "iaso_users_managed"
-_USERS_ROLES = "iaso_user_roles"
-_WORKFLOW = "iaso_workflows"
+import iaso.permissions as core_permissions
 
 
 # Trypelim
@@ -110,61 +67,6 @@ _ZONES_EDIT = "iaso_trypelim_management_edit_zones"
 _ZONES_SHAPES_EDIT = "iaso_trypelim_management_edit_shape_zones"
 
 _PREFIX = "menupermissions."
-ASSIGNMENTS = _PREFIX + _ASSIGNMENTS
-COMPLETENESS = _PREFIX + _COMPLETENESS
-COMPLETENESS_STATS = _PREFIX + _COMPLETENESS_STATS
-DATASTORE_READ = _PREFIX + _DATASTORE_READ
-DATASTORE_WRITE = _PREFIX + _DATASTORE_WRITE
-DATA_TASKS = _PREFIX + _DATA_TASKS
-ENTITIES = _PREFIX + _ENTITIES
-ENTITY_TYPE_WRITE = _PREFIX + _ENTITY_TYPE_WRITE
-ENTITIES_DUPLICATE_READ = _PREFIX + _ENTITIES_DUPLICATE_READ
-ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
-FORMS = _PREFIX + _FORMS
-FORMS_STATS = _PREFIX + _FORMS_STATS
-LINKS = _PREFIX + _LINKS
-MAPPINGS = _PREFIX + _MAPPINGS
-MOBILE_APP_OFFLINE_SETUP = _PREFIX + _MOBILE_APP_OFFLINE_SETUP
-MODULES = _PREFIX + _MODULES
-ORG_UNITS = _PREFIX + _ORG_UNITS
-ORG_UNITS_HISTORY = _PREFIX + _ORG_UNITS_HISTORY
-ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
-ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
-ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
-ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
-ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS
-PAYMENTS = _PREFIX + _PAYMENTS
-PAGES = _PREFIX + _PAGES
-PAGE_WRITE = _PREFIX + _PAGE_WRITE
-PLANNING_WRITE = _PREFIX + _PLANNING_WRITE
-PLANNING_READ = _PREFIX + _PLANNING_READ
-
-
-# Import from plugins
-# for plugin in settings.PLUGINS:
-#     try:
-#         exported_permissions = import_module(f"plugins.{plugin}.permissions").exported_permissions
-#         for permission_name, permission_value in exported_permissions.items():
-#             globals()[permission_name] = permission_value
-#     except ImportError:
-#         print(f"{plugin} plugin has no permission support")
-
-
-PROJECTS = _PREFIX + _PROJECTS
-REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
-REGISTRY_READ = _PREFIX + _REGISTRY_READ
-REPORTS = _PREFIX + _REPORTS
-SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
-SOURCES = _PREFIX + _SOURCES
-SOURCES_CAN_CHANGE_DEFAULT_VERSION = _PREFIX + _SOURCES_CAN_CHANGE_DEFAULT_VERSION
-STORAGE = _PREFIX + _STORAGE
-SUBMISSIONS = _PREFIX + _SUBMISSIONS
-SUBMISSIONS_UPDATE = _PREFIX + _SUBMISSIONS_UPDATE
-TEAMS = _PREFIX + _TEAMS
-USERS_ADMIN = _PREFIX + _USERS_ADMIN
-USERS_MANAGED = _PREFIX + _USERS_MANAGED
-USERS_ROLES = _PREFIX + _USERS_ROLES
-WORKFLOW = _PREFIX + _WORKFLOW
 
 # Trypelim
 ANONYMOUS_VIEW = _PREFIX + _ANONYMOUS_VIEW
@@ -231,17 +133,17 @@ class CustomPermissionSupport(models.Model):
 
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
-        _FORMS,
-        _SUBMISSIONS,
-        _MAPPINGS,
-        _COMPLETENESS,
-        _ORG_UNITS,
-        _LINKS,
-        _USERS_ADMIN,
-        _PROJECTS,
-        _SOURCES,
-        _DATA_TASKS,
-        _REPORTS,
+        core_permissions._FORMS,
+        core_permissions._SUBMISSIONS,
+        core_permissions._MAPPINGS,
+        core_permissions._COMPLETENESS,
+        core_permissions._ORG_UNITS,
+        core_permissions._LINKS,
+        core_permissions._USERS_ADMIN,
+        core_permissions._PROJECTS,
+        core_permissions._SOURCES,
+        core_permissions._DATA_TASKS,
+        core_permissions._REPORTS,
     ]
 
     class Meta:
@@ -249,55 +151,6 @@ class CustomPermissionSupport(models.Model):
         # will be performed for this model.
 
         permissions = (
-            (_FORMS, _("Formulaires")),
-            (_FORMS_STATS, _("Statistiques pour les formulaires")),
-            (_MAPPINGS, _("Correspondances avec DHIS2")),
-            (_MODULES, _("modules")),
-            (_COMPLETENESS, _("Complétude des données")),
-            (_ORG_UNITS, _("Unités d'organisations")),
-            (_ORG_UNITS_HISTORY, _("Historique des unités d'organisation")),
-            (_ORG_UNITS_READ, _("Lire les unités d'organisations")),
-            (_REGISTRY_WRITE, _("Editer le Registre")),
-            (_REGISTRY_READ, _("Lire le Registre")),
-            (_LINKS, _("Correspondances sources")),
-            (_USERS_ADMIN, _("Users")),
-            (_USERS_MANAGED, _("Users managed")),
-            (_PAGES, _("Pages")),
-            (_PROJECTS, _("Projets")),
-            (_SOURCES, _("Sources")),
-            (
-                _SOURCES_CAN_CHANGE_DEFAULT_VERSION,
-                _("Can change the default version of a data source"),
-            ),
-            (_DATA_TASKS, _("Tâches")),
-            (_SUBMISSIONS, _("Soumissions")),
-            (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
-            (_PLANNING_WRITE, _("Editer le planning")),
-            (_PLANNING_READ, _("Lire le planning")),
-            (_REPORTS, _("Reports")),
-            (_TEAMS, _("Equipes")),
-            (_ASSIGNMENTS, _("Attributions")),
-            (_ENTITIES, _("Entities")),
-            (_ENTITY_TYPE_WRITE, _("Write entity type")),
-            (_STORAGE, _("Storages")),
-            (_COMPLETENESS_STATS, _("Completeness stats")),
-            (_WORKFLOW, _("Workflows")),
-            (_ENTITIES_DUPLICATE_READ, _("Read Entity duplicates")),
-            (_ENTITIES_DUPLICATE_WRITE, _("Write Entity duplicates")),
-            (_USERS_ROLES, _("Manage user roles")),
-            (_DATASTORE_READ, _("Read data store")),
-            (_DATASTORE_WRITE, _("Write data store")),
-            (_ORG_UNITS_TYPES, _("Org unit types")),
-            (_ORG_UNITS_GROUPS, _("Org unit groups")),
-            (_ORG_UNITS_CHANGE_REQUEST_REVIEW, _("Org unit change request review")),
-            (
-                _ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS,
-                _("Org unit change request configurations"),
-            ),
-            (_SOURCE_WRITE, _("Write data source")),
-            (_PAGE_WRITE, _("Write page")),
-            (_PAYMENTS, _("Payments page")),
-            (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),
             (_AREAS, _("Areas")),
@@ -340,6 +193,7 @@ class CustomPermissionSupport(models.Model):
     @staticmethod
     def filter_permissions(permissions, modules_permissions, settings: LazySettings):
         content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+        content_types.append(ContentType.objects.get_for_model(core_permissions.CorePermissionSupport))
 
         for plugin in settings.PLUGINS:
             try:
@@ -361,5 +215,7 @@ class CustomPermissionSupport(models.Model):
 
     @staticmethod
     def assert_right_to_assign(user, permission_codename: str):
-        if not user.has_perm(USERS_ADMIN) and permission_codename == _USERS_ADMIN:
-            raise PermissionDenied(f"Only users with {USERS_ADMIN} permission can grant {USERS_ADMIN} permission")
+        if not user.has_perm(core_permissions.USERS_ADMIN) and permission_codename == core_permissions._USERS_ADMIN:
+            raise PermissionDenied(
+                f"Only users with {core_permissions.USERS_ADMIN} permission can grant {core_permissions.USERS_ADMIN} permission"
+            )

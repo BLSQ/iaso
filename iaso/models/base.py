@@ -1756,6 +1756,16 @@ class ExportStatus(models.Model):
 
 
 class FeatureFlag(models.Model):
+    class FeatureFlagCategory(models.TextChoices):
+        DATA_COLLECTION_OPTIONS = "DCO", _("Data collection options")
+        REFRESH_OPTIONS = "REO", _("Refresh options")
+        GEOGRAPHIC_OPTIONS = "GEO", _("Geographic options")
+        DATA_VALIDATION = "DAV", _("Data Validation")
+        ENTITIES = "ENT", _("Entities")
+        PLANNING = "PLA", _("Planning")
+        SPECIFIC_OPTIONS = "SPO", _("Specific options")
+        NA = "NA", _("Not specified")
+
     INSTANT_EXPORT = "INSTANT_EXPORT"
     TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
@@ -1798,6 +1808,8 @@ class FeatureFlag(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
+    category = models.TextField(choices=FeatureFlagCategory.choices, default=FeatureFlagCategory.NA)
+    is_dangerous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -7,9 +7,10 @@ from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
-from hat.menupermissions import models as permission
 from iaso.api.common import (
     DateTimestampField,
     DeletionFilterBackend,
@@ -17,10 +18,10 @@ from iaso.api.common import (
     ReadOnlyOrHasPermission,
     TimestampField,
 )
+from iaso.api.permission_checks import ReadOnly
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
-from iaso.permissions import ReadOnly
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -238,7 +239,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamTypesFilterBackend,
         TeamProjectsFilterBackend,
     ]
-    permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(core_permissions.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
@@ -360,7 +361,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(permission.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -505,7 +506,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(permission.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [

@@ -7,9 +7,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.api.common import ModelViewSet, TimestampField
+from iaso.api.permission_checks import ReadOnly
 from iaso.api.query_params import APP_ID
 from iaso.models import Project, StoragePassword
-from iaso.permissions import ReadOnly
 
 
 class MobileStoragePasswordSerializer(serializers.ModelSerializer):

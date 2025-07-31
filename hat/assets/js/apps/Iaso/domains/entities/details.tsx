@@ -103,20 +103,6 @@ export const Details: FunctionComponent = () => {
                                     }}
                                 />
                                 <Divider />
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    p={2}
-                                >
-                                    <Box mr={1} ml={2}>
-                                        <CsvButton
-                                            csvUrl={`/api/entities/?csv=true&id=${entityId}`}
-                                        />
-                                    </Box>
-                                    <XlsxButton
-                                        xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
-                                    />
-                                </Box>
                             </WidgetPaper>
                         </Grid>
                     </Grid>

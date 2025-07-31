@@ -7,7 +7,8 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as p
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import PERMISSIONS_PRESENTATION, READ_EDIT_PERMISSIONS
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.utils.module_permissions import account_module_permissions
@@ -16,8 +17,8 @@ from iaso.utils.module_permissions import account_module_permissions
 class PermissionsViewSet(viewsets.ViewSet):
     f"""Permissions API
 
-    This API is restricted to authenticated users. Note that only users with the "{p.USERS_ADMIN}" or
-    "{p.USERS_MANAGED}" permission will be able to list all permissions - other users can only list their permissions.
+    This API is restricted to authenticated users. Note that only users with the "{core_permissions.USERS_ADMIN}" or
+    "{core_permissions.USERS_MANAGED}" permission will be able to list all permissions - other users can only list their permissions.
 
     GET /api/permissions/
     """
@@ -94,7 +95,7 @@ class PermissionsViewSet(viewsets.ViewSet):
         return permissions
 
     def queryset(self, request):
-        if request.user.has_perm(p.USERS_ADMIN) or request.user.has_perm(p.USERS_MANAGED):
+        if request.user.has_perm(core_permissions.USERS_ADMIN) or request.user.has_perm(core_permissions.USERS_MANAGED):
             perms = Permission.objects
         else:
             perms = request.user.user_permissions

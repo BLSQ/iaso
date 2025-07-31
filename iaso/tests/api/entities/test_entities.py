@@ -2,12 +2,10 @@ import csv
 import datetime
 import io
 import json
-import time
 import uuid
 
-from unittest import mock
-
 import pytz
+import time_machine
 
 from django.core.files import File
 
@@ -211,6 +209,119 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
+
+    def test_list_entities_annotate_duplicates(self):
+        """
+        Test that the list of entities at /api/entities includes duplicate ids annotations
+
+        This shouldn't result in n+1 queries.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        instances = Instance.objects.bulk_create(Instance(org_unit=self.ou_country, form=self.form_1) for _ in range(3))
+        entities = Entity.objects.bulk_create(
+            Entity(
+                entity_type=self.entity_type,
+                attributes=instance,
+                account=self.yoda.iaso_profile.account,
+            )
+            for instance in instances
+        )
+
+        m.EntityDuplicate.objects.create(
+            entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
+        )
+        with self.assertNumQueries(9):
+            response = self.client.get("/api/entities/", format="json")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["id"], entities[0].id)
+        self.assertEqual(result[0]["duplicates"], [entities[1].id])
+
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
+    def test_list_entities_single_entity_type(self):
+        """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
+
+        This should result in extra columns from the type being returned for each entity."""
+        self.client.force_authenticate(self.yoda)
+
+        # We expect the intersection of the form's possible_fields
+        # and the entity type's field_list_view to show up as columns
+        # in the export. Other propreties should be ignored.
+
+        possible_fields = [
+            {"name": "first_name", "type": "text", "label": "First Name"},
+            {"name": "middle_name", "type": "text", "label": "Middle Name"},
+            {"name": "last_name", "type": "text", "label": "Last Name"},
+            {"name": "foobar", "type": "text", "label": "Not supposed to be here"},
+        ]
+
+        form_2 = m.Form.objects.create(
+            name="Another study",
+            period_type=m.MONTH,
+            single_per_period=True,
+            form_id="form_2",
+            possible_fields=possible_fields,
+        )
+
+        form_2.projects.add(self.project)
+        entity_type_2 = m.EntityType.objects.create(
+            name="Type 2",
+            reference_form=form_2,
+            account=self.account,
+            fields_list_view=["first_name", "middle_name", "last_name", "mayonnaise"],
+        )
+
+        instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=form_2,
+            json={
+                "first_name": "Jean",
+                "middle_name": "M.",
+                "last_name": "Dupont",
+                "mayonnaise": "yes",
+                "foobar": "snafu",
+            },
+        )
+        entity = Entity.objects.create(
+            entity_type=entity_type_2,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}", format="json")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()["result"]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["id"], entity.id)
+        self.assertEqual(result[0]["first_name"], "Jean")
+        self.assertEqual(result[0]["last_name"], "Dupont")
+        self.assertEqual(result[0]["middle_name"], "M.")
+
+        # Test the extra columns in the CSV export
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
+        row_to_test = data[len(data) - 1]
+
+        expected_row = [
+            str(entity.id),
+            str(entity.uuid),
+            entity.entity_type.name,
+            entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+            instance.org_unit.name,
+            str(instance.org_unit.id),
+            "",
+            "Jean",
+            "M.",
+            "Dupont",
+        ]
+        self.assertEqual(row_to_test, expected_row)
 
     def test_list_entities_search_uuid_filter(self):
         """
@@ -696,10 +807,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @mock.patch(
-        "iaso.api.entity.gmtime",
-        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
-    )
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
 

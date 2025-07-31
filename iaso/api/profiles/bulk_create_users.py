@@ -18,8 +18,9 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+import iaso.permissions as core_permissions
+
 from hat.audit.models import PROFILE_API_BULK
-from hat.menupermissions import models as permission
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.models import BulkCreateUserCsvFile, OrgUnit, OrgUnitType, Profile, Project, UserRole
 from iaso.utils.module_permissions import account_module_permissions
@@ -53,7 +54,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED):
+        if request.user.has_perm(core_permissions.USERS_ADMIN) or request.user.has_perm(core_permissions.USERS_MANAGED):
             return True
         return False
 
@@ -114,7 +115,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @staticmethod
     def has_only_user_managed_permission(request):
-        if not request.user.has_perm(permission.USERS_ADMIN) and request.user.has_perm(permission.USERS_MANAGED):
+        if not request.user.has_perm(core_permissions.USERS_ADMIN) and request.user.has_perm(
+            core_permissions.USERS_MANAGED
+        ):
             return True
         return False
 
@@ -213,7 +216,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     if has_geo_limit and len(list(filter(None, org_units))) == 0:
                         raise serializers.ValidationError(
                             {
-                                "error": f"Operation aborted. A User with {permission.USERS_MANAGED} permission "
+                                "error": f"Operation aborted. A User with {core_permissions.USERS_MANAGED} permission "
                                 "has to create users with OrgUnits in the file"
                             }
                         )

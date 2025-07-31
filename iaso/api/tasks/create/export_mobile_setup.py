@@ -2,7 +2,8 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
@@ -22,7 +23,7 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.MOBILE_APP_OFFLINE_SETUP),
+        HasPermission(core_permissions.MOBILE_APP_OFFLINE_SETUP),
     ]
 
     def create(self, request):

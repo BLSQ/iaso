@@ -1,3 +1,4 @@
+import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import {
     ArrayFieldInput,
@@ -16,7 +17,6 @@ import {
     translateOptions,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
 import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {

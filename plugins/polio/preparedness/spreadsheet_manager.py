@@ -23,13 +23,13 @@ from hat.__version__ import VERSION
 from iaso.models import OrgUnit
 from plugins.polio.models import Campaign, CountryUsersGroup
 from plugins.polio.preparedness.client import get_client, get_google_config
+from plugins.polio.preparedness.parser import TEMPLATE_VERSION
 
 
 logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3.3"
 
 
 def get_config_for_country(config, country):

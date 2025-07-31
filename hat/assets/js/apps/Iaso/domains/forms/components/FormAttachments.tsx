@@ -1,11 +1,11 @@
-import { Box } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Box } from '@mui/material';
 
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { baseUrls } from 'Iaso/constants/urls';
 import { useGetColumns } from '../config/attachments';
 import { useGetAttachments } from '../hooks/useGetAttachments';
 
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../constants/urls';
 import { useUploadAttachment } from '../hooks/useUploadAttachment';
 import { FormParams } from '../types/forms';
 import { AttachmentModal } from './AttachmentModal';

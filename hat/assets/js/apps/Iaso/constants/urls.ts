@@ -75,6 +75,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'tab',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('attachments'),
+            ...paginationPathParamsWithPrefix('predefinedFilters'),
         ],
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },

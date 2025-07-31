@@ -35,35 +35,35 @@ const MESSAGES = defineMessages({
     },
     featureFlag_DCO: {
         defaultMessage: 'Data collection options',
-        id: 'iaso.projects.featureFlagCategory.DCO',
+        id: 'iaso.projets.featureflag.category.DCO',
     },
     featureFlag_REO: {
         defaultMessage: 'Refresh options',
-        id: 'iaso.projects.featureFlagCategory.REO',
+        id: 'iaso.projets.featureflag.category.REO',
     },
     featureFlag_GEO: {
         defaultMessage: 'Geographic options',
-        id: 'iaso.projects.featureFlagCategory.GEO',
+        id: 'iaso.projets.featureflag.category.GEO',
     },
     featureFlag_DAV: {
         defaultMessage: 'Data validation',
-        id: 'iaso.projects.featureFlagCategory.DAV',
+        id: 'iaso.projets.featureflag.category.DAV',
     },
     featureFlag_ENT: {
         defaultMessage: 'Entities',
-        id: 'iaso.projects.featureFlagCategory.ENT',
+        id: 'iaso.projets.featureflag.category.ENT',
     },
     featureFlag_PLA: {
         defaultMessage: 'Planning',
-        id: 'iaso.projects.featureFlagCategory.PLA',
+        id: 'iaso.projets.featureflag.category.PLA',
     },
     featureFlag_SPO: {
         defaultMessage: 'Specific options',
-        id: 'iaso.projects.featureFlagCategory.SPO',
+        id: 'iaso.projets.featureflag.category.SPO',
     },
     featureFlag_NA: {
         defaultMessage: 'Generics',
-        id: 'iaso.projects.featureFlagCategory.NA',
+        id: 'iaso.projets.featureflag.category.NA',
     },
     updateProject: {
         defaultMessage: 'Update project',

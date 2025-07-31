@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0332_merge_20250717_1033"),
+        ("iaso", "0334_split_core_permissions_from_hat"),
     ]
 
     operations = [

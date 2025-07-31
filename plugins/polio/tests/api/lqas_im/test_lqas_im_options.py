@@ -851,7 +851,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         results = json_response["results"]
         self.assertEqual(len(results), 2)
 
-    def test_return_blocks_with_lqasend_date_within_month_param(self):
+    def test_return_blocks_with_lqas_end_date_within_month_param(self):
         self.client.force_authenticate(self.user)
 
         #  test when lqas end = last day of month
@@ -936,7 +936,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         test_campaign.on_hold = True
         test_campaign.save()
 
-        #  ingnore campaign on hold
+        #  ignore campaign on hold
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]
@@ -952,7 +952,7 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         test_rnd3.on_hold = True
         test_rnd3.save()
 
-        #  ingnore if round for selected period is on hold
+        #  ignore if round for selected period is on hold
         response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
         json_response = self.assertJSONResponse(response, 200)
         results = json_response["results"]

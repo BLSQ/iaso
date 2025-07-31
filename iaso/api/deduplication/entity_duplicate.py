@@ -24,7 +24,6 @@ import iaso.models.base as base
 import iaso.permissions as core_permissions
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
-
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance

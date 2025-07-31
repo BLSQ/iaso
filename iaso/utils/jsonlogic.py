@@ -388,6 +388,75 @@ def _handle_comparison_operators(op: str, params: list, field_prefix: str) -> Q:
     return q
 
 
+def jsonlogic_to_exists_q_clauses(
+    jsonlogic: Dict[str, Any], queryset: Any, id_field_name: str, group_by_field_name: str
+) -> Q:
+    """Converts a JsonLogic query to a Django Q object for use in Exists clauses.
+    This is used to filter entities based on the existence of certain conditions
+    in their related instances.
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict.
+    Example:
+     "or":[
+        {">=":[{"var":"23"},900]},
+        {"==":[{"var":"22"},700]},
+        {"and":[
+            {"<=":[{"var":"23"},1500]},
+            {"==":[{"var":"24"},1000]}
+        ]}
+    ]
+    :param entities: The Django model manager for the entities to filter. Should be a QuerySet or Manager.
+    :param id_field_name: The name of the field in the entities that corresponds to the "var" in the JsonLogic query.
+    :param group_by_field_name: The name of the field used to group the entities in the Exists clause.
+    :return: A Django Q object.
+    """
+    print(f"jsonlogic_to_exists_q_clauses: {jsonlogic}")
+    if "and" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["and"]:
+            sub_query = operator.and_(
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, group_by_field_name),
+            )
+        return sub_query
+    if "or" in jsonlogic:
+        sub_query = Q()
+        for lookup in jsonlogic["or"]:
+            sub_query = operator.or_(
+                sub_query,
+                jsonlogic_to_exists_q_clauses(lookup, queryset, id_field_name, group_by_field_name),
+            )
+        return sub_query
+    if "!" in jsonlogic:
+        return ~jsonlogic_to_exists_q_clauses(jsonlogic["!"], queryset, id_field_name, group_by_field_name)
+
+    if not jsonlogic.keys():
+        return Q()
+
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
+
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    value = params[0] if op == "in" else params[1]
+    # This break flexibility, maybe we can two parameters "value_field_name" and "string_value_field_name"
+    value_field_name = "value" if floatTryParse(value) else "string_value"
+    q = Q(
+        Exists(
+            queryset.filter(
+                **{
+                    group_by_field_name: OuterRef(group_by_field_name),
+                    id_field_name: field["var"],
+                }
+            ).filter(Q(**{f"{value_field_name}__{EXTENDED_OPERATOR_LOOKUPS[op]}": value}))
+        )
+    )
+
+    if op == "!=":
+        # invert the filter
+        q = ~q
+    return q
+
+
 def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     """This enhances the jsonlogic_to_q() method to allow filtering entities on
     the submitted values of their instances.
@@ -449,3 +518,11 @@ def entities_jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -
 
 def matches_all(field_value, expected_list):
     return sorted(field_value.split()) == sorted(expected_list)
+
+
+def floatTryParse(value):
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False

@@ -4,6 +4,7 @@ import os
 import uuid
 import zipfile
 
+from contextlib import contextmanager
 from unittest import mock
 
 import pytz
@@ -66,18 +67,10 @@ class ProcessMobileBulkUploadTestCase(TestCase):
         )
 
     @staticmethod
-    def zip_fixture_dir(subdir=""):
-        return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
-
-    @classmethod
-    def create_zip_file(cls, api_import):
-        # Create the zip file: we create it on the fly to be able to clearly
-        # see the contents in our repo. We then mock the file download method
-        # to return the filepath to this zip.
-        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
-        with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            cls.add_to_zip(zipf, cls.zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
-        cls.save_file_to_api_import(api_import, zip_path)
+    @contextmanager
+    def zip_file(path):
+        with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as zipf:
+            yield zipf
 
     @staticmethod
     def add_to_zip(zipf, directory, subset):
@@ -142,6 +135,20 @@ class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
             launcher=self.user,
             account=self.account,
         )
+
+    @staticmethod
+    def zip_fixture_dir(subdir=""):
+        return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
+
+    @classmethod
+    def create_zip_file(cls, api_import):
+        # Create the zip file: we create it on the fly to be able to clearly
+        # see the contents in our repo. We then mock the file download method
+        # to return the filepath to this zip.
+        zip_path = f"/tmp/{CATT_TABLET_DIR}.zip"
+        with cls.zip_file(zip_path) as zipf:
+            cls.add_to_zip(zipf, cls.zip_fixture_dir(CATT_TABLET_DIR), CORRECT_FILES_FOR_ZIP)
+        cls.save_file_to_api_import(api_import, zip_path)
 
     def _create_zip_file(self):
         return self.create_zip_file(self.api_import)

@@ -88,16 +88,6 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
         useGetFeatureFlags();
 
-    const groupedFeatureFlags = useMemo(
-        () =>
-            featureFlags?.reduce((acc, f) => {
-                const existingGroup = acc.get(f.category) ?? [];
-                acc.set(f.category, [...existingGroup, f]);
-                return acc;
-            }, new Map<string, FeatureFlag[]>()),
-        [featureFlags],
-    );
-
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(

@@ -752,18 +752,25 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-entity-duplicate-analysis" class="md-nav__link">
-    2. Entity Duplicate Analysis
+  <a href="#2-add-a-deduplication-algorithm" class="md-nav__link">
+    2. Add a Deduplication Algorithm
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-duplicate-management" class="md-nav__link">
-    3. Duplicate Management
+  <a href="#3-entity-duplicate-analysis" class="md-nav__link">
+    3. Entity Duplicate Analysis
   </a>
   
-    <nav class="md-nav" aria-label="3. Duplicate Management">
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-duplicate-management" class="md-nav__link">
+    4. Duplicate Management
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Duplicate Management">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -786,8 +793,8 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-validation-status" class="md-nav__link">
-    4. Validation Status
+  <a href="#5-validation-status" class="md-nav__link">
+    5. Validation Status
   </a>
   
 </li>
@@ -857,12 +864,15 @@
 
 <h1 id="entities-deduplication-system">Entities Deduplication System<a class="headerlink" href="#entities-deduplication-system" title="Permanent link">#</a></h1>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
-<p>The entities deduplication system is designed to identify and manage potential duplicate entities within the Iaso platform. It provides a flexible framework for detecting duplicates using various algorithms and allows users to review, merge, or ignore potential duplicates.</p>
+<p>The entities deduplication system is designed to identify and manage potential duplicate entities within the Iaso platform.</p>
+<p>It provides a flexible framework for detecting duplicates using various algorithms and allows users to review, merge, or ignore potential duplicates.</p>
 <h2 id="core-components">Core Components<a class="headerlink" href="#core-components" title="Permanent link">#</a></h2>
 <h3 id="1-deduplication-algorithms">1. Deduplication Algorithms<a class="headerlink" href="#1-deduplication-algorithms" title="Permanent link">#</a></h3>
-<p>The system supports multiple deduplication algorithms through a plugin architecture (at the moment, only the Levenshtein algorithm is supported):</p>
+<p>The system supports multiple deduplication algorithms.</p>
+<p>Currently, only the Levenshtein algorithm is supported:</p>
 <ul>
-<li><strong>Levenshtein Algorithm</strong>: Uses string distance to compare text fields</li>
+<li><strong>Levenshtein Algorithm</strong>:</li>
+<li>It uses string distance to compare text fields</li>
 <li>Configurable parameters:<ul>
 <li><code>levenshtein_max_distance</code>: Maximum allowed distance (default: 3)</li>
 <li><code>above_score_display</code>: Minimum score to display (default: 50)</li>
@@ -876,9 +886,21 @@
 </ul>
 </li>
 </ul>
-<h3 id="2-entity-duplicate-analysis">2. Entity Duplicate Analysis<a class="headerlink" href="#2-entity-duplicate-analysis" title="Permanent link">#</a></h3>
+<h3 id="2-add-a-deduplication-algorithm">2. Add a Deduplication Algorithm<a class="headerlink" href="#2-add-a-deduplication-algorithm" title="Permanent link">#</a></h3>
+<p>To add an algorithm:</p>
+<ol>
+<li>create a file with the algorithm name in <code>iaso/api/deduplication/algos/</code><ul>
+<li>e.g. <code>levenshtein.py</code></li>
+</ul>
+</li>
+<li>inside that file, create a class for that algorithm that derives from <code>iaso.api.deduplication.base.DeduplicationAlgorithm</code></li>
+<li>add the algorithm to <code>iaso.models.deduplication.PossibleAlgorithms</code></li>
+<li>enable the algorithm in <code>iaso.tasks.run_deduplication_algo.run_deduplication_algo</code></li>
+</ol>
+<p>This seems like a lot of steps, but it simplifies the understanding of the system until we have to manage dozens of algorithms.</p>
+<h3 id="3-entity-duplicate-analysis">3. Entity Duplicate Analysis<a class="headerlink" href="#3-entity-duplicate-analysis" title="Permanent link">#</a></h3>
 <p>The system provides an API to run deduplication analysis:</p>
-<pre><code class="language-python">POST /api/entityduplicates_analyzes/
+<pre><code>POST /api/entityduplicates_analyzes/
 {
     &quot;algorithm&quot;: &quot;levenshtein&quot;,
     &quot;entity_type_id&quot;: &quot;string&quot;,
@@ -888,10 +910,10 @@
     }
 }
 </code></pre>
-<p>The entity_type_id is the id of the entity type to analyze.
-The fields are the fields to compare.
-The parameters are the parameters to pass directly to the algorithm (for example levenshtein_max_distance can be passed to change from default valu)</p>
-<h3 id="3-duplicate-management">3. Duplicate Management<a class="headerlink" href="#3-duplicate-management" title="Permanent link">#</a></h3>
+<p><code>entity_type_id</code> is the <code>id</code> of the entity type to analyze.</p>
+<p><code>fields</code> are the fields to compare.</p>
+<p><code>parameters</code> are the parameters to pass directly to the algorithm (for example, <code>levenshtein_max_distance</code> can be passed to change from default value)</p>
+<h3 id="4-duplicate-management">4. Duplicate Management<a class="headerlink" href="#4-duplicate-management" title="Permanent link">#</a></h3>
 <p>Once duplicates are identified, they can be managed through several actions:</p>
 <h4 id="viewing-duplicates">Viewing Duplicates<a class="headerlink" href="#viewing-duplicates" title="Permanent link">#</a></h4>
 <ul>
@@ -921,11 +943,13 @@ The parameters are the parameters to pass directly to the algorithm (for example
 <li>Provide reason for ignoring</li>
 <li>Prevents future processing of ignored pairs</li>
 </ol>
-<h3 id="4-validation-status">4. Validation Status<a class="headerlink" href="#4-validation-status" title="Permanent link">#</a></h3>
-<p>Duplicates can have one of three statuses:
-- <code>PENDING</code>: Initial state, awaiting review
-- <code>VALIDATED</code>: Duplicates have been merged
-- <code>IGNORED</code>: Duplicates have been marked as not duplicates</p>
+<h3 id="5-validation-status">5. Validation Status<a class="headerlink" href="#5-validation-status" title="Permanent link">#</a></h3>
+<p>Duplicates can have one of three statuses:</p>
+<ul>
+<li><code>PENDING</code>: Initial state, awaiting review</li>
+<li><code>VALIDATED</code>: Duplicates have been merged</li>
+<li><code>IGNORED</code>: Duplicates have been marked as not duplicates</li>
+</ul>
 <h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">#</a></h2>
 <h3 id="entity-duplicates">Entity Duplicates<a class="headerlink" href="#entity-duplicates" title="Permanent link">#</a></h3>
 <ul>

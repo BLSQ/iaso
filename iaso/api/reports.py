@@ -3,7 +3,8 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions, serializers
 from rest_framework.pagination import LimitOffsetPagination
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import Report
 
@@ -28,7 +29,7 @@ class ReportsViewSet(ModelViewSet):
     results_key = "result"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.REPORTS)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.REPORTS)]  # type: ignore
     pagination_class = LimitOffsetPagination
 
     def get_serializer_class(self):

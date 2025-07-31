@@ -51,3 +51,46 @@ class MobileEntityAPITestCase(EntityAPITestCase):
 
         entity = response_json["results"][0]
         self.assertEqual(entity["defining_instance_id"], str(uuid_valid_instance))
+
+    def test_list_entities_no_duplicates_in_response(self):
+        """Test that the same entity is not present twice in the API response"""
+        # Create entity with single instance
+        uuid_instance = uuid.uuid4()
+        instance = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid_instance,
+        )
+        entity = m.Entity.objects.create(
+            name="test_entity",
+            entity_type=self.entity_type,
+            attributes=instance,
+            account=self.account,
+        )
+        instance.entity = entity
+        instance.save()
+
+        # Create a second instance for the same entity
+        uuid_instance_2 = uuid.uuid4()
+        instance_2 = self.create_form_instance(
+            project=self.project,
+            org_unit=self.ou_country,
+            form=self.form_1,
+            uuid=uuid_instance_2,
+        )
+        instance_2.entity = entity
+        instance_2.save()
+        self.yoda.iaso_profile.org_units.add(self.ou_country)
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(self.BASE_URL, {"app_id": self.project.app_id})
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        # Verify only one entity is returned despite having multiple instances
+        self.assertEqual(response_json["count"], 1)
+
+        # Extract all entity IDs from response
+        entity_ids = [entity["id"] for entity in response_json["results"]]
+
+        # Verify no duplicate entity IDs
+        self.assertEqual(len(entity_ids), len(set(entity_ids)), "Found duplicate entities in response")

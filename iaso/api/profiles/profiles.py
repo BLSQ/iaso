@@ -21,9 +21,10 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
-from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
@@ -42,9 +43,9 @@ class HasProfilePermission(permissions.BasePermission):
         pk = view.kwargs.get("pk")
         if view.action in ("retrieve", "partial_update") and pk == PK_ME:
             return True
-        if request.user.has_perm(permission.USERS_ADMIN):
+        if request.user.has_perm(core_permissions.USERS_ADMIN):
             return True
-        if request.user.has_perm(permission.USERS_MANAGED):
+        if request.user.has_perm(core_permissions.USERS_MANAGED):
             return self.has_permission_over_user(request, pk)
 
         return request.method == "GET"
@@ -60,11 +61,11 @@ class HasProfilePermission(permissions.BasePermission):
             new_user_org_units = request.data.get("org_units", [])
             if len(new_user_org_units) == 0:
                 raise PermissionDenied(
-                    f"User with '{permission.USERS_MANAGED}' can not create a new user without a location."
+                    f"User with '{core_permissions.USERS_MANAGED}' can not create a new user without a location."
                 )
 
         if pk == request.user.id:
-            raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot edit their own permissions.")
+            raise PermissionDenied(f"User with '{core_permissions.USERS_MANAGED}' cannot edit their own permissions.")
 
         org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
 
@@ -172,9 +173,9 @@ def get_filtered_profiles(
     if managed_users_only:
         if not user:
             raise Exception("User cannot be 'None' when filtering on managed users only")
-        if user.has_perm(permission.USERS_ADMIN):
+        if user.has_perm(core_permissions.USERS_ADMIN):
             queryset = queryset  # no filter needed
-        elif user.has_perm(permission.USERS_MANAGED):
+        elif user.has_perm(core_permissions.USERS_MANAGED):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )
@@ -197,8 +198,8 @@ class ProfileError(ValidationError):
 class ProfilesViewSet(viewsets.ViewSet):
     f"""Profiles API
 
-    This API is restricted to authenticated users having the "{permission.USERS_ADMIN}" or "{permission.USERS_MANAGED}"
-    permission for write permission.
+    This API is restricted to authenticated users having the "{core_permissions.USERS_ADMIN}" or "{core_permissions.USERS_MANAGED}"
+    permission for write core_permissions.
     Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
     the interface.
 
@@ -640,7 +641,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             return OrgUnit.objects.filter(id__in=org_unit_ids)
 
         filtered_org_unit_ids = []
-        if request.user.has_perm(permission.USERS_MANAGED) and not request.user.has_perm(permission.USERS_ADMIN):
+        if request.user.has_perm(core_permissions.USERS_MANAGED) and not request.user.has_perm(
+            core_permissions.USERS_ADMIN
+        ):
             profile_org_units = request.user.iaso_profile.org_units.all()
             managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
             # Only filter if there's an org unit limitation in place.
@@ -652,7 +655,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                         and not request.user.is_superuser
                     ):
                         raise PermissionDenied(
-                            f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                            f"User with {core_permissions.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
                             f"pyramid. Trying to assign {org_unit_id}."
                         )
                     filtered_org_unit_ids.append(org_unit_id)
@@ -680,7 +683,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
         new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
 
-        if request.user.has_perm(permission.USERS_ADMIN):
+        if request.user.has_perm(core_permissions.USERS_ADMIN):
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
         user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)

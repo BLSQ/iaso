@@ -87,7 +87,7 @@ from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
-from .api.permissions import PermissionsViewSet
+from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.profiles.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet

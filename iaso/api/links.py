@@ -8,9 +8,10 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import ORG_UNIT_API, log_modification
-from hat.menupermissions import models as permission
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.models import DataSource, Link, OrgUnit
 from iaso.utils import geojson_queryset
@@ -42,7 +43,7 @@ class LinkSerializer(serializers.ModelSerializer):
 class LinkViewSet(viewsets.ViewSet):
     f"""Links API
 
-    This API is restricted to authenticated users having the "{permission.LINKS}" permission
+    This API is restricted to authenticated users having the "{core_permissions.LINKS}" permission
 
     GET /api/links/
     POST /api/links/

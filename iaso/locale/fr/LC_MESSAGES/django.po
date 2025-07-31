@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-16 15:28+0000\n"
+"POT-Creation-Date: 2025-07-23 09:15+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -459,6 +459,10 @@ msgstr ""
 #: iaso/models/data_source.py
 msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
+
+#: iaso/models/deduplication.py
+msgid "Levenshtein"
+msgstr "Levenshtein"
 
 #: iaso/models/deduplication.py iaso/models/payments.py
 #: iaso/utils/virus_scan/model.py

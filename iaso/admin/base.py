@@ -845,6 +845,7 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("task",)
     search_fields = ("id",)
 
 

@@ -28,11 +28,13 @@ class MetricTypeSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+
 class MetricValueSerializer(serializers.ModelSerializer):
     class Meta:
         model = MetricValue
         fields = ["id", "metric_type", "org_unit", "year", "value", "string_value"]
         read_only_fields = fields
+
 
 class OrgUnitIdSerializer(serializers.Serializer):
     org_unit_id = serializers.IntegerField()

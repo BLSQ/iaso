@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
             "SHOW_DETAIL_MAP_ON_MOBILE": "GEO",
             "CHECK_POSITION_FOR_FORMS": "GEO",
             "MOBILE_SELECT_CLOSEST_ORG_UNIT": "GEO",
+            "MOBILE_ORG_UNIT_DEEP_SEARCH": "GEO",
             "MOBILE_CHANGE_REQUESTS_TAB": "DAV",
             "MOBILE_ORG_UNIT_REGISTRY": "DAV",
             "SHOW_LINK_INSTANCE_REFERENCE": "DAV",
@@ -40,7 +41,6 @@ class Migration(migrations.Migration):
             "MOBILE_USE_ETHIOPIC_CALENDAR": "SPO",
             "MOBILE_NO_ORG_UNIT": "SPO",
             "REPORTS": "SPO",
-            "MOBILE_ORG_UNIT_DEEP_SEARCH": "NA",
         }
 
         feature_flag_code_to_order = {

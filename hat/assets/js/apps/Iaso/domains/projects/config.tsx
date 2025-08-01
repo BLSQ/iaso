@@ -1,17 +1,16 @@
 import React, { ReactElement, useMemo } from 'react';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-import { Box, Button, Chip, Switch, Tooltip } from '@mui/material';
+import { Box, Chip, Switch } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
+import { FeatureFlagToggleCell } from './components/FeatureFlagsToggleCell';
+import { FeatureFlagTooltipCell } from './components/FeatureFlagTooltipCell';
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
-import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 export const baseUrl = baseUrls.projects;
 export const useColumns = (
@@ -111,34 +110,21 @@ export const useFeatureFlagColumns = (
                           ]
                         : settings.row.original.name;
                     return !settings.row.original.group ? (
-                        <Box style={{ cursor: 'pointer' }}>
-                            <Tooltip
-                                title={formatMessage(title)}
-                                disableInteractive={false}
-                                leaveDelay={500}
-                                placement="left-start"
-                                arrow
-                            >
-                                {settings.row.original.is_dangerous ? (
-                                    <WarningAmberIcon color="warning" />
-                                ) : (
-                                    <HelpOutlineIcon color="primary" />
-                                )}
-                            </Tooltip>
-                        </Box>
+                        <FeatureFlagTooltipCell
+                            title={formatMessage(title)}
+                            iconVariant={
+                                settings.row.original.is_dangerous
+                                    ? 'warning'
+                                    : 'info'
+                            }
+                        />
                     ) : (
-                        <Button
-                            variant="text"
-                            onClick={() =>
+                        <FeatureFlagToggleCell
+                            collapsed={settings.row.original.collapsed}
+                            onToggle={() =>
                                 toggleFeatureGroup(settings.row.original.code)
                             }
-                        >
-                            {settings.row.original.collapsed ? (
-                                <ExpandMore />
-                            ) : (
-                                <ExpandLess />
-                            )}
-                        </Button>
+                        />
                     );
                 },
             },

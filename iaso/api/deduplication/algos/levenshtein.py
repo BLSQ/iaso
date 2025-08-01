@@ -128,32 +128,48 @@ def _build_query(params):
                 query_params.extend([f_name, f_name, f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
-
-    query_params = [params.get("entity_type_id")] + query_params
-    query_params.extend([above_score_display])
+    query_params = [params.get("entity_type_id")] + query_params + [above_score_display]
 
     return (
         query_params,
         f"""
-    WITH filtered_entities AS (
+    /*
+    A materialized CTE is computed and stored temporarily at the beginning of the query execution.
+    Without MATERIALIZED, PostgreSQL might execute the CTE multiple times.
+    */
+    WITH filtered_entities AS MATERIALIZED (
         SELECT id, attributes_id
         FROM iaso_entity
         WHERE entity_type_id = %s AND deleted_at IS NULL
     ),
-    entity_pairs AS (
+    /*
+    With MATERIALIZED, each entity's JSON should be extracted exactly once.
+    `n` entities × JSON size = predictable memory footprint.
+    */
+    entity_instances_json AS MATERIALIZED (
         SELECT
-            entity1.id AS entity_id1,
-            entity2.id AS entity_id2,
-            ({fields_comparison}) / NULLIF({n}, 0) * 100 AS raw_score
-        FROM filtered_entities AS entity1
-        JOIN filtered_entities AS entity2 ON entity1.id > entity2.id  -- This assumes IDs increase over time.
-        JOIN iaso_instance AS instance1 ON entity1.attributes_id = instance1.id
-        JOIN iaso_instance AS instance2 ON entity2.attributes_id = instance2.id
-        WHERE NOT EXISTS (
+            e.id AS entity_id,
+            i.json
+        FROM filtered_entities AS e
+        JOIN iaso_instance AS i ON e.attributes_id = i.id
+    ),
+    /*
+    Pre-filter pairs before expensive calculations.
+    */
+    candidate_pairs AS (
+        SELECT
+            e1.entity_id AS entity_id1,
+            e2.entity_id AS entity_id2,
+            e1.json AS json1,
+            e2.json AS json2
+        FROM entity_instances_json AS e1
+        CROSS JOIN entity_instances_json AS e2
+        WHERE e1.entity_id > e2.entity_id
+        AND NOT EXISTS (
             SELECT 1
-            FROM iaso_entityduplicate AS d
-            WHERE d.entity1_id = entity1.id
-              AND d.entity2_id = entity2.id
+            FROM iaso_entityduplicate d
+            WHERE d.entity1_id = e1.entity_id
+              AND d.entity2_id = e2.entity_id
         )
     ),
     scored_pairs AS (
@@ -162,13 +178,19 @@ def _build_query(params):
             entity_id2,
             CAST(
                 GREATEST(
-                    LEAST(COALESCE(raw_score, 0), 100),
+                    LEAST(
+                        COALESCE(
+                            ({fields_comparison.replace("instance1.json", "json1").replace("instance2.json", "json2")}) / NULLIF({n}, 0) * 100,
+                            0
+                        ),
+                        100
+                    ),
                     0
                 ) AS SMALLINT
             ) AS score
-        FROM entity_pairs
+        FROM candidate_pairs
     )
-    SELECT *
+    SELECT entity_id1, entity_id2, score
     FROM scored_pairs
     WHERE score > %s
     ORDER BY score DESC;
@@ -203,7 +225,9 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
             cursor.execute(the_query, the_params)
 
             while True:
-                records = cursor.fetchmany(size=100)
+                # We can use a large batch size here since the results are lightweight
+                # (just 3 fields: entity1_id, entity2_id, score).
+                records = cursor.fetchmany(size=1000)
 
                 if not records:
                     break

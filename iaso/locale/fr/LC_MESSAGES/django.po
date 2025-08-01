@@ -768,10 +768,6 @@ msgid "Attributions"
 msgstr "Attributions"
 
 #: iaso/permissions.py
-msgid "Entities"
-msgstr "Entités"
-
-#: iaso/permissions.py
 msgid "Write entity type"
 msgstr "Écrire type d'entité"
 

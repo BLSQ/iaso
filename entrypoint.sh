@@ -90,6 +90,15 @@ case "$1" in
   "manage" )
     ./manage.py "${@:2}"
   ;;
+  "fixtures" )
+    ./scripts/wait_for_dbs.sh
+    export DJANGO_SUPERUSER_USERNAME=admin
+    export DJANGO_SUPERUSER_PASSWORD=admin
+    export DJANGO_SUPERUSER_EMAIL=admin@openiaso.com
+    ./manage.py createsuperuser --no-input || true
+    ./manage.py set_up_burkina_faso_account
+    ./manage.py seed_interventions
+  ;;
   "eval" )
     eval "${@:2}"
   ;;

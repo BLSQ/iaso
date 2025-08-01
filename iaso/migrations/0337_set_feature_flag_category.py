@@ -5,7 +5,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0333_featureflag_category_featureflag_is_dangerous_featureflag_order"),
+        ("iaso", "0336_featureflag_category_featureflag_is_dangerous_and_more"),
     ]
 
     def set_feature_flag_category_and_is_dangerous(apps, schema_editor):

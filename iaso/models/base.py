@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
+from django.db.models import Case, Count, Exists, F, FilteredRelation, Func, OuterRef, Q, When
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1755,6 +1755,26 @@ class ExportStatus(models.Model):
         return "ExportStatus " + str(self.id)
 
 
+class FeatureFlagQuerySet(models.QuerySet):
+    category_order = [
+        "DCO",
+        "REO",
+        "GEO",
+        "DAV",
+        "ENT",
+        "PLA",
+        "SPO",
+        "NA",
+    ]
+
+    def order_by_category_then_order(self):
+        category_ordering = Case(
+            *[When(category=cat, then=pos) for pos, cat in enumerate(self.category_order)],
+            output_field=models.IntegerField(),
+        )
+        return self.annotate(category_order=category_ordering).order_by("category_order", "order")
+
+
 class FeatureFlag(models.Model):
     class FeatureFlagCategory(models.TextChoices):
         DATA_COLLECTION_OPTIONS = "DCO", _("Data collection options")
@@ -1813,6 +1833,7 @@ class FeatureFlag(models.Model):
     is_dangerous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = FeatureFlagQuerySet.as_manager()
 
     def __str__(self):
         return self.name

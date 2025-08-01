@@ -59,7 +59,7 @@ class FeatureFlagViewSet(ModelViewSet):
             if "SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG" not in account_feature_flags:
                 featureflags = featureflags.exclude(code="MOBILE_NO_ORG_UNIT")
 
-        return featureflags.order_by("order")
+        return featureflags.order_by_category_then_order()
 
     @action(methods=["GET"], detail=False)
     def except_no_activated_modules(self, request):

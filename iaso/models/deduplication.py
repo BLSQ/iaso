@@ -62,7 +62,3 @@ class EntityDuplicate(models.Model):
 
     class Meta:
         unique_together = ("entity1", "entity2")
-        indexes = [
-            # Composite index for the NOT EXISTS subquery optimization (LevenshteinAlgorithm).
-            models.Index(fields=["entity1", "entity2"], name="idx_entityduplicate_pairs"),
-        ]

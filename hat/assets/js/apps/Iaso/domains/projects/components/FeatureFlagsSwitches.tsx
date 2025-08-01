@@ -53,22 +53,22 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
         [projectFeatureFlagsValues, handleChange],
     );
 
-    const [hiddenFeatureGroups, setHiddenFeatureGroups] = useState<string[]>(
+    const [visibleFeatureGroups, setVisibleFeatureGroups] = useState<string[]>(
         [],
     );
 
     const toggleFeatureGroup = useCallback(
         group => {
-            const indexOfHidden = hiddenFeatureGroups?.indexOf(group) ?? -1;
-            if (indexOfHidden < 0) {
-                setHiddenFeatureGroups([...hiddenFeatureGroups, group]);
+            const indexOfVisible = visibleFeatureGroups?.indexOf(group) ?? -1;
+            if (indexOfVisible < 0) {
+                setVisibleFeatureGroups([...visibleFeatureGroups, group]);
             } else {
-                setHiddenFeatureGroups(
-                    hiddenFeatureGroups.filter((_, i) => i !== indexOfHidden),
+                setVisibleFeatureGroups(
+                    visibleFeatureGroups.filter((_, i) => i !== indexOfVisible),
                 );
             }
         },
-        [hiddenFeatureGroups, setHiddenFeatureGroups],
+        [visibleFeatureGroups, setVisibleFeatureGroups],
     );
 
     const columns = useFeatureFlagColumns(
@@ -79,10 +79,8 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
 
     const featureFlagsData = useMemo(() => {
         const groupRows: string[] = [];
-        // Assuming order from Back end is related to groups as well ..
-        // Maybe we should make sure of that.
         return featureFlags.reduce((acc, f) => {
-            const isGroupCollapsed = hiddenFeatureGroups.includes(f.category);
+            const isGroupCollapsed = !visibleFeatureGroups.includes(f.category);
             if (!groupRows.includes(f.category)) {
                 acc.push({
                     code: f.category,
@@ -99,7 +97,7 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
 
             return acc;
         }, [] as any[]);
-    }, [featureFlags, hiddenFeatureGroups]);
+    }, [featureFlags, visibleFeatureGroups]);
 
     return (
         <Box className={classes.container}>

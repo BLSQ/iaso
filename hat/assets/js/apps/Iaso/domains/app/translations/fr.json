@@ -1279,7 +1279,7 @@
     "iaso.projets.featureflag.tooltip.write_on_nfc_cards": "Active la possibilité d'enregistrer les données d'entités sur une carte NFC qui se scanne contre l'appareil",
     "iaso.projets.featureflag.transport_tracking": "GPS des trajets",
     "iaso.projets.featureflag.write_on_nfc_cards": "Utiliser la carte NFC pour enregistrer l'entité",
-    "iaso.projets.featureflag.category.DCO": "Options de collection de données",
+    "iaso.projets.featureflag.category.DCO": "Options de collecte de données",
     "iaso.projets.featureflag.category.REO": "Options de rafraichissement",
     "iaso.projets.featureflag.category.GEO": "Options géographiques",
     "iaso.projets.featureflag.category.DAV": "Validation de données",

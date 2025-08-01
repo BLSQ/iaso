@@ -31,6 +31,7 @@ from plugins.polio.api.lqas_im.lqas_im_country import LQASIMCountryViewset
 from plugins.polio.api.lqas_im.lqas_im_dropdowns import (
     LqasImCampaignOptionsViewset,
     LqasImCountriesOptionsViewset,
+    LqasImCountryBlockOptionsViewSet,
     LqasImRoundOptionsViewset,
 )
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
@@ -87,6 +88,9 @@ router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basena
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
 router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
+router.register(
+    r"polio/lqasim/countryblockoptions", LqasImCountryBlockOptionsViewSet, basename="lqasimcountryblockoptions"
+)
 router.register(r"polio/lqasim/countriesoptions", LqasImCountriesOptionsViewset, basename="lqasimcountriesoptions")
 router.register(r"polio/lqasim/campaignoptions", LqasImCampaignOptionsViewset, basename="lqasimcampaignoptions")
 router.register(r"polio/lqasim/roundoptions", LqasImRoundOptionsViewset, basename="lqasimroundoptions")

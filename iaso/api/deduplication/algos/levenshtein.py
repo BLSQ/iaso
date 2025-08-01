@@ -203,7 +203,9 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
             cursor.execute(the_query, the_params)
 
             while True:
-                records = cursor.fetchmany(size=100)
+                # We can use a large batch size here since the results are lightweight
+                # (just 3 fields: entity1_id, entity2_id, score).
+                records = cursor.fetchmany(size=1000)
 
                 if not records:
                     break

@@ -2,7 +2,7 @@ from django.db.models import Q
 
 from iaso.models.metric import MetricValue
 from iaso.test import TestCase
-from iaso.utils.jsonlogic import jsonlogic_to_exists_q_clauses, instance_jsonlogic_to_q, jsonlogic_to_q
+from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
 
 
 class JsonLogicTests(TestCase):

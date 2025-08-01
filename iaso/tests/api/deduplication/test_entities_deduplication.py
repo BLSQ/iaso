@@ -507,7 +507,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_ignore_entity_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
-        response = self.client.post(
+        self.client.post(
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,

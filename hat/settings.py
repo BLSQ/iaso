@@ -214,8 +214,16 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
+ENABLE_GZIP = os.environ.get("ENABLE_GZIP", "false").lower() == "true"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+]
+if ENABLE_GZIP:
+    MIDDLEWARE += [
+        "django.middleware.gzip.GZipMiddleware",
+    ]
+MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
 ]

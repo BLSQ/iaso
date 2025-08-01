@@ -54,6 +54,9 @@ If you don't set the required variables, ClamAV will not be configured and Iaso 
 | CLAMAV_PORT   | true     | `3310`             | port that Iaso can use to reach ClamAV                                                       |
 
 
+# Compression
+You can enable compression of responses using the django middleware `GZipMiddleware` by setting the environment variable `ENABLE_GZIP` to `"true"`.
+Default is `"false"` since it is generally better to do compression at the web server level (e.g., Nginx or Apache).
 
 # Security Settings
 

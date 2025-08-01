@@ -87,12 +87,4 @@ class Migration(migrations.Migration):
             flag.is_dangerous = True if category == "SPO" else False
             flag.save()
 
-    def reverse_set_feature_flag_category_and_is_dangerous(apps, schema_editor):
-        # We can ignore this, not sure how to say that there is nothing to revert.
-        pass
-
-    operations = [
-        migrations.RunPython(
-            set_feature_flag_category_and_is_dangerous, reverse_set_feature_flag_category_and_is_dangerous
-        )
-    ]
+    operations = [migrations.RunPython(set_feature_flag_category_and_is_dangerous, elidable=True)]

@@ -1829,7 +1829,7 @@ class FeatureFlag(models.Model):
     requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     category = models.TextField(choices=FeatureFlagCategory.choices, default=FeatureFlagCategory.NA)
-    order = models.IntegerField(default=0)
+    order = models.PositiveSmallIntegerField(default=0)
     is_dangerous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

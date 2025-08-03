@@ -1,0 +1,2446 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../iaso_modules/iaso_modules.html">
+      
+      
+        <link rel="next" href="../iaso_mobile/iaso_mobile.html">
+      
+      <link rel="icon" href="../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Plataforma Web - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plataforma-web" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plataforma Web
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../pages/users/reference/iaso_web/user_guide.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../fr/pages/users/reference/iaso_web/user_guide.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="user_guide.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          Plataforma Web
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="user_guide.html" class="md-nav__link md-nav__link--active">
+        Plataforma Web
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inicio-de-sesion" class="md-nav__link">
+    Inicio de sesión
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navegando-en-iaso" class="md-nav__link">
+    Navegando en IASO
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gestionar-formularios-de-recoleccion-de-datos" class="md-nav__link">
+    Gestionar formularios de recolección de datos
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestionar formularios de recolección de datos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-formularios" class="md-nav__link">
+    Lista de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crearsubir-un-formulario-de-recoleccion-de-datos" class="md-nav__link">
+    Crear/Subir un formulario de recolección de datos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#envios-de-formularios" class="md-nav__link">
+    Envíos de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestionar-envios" class="md-nav__link">
+    Gestionar envíos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estadisticas-de-formularios" class="md-nav__link">
+    Estadísticas de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapeos-dhis2" class="md-nav__link">
+    Mapeos DHIS2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completitud" class="md-nav__link">
+    Completitud
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estadisticas-de-completitud" class="md-nav__link">
+    Estadísticas de completitud
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#georegistry-gestion-de-unidades-organizacionales" class="md-nav__link">
+    Georegistry - Gestión de Unidades Organizacionales
+  </a>
+  
+    <nav class="md-nav" aria-label="Georegistry - Gestión de Unidades Organizacionales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-unidades-organizacionales" class="md-nav__link">
+    Lista de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grupos-de-unidades-organizacionales" class="md-nav__link">
+    Grupos de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-de-tipos-de-unidades-organizacionales" class="md-nav__link">
+    Gestión de tipos de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-de-fuentes-de-datos" class="md-nav__link">
+    Gestión de Fuente(s) de Datos
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestión de Fuente(s) de Datos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-fuentes-de-datos" class="md-nav__link">
+    Lista de Fuente(s) de Datos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coincidencia" class="md-nav__link">
+    Coincidencia
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registro" class="md-nav__link">
+    Registro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revisar-propuestas-de-cambio" class="md-nav__link">
+    Revisar propuestas de cambio
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planificacion" class="md-nav__link">
+    Planificación
+  </a>
+  
+    <nav class="md-nav" aria-label="Planificación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-planificacion" class="md-nav__link">
+    Lista de Planificación
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entidades" class="md-nav__link">
+    Entidades
+  </a>
+  
+    <nav class="md-nav" aria-label="Entidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-crear-una-entidad" class="md-nav__link">
+    Cómo crear una entidad
+  </a>
+  
+    <nav class="md-nav" aria-label="Cómo crear una entidad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crear-el-tipo-de-entidad" class="md-nav__link">
+    Crear el tipo de entidad
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crear-una-entidad" class="md-nav__link">
+    Crear una entidad
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-configurar-como-mostramos-una-entidad" class="md-nav__link">
+    ¿Cómo configurar cómo mostramos una entidad?
+  </a>
+  
+    <nav class="md-nav" aria-label="¿Cómo configurar cómo mostramos una entidad?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-interfaz-web" class="md-nav__link">
+    En la interfaz web
+  </a>
+  
+    <nav class="md-nav" aria-label="En la interfaz web">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-lista" class="md-nav__link">
+    En la lista
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-pantalla-de-detalles" class="md-nav__link">
+    En la pantalla de detalles
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-aplicacion-movil" class="md-nav__link">
+    En la aplicación móvil
+  </a>
+  
+    <nav class="md-nav" aria-label="En la aplicación móvil">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-lista_1" class="md-nav__link">
+    En la lista
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-pantalla-de-detalles_1" class="md-nav__link">
+    En la pantalla de detalles
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#buscar-una-entidad" class="md-nav__link">
+    Buscar una entidad
+  </a>
+  
+    <nav class="md-nav" aria-label="Buscar una entidad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-web" class="md-nav__link">
+    En la web
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-aplicacion" class="md-nav__link">
+    En la aplicación
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#que-son-los-flujos-de-trabajo" class="md-nav__link">
+    ¿Qué son los flujos de trabajo?
+  </a>
+  
+    <nav class="md-nav" aria-label="¿Qué son los flujos de trabajo?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crear-un-flujo-de-trabajo" class="md-nav__link">
+    Crear un flujo de trabajo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seguimientos-y-cambios" class="md-nav__link">
+    Seguimientos y cambios
+  </a>
+  
+    <nav class="md-nav" aria-label="Seguimientos y cambios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#seguimientos" class="md-nav__link">
+    Seguimientos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cambios" class="md-nav__link">
+    Cambios
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usar-valores-del-perfil-en-formularios-subsecuentes" class="md-nav__link">
+    Usar valores del perfil en formularios subsecuentes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publicar-flujos-de-trabajo" class="md-nav__link">
+    Publicar flujos de trabajo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    Admin
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tareas" class="md-nav__link">
+    Tareas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoreo" class="md-nav__link">
+    Monitoreo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proyectos" class="md-nav__link">
+    Proyectos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usuarios" class="md-nav__link">
+    Usuarios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-de-usuario" class="md-nav__link">
+    Roles de usuario
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#equipos" class="md-nav__link">
+    Equipos
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../dev/how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#inicio-de-sesion" class="md-nav__link">
+    Inicio de sesión
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navegando-en-iaso" class="md-nav__link">
+    Navegando en IASO
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gestionar-formularios-de-recoleccion-de-datos" class="md-nav__link">
+    Gestionar formularios de recolección de datos
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestionar formularios de recolección de datos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-formularios" class="md-nav__link">
+    Lista de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crearsubir-un-formulario-de-recoleccion-de-datos" class="md-nav__link">
+    Crear/Subir un formulario de recolección de datos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#envios-de-formularios" class="md-nav__link">
+    Envíos de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestionar-envios" class="md-nav__link">
+    Gestionar envíos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estadisticas-de-formularios" class="md-nav__link">
+    Estadísticas de formularios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mapeos-dhis2" class="md-nav__link">
+    Mapeos DHIS2
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#completitud" class="md-nav__link">
+    Completitud
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estadisticas-de-completitud" class="md-nav__link">
+    Estadísticas de completitud
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#georegistry-gestion-de-unidades-organizacionales" class="md-nav__link">
+    Georegistry - Gestión de Unidades Organizacionales
+  </a>
+  
+    <nav class="md-nav" aria-label="Georegistry - Gestión de Unidades Organizacionales">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-unidades-organizacionales" class="md-nav__link">
+    Lista de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#grupos-de-unidades-organizacionales" class="md-nav__link">
+    Grupos de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-de-tipos-de-unidades-organizacionales" class="md-nav__link">
+    Gestión de tipos de Unidades Organizacionales
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gestion-de-fuentes-de-datos" class="md-nav__link">
+    Gestión de Fuente(s) de Datos
+  </a>
+  
+    <nav class="md-nav" aria-label="Gestión de Fuente(s) de Datos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-fuentes-de-datos" class="md-nav__link">
+    Lista de Fuente(s) de Datos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#coincidencia" class="md-nav__link">
+    Coincidencia
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#registro" class="md-nav__link">
+    Registro
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revisar-propuestas-de-cambio" class="md-nav__link">
+    Revisar propuestas de cambio
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#planificacion" class="md-nav__link">
+    Planificación
+  </a>
+  
+    <nav class="md-nav" aria-label="Planificación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lista-de-planificacion" class="md-nav__link">
+    Lista de Planificación
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#entidades" class="md-nav__link">
+    Entidades
+  </a>
+  
+    <nav class="md-nav" aria-label="Entidades">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#como-crear-una-entidad" class="md-nav__link">
+    Cómo crear una entidad
+  </a>
+  
+    <nav class="md-nav" aria-label="Cómo crear una entidad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crear-el-tipo-de-entidad" class="md-nav__link">
+    Crear el tipo de entidad
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crear-una-entidad" class="md-nav__link">
+    Crear una entidad
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-configurar-como-mostramos-una-entidad" class="md-nav__link">
+    ¿Cómo configurar cómo mostramos una entidad?
+  </a>
+  
+    <nav class="md-nav" aria-label="¿Cómo configurar cómo mostramos una entidad?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-interfaz-web" class="md-nav__link">
+    En la interfaz web
+  </a>
+  
+    <nav class="md-nav" aria-label="En la interfaz web">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-lista" class="md-nav__link">
+    En la lista
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-pantalla-de-detalles" class="md-nav__link">
+    En la pantalla de detalles
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-aplicacion-movil" class="md-nav__link">
+    En la aplicación móvil
+  </a>
+  
+    <nav class="md-nav" aria-label="En la aplicación móvil">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-lista_1" class="md-nav__link">
+    En la lista
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-pantalla-de-detalles_1" class="md-nav__link">
+    En la pantalla de detalles
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#buscar-una-entidad" class="md-nav__link">
+    Buscar una entidad
+  </a>
+  
+    <nav class="md-nav" aria-label="Buscar una entidad">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#en-la-web" class="md-nav__link">
+    En la web
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#en-la-aplicacion" class="md-nav__link">
+    En la aplicación
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#que-son-los-flujos-de-trabajo" class="md-nav__link">
+    ¿Qué son los flujos de trabajo?
+  </a>
+  
+    <nav class="md-nav" aria-label="¿Qué son los flujos de trabajo?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crear-un-flujo-de-trabajo" class="md-nav__link">
+    Crear un flujo de trabajo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#seguimientos-y-cambios" class="md-nav__link">
+    Seguimientos y cambios
+  </a>
+  
+    <nav class="md-nav" aria-label="Seguimientos y cambios">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#seguimientos" class="md-nav__link">
+    Seguimientos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cambios" class="md-nav__link">
+    Cambios
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usar-valores-del-perfil-en-formularios-subsecuentes" class="md-nav__link">
+    Usar valores del perfil en formularios subsecuentes
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#publicar-flujos-de-trabajo" class="md-nav__link">
+    Publicar flujos de trabajo
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#admin" class="md-nav__link">
+    Admin
+  </a>
+  
+    <nav class="md-nav" aria-label="Admin">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tareas" class="md-nav__link">
+    Tareas
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoreo" class="md-nav__link">
+    Monitoreo
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#proyectos" class="md-nav__link">
+    Proyectos
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usuarios" class="md-nav__link">
+    Usuarios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#roles-de-usuario" class="md-nav__link">
+    Roles de usuario
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#equipos" class="md-nav__link">
+    Equipos
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/users/reference/iaso_web/user_guide.es.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="plataforma-web">Plataforma Web<a class="headerlink" href="#plataforma-web" title="Permanent link">#</a></h1>
+<p>La plataforma web de IASO está destinada a los administradores para que definan los detalles de la recolección de datos que desean realizar.
+Algunos elementos clave de IASO son:</p>
+<ul>
+<li>
+<p>el versionado de todos los datos - cada cambio es rastreado y las versiones anteriores pueden ser recuperadas según sea necesario</p>
+</li>
+<li>
+<p>recolección de datos geo-estructurados - los formularios están vinculados a niveles geográficos claros o "Unidades Organizacionales"</p>
+</li>
+<li>
+<p>la trazabilidad de los cambios - permitiendo la descentralización de las actividades y responsabilidades
+Los administradores pueden por lo tanto usar la plataforma web para planificar, monitorear y luego evaluar los esfuerzos de recolección de datos.</p>
+</li>
+</ul>
+<h2 id="inicio-de-sesion">Inicio de sesión<a class="headerlink" href="#inicio-de-sesion" title="Permanent link">#</a></h2>
+<p>Para iniciar sesión en la interfaz web, vaya a
+<a href="https://iaso.bluesquare.org/login/"><u>https://iaso.bluesquare.org/login/</u></a>
+e inicie sesión con su nombre de usuario y contraseña.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/iasologin.png" /></p>
+<p>También puede restablecer su contraseña haciendo clic en el enlace "¿Olvidó su contraseña?". Esto enviará un correo electrónico automático y le permitirá crear una nueva contraseña.</p>
+<h2 id="navegando-en-iaso">Navegando en IASO<a class="headerlink" href="#navegando-en-iaso" title="Permanent link">#</a></h2>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Web%20interface%20intro.jpg" /></p>
+<h2 id="gestionar-formularios-de-recoleccion-de-datos">Gestionar formularios de recolección de datos<a class="headerlink" href="#gestionar-formularios-de-recoleccion-de-datos" title="Permanent link">#</a></h2>
+<h3 id="lista-de-formularios">Lista de formularios<a class="headerlink" href="#lista-de-formularios" title="Permanent link">#</a></h3>
+<p>Desde la lista de formularios, puede buscar entre los formularios disponibles de la cuenta IASO a la que está conectado usando los filtros:</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/formsmanagementv2.png" /></p>
+<p>Los botones a continuación le permiten gestionar los formularios de recolección de datos.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/formsbuttons.png" /></p>
+<h3 id="crearsubir-un-formulario-de-recoleccion-de-datos">Crear/Subir un formulario de recolección de datos<a class="headerlink" href="#crearsubir-un-formulario-de-recoleccion-de-datos" title="Permanent link">#</a></h3>
+<p>Acceda a la entrada Formularios en el menú, luego haga clic en Lista de formularios.
+Haga clic en el botón "Crear". Una vez en la página de creación de formularios, siga los pasos a continuación:</p>
+<ul>
+<li>Ingrese un nombre para su formulario en el campo "Nombre".</li>
+<li>Asigne uno o varios <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects">Proyecto(s)</a> a su formulario.</li>
+<li>Asigne un <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units">Tipo de unidad organizacional</a> a su formulario.</li>
+<li>Asigne un Período a su formulario. Esto está destinado para recolección de datos regular (por ejemplo, diaria/semanal/anual). Si no necesita esta opción, simplemente seleccione "Sin Período".</li>
+</ul>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/createformv2.png" /></p>
+<p>Consejos:</p>
+<ul>
+<li>Verifique su formulario XLS antes de subirlo a IASO usando este enlace: https://getodk.org/xlsform/</li>
+<li>El ID del formulario debe permanecer igual entre versiones (no puede ser diferente de una versión a otra). Tendrá un error si este es el caso.</li>
+<li>La versión del formulario (que no es un campo obligatorio en la configuración de los formularios XLS) debe mantenerse consistente entre versiones. Por ejemplo, si es una fecha como 20240410, entonces no podrá subir una versión llamada 20231025. IASO hace verificaciones automáticas para asegurar que no está subiendo una versión anterior.</li>
+</ul>
+<h3 id="envios-de-formularios">Envíos de formularios<a class="headerlink" href="#envios-de-formularios" title="Permanent link">#</a></h3>
+<p>Una vez que un formulario ha sido completado y enviado al servidor, crea un "envío de formulario". Cada envío de formulario se registra en la plataforma y los datos enviados se pueden consultar desde allí. Puede usar los filtros para consultar los envíos de formularios según sea necesario:</p>
+<ul>
+<li>Búsqueda abierta (escriba algunas palabras clave)</li>
+<li>Por formulario</li>
+<li>Por Unidad organizacional (seleccione la relevante en la pirámide desplegable)</li>
+<li>Por tipo de Unidad organizacional (por ejemplo, País, Distrito, Villa)</li>
+<li>Por fecha de envío (creación desde/creación hasta)</li>
+<li>Por usuario (escriba un nombre de usuario y aparecerá como desplegable)</li>
+</ul>
+<p>Esta vista le permite buscar formularios a través de entrada de texto libre y varios
+filtros que se pueden combinar.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Formsubmissions.png" /></p>
+<p>Una vez que haya aplicado al menos un filtro de formulario, puede descargar envíos usando los botones "CSV" o "XLSX".</p>
+<p>También puede crear un nuevo envío haciendo clic en "Crear". Esto abrirá Enketo y preguntará a qué Unidad Organizacional se relaciona.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/downloadsubmissions.png" /></p>
+<p>También puede verificar los envíos en la vista del mapa, en la que se aplican los filtros. Para asegurarse de tener esta vista de mapa habilitada, asegúrese de haber agregado la función "GPS para cada formulario" al <a href="Projects">Proyecto</a> relacionado.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/mapviewsubmissions.png" /></p>
+<p>La pestaña "Archivo" le permite visualizar los archivos que han sido enviados junto con los formularios, como imágenes. Al hacer clic en un archivo dado, puede ser redirigido al envío de formulario relevante.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/formsubmissionsfiles.png" /></p>
+<h3 id="gestionar-envios">Gestionar envíos<a class="headerlink" href="#gestionar-envios" title="Permanent link">#</a></h3>
+<p>En la página de Envíos, puede ver la lista de envíos que se han hecho para la cuenta. Puede gestionarlos usando las opciones a continuación.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/submissionsmanagement.png" /></p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Submissionsbuttons.png" /></p>
+<p><strong>Visualizar un envío</strong></p>
+<p>Puede ver un envío específico/formulario enviado haciendo clic en el
+botón "Ver" (ver arriba).</p>
+<p>Esto le permite ver los datos enviados y editarlos en Enketo
+(aplicación web <a href="https://github.com/enketo/enketo-express/">open-source</a>).</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/submissionview.png" /></p>
+<p>La sección "Información" proporciona una descripción técnica del formulario.</p>
+<p>La sección "Ubicación" muestra la indicación de la pirámide de salud de dónde
+se recolectaron los datos.</p>
+<p>La sección "Solicitudes de Exportación" muestra cuándo los datos fueron exportados a DHIS2,
+por quién, y cualquier error que ocurrió durante la exportación.</p>
+<p>La sección "Archivos" puede contener imágenes, videos, documentos.</p>
+<p>La sección "Formulario" muestra todas las preguntas del formulario y respuestas ingresadas durante
+la recolección de datos.</p>
+<p><strong>Descargar un envío</strong></p>
+<p>El icono "XML" le permite descargar un envío en formato XML.</p>
+<p><img src="./attachments/image102.png"
+style="width:5.96354in;height:2.29367in" /></p>
+<p><img src="./attachments/image71.png"
+style="width:5.95313in;height:2.73806in" /></p>
+<p>El icono de engranaje en la esquina inferior del lado derecho le muestra una serie de iconos al pasar el cursor. Estos le permiten:</p>
+<ul>
+<li>Eliminar un envío</li>
+<li>Editar Unidad Organizacional o Período adjuntos</li>
+<li>Exportar (por ejemplo, a DHIS2)</li>
+<li>Empujar coordenadas GPS del envío a la Unidad Organizacional</li>
+<li>Editar este envío vía Enketo</li>
+<li>Bloquear envío</li>
+</ul>
+<p>Vea a continuación las secciones dedicadas para más información sobre cada una de estas acciones.</p>
+<p><strong>Eliminar un envío</strong></p>
+<p>Le permite eliminar el formulario. Si ya ha sido exportado a DHIS2,
+esto no eliminará los datos en DHIS2. Aparecerá un mensaje de advertencia:</p>
+<p><img src="./attachments/image66.png"
+style="width:4.52131in;height:1.05729in" /></p>
+<p><strong>Editar Unidad Organizacional o Período adjuntos</strong></p>
+<p>Cuando hace clic en "Editar Período y/o Unidad Organizacional", se abre una ventana
+que le permite reasignar la instancia. Puede cambiar el período de tiempo
+o la unidad organizacional que ha sido asignada al formulario
+enviado.</p>
+<p><img src="./attachments/image76.png"
+style="width:1.56771in;height:1.65794in" /></p>
+<p><strong>Exportar un envío</strong></p>
+<p>La función de exportación le permite exportar el formulario a DHIS2. Previamente, necesita haber sido mapeado usando la funcionalidad de <a href="DHIS2">mapeo DHIS2</a>.</p>
+<p><strong>Editar el envío vía Enketo</strong></p>
+<p>Para editar un formulario, haga clic en el icono Enketo (ver arriba).</p>
+<p>Edite el formulario cambiando las respuestas a las preguntas que necesitan ser
+cambiadas. Luego haga clic en enviar en la parte inferior del formulario.</p>
+<p><img src="./attachments/image57.png"
+style="width:6.15663in;height:3.40104in" /></p>
+<p><img src="./attachments/image7.png"
+style="width:1.04311in;height:0.32269in" /></p>
+<p><strong>Empujar coordenadas GPS del envío a la Unidad Organizacional</strong></p>
+<p>Esto usará la coordenada GPS recolectada a través del formulario para empujar a las coordenadas GPS de la Unidad Organizacional.</p>
+<p><strong>Bloquear envío</strong></p>
+<p>Esta funcionalidad le permite proteger los envíos de formularios de edición adicional por usuarios que tienen menos permisos que usted.</p>
+<h3 id="estadisticas-de-formularios">Estadísticas de formularios<a class="headerlink" href="#estadisticas-de-formularios" title="Permanent link">#</a></h3>
+<p>Esta vista le permite ver estadísticas sobre los formularios. Al hacer clic en
+"Estadísticas de Formularios" abrirá una página con dos gráficos.</p>
+<p>El primero muestra el número total de envíos a lo largo del tiempo y el
+segundo muestra los nuevos envíos por mes por formulario.</p>
+<p><img src="./attachments/image74.png" style="width:6.5in;height:1.75in" /></p>
+<h3 id="mapeos-dhis2">Mapeos DHIS2<a class="headerlink" href="#mapeos-dhis2" title="Permanent link">#</a></h3>
+<p>Una gran ventaja de IASO es que puede exportar datos a DHIS2. Al
+hacerlo, es necesario un mapeo previo. Después de que el formulario es subido, mapee
+el formulario para que coincida con el elemento de datos en DHIS2.</p>
+<p>Haga clic en Mapeos DHIS para ver los formularios:</p>
+<p><img src="./attachments/image75.png" style="width:6.5in;height:2.59722in" /></p>
+<p>En la vista de Formulario puede ver detalles de:</p>
+<ul>
+<li>
+<p>Acciones</p>
+</li>
+<li>
+<p>Nombre de formularios disponibles para mapeo</p>
+</li>
+<li>
+<p>Versiones</p>
+</li>
+<li>
+<p>Tipo del formulario:</p>
+<ul>
+<li>
+<p>Agregado: fijo</p>
+</li>
+<li>
+<p>Evento: serie de eventos singulares</p>
+</li>
+<li>
+<p>Rastreador de Eventos: continuo</p>
+</li>
+</ul>
+</li>
+<li>
+<p>Número de cuestionarios a ser mapeados</p>
+</li>
+<li>
+<p>Número total de cuestionarios</p>
+</li>
+<li>
+<p>Cobertura de mapeo</p>
+</li>
+<li>
+<p>Fecha de última modificación</p>
+</li>
+</ul>
+<p>Haga clic en "Crear" y se abrirá una ventana que le permitirá
+mapear cada cuestionario de los formularios xls al elemento de datos
+de DHIS2 correspondiente<img src="./attachments/image93.png"
+style="width:2.03704in;height:1.83333in" /><img src="./attachments/image98.png"
+style="width:2.05729in;height:1.8085in" /></p>
+<p>El proceso de mapeo consiste en seleccionar una pregunta a la izquierda y
+decidir si debe ser mapeada a DHIS2 o no.</p>
+<p>Algunas preguntas pueden no necesitar ser mapeadas como notas, metadatos, etc. en
+tal caso haga clic en nunca mapear.</p>
+<p>Si la pregunta debe ser mapeada, busque el DE correspondiente en la
+caja usando el nombre, código o ID y luego confirme.</p>
+<p>Una vez confirmado, la pregunta se pondrá verde y será contada.</p>
+<p><img src="./attachments/image115.png"
+style="width:7.03646in;height:3.20249in" /></p>
+<h3 id="completitud">Completitud<a class="headerlink" href="#completitud" title="Permanent link">#</a></h3>
+<p>Esta funcionalidad está destinada a casos de uso donde se han establecido Períodos para los formularios de recolección de datos.
+En la vista "completitud" verá detalles de:</p>
+<ul>
+<li>
+<p>Botones para seleccionar formularios "listos" para ser exportados, formularios con "errores"
+    &gt; y formularios que han sido "exportados"</p>
+</li>
+<li>
+<p>Filtro de periodicidad: el filtro de periodicidad le permite organizar
+    &gt; los datos en meses, trimestres, semestres o años. La lista
+    &gt; mostrará los formularios disponibles para el período seleccionado, e
+    &gt; indicará cuántos formularios han sido enviados para cada uno</p>
+</li>
+<li>
+<p>Botón Sincronizar para sincronizar dos formularios</p>
+</li>
+</ul>
+<p>Haga clic en cada uno de estos botones para tener formularios listos para ser exportados,
+errores y exportados. Un filtro de periodicidad está ahí para organizar datos en
+meses, trimestres, semestre o anualmente.</p>
+<p><img src="./attachments/image94.png"
+style="width:6.96429in;height:1.48438in" /></p>
+<p>Si hace clic en el número de envíos, será llevado a la
+vista de envíos, donde puede hacer clic en el icono de ver y ver los
+envíos para ese formulario.</p>
+<p>Haga clic en el botón <img src="./attachments/image104.png"
+style="width:0.49791in;height:0.40738in" /> para sincronizar dos
+formularios</p>
+<p>Por ejemplo: para obtener datos agregados de la encuesta de verificación de la comunidad, todos los
+formularios del cliente deben sincronizarse a un solo formulario.
+<img src="./attachments/image17.png" style="width:6.5in;height:2.95833in" /></p>
+<h3 id="estadisticas-de-completitud">Estadísticas de completitud<a class="headerlink" href="#estadisticas-de-completitud" title="Permanent link">#</a></h3>
+<p>Esta vista de tabla le muestra la completitud de los envíos de formularios en número (número de formularios completados) y en porcentajes (Completitud de datos). Se hace una distinción entre "formularios directos" (que se relacionan con el nivel de Unidad Organizacional seleccionado) y "formularios de nivel inferior" (que se relacionan con formularios abajo en la jerarquía).</p>
+<p>Use los filtros (Nombre del formulario, Unidad Organizacional padre, Tipo de Unidad Organizacional, Usuario, Planificación, Equipos, Período) para ver estadísticas solo de una manera más específica.</p>
+<p>El botón de acción "Ver hijos" le permite profundizar en la jerarquía geográfica para identificar el nivel de completitud y detectar dónde pueden haber ocurrido problemas.</p>
+<p>Las primeras dos columnas "en sí mismo" indican el número de formularios completados al nivel de la Unidad Organizacional destacada.
+La siguiente columna "descendientes" da información sobre el número de formularios completados al nivel en cuestión, pero también en todos los niveles inferiores.</p>
+<p><img alt="" src="../../../../../pages/users/reference/iaso_web/attachments/completeness%20stats.png" /></p>
+<p>También puede ver la completitud de datos con una vista de mapa haciendo clic en la pestaña "Mapa". Tenga en cuenta que necesita seleccionar un Formulario en los filtros previamente para habilitar esta vista.
+Puede ajustar los umbrales para aplicar a la leyenda sobre completitud en la configuración avanzada del formulario relevante.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Completenessmap.png" /></p>
+<h2 id="georegistry-gestion-de-unidades-organizacionales">Georegistry - Gestión de Unidades Organizacionales<a class="headerlink" href="#georegistry-gestion-de-unidades-organizacionales" title="Permanent link">#</a></h2>
+<p>Vea la definición de <a href="https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units">Unidad Organizacional</a> para más información sobre qué son las Unidades Organizacionales.
+En resumen, puede gestionar sus datos geográficos asociados a su cuenta usando la parte de Unidad Organizacional de IASO.</p>
+<h3 id="lista-de-unidades-organizacionales">Lista de Unidades Organizacionales<a class="headerlink" href="#lista-de-unidades-organizacionales" title="Permanent link">#</a></h3>
+<p>Haga clic en Unidades Organizacionales en el menú y luego en Lista de Unidades Organizacionales para navegar la pirámide de unidades organizacionales.</p>
+<p>Puede ver en lista o mapa.</p>
+<p>Puede seleccionar una Navegación de Unidad Organizacional y:</p>
+<ul>
+<li>Cambiar el nombre, tipo, estado de validación, lugar en la pirámide, etc. de la UO</li>
+<li>Visualizar la UO en un mapa</li>
+<li>Ver el historial de sus modificaciones</li>
+</ul>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Orgunitlist.png" /></p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/orgunitmap.png" /></p>
+<p>Los resultados de búsqueda pueden ser exportados en CSV, XLSX o GPKG.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/download%20orgunits.png" /></p>
+<p>Los resultados pueden verse en una lista o en un mapa</p>
+<p><img src="./attachments/image35.png"
+style="width:6.18229in;height:2.9029in" /></p>
+<p>El estado para cuando una villa ha sido añadida y necesita ser
+revisada por ejemplo.</p>
+<p>La referencia externa se usa para exportar datos a DHIS2.</p>
+<p>El mapa le ayuda a saber dónde está ubicada la estructura.</p>
+<p>Puede ver el historial de modificaciones haciendo clic en el pequeño icono de reloj
+o los detalles de los formularios completados haciendo clic en el icono del ojo.</p>
+<p><img src="./attachments/image32.png" style="width:6.5in;height:2.875in" /></p>
+<p>Se pueden hacer varias búsquedas agregando pestañas a la página con el
+botón +. <img src="./attachments/image45.png" style="width:7.01017in;height:1.93229in" /></p>
+<p>Puede elegir el color de los resultados en el mapa para cada búsqueda.</p>
+<p><img src="./attachments/image90.png"
+style="width:6.95313in;height:2.9466in" /></p>
+<p><img src="./attachments/image120.png" style="width:6.26042in;height:2.38542in" /></p>
+<p><strong>Creación de una Unidad Organizacional</strong></p>
+<p>En la página de lista de Unidades Organizacionales, haga clic en "Crear". Luego puede crear una Unidad Organizacional según sea necesario.</p>
+<p><img src="./attachments/image16.png" style="width:6.86961in;height:2.80729in" /></p>
+<p>Necesitará ingresar la información a continuación antes de guardar:</p>
+<ul>
+<li>Nombre de la Unidad Organizacional</li>
+<li>Tipo de la Unidad Organizacional (que habría definido previamente en la parte de Tipo de Unidad Organizacional)</li>
+<li>Estado: Nuevo, Validado, o Rechazado.<ul>
+<li>Nuevo: la Unidad organizacional ha sido creada pero no ha sido validada aún. Si activa la posibilidad de crear Unidades Organizacionales desde la aplicación móvil IASO, aparecerán primero como "Nuevo" en la web</li>
+<li>Validado: la Unidad organizacional está validada</li>
+<li>Rechazado: la Unidad organizacional ya no existe o ha sido fusionada/dividida o reemplazada por otra. IASO no permite borrar Unidades Organizacionales para mantener el registro de cambios pasados.</li>
+</ul>
+</li>
+</ul>
+<p>Campos opcionales:</p>
+<ul>
+<li>Alias: puede agregar tantos alias como sea necesario para rastrear las diferentes formas de escribir el nombre de la Unidad Organizacional (por ejemplo, "Ste Marie", "Sainte-Marie", "Sainte Marie", etc.)</li>
+<li>Grupo: puede organizar las Unidades Organizacionales en Grupos en IASO. Puede multi-seleccionar el/los grupo(s) con los que la unidad organizacional que está creando está asociada</li>
+<li>Unidad Organizacional padre: coloque su Unidad Organizacional en su lugar relevante en la jerarquía</li>
+<li>Fecha(s) de apertura y/o cierre: use estos campos para indicar la fecha de apertura o cierre de la Unidad Organizacional</li>
+</ul>
+<p><strong>Editar una Unidad Organizacional o consultar detalles</strong></p>
+<p>Para acceder a la vista detallada de una Unidad Organizacional, proceda como se describe a continuación:</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/orgunitdetailsedit.png" /></p>
+<p>En esta vista, tiene un conjunto de pestañas que le permiten editar la Unidad Organizacional según sea necesario:</p>
+<ul>
+<li>Infos: edite la información principal relacionada con esta Unidad Organizacional</li>
+<li>Mapa: consulte la información geográfica disponible para esta Unidad Organizacional (límites o coordenadas GPS). Puede ver datos geográficos a través de fuentes de datos (si hay varias fuentes). También puede dejar un comentario</li>
+<li>Hijos: lista los hijos de esta Unidad Organizacional. Puede usar filtro para revisar la lista de una manera más detallada
+<img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/children%20org%20units.png" /></li>
+<li>Enlaces: en el caso de coincidir una Unidad Organizacional a través de múltiples fuentes de datos, los enlaces entre las fuentes de datos pueden encontrarse aquí</li>
+<li>Historial: le permite rastrear todas las modificaciones que se hicieron a la Unidad Organizacional por usuario</li>
+<li>Formularios: lista todos los formularios de recolección de datos que están enlazados al tipo de Unidad Organizacional de esta Unidad Organizacional</li>
+<li>Comentarios: puede dejar un comentario sobre esta Unidad Organizacional usando esta sección</li>
+</ul>
+<p><strong>Edición en lote de Unidades Organizacionales</strong></p>
+<p>También puede editar Unidades Organizacionales en lote.
+Para hacer esto, desde la lista de Unidades Organizacionales, marque las casillas de las Unidades Organizacionales que le gustaría editar en lote, luego pase el cursor sobre el botón de acción. Haga clic en el botón de acción de engranaje, y seleccione la acción que le gustaría realizar.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Orgunitbulkedit.png" /></p>
+<h3 id="grupos-de-unidades-organizacionales">Grupos de Unidades Organizacionales<a class="headerlink" href="#grupos-de-unidades-organizacionales" title="Permanent link">#</a></h3>
+<p>Las unidades organizacionales pueden ser agrupadas en grupos de unidades organizacionales, y estos
+grupos pueden ser organizados además en conjuntos de grupos. Juntos pueden imitar
+una jerarquía organizacional alternativa que puede ser usada al crear
+reportes y otra salida de datos. Además de representar ubicaciones
+geográficas alternativas que no son parte de la jerarquía principal, estos grupos son
+útiles para asignar esquemas de clasificación a las Unidades Organizacionales.</p>
+<p><img src="./attachments/image44.png" style="width:6.5in;height:2.41667in" /></p>
+<p><strong>Gestionar Grupos de Unidades Organizacionales</strong></p>
+<p>Para gestionar los Grupos de Unidades Organizacionales, acceda a la entrada del menú Unidades Organizacionales &gt; Grupos.</p>
+<p><img src="./attachments/image5.png" style="width:6.5in;height:2.29167in" /></p>
+<p>Esta vista le permite buscar los Grupos de Unidades Organizacionales a través de
+entrada de texto libre.</p>
+<p>Puede crear un nuevo grupo 
+haciendo clic en el botón crear.</p>
+<p>Los grupos pueden ser editados haciendo clic en el icono de engranaje
+o eliminados haciendo clic en el
+botón eliminar.</p>
+<p>En la tabla, la columna "Unidades Org" muestra el número de Unidades Organizacionales que están asignadas a este grupo. Cuando hace clic en el número, verá la lista de ese grupo de Unidad Organizacional.</p>
+<p><strong>Asignar Unidades Organizacionales a Grupos</strong></p>
+<p>Para asignar Unidades Organizacionales a Grupos, vaya a la vista de Lista de Unidades Organizacionales desde el menú y haga una edición en lote de las Unidades Organizacionales seleccionadas. Vea arriba en la sección "Edición en lote de Unidades Organizacionales" para más detalles sobre la edición en lote de Unidades Organizacionales.</p>
+<h3 id="gestion-de-tipos-de-unidades-organizacionales">Gestión de tipos de Unidades Organizacionales<a class="headerlink" href="#gestion-de-tipos-de-unidades-organizacionales" title="Permanent link">#</a></h3>
+<p>Los tipos de Unidades Organizacionales son específicos de IASO (es decir, esto no se maneja en DHIS2). Vea la parte sobre <a href="OU">Unidades Organizacionales</a> para más detalles sobre qué son los tipos de Unidades Organizacionales.</p>
+<p>Desde la entrada del menú Unidad Organizacional, haga clic en "Tipos de Unidades Organizacionales". Esta vista lista los tipos de Unidades Organizacionales existentes en su cuenta IASO.</p>
+<p><strong>Crear un tipo de Unidad Organizacional</strong></p>
+<p>Haga clic en "Crear" e ingrese los campos obligatorios a continuación:</p>
+<ul>
+<li>Nombre del tipo de Unidad Organizacional. Tenga cuidado de que esto debe ser la "categoría" / "nivel en la jerarquía", NO el nombre específico de una Unidad Organizacional. Por ejemplo, "País", "Provincia", "Distrito", y NO "RDC", "Kinshasa", "Gombe"</li>
+<li>Nombre corto: esto aparecerá en otras vistas de IASO. Debe ser una versión corta del nombre completo</li>
+<li>Proyecto(s): seleccione uno o múltiples proyecto(s) al que el tipo de Unidad Organizacional está vinculado</li>
+</ul>
+<p>Estos otros campos no son obligatorios:</p>
+<ul>
+<li>Nivel: comience con 0 para el punto más alto en la jerarquía, por ejemplo "País". Por ejemplo, País - 0, Provincia - 1, Distrito - 2, Villa - 3</li>
+<li>Tipos de sub unidades organizacionales a mostrar: seleccione el/los tipo(s) de Unidad Organizacional de abajo que le gustaría mostrar en la vista de Registro si este tipo principal de Unidad Organizacional que está editando es seleccionado.</li>
+<li>Tipos de Sub Unidades organizacionales a crear: seleccione el/los tipo(s) de Unidad Organizacional que le gustaría habilitar para la creación en la aplicación móvil IASO. Por ejemplo, si está editando el tipo de Unidad organizacional "Distrito", puede habilitar la creación de "Villa" y/o "Punto de Interés"</li>
+<li>Formularios de referencia: seleccione uno o varios Formulario(s) de recolección de datos que serán asignados como referencia para este tipo de Unidad Organizacional. Los formularios de referencia son Formularios que están estrechamente vinculados al tipo de Unidad Organizacional. Un caso de uso típico es para un Área asignar un Formulario de referencia para datos de Población.</li>
+</ul>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/editorgunittype.png" /></p>
+<h3 id="gestion-de-fuentes-de-datos">Gestión de Fuente(s) de Datos<a class="headerlink" href="#gestion-de-fuentes-de-datos" title="Permanent link">#</a></h3>
+<p>IASO permite importar y manejar una o varias fuente(s) de datos geográficos.</p>
+<h4 id="lista-de-fuentes-de-datos">Lista de Fuente(s) de Datos<a class="headerlink" href="#lista-de-fuentes-de-datos" title="Permanent link">#</a></h4>
+<p>Encuentre aquí las fuentes de datos con sus nombres, versiones y descripciones. Es posible
+editar la fuente de datos, verificar el historial de versiones de los archivos o comparar
+fuentes de datos y exportarlas a DHIS2.</p>
+<p><img src="./attachments/image52.png" style="width:6.5in;height:1.86111in" /></p>
+<h4 id="coincidencia">Coincidencia<a class="headerlink" href="#coincidencia" title="Permanent link">#</a></h4>
+<p>Esta es más bien una funcionalidad "geoespacial": tener varias fuentes de pirámide geográfica
+e intentar hacer enlaces (Ejemplo: donde en un csv "provincia x" se
+llama "PROVINCIA X" y en otra fuente se llama "DPS X").</p>
+<p>La parte de ejecución de algoritmos está destinada para trabajo de ciencia de datos.</p>
+<p><img src="./attachments/image40.png" style="width:6.5in;height:1.26389in" /></p>
+<h3 id="registro">Registro<a class="headerlink" href="#registro" title="Permanent link">#</a></h3>
+<p>La entrada de Registro en Unidad Organizacional es una herramienta de visualización que permite a los usuarios profundizar en la jerarquía geográfica y consultar los datos geográficos así como la recolección de datos asociada a los diferentes nivel(es).</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/registry.png" /></p>
+<h3 id="revisar-propuestas-de-cambio">Revisar propuestas de cambio<a class="headerlink" href="#revisar-propuestas-de-cambio" title="Permanent link">#</a></h3>
+<p>Con IASO, los supervisores pueden comparar y validar envíos de datos mientras son enviados al servidor.
+Tenga en cuenta que esta característica solo funcionará siempre que haya activado la bandera de característica "Solicitudes de cambio" en el Proyecto IASO para el que le gustaría validar datos recolectados. Vea la parte de Proyectos para más información sobre banderas de características móviles en IASO.</p>
+<p>En la página Revisar propuestas de cambio, los usuarios pueden usar los filtros para seleccionar las propuestas en las que les gustaría enfocarse. Vea en la imagen a continuación los filtros detallados.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/reviewchangeproposals.png" /></p>
+<p>Los supervisores pueden luego hacer clic en el icono de engranaje al final de la línea relevante para poder ver los detalles de la propuesta de cambio enviada y comparar con la versión anterior a la izquierda.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/reviewchanges.png" /></p>
+<p>Los supervisores pueden luego seleccionar los cambios que les gustaría aprobar marcando las casillas de los cambios seleccionados en la columna derecha, y luego presionar "Aprobar cambios seleccionados".
+Si los cambios propuestos no son satisfactorios, los supervisores pueden rechazar todos los cambios y proporcionar un comentario.</p>
+<p>Para cada propuesta de cambio enviada, los usuarios de la aplicación móvil IASO podrán ver si han sido aprobados o rechazados, y si rechazados, consultar el comentario.</p>
+<h2 id="planificacion">Planificación<a class="headerlink" href="#planificacion" title="Permanent link">#</a></h2>
+<p>La característica de Planificación en IASO le permite planificar trabajo de campo por equipo y usuario en zonas/unidades organizacionales definidas y según una línea de tiempo específica. Una vez que las actividades de recolección de datos hayan sido asignadas a través de la interfaz, los agentes de campo que usan la aplicación móvil solo podrían ver las actividades asignadas a ellos, y navegar hacia el/los punto(s) GPS relevante(s).</p>
+<p>Para poder crear una Planificación, necesitará haber creado previamente Unidades organizacionales, Usuarios, un Proyecto, Equipos de Usuarios/Equipos de Equipos y formularios de recolección de datos para los cuales le gustaría usar la característica de Planificación.</p>
+<h3 id="lista-de-planificacion">Lista de Planificación<a class="headerlink" href="#lista-de-planificacion" title="Permanent link">#</a></h3>
+<p>Haga clic en Planificación en el panel del menú. Bajo Lista de Planificación verá la lista de horarios/planificaciones que han sido
+creadas en IASO. Puede buscar a través de las diferentes Planificaciones usando los diferentes filtros y tomar las acciones a continuación:</p>
+<ul>
+<li>Crear Planificación</li>
+<li>Ver Planificación: aquí es donde accederá a la interfaz para asignar actividades de recolección de datos a Equipos y Usuarios según geografías</li>
+<li>Editar Planificación: editar el Nombre, Proyecto, Unidad Organizacional padre y Equipo al que se aplica, Formulario(s), Descripción</li>
+<li>Duplicar Planificación: permite a los usuarios copiar una Planificación existente y readaptarla según sea necesario</li>
+<li>Borrar Planificación</li>
+</ul>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/planninglist.png" /></p>
+<p><strong>Crear una Planificación</strong></p>
+<p>Haga clic en "Crear" y verá la ventana a continuación abriéndose:</p>
+<p><img src="./attachments/image48.png" style="width:6.5in;height:3.80556in" /></p>
+<p>Los campos a continuación son obligatorios:</p>
+<ul>
+<li>Nombre</li>
+<li>Proyecto: define en qué ambiente de aplicación móvil la información de Planificación
+será visible</li>
+<li>Equipo: es el equipo responsable de la planificación - esto es usualmente un Equipo de Equipos</li>
+<li>Formulario(s): seleccione uno o varios Formulario(s) para aplicar a esta Planificación</li>
+<li>Unidad organizacional: seleccione la Unidad Organizacional base a la que se aplica su Planificación. Tenga en cuenta que profundizará desde esta Unidad Organizacional base para asignar sus actividades de recolección de datos a Equipos/Usuarios.</li>
+<li>fechas de inicio y fin para su Planificación</li>
+</ul>
+<p>Puede agregar una descripción como opción.</p>
+<p>El "Estado de publicación" (en la esquina inferior izquierda
+) hace posible asegurar, una vez completado (y todas
+las asignaciones hechas), que la planificación recién creada estará disponible en la
+aplicación móvil IASO para el proyecto relevante.</p>
+<p>Una vez que haya completado los campos, haga clic en "Guardar" para terminar.</p>
+<p>Haga clic en el icono del ojo
+desde la lista de Planificación
+para comenzar a editar su nueva Planificación a través de la interfaz del Mapa.</p>
+<p>Puede hacer
+la asignación ya sea a través de la pestaña "Mapa" o "Lista". Si
+procesa a través del mapa, primero seleccione el Equipo al que le gustaría asignar una geografía en el desplegable, así como el "Tipo de Unidad Organizacional base" relevante en el desplegable. Luego puede comenzar a asignar áreas geográficas o puntos directamente a los miembros del Equipo seleccionados directamente en el mapa.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/planning%20assignment.png" /></p>
+<p>Las áreas seleccionadas serán resaltadas con el color del equipo, que puede cambiar según sea necesario.</p>
+<p>Para asignar todas las Unidades Organizacionales hijas de una Unidad Organizacional padre dada al mismo Equipo/Usuario, puede seleccionar el "Modo de selección padre" antes de proceder a su selección.</p>
+<p><img src="./attachments/image10.png" style="width:2.97396in;height:2.55034in" /></p>
+<p>Si prefiere usar la pestaña Lista, el proceso es bastante similar. La
+diferencia principal es que trabaja aquí con una lista de nombres, según
+el nivel seleccionado. Las unidades organizacionales son asignadas haciendo clic en frente del
+nombre del elemento, en la columna "Asignación".</p>
+<p><img src="./attachments/image73.png" style="width:6.5in;height:2.68056in" /></p>
+<p>Puede ordenar Unidades Organizacionales y Padres haciendo clic en el nombre de la columna.</p>
+<h2 id="entidades">Entidades<a class="headerlink" href="#entidades" title="Permanent link">#</a></h2>
+<p>Llamamos una "<strong>Entidad</strong>" a cualquier cosa que pueda moverse o ser movida y que queramos rastrear a través del tiempo y Unidades Organizacionales. Por ejemplo, un beneficiario, un carro, etc.</p>
+<p>Para diferenciar entre diferentes tipos de entidades, IASO tiene un concepto de "<strong>Tipo de Entidad</strong>".
+IASO depende mucho de <a href="https://xlsform.org">XLSForms</a>, y las entidades no son excepción. Por lo tanto, una entidad está representada por un envío a un formulario. Este envío se refiere como el <strong>perfil</strong>. El tipo de entidad define qué formulario tiene que ser completado.</p>
+<h3 id="como-crear-una-entidad">Cómo crear una entidad<a class="headerlink" href="#como-crear-una-entidad" title="Permanent link">#</a></h3>
+<p><strong>Habilitar la característica</strong></p>
+<p>Para crear una entidad, su proyecto debe primero habilitar la bandera de característica de entidad. Puede establecer esta bandera ya sea durante su creación o actualizándola más tarde.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/81cf73cc-3027-453b-9d4b-8d94c6866196" /></p>
+<p><strong>Crear y subir el formulario de perfil</strong></p>
+<p>Usando la aplicación de hoja de su elección, cree un XLSForm que contendrá todas las preguntas relacionadas con su entidad que son ya sea fijas (es decir, nombre y apellido) o pueden evolucionar a través del tiempo (es decir, un programa al que una entidad puede estar afiliada).
+Súbalo al servidor usando la aplicación web.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Nota: Las preguntas que pueden evolucionar a través del tiempo no deben ser editables.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="crear-el-tipo-de-entidad"><strong>Crear el tipo de entidad</strong><a class="headerlink" href="#crear-el-tipo-de-entidad" title="Permanent link">#</a></h4>
+<p>En la pantalla de tipos de entidades, haga clic en el botón "CREAR". Dé al tipo de entidad un nombre y seleccione el formulario recién subido como formulario de referencia:</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/cb592428-b7b0-49c5-9833-026f06707ec6" /></p>
+<table>
+<thead>
+<tr>
+<th align="left">Nota: Veremos más tarde qué son "Campos de lista" y "Campos de información de detalle".</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="crear-una-entidad"><strong>Crear una entidad</strong><a class="headerlink" href="#crear-una-entidad" title="Permanent link">#</a></h4>
+<p>En la aplicación móvil, asegúrese de que los datos hayan sido refrescados y estén actualizados con el servidor backend. Ahora podrá ver la pantalla de entidad.</p>
+<p>En este momento, no es posible crear una Entidad desde una interfaz web.</p>
+<p>Haga clic en el botón "Agregar" en la aplicación.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/17504dfd-dc50-43af-8d7e-2a380a62cf36" /></p>
+<p>Seleccione el tipo de entidad que quiere crear.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/bf54deca-920e-47e7-a356-819d8284a054" /></p>
+<p>Se le pedirá confirmar su selección.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/53717a3b-ffc6-40a5-958b-97aec46abf1e" /></p>
+<p>Luego puede completar el formulario para finalizar su primera entidad.</p>
+<h3 id="como-configurar-como-mostramos-una-entidad">¿Cómo configurar cómo mostramos una entidad?<a class="headerlink" href="#como-configurar-como-mostramos-una-entidad" title="Permanent link">#</a></h3>
+<p>Dentro de la configuración del tipo de entidad, es posible para los administradores definir qué preguntas se muestran dentro de las listas y dentro de la pantalla de detalles.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/160da5f1-bb8e-4fce-bf04-5bb85ad5e28b" /></p>
+<p>Esto impacta cómo las aplicaciones web y móvil muestran entidades, como se muestra a continuación.</p>
+<h4 id="en-la-interfaz-web"><strong>En la interfaz web</strong><a class="headerlink" href="#en-la-interfaz-web" title="Permanent link">#</a></h4>
+<h5 id="en-la-lista">En la lista<a class="headerlink" href="#en-la-lista" title="Permanent link">#</a></h5>
+<p><img alt="image" src="https://github.com/user-attachments/assets/fe377ed2-d6e7-4f86-8d51-56c11499ee19" /></p>
+<h5 id="en-la-pantalla-de-detalles">En la pantalla de detalles<a class="headerlink" href="#en-la-pantalla-de-detalles" title="Permanent link">#</a></h5>
+<p><img alt="image" src="https://github.com/user-attachments/assets/30ba9e4f-f282-40c6-9594-ed324c97145e" /></p>
+<h4 id="en-la-aplicacion-movil"><strong>En la aplicación móvil</strong><a class="headerlink" href="#en-la-aplicacion-movil" title="Permanent link">#</a></h4>
+<h5 id="en-la-lista_1">En la lista<a class="headerlink" href="#en-la-lista_1" title="Permanent link">#</a></h5>
+<p><img alt="image" src="https://github.com/user-attachments/assets/bfe20c8e-8285-4416-a276-d59404678312" /></p>
+<h5 id="en-la-pantalla-de-detalles_1">En la pantalla de detalles<a class="headerlink" href="#en-la-pantalla-de-detalles_1" title="Permanent link">#</a></h5>
+<p><img alt="image" src="https://github.com/user-attachments/assets/4303f3ac-9784-4f6e-b520-8c6941766564" /></p>
+<h3 id="buscar-una-entidad">Buscar una entidad<a class="headerlink" href="#buscar-una-entidad" title="Permanent link">#</a></h3>
+<h4 id="en-la-web"><strong>En la web</strong><a class="headerlink" href="#en-la-web" title="Permanent link">#</a></h4>
+<p>En la lista de beneficiarios, puede filtrar por tipo y/o ingresar una consulta para filtrar basado en el identificador o cualquiera de los valores de campos de lista.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/0adb7323-867d-43c4-91cf-dee6fccd878c" /></p>
+<h4 id="en-la-aplicacion"><strong>En la aplicación</strong><a class="headerlink" href="#en-la-aplicacion" title="Permanent link">#</a></h4>
+<p>Hacer clic en el icono de lupa en la pantalla de entidad lo llevará a la lista de todas las entidades y le permitirá filtrarlas rápidamente basado en el identificador o cualquiera de los valores de campos de lista.
+Si necesita una selección más refinada, puede hacer clic en el icono de embudo, seleccionar un tipo y completar el formulario de búsqueda (segunda imagen)</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/dd266fd9-3470-4e3a-82bd-e1d0af54297b" /></p>
+<h3 id="que-son-los-flujos-de-trabajo">¿Qué son los flujos de trabajo?<a class="headerlink" href="#que-son-los-flujos-de-trabajo" title="Permanent link">#</a></h3>
+<p>Como se declaró antes, una entidad es rastreada a través del tiempo y Unidades Organizacionales. Para lograr esto, Iaso vincula los envíos subsecuentes para una entidad juntos y permite que los envíos subsecuentes cambien el perfil. Para que pueda elegir qué formularios deben presentarse a continuación y qué valores anulan las propiedades del perfil, puede definir un flujo de trabajo.</p>
+<h4 id="crear-un-flujo-de-trabajo"><strong>Crear un flujo de trabajo</strong><a class="headerlink" href="#crear-un-flujo-de-trabajo" title="Permanent link">#</a></h4>
+<p>En la lista de tipos de entidades, haga clic en el icono de flujo de trabajo</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/d41d0047-497e-45be-8490-25260755ba74" /></p>
+<p>En la lista de las versiones de flujo de trabajo, cree el botón "CREAR" y dé a la versión un nombre:</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/50a8eeab-399f-446b-90cf-10da40d13018" /></p>
+<h3 id="seguimientos-y-cambios"><strong>Seguimientos y cambios</strong><a class="headerlink" href="#seguimientos-y-cambios" title="Permanent link">#</a></h3>
+<h4 id="seguimientos">Seguimientos<a class="headerlink" href="#seguimientos" title="Permanent link">#</a></h4>
+<p>Representan los próximos formularios posibles basados en el estado del perfil. Están basados en una condición.
+En el siguiente ejemplo, la aplicación móvil ofrecerá "Registro U5 WFP" como el próximo formulario posible si el primer nombre es "Bill".</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/e21d8940-8fde-4d21-b14b-256f261bffca" /></p>
+<table>
+<thead>
+<tr>
+<th align="left">Recordatorio: "Primer Nombre" es una de las preguntas en el formulario del Tipo de Entidad.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4 id="cambios">Cambios<a class="headerlink" href="#cambios" title="Permanent link">#</a></h4>
+<p>Representan el mapeo de qué valor de un formulario cambiará los valores en el perfil.</p>
+<p>En el ejemplo a continuación, el "Formulario objetivo" es el formulario del Tipo de Entidad, y el "Formulario fuente" es el envío subsecuente.
+Cuando un formulario "Registro U5 WFP" es completado, el valor ingresado en "Edad del niño en meses" será copiado en la pregunta "Edad (Meses)" del perfil. Y el valor ingresado en "Nombre del niño" será copiado en la pregunta "Primer Nombre" del perfil.</p>
+<p><img alt="image" src="https://github.com/user-attachments/assets/b6676c6d-92c6-4059-82e4-21675f2ecd47" /></p>
+<h3 id="usar-valores-del-perfil-en-formularios-subsecuentes"><strong>Usar valores del perfil en formularios subsecuentes</strong><a class="headerlink" href="#usar-valores-del-perfil-en-formularios-subsecuentes" title="Permanent link">#</a></h3>
+<p>Algunas veces, quiere que un formulario subsecuente use valores del perfil. Para hacer esto, simplemente agregue una pregunta con el mismo identificador y tipo que el valor del perfil.</p>
+<p>Es decir, Asumamos que el perfil tiene 2 preguntas de tipo "texto": primer_nombre y apellido. Al agregar una pregunta similar de solo lectura en sus formularios subsecuentes, el valor estará disponible para usted.</p>
+<h3 id="publicar-flujos-de-trabajo"><strong>Publicar flujos de trabajo</strong><a class="headerlink" href="#publicar-flujos-de-trabajo" title="Permanent link">#</a></h3>
+<p>Una vez que una versión de flujo de trabajo ha sido publicada, está marcada como finalizada, y no puede ser editada más. Solo los flujos de trabajo en "borrador" pueden ser editados.
+Si quiere editar un flujo de trabajo finalizado, primero necesita duplicarlo usando el botón "Copiar versión". Una nueva versión de borrador es entonces creada con el mismo contenido.</p>
+<h2 id="admin">Admin<a class="headerlink" href="#admin" title="Permanent link">#</a></h2>
+<p>La parte Admin de IASO comprende varias partes, que aparecerán o no dependiendo de los permisos del usuario:</p>
+<ul>
+<li>Tareas</li>
+<li>Monitoreo</li>
+<li>Proyectos</li>
+<li>Módulos</li>
+<li>Usuarios</li>
+<li>Roles de usuario</li>
+<li>Equipos</li>
+</ul>
+<h3 id="tareas">Tareas<a class="headerlink" href="#tareas" title="Permanent link">#</a></h3>
+<p>Este es el registro de actualizaciones por lotes de IASO. Un registro de operación contiene información sobre cuándo y dónde una operación
+corrió, el estado de la operación, el número de registros fuente y objetivo
+procesados, y cualquier mensaje de registro.</p>
+<p>Ejemplos de tareas incluyen:</p>
+<ul>
+<li>Actualización en lote de unidad organizacional</li>
+<li>Importación de datos DHIS2</li>
+<li>Importación de Geopackage</li>
+</ul>
+<p>Los estados son:</p>
+<ul>
+<li>Error: la Tarea no lo logró. Se aconseja a los usuarios intentar de nuevo.</li>
+<li>Ejecutándose: la Tarea está en proceso</li>
+<li>En cola: la Tarea se ha detenido y se reiniciará si se cumplen las condiciones (por ejemplo, si hay mejor conectividad)</li>
+<li>Eliminada: la Tarea fue interrumpida por el usuario después de que había sido iniciada</li>
+<li>Éxito: la Tarea ha sido ejecutada exitosamente</li>
+</ul>
+<p>La lista de Tareas puede ser refrescada presionando el botón "Refrescar" en el lado superior derecho.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/tasks.png" /></p>
+<h3 id="monitoreo">Monitoreo<a class="headerlink" href="#monitoreo" title="Permanent link">#</a></h3>
+<p>Esta parte permite a los supervisores monitorear dispositivos que están vinculados con la cuenta IASO.
+Desde esta página, puede consultar:</p>
+<ul>
+<li>El IMEI o identificador del dispositivo</li>
+<li>Si este es un dispositivo de prueba o no</li>
+<li>el nombre del último propietario</li>
+<li>la última vez que ha sido sincronizado</li>
+<li>la fecha de creación (primera vez que ha sido sincronizado)</li>
+<li>la fecha de modificación</li>
+</ul>
+<p>En el lado derecho, puede ver el número de dispositivos que están conectados bajo la cuenta IASO a la que está conectado.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Devices.png" /></p>
+<h3 id="proyectos">Proyectos<a class="headerlink" href="#proyectos" title="Permanent link">#</a></h3>
+<p>Un Proyecto en IASO se relaciona con una instancia de aplicación móvil.
+Cada Proyecto es identificado por un Nombre y un ID de App. Vea <a href="https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects">aquí</a> para una definición más detallada de Proyectos en IASO.</p>
+<p><strong>Crear un Proyecto</strong></p>
+<p>Desde el menú, Admin &gt; Proyectos &gt; Haga clic en "Crear"</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Project.png" /></p>
+<p>Luego, agregue un nombre de Proyecto, y un ID de App.
+Tenga en cuenta que el ID de App tendrá que ser ingresado por los usuarios de aplicación móvil IASO la primera vez que se conecten a la app IASO, por lo que no debe ser excesivamente complicado para evitar errores de tipeo.</p>
+<p>Luego puede seleccionar las banderas de características que le gustaría aplicar a su Proyecto en la siguiente pestaña y presionar "Guardar".</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/featureflags2.png" /></p>
+<p><strong>Definición de banderas de características</strong></p>
+<p>Vea la tabla a continuación para más detalles sobre las banderas de características del Proyecto:</p>
+<table>
+<thead>
+<tr>
+<th>Bandera de característica</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Autenticación</td>
+<td>Los usuarios tienen que ingresar su inicio de sesión y contraseña en la aplicación móvil antes de proceder a la recolección de datos. Tenga en cuenta que esto es posible en IASO proceder a la recolección de datos sin autenticación para procesos simplificados (también llamado "modo anónimo")</td>
+</tr>
+<tr>
+<td>Móvil: mostrar pantalla de recolección de datos</td>
+<td>Habilitar la característica para recolectar datos desde la aplicación móvil IASO (recolección de datos que no está vinculada a una planificación o un flujo de trabajo de solicitud de cambio)</td>
+</tr>
+<tr>
+<td>GPS para cada formulario</td>
+<td>Cada vez que un formulario de recolección de datos es enviado, un punto GPS es automáticamente tomado y asociado al envío del formulario</td>
+</tr>
+<tr>
+<td>Forzar que los usuarios estén dentro del alcance de la unidad organizacional antes de comenzar el formulario</td>
+<td>Los usuarios de aplicación móvil IASO tienen que estar cerca (50m) del punto GPS de la unidad organizacional para la que están recolectando datos para que el formulario se abra</td>
+</tr>
+<tr>
+<td>Móvil. Mostrar pantalla de planificación</td>
+<td>Cuando una planificación ha sido hecha en IASO a través de la interfaz web, los puntos de recolección de datos asignados y tareas se reflejan a través de esta pestaña</td>
+</tr>
+<tr>
+<td>Móvil: limitar descarga de unidad organizacional a lo que el usuario tiene acceso</td>
+<td>Al cargar datos en la aplicación móvil, solo la zona geográfica que está asignada al usuario es descargada, para habilitar uso fuera de línea. Esto permite una descarga más ligera (y entonces más rápida y menos consumidora de datos) de datos al inicio de la aplicación móvil IASO</td>
+</tr>
+<tr>
+<td>Móvil. Mostrar Mapa de unidad organizacional</td>
+<td>Agrega una pestaña en la aplicación móvil para mostrar la información geográfica disponible para la Unidad Organizacional seleccionada en la aplicación móvil. Por ejemplo, si una coordenada GPS está disponible para una instalación de salud, se mostraría en el mapa a través de esta pestaña</td>
+</tr>
+<tr>
+<td>Solicitar cambios a unidades organizacionales</td>
+<td>Habilitar la característica para proponer cambios a unidades organizacionales y sus formulario(s) de referencia relacionados</td>
+</tr>
+<tr>
+<td>Móvil: Solicitudes de cambio</td>
+<td>Agrega la pestaña que permite proponer cambios a unidades organizacionales y sus formulario(s) de referencia</td>
+</tr>
+<tr>
+<td>GPS para trayectoria</td>
+<td>Habilitar al usuario activar una función que rastrea su posición cada 15 minutos durante un período de tiempo</td>
+</tr>
+<tr>
+<td>Móvil. Advertir al usuario cuando los formularios han sido actualizados</td>
+<td>Cuando nuevas versiones de formularios han sido subidas en la web, el usuario de aplicación móvil IASO es notificado. Luego el usuario puede elegir aplicarlas o no</td>
+</tr>
+<tr>
+<td>Móvil. Advertir al usuario cuando los formularios han sido actualizados y forzarlos a actualizar</td>
+<td>Cuando nuevas versiones de formularios han sido subidas en la web, el usuario de aplicación móvil IASO es notificado y la actualización ocurre automáticamente</td>
+</tr>
+<tr>
+<td>Móvil. Advertir al usuario cuando las unidades organizacionales han sido actualizadas</td>
+<td>Cuando cambios a las Unidades organizacionales (pirámide de salud) han sido hechos en la web, el usuario de aplicación móvil IASO es notificado. Luego el usuario puede elegir aplicarlos o no</td>
+</tr>
+<tr>
+<td>Móvil. Advertir al usuario cuando las unidades organizacionales han sido actualizadas y forzarlos a actualizar</td>
+<td>Cuando cambios a las Unidades organizacionales (pirámide de salud) han sido hechos en la web, el usuario de aplicación móvil IASO es notificado y la actualización ocurre automáticamente</td>
+</tr>
+<tr>
+<td>Subida automática de formularios finalizados</td>
+<td>La sincronización de formularios que han sido completados toma lugar automáticamente tan pronto como el usuario tiene conectividad</td>
+</tr>
+<tr>
+<td>Móvil. Los formularios finalizados son de solo lectura</td>
+<td>Los usuarios de aplicación móvil IASO no pueden editar los formularios una vez finalizados en la aplicación móvil</td>
+</tr>
+</tbody>
+</table>
+<h3 id="usuarios">Usuarios<a class="headerlink" href="#usuarios" title="Permanent link">#</a></h3>
+<p>Los usuarios pueden acceder a la aplicación web y móvil de IASO con credenciales de inicio de sesión. Cada usuario tiene permisos asignados y puede ser limitado por ubicación.</p>
+<p>Los permisos son relativamente granulares:
+- Por pantalla/pestaña
+- Diferentes permisos de lectura/escritura para dominios importantes
+- Restricción de acceso usando la pirámide de salud
+- Creación/modificación en lote de usuarios
+- Roles de usuario personalizables (Administrador, Gestor de datos, etc.)</p>
+<p>Tenga en cuenta que los permisos asignados desde la gestión de Usuarios se aplican <strong>solo a IASO web</strong>. IASO no tiene un sistema de permisos para su aplicación móvil, sino más bien un conjunto de Banderas de Características.</p>
+<p><strong>Crear un nuevo usuario IASO</strong></p>
+<p>Desde el menú Admin &gt; Usuarios, haga clic en "Crear".</p>
+<ol>
+<li>Complete la información del usuario</li>
+</ol>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Createuser.png" /></p>
+<p>Tenga en cuenta que también puede indicar la siguiente información:</p>
+<ul>
+<li>ID DHIS2 del usuario: puede importar una lista de usuarios DHIS2 a IASO y mantener el registro de su id DHIS2 en IASO para vincularlos a través de ambos sistemas</li>
+<li>Página de inicio: puede configurar una página de aterrizaje predeterminada para ese usuario al conectarse a esta cuenta IASO</li>
+<li>Proyectos: seleccione uno o varios Proyecto(s) al cual el usuario recién creado será vinculado. Si no hay Proyecto indicado aquí, el usuario tendrá acceso a todos los Proyectos de la cuenta IASO por defecto.</li>
+<li>
+<p>Idioma: puede especificar en qué idioma predeterminado este usuario usará IASO web. La aplicación móvil IASO está basada en el idioma predeterminado del dispositivo del usuario.</p>
+</li>
+<li>
+<p>Asignar permisos de usuario</p>
+</li>
+</ul>
+<p>En la siguiente pestaña "Permisos", puede habilitar/deshabilitar permisos para ese usuario según sea necesario. Tenga en cuenta que en los "?" hay tooltips para explicar qué hacen los permisos.
+<img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Permissions.png" /></p>
+<ol>
+<li>Restringir usuario a una Ubicación específica</li>
+</ol>
+<p>En la última pestaña "Ubicación", puede restringir el acceso del usuario que está editando a una sub-parte de la jerarquía de Unidad Organizacional (por lo tanto el usuario solo podrá ver datos relacionados con su Geografía).
+Si no se especifica Ubicación aquí, por defecto el usuario verá todos los datos disponibles a través de toda la jerarquía.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/locationrestrict.png" /></p>
+<p><strong>Crear usuarios en lote</strong></p>
+<p>Puede crear varios usuarios a la vez usando un archivo CSV que importa a IASO.</p>
+<p>Use el botón "Crear desde archivo" y luego puede importar su lista de usuarios (o descargar la plantilla relevante para hacerlo previamente).</p>
+<p><strong>Gestionar usuarios IASO</strong></p>
+<p>Esta vista le permite gestionar usuarios y sus permisos. Puede buscar
+por un usuario usando los diferentes filtros.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/userfilters.png" /></p>
+<p>Puede editar usuarios IASO en lote usando la característica de actualización en lote. Primero, marque cada usuario que le gustaría actualizar usando las casillas de verificación en el lado derecho de cada línea de usuario.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/editusersbulk.png" /></p>
+<p>Luego seleccione la(s) acción(es) que le gustaría realizar para estos usuarios. Pueden ser:</p>
+<ul>
+<li>Agregar o quitar de rol(es) de usuario</li>
+<li>Agregar o quitar de Proyecto(s)</li>
+<li>Agregar o quitar de Equipo(s)</li>
+<li>Actualizar idioma predeterminado</li>
+<li>Agregar o Quitar Ubicación (por lo tanto limitando estos usuarios a la Geografía seleccionada)</li>
+</ul>
+<p>Haga clic en "Validar" cuando termine.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/usersbulkeditactions.png" /></p>
+<h3 id="roles-de-usuario">Roles de usuario<a class="headerlink" href="#roles-de-usuario" title="Permanent link">#</a></h3>
+<p>Los roles de usuario permiten agrupar usuarios que tienen un conjunto de permisos bajo el mismo rol. En el Rol de usuario, puede crear Roles de usuario con sus permisos coincidentes, a los cuales los Usuarios pueden ser asignados.</p>
+<p><strong>Crear un Rol de usuario</strong></p>
+<p>Desde la página Admin &gt; Roles de usuario, haga clic en "Crear".</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/userroles.png" /></p>
+<p>Luego puede asignar este rol de usuario a cualquier usuario a través de la pestaña Permiso en la ventana emergente de edición de Usuario. Tenga en cuenta que los permisos de Rol de usuario se aplicarán al usuario, pero si el Usuario tiene más permisos que habían sido previamente asignados a él/ella, no los perderá sino que se sumarán.</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/Userrolespermissions.png" /></p>
+<p>Para asignar múltiples Usuarios a este rol de usuario recién creado en lote, regrese a la lista de Usuarios y proceda a una actualización en lote (vea Gestionar Usuarios arriba).</p>
+<h3 id="equipos">Equipos<a class="headerlink" href="#equipos" title="Permanent link">#</a></h3>
+<p>La noción de Equipos en IASO se usa principalmente para la característica de <a href="Planning">Planificación</a>. Permite organizar Usuarios en jerarquías de Equipo y asignar actividades de recolección de datos a las geografías relevantes según sea necesario para los propósitos de Planificación.</p>
+<p>Hay dos tipos de Equipos:</p>
+<ul>
+<li>Equipos de Usuarios: reúne Usuarios IASO bajo el mismo equipo</li>
+<li>Equipos de Equipos: reúne varios Equipos bajo un mismo Equipo. Luego puede crear jerarquías de Equipos</li>
+</ul>
+<p><strong>Crear un Equipo</strong></p>
+<p>Desde el menú, acceda a Admin &gt; Equipos. Haga clic en "Crear"</p>
+<p><img alt="alt text" src="../../../../../pages/users/reference/iaso_web/attachments/createteam.png" /></p>
+<p>Complete los campos a continuación:</p>
+<ul>
+<li>Nombre del equipo</li>
+<li>Gerente: seleccione de los Usuarios en IASO</li>
+<li>Proyecto: seleccione el Proyecto a ser vinculado a este Equipo</li>
+<li>Tipo: seleccione en el desplegable el tipo de Equipo<ul>
+<li>Si selecciona "Equipo de Usuarios" - entonces seleccione los Usuarios a ser agregados a ese Equipo</li>
+<li>Si selecciona "Equipo de Equipos" - entonces seleccione los Equipos a ser agregados a ese Equipo</li>
+</ul>
+</li>
+<li>Padre: seleccione el Equipo Padre para este equipo recién creado</li>
+</ul>
+<p>Luego puede usar el icono de engranaje o papelera en la página principal para editar o eliminar Equipo(s) según sea necesario.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

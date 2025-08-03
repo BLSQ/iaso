@@ -1,0 +1,1177 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../data_model_glossary/data_model_glossary.html">
+      
+      
+        <link rel="next" href="../docker/docker.html">
+      
+      <link rel="icon" href="../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>SQL Dashboard feature - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#tips" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SQL Dashboard feature
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../fr/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="SQL_Dashboard_feature.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plataforma Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+    
+  
+  
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" checked>
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="true">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          SQL Dashboard feature
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="SQL_Dashboard_feature.html" class="md-nav__link md-nav__link--active">
+        SQL Dashboard feature
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bar-charts" class="md-nav__link">
+    Bar charts
+  </a>
+  
+    <nav class="md-nav" aria-label="Bar charts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-number-of-org-unit-per-type-in-a-project" class="md-nav__link">
+    Example: Number of Org Unit per type in a project
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orgunit-hierarchy-linked-to-an-org-unit" class="md-nav__link">
+    OrgUnit hierarchy linked to an org unit
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-of-parameters" class="md-nav__link">
+    Use of parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Use of parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-number-of-submission-per-form-and-per-org_unit-in-a-particular-sourceversion-version_id" class="md-nav__link">
+    Example number of submission per form and per org_unit in a particular SourceVersion (version_id)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-multiple-ids" class="md-nav__link">
+    Use multiple ids
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-line-chart" class="md-nav__link">
+    Multi Line chart
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi Line chart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-cumulative-submission-per-projects-per-month" class="md-nav__link">
+    Example cumulative submission per projects per month
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#bar-charts" class="md-nav__link">
+    Bar charts
+  </a>
+  
+    <nav class="md-nav" aria-label="Bar charts">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-number-of-org-unit-per-type-in-a-project" class="md-nav__link">
+    Example: Number of Org Unit per type in a project
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#orgunit-hierarchy-linked-to-an-org-unit" class="md-nav__link">
+    OrgUnit hierarchy linked to an org unit
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#use-of-parameters" class="md-nav__link">
+    Use of parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Use of parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-number-of-submission-per-form-and-per-org_unit-in-a-particular-sourceversion-version_id" class="md-nav__link">
+    Example number of submission per form and per org_unit in a particular SourceVersion (version_id)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#use-multiple-ids" class="md-nav__link">
+    Use multiple ids
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multi-line-chart" class="md-nav__link">
+    Multi Line chart
+  </a>
+  
+    <nav class="md-nav" aria-label="Multi Line chart">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#example-cumulative-submission-per-projects-per-month" class="md-nav__link">
+    Example cumulative submission per projects per month
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.en.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<p>For super user across account there is a way to run raw read only SQL queries at the <code>/explore/</code> page : <a href="https://iaso.bluesquare.org/explore/">https://iaso.bluesquare.org/explore/</a>
+e.g <a href="https://iaso.bluesquare.org/explore/?sql=select+name+from+iaso_orgunittype%3AMRkVISqY7UEDGEyyUtdg1A7sxl2eaHNOtgr6fqbkLj4">SELECT name FROM iaso_orgunittype</a></p>
+<p>This is useful to check the database state and query data accross different client account. You can also save query and share them with others.</p>
+<p>This feature is implemented via the excellent Django SQL Dashboard, their documentation has more complete information: 
+https://django-sql-dashboard.datasette.io/en/stable/index.html</p>
+<h1 id="tips">Tips<a class="headerlink" href="#tips" title="Permanent link">#</a></h1>
+<h2 id="bar-charts">Bar charts<a class="headerlink" href="#bar-charts" title="Permanent link">#</a></h2>
+<p>You can generate bar chart by having two column named <code>bar_label</code>  and <code>bar_quantity</code></p>
+<p>Examples</p>
+<h3 id="example-number-of-org-unit-per-type-in-a-project">Example: Number of Org Unit per type in a project<a class="headerlink" href="#example-number-of-org-unit-per-type-in-a-project" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">select iaso_orgunittype.name as bar_label, count(org_unit.id) as bar_quantity  
+from iaso_orgunittype  
+    join iaso_orgunittype_projects on iaso_orgunittype.id = iaso_orgunittype_projects.orgunittype_id  
+    left join iaso_orgunit org_unit on iaso_orgunittype.id = org_unit.org_unit_type_id  
+    where iaso_orgunittype_projects.project_id = 1  
+group by iaso_orgunittype.id  
+order by  bar_quantity
+</code></pre>
+<p><img alt="Example sql bar chart.png" src="../../../../../pages/dev/reference/sql_dashboard/Example%20sql%20bar%20chart.png" /></p>
+<h2 id="orgunit-hierarchy-linked-to-an-org-unit">OrgUnit hierarchy linked to an org unit<a class="headerlink" href="#orgunit-hierarchy-linked-to-an-org-unit" title="Permanent link">#</a></h2>
+<pre><code class="language-sql">SELECT * FROM iaso_orgunit WHERE path ~ '*.104133.*'
+</code></pre>
+<h2 id="use-of-parameters">Use of parameters<a class="headerlink" href="#use-of-parameters" title="Permanent link">#</a></h2>
+<p>You can use parameter, this will automatically create an input.</p>
+<p>If you save them as a dashboard it will allow passing the paramter in the url</p>
+<h3 id="example-number-of-submission-per-form-and-per-org_unit-in-a-particular-sourceversion-version_id">Example number of submission per form and per org_unit in a particular SourceVersion (version_id)<a class="headerlink" href="#example-number-of-submission-per-form-and-per-org_unit-in-a-particular-sourceversion-version_id" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT &quot;iaso_orgunit&quot;.&quot;path&quot;,  
+       &quot;iaso_orgunit&quot;.&quot;name&quot;,  
+       &quot;iaso_instance&quot;.&quot;form_id&quot;,  
+       count(&quot;iaso_instance&quot;.&quot;id&quot;) filter  
+           (WHERE (not (&quot;iaso_instance&quot;.&quot;file&quot; = '' and &quot;iaso_instance&quot;.&quot;file&quot; is not null) and  
+                   not (&quot;iaso_instance&quot;.&quot;deleted&quot; and &quot;iaso_instance&quot;.&quot;deleted&quot; is not null))) as &quot;instances_count&quot;  
+
+FROM &quot;iaso_orgunit&quot;  
+         JOIN &quot;iaso_instance&quot;  
+              ON (&quot;iaso_orgunit&quot;.&quot;id&quot; = &quot;iaso_instance&quot;.&quot;org_unit_id&quot;)  
+                  and version_id = %(version_id)s
+GROUP BY &quot;iaso_orgunit&quot;.path, &quot;iaso_orgunit&quot;.&quot;id&quot;, &quot;iaso_instance&quot;.&quot;form_id&quot;  
+order by &quot;iaso_orgunit&quot;.path  
+limit 100;
+</code></pre>
+<h3 id="use-multiple-ids">Use multiple ids<a class="headerlink" href="#use-multiple-ids" title="Permanent link">#</a></h3>
+<p>This tips is useful to allow passing multiple ids, separated per <code>,</code></p>
+<pre><code class="language-sql">select * from iaso_form where
+iaso_form.id = ANY (string_to_array(%(form_ids)s::text, ',')::int[])
+</code></pre>
+<h2 id="multi-line-chart">Multi Line chart<a class="headerlink" href="#multi-line-chart" title="Permanent link">#</a></h2>
+<p>You can generate multi line chart by naming columns <code>line_label</code>, <code>line_quantity</code> and <code>line_category</code> (you need all three)</p>
+<p><img alt="Example multi line chart.png" src="../../../../../pages/dev/reference/sql_dashboard/Example%20multi%20line%20chart.png" /></p>
+<h3 id="example-cumulative-submission-per-projects-per-month">Example cumulative submission per projects per month<a class="headerlink" href="#example-cumulative-submission-per-projects-per-month" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">select line_label,
+       line_category,
+       sum(line_quantity) over (PARTITION BY line_category order by line_label) as line_quantity
+from (
+select TO_CHAR(date_trunc('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)), 'YYYY/MM') as line_label, count(*) as line_quantity,  iaso_project.name as line_category from iaso_instance inner join iaso_project on iaso_instance.project_id = iaso_project.id
+ group by line_label, iaso_project.name order by line_label, line_quantity desc limit 200
+) as data
+</code></pre>
+<h1 id="cumulative-sum">Cumulative sum<a class="headerlink" href="#cumulative-sum" title="Permanent link">#</a></h1>
+<p>To generate a cumulative sum (particularly useful for progression over time). Wrap your query with</p>
+<pre><code class="language-sql">select line_label,
+       line_category,
+       sum(line_quantity) over (PARTITION BY line_category order by line_label) as line_quantity
+from (
+ YOUR QUERY
+) as data
+</code></pre>
+<p>See previous example.</p>
+<h3 id="random-data-generation-example">random data generation example<a class="headerlink" href="#random-data-generation-example" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">select line_label,  
+       line_category,  
+       sum(line_quantity) over (PARTITION BY line_category order by line_label) as line_quantity  
+from (select TO_CHAR(gen_date.generate_series, 'YYYY/MM') as line_label,  
+             (random() - 0.2) * 1000::int                 as line_quantity,  
+             name                                         as line_category  
+      from (select *  
+            from generate_series('2008-03-01 08:00'::timestamp,  
+                                 '2009-03-04 12:00'::timestamp, '1 month')) gen_date  
+               cross join (VALUES ('foo'), ('bar'), ('baz')) as categories (name)) as data
+</code></pre>
+<h1 id="searching-in-org-units-org-unit-types">Searching in Org Units, Org Unit Types<a class="headerlink" href="#searching-in-org-units-org-unit-types" title="Permanent link">#</a></h1>
+<p>Here are some examples of queries to find Org Units, their types, reference forms and everything linked to the hierarchy of a specific Org Unit.</p>
+<p>As we are using Postgre's <a href="https://www.postgresql.org/docs/16/ltree.html">ltree extension</a> and <a href="https://github.com/mariocesar/django-ltree">django-ltree</a> to model this hierarchy, specific SQL operators are available to search in a performant way and queries can be cumbersome.</p>
+<p>Let's say you have a OrgUnit with ID : <strong>XXXXXX</strong></p>
+<h3 id="find-the-hierarchy-linked-to-this-org-unit">Find the hierarchy linked to this Org Unit.<a class="headerlink" href="#find-the-hierarchy-linked-to-this-org-unit" title="Permanent link">#</a></h3>
+<pre><code class="language-SQL">SELECT * FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*'
+</code></pre>
+<h3 id="find-the-related-org-unit-types">Find the related Org Unit Types :<a class="headerlink" href="#find-the-related-org-unit-types" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_orgunittype WHERE id IN 
+    (SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*')
+</code></pre>
+<h3 id="reference-forms-of-these-org-unit-types">Reference forms of these Org Unit Types<a class="headerlink" href="#reference-forms-of-these-org-unit-types" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_form WHERE id IN 
+    (SELECT reference_form_id FROM iaso_orgunittype WHERE id IN 
+        (SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*'))
+</code></pre>
+<h3 id="find-the-form-versions-of-these-reference-forms">Find the Form Versions of these Reference Forms.<a class="headerlink" href="#find-the-form-versions-of-these-reference-forms" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_formversion WHERE id IN 
+    (SELECT id FROM iaso_form WHERE id IN 
+        (SELECT reference_form_id FROM iaso_orgunittype WHERE id IN 
+            (SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*')))
+</code></pre>
+<h3 id="the-instances-linked-to-that-hierarchy">The Instances linked to that hierarchy<a class="headerlink" href="#the-instances-linked-to-that-hierarchy" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_instance WHERE org_unit_id IN 
+    (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')
+</code></pre>
+<h3 id="finding-the-projects-linked-to-that-hierarchy">Finding the projects linked to that hierarchy<a class="headerlink" href="#finding-the-projects-linked-to-that-hierarchy" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_project WHERE id in 
+    (SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+        (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))
+</code></pre>
+<h3 id="devices-linked-to-that-hierarchy">Devices linked to that hierarchy<a class="headerlink" href="#devices-linked-to-that-hierarchy" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_device WHERE id in 
+    (SELECT device_id FROM iaso_instance WHERE org_unit_id IN 
+        (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))
+</code></pre>
+<h3 id="accounts-linked-to-these-projects">Accounts linked to these projects<a class="headerlink" href="#accounts-linked-to-these-projects" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_account WHERE id IN 
+    (SELECT account_id FROM iaso_project WHERE id in 
+        (SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+            (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')))
+</code></pre>
+<h3 id="source-versions-linked-to-these-projects">Source versions linked to these projects<a class="headerlink" href="#source-versions-linked-to-these-projects" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_sourceversion WHERE id IN
+    (SELECT default_version_id FROM iaso_account WHERE id IN 
+        (SELECT account_id FROM iaso_project WHERE id in 
+            (SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+                (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))))
+</code></pre>
+<h3 id="datasources-linked-to-these-versions">Datasources linked to these versions<a class="headerlink" href="#datasources-linked-to-these-versions" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_datasource WHERE id IN (SELECT data_source_id FROM iaso_sourceversion WHERE id IN
+(SELECT default_version_id FROM iaso_account WHERE id IN 
+    (SELECT account_id FROM iaso_project WHERE id in 
+        (SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+            (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')))))
+</code></pre>
+<h3 id="credentials-linked-these-datasources">Credentials linked these datasources<a class="headerlink" href="#credentials-linked-these-datasources" title="Permanent link">#</a></h3>
+<pre><code class="language-sql">SELECT * FROM iaso_externalcredentials WHERE id IN (SELECT credentials_id FROM iaso_datasource WHERE id IN (SELECT data_source_id FROM iaso_sourceversion WHERE id IN
+(SELECT default_version_id FROM iaso_account WHERE id IN 
+    (SELECT account_id FROM iaso_project WHERE id in 
+        (SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+            (SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))))))
+</code></pre>
+<h1 id="restrictions">Restrictions<a class="headerlink" href="#restrictions" title="Permanent link">#</a></h1>
+<p>This functionality is severly restricted to prevent the risk of data leak and security issues:</p>
+<ul>
+<li>Only a certain set of table are accessible. (notably not the user table password)</li>
+<li>Since this is ignore the multi tenant rule only super user can be given access to it</li>
+<li>Access is read only (see implementation detail)</li>
+</ul>
+<h1 id="configuration-and-implementation-detail">Configuration and Implementation detail<a class="headerlink" href="#configuration-and-implementation-detail" title="Permanent link">#</a></h1>
+<p>To garantee read only access this feature use a separate user that should only be given restricted right.</p>
+<p>The functionnality is automatically enabled if this user is set via the <code>DB_READONLY_USERNAME</code> environment variable.</p>
+<p>To configure it:
+Create a Postgresql user with a password and no acess and give him the role <code>readonlyrole</code>.
+You can do so using the sql command</p>
+<pre><code class="language-sql">GRANT readonlyrole to YOUR_USER
+</code></pre>
+<p>Set the environment variable <code>DB_READONLY_USERNAME</code> and <code>DB_READONLY_PASSWORD</code>.</p>
+<p>Some migration will give read acess to the certain tables to the <code>readonlyrole</code>, should you give access to more table use the command</p>
+<pre><code class="language-sql">GRANT SELECT ON TABLE   
+ iaso_new_table_1,
+ iaso_new_table_2,
+TO &quot;readonlyrole&quot;;
+</code></pre>
+<p>to only give access to certain column on a table</p>
+<pre><code class="language-sql">GRANT SELECT(  
+  id, username, is_active, date_joined  
+) ON auth_user TO &quot;readonlyrole&quot;;
+</code></pre>
+<p>See also https://django-sql-dashboard.datasette.io/en/stable/security.html</p>
+<h1 id="in-local-dev">In local dev<a class="headerlink" href="#in-local-dev" title="Permanent link">#</a></h1>
+<p>this feature is automatically enabled.</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

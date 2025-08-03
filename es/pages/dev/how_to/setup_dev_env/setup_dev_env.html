@@ -1,0 +1,965 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../contribute/contribute.html" rel="prev"/>
+<link href="../use_iaso_apis/use_iaso_apis.html" rel="next"/>
+<link href="../../../../../assets/iaso-favicon.png" rel="icon"/>
+<meta content="mkdocs-1.5.2, mkdocs-material-9.1.1" name="generator"/>
+<title>Setup a dev environment - IASO</title>
+<link href="../../../../../assets/stylesheets/main.402914a4.min.css" rel="stylesheet"/>
+<link href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../../stylesheets/extra.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+</head>
+<body data-md-color-accent="" data-md-color-primary="custom" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#setup-a-dev-environment">
+          Saltar a contenido
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow" data-md-component="header">
+<nav aria-label="Cabecera" class="md-header__inner md-grid">
+<a aria-label="IASO" class="md-header__button md-logo" data-md-component="logo" href="../../../../index.html" title="IASO">
+<img alt="logo" src="../../../../../assets/iaso.png"/>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            IASO
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Setup a dev environment
+            
+          </span>
+</div>
+</div>
+</div>
+<div class="md-header__option">
+<div class="md-select">
+<button aria-label="Seleccionar idioma" class="md-header__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+</button>
+<div class="md-select__inner">
+<ul class="md-select__list">
+<li class="md-select__item">
+<a class="md-select__link" href="../../../../../pages/dev/how_to/setup_dev_env/setup_dev_env.html" hreflang="en">
+                    English
+                  </a>
+</li>
+<li class="md-select__item">
+<a class="md-select__link" href="../../../../../fr/pages/dev/how_to/setup_dev_env/setup_dev_env.html" hreflang="fr">
+                    Français
+                  </a>
+</li>
+<li class="md-select__item">
+<a class="md-select__link" href="setup_dev_env.html" hreflang="es">
+                    Español
+                  </a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Búsqueda" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Búsqueda" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+</label>
+<nav aria-label="Buscar" class="md-search__options">
+<button aria-label="Limpiar" class="md-search__icon md-icon" tabindex="-1" title="Limpiar" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+</button>
+</nav>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/BLSQ/iaso" title="Ir al repositorio">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<!-- Navigation -->
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navegación" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="IASO" class="md-nav__button md-logo" data-md-component="logo" href="../../../../index.html" title="IASO">
+<img alt="logo" src="../../../../../assets/iaso.png"/>
+</a>
+    IASO
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/BLSQ/iaso" title="Ir al repositorio">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../index.html">
+        Inicio
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_concepts/iaso_concepts.html">
+        Conceptos
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_modules/iaso_modules.html">
+        Módulos
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_web/user_guide.html">
+        Plataforma Web
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_mobile/iaso_mobile.html">
+        Aplicación Móvil
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_1">
+<span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/data_model_glossary/data_model_glossary.html">
+        Data model glossary
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/sql_dashboard/SQL_Dashboard_feature.html">
+        SQL Dashboard feature
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/docker/docker.html">
+        Docker
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/background_tasks/background_tasks.html">
+        Background tasks &amp; worker
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/env_variables/env_variables.html">
+        Environnement variables
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_6_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_6">
+<span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../reference/API/entity.html">
+        API reference: Entity
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" id="__nav_3_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="true" aria-labelledby="__nav_3_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_2">
+<span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../contribute/contribute.html">
+        Contribute
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+          Setup a dev environment
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="setup_dev_env.html">
+        Setup a dev environment
+      </a>
+<nav aria-label="Tabla de contenidos" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-environment-variables">
+    1. Environment variables
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-build-the-containers">
+    2. Build the containers
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-start-the-database">
+    3. Start the database
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-run-migrations">
+    4. Run migrations
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-start-the-server">
+    5. Start the server
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-create-a-superuser">
+    6. Create a superuser
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-create-and-import-data">
+    7. Create and import data
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#8-create-a-form">
+    8. Create a form
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#9-start-adding-features">
+    9. Start adding features
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#10-import-orgunit-forms-and-submission-from-dhis2">
+    10. Import OrgUnit, Forms and Submission from DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#11-enketo">
+    11. Enketo
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#12-database-dump">
+    12. Database dump
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#13-restore-database-from-dump">
+    13. Restore database from dump
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#14-health">
+    14. Health
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#15-set-up-a-local-dhis2-server">
+    15. Set up a local DHIS2 server
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#16-sample-dhis2-database">
+    16. Sample dhis2 database
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#17-set-up-single-sign-on-sso-with-a-local-dhis2">
+    17. Set up Single Sign On (SSO) with a local DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#18-test-forms-from-iaso-mobile-application">
+    18. Test forms from Iaso mobile application
+  </a>
+<nav aria-label="18. Test forms from Iaso mobile application" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-setup-ngrok">
+    1 - Setup Ngrok
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-setup-the-mobile-app">
+    2 - Setup the mobile app
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#19-sso-with-dhis2">
+    19. SSO with DHIS2
+  </a>
+<nav aria-label="19. SSO with DHIS2" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-setup-oauth2-clients-in-dhis2">
+    1 - Setup OAuth2 clients in DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-configure-the-oauth2-connection-in-iaso">
+    2 - Configure the OAuth2 connection in Iaso
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-workflow-for-single-sign-on-as-a-sequence-diagram">
+    3. Workflow for Single Sign On as a sequence diagram
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#20live-bluesquare-components">
+    20.Live Bluesquare components
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#21-task-worker">
+    21. Task worker
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#22-customization">
+    22. Customization
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../use_iaso_apis/use_iaso_apis.html">
+        Use iaso apis
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.openiaso.com/">
+        Sitio web de IASO
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.digitalpublicgoods.net/r/iaso">
+        Digital Public Goods Registry
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://github.com/BLSQ/iaso/releases">
+        Notas de versión
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.bluesquarehub.com/">
+        Sitio web de Bluesquare
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+<!-- pdf download  -->
+<div id="pdf-download-container">
+<button id="pdf-download" type="button">
+<span id="button-text">Download current page</span>
+<svg fill="#192041" height="24px" viewbox="0 -960 960 960" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Table of contents -->
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Tabla de contenidos" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-environment-variables">
+    1. Environment variables
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-build-the-containers">
+    2. Build the containers
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-start-the-database">
+    3. Start the database
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#4-run-migrations">
+    4. Run migrations
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#5-start-the-server">
+    5. Start the server
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#6-create-a-superuser">
+    6. Create a superuser
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#7-create-and-import-data">
+    7. Create and import data
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#8-create-a-form">
+    8. Create a form
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#9-start-adding-features">
+    9. Start adding features
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#10-import-orgunit-forms-and-submission-from-dhis2">
+    10. Import OrgUnit, Forms and Submission from DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#11-enketo">
+    11. Enketo
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#12-database-dump">
+    12. Database dump
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#13-restore-database-from-dump">
+    13. Restore database from dump
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#14-health">
+    14. Health
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#15-set-up-a-local-dhis2-server">
+    15. Set up a local DHIS2 server
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#16-sample-dhis2-database">
+    16. Sample dhis2 database
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#17-set-up-single-sign-on-sso-with-a-local-dhis2">
+    17. Set up Single Sign On (SSO) with a local DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#18-test-forms-from-iaso-mobile-application">
+    18. Test forms from Iaso mobile application
+  </a>
+<nav aria-label="18. Test forms from Iaso mobile application" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-setup-ngrok">
+    1 - Setup Ngrok
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-setup-the-mobile-app">
+    2 - Setup the mobile app
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#19-sso-with-dhis2">
+    19. SSO with DHIS2
+  </a>
+<nav aria-label="19. SSO with DHIS2" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#1-setup-oauth2-clients-in-dhis2">
+    1 - Setup OAuth2 clients in DHIS2
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#2-configure-the-oauth2-connection-in-iaso">
+    2 - Configure the OAuth2 connection in Iaso
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#3-workflow-for-single-sign-on-as-a-sequence-diagram">
+    3. Workflow for Single Sign On as a sequence diagram
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#20live-bluesquare-components">
+    20.Live Bluesquare components
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#21-task-worker">
+    21. Task worker
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#22-customization">
+    22. Customization
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/setup_dev_env/setup_dev_env.en.md" title="Editar esta página">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+</a>
+<h1 id="setup-a-dev-environment">Setup a dev environment<a class="headerlink" href="#setup-a-dev-environment" title="Permanent link">#</a></h1>
+<p>A running local instance for development can be spun up via docker compose which will install and
+configure all deps in separate container. As such your computer should only need:</p>
+<ul>
+<li><a href="https://git-scm.com/">git</a></li>
+<li><a href="https://docs.docker.com/engine/installation/">docker</a></li>
+<li><a href="https://docs.docker.com/compose/">docker compose</a></li>
+</ul>
+<p>If docker compose give you trouble, make sure it can connect to the
+<strong>docker daemon</strong>.</p>
+<p>If you use an Apple Silicon Mac, ensure <code>export DOCKER_DEFAULT_PLATFORM=linux/amd64</code> is set.</p>
+<p>A <code>pgdata-iaso</code> folder, containing the database data, will be created in the parent directory of the git repository.</p>
+<h3 id="1-environment-variables">1. Environment variables<a class="headerlink" href="#1-environment-variables" title="Permanent link">#</a></h3>
+<p>The docker-compose.yml file contains sensible defaults for the Django
+application.</p>
+<p>Other environment variables can be provided by a <a href="https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file">.env
+file</a>.</p>
+<p>As a starting point, you can copy the sample .env.dist file and edit it
+to your needs.</p>
+<pre class="bash"><code class="language-sourceCode">cp .env.dist .env
+</code></pre>
+<p><strong>note:</strong>
+All the commands here need to be run in the project directory in which the repository was cloned</p>
+<h3 id="2-build-the-containers">2. Build the containers<a class="headerlink" href="#2-build-the-containers" title="Permanent link">#</a></h3>
+<p>This will build and download the containers.</p>
+<pre class="bash"><code class="language-sourceCode">docker compose build
+</code></pre>
+<h3 id="3-start-the-database">3. Start the database<a class="headerlink" href="#3-start-the-database" title="Permanent link">#</a></h3>
+<pre class="bash"><code class="language-sourceCode">docker compose up db
+</code></pre>
+<h3 id="4-run-migrations">4. Run migrations<a class="headerlink" href="#4-run-migrations" title="Permanent link">#</a></h3>
+<pre class="bash"><code class="language-sourceCode">docker compose run --rm iaso manage migrate
+</code></pre>
+<p>If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using </p>
+<pre><code>psql -h localhost -p 5433 -U postgres
+</code></pre>
+<p>then type </p>
+<pre><code>create database iaso; 
+</code></pre>
+<p>to create the missing database.</p>
+<h3 id="5-start-the-server">5. Start the server<a class="headerlink" href="#5-start-the-server" title="Permanent link">#</a></h3>
+<p>To start all the containers (backend, frontend, db)</p>
+<pre class="bash"><code class="language-sourceCode">docker compose up
+</code></pre>
+<p>The web server will be reachable at <code>http://localhost:8081</code>.</p>
+<p>The <code>docker-compose.yml</code> file describes the setup of the containers.</p>
+<h3 id="6-create-a-superuser">6. Create a superuser<a class="headerlink" href="#6-create-a-superuser" title="Permanent link">#</a></h3>
+<p>To login to the app or the Django admin, a superuser needs to be created
+with:</p>
+<pre class="bash"><code class="language-sourceCode">docker compose exec iaso ./manage.py createsuperuser
+</code></pre>
+<p>You can now login in the admin at <code>http://localhost:8081/admin</code>.</p>
+<p>Then additional users with custom groups and permissions can be added
+through the Django admin or loaded via fixtures.</p>
+<h3 id="7-create-and-import-data">7. Create and import data<a class="headerlink" href="#7-create-and-import-data" title="Permanent link">#</a></h3>
+<p>To create the initial account, project and profile, do the following:</p>
+<pre class="bash"><code class="language-sourceCode">docker compose exec iaso ./manage.py create_and_import_data
+</code></pre>
+<p>You can now login on <code>http://localhost:8081</code> but still need to import your own data.</p>
+<p>An alternative to this and the following steps is to <a href="#10-import-orgunit-forms-and-submission-from-dhis2">import data from DHIS2</a>.</p>
+<h3 id="8-create-a-form">8. Create a form<a class="headerlink" href="#8-create-a-form" title="Permanent link">#</a></h3>
+<p>Run the following command to create a form:</p>
+<pre class="bash"><code class="language-sourceCode">docker compose exec iaso ./manage.py create_form
+</code></pre>
+<p>At this point, if you want to edit forms directly on your machine using
+Enketo, go to the Enketo setup section of this README (down below).</p>
+<p>Once you are done, you can click on the eye for your newly added form,
+click on "+ Create", tap a letter, then enter, select the org unit, then
+click "Create submission".</p>
+<p>If Enketo is running and well setup, you can fill the form now.</p>
+<h3 id="9-start-adding-features">9. Start adding features<a class="headerlink" href="#9-start-adding-features" title="Permanent link">#</a></h3>
+<p>You can now start to develop additional features on Iaso!</p>
+<h3 id="10-import-orgunit-forms-and-submission-from-dhis2">10. Import OrgUnit, Forms and Submission from DHIS2<a class="headerlink" href="#10-import-orgunit-forms-and-submission-from-dhis2" title="Permanent link">#</a></h3>
+<p>Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org):</p>
+<pre class="bash"><code class="language-sourceCode">docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
+</code></pre>
+<p>The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. OrgUnit types are not
+handled at the moment</p>
+<p>Log in to  <a href="http://127.0.0.1:8081/dashboard">http://127.0.0.1:8081/dashboard</a> with :</p>
+<ul>
+<li>user : testemail2.35.3</li>
+<li>password: testemail2.35.3</li>
+</ul>
+<h3 id="11-enketo">11. Enketo<a class="headerlink" href="#11-enketo" title="Permanent link">#</a></h3>
+<p>To submit and edit existing form submission from the browser, an Enketo service is needed. </p>
+<p>To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker compose with both files.</p>
+<pre><code>docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
+</code></pre>
+<p>No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.</p>
+<p>You can check that the server is correctly launched by going to http://localhost:8005</p>
+<p>To seed your DB with typical example forms editable by Enketo, see <a href="#10-import-orgunit-forms-and-submission-from-dhis2">import data from DHIS2</a></p>
+<h3 id="12-database-dump">12. Database dump<a class="headerlink" href="#12-database-dump" title="Permanent link">#</a></h3>
+<p>To create a copy of your iaso database in a file (dump) you can use:</p>
+<pre><code>docker compose exec db pg_dump -U postgres iaso  -Fc &gt; iaso.dump
+</code></pre>
+<p>The dumpfile will be created on your host. The <code>-Fc</code> meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use <code>-Fp</code></p>
+<h3 id="13-restore-database-from-dump">13. Restore database from dump<a class="headerlink" href="#13-restore-database-from-dump" title="Permanent link">#</a></h3>
+<ol>
+<li>Ensure the database server is running but not the rest. Close your docker compose, ensure it is down with <code>docker compose down</code></li>
+<li>Launch the database server with <code>docker compose up db</code> </li>
+<li>Choose a name for you database. In this example  it will be <code>iaso5</code>
+   You can list existing databases using <code>docker compose exec db psql -U postgres -l</code></li>
+<li>Create the database <code>docker compose exec db psql -U postgres -c "create database iaso5"</code></li>
+<li>Restore the dump file to put the data in your database</li>
+</ol>
+<pre><code>cat iaso.dump | docker compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
+</code></pre>
+<ol>
+<li>Edit your <code>.env</code> file to use to this database in the <code>RDS_DB_NAME</code> settings.</li>
+<li>Start Iaso. Cut your docker compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker compose</li>
+</ol>
+<h3 id="14-health">14. Health<a class="headerlink" href="#14-health" title="Permanent link">#</a></h3>
+<hr/>
+<p>On the /health/ url you can find listed the Iaso version number, environment, deployment time, etc... that might help you understand how this server instance is deployed for debugging. e.g.  https://iaso.bluesquare.org/health/</p>
+<h3 id="15-set-up-a-local-dhis2-server">15. Set up a local DHIS2 server<a class="headerlink" href="#15-set-up-a-local-dhis2-server" title="Permanent link">#</a></h3>
+<hr/>
+<p>Experimental. For development if you need a local dhis2 server, you can spin up one in your docker compose by using the <code>docker/docker-compose-dhis2.yml</code> configuration file.</p>
+<p>Replace your invocations of <code>docker compose</code> by <code>docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml</code> you need to specify both config files. e.g to launch the cluster:</p>
+<pre><code>docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
+</code></pre>
+<p>The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /</p>
+<p>Database file are stored in <code>../pgdata-dhis2</code> and dhis2 log and uploaded files in <code>docker/DHIS2_home</code>.</p>
+<h3 id="16-sample-dhis2-database">16. Sample dhis2 database<a class="headerlink" href="#16-sample-dhis2-database" title="Permanent link">#</a></h3>
+<p>You will probably require some sample data in your instance. It is possible to
+populate your DHIS2 server with sample data from a database dump like it's done
+for the official play servers. The DHIS2 database take around 3 GB.</p>
+<p>The steps as are follow:
+Download the file, stop all the docker, remove the postgres database directory, start only the database docker, load the database dump and then restart everything.</p>
+<pre><code>wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
+docker compose down
+sudo rm ../pgdata-dhis2 -r
+docker compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker compose up
+cd Projects/blsq/iaso
+docker compose up dhis2 db_dhis2
+</code></pre>
+<h3 id="17-set-up-single-sign-on-sso-with-a-local-dhis2">17. Set up Single Sign On (SSO) with a local DHIS2<a class="headerlink" href="#17-set-up-single-sign-on-sso-with-a-local-dhis2" title="Permanent link">#</a></h3>
+<p>If you want to test the feature with your local dhis2 you can use the following step. This assume you are running everything in Docker containers</p>
+<ol>
+<li>Launch DHIS2 with iaso within docker compose
+<code>docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up</code>
+ With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine</li>
+<li>These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section</li>
+<li>Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2</li>
+<li>Add new client:</li>
+<li>Name : what you want</li>
+<li>ClientId: What you want (must be the same as your external credential in Iaso)</li>
+<li>Client Secret : there is one generated, copy it and save it for a latter step</li>
+<li>Grant Type: check Authorization code</li>
+<li>
+<p>Redirect URI : http://localhost:8081/api/dhis2/{same as client id}/login/</p>
+</li>
+<li>
+<p>Setup external credential in iaso</p>
+</li>
+<li>open admin http://localhost:8081/admin/</li>
+<li>go to External Credentials | http://localhost:8081/admin/iaso/externalcredentials/</li>
+<li>Add external credentials on the top right | http://localhost:8081/admin/iaso/externalcredentials/add/</li>
+<li>Account: The account for which you want to enable dhis2 auth</li>
+<li>Name : Same as DHIS2 Client ID</li>
+<li>Login : http://dhis2:8080/</li>
+<li>Password: the client secret you saved in step 2</li>
+<li>Url: http://localhost:8081/</li>
+</ol>
+<p>5 Create a new user in Iaso, grant it some rights</p>
+<ol>
+<li>
+<p>In DHIS2 retrieve the id for the user</p>
+<ul>
+<li>Current way I have found it is to go to http://localhost:8080/api/me and copy the id field</li>
+<li>But you can also find a user here and it's in the url http://localhost:8080/dhis-web-user/index.html#/users</li>
+</ul>
+</li>
+<li>
+<p>Add the dhis2 id to the Iaso user : Open the target user in the iaso Admin http://localhost:8081/admin/iaso/profile/ and add it to the dhis2 id field, save.</p>
+</li>
+<li>
+<p>Unlog from iaso or in a separate session/container</p>
+</li>
+<li>Try the feature by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&amp;response_type=code</li>
+</ol>
+<h3 id="18-test-forms-from-iaso-mobile-application">18. Test forms from Iaso mobile application<a class="headerlink" href="#18-test-forms-from-iaso-mobile-application" title="Permanent link">#</a></h3>
+<h4 id="1-setup-ngrok">1 - Setup Ngrok<a class="headerlink" href="#1-setup-ngrok" title="Permanent link">#</a></h4>
+<p>Download and setup Ngrok on https://ngrok.com/. Once Ngrok installed and running you must add your ngrok server url
+in <code>settings.py</code> by adding the following line :</p>
+<pre><code>FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "YOUR_NGROK_SERVER_URL")
+</code></pre>
+<p>After this step you have to import  <code>settings.py</code> and add <code>FILE_SERVER_URL</code> to <code>forms.py</code> in iaso/models/forms as
+shown on the following lines :</p>
+<pre><code>"file": settings.FILE_SERVER_URL + self.file.url,
+"xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None
+</code></pre>
+<h4 id="2-setup-the-mobile-app">2 - Setup the mobile app<a class="headerlink" href="#2-setup-the-mobile-app" title="Permanent link">#</a></h4>
+<p>Once Ngrok installed and running you have to run the app in developer mode (tap 10 times on the Iaso icon at start ) and connect the mobile app to your server
+by selecting the 3 dots in the top right corner and select "change server url". When connected to your server, refresh
+all data and your app will be ready and connected to your development server.</p>
+<h3 id="19-sso-with-dhis2">19. SSO with DHIS2<a class="headerlink" href="#19-sso-with-dhis2" title="Permanent link">#</a></h3>
+<p>You can use DHIS2 as identity provider to login on Iaso. It requires a little configuration on DHIS2 and Iaso in order
+to achieve that. </p>
+<h4 id="1-setup-oauth2-clients-in-dhis2">1 - Setup OAuth2 clients in DHIS2<a class="headerlink" href="#1-setup-oauth2-clients-in-dhis2" title="Permanent link">#</a></h4>
+<p>In DHIS2 settings you must setup your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
+* Client ID : What you want (Must be the same as your external credential name in Iaso)
+* Grant Types : Authorization code</p>
+<p>Redirect URIs is your iaso server followed by : <code>/api/dhis2/{your_dhis2_client_id}/login/</code></p>
+<p>For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/</p>
+<h4 id="2-configure-the-oauth2-connection-in-iaso">2 - Configure the OAuth2 connection in Iaso<a class="headerlink" href="#2-configure-the-oauth2-connection-in-iaso" title="Permanent link">#</a></h4>
+<p>In iaso you must setup your dhis2 server credentials. 
+To do so, go to <code>/admin</code> and setup as follow :  </p>
+<ul>
+<li>Name: {your_dhis2_client_id} ( It must be exactly as it is in your DHIS2 client_id and DHIS2 Redirect URIs)</li>
+<li>Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )</li>
+<li>Password: The secret provided by DHIS2 when you created your OAuth2 client.</li>
+<li>Url: Your Iaso Url (Ex: https://myiaso.com/)</li>
+</ul>
+<p>Don't forget the <code>/</code> at the end of the urls.</p>
+<h4 id="3-workflow-for-single-sign-on-as-a-sequence-diagram">3. Workflow for Single Sign On as a sequence diagram<a class="headerlink" href="#3-workflow-for-single-sign-on-as-a-sequence-diagram" title="Permanent link">#</a></h4>
+<div class="mermaid">sequenceDiagram
+    autonumber
+    Note right of Browser: user open url to login
+    Browser-&gt;&gt;DHIS2: GET /uaa/oauth/authorize&lt;br&gt;?client_id={your_dhis2_client_id}
+    loop if not logged
+        DHIS2-&gt;&gt;Browser: Login screen
+        Browser-&gt;&gt;DHIS2: Enter credentials
+        DHIS2-&gt;&gt;Browser: Login ok
+    end
+    DHIS2 --&gt;&gt; Browser: 200 Authorize Iaso? Authorize/Deny
+    Browser -&gt;&gt; DHIS2: POST /authorize
+    DHIS2 --&gt;&gt; Browser: 303  redirect
+    Browser -&gt;&gt; IASO: GET /api/dhis2/&lt;dhis2_slug&gt;/login/?code=
+    IASO -&gt;&gt; DHIS2: POST /uaa/oauth/token/
+    DHIS2 --&gt;&gt; IASO: access token
+    IASO -&gt;&gt; DHIS2 : GET /api/me
+    DHIS2 --&gt;&gt; IASO: credential info
+    Note right of IASO: find matching IASO user
+    Note right of IASO: Log in session
+    IASO --&gt;&gt; Browser: 303 Redirect &amp; set cookies
+    Browser -&gt;&gt; IASO: Use iaso normally as logged user.
+</div>
+<h3 id="20live-bluesquare-components">20.Live Bluesquare components<a class="headerlink" href="#20live-bluesquare-components" title="Permanent link">#</a></h3>
+<p>It is possible to configure the project to load a version of <a href="https://github.com/BLSQ/bluesquare-components">Bluesquare components</a> from a local git repository instead of the one installed from a package. This enabled to develop feature necessitating modification in the components code.</p>
+<p>To do so:
+ * place the repository in the parent repository of Iaso <code>../bluesquare-components/</code>
+ * install the dependency for bluesquare-component by running npm install in its directory
+ * set the environment variable <code>LIVE_COMPONENTS=true</code>
+ * start your docker compose</p>
+<pre><code>cd ..
+git clone git@github.com:BLSQ/bluesquare-components.git
+cd  bluesquare-components
+npm install
+cd ../iaso
+LIVE_COMPONENTS=true docker compose up
+</code></pre>
+<p>This way the page will reload automatically if you make a change to the bluesquare-components code.</p>
+<p>This functionality also works if you launch webpack outside of docker.</p>
+<p>If you encounter any problem, first check that your repo is on the correct branch and the deps are up-to-date</p>
+<h3 id="21-task-worker">21. Task worker<a class="headerlink" href="#21-task-worker" title="Permanent link">#</a></h3>
+<p>In local development, you can run a worker for background tasks by using the command:</p>
+<pre><code>docker compose run iaso manage tasks_worker
+</code></pre>
+<p>Alternatively, you can call the url <code>tasks/run_all</code> which will run all the pending tasks in queue.</p>
+<h3 id="22-customization">22. Customization<a class="headerlink" href="#22-customization" title="Permanent link">#</a></h3>
+<p>You can override default application title, logo and colors using the <code>.env</code> file and specify those variables:</p>
+<pre><code>THEME_PRIMARY_COLOR="&lt;hexa_color&gt;"
+THEME_PRIMARY_BACKGROUND_COLOR="&lt;hexa_color&gt;"
+THEME_SECONDARY_COLOR="&lt;hexa_color&gt;"
+APP_TITLE="&lt;app_title&gt;"
+FAVICON_PATH="&lt;path_in_static_folder&gt;"
+LOGO_PATH="&lt;path_in_static_folder&gt;"
+SHOW_NAME_WITH_LOGO="&lt;'yes' or 'no'&gt;"
+</code></pre>
+<p>Those settings are optional and are using a default value if nothing is provided</p>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+<script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+<script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+<script src="../../../../../extrajs/pdfDownload.js"></script>
+<script src="https://plausible.io/js/script.js"></script>
+<script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script><script>mermaid.initialize({});</script></body>
+</html>

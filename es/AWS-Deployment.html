@@ -1,0 +1,1017 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Cómo se despliega Iaso en AWS - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#como-se-despliega-iaso-en-aws" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Cómo se despliega Iaso en AWS
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../AWS-Deployment.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../fr/AWS-Deployment.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="AWS-Deployment.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plataforma Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="pages/dev/how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#partes-principales" class="md-nav__link">
+    Partes principales
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infraestructura-del-host" class="md-nav__link">
+    Infraestructura del host
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuracion-del-elastic-beanstalk" class="md-nav__link">
+    Configuración del Elastic Beanstalk
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ejecutando-django-3-en-elastic-beanstalk-ami-personalizada" class="md-nav__link">
+    Ejecutando Django 3 en Elastic Beanstalk / AMI personalizada
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#donde-esta-el-codigo" class="md-nav__link">
+    ¿Dónde está el código?
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#servicios-relacionados" class="md-nav__link">
+    Servicios relacionados
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/AWS-Deployment.es.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="como-se-despliega-iaso-en-aws">Cómo se despliega Iaso en AWS<a class="headerlink" href="#como-se-despliega-iaso-en-aws" title="Permanent link">#</a></h1>
+<p>en ElasticBeanstalk + RDS
+<img alt="schema archi iaso.svg" src="../schema%20archi%20iaso.svg" /></p>
+<hr />
+<h2 id="partes-principales">Partes principales<a class="headerlink" href="#partes-principales" title="Permanent link">#</a></h2>
+<ul>
+<li>Creación del entorno HOST donde se desplegará el código de Iaso así como los servicios relacionados</li>
+<li>El despliegue del código en sí y de nuevas versiones</li>
+</ul>
+<hr />
+<h2 id="infraestructura-del-host">Infraestructura del host<a class="headerlink" href="#infraestructura-del-host" title="Permanent link">#</a></h2>
+<p>Esta documentación se refiere al despliegue principal de Iaso, que se realiza en AWS.</p>
+<p>El pilar principal es <em>AWS Elastic beanstalk</em></p>
+<p>Que es una especie de solución mágica de Amazon que vincula varios de sus servicios, maneja la lógica de despliegue, etc...</p>
+<p>En el pasado lo configurábamos a mano, pero ahora nos estamos moviendo hacia tenerlo todo manejado vía Terraform para que esté en código (podemos tener un historial, evitar errores de clic, hacer operaciones complejas, etc...).</p>
+<p>El término técnico para esto es "Provisioning" si quieres buscarlo.</p>
+<h2 id="configuracion-del-elastic-beanstalk">Configuración del Elastic Beanstalk<a class="headerlink" href="#configuracion-del-elastic-beanstalk" title="Permanent link">#</a></h2>
+<p>Ver<br />
+https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html</p>
+<p>Tenemos comandos personalizados y configuración en <a href=".ebextensions/">.ebextensions/</a> y en 
+y en <a href=".platform/">.platform/</a> para extender la configuración de nginx.</p>
+<h2 id="ejecutando-django-3-en-elastic-beanstalk-ami-personalizada">Ejecutando Django 3 en Elastic Beanstalk / AMI personalizada<a class="headerlink" href="#ejecutando-django-3-en-elastic-beanstalk-ami-personalizada" title="Permanent link">#</a></h2>
+<p>Django 3 requiere la versión 2+ de la biblioteca gdal. Lamentablemente, Beanstalk está
+basado en Amazon Linux que contiene una versión desactualizada de GDAL.</p>
+<p>Para solucionar esto, tienes que crear una AMI personalizada para usar en tus entornos Elastic Beanstalk
+y compilar tu propia versión de gdal y sus dependencias.</p>
+<p>Ver la <a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html">documentación de AWS sobre crear y usar una AMI personalizada</a>
+y la <a href="https://docs.djangoproject.com/en/4.1/ref/contrib/gis/install/">documentación de Django sobre compilar las bibliotecas GIS</a></p>
+<p>Se realizó la construcción personalizada de las siguientes bibliotecas:</p>
+<ul>
+<li>geos</li>
+<li>SQLite</li>
+<li>proj</li>
+<li>proj-data</li>
+<li>spatialite</li>
+<li>gdal</li>
+</ul>
+<p>Puedes revisar <code>scripts/create_ami.sh</code> como referencia</p>
+<p>Lee la <a href="https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html">documentación de AWS sobre crear y usar una AMI personalizada</a>
+pero en resumen:</p>
+<ol>
+<li>En EC2 -&gt; AMIs, identifica la AMI del servidor EC2 de Elastic Beanstalk (Ej: Elige una AMI pública en la que python3.9 esté instalado con Amazon Linux 2).</li>
+<li>Selecciona la AMI y lanza una nueva instancia basada en ella. </li>
+<li>Especifica el nombre de la instancia y elige un par de claves.</li>
+<li>No olvides configurar en la sección avanzada:</li>
+</ol>
+<pre><code class="language-yaml">#cloud-config
+  repo_releasever: repository version number
+  repo_upgrade: none
+</code></pre>
+<ol>
+<li>Conéctate vía SSH a la instancia</li>
+<li>Instala las dependencias (ver scripts/create_ami.sh)</li>
+<li>Luego ve a Actions -&gt; Image -&gt; Create Image</li>
+<li>Cuando esté listo, ve a la Configuración de Instancia de Beanstalk y especifica la referencia AMI de la imagen que acabamos de crear.</li>
+</ol>
+<hr />
+<h2 id="donde-esta-el-codigo">¿Dónde está el código?<a class="headerlink" href="#donde-esta-el-codigo" title="Permanent link">#</a></h2>
+<p>Infraestructura y configuración en el repositorio Github
+<a href="https://github.com/BLSQ/terraform-iaso-eb">BLSQ/terraform-iaso-eb</a> Hay buena documentación de Mbayang en la carpeta <code>docs/</code>. La visibilidad está restringida.</p>
+<p>En el repositorio Github <code>BLSQ/iaso</code>:
+* <code>.github</code> Para la información del flujo de trabajo
+* <code>scripts/</code>
+* <code>.ebextension</code> Para los comandos específicos de Elastic beanstalk
+* <code>.platform</code> Sobrescritura de configuración</p>
+<hr />
+<h2 id="servicios-relacionados">Servicios relacionados<a class="headerlink" href="#servicios-relacionados" title="Permanent link">#</a></h2>
+<ul>
+<li>Bucket S3: Para los archivos estáticos y medios subidos por usuarios (en AWS)</li>
+<li>Enketo (en otro AWS Elastic Beanstalk)</li>
+<li>Postgresql RDS (en AWS)</li>
+<li>Servicio de Cola para Worker en segundo plano (en AWS SQS)</li>
+<li>Sentry: manejo de errores y notificaciones (como Saas)</li>
+<li>MailGun (como Saas)</li>
+<li>Route53: redirección DNS (en AWS)</li>
+</ul>
+<hr />
+<p>Dos tipos de entorno en elastic beanstalk:
+* web
+* worker</p>
+<p>Los vinculamos vía una etiqueta "env" en AWS, para poder desplegarlos al mismo tiempo</p>
+<p>Un Entorno Elastic Beanstalk puede contener múltiples "Instancias EC2", que son servidores de máquina virtual. Su número se escala automáticamente según las reglas en elastic beanstalk.
+Usualmente tenemos 1 instancia para Worker y 2 para Web.</p>
+<hr />
+<h1 id="bucket-s3">Bucket S3<a class="headerlink" href="#bucket-s3" title="Permanent link">#</a></h1>
+<ul>
+<li>Estático: Empujar estáticos en ellos para que puedan ser adecuadamente cacheados y CDN (no estoy seguro de que realmente hagamos esto)</li>
+<li>Medios: Almacenar medios subidos por los usuarios: Respuesta de formulario (XML), medios adjuntos a respuesta de formulario (fotos), gpkg, definición de formulario, etc.. </li>
+</ul>
+<p>Los estáticos son legibles por todos.</p>
+<p>Los medios solo son accesibles vía URL firmada que expira después de un lapso de tiempo (15 minutos creo) y que son generadas al vuelo por iaso cuando se necesita.</p>
+<hr />
+<h1 id="cicd">CI/CD<a class="headerlink" href="#cicd" title="Permanent link">#</a></h1>
+<p>El despliegue de nuevas versiones se hace vía Github action.</p>
+<p>Cada cambio en main se despliega automáticamente en el entorno de staging</p>
+<p>El despliegue a otros entornos tiene que ser activado manualmente</p>
+<hr />
+<h3 id="proceso-de-despliegue">Proceso de despliegue<a class="headerlink" href="#proceso-de-despliegue" title="Permanent link">#</a></h3>
+<p>Cómo se despliega una nueva versión de Iaso</p>
+<p>Esta es una vista simplificada, algunos detalles se omiten por claridad</p>
+<ol>
+<li>Un usuario activa el flujo de trabajo de despliegue en github actions (o se activa automáticamente para staging)</li>
+<li>En el worker de github: (código en .github/workflows/deploy.yml)<ol>
+<li>Determinar número de versión. Llamar set_version para configurarlo.</li>
+<li>Construye todo el JS/CSS y otros recursos para el front-end</li>
+<li>Añadirlos al repositorio git</li>
+<li>scripts/eb-deploy.py:<ol>
+<li>Conectar a la API de AWS para obtener todos los <em>entornos beanstalk</em> para el entorno <code>iaso</code>. ej.: <code>staging</code> -&gt; <code>iaso-staging2</code> y <code>iaso-staging2-worker</code></li>
+<li>Para cada entorno beanstalk, activar <code>eb deploy</code> (desde awseb cli):<ol>
+<li>Hacer un archivo zip del contenido del repositorio git (hecho por eb deploy). Incluyendo el asset compilado</li>
+<li>Llamar API ElasticBeanstalk para desplegarlo</li>
+</ol>
+</li>
+</ol>
+</li>
+</ol>
+</li>
+<li>En los servidores Iaso (instancias EC2): Nuestro código/configuración para esto está en el directorio <code>.ebextensions</code> Las acciones marcadas con ¥ son parte de la lógica de Elastic beanstalk<ol>
+<li>El despliegue es activado ¥</li>
+<li>La nueva versión de la app es copiada en <code>/var/app/staging</code> ¥</li>
+<li>Las dependencias en requirements.txt son instaladas ¥</li>
+<li><a href="https://github.com/BLSQ/iaso/blob/main/.ebextensions/50_container_commands.config">Nuestra lógica</a> es ejecutada<ol>
+<li>Las traducciones del servidor son compiladas</li>
+<li><strong>El frontend (JS compilado, imagen, css) es empujado al bucket S3.</strong></li>
+<li><strong>Las migraciones de base de datos son realizadas</strong></li>
+<li>La tabla de caché es creada</li>
+</ol>
+</li>
+<li><code>/var/app/staging</code> es movido a <code>/var/app/current</code> ¥</li>
+<li>Si estos pasos fallan, Elastic beanstalk hará un <em>rollback</em> y revertirá a la versión anterior. Nota: como hacemos manualmente la coincidencia entre worker y web, a veces tenemos el problema de que uno es revertido y el otro no y tenemos un desajuste de versión. A veces también tenemos el problema con migraciones de base de datos incompatibles. ¥</li>
+<li>Enviar una notificación de Slack para notificar del éxito o falla del despliegue de github.</li>
+</ol>
+</li>
+</ol>
+<hr />
+<h1 id="servicios-relacionados-en-mas-detalle">Servicios relacionados en más detalle<a class="headerlink" href="#servicios-relacionados-en-mas-detalle" title="Permanent link">#</a></h1>
+<ul>
+<li>Bucket S3: Para los archivos estáticos y medios subidos por usuarios (en AWS)</li>
+<li>Enketo (en otro AWS Elastic Beanstalk)</li>
+<li>Postgresql RDS (en AWS)</li>
+<li>Servicio de Cola para Worker en segundo plano (en AWS SQS)</li>
+<li>Sentry: manejo de errores y notificaciones (como Saas)</li>
+<li>MailGun (como Saas)</li>
+<li>Route53: redirección DNS (en AWS)</li>
+</ul>
+<hr />
+<h3 id="enketo">Enketo<a class="headerlink" href="#enketo" title="Permanent link">#</a></h3>
+<p>Desplegado por separado, manejado vía Elastic Beanstalk también, vinculado a Iaso vía variable de entorno. Mbayang maneja esto</p>
+<hr />
+<h3 id="aws-sqs">AWS SQS<a class="headerlink" href="#aws-sqs" title="Permanent link">#</a></h3>
+<p>Sistema de cola usado para Worker, ver sección worker en README</p>
+<hr />
+<h3 id="bucket-s3_1">Bucket S3<a class="headerlink" href="#bucket-s3_1" title="Permanent link">#</a></h3>
+<p>S3 ver arriba</p>
+<h1 id="arquitectura-dentro-de-la-vm">Arquitectura dentro de la VM<a class="headerlink" href="#arquitectura-dentro-de-la-vm" title="Permanent link">#</a></h1>
+<p>El código está en <code>/var/app/current</code></p>
+<p>Systemctl lanza el servidor web como la unidad <code>web</code>. Esto se hace vía Gunicorn bajo el usuario web, gunicorn lanza múltiples servidores Django.</p>
+<p>Hay un NGINX frente a gunicorn.
+Lo anterior es manejado automáticamente vía Iaso</p>
+<p>Los logs pueden ser listados dentro de la VM vía <code>journalctl -u web</code></p>
+<p>Tenemos 2 crons (por ahora). Se pueden ver usando <code>systemctl list-timers</code></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "..", "features": ["content.action.edit"], "search": "../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

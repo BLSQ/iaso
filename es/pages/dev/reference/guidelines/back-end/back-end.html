@@ -1,0 +1,1177 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Backend and API Guidelines - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#backend-and-api-guidelines" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Backend and API Guidelines
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../../pages/dev/reference/guidelines/back-end/back-end.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../../fr/pages/dev/reference/guidelines/back-end/back-end.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="back-end.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../../index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plataforma Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#important-considerations" class="md-nav__link">
+    Important considerations
+  </a>
+  
+    <nav class="md-nav" aria-label="Important considerations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#security" class="md-nav__link">
+    Security
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tenancy" class="md-nav__link">
+    Tenancy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-the-broad-lines-adding-a-complete-new-feature-will-consist-of" class="md-nav__link">
+    In the broad lines adding a complete new feature will consist of
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-model-implementation" class="md-nav__link">
+    New Model implementation
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api" class="md-nav__link">
+    API
+  </a>
+  
+    <nav class="md-nav" aria-label="API">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filtering-for-user" class="md-nav__link">
+    Filtering for user
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#permissions" class="md-nav__link">
+    Permissions
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering" class="md-nav__link">
+    Filtering
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#annotation-for-ordering-and-filtering" class="md-nav__link">
+    Annotation for ordering and filtering
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mobile" class="md-nav__link">
+    Mobile
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#csv-and-xls-export" class="md-nav__link">
+    CSV and XLS export
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#softdelete" class="md-nav__link">
+    SoftDelete
+  </a>
+  
+    <nav class="md-nav" aria-label="SoftDelete">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#permissions_1" class="md-nav__link">
+    Permissions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#django-admin" class="md-nav__link">
+    Django Admin
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/guidelines/back-end/back-end.en.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="backend-and-api-guidelines">Backend and API Guidelines<a class="headerlink" href="#backend-and-api-guidelines" title="Permanent link">#</a></h1>
+<h2 id="important-considerations">Important considerations<a class="headerlink" href="#important-considerations" title="Permanent link">#</a></h2>
+<p>Please do a rough design before any implementation and discuss it with the rest of the team. It doesn't need to be too detailed but you should have at least a list of Model, the important fields on it, the security model and what endpoint you will add.</p>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">#</a></h3>
+<p>When Adding New feature that will add Model and API please think about the security model.
+You can start by asking yourself these questions:</p>
+<ol>
+<li>Which user should have access to this?</li>
+<li>How to implement the multi-tenant</li>
+<li>Are new permission needed?</li>
+<li>Is the item listable/readable by user without the permission to implement Filter dropdown. For example users without the Form permission but with the Submission permission can still list Form from the API to be able to filter Instance by Form</li>
+</ol>
+<h3 id="tenancy">Tenancy<a class="headerlink" href="#tenancy" title="Permanent link">#</a></h3>
+<p>Iaso is multi tenant. Tenant are called and represented by the model <code>Account</code>. It represents roughly one client org or country. It also represents the natural limit of right for a user.</p>
+<p>So all new model and API per default should support tenancy. It's kind of annoying  to add it later.</p>
+<p>We have two kind of tenancy, one per Project, one per Account. A Project represent a mobile app, there might be several linked to an account. You will have to consider which want you one to use. In some case it might be both.</p>
+<p>In some case if your new model is linked to existing one it might derive the tenancy from there (for example FormVersion derive their tenancy from Form). </p>
+<p>In practice this will consist on:
+1. adding a ForeignKey to Account or Project on your model.
+2. At creation 
+2. in your ViewSet filtering on the Object in the account (see filtering for user)</p>
+<p>In most case if this an API for the Mobile the tenancy will be per project. But if that's not the case and  you are really not sure, there is nobody to ask and you need to advance, add it on the Account it will be simpler.</p>
+<p>Don't hesitate to ask if you don't understand what tenancy means or how it works.</p>
+<h3 id="in-the-broad-lines-adding-a-complete-new-feature-will-consist-of">In the broad lines adding a complete new feature will consist of<a class="headerlink" href="#in-the-broad-lines-adding-a-complete-new-feature-will-consist-of" title="Permanent link">#</a></h3>
+<ol>
+<li>The model(s): The modelisation in the Database</li>
+<li>The serializer(s): Which decide which field  are returned to the client. But also which field(s) are accepted for creating and modifying object</li>
+<li>The ViewSet(s) which represent the Endpoints (GET PATCH, POST DELETE etc...)</li>
+<li>The routing, tell which url we use. <code>/api/yourmodel</code></li>
+<li>The security model : Who can see and modify what and how.</li>
+</ol>
+<h2 id="new-model-implementation">New Model implementation<a class="headerlink" href="#new-model-implementation" title="Permanent link">#</a></h2>
+<p>Always add the field <code>created_at</code>, <code>updated_at</code>. This allow us the minimum of traceability and is useful in debug.</p>
+<pre><code class="language-python">    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+</code></pre>
+<p>You might need Soft delete (see Soft Delete section)</p>
+<p>Don't forget the tenancy.</p>
+<p>Examples: There is a very simple Model/API example in the directory <code>plugins/tests</code> that you can use as a template.</p>
+<h2 id="api">API<a class="headerlink" href="#api" title="Permanent link">#</a></h2>
+<p>Please use serializers !</p>
+<p>This will allow the API to be autodocumented in the swagger and the browsable API interface. You can check the swagger at /swagger/</p>
+<p>For the ViewSet, always^ inherit  ModelViewSet from iaso.api.common, not the one from DRF !
+This will handle the Pagination that is particular to Django correctly out of the box.</p>
+<p>^ Except in some case obviously but it should be the default</p>
+<p>For the default case you ModelViewSet should be very simple, and you should not have to reimplement <code>def list()</code> and <code>def create()</code> etc... if you properly did the Serializer and inherited from <code>iaso.api.common.ModelViewset</code></p>
+<h3 id="filtering-for-user">Filtering for user<a class="headerlink" href="#filtering-for-user" title="Permanent link">#</a></h3>
+<p>Per default you will want to filter what is viewable by the correctly connected user (at minimum for the tenancy, see relevant section)</p>
+<p>To do so add a <code>get_queryset()</code> method on your ViewSet which will filter the queryset on the user. It's not a bad idea to move the logic of that code directly on your Model queryset by adding a <code>Queryset.for_user(user: User)</code> on your model so we can reuse it on other models. See for example TeamQuerySet.</p>
+<h3 id="permissions">Permissions<a class="headerlink" href="#permissions" title="Permanent link">#</a></h3>
+<p>We use the DRF system with <code>permission_class</code> see DRF Doc. See also <code>plugins/test/api.py</code> for an example.</p>
+<p>By default all the API require to be logged but any user can post GET / POST / PATCH / DELETE so beware of that.</p>
+<p>Further restriction can be added using <code>http_method_names = ["put"]</code> if you want to be extra sure, but that shouldn't be the only check method.</p>
+<p>Do not hesitate to put test to check that the method are effectively restricted to both authorized and unauthenticated user so they are not re-enabled by default.</p>
+<p>If you want to check if an user has a permission there is a HasPermission class in <code>iaso.api.common.py</code>
+TODO : expand section</p>
+<h3 id="filtering">Filtering<a class="headerlink" href="#filtering" title="Permanent link">#</a></h3>
+<p>Set the <code>filter_backends</code> config key in your ViewSet, with per default at least, the backends  <code>filters.OrderingFilter</code>  and <code>DjangoFilterBackend</code></p>
+<pre><code class="language-python">    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+
+    ]
+</code></pre>
+<p>This will allow ordering and filtering on the key present on the model automatically.</p>
+<p>The front dev will push you to include special filter with Javascript case name like <code>FormId</code> or stuff which will require special case in list() because that's what they are used to but in 99% of the case this is not needed and there is already a filter in python case <code>form_id</code>. The normal django operator can also be used <code>__in</code> for list, <code>__gte</code> for <code>&gt;=</code> , <code>iexact</code> to ignore case, etc..</p>
+<p>See the field lookup for the complete reference
+<code>https://docs.djangoproject.com/en/4.1/ref/models/querysets/#field-lookups</code></p>
+<p>All these filters are conveniently listed in the swagger for each endpoint and in the browsable API</p>
+<p>If your model use SoftDelete include the <code>DeletionFilterBackend</code> filter. See the SoftDelete section</p>
+<pre><code>        DeletionFilterBackend,
+</code></pre>
+<p>If you need more control on how fields can be used for ordering and filtering you can respectively use <code>ordering_fields</code> and <code>filterset_fields</code>. See the django-filter and drf doc.</p>
+<p>Frontend expect "big" api to accept a <code>search</code> filter which usually does a <code>icontains</code> on any of the model StringField (e.g. name or description) or related model (e.g the org unit name).</p>
+<p>The <code>filters.OrderingFilter</code> use the <code>?order_by</code> query parameters, multiple field can be specified, separated by <code>,</code>,  <code>-</code> in front of the field can be used to specify to reverse the order</p>
+<h3 id="annotation-for-ordering-and-filtering">Annotation for ordering and filtering<a class="headerlink" href="#annotation-for-ordering-and-filtering" title="Permanent link">#</a></h3>
+<p>In very special case if you need strange manipulation for ordering or filtering,
+adding an annotation on the queryset might help a lot. Since it does all the calculation on the database side, this allows use to add filter on fields that would otherwise not be possible without retrieving a lot of data on the backend. </p>
+<p>You might need to add them in  <code>ordering_fields</code> and <code>filterset_fields</code>. (TODO Olivier : check)</p>
+<h3 id="mobile">Mobile<a class="headerlink" href="#mobile" title="Permanent link">#</a></h3>
+<p>If this API is accessible via mobile, add a separate endpoint for the mobile to use,
+in <code>/api/mobile</code>, even if it is the same as the "regular" <code>web</code> endpoint and that you connect it to the same ViewSet. This allows us flexibility if we have to break compatibility in the future.</p>
+<p>For date in new API endpoint we use the RFC format (2022-03-02 23:34...) that is the default in DRF so there is nothing to be done. Old endpoint might still use the old format in Timestamp.</p>
+<p>In the endpoint for mobile we  always use Timestamp. You can use TimestampField and DateTimestampField in your Serializer for this.</p>
+<p>Take special care when modifying the API used by the mobile, we don't have a complete list,
+but we still have old version of the APP using very old endpoints that newer version don't use anymore.</p>
+<p>For API endpoint that the mobile APP will POST to, you should check with Martin if you may need the decorator <code>@safe_api_import</code> to ensure no data is lost. See <code>/iaso/hat/vector_control/README.md</code></p>
+<h3 id="csv-and-xls-export">CSV and XLS export<a class="headerlink" href="#csv-and-xls-export" title="Permanent link">#</a></h3>
+<p>For data that will be presented as a table, we will want to provide
+CSV and XLS export to the user in nearly all cases. </p>
+<p>We don't use the CSV export provided by DRF for that and use a bit of code that we copy  past and should really be refactored.</p>
+<p>TODO: Expand section</p>
+<h3 id="softdelete">SoftDelete<a class="headerlink" href="#softdelete" title="Permanent link">#</a></h3>
+<p>Soft Delete is a way to mark an Object as deleted without actually deleting it
+from the database. That way we can still show them to user in the interface it
+they choose to and the user can restore it easily.</p>
+<p>We have a standard way to implement it:
+- Have your model inherit from the SoftDelete.
+- This will add the deleted_at field. When the field is null it's not deleted
+ if it contains a data it is deleted.</p>
+<p>In the ViewSet add the filter DeletionFilterBackend.</p>
+<p>Test that you can restore by doing a patch on your row on the <code>deleted_at</code> fields</p>
+<h4 id="permissions_1">Permissions<a class="headerlink" href="#permissions_1" title="Permanent link">#</a></h4>
+<p>if you add a new permission, don't forget to add it in the Frontend, or it will not be displayed properly. See the instruction on the top of <code>menupermissions/models.py</code></p>
+<h3 id="django-admin">Django Admin<a class="headerlink" href="#django-admin" title="Permanent link">#</a></h3>
+<p>If you add New model, add them in the Admin if you don't know which fields or filter to add just add at least the minimum, we can expand it latter.</p>
+<p>Minimum Admin for a Model (BlogPost in this Example), in admin.py</p>
+<pre><code>class BlogPostAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(BlogPost, BlogPostAdmin)
+</code></pre>
+<p>If you want a base to be a mot more fancy:</p>
+<pre><code>    search_fields = (&quot;title&quot;, &quot;content&quot;)
+    list_display = (&quot;title&quot;, &quot;author&quot;, &quot;created_at&quot;, &quot;updated_at&quot;)
+    date_hierarchy = &quot;created_at&quot;
+    list_filter = (&quot;author&quot;, &quot;updated_at&quot;)
+    readonly_fields = (&quot;created_at&quot;, &quot;updated_at&quot;)
+
+</code></pre>
+<h1 id="configuration-settings">Configuration settings<a class="headerlink" href="#configuration-settings" title="Permanent link">#</a></h1>
+<p>We configure the Iaso deployement (the server) via environment flags. So if you add something configurable on the whole server level do it that way. See https://12factor.net/config if your are not familiar with the philosophy. </p>
+<p>Note :There are of course some exceptions and thus some settings are configured in the Database. Notably for the Polio plugins. But please keep that exceptional.</p>
+<p>You can change your own local configuration in the file <code>.env</code>. Do note that if you make any modification in your <code>.env</code> or  in your <code>docker-compose.yml</code> file. You will need to restart the whole docker compose for it to take effect (Ctrl-c your current docker compose and bring it back up with <code>docker compose up</code></p>
+<p>If you add a new Environement variable to allow some configuration:
+1. Do not access the Enviroement variable directly from your python code !
+1. Instead add it as a variable in the <code>settings.py</code>.
+1. Add a comment explaing what this variable does.
+1. Always provide a default value
+1. To allow developer to change the variable locally add it in docker-compose.yml</p>
+<p>Also <a href="https://en.wikipedia.org/wiki/KISS_principle">KISS</a>, the less configuration the better !</p>
+<p>There is no comprehensive documentation of all the configuration settings except what is in settings.py so it's important that you comment it well !</p>
+<h2 id="example">Example<a class="headerlink" href="#example" title="Permanent link">#</a></h2>
+<ol>
+<li><code>settings.py</code></li>
+</ol>
+<pre><code># Application customizations
+APP_TITLE = os.environ.get(&quot;APP_TITLE&quot;, &quot;Iaso&quot;)
+</code></pre>
+<ol>
+<li>Docker-compose</li>
+</ol>
+<pre><code class="language-diff">diff --git a/docker-compose.yml b/docker-compose.yml
+index 057b81e39..49b29ac30 100644
+--- a/docker-compose.yml
++++ b/docker-compose.yml
+@@ -44,6 +44,7 @@ services:
+       THEME_PRIMARY_BACKGROUND_COLOR:
+       FAVICON_PATH:
+       LOGO_PATH:
++      APP_TITLE:
+       SHOW_NAME_WITH_LOGO:
+       RDS_USERNAME: postgres
+       RDS_PASSWORD: postgres
+</code></pre>
+<ol>
+<li>Your python code</li>
+</ol>
+<pre><code>from django.conf import settings
+settings.APP_TITLE
+</code></pre>
+<h1 id="feature-flags">Feature Flags<a class="headerlink" href="#feature-flags" title="Permanent link">#</a></h1>
+<p>Feature flags allow to enable special feature or behaviour for our clients.
+The use case are: certain workflow that are particular to a client use case or feature that are still in development and that we are co-developing with the client.</p>
+<p>Example of feature flag: Enable editing an org unit geography directly via the web map or requiring user to log in into the mobile app to submit.</p>
+<p>We have two kind of flags in iaso: Mobile and Web</p>
+<ol>
+<li>To control how the Mobile application behave. Model <code>FeatureFlag</code> that are linked to <code>Project</code> (there might have multiple Mobile application per account)</li>
+<li>Model <code>AccountFeatureFlag</code> for the whole account. It is mainly used to control the behaviour of the web frontend.</li>
+</ol>
+<p>The list of flags are stored in database tables, to add a new Flag migration are used.</p>
+<p>Usually client can control which Project/Mobile flag they have but not the one on the Account level.</p>
+<p>To toggle a Mobile Feature flag for a client, add it in the dashboard -&gt; Admin -&gt; Projects -&gt; Edit a project -&gt; <code>Options</code>. </p>
+<p>To toggle an Account Feature flag, it is in the django Admin</p>
+<h2 id="adding-a-new-feature-flag-via-a-migration">Adding a new Feature Flag via a Migration<a class="headerlink" href="#adding-a-new-feature-flag-via-a-migration" title="Permanent link">#</a></h2>
+<p>For example a Project Feature Flag</p>
+<ol>
+<li>Create an empty migration:
+  <code>python manage.py makemigrations --empty yourappname</code></li>
+<li>Open the generated migration file, and adapt it to Create the migration.</li>
+<li>It should look like this</li>
+</ol>
+<pre><code class="language-python">def create_feature_flags(apps, schema_editor):
+    FeatureFlag = apps.get_model(&quot;iaso&quot;, &quot;FeatureFlag&quot;)
+    FeatureFlag.objects.create(
+        code=&quot;CHECK_POSITION_FOR_FORMS&quot;,
+        name=&quot;Mobile: Enforce users are within reach of the Org Unit before starting a form.&quot;,
+    )
+
+
+def destroy_feature_flags(apps, schema_editor):
+    FeatureFlag = apps.get_model(&quot;iaso&quot;, &quot;FeatureFlag&quot;)
+    FeatureFlag.objects.filter(code=&quot;CHECK_POSITION_FOR_FORMS&quot;).delete()
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        (&quot;iaso&quot;, &quot;0150_profile_home_page&quot;),
+    ]
+
+    operations = [
+        migrations.RunPython(create_feature_flags, destroy_feature_flags),
+    ]
+</code></pre>
+<ol>
+<li>Run black on it</li>
+<li>Add the file in git</li>
+</ol>
+<p>See https://docs.djangoproject.com/en/4.0/topics/migrations/#data-migrations</p>
+<h2 id="typing-and-annotations">Typing and annotations<a class="headerlink" href="#typing-and-annotations" title="Permanent link">#</a></h2>
+<p>If you use an annotate and mypy complains when using the field. You can add the field on the model using Annotated. for example:</p>
+<pre><code class="language-python">from typing_extensions import Annotated, TypedDict
+
+class LastBudgetAnnotation(TypedDict):
+    budget_last_updated_at: datetime
+
+
+class MonSerializeur()
+    def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
+        if campaign.budget_last_updated_at:
+            return campaign.budget_last_updated_at.strftime(&quot;%Y-%m-%d&quot;)
+
+
+</code></pre>
+<p>Do not use the <code>WithAnnotations</code> from django-stubs. it doesn't work with our setup. I think it's a problem of python 3.8</p>
+<h1 id="glossary">Glossary<a class="headerlink" href="#glossary" title="Permanent link">#</a></h1>
+<ul>
+<li>DRF: Django Rest Framework, the magic framework we use to generate the API</li>
+<li>mypy: Tool used to check the </li>
+<li>ci: continuous integration, it the fact that we launch the test on github on each commit</li>
+<li>There is a Glossary of common Model in the Iaso root Readme. also check it</li>
+</ul>
+<h1 id="faq">FAQ<a class="headerlink" href="#faq" title="Permanent link">#</a></h1>
+<h2 id="i-added-a-new-environement-variable-in-my-env-but-it-is-not-accessible-from-python-or-in-the-settingspy">I added a new environement variable in my .env but it is not accessible from python or in the <code>settings.py</code><a class="headerlink" href="#i-added-a-new-environement-variable-in-my-env-but-it-is-not-accessible-from-python-or-in-the-settingspy" title="Permanent link">#</a></h2>
+<p>The new environment variable need to be listed in the docker-compose.yml</p>
+<h2 id="logging-is-broken">Logging is broken<a class="headerlink" href="#logging-is-broken" title="Permanent link">#</a></h2>
+<p>Symptom : The request are not displayed in the the sever console, or in productoin <code>/var/app/log</code></p>
+<p>Someone probably imported a function from the <code>tests</code> directory, which disable logging. Please don't do that. Move the imported code elsewhere. See https://github.com/BLSQ/iaso/commit/b22b1bcc31a5b05650b675a3c168285103f9bcf8</p>
+<h2 id="in-prod-how-to-see-the-log">in prod how to see the log<a class="headerlink" href="#in-prod-how-to-see-the-log" title="Permanent link">#</a></h2>
+<p><code>journalctl -u web</code></p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../../..", "features": ["content.action.edit"], "search": "../../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

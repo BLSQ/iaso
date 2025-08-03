@@ -1,0 +1,1294 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Using Plugins in Iaso Frontend - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#using-plugins-in-iaso-frontend" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Using Plugins in Iaso Frontend
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../pages/dev/how_to/use_plugins/use_plugins.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../fr/pages/dev/how_to/use_plugins/use_plugins.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="use_plugins.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plataforma Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    How It Works
+  </a>
+  
+    <nav class="md-nav" aria-label="How It Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-discovery" class="md-nav__link">
+    Plugin Discovery
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generated-files" class="md-nav__link">
+    Generated Files
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#module-federation" class="md-nav__link">
+    Module Federation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plugin-structure" class="md-nav__link">
+    Plugin Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-configuration" class="md-nav__link">
+    Plugin Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-properties" class="md-nav__link">
+    Required Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-properties" class="md-nav__link">
+    Optional Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-configuration" class="md-nav__link">
+    Example Configuration
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#development-vs-production" class="md-nav__link">
+    Development vs Production
+  </a>
+  
+    <nav class="md-nav" aria-label="Development vs Production">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#development-mode" class="md-nav__link">
+    Development Mode
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#production-mode" class="md-nav__link">
+    Production Mode
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-plugins-at-runtime" class="md-nav__link">
+    Loading Plugins at Runtime
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#creating-a-new-plugin" class="md-nav__link">
+    Creating a New Plugin
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#translations" class="md-nav__link">
+    Translations
+  </a>
+  
+    <nav class="md-nav" aria-label="Translations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#plugin-specific-translation-details" class="md-nav__link">
+    Plugin-Specific Translation Details
+  </a>
+  
+    <nav class="md-nav" aria-label="Plugin-Specific Translation Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#translation-structure-in-plugins" class="md-nav__link">
+    Translation Structure in Plugins
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adding-translations-to-a-plugin" class="md-nav__link">
+    Adding Translations to a Plugin
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#translation-fallbacks" class="md-nav__link">
+    Translation Fallbacks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/use_plugins/use_plugins.en.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="using-plugins-in-iaso-frontend">Using Plugins in Iaso Frontend<a class="headerlink" href="#using-plugins-in-iaso-frontend" title="Permanent link">#</a></h1>
+<p>Iaso uses Webpack's Module Federation to dynamically load plugins at runtime. This guide explains how the plugin system works and how to create new plugins.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>The plugin system allows you to:
+- Add new features to Iaso without modifying the core codebase
+- Load plugin code dynamically at runtime
+- Share common dependencies between plugins and the main application
+- Extend the UI with new routes and menu items</p>
+<h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">#</a></h2>
+<h3 id="plugin-discovery">Plugin Discovery<a class="headerlink" href="#plugin-discovery" title="Permanent link">#</a></h3>
+<p>During the build process (both development and production), Iaso:</p>
+<ol>
+<li>Scans the <code>/plugins</code> directory for valid plugin folders</li>
+<li>Looks for plugin configuration files (<code>config.tsx</code>)</li>
+<li>Generates combined configuration files</li>
+<li>Makes these files available through Module Federation</li>
+</ol>
+<h3 id="generated-files">Generated Files<a class="headerlink" href="#generated-files" title="Permanent link">#</a></h3>
+<p>The system generates several files in the <code>hat/assets/js/apps/Iaso/bundle/generated/</code> directory:</p>
+<ul>
+<li><code>combinedPluginConfigs.js</code> - Combined configurations from all plugins</li>
+<li><code>pluginKeys.js</code> - List of available plugin identifiers</li>
+</ul>
+<h3 id="module-federation">Module Federation<a class="headerlink" href="#module-federation" title="Permanent link">#</a></h3>
+<p>Iaso exposes these generated files through Webpack's ModuleFederationPlugin:</p>
+<pre><code class="language-javascript">new ModuleFederationPlugin({
+    name: 'IasoModules',
+    filename: 'remoteEntry.js',
+    exposes: {
+        './plugins/configs': combinedConfigPath,
+        './plugins/keys': pluginKeysPath,
+    },
+    shared: {
+        // Shared dependencies between plugins and main app
+        react: { singleton: true, eager: true },
+        'react-dom': { singleton: true, eager: true },
+        'react-intl': { singleton: true, eager: true },
+        '@mui/material': { singleton: true, eager: true },
+        'bluesquare-components': { singleton: true, eager: true },
+    },
+})
+</code></pre>
+<h2 id="plugin-structure">Plugin Structure<a class="headerlink" href="#plugin-structure" title="Permanent link">#</a></h2>
+<p>A valid plugin must follow this structure:</p>
+<pre><code>plugins/
+└── your_plugin/
+    ├── js/
+    │   ├── config.tsx       # Required: Plugin configuration
+    │   ├── index.tsx       # Plugin entry point
+    │   ├── components/     # Plugin components
+    │   └── routes/         # Plugin route components
+    └── README.md          # Plugin documentation
+</code></pre>
+<h3 id="plugin-configuration">Plugin Configuration<a class="headerlink" href="#plugin-configuration" title="Permanent link">#</a></h3>
+<p>The <code>config.tsx</code> file must export a configuration object that matches the <code>Plugin</code> type defined in <code>hat/assets/js/apps/Iaso/plugins/types.ts</code>:</p>
+<pre><code class="language-typescript">import { ElementType } from 'react';
+import { Theme } from '@mui/material/styles';
+import { MenuItem } from '../domains/app/types';
+import {
+    RouteCustom,
+    Redirection as RoutingRedirection,
+} from '../routing/types';
+
+export type Plugin = {
+    routes: RouteCustom[];
+    menu: MenuItem[];
+    translations: Record&lt;string, any&gt;;
+    homeUrl?: string;
+    homeOnline?: ElementType;
+    homeOffline?: ElementType;
+    key?: string;
+    baseUrls: Record&lt;string, string&gt;;
+    paramsConfig: Record&lt;string, string[]&gt;;
+    redirections?: RoutingRedirection[];
+    theme?: Theme;
+    customComponents?: {
+        key: string;
+        component: ElementType;
+    }[];
+};
+
+export type Plugins = {
+    plugins: Plugin[];
+};
+</code></pre>
+<h4 id="required-properties">Required Properties<a class="headerlink" href="#required-properties" title="Permanent link">#</a></h4>
+<ul>
+<li><code>routes</code>: Array of custom routes for the plugin</li>
+<li><code>menu</code>: Array of menu items to be added to the main navigation</li>
+<li><code>translations</code>: Record of translations for the plugin</li>
+<li><code>baseUrls</code>: Record of base URLs for the plugin</li>
+<li><code>paramsConfig</code>: Record of parameter configurations for the plugin</li>
+</ul>
+<h4 id="optional-properties">Optional Properties<a class="headerlink" href="#optional-properties" title="Permanent link">#</a></h4>
+<ul>
+<li><code>homeUrl</code>: URL for the plugin's home page</li>
+<li><code>homeOnline</code>: Component to display when the plugin is online</li>
+<li><code>homeOffline</code>: Component to display when the plugin is offline</li>
+<li><code>key</code>: Unique identifier for the plugin</li>
+<li><code>redirections</code>: Array of routing redirections</li>
+<li><code>theme</code>: Custom theme for the plugin</li>
+<li><code>customComponents</code>: Array of custom components to be registered</li>
+</ul>
+<h4 id="example-configuration">Example Configuration<a class="headerlink" href="#example-configuration" title="Permanent link">#</a></h4>
+<pre><code class="language-typescript">// js/config.tsx
+import React from 'react';
+import MyPluginComponent from './components/MyPluginComponent';
+import MyPluginHome from './components/MyPluginHome';
+
+export default {
+    routes: [
+        {
+            path: '/my-plugin',
+            component: MyPluginComponent,
+            permissions: ['plugin_access'],
+        },
+    ],
+    menu: [
+        {
+            label: 'My Plugin',
+            icon: 'plugin',
+            path: '/my-plugin',
+            permissions: ['plugin_access'],
+            subMenu: [
+                {
+                    label: 'Sub Feature',
+                    path: '/my-plugin/sub-feature',
+                    permissions: ['sub_feature_access'],
+                },
+            ],
+        },
+    ],
+    translations: {
+        en: {
+            'myPlugin.title': 'My Plugin',
+            'myPlugin.description': 'This is my plugin',
+        },
+        fr: {
+            'myPlugin.title': 'Mon Plugin',
+            'myPlugin.description': 'C\'est mon plugin',
+        },
+    },
+    homeUrl: '/my-plugin',
+    homeOnline: MyPluginHome,
+    key: 'my-plugin',
+    baseUrls: {
+        api: '/api/my-plugin',
+    },
+    paramsConfig: {
+        'my-plugin': ['id', 'type'],
+    },
+    redirections: [
+        {
+            from: '/old-path',
+            to: '/my-plugin',
+        },
+    ],
+    customComponents: [
+        {
+            key: 'myCustomComponent',
+            component: MyCustomComponent,
+        },
+    ],
+};
+</code></pre>
+<h2 id="development-vs-production">Development vs Production<a class="headerlink" href="#development-vs-production" title="Permanent link">#</a></h2>
+<h3 id="development-mode">Development Mode<a class="headerlink" href="#development-mode" title="Permanent link">#</a></h3>
+<p>In development (<code>webpack.dev.js</code>):
+- Files are generated on-the-fly when changes are detected
+- Hot Module Replacement (HMR) is enabled for quick development
+- Source maps are available for debugging
+- Plugin changes are automatically detected and reloaded</p>
+<h3 id="production-mode">Production Mode<a class="headerlink" href="#production-mode" title="Permanent link">#</a></h3>
+<p>In production (<code>webpack.prod.js</code>):
+- Files are generated once during the build process
+- Code is minified and optimized
+- Dead code elimination is performed
+- Source maps are optional (configurable)</p>
+<h2 id="loading-plugins-at-runtime">Loading Plugins at Runtime<a class="headerlink" href="#loading-plugins-at-runtime" title="Permanent link">#</a></h2>
+<p>The main application:
+1. Loads the plugin keys from <code>IasoModules/plugins/keys</code>
+2. Loads configurations from <code>IasoModules/plugins/configs</code>
+3. Registers plugin routes in the router
+4. Adds plugin menu items to the navigation
+5. Initializes plugin components and themes</p>
+<h2 id="creating-a-new-plugin">Creating a New Plugin<a class="headerlink" href="#creating-a-new-plugin" title="Permanent link">#</a></h2>
+<p>Quick start guide:</p>
+<ol>
+<li>
+<p>Create a new directory in the plugins folder:
+   <code>bash
+   mkdir -p plugins/my-plugin/js</code></p>
+</li>
+<li>
+<p>Create the basic file structure:
+   <code>bash
+   cd plugins/my-plugin
+   touch js/config.tsx js/index.tsx README.md</code></p>
+</li>
+<li>
+<p>Initialize the plugin configuration:
+   ```typescript
+   // js/config.tsx
+   import React from 'react';
+   import MyPluginComponent from './components/MyPluginComponent';</p>
+</li>
+</ol>
+<p>export default {
+       routes: [
+           {
+               path: '/my-plugin',
+               component: MyPluginComponent,
+               permissions: ['plugin_access'],
+           },
+       ],
+       menu: [
+           {
+               label: 'My Plugin',
+               icon: 'plugin',
+               path: '/my-plugin',
+               permissions: ['plugin_access'],
+           },
+       ],
+       translations: {
+           en: {
+               'myPlugin.title': 'My Plugin',
+               'myPlugin.description': 'This is my plugin',
+           },
+           fr: {
+               'myPlugin.title': 'Mon Plugin',
+               'myPlugin.description': 'C\'est mon plugin',
+           },
+       },
+       baseUrls: {
+           api: '/api/my-plugin',
+       },
+       paramsConfig: {
+           'my-plugin': ['id', 'type'],
+       },
+   };
+   ```</p>
+<ol>
+<li>Add your plugin's main component:
+   ```typescript
+   // js/index.tsx
+   import React from 'react';</li>
+</ol>
+<p>const MyPlugin: React.FC = () =&gt; {
+       return <div>My Plugin Content</div>;
+   };</p>
+<p>export default MyPlugin;
+   ```</p>
+<ol>
+<li>Document your plugin:
+   ```markdown
+   # My Plugin</li>
+</ol>
+<p>Description of what your plugin does.</p>
+<p>## Features
+   - Feature 1
+   - Feature 2</p>
+<p>## Required Permissions
+   - plugin_access</p>
+<p>## Configuration
+   Any specific configuration needed.
+   ```</p>
+<h2 id="translations">Translations<a class="headerlink" href="#translations" title="Permanent link">#</a></h2>
+<p>The plugin system includes support for translations. For a comprehensive guide on the translation system, see <a href="../use_tranlations/use_translations.html">Using Translations in Iaso Frontend</a>.</p>
+<h3 id="plugin-specific-translation-details">Plugin-Specific Translation Details<a class="headerlink" href="#plugin-specific-translation-details" title="Permanent link">#</a></h3>
+<h4 id="translation-structure-in-plugins">Translation Structure in Plugins<a class="headerlink" href="#translation-structure-in-plugins" title="Permanent link">#</a></h4>
+<p>A valid plugin with translations should follow this structure:</p>
+<pre><code>plugins/
+└── your_plugin/
+    ├── js/
+    │   ├── config.tsx       # Required: Plugin configuration
+    │   ├── index.tsx       # Plugin entry point
+    │   ├── components/     # Plugin components
+    │   ├── routes/         # Plugin route components
+    │   └── src/
+    │       └── constants/
+    │           └── translations/
+    │               ├── en.json  # English translations (required)
+    │               ├── fr.json  # French translations (optional)
+    │               └── ...      # Other language translations
+    └── README.md          # Plugin documentation
+</code></pre>
+<h4 id="adding-translations-to-a-plugin">Adding Translations to a Plugin<a class="headerlink" href="#adding-translations-to-a-plugin" title="Permanent link">#</a></h4>
+<p>To add translations to your plugin:
+1. Create a <code>js/src/constants/translations</code> directory in your plugin
+2. Add language files (e.g., <code>en.json</code>, <code>fr.json</code>)
+3. Structure your translations as a flat object with dot-notation keys:</p>
+<pre><code class="language-json">{
+    &quot;myPlugin.title&quot;: &quot;My Plugin Title&quot;,
+    &quot;myPlugin.description&quot;: &quot;Plugin description&quot;
+}
+</code></pre>
+<ol>
+<li>Make sure to include at least an English translation file (<code>en.json</code>) as it will be used as a fallback for other languages</li>
+</ol>
+<h4 id="translation-fallbacks">Translation Fallbacks<a class="headerlink" href="#translation-fallbacks" title="Permanent link">#</a></h4>
+<p>The system uses a fallback mechanism to ensure all strings are translated:
+1. If a translation is missing for a specific language, the system will use the English translation
+2. If the English translation is also missing, the system will use the key itself
+3. Warnings will be displayed in the console during build when fallbacks are used</p>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

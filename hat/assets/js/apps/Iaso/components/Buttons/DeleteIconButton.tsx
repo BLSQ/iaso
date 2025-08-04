@@ -13,13 +13,13 @@ const messages = defineMessages({
 type Props = {
     onClick: () => void;
     message?: IntlMessage;
-    color: string;
+    color?: string;
 };
 
 export const DeleteIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
-    color,
+    color = 'action',
 }) => {
     return (
         <IconButton

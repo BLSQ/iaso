@@ -32,7 +32,7 @@ export const getRangeValues = (
 };
 export const getThresHoldLabels = (
     scaleThreshold?: ScaleThreshold,
-    unit?: string,
+    unit: string = '%',
 ): string[] => {
     const domain = scaleThreshold?.domain ?? [];
     const labels = domain.map((value, index, array) => {
@@ -45,9 +45,5 @@ export const getThresHoldLabels = (
         labels.push(`> ${domain[domain.length - 1]}`);
     }
 
-    if (unit) {
-        return labels.map(l => `${l}${unit}`);
-    } else {
-        return labels;
-    }
+    return unit ? labels.map(l => `${l}${unit}`) : labels;
 };

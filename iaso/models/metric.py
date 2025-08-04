@@ -1,9 +1,14 @@
+from enum import Enum
+
 from django.db import models
 
 from iaso.models import OrgUnit
 
 
-LEGEND_TYPES = ["threshold", "linear", "ordinal"]
+class LegendType(Enum):
+    THRESHOLD = "threshold"
+    LINEAR = "linear"
+    ORDINAL = "ordinal"
 
 
 class MetricType(models.Model):
@@ -22,7 +27,11 @@ class MetricType(models.Model):
     unit_symbol = models.CharField(max_length=255, blank=True)
     category = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
-    legend_type = models.CharField(choices=[(t, t) for t in LEGEND_TYPES], max_length=40, default="threshold")
+    legend_type = models.CharField(
+        choices=[(tag.value, tag.value) for tag in LegendType],
+        max_length=40,
+        default=LegendType.THRESHOLD.value,
+    )
     legend_config = models.JSONField(blank=True, default=dict)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -39,8 +48,8 @@ class MetricValue(models.Model):
     metric_type = models.ForeignKey(MetricType, on_delete=models.PROTECT)
     org_unit = models.ForeignKey(OrgUnit, null=True, blank=True, on_delete=models.PROTECT)
     year = models.IntegerField(null=True, blank=True)
-    value = models.FloatField(null=True)
-    string_value = models.TextField(null=True)
+    value = models.FloatField(null=True, blank=True)
+    string_value = models.TextField(blank=True, default="")
 
     def __str__(self):
         return "%s %s %s %s" % (self.metric_type, self.org_unit, self.year, self.value)

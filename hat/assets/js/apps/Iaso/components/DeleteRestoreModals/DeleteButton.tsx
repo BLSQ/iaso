@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Button } from '@mui/material';
+import { Button, SxProps } from '@mui/material';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 
@@ -15,7 +15,7 @@ type Props = {
     message?: IntlMessage;
     variant?: 'text' | 'outlined' | 'contained';
     size?: 'small' | 'medium' | 'large';
-    sx?: object;
+    sx?: SxProps;
 };
 
 export const DeleteButton: FunctionComponent<Props> = ({

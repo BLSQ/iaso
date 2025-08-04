@@ -5,47 +5,58 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0337_featureflag_category_featureflag_is_dangerous_and_more'),
+        ("iaso", "0337_featureflag_category_featureflag_is_dangerous_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MetricType',
+            name="MetricType",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255)),
-                ('code', models.CharField(max_length=255)),
-                ('description', models.TextField(blank=True)),
-                ('source', models.CharField(blank=True, max_length=255)),
-                ('units', models.CharField(blank=True, max_length=255)),
-                ('unit_symbol', models.CharField(blank=True, max_length=255)),
-                ('category', models.CharField(blank=True, max_length=255)),
-                ('comments', models.TextField(blank=True)),
-                ('legend_type', models.CharField(choices=[('threshold', 'threshold'), ('linear', 'linear'), ('ordinal', 'ordinal')], default='threshold', max_length=40)),
-                ('legend_config', models.JSONField(blank=True, default=dict)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('account', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='iaso.account')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("code", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("source", models.CharField(blank=True, max_length=255)),
+                ("units", models.CharField(blank=True, max_length=255)),
+                ("unit_symbol", models.CharField(blank=True, max_length=255)),
+                ("category", models.CharField(blank=True, max_length=255)),
+                ("comments", models.TextField(blank=True)),
+                (
+                    "legend_type",
+                    models.CharField(
+                        choices=[("threshold", "threshold"), ("linear", "linear"), ("ordinal", "ordinal")],
+                        default="threshold",
+                        max_length=40,
+                    ),
+                ),
+                ("legend_config", models.JSONField(blank=True, default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
             ],
             options={
-                'ordering': ['id'],
-                'unique_together': {('account', 'code')},
+                "ordering": ["id"],
+                "unique_together": {("account", "code")},
             },
         ),
         migrations.CreateModel(
-            name='MetricValue',
+            name="MetricValue",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('year', models.IntegerField(blank=True, null=True)),
-                ('value', models.FloatField(blank=True, null=True)),
-                ('string_value', models.TextField(blank=True, default='')),
-                ('metric_type', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='iaso.metrictype')),
-                ('org_unit', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='iaso.orgunit')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("year", models.IntegerField(blank=True, null=True)),
+                ("value", models.FloatField(blank=True, null=True)),
+                ("string_value", models.TextField(blank=True, default="")),
+                ("metric_type", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.metrictype")),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit"
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('metric_type', 'org_unit', 'year')},
+                "unique_together": {("metric_type", "org_unit", "year")},
             },
         ),
     ]

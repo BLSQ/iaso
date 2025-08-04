@@ -25,6 +25,22 @@ class JsonLogicTests(TestCase):
         querySet = MetricValue.objects.filter(q)
         self.assertEqual(str(querySet.query), expectedQuerySet)
 
+    def test_jsonlogic_to_exists_q_clauses__simple(self) -> None:
+        """Test a simple JsonLogic query to ensure it returns a Q object."""
+        filters = {"!=": [{"var": 22}, 1]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE NOT (EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1.0) LIMIT 1))'
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+        print(q)
+        querySet = MetricValue.objects.filter(q)
+        print(f"raw {querySet.raw}")
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
     def test_jsonlogic_to_exists_q_clauses__simple_string_value(self) -> None:
         """Test a simple JsonLogic query to ensure it returns a Q object."""
         filters = {"==": [{"var": 22}, "coucou"]}

@@ -409,7 +409,6 @@ def jsonlogic_to_exists_q_clauses(
     :param group_by_field_name: The name of the field used to group the entities in the Exists clause.
     :return: A Django Q object.
     """
-    print(f"jsonlogic_to_exists_q_clauses: {jsonlogic}")
     if "and" in jsonlogic:
         sub_query = Q()
         for lookup in jsonlogic["and"]:

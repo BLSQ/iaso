@@ -16,11 +16,13 @@ ABOVE_SCORE_DISPLAY = 50
 # CREATE EXTENSION fuzzystrmatch;
 
 
-def _build_query(params):
+def _build_query(params, start_id, end_id):
     reference_form_fields = params.get("fields", [])
+
     custom_params = params.get("parameters", {})
     levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
     above_score_display = custom_params.get("above_score_display", ABOVE_SCORE_DISPLAY)
+
     n = len(reference_form_fields)
     fc_arr = []
     query_params = []
@@ -128,48 +130,36 @@ def _build_query(params):
                 query_params.extend([f_name, f_name, f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
-    query_params = [params.get("entity_type_id")] + query_params + [above_score_display]
+    query_params = [params.get("entity_type_id"), start_id, end_id] + query_params + [above_score_display]
 
     return (
         query_params,
         f"""
-    /*
-    A materialized CTE is computed and stored temporarily at the beginning of the query execution.
-    Without MATERIALIZED, PostgreSQL might execute the CTE multiple times.
-    */
-    WITH filtered_entities AS MATERIALIZED (
+    WITH filtered_entities AS (
         SELECT id, attributes_id
         FROM iaso_entity
         WHERE entity_type_id = %s AND deleted_at IS NULL
+        ORDER BY id
     ),
-    /*
-    With MATERIALIZED, each entity's JSON should be extracted exactly once.
-    `n` entities × JSON size = predictable memory footprint.
-    */
-    entity_instances_json AS MATERIALIZED (
-        SELECT
-            e.id AS entity_id,
-            i.json
-        FROM filtered_entities AS e
-        JOIN iaso_instance AS i ON e.attributes_id = i.id
+    entity1_batch AS (
+        SELECT id, attributes_id
+        FROM filtered_entities
+        WHERE id BETWEEN %s AND %s
     ),
-    /*
-    Pre-filter pairs before expensive calculations.
-    */
-    candidate_pairs AS (
+    entity_pairs AS (
         SELECT
-            e1.entity_id AS entity_id1,
-            e2.entity_id AS entity_id2,
-            e1.json AS json1,
-            e2.json AS json2
-        FROM entity_instances_json AS e1
-        CROSS JOIN entity_instances_json AS e2
-        WHERE e1.entity_id > e2.entity_id
-        AND NOT EXISTS (
+            entity1.id AS entity_id1,
+            entity2.id AS entity_id2,
+            ({fields_comparison}) / NULLIF({n}, 0) * 100 AS raw_score
+        FROM entity1_batch AS entity1
+        JOIN filtered_entities AS entity2 ON entity1.id > entity2.id
+        JOIN iaso_instance AS instance1 ON entity1.attributes_id = instance1.id
+        JOIN iaso_instance AS instance2 ON entity2.attributes_id = instance2.id
+        WHERE NOT EXISTS (
             SELECT 1
-            FROM iaso_entityduplicate d
-            WHERE d.entity1_id = e1.entity_id
-              AND d.entity2_id = e2.entity_id
+            FROM iaso_entityduplicate AS d
+            WHERE d.entity1_id = entity1.id
+              AND d.entity2_id = entity2.id
         )
     ),
     scored_pairs AS (
@@ -178,22 +168,15 @@ def _build_query(params):
             entity_id2,
             CAST(
                 GREATEST(
-                    LEAST(
-                        COALESCE(
-                            ({fields_comparison.replace("instance1.json", "json1").replace("instance2.json", "json2")}) / NULLIF({n}, 0) * 100,
-                            0
-                        ),
-                        100
-                    ),
+                    LEAST(COALESCE(raw_score, 0), 100),
                     0
                 ) AS SMALLINT
             ) AS score
-        FROM candidate_pairs
+        FROM entity_pairs
     )
-    SELECT entity_id1, entity_id2, score
+    SELECT *
     FROM scored_pairs
-    WHERE score > %s
-    ORDER BY score DESC;
+    WHERE score > %s;
     """,
     )
 
@@ -210,30 +193,51 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
 
         cursor = connection.cursor()
         potential_duplicates = []
-        try:
-            the_params, the_query = _build_query(params)
+        batch_size = 100
 
-            # Log the generated query and parameters just before execution
-            task.report_progress_and_stop_if_killed(
-                progress_message="=== SQL Query ===\n"
-                + the_query
-                + "\n=== Parameters ===\n"
-                + str(the_params)
-                + "\n=== End Query ===",
+        try:
+            cursor.execute(
+                """
+                SELECT MIN(id), MAX(id), COUNT(*)
+                FROM iaso_entity 
+                WHERE entity_type_id = %s AND deleted_at IS NULL
+            """,
+                [params.get("entity_type_id")],
             )
 
-            cursor.execute(the_query, the_params)
+            min_id, max_id, total_entities = cursor.fetchone()
 
-            while True:
-                # We can use a large batch size here since the results are lightweight
-                # (just 3 fields: entity1_id, entity2_id, score).
-                records = cursor.fetchmany(size=1000)
+            if not min_id or total_entities == 0:
+                task.report_progress_and_stop_if_killed(progress_message="No entities found")
+                return potential_duplicates
 
-                if not records:
-                    break
+            batch_num = 0
+            current_id = min_id
 
-                for record in records:
+            while current_id <= max_id:
+                batch_num += 1
+                batch_end_id = min(current_id + batch_size - 1, max_id)
+
+                the_params, the_query = _build_query(params, current_id, batch_end_id)
+
+                task.report_progress_and_stop_if_killed(
+                    progress_message=(
+                        f"Processing batch {batch_num}: entities #{current_id} to #{batch_end_id}\n"
+                        "=== SQL Query ===\n"
+                        f"{the_query}"
+                        "\n=== Parameters ===\n"
+                        f"{the_params}"
+                        "\n=== End Query ==="
+                    )
+                )
+
+                cursor.execute(the_query, the_params)
+
+                for record in cursor.fetchall():
                     potential_duplicates.append(PotentialDuplicate(record[0], record[1], record[2]))
+
+                current_id = batch_end_id + 1  # Move to the next batch.
+
         finally:
             cursor.close()
 

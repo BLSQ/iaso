@@ -5,7 +5,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("iaso", "0335_alter_entityduplicateanalyzis_algorithm"),
+        ("iaso", "0337_featureflag_category_featureflag_is_dangerous_and_more"),
     ]
 
     operations = [

@@ -1,11 +1,12 @@
 import React, { ReactElement, useMemo } from 'react';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import { Box, Chip, Switch, Tooltip } from '@mui/material';
+import { Box, Chip, Switch } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
+import { FeatureFlagToggleCell } from './components/FeatureFlagsToggleCell';
+import { FeatureFlagTooltipCell } from './components/FeatureFlagTooltipCell';
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag } from './types/featureFlag';
@@ -88,6 +89,7 @@ export const useColumns = (
 
 export const useFeatureFlagColumns = (
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
+    toggleFeatureGroup: (group: string) => void,
     featureFlagsValues: (string | number)[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
@@ -107,18 +109,22 @@ export const useFeatureFlagColumns = (
                               `${settings.row.original.code.toLowerCase()}_tooltip`
                           ]
                         : settings.row.original.name;
-                    return (
-                        <Box style={{ cursor: 'pointer' }}>
-                            <Tooltip
-                                title={formatMessage(title)}
-                                disableInteractive={false}
-                                leaveDelay={500}
-                                placement="left-start"
-                                arrow
-                            >
-                                <HelpOutlineIcon color="primary" />
-                            </Tooltip>
-                        </Box>
+                    return !settings.row.original.group ? (
+                        <FeatureFlagTooltipCell
+                            title={formatMessage(title)}
+                            iconVariant={
+                                settings.row.original.is_dangerous
+                                    ? 'warning'
+                                    : 'info'
+                            }
+                        />
+                    ) : (
+                        <FeatureFlagToggleCell
+                            collapsed={settings.row.original.collapsed}
+                            onToggle={() =>
+                                toggleFeatureGroup(settings.row.original.code)
+                            }
+                        />
                     );
                 },
             },
@@ -130,6 +136,17 @@ export const useFeatureFlagColumns = (
                 width: 250,
                 align: 'left',
                 Cell: settings => {
+                    if (settings.row.original.group) {
+                        return (
+                            <strong>
+                                {formatMessage(
+                                    MESSAGES[
+                                        `featureFlag_${settings.row.original.code}`
+                                    ],
+                                )}
+                            </strong>
+                        );
+                    }
                     return settings.row.original.name;
                 },
             },
@@ -139,7 +156,7 @@ export const useFeatureFlagColumns = (
                 accessor: 'code',
                 sortable: false,
                 Cell: settings => {
-                    return (
+                    return !settings.row.original.group ? (
                         <Switch
                             data-test="featureFlag-checkbox"
                             id={`featureFlag-checkbox-${settings.row.original.id}`}
@@ -157,9 +174,11 @@ export const useFeatureFlagColumns = (
                             name={settings.row.original.id}
                             color="primary"
                         />
+                    ) : (
+                        ''
                     );
                 },
             },
         ];
-    }, [featureFlagsValues, formatMessage, setFeatureFlag]);
+    }, [featureFlagsValues, formatMessage, setFeatureFlag, toggleFeatureGroup]);
 };

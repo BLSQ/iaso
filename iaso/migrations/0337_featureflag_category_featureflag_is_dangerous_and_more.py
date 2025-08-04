@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0335_alter_entityduplicateanalyzis_algorithm"),
+        ("iaso", "0336_merge_20250731_0902"),
     ]
 
     def set_feature_flag_category_and_is_dangerous(apps, schema_editor):

@@ -1,41 +1,48 @@
-import { Theme } from '@mui/material';
 import React, { FunctionComponent, useContext } from 'react';
+import { Box, Theme } from '@mui/material';
 
-import { makeStyles } from '@mui/styles';
 import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
 import { LogoSvg } from './LogoSvg';
 
-const useStyles = makeStyles((theme: Theme) => ({
+const styles = {
     text: {
         fontFamily: '"DINAlternate-Bold", "DIN Alternate", sans-serif',
         fontSize: 23,
-        marginLeft: theme.spacing(2),
     },
-}));
+};
 
 export const Logo: FunctionComponent = () => {
     const { LOGO_PATH, APP_TITLE, SHOW_NAME_WITH_LOGO } =
         useContext(ThemeConfigContext);
-    const classes = useStyles();
     const showAppName = SHOW_NAME_WITH_LOGO === 'yes';
-    if (LOGO_PATH && APP_TITLE !== 'Iaso') {
-        return (
-            <>
-                <img
-                    alt="logo"
-                    src={`${window.STATIC_URL}${LOGO_PATH}`}
-                    style={{ maxHeight: '50px', maxWidth: '200px' }}
-                />
-                {showAppName && (
-                    <span className={classes.text}>{APP_TITLE}</span>
-                )}
-            </>
+
+    let logoComponent: React.ReactNode = null;
+    if (APP_TITLE === 'Iaso') {
+        logoComponent = <LogoSvg />;
+    } else if (LOGO_PATH) {
+        logoComponent = (
+            <img
+                alt="logo"
+                src={`${window.STATIC_URL}${LOGO_PATH}`}
+                style={{ maxHeight: '50px', maxWidth: '200px' }}
+            />
         );
     }
+
     return (
         <>
-            <LogoSvg />
-            <span className={classes.text}>Iaso</span>
+            {logoComponent}
+            {showAppName && (
+                <Box
+                    component="span"
+                    sx={(theme: Theme) => ({
+                        ...styles.text,
+                        marginLeft: logoComponent ? theme.spacing(2) : 0,
+                    })}
+                >
+                    {APP_TITLE}
+                </Box>
+            )}
         </>
     );
 };

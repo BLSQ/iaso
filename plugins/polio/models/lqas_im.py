@@ -11,7 +11,6 @@ class LqasBaseModel(models.Model):
 
     class Meta:
         abstract = True
-        unique_together = [("round", "subactivity")]
 
     def clean(self):
         """Custom validation to ensure subactivity belongs to the same round"""
@@ -39,7 +38,6 @@ class LqasDistrictBaseModel(LqasBaseModel):
 
     class Meta(LqasBaseModel.Meta):
         abstract = True
-        unique_together = [("round", "subactivity", "district")]
 
     def __str__(self):
         if self.subactivity:
@@ -68,16 +66,41 @@ class LqasActivityStats(LqasBaseModel):
     class Meta(LqasBaseModel.Meta):
         verbose_name = _("LQAS Activity Statistics")
         verbose_name_plural = _("LQAS Activity Statistics")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["round", "subactivity"],
+                name="unique_lqasactivitystats_round_subactivity",
+                condition=models.Q(subactivity__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=["round"],
+                name="unique_lqasactivitystats_round_no_subactivity",
+                condition=models.Q(subactivity__isnull=True),
+            ),
+        ]
 
 
 class LqasEntry(LqasDistrictBaseModel):
     total_children_fmd = models.IntegerField()
     total_children_checked = models.IntegerField()
     total_sites_visited = models.IntegerField()
+    status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
 
     class Meta(LqasDistrictBaseModel.Meta):
         verbose_name = _("LQAS Entry")
         verbose_name_plural = _("LQAS Entries")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["round", "subactivity", "district"],
+                name="unique_lqasentry_round_subactivity_district",
+                condition=models.Q(subactivity__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=["round", "district"],
+                name="unique_lqasentry_round_district_no_subactivity",
+                condition=models.Q(subactivity__isnull=True),
+            ),
+        ]
 
 
 class LqasCareGiverStats(models.Model):
@@ -114,6 +137,18 @@ class LqasNoMarkStats(LqasBaseModel):
     class Meta(LqasBaseModel.Meta):
         verbose_name = _("LQAS No Finger Mark Statistics")
         verbose_name_plural = _("LQAS No Finger Mark Statistics")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["round", "subactivity"],
+                name="unique_lqasnomarkstats_round_subactivity",
+                condition=models.Q(subactivity__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=["round"],
+                name="unique_lqasnomarkstats_round_no_subactivity",
+                condition=models.Q(subactivity__isnull=True),
+            ),
+        ]
 
 
 class LqasAbsenceStats(LqasBaseModel):
@@ -139,3 +174,15 @@ class LqasAbsenceStats(LqasBaseModel):
     class Meta(LqasBaseModel.Meta):
         verbose_name = _("LQAS Absent Children Statistics")
         verbose_name_plural = _("LQAS Absent Children Statistics")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["round", "subactivity"],
+                name="unique_lqasabsencestats_round_subactivity",
+                condition=models.Q(subactivity__isnull=False),
+            ),
+            models.UniqueConstraint(
+                fields=["round"],
+                name="unique_lqasabsencestats_round_no_subactivity",
+                condition=models.Q(subactivity__isnull=True),
+            ),
+        ]

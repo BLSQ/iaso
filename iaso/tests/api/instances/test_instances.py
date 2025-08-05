@@ -1033,7 +1033,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(10):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )

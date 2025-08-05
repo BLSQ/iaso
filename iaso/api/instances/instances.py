@@ -193,8 +193,12 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         request = self.request
-        queryset: InstanceQuerySet = Instance.objects.order_by("-id")
-        queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
+        queryset: InstanceQuerySet = (
+            Instance.objects.order_by("-id")
+            .filter_for_user(request.user)
+            .filter_on_user_projects(user=request.user)
+            .select_related("form", "created_by", "last_modified_by")
+        )
         return queryset
 
     def _get_filtered_attachments_queryset(self, request):

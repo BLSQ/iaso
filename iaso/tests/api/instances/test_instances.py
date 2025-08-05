@@ -730,7 +730,8 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.client.force_authenticate(self.yoda)
         json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
-        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)

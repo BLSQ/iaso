@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-08 09:46+0000\n"
+"POT-Creation-Date: 2025-08-05 20:37+0000\n"
 "PO-Revision-Date: 2025-02-05 14:43+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,607 +18,676 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/campaigns.py:179
 msgid "Round {} ended"
 msgstr "Round {} terminé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/campaigns.py:181
 msgid "Round {} started"
 msgstr "Round {} commencé"
 
-#: plugins/polio/api/campaigns/campaigns.py
+#: plugins/polio/api/campaigns/campaigns.py:182
 msgid "Preparing"
 msgstr "Préparation"
 
-#: plugins/polio/api/chronogram/filters.py
+#: plugins/polio/api/chronogram/filters.py:48
 msgid "Campaigns"
 msgstr "Campagnes"
 
-#: plugins/polio/api/chronogram/filters.py
-#: plugins/polio/api/notifications/filters.py
+#: plugins/polio/api/chronogram/filters.py:51
+#: plugins/polio/api/notifications/filters.py:20
 msgid "Country"
 msgstr "Pays"
 
-#: plugins/polio/api/chronogram/filters.py
+#: plugins/polio/api/chronogram/filters.py:53
 msgid "On time"
 msgstr "À temps"
 
-#: plugins/polio/api/chronogram/filters.py plugins/polio/budget/filters.py
+#: plugins/polio/api/chronogram/filters.py:55
+#: plugins/polio/budget/filters.py:16
 msgid "Search"
 msgstr "Recherche"
 
-#: plugins/polio/api/chronogram/filters.py
+#: plugins/polio/api/chronogram/filters.py:58
+#: plugins/polio/api/chronogram/filters.py:74
 msgid "Created at greater than or equal to"
 msgstr "Créé à une date supérieure ou égale à"
 
-#: plugins/polio/api/chronogram/filters.py
+#: plugins/polio/api/chronogram/filters.py:60
+#: plugins/polio/api/chronogram/filters.py:76
 msgid "Power BI limit"
 msgstr "Limite Power BI"
 
-#: plugins/polio/api/dashboards/vaccine_stock_history.py
+#: plugins/polio/api/dashboards/vaccine_stock_history.py:19
 msgid "Vaccine"
 msgstr "Vaccin"
 
-#: plugins/polio/api/dashboards/vaccine_stock_history.py
+#: plugins/polio/api/dashboards/vaccine_stock_history.py:20
 msgid "Campaign OBR name"
 msgstr "Nom de la campagne OBR"
 
-#: plugins/polio/api/dashboards/vaccine_stock_history.py
+#: plugins/polio/api/dashboards/vaccine_stock_history.py:21
 msgid "Country ID"
 msgstr "ID du Pays"
 
-#: plugins/polio/api/dashboards/vaccine_stock_history.py
-#: plugins/polio/api/vaccines/supply_chain.py
+#: plugins/polio/api/dashboards/vaccine_stock_history.py:22
+#: plugins/polio/api/vaccines/supply_chain.py:811
 msgid "Round ID"
 msgstr "ID du round"
 
-#: plugins/polio/budget/filters.py
+#: plugins/polio/budget/filters.py:12
 msgid "Countries IDs (comma-separated)"
 msgstr "ID des pays (séparés par des virgules)"
 
-#: plugins/polio/budget/filters.py
+#: plugins/polio/budget/filters.py:14
 msgid "Org unit group IDs (comma-separated)"
 msgstr "ID des groupes d'unités d'org (séparés par des virgules)"
 
-#: plugins/polio/budget/models.py plugins/polio/models/base.py
+#: plugins/polio/budget/models.py:90 plugins/polio/models/base.py:799
 msgid "Disbursed to CO (WHO)"
 msgstr "Versé au CO (OMS)"
 
-#: plugins/polio/budget/models.py plugins/polio/models/base.py
+#: plugins/polio/budget/models.py:95 plugins/polio/models/base.py:804
 msgid "Disbursed to MOH (WHO)"
 msgstr "Versé au ministère de la santé (OMS)"
 
-#: plugins/polio/budget/models.py plugins/polio/models/base.py
+#: plugins/polio/budget/models.py:100 plugins/polio/models/base.py:809
 msgid "Disbursed to CO (UNICEF)"
 msgstr "Versé au CO (UNICEF)"
 
-#: plugins/polio/budget/models.py plugins/polio/models/base.py
+#: plugins/polio/budget/models.py:105 plugins/polio/models/base.py:814
 msgid "Disbursed to MOH (UNICEF)"
 msgstr "Versé au ministère de la santé (UNICEF)"
 
-#: plugins/polio/budget/models.py
+#: plugins/polio/budget/models.py:192
 #, python-format
 msgid "Error in template: %(error)s"
 msgstr "Erreur dans le template : %(error)s"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:50
 msgid "PV1"
 msgstr "PV1"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:51
 msgid "PV2"
 msgstr "PV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:52
 msgid "PV3"
 msgstr "PV3"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:53 plugins/polio/models/base.py:1774
 msgid "cVDPV2"
 msgstr "cVDPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:54 plugins/polio/models/base.py:1785
 msgid "WPV1"
 msgstr "WPV1"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:55
 msgid "PV1 & cVDPV2"
 msgstr "PV1 & cVDPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:56
 msgid "cVDPV1 & cVDPV2"
 msgstr "cVDPV1 & cVDPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:60 plugins/polio/models/base.py:67
 msgid "mOPV2"
 msgstr "mOPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:61 plugins/polio/models/base.py:68
+#: plugins/polio/models/base.py:1775
 msgid "nOPV2"
 msgstr "nOPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:62 plugins/polio/models/base.py:69
 msgid "bOPV"
 msgstr "bOPV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:63
 msgid "nOPV2 & bOPV"
 msgstr "nOPV2 & bOPV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:85
 msgid "WHO"
 msgstr "WHO"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:86
 msgid "UNICEF"
 msgstr "UNICEF"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:87
 msgid "National"
 msgstr "National"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:88
 msgid "MOH"
 msgstr "Ministère de la santé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:89
 msgid "PROVINCE"
 msgstr "PROVINCE"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:90
 msgid "District"
 msgstr "District"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:94 plugins/polio/models/base.py:1876
 msgid "Pending"
 msgstr "En attente"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:95 plugins/polio/models/base.py:108
+#: plugins/polio/models/base.py:1297
 msgid "Ongoing"
 msgstr "En cours"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:96 plugins/polio/models/base.py:110
 msgid "Finished"
 msgstr "Terminé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:100
 msgid "Approved"
 msgstr "Approuvé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:101
 msgid "To Submit"
 msgstr "À soumettre"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:102
 msgid "Submitted"
 msgstr "Soumis"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:103
 msgid "Reviewed by RRT"
 msgstr "Revue par RRT"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:107
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:109
 msgid "Failed"
 msgstr "Échec"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:114
 msgid "Direct"
 msgstr "Direct"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:115
 msgid "DFC"
 msgstr "DFC"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:116
 msgid "Mobile Payment"
 msgstr "Paiement mobile"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:121
 msgid "initial_data"
 msgstr "données initiales"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:122
 msgid "encoding_error"
 msgstr "erreur d'encodage"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:123
 msgid "public_holday"
 msgstr "jour férié"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:124
 msgid "other_activities"
 msgstr "autres activités"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:125
 msgid "moh_decision"
 msgstr "décision du ministère de la santé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:126
 msgid "campaign_synchronization"
 msgstr "synchronisation de la campagne"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:127
 msgid "preparedness_level_not_reached"
 msgstr "niveau de préparation non atteint"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:128
 msgid "funds_not_received_ops_level"
 msgstr "fonds non reçus au niveau opérationnel"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:129
 msgid "funds_not_arrived_in_country"
 msgstr "fonds non arrivés dans le pays"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:130
 msgid "vaccines_not_delivered_ops_level"
 msgstr "vaccins non livrés au niveau opérationnel"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:131
 msgid "vaccines_not_arrived_in_country"
 msgstr "vaccins non arrivés dans le pays"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:132
 msgid "security_context"
 msgstr "contexte sécuritaire"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:133
 msgid "campaign_moved_forward_by_moh"
 msgstr "campagne avancée par le ministère de la santé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:134
 msgid "vrf_not_signed"
 msgstr "VRF non signé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:135
 msgid "four_weeks_gap_betwenn_rounds"
 msgstr "écart de quatre semaines entre les rounds"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:136
 msgid "other_vaccination_campaigns"
 msgstr "autres campagnes de vaccination"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:139
 msgid "pending_liquidation_of_previous_sia_funding"
 msgstr "liquidation en attente du financement SIA précédent"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:144
 msgid "years"
 msgstr "années"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:145
 msgid "months"
 msgstr "mois"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:224
 msgid "name"
 msgstr "nom"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:692
 msgid "When the campaign starts"
 msgstr "Quand la campagne commence"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:699
 msgid "Outbreak declaration date"
 msgstr "Date de déclaration du foyer"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:706
 msgid "cVDPV2 Notification"
 msgstr "Notification cVDPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:712
 msgid "PV Notification"
 msgstr "Notification PV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:718
 msgid "PV2 Notification"
 msgstr "Notification PV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:729 plugins/polio/models/base.py:743
 msgid "1st Draft Submission"
 msgstr "Soumission du 1er projet"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:738
 msgid "Field Investigation Date"
 msgstr "Date de l'enquête sur le terrain"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:748
 msgid "RRT/OPRTT Approval"
 msgstr "Approbation du RRT/OPRTT"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:753
 msgid "AG/nOPV Group"
 msgstr "Groupe AG/nOPV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:758
 msgid "DG Authorization"
 msgstr "Autorisation DG"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1166
 msgid "National Score"
 msgstr "Score national"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1167
 msgid "Regional Score"
 msgstr "Score régional"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1168
 msgid "District Score"
 msgstr "Score du district"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1298
 msgid "Validated"
 msgstr "Validé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1299
 msgid "Sent for signature"
 msgstr "Envoyé pour signature"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1300
 msgid "Expired"
 msgstr "Expiré"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1357
 msgid "Normal"
 msgstr "Normal"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1358 plugins/polio/models/base.py:1650
 msgid "Missing"
 msgstr "Manquant"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1359
 msgid "Not Required"
 msgstr "Non requis"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1648
 msgid "VVM reached the discard point"
 msgstr "La VVM a atteint le point de rejet"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1649
 msgid "Vaccine expired"
 msgstr "Vaccin expiré"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1651
 msgid "Return"
 msgstr "Retour"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1652
 msgid "Stealing"
 msgstr "Vols"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1653
 #, fuzzy
 #| msgid "Physical Inventory"
 msgid "Add to Physical Inventory"
 msgstr "Inventaire physique"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1654
 #, fuzzy
 #| msgid "Physical Inventory"
 msgid "remove from Physical Inventory"
 msgstr "Inventaire physique"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1655
 msgid "Broken"
 msgstr "Cassé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1656
 msgid "Unreadable label"
 msgstr "Étiquette illisible"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1687
 msgid "Created"
 msgstr "Créé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1688
 msgid "Used"
 msgstr "Utilisé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1689
 #, fuzzy
 #| msgid "Return"
 msgid "Returned"
 msgstr "Retourné"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1772
 msgid "aVDPV"
 msgstr "aVDPV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1773
 msgid "cVDPV1"
 msgstr "cVDPV1"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1776
 msgid "Sabin"
 msgstr "Sabin"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1777
 msgid "SABIN 1"
 msgstr "SABIN 1"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1778
 msgid "SABIN 2"
 msgstr "SABIN 2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1779
 msgid "SABIN 3"
 msgstr "SABIN 3"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1780
 msgid "VDPV"
 msgstr "VDPV"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1781
 msgid "VDPV1"
 msgstr "VDPV1"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1782
 msgid "VDPV2"
 msgstr "VDPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1783
 msgid "VDPV3"
 msgstr "VDPV3"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1784
 msgid "VPV2"
 msgstr "VPV2"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1790
 msgid "Accute Flaccid Paralysis"
 msgstr "Paralysie flasque aiguë"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1792
 msgid "Contact Case"
 msgstr "Cas contact"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1793
 msgid "Community"
 msgstr "Communauté"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1794
 msgid "Contact"
 msgstr "Contact"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1795
 msgid "Environmental"
 msgstr "Environnement"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1796
 msgid "Healthy Children"
 msgstr "Enfants en bonne santé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1797
 msgid "Other"
 msgstr "Autre"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1845
 msgid "Notification"
 msgstr "Notification"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1875
 msgid "New"
 msgstr "Nouveau"
 
-#: plugins/polio/models/base.py plugins/polio/models/chronogram.py
+#: plugins/polio/models/base.py:1877 plugins/polio/models/chronogram.py:139
 msgid "Done"
 msgstr "Terminé"
 
-#: plugins/polio/models/base.py
+#: plugins/polio/models/base.py:1898
 msgid "Notification import"
 msgstr "Importation de notification"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:28
 msgid "Before"
 msgstr "Avant"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:29
 msgid "During"
 msgstr "Pendant"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:30
 msgid "After"
 msgstr "Après"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:78
 msgid "Chronogram"
 msgstr "Chronogramme"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:137
 msgid "Not started"
 msgstr "Pas commencé"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:138
 msgid "In progress"
 msgstr "En cours"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:140
 msgid "N/A"
 msgstr "N/A"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:161
 msgid "Chronogram Task"
 msgstr "Tâche de chronogramme"
 
-#: plugins/polio/models/chronogram.py
+#: plugins/polio/models/chronogram.py:215
 msgid "Chronogram Template Task"
 msgstr "Modèle de tâche de chronogramme"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/models/lqas_im.py:22
+msgid "SubActivity must belong to the same round as the LQAS Activity Stats."
+msgstr "La sous-activité doit appartenir au même round que les statistiques d'activité LQAS."
+
+#: plugins/polio/models/lqas_im.py:49
+msgid "1lqasOK"
+msgstr "1lqasOK"
+
+#: plugins/polio/models/lqas_im.py:50
+msgid "2lqasDisqualified"
+msgstr "2lqasDisqualified"
+
+#: plugins/polio/models/lqas_im.py:51
+msgid "3lqaspoor"
+msgstr "3lqaspoor"
+
+#: plugins/polio/models/lqas_im.py:52
+msgid "3lqasverypoor"
+msgstr "3lqasverypoor"
+
+#: plugins/polio/models/lqas_im.py:53
+msgid "3lqasFail"
+msgstr "3lqasFail"
+
+#: plugins/polio/models/lqas_im.py:54
+msgid "3lqasmoderate"
+msgstr "3lqasmoderate"
+
+#: plugins/polio/models/lqas_im.py:55
+msgid "3lqasundersampled"
+msgstr "3lqasundersampled"
+
+#: plugins/polio/models/lqas_im.py:56
+msgid "3lqasoversampled"
+msgstr "3lqasoversampled"
+
+#: plugins/polio/models/lqas_im.py:57
+msgid "inScope"
+msgstr "inScope"
+
+#: plugins/polio/models/lqas_im.py:74 plugins/polio/models/lqas_im.py:75
+msgid "LQAS Activity Statistics"
+msgstr "Statistiques d'activité LQAS"
+
+#: plugins/polio/models/lqas_im.py:105
+msgid "LQAS Entry"
+msgstr "Entrée LQAS"
+
+#: plugins/polio/models/lqas_im.py:106
+msgid "LQAS Entries"
+msgstr "Entrées LQAS"
+
+#: plugins/polio/models/lqas_im.py:130
+msgid "LQAS Care Giver Statistics"
+msgstr "Statistiques des soignants LQAS"
+
+#: plugins/polio/models/lqas_im.py:153 plugins/polio/models/lqas_im.py:154
+msgid "LQAS No Finger Mark Statistics"
+msgstr "Statistiques LQAS enfants non-marqués"
+
+#: plugins/polio/models/lqas_im.py:190 plugins/polio/models/lqas_im.py:191
+msgid "LQAS Absent Children Statistics"
+msgstr "Statistiques des enfants absents LQAS"
+
+#: plugins/polio/permissions.py:136
 msgid "Polio"
 msgstr "Polio"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:137
 msgid "Budget Polio"
 msgstr "Polio - budget"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:138
 msgid "Budget Polio Admin"
 msgstr "Polio - administration du budget"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:139
 msgid "Polio config"
 msgstr "Polio - configuration"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:140
 msgid "Polio chronogram"
 msgstr "Polio - chronogrammes"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:141
 msgid "Polio chronogram user (restricted write)"
 msgstr "Polio - chronogrammes (écriture restreinte)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:142
 msgid "Polio notifications"
 msgstr "Polio - notifications"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:143
 msgid "Polio Vaccine Authorizations Admin"
 msgstr "Polio - autorisations de vaccin (admin)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:144
 msgid "Polio Vaccine Authorizations Read Only"
 msgstr "Polio - autorisations de vaccin (lecture seule)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:145
 msgid "Polio Vaccine Stock Earmarks Admin"
 msgstr "Polio - stock de vaccins réservés (admin)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:146
 msgid "Polio Vaccine Stock Earmarks Non Admin"
 msgstr "Polio - stock de vaccins réservés (non admin)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:147
 msgid "Polio Vaccine Stock Earmarks Read Only"
 msgstr "Polio - stock de vaccins réservés (lecture seule)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:148
 msgid "Polio Vaccine Stock Management Read"
 msgstr "Polio - gestion des stocks de vaccins (lecture)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:149
 msgid "Polio Vaccine Stock Management Read Only"
 msgstr "Polio - gestion des stocks de vaccins (lecture seule)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:150
 msgid "Polio Vaccine Stock Management Write"
 msgstr "Polio - gestion des stocks de vaccins (écriture)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:151
 msgid "Polio Vaccine Supply Chain Read"
 msgstr "Polio - chaîne d'approvisionnement (lecture)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:152
 msgid "Polio Vaccine Supply Chain Read Only"
 msgstr "Polio - chaîne d'approvisionnement (lecture seule)"
 
-#: plugins/polio/permissions.py
+#: plugins/polio/permissions.py:153
 msgid "Polio Vaccine Supply Chain Write"
 msgstr "Polio - chaîne d'approvisionnement (écriture)"
 
-#: plugins/polio/preparedness/spreadsheet_manager.py
+#: plugins/polio/preparedness/spreadsheet_manager.py:201
 msgid "No country found for campaign"
 msgstr "Aucun pays trouvé pour la campagne"

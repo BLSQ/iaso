@@ -51,6 +51,8 @@ class LqasStatuses(models.TextChoices):
     LQASOK = "1lqasOK", _("1lqasOK")
     LQASDISQUALIFIED = "2lqasDisqualified", _("2lqasDisqualified")
     LQASPOOR = "3lqaspoor", _("3lqaspoor")
+    LQASVERYPOOR = "3lqasverypoor", _("3lqasverypoor")
+    LQASFAIL = "3lqasFail", _("3lqasFail")
     LQASMODERATE = "3lqasmoderate", _("3lqasmoderate")
     LQASUNDERSAMPLED = "3lqasundersampled", _("3lqasundersampled")
     LQASOVERSAMPLED = "3lqasoversampled", _("3lqasoversampled")
@@ -59,7 +61,7 @@ class LqasStatuses(models.TextChoices):
 
 class LqasActivityStats(LqasBaseModel):
     lqas_failed = models.IntegerField()
-    lqas_passeded = models.IntegerField()
+    lqas_passed = models.IntegerField()
     lqas_no_data = models.IntegerField()
     status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
 
@@ -100,13 +102,13 @@ class LqasNoMarkStats(LqasBaseModel):
     vaccinated_but_not_fm = models.IntegerField()
 
     JSON_KEYS = {
-        "childabsent": "child_absent",
-        "Other": "other",
-        "Non_Compliance": "non_compliance",
-        "Child_was_asleep": "child_was_asleep",
-        "House_not_visited": "house_not_visited",
-        "Child_is_a_visitor": "child_is_a_visitor",
-        "Vaccinated_but_not_FM": "vaccinated_but_not_fm",
+        "child_absent": "childabsent",
+        "other": "Other",
+        "non_compliance": "Non_Compliance",
+        "child_was_asleep": "Child_was_asleep",
+        "house_not_visited": "House_not_visited",
+        "child_is_a_visitor": "Child_is_a_visitor",
+        "vaccinated_but_not_fm": "Vaccinated_but_not_FM",
     }
 
     class Meta(LqasBaseModel.Meta):
@@ -124,13 +126,13 @@ class LqasAbsenceStats(LqasBaseModel):
     unknown = models.IntegerField()
 
     JSON_KEYS = {
-        "Farm": "farm",
-        "Other": "other",
-        # "Otherone": "other", # This has been seen in the data
-        "Market": "market",
-        "School": "school",
-        "Travelled": "travelled",
-        "In_playground": "in_playground",
+        "farm": "Farm",
+        "other": "Other",
+        # "other": "Otherone", # This has been seen in the data
+        "market": "Market",
+        "school": "School",
+        "travelled": "Travelled",
+        "in_playground": "In_playground",
         "unknown": "unknown",
     }
 

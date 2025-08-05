@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
+import { Button, SxProps } from '@mui/material';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import { Button } from '@mui/material';
 
 const messages = defineMessages({
     delete: {
@@ -13,15 +13,27 @@ const messages = defineMessages({
 type Props = {
     onClick: () => void;
     message?: IntlMessage;
+    variant?: 'text' | 'outlined' | 'contained';
+    size?: 'small' | 'medium' | 'large';
+    sx?: SxProps;
 };
 
 export const DeleteButton: FunctionComponent<Props> = ({
     onClick,
     message,
+    variant = 'contained',
+    size = 'medium',
+    sx = {},
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Button onClick={onClick} variant="contained" color="primary">
+        <Button
+            onClick={onClick}
+            variant={variant}
+            color="primary"
+            size={size}
+            sx={sx}
+        >
             {message ?? formatMessage(messages.delete)}
         </Button>
     );

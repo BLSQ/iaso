@@ -1,17 +1,15 @@
-from enum import Enum
-
 from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnit
 
 
-class LegendType(Enum):
-    THRESHOLD = "threshold"
-    LINEAR = "linear"
-    ORDINAL = "ordinal"
-
-
 class MetricType(models.Model):
+    class LegendType(models.TextChoices):
+        THRESHOLD = "threshold", _("Threshold")
+        LINEAR = "linear", _("Linear")
+        ORDINAL = "ordinal", _("Ordinal")
+
     class Meta:
         ordering = ["id"]  # force ordering in order of creation (for demo)
         unique_together = [
@@ -28,9 +26,9 @@ class MetricType(models.Model):
     category = models.CharField(max_length=255, blank=True)
     comments = models.TextField(blank=True)
     legend_type = models.CharField(
-        choices=[(tag.value, tag.value) for tag in LegendType],
+        choices=LegendType.choices,
         max_length=40,
-        default=LegendType.THRESHOLD.value,
+        default=LegendType.THRESHOLD,
     )
     legend_config = models.JSONField(blank=True, default=dict)
 

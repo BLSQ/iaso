@@ -387,28 +387,25 @@ export const useMenuItems = (): MenuItems => {
     const { HIDE_BASIC_NAV_ITEMS } = useContext(ThemeConfigContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
     const allBasicItems = useMemo(
-        () =>
-            HIDE_BASIC_NAV_ITEMS === 'yes'
-                ? []
-                : [
-                      ...menuItems(
-                          entityTypes || [],
-                          formatMessage,
-                          currentUser,
-                          orgUnitExtraPath,
-                      ),
-                  ],
-        [
-            currentUser,
-            orgUnitExtraPath,
-            entityTypes,
-            formatMessage,
-            HIDE_BASIC_NAV_ITEMS,
+        () => [
+            ...menuItems(
+                entityTypes || [],
+                formatMessage,
+                currentUser,
+                orgUnitExtraPath,
+            ),
         ],
+        [currentUser, orgUnitExtraPath, entityTypes, formatMessage],
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
-    const basicItems = allBasicItems.filter(item => item.key !== 'settings');
+    const basicItems = useMemo(
+        () =>
+            HIDE_BASIC_NAV_ITEMS === 'yes'
+                ? []
+                : allBasicItems.filter(item => item.key !== 'settings'),
+        [HIDE_BASIC_NAV_ITEMS, allBasicItems],
+    );
 
     // Hide dhis2 mapping In the main menu, under Forms when dhis2 module is not activated
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);

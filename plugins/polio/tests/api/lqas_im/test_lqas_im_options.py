@@ -1,6 +1,6 @@
 import datetime
 
-from iaso.models.base import GROUP_DOMAIN, Group
+from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnit
 from iaso.test import APITestCase
 from plugins.polio.models import Round
@@ -744,7 +744,6 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         # The one we expect to be returned
         cls.eligible_country_block = Group.objects.create(
             name="Good Country Block",
-            domain=GROUP_DOMAIN[0][0],
             block_of_countries=True,
             source_version=cls.source_version_1,
         )
@@ -754,7 +753,6 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
         # The one we expect to be excluded based on dates
         cls.ineligible_country_block = Group.objects.create(
             name="Bad Country Block",
-            domain=GROUP_DOMAIN[0][0],
             block_of_countries=True,
             source_version=cls.source_version_1,
         )
@@ -898,7 +896,6 @@ class PolioLqasImCountryBlockOptionsTestCase(LqasImOptionsTestCase):
 
         new_eligible_country_block = Group.objects.create(
             name="New Country Block",
-            domain=GROUP_DOMAIN[0][0],
             block_of_countries=True,
             source_version=self.source_version_1,
         )

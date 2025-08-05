@@ -403,6 +403,38 @@ msgstr ""
 "tentative de téléchargement immédiatement + à chaque fois que le réseau "
 "devient disponible"
 
+#: iaso/models/base.py
+msgid "Data collection options"
+msgstr "Options de collection de données"
+
+#: iaso/models/base.py
+msgid "Refresh options"
+msgstr "Options de rafraichissement"
+
+#: iaso/models/base.py
+msgid "Geographic options"
+msgstr "Options géographiques"
+
+#: iaso/models/base.py
+msgid "Data Validation"
+msgstr "Validation de données"
+
+#: iaso/models/base.py
+msgid "Entities"
+msgstr "Entités"
+
+#: iaso/models/base.py
+msgid "Planning"
+msgstr "Planification"
+
+#: iaso/models/base.py
+msgid "Specific options"
+msgstr "Options spécifiques"
+
+#: iaso/models/base.py
+msgid "Not specified"
+msgstr "Génériques"
+
 #: iaso/models/comment.py
 msgid "content type"
 msgstr "type de contenu"
@@ -734,10 +766,6 @@ msgstr "Equipes"
 #: iaso/permissions.py
 msgid "Attributions"
 msgstr "Attributions"
-
-#: iaso/permissions.py
-msgid "Entities"
-msgstr "Entités"
 
 #: iaso/permissions.py
 msgid "Write entity type"

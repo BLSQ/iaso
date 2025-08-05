@@ -63,6 +63,13 @@ class LqasActivityStats(LqasBaseModel):
     lqas_no_data = models.IntegerField()
     status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
 
+    JSON_KEYS = {
+        "lqas_failed": "lqas_failed",
+        "lqas_passed": "lqas_passed",
+        "lqas_no_data": "lqas_no_data",
+        "status": "status",
+    }
+
     class Meta(LqasBaseModel.Meta):
         verbose_name = _("LQAS Activity Statistics")
         verbose_name_plural = _("LQAS Activity Statistics")
@@ -85,6 +92,14 @@ class LqasEntry(LqasDistrictBaseModel):
     total_children_checked = models.IntegerField()
     total_sites_visited = models.IntegerField()
     status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
+
+    JSON_KEYS = {
+        "total_children_fmd": "total_child_fmd",
+        "total_children_checked": "total_child_checked",
+        "total_sites_visited": "total_sites_visited",
+        "status": "status",
+        "care_giver_stats": "care_giver_stats",
+    }
 
     class Meta(LqasDistrictBaseModel.Meta):
         verbose_name = _("LQAS Entry")

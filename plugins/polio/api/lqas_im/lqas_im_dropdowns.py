@@ -249,8 +249,8 @@ class LqasImCountryBlockOptionsFilter(django_filters.rest_framework.FilterSet):
         # Find subactivities within the date-month period
         sub_activities_with_lqas = SubActivity.objects.filter(
             subactivity_with_lqas_end_date | subactivity_without_lqas_end_date
-        )
-        with_subactivity = Q(sub_activities__in=sub_activities_with_lqas)
+        ).values_list("id")
+        with_subactivity = Q(sub_activities__id__in=sub_activities_with_lqas)
 
         countries_with_lqas = (
             Round.objects.filter(campaign__is_test=False)
@@ -273,4 +273,4 @@ class LqasImCountryBlockOptionsViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Group.all_objects.filter_for_user(user).filter(block_of_countries=True)
+        return Group.objects.filter_for_user(user).filter(block_of_countries=True)

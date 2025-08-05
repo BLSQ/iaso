@@ -135,82 +135,79 @@ class LqasDataManager:
         )
 
     def _create_lqas_no_marks(self, round_obj: Round, obr_name: str, round_data, subactivity=None):
-        no_mark_data = round_data.get("nfm_stats", None)
-        if no_mark_data:
-            try:
-                LqasNoMarkStats.objects.create(
-                    round=round_obj,
-                    subactivity=subactivity,
-                    vaccinated_but_not_fm=no_mark_data.get("vaccinated_but_not_fm", 0),
-                    child_is_a_visitor=no_mark_data.get("child_is_a_visitor", 0),
-                    house_not_visited=no_mark_data.get("house_not_visited", 0),
-                    child_was_asleep=no_mark_data.get("child_was_asleep", 0),
-                    non_compliance=no_mark_data.get("non_compliance", 0),
-                    child_absent=no_mark_data.get("child_absent", 0),
-                    other=no_mark_data.get("other", 0),
-                )
+        no_mark_data = round_data.get("nfm_stats", {})
+        try:
+            LqasNoMarkStats.objects.create(
+                round=round_obj,
+                subactivity=subactivity,
+                child_absent=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_absent"], 0),
+                other=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["other"], 0),
+                non_compliance=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["non_compliance"], 0),
+                child_was_asleep=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_was_asleep"], 0),
+                house_not_visited=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["house_not_visited"], 0),
+                child_is_a_visitor=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_is_a_visitor"], 0),
+                vaccinated_but_not_fm=no_mark_data.get(LqasNoMarkStats.JSON_KEYS["vaccinated_but_not_fm"], 0),
+            )
 
-            except IntegrityError as e:
-                self.logger.warning(f"LQAS care giver data already exists for {obr_name} Round {round_data['number']}")
-                self.logger.warning(e)
-                raise e
+        except IntegrityError as e:
+            self.logger.warning(f"LQAS care giver data already exists for {obr_name} Round {round_data['number']}")
+            self.logger.warning(e)
+            raise e
 
     def _update_lqas_no_marks(self, round_obj: Round, round_data, subactivity=None):
-        no_mark_data = round_data.get("nfm_stats", None)
-        if no_mark_data:
-            update_values = {
-                "vaccinated_but_not_fm": no_mark_data.get("vaccinated_but_not_fm", 0),
-                "child_is_a_visitor": no_mark_data.get("child_is_a_visitor", 0),
-                "house_not_visited": no_mark_data.get("house_not_visited", 0),
-                "child_was_asleep": no_mark_data.get("child_was_asleep", 0),
-                "non_compliance": no_mark_data.get("non_compliance", 0),
-                "child_absent": no_mark_data.get("child_absent", 0),
-                "other": no_mark_data.get("other", 0),
-            }
-            return self._safe_update_or_create(
-                model_class=LqasNoMarkStats,
-                lookup_kwargs={"round": round_obj, "subactivity": subactivity},
-                update_values=update_values,
-            )
+        no_mark_data = round_data.get("nfm_stats", {})
+        update_values = {
+            "vaccinated_but_not_fm": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["vaccinated_but_not_fm"], 0),
+            "child_is_a_visitor": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_is_a_visitor"], 0),
+            "house_not_visited": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["house_not_visited"], 0),
+            "child_was_asleep": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_was_asleep"], 0),
+            "non_compliance": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["non_compliance"], 0),
+            "child_absent": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["child_absent"], 0),
+            "other": no_mark_data.get(LqasNoMarkStats.JSON_KEYS["other"], 0),
+        }
+        return self._safe_update_or_create(
+            model_class=LqasNoMarkStats,
+            lookup_kwargs={"round": round_obj, "subactivity": subactivity},
+            update_values=update_values,
+        )
 
     def _create_lqas_absences(self, round_obj: Round, obr_name: str, round_data, subactivity=None):
-        no_mark_data = round_data.get("nfm_abs_stats", None)
-        if no_mark_data:
-            try:
-                LqasAbsenceStats.objects.create(
-                    round=round_obj,
-                    subactivity=subactivity,
-                    farm=no_mark_data.get("farm", 0),
-                    other=no_mark_data.get("other", 0),
-                    market=no_mark_data.get("market", 0),
-                    school=no_mark_data.get("school", 0),
-                    travelled=no_mark_data.get("travelled", 0),
-                    in_playground=no_mark_data.get("in_playground", 0),  # To do match casing to form
-                    unknown=no_mark_data.get("unknown", 0),
-                )
+        absence_data = round_data.get("nfm_abs_stats", {})
 
-            except IntegrityError as e:
-                self.logger.warning(f"LQAS care giver data already exists for {obr_name} Round {round_data['number']}")
-                self.logger.warning(e)
-                raise e
+        try:
+            LqasAbsenceStats.objects.create(
+                round=round_obj,
+                subactivity=subactivity,
+                farm=absence_data.get(LqasAbsenceStats.JSON_KEYS["farm"], 0),
+                other=absence_data.get(LqasAbsenceStats.JSON_KEYS["other"], 0),
+                market=absence_data.get(LqasAbsenceStats.JSON_KEYS["market"], 0),
+                school=absence_data.get(LqasAbsenceStats.JSON_KEYS["school"], 0),
+                travelled=absence_data.get(LqasAbsenceStats.JSON_KEYS["travelled"], 0),
+                in_playground=absence_data.get(LqasAbsenceStats.JSON_KEYS["in_playground"], 0),
+                unknown=absence_data.get(LqasAbsenceStats.JSON_KEYS["unknown"], 0),
+            )
+
+        except IntegrityError as e:
+            self.logger.warning(f"LQAS care giver data already exists for {obr_name} Round {round_data['number']}")
+            self.logger.warning(e)
+            raise e
 
     def _update_lqas_absences(self, round_obj: Round, round_data, subactivity=None):
-        absence_data = round_data.get("nfm_abs_stats", None)
-        if absence_data:
-            update_values = {
-                "farm": absence_data.get("farm", 0),
-                "other": absence_data.get("other", 0),
-                "market": absence_data.get("market", 0),
-                "school": absence_data.get("school", 0),
-                "travelled": absence_data.get("travelled", 0),
-                "in_playground": absence_data.get("in_playground", 0),
-                "unknown": absence_data.get("unknown", 0),
-            }
-            return self._safe_update_or_create(
-                model_class=LqasAbsenceStats,
-                lookup_kwargs={"round": round_obj, "subactivity": subactivity},
-                update_values=update_values,
-            )
+        absence_data = round_data.get("nfm_abs_stats", {})
+        update_values = {
+            "farm": absence_data.get(LqasAbsenceStats.JSON_KEYS["farm"], 0),
+            "other": absence_data.get(LqasAbsenceStats.JSON_KEYS["other"], 0),
+            "market": absence_data.get(LqasAbsenceStats.JSON_KEYS["market"], 0),
+            "school": absence_data.get(LqasAbsenceStats.JSON_KEYS["school"], 0),
+            "travelled": absence_data.get(LqasAbsenceStats.JSON_KEYS["travelled"], 0),
+            "in_playground": absence_data.get(LqasAbsenceStats.JSON_KEYS["in_playground"], 0),
+            "unknown": absence_data.get(LqasAbsenceStats.JSON_KEYS["unknown"], 0),
+        }
+        return self._safe_update_or_create(
+            model_class=LqasAbsenceStats,
+            lookup_kwargs={"round": round_obj, "subactivity": subactivity},
+            update_values=update_values,
+        )
 
     def _create_lqas_entry(self, round_obj: Round, district: OrgUnit, district_data, subactivity=None):
         try:

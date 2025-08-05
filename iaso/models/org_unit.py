@@ -201,6 +201,13 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
+    def filter_for_account(self, account):
+        queryset: OrgUnitQuerySet = self.defer("geom")
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=account).values_list("id", flat=True).distinct()
+        )
+        return queryset.filter(version_id__in=version_ids)
+
     def filter_for_user(self, user):
         return self.filter_for_user_and_app_id(user, None)
 
@@ -215,14 +222,15 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
+            queryset = self.filter_for_account(account)
 
             # Filter on version ids (linked to the account)
-            version_ids = (
-                SourceVersion.objects.filter(data_source__projects__account=account)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-            queryset = queryset.filter(version_id__in=version_ids)
+            # version_ids = (
+            #     SourceVersion.objects.filter(data_source__projects__account=account)
+            #     .values_list("id", flat=True)
+            #     .distinct()
+            # )
+            # queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user but only when the user is not a super user
             if user.iaso_profile.org_units.exists() and not user.is_superuser:

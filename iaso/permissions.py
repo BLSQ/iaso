@@ -275,3 +275,6 @@ class CorePermissionSupport(models.Model):
             (_PAYMENTS, _("Payments page")),
             (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
         )
+
+
+permission_models = [CorePermissionSupport]

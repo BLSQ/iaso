@@ -253,7 +253,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        return self.queryset.filter_for_user(user).select_related("project").prefetch_related("users", "sub_teams")
 
 
 class PlanningSerializer(serializers.ModelSerializer):

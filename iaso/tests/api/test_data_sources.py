@@ -46,7 +46,8 @@ class DataSourcesAPITestCase(APITestCase):
         # if the user has one perms
         self.client.force_authenticate(self.jane)
 
-        response = self.client.get("/api/datasources/")
+        with self.assertNumQueries(7):
+            response = self.client.get("/api/datasources/")
         self.assertJSONResponse(response, 200)
 
     def test_datasource_post_with_all_params(self):

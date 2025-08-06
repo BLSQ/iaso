@@ -4,7 +4,7 @@ import logging
 import dhis2
 import requests
 
-from django.db.models import Count
+from django.db.models import Count, Prefetch
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -12,7 +12,7 @@ from rest_framework.response import Response
 
 import iaso.permissions as core_permissions
 
-from iaso.models import DataSource, ExternalCredentials, OrgUnit
+from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
 
 from ..dhis2.url_helper import clean_url
 from ..tasks.dhis2_ou_importer import get_api
@@ -53,11 +53,18 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_versions(obj: DataSource):
-        return [v.as_dict_without_data_source() for v in obj.versions.all()]
+        versions = []
+        for version in obj.versions.all():
+            org_units_count = getattr(version, "annotated_org_units_count", None)
+            versions.append(version.as_dict_without_data_source(org_units_count=org_units_count))
+        return versions
 
     @staticmethod
     def get_default_version(obj: DataSource):
-        return obj.default_version.as_dict_without_data_source() if obj.default_version else None
+        if not obj.default_version:
+            return None
+        org_units_count = getattr(obj, "annotated_org_units_count", None)
+        return obj.default_version.as_dict_without_data_source(org_units_count=org_units_count)
 
     @staticmethod
     def get_projects(obj: DataSource):
@@ -271,10 +278,18 @@ class DataSourceViewSet(ModelViewSet):
         project_ids = self.request.GET.get("project_ids")
         name = self.request.GET.get("name", None)
 
+        versions_prefetch = Prefetch(
+            "versions",
+            queryset=SourceVersion.objects.filter(data_source__projects__account=profile.account).annotate(
+                annotated_org_units_count=Count("orgunit")
+            ),
+        )
+
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
-            .prefetch_related("projects", "versions")
+            .prefetch_related("projects", versions_prefetch)
             .filter(projects__account=profile.account)
+            .annotate(annotated_org_units_count=Count("default_version__orgunit"))
             .distinct()
         )
 

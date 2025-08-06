@@ -388,13 +388,13 @@ class LqasDataManager:
 
         except IntegrityError as e:
             self.logger.warning(
-                f"LQAS entry already exists for {round.campaign.obr_name} Round {round.number} district {district.name} Subactivity {subactivity}"
+                f"LQAS entry already exists for {round_obj.campaign.obr_name} Round {round_obj.number} district {district.name} Subactivity {subactivity}"
             )
             self.logger.warning(e)
             raise e
         except ValidationError as e:
             self.logger.warning(
-                f"LQAS entry already exists for {round.campaign.obr_name} Round {round.number} district {district.name} Subactivity {subactivity}"
+                f"LQAS entry already exists for {round_obj.campaign.obr_name} Round {round_obj.number} district {district.name} Subactivity {subactivity}"
             )
             self.logger.warning(e)
             raise e

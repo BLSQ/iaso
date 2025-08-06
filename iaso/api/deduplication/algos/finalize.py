@@ -32,6 +32,7 @@ def create_entity_duplicates(task: Task, potential_duplicates: List[PotentialDup
         batch = list(islice(entity_duplicates, batch_size))
         if not batch:
             break
+        task.report_progress_and_stop_if_killed(progress_message=f"Bulk creating {batch_size} entity duplicates")
         EntityDuplicate.objects.bulk_create(batch, batch_size, ignore_conflicts=True)
 
     eda.finished_at = now()

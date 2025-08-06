@@ -220,16 +220,16 @@ class LevenshteinAlgorithm(DeduplicationAlgorithm):
 
                 the_params, the_query = _build_query(params, current_id, batch_end_id)
 
-                task.report_progress_and_stop_if_killed(
-                    progress_message=(
-                        f"Processing batch {batch_num}: entities #{current_id} to #{batch_end_id}\n"
-                        "=== SQL Query ===\n"
-                        f"{the_query}"
-                        "\n=== Parameters ===\n"
-                        f"{the_params}"
-                        "\n=== End Query ==="
-                    )
+                msg = (
+                    f"Total entities: {total_entities}\n"
+                    f"Processing batch {batch_num}: entities #{current_id} to #{batch_end_id}\n"
+                    f"SQL Query Parameters: {the_params}\n"
                 )
+                if batch_num == 1:
+                    msg_query = f"=== Start SQL Query ===\n{the_query}\n=== End SQL Query ===\n"
+                    task.report_progress_and_stop_if_killed(progress_message=msg + msg_query)
+                else:
+                    task.report_progress_and_stop_if_killed(progress_message=msg)
 
                 cursor.execute(the_query, the_params)
 

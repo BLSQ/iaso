@@ -409,7 +409,7 @@ export const useMenuItems = (): MenuItems => {
 
     // Hide dhis2 mapping In the main menu, under Forms when dhis2 module is not activated
     const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
-    if (!hasDhis2Module && basicItems && basicItems.length > 0) {
+    if (!hasDhis2Module && basicItems?.length > 0) {
         basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
             item => item.key !== 'mappings',
         );

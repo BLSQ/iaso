@@ -381,7 +381,9 @@ class PlanningViewSet(AuditMixin, ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        return (
+            self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
+        )
 
 
 class AssignmentSerializer(serializers.ModelSerializer):

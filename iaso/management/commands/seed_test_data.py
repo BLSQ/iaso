@@ -63,11 +63,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
         dhis2_version = "stable-" + dhis2_version.replace(".", "-")
-
-        response = requests.get(f"http://play.im.dhis2.org/{dhis2_version}")
+        dhis2_url = f"https://play.im.dhis2.org/{dhis2_version}"
+        print(dhis2_url)
+        response = requests.get(dhis2_url)
+        print(response.url)
         dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
-        dhis2_version = dhis2_url.split("/")[-3]
-        print("dhis2_version resolved to ", dhis2_version)
+        print("dhis2_version resolved to ", dhis2_version, dhis2_url)
 
         mode = options.get("mode")
 
@@ -114,7 +115,7 @@ class Command(BaseCommand):
 
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
-        project.app_id = "org.bluesquare.play"
+        project.app_id = f"org.bluesquare.play{dhis2_version}"
         project.save()
 
         datasource, _ds_created = DataSource.objects.get_or_create(
@@ -535,8 +536,6 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
-        out = OrgUnitType.objects.filter(orgunit__version=source_version).distinct()
-        form.org_unit_types.set(out)
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:

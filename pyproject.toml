@@ -2,9 +2,11 @@
 name = "Iaso"
 readme = "README.md"
 requires-python = "~=3.9"
+version = "v1.3"
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"
+
 
 # https://docs.astral.sh/ruff/settings/
 [tool.ruff]

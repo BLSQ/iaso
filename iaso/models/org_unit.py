@@ -225,12 +225,6 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
             queryset = self.filter_for_account(account)
 
             # Filter on version ids (linked to the account)
-            # version_ids = (
-            #     SourceVersion.objects.filter(data_source__projects__account=account)
-            #     .values_list("id", flat=True)
-            #     .distinct()
-            # )
-            # queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user but only when the user is not a super user
             if user.iaso_profile.org_units.exists() and not user.is_superuser:

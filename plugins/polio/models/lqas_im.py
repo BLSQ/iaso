@@ -17,7 +17,7 @@ class LqasStatuses(models.TextChoices):
     INSCOPE = "inScope", _("inScope")
 
 
-class LqasRoundDataModel(models.Model):
+class LqasRoundData(models.Model):
     round = models.ForeignKey("Round", on_delete=models.CASCADE)
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, null=True, blank=True)
     lqas_failed = models.IntegerField()
@@ -108,7 +108,7 @@ class LqasRoundDataModel(models.Model):
         return f"{self._meta.verbose_name} for {self.round}"
 
 
-class LqasDistrictDataModel(models.Model):
+class LqasDistrictData(models.Model):
     round = models.ForeignKey("Round", on_delete=models.CASCADE)
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, null=True, blank=True)
     district = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
@@ -130,6 +130,10 @@ class LqasDistrictDataModel(models.Model):
         "total_sites_visited": "total_sites_visited",
         "status": "status",
         "care_giver_stats": "care_giver_stats",
+    }
+    CG_JSON_KEYS = {
+        "cg_caregivers_informed": "caregivers_informed",
+        "cg_caregivers_informed_ratio": "caregivers_informed_ratio",
     }
 
     class Meta:

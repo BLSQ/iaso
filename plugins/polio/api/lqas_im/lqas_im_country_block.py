@@ -4,8 +4,8 @@ from datetime import datetime, timedelta
 
 import django_filters
 
-from django.db.models import DateField, Exists, F, OuterRef, Q, QuerySet
-from django.db.models.functions import Coalesce
+from django.db.models import DateField, F, QuerySet, Window
+from django.db.models.functions import Coalesce, RowNumber
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
@@ -40,67 +40,32 @@ class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
 
         queryset = (
-            queryset.filter(
-                Q(
-                    subactivity__isnull=True,
-                    round__lqas_ended_at__isnull=False,
-                    round__lqas_ended_at__gte=first_day,
-                    round__lqas_ended_at__lte=last_day,
-                )
-                | Q(
-                    subactivity__isnull=True,
-                    round__lqas_ended_at__isnull=True,
-                    round__ended_at__gte=first_day - timedelta(days=10),
-                    round__ended_at__lte=last_day - timedelta(days=10),
-                )
-                | Q(
-                    subactivity__isnull=False,
-                    subactivity__lqas_ended_at__isnull=False,
-                    subactivity__lqas_ended_at__gte=first_day,
-                    subactivity__lqas_ended_at__lte=last_day,
-                )
-                | Q(
-                    subactivity__isnull=False,
-                    subactivity__lqas_ended_at__isnull=True,
-                    subactivity__end_date__gte=first_day - timedelta(days=10),
-                    subactivity__end_date__lte=last_day - timedelta(days=10),
-                )
-            )
-            .annotate(
-                # Pre-annotate the date fields to simplify Coalesce
-                subactivity_lqas_date=F("subactivity__lqas_ended_at"),
-                subactivity_end_date_plus_10=F("subactivity__end_date") + timedelta(days=10),
-                round_lqas_date=F("round__lqas_ended_at"),
-                round_end_date_plus_10=F("round__ended_at") + timedelta(days=10),
-            )
-            .annotate(
-                ranking_date=Coalesce(
-                    "subactivity_lqas_date",
-                    "subactivity_end_date_plus_10",
-                    "round_lqas_date",
-                    "round_end_date_plus_10",
+            queryset.annotate(
+                # Create unified date field for comparison
+                effective_date=Coalesce(
+                    "subactivity__lqas_ended_at",
+                    F("subactivity__end_date") + timedelta(days=10),
+                    "round__lqas_ended_at",
+                    F("round__ended_at") + timedelta(days=10),
                     output_field=DateField(),
                 ),
-            ),
+                # Rank entries by recency within each district
+                recency_rank=Window(
+                    expression=RowNumber(),
+                    partition_by=F("district"),
+                    order_by=[
+                        F("effective_date").desc(nulls_last=True),
+                        F("round__number").desc(nulls_last=True),
+                    ],
+                ),
+            ).filter(
+                recency_rank=1,
+                effective_date__gte=first_day,
+                effective_date__lte=last_day,
+            )  # Keep only the most recent entry per district for which the effective date is in range
         )
-        #         recency_rank=Window(
-        #             expression=RowNumber(),
-        #             partition_by=F("district"),
-        #             order_by=[
-        #                 F("ranking_date").desc(nulls_last=True),  # Most recent date first
-        #                 F("round__number").desc(nulls_last=True),  # Tie-breaker
-        #             ],
-        #         ),
-        #     )
-        #     .filter(recency_rank=1)
-        # )
-        # return queryset
 
-        # Use EXISTS to find the most recent entry per district
-        # This replaces the Window function with a more efficient subquery
-        return queryset.filter(
-            ~Exists(LqasEntry.objects.filter(district=OuterRef("district"), ranking_date__gt=OuterRef("ranking_date")))
-        )
+        return queryset
 
 
 class LqasCareGiverStatsSerializer(serializers.ModelSerializer):

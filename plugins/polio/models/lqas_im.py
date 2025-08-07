@@ -95,7 +95,7 @@ class LqasEntryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         qs = self
         if user.is_authenticated:
-            qs = qs.filter(round__campaign__account=user.iaso_profile.account)
+            return qs.filter(round__campaign__account=user.iaso_profile.account)
         return qs.none()
 
 

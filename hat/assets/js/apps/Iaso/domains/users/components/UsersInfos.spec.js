@@ -62,7 +62,7 @@ describe('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(8);
+        expect(setFieldValue.getCalls().length).to.equal(7);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);

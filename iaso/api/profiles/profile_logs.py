@@ -9,8 +9,9 @@ from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 from rest_framework import filters, serializers
 
+import iaso.permissions as core_permissions
+
 from hat.audit.models import Modification
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet, Paginator, parse_comma_separated_numeric_values
 from iaso.models.base import Profile, UserRole
 from iaso.models.org_unit import OrgUnit
@@ -190,7 +191,7 @@ class ProfileLogRetrieveSerializer(serializers.ModelSerializer):
 
 
 class ProfileLogsViewset(ModelViewSet):
-    permission_classes = [HasPermission(permission.USERS_ADMIN)]
+    permission_classes = [HasPermission(core_permissions.USERS_ADMIN)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,

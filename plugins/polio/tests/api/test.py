@@ -37,6 +37,7 @@ class PolioTestCaseMixin:
             account=account,
             separate_scopes_per_round=False,
         )
+
         scope_group = m.Group.objects.create(name="campaign_scope", source_version=source_version)
         scope_group.org_units.set([district])  # FIXME: we should actually have children org units
         pm.CampaignScope.objects.create(campaign=campaign, vaccine=vaccine, group=scope_group)

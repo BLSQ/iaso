@@ -1,7 +1,8 @@
 from rest_framework import permissions, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.models import Instance
 
 from .common import HasPermission
@@ -12,14 +13,14 @@ class PeriodsViewSet(viewsets.ViewSet):
 
     Note: only used to list periods for a specific form (the form_id query param is mandatory).
 
-    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
+    This API is restricted to authenticated users having the "{core_permissions.FORMS}" or "{core_permissions.SUBMISSIONS}" permissions.
 
     GET /api/periods/?form_id=id
     """
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.FORMS, permission.SUBMISSIONS),  # type: ignore
+        HasPermission(core_permissions.FORMS, core_permissions.SUBMISSIONS),  # type: ignore
     ]
 
     def list(self, request):

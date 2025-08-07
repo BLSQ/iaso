@@ -2,7 +2,8 @@ from django.utils.text import slugify
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import ModelViewSet
 from iaso.models.data_store import JsonDataStore
 
@@ -53,8 +54,8 @@ class DataStoreSerializer(serializers.ModelSerializer):
 
 class DataStorePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perm = permission.DATASTORE_READ
-        write_perm = permission.DATASTORE_WRITE
+        read_perm = core_permissions.DATASTORE_READ
+        write_perm = core_permissions.DATASTORE_WRITE
 
         if request.method == "GET":
             can_get = (

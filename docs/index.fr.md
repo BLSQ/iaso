@@ -1,7 +1,7 @@
 # Bienvenue dans la documentation d'IASO
 
 # Introduction à IASO
-IASO est une plateforme innovante, open-source, bilingue (EN/FR) de **collecte de données à fonctionnalités géospatiales avancées** pour planifier, surveiller et évaluer les programmes de santé, environnementaux ou sociaux dans les pays à revenu faible et intermédiaire (PRFI). IASO est reconnu comme un **Bien Public Numérique** par l'Alliance des Biens Publics Numériques et figure parmi les logiciels **Global Goods** de Digital Square, témoignant de son utilité publique.
+IASO est une plateforme innovante, open-source, trilingue (EN/FR/ES) de **collecte de données à fonctionnalités géospatiales avancées** pour planifier, surveiller et évaluer les programmes de santé, environnementaux ou sociaux dans les pays à revenu faible et intermédiaire (PRFI). IASO est reconnu comme un **Bien Public Numérique** par l'Alliance des Biens Publics Numériques et figure parmi les logiciels **Global Goods** de Digital Square, témoignant de son utilité publique.
 
 IASO comprend :
 

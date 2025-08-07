@@ -1,16 +1,20 @@
 import React, { useMemo } from 'react';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import { Tooltip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import MESSAGES from '../messages';
-import { EditSourceVersion } from '../components/EditSourceVersion';
+import { Tooltip } from '@mui/material';
+import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { AddTask } from '../components/AddTaskComponent';
 import { CopySourceVersion } from '../components/CopySourceVersion/CopySourceVersion';
+import { EditSourceVersion } from '../components/EditSourceVersion';
 import { ImportGeoPkgDialog } from '../components/ImportGeoPkgDialog';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import MESSAGES from '../messages';
 
-export const useVersionsDialogTableColumns = (source): Column[] => {
+export const useVersionsDialogTableColumns = (
+    source,
+    hasDhis2Module,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
+
     return useMemo(
         () => [
             {
@@ -18,19 +22,11 @@ export const useVersionsDialogTableColumns = (source): Column[] => {
                 accessor: 'id',
                 sortable: false,
                 Cell: settings => {
-                    return (
-                        <>
-                            {source.default_version?.id === settings.value && (
-                                <Tooltip
-                                    title={formatMessage(
-                                        MESSAGES.defaultVersion,
-                                    )}
-                                >
-                                    <CheckCircleIcon color="primary" />
-                                </Tooltip>
-                            )}
-                        </>
-                    );
+                    return source.default_version?.id === settings.value ? (
+                        <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
+                            <CheckCircleIcon color="primary" />
+                        </Tooltip>
+                    ) : null;
                 },
             },
             {
@@ -78,22 +74,24 @@ export const useVersionsDialogTableColumns = (source): Column[] => {
                                 }
                                 dataSourceId={source.id}
                             />
-                            <AddTask
-                                renderTrigger={({ openDialog }) => (
-                                    <IconButton
-                                        onClick={openDialog}
-                                        icon="dhis"
-                                        tooltipMessage={
-                                            MESSAGES.updateFromDhis2
-                                        }
-                                    />
-                                )}
-                                sourceId={source.id}
-                                sourceVersionNumber={
-                                    settings.row.original.number
-                                }
-                                sourceCredentials={source.credentials ?? {}}
-                            />
+                            {hasDhis2Module && (
+                                <AddTask
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButton
+                                            onClick={openDialog}
+                                            icon="dhis"
+                                            tooltipMessage={
+                                                MESSAGES.updateFromDhis2
+                                            }
+                                        />
+                                    )}
+                                    sourceId={source.id}
+                                    sourceVersionNumber={
+                                        settings.row.original.number
+                                    }
+                                    sourceCredentials={source.credentials ?? {}}
+                                />
+                            )}
                             <ImportGeoPkgDialog
                                 renderTrigger={({ openDialog }) => (
                                     <IconButton
@@ -105,7 +103,6 @@ export const useVersionsDialogTableColumns = (source): Column[] => {
                                 sourceId={source.id}
                                 sourceName={source.name}
                                 versionNumber={settings.row.original.number}
-                                projects={source.projects.flat()}
                             />
                             <CopySourceVersion
                                 dataSourceId={source.id}
@@ -125,7 +122,6 @@ export const useVersionsDialogTableColumns = (source): Column[] => {
             source.default_version?.id,
             source.id,
             source.name,
-            source.projects,
             source.read_only,
         ],
     );

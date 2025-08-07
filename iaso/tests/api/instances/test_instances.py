@@ -730,7 +730,8 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         self.client.force_authenticate(self.yoda)
         json_filters = json.dumps({"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]})
-        response = self.client.get("/api/instances/", {"jsonContent": json_filters})
+        with self.assertNumQueries(6):
+            response = self.client.get("/api/instances/", {"jsonContent": json_filters})
         self.assertJSONResponse(response, 200)
         response_json = response.json()
         self.assertValidInstanceListData(response_json, expected_length=1)
@@ -1032,7 +1033,7 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
 
-        with self.assertNumQueries(12):
+        with self.assertNumQueries(10):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
             )

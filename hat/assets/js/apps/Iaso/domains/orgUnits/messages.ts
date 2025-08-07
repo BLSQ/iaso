@@ -605,6 +605,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.fitToOutBounds',
         defaultMessage: 'Fit map to children bounds',
     },
+    searchToSeeOrgUnits: {
+        id: 'iaso.forms.searchToSeeOrgUnits',
+        defaultMessage: 'Click "Search" button to see org units',
+    },
 });
 
 export default MESSAGES;

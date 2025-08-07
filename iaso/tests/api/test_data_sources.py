@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Permission
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -45,7 +46,8 @@ class DataSourcesAPITestCase(APITestCase):
         # if the user has one perms
         self.client.force_authenticate(self.jane)
 
-        response = self.client.get("/api/datasources/")
+        with self.assertNumQueries(7):
+            response = self.client.get("/api/datasources/")
         self.assertJSONResponse(response, 200)
 
     def test_datasource_post_with_all_params(self):
@@ -228,11 +230,11 @@ class DataSourcesAPITestCase(APITestCase):
             ["User doesn't have the permission to change the default version of a data source."], json_response
         )
 
-        perm = Permission.objects.get(codename=permission._SOURCES_CAN_CHANGE_DEFAULT_VERSION)
+        perm = Permission.objects.get(codename=core_permissions._SOURCES_CAN_CHANGE_DEFAULT_VERSION)
         self.joe.user_permissions.add(perm)
         del self.joe._perm_cache
         del self.joe._user_perm_cache
-        self.assertTrue(self.joe.has_perm(permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION))
+        self.assertTrue(self.joe.has_perm(core_permissions.SOURCES_CAN_CHANGE_DEFAULT_VERSION))
 
         response = self.client.put(f"/api/datasources/{self.data_source.id}/", format="json", data=data)
         self.assertJSONResponse(response, 200)

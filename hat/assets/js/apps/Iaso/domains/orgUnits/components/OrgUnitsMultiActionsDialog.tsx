@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReportIcon from '@mui/icons-material/Report';
@@ -27,6 +27,7 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
+import { useSourceVersionIds } from '../hooks/utils/useSourceVersionIds';
 import MESSAGES from '../messages';
 import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { OrgUnit, OrgUnitParams } from '../types/orgUnit';
@@ -106,11 +107,20 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     >(undefined);
 
     const currentUser = useCurrentUser();
+    const searches = useMemo(
+        () => decodeSearch(decodeURI(params.searches)),
+        [params.searches],
+    );
+    const defaultVersion = currentUser?.account?.default_version;
+    const defaultDataSource = defaultVersion?.data_source;
+    const dataSourceIds = defaultDataSource?.id
+        ? `${defaultDataSource.id}`
+        : undefined;
+    const sourceVersionIds = useSourceVersionIds(searches, defaultVersion);
     const { data: groups = [], isFetching: isFetchingGroups } =
         useGetGroupDropdown({
-            dataSourceId:
-                currentUser?.account?.default_version?.data_source?.id,
-            sourceVersionId: currentUser?.account?.default_version?.id,
+            dataSourceIds: sourceVersionIds ? undefined : dataSourceIds,
+            sourceVersionIds,
         });
     const isSaveDisabled = () =>
         ((editGroups &&
@@ -190,7 +200,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
             // their fix but not a fan we should change it
             // when we refactor the search, probably set orgUnitParentId
             // directly in the onchange of OrgUnitTreeviewModal.
-            const searches = decodeSearch(params.searches);
             searches.forEach((s, i) => {
                 searches[i].orgUnitParentId = searches[i].levels;
             });

@@ -56,6 +56,8 @@ from ..models import (
     Mapping,
     MappingVersion,
     MatchingAlgorithm,
+    MetricType,
+    MetricValue,
     OrgUnit,
     OrgUnitChangeRequest,
     OrgUnitChangeRequestConfiguration,
@@ -443,8 +445,8 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
-    search_fields = ("name", "source_version", "domain")
-    list_display = ("name", "source_version", "created_at", "org_unit_count", "domain", "source_ref")
+    search_fields = ("name", "source_version")
+    list_display = ("name", "source_version", "created_at", "org_unit_count", "source_ref")
 
     def org_unit_count(self, obj):
         return obj.org_units.count()
@@ -562,7 +564,10 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
+        "id",
         "uuid__exact",
+        "account__name",
+        "entity_type__name",
         "attributes__json",
         "attributes__id__exact",
         "attributes__uuid__exact",
@@ -818,6 +823,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):
@@ -841,6 +847,8 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("task",)
+    search_fields = ("id",)
 
 
 @admin.register(OrgUnitChangeRequest)
@@ -1071,34 +1079,33 @@ class TenantUserAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         return urls
 
+    @admin.display(
+        description="Account",
+        ordering="account_user__iaso_profile__account",
+    )
     def account(self, obj):
         return obj.account
 
-    account.admin_order_field = "account_user__iaso_profile__account"
-    account.short_description = "Account"
-
+    @admin.display(description="Total Accounts")
     def all_accounts_count(self, obj):
         return obj.main_user.tenant_users.count()
 
-    all_accounts_count.short_description = "Total Accounts"
-
+    @admin.display(
+        description="Self Account",
+        boolean=True,
+    )
     def is_self_account(self, obj):
         return obj.main_user == obj.account_user
 
-    is_self_account.boolean = True
-    is_self_account.short_description = "Self Account"
-
+    @admin.display(description="All Account Users")
     def all_account_users(self, obj):
         users = obj.get_all_account_users()
         return format_html("<br>".join(user.username for user in users))
 
-    all_account_users.short_description = "All Account Users"
-
+    @admin.display(description="Other Accounts")
     def other_accounts(self, obj):
         accounts = obj.get_other_accounts()
-        return format_html("<br>".join(str(account) for account in accounts))
-
-    other_accounts.short_description = "Other Accounts"
+        return format_html("<br>".join(account.name for account in accounts))
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("main_user", "account_user__iaso_profile__account")
@@ -1142,6 +1149,31 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
                 "created_by",
             )
         )
+
+
+@admin.register(MetricType)
+class MetricTypeAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "account",
+        "name",
+        "category",
+        "source",
+        "units",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("name", "description", "source", "units", "comments")
+    list_filter = ("account", "source")
+    ordering = ("name",)
+
+
+@admin.register(MetricValue)
+class MetricValueAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit",)
+    list_display = ("metric_type", "org_unit", "year", "value")
+    search_fields = ("metric_type__name", "org_unit__name")
+    list_filter = ("metric_type", "year")
 
 
 admin.site.register(AccountFeatureFlag)

@@ -7,7 +7,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.models import Account, SourceVersion
 
 from .common import HasPermission, ModelViewSet
@@ -51,7 +52,7 @@ class HasAccountPermission(permissions.BasePermission):
 class AccountViewSet(ModelViewSet):
     f"""Account API
 
-    This API is restricted to authenticated users having the "{permission.SOURCES}" permission
+    This API is restricted to authenticated users having the "{core_permissions.SOURCES}" permission
     Only allow to update default source / version for an account
     PUT /api/account/<id>
     """
@@ -68,7 +69,7 @@ class AccountViewSet(ModelViewSet):
         else:
             permission_classes = [
                 permissions.IsAuthenticated,
-                HasPermission(permission.SOURCES),  # type: ignore
+                HasPermission(core_permissions.SOURCES),  # type: ignore
                 HasAccountPermission,
             ]
 

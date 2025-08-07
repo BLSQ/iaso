@@ -43,6 +43,7 @@ import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants
 import {
     listMenuPermission,
     userHasOneOfPermissions,
+    userHasAccessToModule,
 } from '../domains/users/utils';
 import { PluginsContext } from '../plugins/context';
 import { Plugins } from '../plugins/types';
@@ -398,6 +399,14 @@ export const useMenuItems = (): MenuItems => {
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
     const basicItems = allBasicItems.filter(item => item.key !== 'settings');
+
+    // Hide dhis2 mapping In the main menu, under Forms when dhis2 module is not activated
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
+    if (!hasDhis2Module) {
+        basicItems[0].subMenu = basicItems[0]?.subMenu?.filter(
+            item => item.key !== 'mappings',
+        );
+    }
 
     // add feature flags
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {

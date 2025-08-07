@@ -15,7 +15,7 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import { useFormState } from '../../../hooks/form';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
-import { userHasPermission } from '../../users/utils';
+import { userHasPermission, userHasAccessToModule } from '../../users/utils';
 
 const ProjectSelectorIds = ({
     keyValue,
@@ -127,7 +127,7 @@ export const DataSourceDialogComponent = ({
         Permission.SOURCES_CAN_CHANGE_DEFAULT_VERSION,
         currentUser,
     );
-
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', currentUser);
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
         closeDialog();
@@ -184,12 +184,12 @@ export const DataSourceDialogComponent = ({
             }}
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.cancel}
-            maxWidth="md"
+            maxWidth={hasDhis2Module ? 'md' : 'sm'}
             allowConfirm={allowConfirm}
         >
             {isSaving && <LoadingSpinner fixed={false} />}
             <Grid container spacing={2} justifyContent="flex-start">
-                <Grid xs={6} item>
+                <Grid xs={hasDhis2Module ? 6 : 12} item>
                     <InputComponent
                         keyValue="name"
                         onChange={setFieldValue}
@@ -261,54 +261,57 @@ export const DataSourceDialogComponent = ({
                         </Box>
                     )}
                 </Grid>
-                <Grid xs={6} item>
-                    <InputComponent
-                        value={form.credentials.value.dhis_name}
-                        keyValue="dhis_name"
-                        errors={form.credentials.errors}
-                        label={MESSAGES.dhisName}
-                        onChange={setCredentials}
-                    />
-                    <InputComponent
-                        value={form.credentials.value.dhis_url}
-                        keyValue="dhis_url"
-                        errors={urlErrors}
-                        label={MESSAGES.dhisUrl}
-                        onChange={setCredentials}
-                    />
-                    <InputComponent
-                        value={form.credentials.value.dhis_login}
-                        keyValue="dhis_login"
-                        errors={form.credentials_dhis2_login?.errors}
-                        label={MESSAGES.dhisLogin}
-                        onChange={setCredentials}
-                    />
-                    <InputComponent
-                        value={form.credentials.value.dhis_password}
-                        keyValue="dhis_password"
-                        errors={userPasswordErrors}
-                        label={MESSAGES.dhisPassword}
-                        onChange={setCredentials}
-                        password
-                    />
-                    {checkDhis2.isLoading && <LoadingSpinner />}
-                    <Button
-                        onClick={() => checkDhis2.mutate(form)}
-                        disabled={!form.credentials.value.dhis_url}
-                    >
-                        <FormattedMessage
-                            id="iaso.label.checkDHIS"
-                            defaultMessage="Test settings"
-                        />
-                    </Button>
-                    <Typography>
-                        {checkDhis2.isSuccess &&
-                            `✅ ${formatMessage(MESSAGES.checkDhis2Success)}`}
 
-                        {checkDhis2.isError &&
-                            `❌ ${formatMessage(MESSAGES.checkDhis2Error)}`}
-                    </Typography>
-                </Grid>
+                {hasDhis2Module && (
+                    <Grid xs={6} item>
+                        <InputComponent
+                            value={form.credentials.value.dhis_name}
+                            keyValue="dhis_name"
+                            errors={form.credentials.errors}
+                            label={MESSAGES.dhisName}
+                            onChange={setCredentials}
+                        />
+                        <InputComponent
+                            value={form.credentials.value.dhis_url}
+                            keyValue="dhis_url"
+                            errors={urlErrors}
+                            label={MESSAGES.dhisUrl}
+                            onChange={setCredentials}
+                        />
+                        <InputComponent
+                            value={form.credentials.value.dhis_login}
+                            keyValue="dhis_login"
+                            errors={form.credentials_dhis2_login?.errors}
+                            label={MESSAGES.dhisLogin}
+                            onChange={setCredentials}
+                        />
+                        <InputComponent
+                            value={form.credentials.value.dhis_password}
+                            keyValue="dhis_password"
+                            errors={userPasswordErrors}
+                            label={MESSAGES.dhisPassword}
+                            onChange={setCredentials}
+                            password
+                        />
+                        {checkDhis2.isLoading && <LoadingSpinner />}
+                        <Button
+                            onClick={() => checkDhis2.mutate(form)}
+                            disabled={!form.credentials.value.dhis_url}
+                        >
+                            <FormattedMessage
+                                id="iaso.label.checkDHIS"
+                                defaultMessage="Test settings"
+                            />
+                        </Button>
+                        <Typography>
+                            {checkDhis2.isSuccess &&
+                                `✅ ${formatMessage(MESSAGES.checkDhis2Success)}`}
+
+                            {checkDhis2.isError &&
+                                `❌ ${formatMessage(MESSAGES.checkDhis2Error)}`}
+                        </Typography>
+                    </Grid>
+                )}
             </Grid>
         </ConfirmCancelDialogComponent>
     );

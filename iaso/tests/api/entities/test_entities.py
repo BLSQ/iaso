@@ -2,12 +2,10 @@ import csv
 import datetime
 import io
 import json
-import time
 import uuid
 
-from unittest import mock
-
 import pytz
+import time_machine
 
 from django.core.files import File
 
@@ -188,25 +186,300 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Case 1: search by entity name
         response = self.client.get("/api/entities/?search=Client", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 2: search by entity name - make sure it's case-insensitive
         response = self.client.get("/api/entities/?search=cLiEnT", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 3: search by entity UUID
         response = self.client.get(f"/api/entities/?search={newly_added_entity.uuid}", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
 
         # Case 4: search by JSON attribute
         response = self.client.get("/api/entities/?search=age", format="json")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         self.assertEqual(the_result["id"], newly_added_entity.id)
+
+    def test_list_entities_annotate_duplicates(self):
+        """
+        Test that the list of entities at /api/entities includes duplicate ids annotations
+
+        This shouldn't result in n+1 queries.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        instances = Instance.objects.bulk_create(Instance(org_unit=self.ou_country, form=self.form_1) for _ in range(3))
+        entities = Entity.objects.bulk_create(
+            Entity(
+                entity_type=self.entity_type,
+                attributes=instance,
+                account=self.yoda.iaso_profile.account,
+            )
+            for instance in instances
+        )
+
+        m.EntityDuplicate.objects.create(
+            entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
+        )
+        with self.assertNumQueries(9):
+            response = self.client.get("/api/entities/", format="json")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()["result"]
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0]["id"], entities[0].id)
+        self.assertEqual(result[0]["duplicates"], [entities[1].id])
+
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
+    def test_list_entities_single_entity_type(self):
+        """Test the 'entityTypeIds' parameter of /api/entities with a single entity type id.
+
+        This should result in extra columns from the type being returned for each entity."""
+        self.client.force_authenticate(self.yoda)
+
+        # We expect the intersection of the form's possible_fields
+        # and the entity type's field_list_view to show up as columns
+        # in the export. Other propreties should be ignored.
+
+        possible_fields = [
+            {"name": "first_name", "type": "text", "label": "First Name"},
+            {"name": "middle_name", "type": "text", "label": "Middle Name"},
+            {"name": "last_name", "type": "text", "label": "Last Name"},
+            {"name": "foobar", "type": "text", "label": "Not supposed to be here"},
+        ]
+
+        form_2 = m.Form.objects.create(
+            name="Another study",
+            period_type=m.MONTH,
+            single_per_period=True,
+            form_id="form_2",
+            possible_fields=possible_fields,
+        )
+
+        form_2.projects.add(self.project)
+        entity_type_2 = m.EntityType.objects.create(
+            name="Type 2",
+            reference_form=form_2,
+            account=self.account,
+            fields_list_view=["first_name", "middle_name", "last_name", "mayonnaise"],
+        )
+
+        instance = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=form_2,
+            json={
+                "first_name": "Jean",
+                "middle_name": "M.",
+                "last_name": "Dupont",
+                "mayonnaise": "yes",
+                "foobar": "snafu",
+            },
+        )
+        entity = Entity.objects.create(
+            entity_type=entity_type_2,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}", format="json")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()["result"]
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0]["id"], entity.id)
+        self.assertEqual(result[0]["first_name"], "Jean")
+        self.assertEqual(result[0]["last_name"], "Dupont")
+        self.assertEqual(result[0]["middle_name"], "M.")
+
+        # Test the extra columns in the CSV export
+        response = self.client.get(f"/api/entities/?entity_type_ids={entity_type_2.pk}&csv=true/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
+        data = list(csv.reader(io.StringIO(response_string), delimiter=","))
+        row_to_test = data[len(data) - 1]
+
+        expected_row = [
+            str(entity.id),
+            str(entity.uuid),
+            entity.entity_type.name,
+            entity.created_at.strftime(EXPORTS_DATETIME_FORMAT),
+            instance.org_unit.name,
+            str(instance.org_unit.id),
+            "",
+            "Jean",
+            "M.",
+            "Dupont",
+        ]
+        self.assertEqual(row_to_test, expected_row)
+
+    def test_list_entities_search_uuid_filter(self):
+        """
+        Test the 'uuids:' search filter of /api/entities with comma-separated UUIDs
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Create multiple entities with different UUIDs
+        instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 1", "age": 25},
+        )
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 2", "age": 30},
+        )
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance3 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 3", "age": 35},
+        )
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        # Test single UUID search
+        response = self.client.get(f"/api/entities/?search=uuids:{entity1.uuid}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+        # Test multiple UUIDs search with comma separation
+        uuids = f"{entity1.uuid},{entity2.uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity2.id, result_ids)
+
+        # Test with spaces around commas
+        uuids_with_spaces = f"{entity1.uuid} , {entity3.uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_spaces}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity3.id, result_ids)
+
+        # Test with non-existent UUID mixed in
+        fake_uuid = "8872aafb-651f-4b0f-89af-35f0a06d9b44"
+        uuids_with_fake = f"{entity1.uuid},{fake_uuid}"
+        response = self.client.get(f"/api/entities/?search=uuids:{uuids_with_fake}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+        # Test invalid UUIDs
+        invalid_uuids = "8872wwfb-651f 4b0f-89af 35f0a06d9b44"
+        response = self.client.get(f"/api/entities/?search=uuids:{invalid_uuids}", format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.json(), ["Failed parsing uuids in search 'uuids:8872wwfb-651f 4b0f-89af 35f0a06d9b44'"]
+        )
+
+    def test_list_entities_search_ids_filter(self):
+        """
+        Test the 'ids:' search filter of /api/entities with comma-separated IDs
+        """
+        self.client.force_authenticate(self.yoda)
+
+        # Create multiple entities
+        instance1 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 1", "age": 25},
+        )
+        entity1 = Entity.objects.create(
+            name="Entity 1",
+            entity_type=self.entity_type,
+            attributes=instance1,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance2 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 2", "age": 30},
+        )
+        entity2 = Entity.objects.create(
+            name="Entity 2",
+            entity_type=self.entity_type,
+            attributes=instance2,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance3 = Instance.objects.create(
+            org_unit=self.ou_country,
+            form=self.form_1,
+            json={"name": "Entity 3", "age": 35},
+        )
+        entity3 = Entity.objects.create(
+            name="Entity 3",
+            entity_type=self.entity_type,
+            attributes=instance3,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        # Test single ID search
+        response = self.client.get(f"/api/entities/?search=ids:{entity1.id}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
+
+        # Test multiple IDs search with comma separation
+        ids = f"{entity1.id},{entity2.id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity2.id, result_ids)
+
+        # Test with spaces around commas
+        ids_with_spaces = f"{entity1.id} , {entity3.id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids_with_spaces}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 2)
+        result_ids = [r["id"] for r in response.json()["result"]]
+        self.assertIn(entity1.id, result_ids)
+        self.assertIn(entity3.id, result_ids)
+
+        # Test with non-existent ID mixed in
+        fake_id = 99999
+        ids_with_fake = f"{entity1.id},{fake_id}"
+        response = self.client.get(f"/api/entities/?search=ids:{ids_with_fake}", format="json")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["result"]), 1)
+        self.assertEqual(response.json()["result"][0]["id"], entity1.id)
 
     def test_list_entities_filter_by_date(self):
         """
@@ -240,6 +513,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on specific date
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date1_str}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
@@ -247,21 +521,25 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         # Search on date range
         response = self.client.get(f"/api/entities/?dateFrom={date1_str}&dateTo={date2_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 2)
         self.assertEqual([r["id"] for r in results], [entity1.id, entity2.id])
 
         # Search on only from date
         response = self.client.get(f"/api/entities/?dateFrom={date2_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity2.id)
         response = self.client.get(f"/api/entities/?dateFrom={date3_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 0)
 
         # Search on only to date
         response = self.client.get(f"/api/entities/?dateTo={date1_str}")
+        self.assertEqual(response.status_code, 200)
         results = response.json()["result"]
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0]["id"], entity1.id)
@@ -329,6 +607,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "F", "Bujumbura")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent1.id)
@@ -338,6 +617,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Bujumbura")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 0)
 
         # gender f OR SOME residence Kinshasa
@@ -345,6 +625,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("or", "some", "F", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 2)
         result_ids = [r["id"] for r in response.json()["result"]]
         self.assertEqual(sorted(result_ids), sorted([ent1.id, ent2.id]))
@@ -354,6 +635,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "some", "M", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
         the_result = response.json()["result"][0]
         self.assertEqual(the_result["id"], ent2.id)
@@ -363,6 +645,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
             "/api/entities/",
             {"fields_search": self._generate_json_filter("and", "all", "M", "Kinshasa")},
         )
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 0)
 
     def _generate_json_filter(self, operator, some_or_all, gender, residence):
@@ -524,10 +807,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["result"]), 1)
 
-    @mock.patch(
-        "iaso.api.entity.gmtime",
-        lambda: time.struct_time((2021, 7, 18, 14, 57, 0, 1, 291, 0)),
-    )
+    @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_export_entities(self):
         self.client.force_authenticate(self.yoda)
 
@@ -662,6 +942,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(0, entity_in_first_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={self.project.app_id}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(0, response.data["count"])
 
         # The list should be restricted to the other project.
@@ -670,6 +951,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         )
         self.assertEqual(2, entity_in_other_project.count())
         response = self.client.get(f"/api/mobile/entities/?app_id={other_project.app_id}")
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(2, response.data["count"])
         for item in response.data["results"]:
             self.assertEqual(item["entity_type_id"], str(entity_type_civilian.pk))
@@ -862,6 +1144,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
         response_json = response.json()
 
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json["count"], 1)
         self.assertEqual(response_json["results"][0]["entity_type_id"], str(self.entity_type.id))
 

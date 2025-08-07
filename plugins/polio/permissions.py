@@ -154,4 +154,4 @@ class PolioPermissionSupport(models.Model):
         )
 
 
-permission_model = PolioPermissionSupport
+permission_models = [PolioPermissionSupport]

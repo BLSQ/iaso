@@ -3,10 +3,10 @@ from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
 
-from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (

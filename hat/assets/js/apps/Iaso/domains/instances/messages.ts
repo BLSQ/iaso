@@ -758,6 +758,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.orgunitreferenceinstance',
         defaultMessage: 'Reference submission',
     },
+    searchToSeeSubmissions: {
+        id: 'iaso.forms.searchToSeeSubmissions',
+        defaultMessage: 'Click "Search" button to see submissions',
+    },
 });
 
 export default MESSAGES;

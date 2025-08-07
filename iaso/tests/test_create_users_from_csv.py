@@ -8,7 +8,8 @@ from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
-from hat.menupermissions import models as permission_models
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
@@ -540,8 +541,8 @@ class BulkCreateCsvTestCase(APITestCase):
             self.assertEqual(csv_line_2[projects_index], self.project.name)
 
         self.user_managed_geo_limit.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
-        self.assertTrue(self.user_managed_geo_limit.has_perm(permission_models.USERS_MANAGED))
-        self.assertFalse(self.user_managed_geo_limit.has_perm(permission_models.USERS_ADMIN))
+        self.assertTrue(self.user_managed_geo_limit.has_perm(core_permissions.USERS_MANAGED))
+        self.assertFalse(self.user_managed_geo_limit.has_perm(core_permissions.USERS_ADMIN))
 
         self.client.force_authenticate(self.user_managed_geo_limit)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
@@ -563,8 +564,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.yoda.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
         self.yoda.iaso_profile.org_units.set([self.org_unit_child])
-        self.assertFalse(self.yoda.has_perm(permission_models.USERS_MANAGED))
-        self.assertTrue(self.yoda.has_perm(permission_models.USERS_ADMIN))
+        self.assertFalse(self.yoda.has_perm(core_permissions.USERS_MANAGED))
+        self.assertTrue(self.yoda.has_perm(core_permissions.USERS_ADMIN))
 
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:

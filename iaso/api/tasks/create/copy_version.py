@@ -4,7 +4,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource, OrgUnit, SourceVersion
@@ -61,7 +62,7 @@ class CopyVersionSerializer(serializers.Serializer):
 
 
 class CopyVersionViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.SOURCES)]  # type: ignore
     serializer_class = CopyVersionSerializer
 
     def create(self, request):

@@ -143,14 +143,14 @@ class SourceVersion(models.Model):
             "id": self.id,
         }
 
-    def as_dict_without_data_source(self):
+    def as_dict_without_data_source(self, org_units_count=None):
         return {
             "number": self.number,
             "description": self.description,
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_units_count": self.orgunit_set.count(),
+            "org_units_count": org_units_count or self.orgunit_set.count(),
         }
 
     def as_report_dict(self):

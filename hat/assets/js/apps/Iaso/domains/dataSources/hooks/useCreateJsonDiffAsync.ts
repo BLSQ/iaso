@@ -72,7 +72,7 @@ const createJsonDiffAsync = async ({
 
     // Options
     const nonEmptyFields = fieldsToExport.filter(
-        field => field !== 'geometry' && field !== 'groups',
+        field => field !== 'geometry' && field !== 'groups' && field !== 'code',
     );
     if (nonEmptyFields.length > 0) {
         params.field_names = nonEmptyFields;
@@ -80,7 +80,6 @@ const createJsonDiffAsync = async ({
 
     params.ignore_groups = !fieldsToExport.includes('groups');
     params.show_deleted_org_units = false;
-
     return patchRequest(
         `/api/datasources/sync/${id}/create_json_diff/`,
         params,

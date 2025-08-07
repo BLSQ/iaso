@@ -1,7 +1,8 @@
 from django.contrib.auth.models import Permission
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
 from iaso.models import Account, Profile
 
@@ -10,7 +11,7 @@ from .common import ModelViewSet
 
 class HasModulesPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (not request.user.has_perm(permission.MODULES)) and request.method != "GET":
+        if (not request.user.has_perm(core_permissions.MODULES)) and request.method != "GET":
             return False
         return True
 
@@ -58,7 +59,7 @@ class ModuleSerializer(serializers.Serializer):
 class ModulesViewSet(ModelViewSet):
     f"""Modules API
 
-    This API is restricted to authenticated users having the "{permission.MODULES}" permission for reading only
+    This API is restricted to authenticated users having the "{core_permissions.MODULES}" permission for reading only
 
     GET /api/modules/
     """
@@ -70,7 +71,7 @@ class ModulesViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = []
         for module in MODULES:
-            permissions = MODULE_PERMISSIONS[module["codename"]]
+            permissions = MODULE_PERMISSIONS.get(module["codename"], [])
             name = module["name"]
             codename = module["codename"]
             fr_name = module["fr_name"]

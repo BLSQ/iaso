@@ -147,9 +147,11 @@ class ExportTestCase(TestCase):
             new_version = m.SourceVersion.objects.create(data_source=self.sw_source, number=3)
 
             # Import the gpkg file
+            # Ensure the DataSource is configured with the project
+            self.sw_source.projects.add(self.project)
+
             import_gpkg_file(
                 temp_file_path,
-                project_id=self.project.id,
                 source_name=self.sw_source.name,
                 version_number=3,
                 validation_status="new",

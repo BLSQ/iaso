@@ -149,9 +149,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             initial_org_unit=cls.country_org_unit_1,
         )
 
-        cls.campaign1_scope_group = Group.objects.create(
-            name="campaign1scope", domain="POLIO", source_version=cls.source_version
-        )
+        cls.campaign1_scope_group = Group.objects.create(name="campaign1scope", source_version=cls.source_version)
         cls.campaign1_scope_group.org_units.add(cls.district_org_unit_1)
         cls.campaign1_scope_group.org_units.add(cls.district_org_unit_2)
         cls.campaign1_scope_group.save()
@@ -194,7 +192,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             campaign=cls.campaign_2,
         )
         cls.campaign2_round1_scope_org_units = Group.objects.create(
-            name="campaign2round1scope", domain="POLIO", source_version=cls.source_version
+            name="campaign2round1scope", source_version=cls.source_version
         )
         cls.campaign2_round1_scope_org_units.org_units.add(cls.district_org_unit_3)
         cls.campaign2_round1_scope_org_units.save()
@@ -209,7 +207,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             campaign=cls.campaign_2,
         )
         cls.campaign2_round2_scope_org_units = Group.objects.create(
-            name="campaign2round2scope", domain="POLIO", source_version=cls.source_version
+            name="campaign2round2scope", source_version=cls.source_version
         )
         cls.campaign2_round2_scope_org_units.org_units.add(cls.district_org_unit_4)
         cls.campaign2_round2_scope_org_units.save()
@@ -321,7 +319,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             initial_org_unit=cls.country_org_unit_1,
         )
         cls.non_polio_campaign_scope_group = Group.objects.create(
-            name="campaign1scope", domain="POLIO", source_version=cls.source_version
+            name="campaign1scope", source_version=cls.source_version
         )
         cls.non_polio_campaign_scope_group.org_units.add(cls.district_org_unit_1)
         cls.non_polio_campaign_scope_group.org_units.add(cls.district_org_unit_2)

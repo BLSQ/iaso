@@ -50,7 +50,7 @@ export const useGetLqasCountriesOptions = ({
             enabled: Boolean(monthYear),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            keepPreviousData: true,
+            keepPreviousData: false,
             select: data => data?.results ?? [],
         },
     });
@@ -80,7 +80,7 @@ export const useGetLqasCampaignsOptions = ({
             enabled: Boolean(monthYear) && Boolean(country),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            keepPreviousData: true,
+            keepPreviousData: false,
             select: data => data?.results ?? [],
         },
     });
@@ -112,7 +112,7 @@ export const useGetLqasRoundOptions = ({
             enabled: Boolean(monthYear) && Boolean(campaign),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
-            keepPreviousData: true,
+            keepPreviousData: false,
             select: data => data?.results ?? [],
         },
     });

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-26 09:39+0000\n"
+"POT-Creation-Date: 2025-08-05 09:57+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -190,7 +190,9 @@ msgstr "Le fichier d'instance avec l'id {} n'existe pas"
 
 #: iaso/api/org_units.py
 msgid "Another valid OrgUnit already exists with the code '{}' in this version"
-msgstr "Une autre unité d'organisation valide existe déjà avec le code '{}' dans cette version"
+msgstr ""
+"Une autre unité d'organisation valide existe déjà avec le code '{}' dans "
+"cette version"
 
 #: iaso/api/org_units.py
 msgid "Unauthorized version id"
@@ -286,12 +288,12 @@ msgid "Nom d'utilisateur requis"
 msgstr "Nom d'utilisateur requis"
 
 #: iaso/api/profiles/profiles.py
-msgid "Nom d'utilisateur existant"
-msgstr "Nom d'utilisateur existant"
-
-#: iaso/api/profiles/profiles.py
 msgid "Mot de passe requis"
 msgstr "Mot de passe requis"
+
+#: iaso/api/profiles/profiles.py
+msgid "Nom d'utilisateur existant"
+msgstr "Nom d'utilisateur existant"
 
 #: iaso/api/profiles/profiles.py
 msgid "Both phone number and country code must be provided"
@@ -350,10 +352,6 @@ msgid "Success"
 msgstr "Succès"
 
 #: iaso/models/base.py
-msgid "Polio"
-msgstr "Polio"
-
-#: iaso/models/base.py
 msgid "SINGLE"
 msgstr "UNIQUE"
 
@@ -373,6 +371,38 @@ msgstr ""
 #: iaso/models/base.py
 msgid "The submission must be an instance of a reference form."
 msgstr "La soumission doit être une instance d'un formulaire de référence."
+
+#: iaso/models/base.py
+msgid "Data collection options"
+msgstr "Options de collection de données"
+
+#: iaso/models/base.py
+msgid "Refresh options"
+msgstr "Options de rafraichissement"
+
+#: iaso/models/base.py
+msgid "Geographic options"
+msgstr "Options géographiques"
+
+#: iaso/models/base.py
+msgid "Data Validation"
+msgstr "Validation de données"
+
+#: iaso/models/base.py iaso/permissions.py
+msgid "Entities"
+msgstr "Entités"
+
+#: iaso/models/base.py
+msgid "Planning"
+msgstr "Planification"
+
+#: iaso/models/base.py
+msgid "Specific options"
+msgstr "Options spécifiques"
+
+#: iaso/models/base.py
+msgid "Not specified"
+msgstr "Génériques"
 
 #: iaso/models/base.py
 msgid "Immediate export of instances to DHIS2"
@@ -458,8 +488,12 @@ msgstr ""
 msgid "Data source synchronization"
 msgstr "Synchronisation de source de données"
 
+#: iaso/models/deduplication.py
+msgid "Levenshtein"
+msgstr "Levenshtein"
+
 #: iaso/models/deduplication.py iaso/models/payments.py
-#: iaso/utils/models/virus_scan.py
+#: iaso/utils/virus_scan/model.py
 msgid "Pending"
 msgstr "En attente"
 
@@ -532,6 +566,18 @@ msgid "Create change request if form is reference form"
 msgstr ""
 "Créer une demande de modification si le formulaire est un formulaire de "
 "référence"
+
+#: iaso/models/metric.py
+msgid "Threshold"
+msgstr "Seuil"
+
+#: iaso/models/metric.py
+msgid "Linear"
+msgstr "Linéaire"
+
+#: iaso/models/metric.py
+msgid "Ordinal"
+msgstr "Ordinal"
 
 #: iaso/models/org_unit.py
 msgid "Country"
@@ -629,6 +675,170 @@ msgstr "Payé"
 msgid "Partially Paid"
 msgstr "Partiellement payé"
 
+#: iaso/permissions.py
+msgid "Formulaires"
+msgstr "Formulaires"
+
+#: iaso/permissions.py
+msgid "Statistiques pour les formulaires"
+msgstr "Statistiques pour les formulaires"
+
+#: iaso/permissions.py
+msgid "Correspondances avec DHIS2"
+msgstr "Correspondances avec DHIS2"
+
+#: iaso/permissions.py
+msgid "modules"
+msgstr "modules"
+
+#: iaso/permissions.py
+msgid "Complétude des données"
+msgstr "Complétude des données"
+
+#: iaso/permissions.py
+msgid "Unités d'organisations"
+msgstr "Unités d'organisations"
+
+#: iaso/permissions.py
+msgid "Historique des unités d'organisation"
+msgstr "Historique des unités d'organisation"
+
+#: iaso/permissions.py
+msgid "Lire les unités d'organisations"
+msgstr "Lire les unités d'organisations"
+
+#: iaso/permissions.py
+msgid "Editer le Registre"
+msgstr "Editer le Registre"
+
+#: iaso/permissions.py
+msgid "Lire le Registre"
+msgstr "Lire le Registre"
+
+#: iaso/permissions.py
+msgid "Correspondances sources"
+msgstr "Correspondances sources"
+
+#: iaso/permissions.py
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: iaso/permissions.py
+msgid "Users managed"
+msgstr "Utilisateurs gérés"
+
+#: iaso/permissions.py
+msgid "Pages"
+msgstr "Pages"
+
+#: iaso/permissions.py
+msgid "Projets"
+msgstr "Projets"
+
+#: iaso/permissions.py
+msgid "Sources"
+msgstr "Sources"
+
+#: iaso/permissions.py
+msgid "Can change the default version of a data source"
+msgstr "Peut modifier la version par défaut d'une source de données"
+
+#: iaso/permissions.py
+msgid "Tâches"
+msgstr "Tâches"
+
+#: iaso/permissions.py
+msgid "Soumissions"
+msgstr "Soumissions"
+
+#: iaso/permissions.py
+msgid "Editer soumissions"
+msgstr "Editer soumissions"
+
+#: iaso/permissions.py
+msgid "Editer le planning"
+msgstr "Editer le planning"
+
+#: iaso/permissions.py
+msgid "Lire le planning"
+msgstr "Lire le planning"
+
+#: iaso/permissions.py
+msgid "Reports"
+msgstr "Rapports"
+
+#: iaso/permissions.py
+msgid "Equipes"
+msgstr "Equipes"
+
+#: iaso/permissions.py
+msgid "Attributions"
+msgstr "Attributions"
+
+#: iaso/permissions.py
+msgid "Write entity type"
+msgstr "Écrire type d'entité"
+
+#: iaso/permissions.py
+msgid "Storages"
+msgstr "Stockages"
+
+#: iaso/permissions.py
+msgid "Completeness stats"
+msgstr "Statistiques de complétude"
+
+#: iaso/permissions.py
+msgid "Workflows"
+msgstr "Flux de travail"
+
+#: iaso/permissions.py
+msgid "Read Entity duplicates"
+msgstr "Lire les doublons d'entités"
+
+#: iaso/permissions.py
+msgid "Write Entity duplicates"
+msgstr "Écrire les doublons d'entités"
+
+#: iaso/permissions.py
+msgid "Manage user roles"
+msgstr "Gérer les rôles utilisateurs"
+
+#: iaso/permissions.py
+msgid "Read data store"
+msgstr "Lire le stockage de données"
+
+#: iaso/permissions.py
+msgid "Write data store"
+msgstr "Écrire dans le stockage de données"
+
+#: iaso/permissions.py
+msgid "Org unit types"
+msgstr "Types d'unités d'organisation"
+
+#: iaso/permissions.py
+msgid "Org unit groups"
+msgstr "Groupes d'unités d'organisation"
+
+#: iaso/permissions.py
+msgid "Org unit change request review"
+msgstr "Révision des demandes de modification d'unités d'organisation"
+
+#: iaso/permissions.py
+msgid "Org unit change request configurations"
+msgstr "Configurations des demandes de modification d'unités d'organisation"
+
+#: iaso/permissions.py
+msgid "Write data source"
+msgstr "Écrire source de données"
+
+#: iaso/permissions.py
+msgid "Write page"
+msgstr "Écrire page"
+
+#: iaso/permissions.py
+msgid "Payments page"
+msgstr "Page des paiements"
+
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
 msgid "Starting"
@@ -645,18 +855,6 @@ msgstr "Copie des unités organisationnelles"
 #: iaso/tasks/copy_version.py
 msgid "Fixing parents"
 msgstr "Correction des parents"
-
-#: iaso/utils/models/virus_scan.py
-msgid "Clean"
-msgstr "Aucun virus détecté"
-
-#: iaso/utils/models/virus_scan.py
-msgid "Infected"
-msgstr "Virus détecté"
-
-#: iaso/utils/models/virus_scan.py
-msgid "Error"
-msgstr "Erreur lors de l'analyse"
 
 #: iaso/utils/serializer/id_or_uuid_field.py
 msgid "This field is required."
@@ -676,3 +874,18 @@ msgstr ""
 #: iaso/utils/serializer/three_dim_point_field.py
 msgid "Enter a valid location."
 msgstr "Entrez une localisation valide."
+
+#: iaso/utils/virus_scan/model.py
+msgid "Clean"
+msgstr "Aucun virus détecté"
+
+#: iaso/utils/virus_scan/model.py
+msgid "Infected"
+msgstr "Virus détecté"
+
+#: iaso/utils/virus_scan/model.py
+msgid "Error"
+msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Polio"
+#~ msgstr "Polio"

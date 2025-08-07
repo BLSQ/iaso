@@ -1,7 +1,7 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, Table } from 'bluesquare-components';
-import React, { useCallback } from 'react';
 import { useFeatureFlagColumns } from '../config';
 import { FeatureFlag } from '../types/featureFlag';
 
@@ -53,17 +53,58 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
         [projectFeatureFlagsValues, handleChange],
     );
 
+    const [visibleFeatureGroups, setVisibleFeatureGroups] = useState<string[]>(
+        [],
+    );
+
+    const toggleFeatureGroup = useCallback(
+        group => {
+            const indexOfVisible = visibleFeatureGroups?.indexOf(group) ?? -1;
+            if (indexOfVisible < 0) {
+                setVisibleFeatureGroups([...visibleFeatureGroups, group]);
+            } else {
+                setVisibleFeatureGroups(
+                    visibleFeatureGroups.filter((_, i) => i !== indexOfVisible),
+                );
+            }
+        },
+        [visibleFeatureGroups, setVisibleFeatureGroups],
+    );
+
     const columns = useFeatureFlagColumns(
         setFeatureFlag,
+        toggleFeatureGroup,
         projectFeatureFlagsValues,
     );
+
+    const featureFlagsData = useMemo(() => {
+        const groupRows: string[] = [];
+        return featureFlags.reduce((acc, f) => {
+            const isGroupCollapsed = !visibleFeatureGroups.includes(f.category);
+            if (!groupRows.includes(f.category)) {
+                acc.push({
+                    code: f.category,
+                    group: true,
+                    collapsed: isGroupCollapsed,
+                });
+
+                groupRows.push(f.category);
+            }
+
+            if (!isGroupCollapsed) {
+                acc.push(f);
+            }
+
+            return acc;
+        }, [] as any[]);
+    }, [featureFlags, visibleFeatureGroups]);
 
     return (
         <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
             <Table
                 columns={columns}
-                data={featureFlags}
+                data={featureFlagsData}
                 showPagination={false}
                 countOnTop={false}
                 marginTop={false}

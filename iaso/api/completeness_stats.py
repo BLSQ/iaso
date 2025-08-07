@@ -52,7 +52,8 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType, Project
 from iaso.utils import geojson_queryset
 
@@ -344,7 +345,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.COMPLETENESS_STATS, permission.REGISTRY_WRITE, permission.REGISTRY_READ),  # type: ignore
+        HasPermission(
+            core_permissions.COMPLETENESS_STATS, core_permissions.REGISTRY_WRITE, core_permissions.REGISTRY_READ
+        ),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())

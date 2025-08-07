@@ -152,7 +152,8 @@ class FormsVersionAPITestCase(APITestCase):
         """GET /formversions/: allowed"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get("/api/formversions/")
+        with self.assertNumQueries(2):
+            response = self.client.get("/api/formversions/")
         self.assertJSONResponse(response, 200)
         form_versions_data = response.json()["form_versions"]
 

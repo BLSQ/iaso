@@ -529,6 +529,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                                             limit: 10,
                                             page: 1,
                                         }}
+                                        isSearchActive
                                     />
                                 </Box>
                             )}

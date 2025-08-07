@@ -15,9 +15,13 @@ class GPKGImport(TestCase):
     def test_minimal_import(self):
         self.assertEqual(0, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(0, Modification.objects.filter(content_type__model="group").count())
+
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -87,6 +91,7 @@ class GPKGImport(TestCase):
         version_number = 2
         source_name = "hey"
         source = DataSource.objects.create(name=source_name)
+        source.projects.add(self.project)  # Ensure the source has the project
         version = SourceVersion.objects.create(number=version_number, data_source=source)
         ou = OrgUnit.objects.create(
             name="bla",
@@ -112,7 +117,6 @@ class GPKGImport(TestCase):
 
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
-            project_id=self.project.id,
             source_name=source_name,
             version_number=version_number,
             validation_status="new",
@@ -180,6 +184,7 @@ class GPKGImport(TestCase):
         version_number = 1
         source_name = "hey"
         source = DataSource.objects.create(name=source_name)
+        source.projects.add(self.project)  # Ensure the source has the project
         version = SourceVersion.objects.create(number=2, data_source=source)  # same source different version number
         ou = OrgUnit.objects.create(name="bla", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=version)
         source2 = DataSource.objects.create(name="different_source")
@@ -189,9 +194,13 @@ class GPKGImport(TestCase):
         )
         Group.objects.create(source_version=version, source_ref="group_b", name="Group B")
         Group.objects.create(source_version=other_version, source_ref="group_b", name="Group B")
+
+        # Create a new source for the import
+        import_source = DataSource.objects.create(name="source_name")
+        import_source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
-            project_id=self.project.id,
             source_name="source_name",
             version_number=version_number,
             validation_status="new",
@@ -218,9 +227,12 @@ class GPKGImport(TestCase):
         self.assertEqual(ou2.org_unit_type, None)
 
     def test_import_orgunit_with_nogeo(self):
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -239,9 +251,12 @@ class GPKGImport(TestCase):
 
     def test_import_orgunit_without_code(self):
         # The "code" column does not exist in this GPKG
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -266,9 +281,13 @@ class GPKGImport(TestCase):
         out: OrgUnitType
         out = OrgUnitType.objects.create(name="AS", depth=4)
         out.projects.add(self.project)
+
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -310,9 +329,12 @@ class GPKGImport(TestCase):
         out_project3 = OrgUnitType.objects.create(name="FOSA", short_name="FOSA", depth=5)
         out_project3.projects.add(project3)
 
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -325,9 +347,12 @@ class GPKGImport(TestCase):
         other_project = Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id2")
         out = OrgUnitType.objects.create(name="AS", depth=100)
         out.projects.add(other_project)
+        # Ensure the DataSource is created with the project
+        source = DataSource.objects.create(name="test")
+        source.projects.add(self.project)
+
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
-            project_id=self.project.id,
             source_name="test",
             version_number=1,
             validation_status="new",
@@ -349,15 +374,16 @@ class GPKGImport(TestCase):
         # If version number is None, it should create a new version after the last one on this source
         source_name = "hey"
         source = DataSource.objects.create(name=source_name)
+        source.projects.add(self.project)  # Ensure the source has the project
         SourceVersion.objects.create(number=16, data_source=source)
         SourceVersion.objects.create(number=11, data_source=source)
         other_source = DataSource.objects.create(name="other source")
+        other_source.projects.add(self.project)  # Ensure the other source has the project
         SourceVersion.objects.create(number=17, data_source=other_source)
         SourceVersion.objects.create(number=18, data_source=other_source)
 
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified.gpkg",
-            project_id=self.project.id,
             source_name=source_name,
             version_number=None,
             validation_status="VALID",
@@ -395,18 +421,39 @@ class GPKGImport(TestCase):
         """
         # Test required columns (ref, name)
         required_columns = ["ref", "name"]
-        for column in required_columns:
+        for i, column in enumerate(required_columns):
             try:
+                # Ensure the DataSource is created with the project
+                source = DataSource.objects.create(name=f"test_column_validation_{i}")
+                source.projects.add(self.project)
+
                 import_gpkg_file(
                     f"./iaso/tests/fixtures/gpkg/missing_column_{column}.gpkg",
-                    project_id=self.project.id,
-                    source_name="test",
+                    source_name=f"test_column_validation_{i}",
                     version_number=1,
                     validation_status="new",
                     description="",
                 )
             except ValueError as e:
                 print(f"Caught expected error: {str(e)}")
+
+    def test_import_without_projects_raises_error(self):
+        """Test that importing a GPKG with a DataSource that has no projects raises an error"""
+        # Create a DataSource without any projects
+        source = DataSource.objects.create(name="test_no_projects")
+
+        # Try to import - this should raise a ValueError
+        with self.assertRaises(ValueError) as context:
+            import_gpkg_file(
+                "./iaso/tests/fixtures/gpkg/minimal.gpkg",
+                source_name="test_no_projects",
+                version_number=1,
+                validation_status="new",
+                description="",
+            )
+
+        # Verify the error message
+        self.assertIn("must have at least one project assigned", str(context.exception))
 
 
 class GPKGImportSimplifiedGroup(TestCase):
@@ -421,6 +468,7 @@ class GPKGImportSimplifiedGroup(TestCase):
         version_number = 1
         cls.source_name = "test source"
         cls.source = DataSource.objects.create(name=cls.source_name)
+        cls.source.projects.add(cls.project)  # Ensure the source has the project
         cls.version = SourceVersion.objects.create(number=version_number, data_source=cls.source)
 
     def test_import_orgunit_existing_group(self):
@@ -428,7 +476,6 @@ class GPKGImportSimplifiedGroup(TestCase):
 
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal_simplified_group.gpkg",
-            project_id=self.project.id,
             source_name=self.source_name,
             version_number=1,
             validation_status="new",
@@ -452,7 +499,6 @@ class GPKGImportSimplifiedGroup(TestCase):
         with self.assertRaises(ValueError):
             import_gpkg_file(
                 "./iaso/tests/fixtures/gpkg/minimal_simplified_group.gpkg",
-                project_id=self.project.id,
                 source_name=self.source_name,
                 version_number=1,
                 validation_status="new",
@@ -473,6 +519,7 @@ class GPKGImportInternalRefs(TestCase):
         cls.project = Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
         cls.source_name = "test source"
         cls.source = DataSource.objects.create(name=cls.source_name)
+        cls.source.projects.add(cls.project)  # Ensure the source has the project
         cls.version = SourceVersion.objects.create(number=1, data_source=cls.source)
 
         # Reproducing the content of the geopackage - Groups
@@ -584,7 +631,6 @@ class GPKGImportInternalRefs(TestCase):
 
         import_gpkg_file(
             self.GPKG_FILEPATH,
-            project_id=self.project.id,
             source_name=self.source_name,
             version_number=2,
             validation_status="new",
@@ -618,7 +664,6 @@ class GPKGImportInternalRefs(TestCase):
 
         import_gpkg_file(
             self.GPKG_FILEPATH,
-            project_id=self.project.id,
             source_name=self.source_name,
             version_number=1,
             validation_status="new",

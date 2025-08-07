@@ -1,3 +1,4 @@
+import React, { useCallback, useMemo, useState } from 'react';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
@@ -9,14 +10,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React, { useCallback, useMemo, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
 import {
     getSortedSourceVersions,
@@ -25,6 +25,7 @@ import {
     handleSort,
     handleTableParamsChange,
 } from '../utils';
+import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {
@@ -43,9 +44,13 @@ const VersionsDialog = ({ renderTrigger, source }) => {
         () => source?.versions ?? [],
         [source?.versions],
     );
+    const hasDhis2Module = userHasAccessToModule(
+        'DHIS2_MAPPING',
+        useCurrentUser(),
+    );
     const { formatMessage } = useSafeIntl();
 
-    const columns = useVersionsDialogTableColumns(source);
+    const columns = useVersionsDialogTableColumns(source, hasDhis2Module);
 
     const formatDataForTable = useCallback(
         (tableData, sortFunc) =>
@@ -132,21 +137,23 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 </Typography>
             )}
             <Grid item>
-                <AddTask
-                    renderTrigger={({ openDialog }) => (
-                        <Button onClick={openDialog}>
-                            <DHIS2Svg />
-                            <span className={spanStyle}>
-                                <FormattedMessage
-                                    id="iaso.versionsDialog.label.newVersionDhis2"
-                                    defaultMessage="New version from DHIS2"
-                                />
-                            </span>
-                        </Button>
-                    )}
-                    sourceId={source.id}
-                    sourceCredentials={source.credentials ?? {}}
-                />
+                {hasDhis2Module && (
+                    <AddTask
+                        renderTrigger={({ openDialog }) => (
+                            <Button onClick={openDialog}>
+                                <DHIS2Svg />
+                                <span className={spanStyle}>
+                                    <FormattedMessage
+                                        id="iaso.versionsDialog.label.newVersionDhis2"
+                                        defaultMessage="New version from DHIS2"
+                                    />
+                                </span>
+                            </Button>
+                        )}
+                        sourceId={source.id}
+                        sourceCredentials={source.credentials ?? {}}
+                    />
+                )}
                 <ImportGeoPkgDialog
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
@@ -161,7 +168,6 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     )}
                     sourceId={source.id}
                     sourceName={source.name}
-                    projects={source.projects.flat()}
                 />
 
                 <AddNewEmptyVersion

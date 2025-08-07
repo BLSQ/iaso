@@ -172,5 +172,8 @@
         "webpack-bundle-tracker": "^1.0.0-alpha.1",
         "webpack-cli": "^4.10.0",
         "webpack-dev-server": "^4.15.1"
+    },
+    "overrides": {
+        "canvg": "4.0.3"
     }
 }

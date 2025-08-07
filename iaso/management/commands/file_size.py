@@ -102,7 +102,7 @@ class Command(BaseCommand):
     @staticmethod
     def calculate_import_gpkg_file_size(account: Account) -> int:
         """Calculate the ImportGPKG size for an account"""
-        imports = ImportGPKG.objects.filter(project__account=account)
+        imports = ImportGPKG.objects.filter(data_source__projects__account=account)
         return Command.sum_size(map(lambda x: x.file, imports))
 
     @staticmethod

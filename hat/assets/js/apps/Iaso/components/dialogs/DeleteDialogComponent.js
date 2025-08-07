@@ -1,9 +1,9 @@
 import React, { useCallback } from 'react';
+import { DialogContentText } from '@mui/material';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-import { DialogContentText } from '@mui/material';
 
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 
 import MESSAGES from './messages';

@@ -118,11 +118,11 @@ class LqasDistrictData(models.Model):
     status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
 
     # care giver stats
-    cg_ratio = models.FloatField()
-    cg_best_info_source = models.CharField()
-    cg_best_info_ratio = models.FloatField()
-    cg_caregivers_informed = models.IntegerField()
-    cg_caregivers_informed_ratio = models.FloatField()
+    cg_ratio = models.FloatField(blank=True, null=True)
+    cg_best_info_source = models.CharField(blank=True)
+    cg_best_info_ratio = models.FloatField(blank=True, null=True)
+    cg_caregivers_informed = models.IntegerField(blank=True, null=True)
+    cg_caregivers_informed_ratio = models.FloatField(blank=True, null=True)
 
     JSON_KEYS = {
         "total_children_fmd": "total_child_fmd",
@@ -132,6 +132,7 @@ class LqasDistrictData(models.Model):
         "care_giver_stats": "care_giver_stats",
     }
     CG_JSON_KEYS = {
+        "cg_ratio": "ratio",
         "cg_caregivers_informed": "caregivers_informed",
         "cg_caregivers_informed_ratio": "caregivers_informed_ratio",
     }

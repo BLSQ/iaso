@@ -8,11 +8,8 @@ from iaso.models.org_unit import OrgUnit, OrgUnitType
 from plugins.polio.api.lqas_im.lqas_data_manager import LqasDataManager
 from plugins.polio.models.base import Campaign, Round, SubActivity
 from plugins.polio.models.lqas_im import (
-    LqasAbsenceStats,
-    LqasActivityStats,
-    LqasCareGiverStats,
-    LqasEntry,
-    LqasNoMarkStats,
+    LqasDistrictData,
+    LqasRoundData,
     LqasStatuses,
 )
 
@@ -186,42 +183,38 @@ class LqasDataManagerTestCase(TestCase):
         with patch.object(manager.logger, "info") as mock_info:
             manager.parse_json_and_create_lqas_activities(self.sample_lqas_data)
 
-        # Verify LQAS activity stats were created
-        activity_stats = LqasActivityStats.objects.filter(round=self.round).first()
-        self.assertIsNotNone(activity_stats)
-        self.assertEqual(activity_stats.lqas_failed, 2)
-        self.assertEqual(activity_stats.lqas_passed, 8)
-        self.assertEqual(activity_stats.lqas_no_data, 0)
-        self.assertEqual(activity_stats.status, LqasStatuses.INSCOPE)
+        # Verify LQAS round data was created
+        round_data = LqasRoundData.objects.filter(round=self.round).first()
+        self.assertIsNotNone(round_data)
+        self.assertEqual(round_data.lqas_failed, 2)
+        self.assertEqual(round_data.lqas_passed, 8)
+        self.assertEqual(round_data.lqas_no_data, 0)
+        self.assertEqual(round_data.status, LqasStatuses.INSCOPE)
 
-        # Verify LQAS no mark stats were created
-        no_mark_stats = LqasNoMarkStats.objects.filter(round=self.round).first()
-        self.assertIsNotNone(no_mark_stats)
-        self.assertEqual(no_mark_stats.child_absent, 5)
-        self.assertEqual(no_mark_stats.other, 2)
-        self.assertEqual(no_mark_stats.non_compliance, 1)
-        self.assertEqual(no_mark_stats.child_was_asleep, 3)
-        self.assertEqual(no_mark_stats.house_not_visited, 0)
-        self.assertEqual(no_mark_stats.child_is_a_visitor, 1)
-        self.assertEqual(no_mark_stats.vaccinated_but_not_fm, 2)
+        # Verify NFM stats were created
+        self.assertEqual(round_data.nfm_child_absent, 5)
+        self.assertEqual(round_data.nfm_other, 2)
+        self.assertEqual(round_data.nfm_non_compliance, 1)
+        self.assertEqual(round_data.nfm_child_was_asleep, 3)
+        self.assertEqual(round_data.nfm_house_not_visited, 0)
+        self.assertEqual(round_data.nfm_child_is_a_visitor, 1)
+        self.assertEqual(round_data.nfm_vaccinated_but_not_fm, 2)
 
-        # Verify LQAS absence stats were created
-        absence_stats = LqasAbsenceStats.objects.filter(round=self.round).first()
-        self.assertIsNotNone(absence_stats)
-        self.assertEqual(absence_stats.farm, 3)
-        self.assertEqual(absence_stats.other, 1)
-        self.assertEqual(absence_stats.market, 2)
-        self.assertEqual(absence_stats.school, 4)
-        self.assertEqual(absence_stats.travelled, 1)
-        self.assertEqual(absence_stats.in_playground, 0)
-        self.assertEqual(absence_stats.unknown, 1)
+        # Verify absence stats were created
+        self.assertEqual(round_data.abs_farm, 3)
+        self.assertEqual(round_data.abs_other, 1)
+        self.assertEqual(round_data.abs_market, 2)
+        self.assertEqual(round_data.abs_school, 4)
+        self.assertEqual(round_data.abs_travelled, 1)
+        self.assertEqual(round_data.abs_in_playground, 0)
+        self.assertEqual(round_data.abs_unknown, 1)
 
-        # Verify LQAS entries were created
-        entries = LqasEntry.objects.filter(round=self.round)
-        self.assertEqual(entries.count(), 2)
+        # Verify LQAS district data was created
+        district_entries = LqasDistrictData.objects.filter(round=self.round)
+        self.assertEqual(district_entries.count(), 2)
 
         # Check first district entry
-        entry1 = entries.filter(district=self.district1).first()
+        entry1 = district_entries.filter(district=self.district1).first()
         self.assertIsNotNone(entry1)
         self.assertEqual(entry1.total_children_fmd, 45)
         self.assertEqual(entry1.total_children_checked, 50)
@@ -229,16 +222,14 @@ class LqasDataManagerTestCase(TestCase):
         self.assertEqual(entry1.status, LqasStatuses.INSCOPE)
 
         # Check caregiver stats for first entry
-        caregiver_stats1 = entry1.caregiver_stats
-        self.assertIsNotNone(caregiver_stats1)
-        self.assertEqual(caregiver_stats1.ratio, 0.9)
-        self.assertEqual(caregiver_stats1.caregivers_informed, 45)
-        self.assertEqual(caregiver_stats1.caregivers_informed_ratio, 0.9)
-        self.assertEqual(caregiver_stats1.best_info_source, "health_worker")
-        self.assertEqual(caregiver_stats1.best_info_ratio, 30)
+        self.assertEqual(entry1.cg_ratio, 0.9)
+        self.assertEqual(entry1.cg_caregivers_informed, 45)
+        self.assertEqual(entry1.cg_caregivers_informed_ratio, 0.9)
+        self.assertEqual(entry1.cg_best_info_source, "health_worker")
+        self.assertEqual(entry1.cg_best_info_ratio, 30)
 
         # Check second district entry
-        entry2 = entries.filter(district=self.district2).first()
+        entry2 = district_entries.filter(district=self.district2).first()
         self.assertIsNotNone(entry2)
         self.assertEqual(entry2.total_children_fmd, 38)
         self.assertEqual(entry2.total_children_checked, 40)
@@ -371,31 +362,28 @@ class LqasDataManagerTestCase(TestCase):
         with patch.object(manager.logger, "info") as mock_info:
             manager.parse_json_and_update_lqas_activities(updated_data)
 
-        # Verify LQAS activity stats were updated
-        activity_stats = LqasActivityStats.objects.filter(round=self.round).first()
-        self.assertEqual(activity_stats.lqas_failed, 3)
-        self.assertEqual(activity_stats.lqas_passed, 7)
-        self.assertEqual(activity_stats.lqas_no_data, 1)
+        # Verify LQAS round data was updated
+        round_data = LqasRoundData.objects.filter(round=self.round).first()
+        self.assertEqual(round_data.lqas_failed, 3)
+        self.assertEqual(round_data.lqas_passed, 7)
+        self.assertEqual(round_data.lqas_no_data, 1)
 
-        # Verify LQAS no mark stats were updated
-        no_mark_stats = LqasNoMarkStats.objects.filter(round=self.round).first()
-        self.assertEqual(no_mark_stats.child_absent, 6)
+        # Verify NFM stats were updated
+        self.assertEqual(round_data.nfm_child_absent, 6)
 
-        # Verify LQAS absence stats were updated
-        absence_stats = LqasAbsenceStats.objects.filter(round=self.round).first()
-        self.assertEqual(absence_stats.farm, 4)
+        # Verify absence stats were updated
+        self.assertEqual(round_data.abs_farm, 4)
 
-        # Verify LQAS entry was updated
-        entry = LqasEntry.objects.filter(round=self.round, district=self.district1).first()
+        # Verify LQAS district data was updated
+        entry = LqasDistrictData.objects.filter(round=self.round, district=self.district1).first()
         self.assertEqual(entry.total_children_fmd, 46)
 
         # Verify caregiver stats were updated
-        caregiver_stats = entry.caregiver_stats
-        self.assertEqual(caregiver_stats.ratio, 0.92)
-        self.assertEqual(caregiver_stats.caregivers_informed, 46)
-        self.assertEqual(caregiver_stats.caregivers_informed_ratio, 0.92)
-        self.assertEqual(caregiver_stats.best_info_source, "health_worker")
-        self.assertEqual(caregiver_stats.best_info_ratio, 30)
+        self.assertEqual(entry.cg_ratio, 0.92)
+        self.assertEqual(entry.cg_caregivers_informed, 46)
+        self.assertEqual(entry.cg_caregivers_informed_ratio, 0.92)
+        self.assertEqual(entry.cg_best_info_source, "health_worker")
+        self.assertEqual(entry.cg_best_info_ratio, 30)
 
         # Verify logging
         mock_info.assert_any_call("Success: 1/1")
@@ -426,13 +414,31 @@ class LqasDataManagerTestCase(TestCase):
 
         manager.parse_json_and_create_lqas_activities(data_with_empty_values)
 
-        # Verify LQAS activity stats were created with default values
-        activity_stats = LqasActivityStats.objects.filter(round=self.round).first()
-        self.assertIsNotNone(activity_stats)
-        self.assertEqual(activity_stats.lqas_failed, 0)
-        self.assertEqual(activity_stats.lqas_passed, 0)
-        self.assertEqual(activity_stats.lqas_no_data, 0)
-        self.assertEqual(activity_stats.status, LqasStatuses.INSCOPE)
+        # Verify LQAS round data was created with default values
+        round_data = LqasRoundData.objects.filter(round=self.round).first()
+        self.assertIsNotNone(round_data)
+        self.assertEqual(round_data.lqas_failed, 0)
+        self.assertEqual(round_data.lqas_passed, 0)
+        self.assertEqual(round_data.lqas_no_data, 0)
+        self.assertEqual(round_data.status, LqasStatuses.INSCOPE)
+
+        # Verify NFM fields have default values
+        self.assertEqual(round_data.nfm_child_absent, 0)
+        self.assertEqual(round_data.nfm_other, 0)
+        self.assertEqual(round_data.nfm_non_compliance, 0)
+        self.assertEqual(round_data.nfm_child_was_asleep, 0)
+        self.assertEqual(round_data.nfm_house_not_visited, 0)
+        self.assertEqual(round_data.nfm_child_is_a_visitor, 0)
+        self.assertEqual(round_data.nfm_vaccinated_but_not_fm, 0)
+
+        # Verify absence fields have default values
+        self.assertEqual(round_data.abs_farm, 0)
+        self.assertEqual(round_data.abs_other, 0)
+        self.assertEqual(round_data.abs_market, 0)
+        self.assertEqual(round_data.abs_school, 0)
+        self.assertEqual(round_data.abs_travelled, 0)
+        self.assertEqual(round_data.abs_in_playground, 0)
+        self.assertEqual(round_data.abs_unknown, 0)
 
     def test_parse_json_with_missing_caregiver_stats(self):
         """Test parsing JSON data without caregiver stats"""
@@ -463,14 +469,6 @@ class LqasDataManagerTestCase(TestCase):
         }
 
         manager.parse_json_and_create_lqas_activities(data_without_caregiver_stats)
-
-        # Verify LQAS entry was created
-        entry = LqasEntry.objects.filter(round=self.round, district=self.district1).first()
-        self.assertIsNotNone(entry)
-
-        # Verify no caregiver stats were created
-        caregiver_stats = LqasCareGiverStats.objects.filter(lqas_entry=entry).first()
-        self.assertIsNone(caregiver_stats)
 
     def test_parse_json_with_invalid_caregiver_stats(self):
         """Test parsing JSON data with invalid caregiver stats structure"""
@@ -505,51 +503,111 @@ class LqasDataManagerTestCase(TestCase):
         # This should not raise an error but should handle gracefully
         manager.parse_json_and_create_lqas_activities(data_with_invalid_caregiver_stats)
 
-        # Verify LQAS entry was created
-        entry = LqasEntry.objects.filter(round=self.round, district=self.district1).first()
-        self.assertIsNotNone(entry)
-        # Verify no caregiver stats were created
-        caregiver_stats = LqasCareGiverStats.objects.filter(lqas_entry=entry).first()
-        self.assertIsNone(caregiver_stats)
-
     def test_safe_update_or_create_method(self):
         """Test the _safe_update_or_create method"""
         manager = LqasDataManager(account=self.account)
 
         # Test creating new instance
         instance = manager._safe_update_or_create(
-            model_class=LqasActivityStats,
+            model_class=LqasRoundData,
             lookup_kwargs={"round": self.round, "subactivity": None},
             update_values={
                 "lqas_failed": 5,
                 "lqas_passed": 10,
                 "lqas_no_data": 0,
                 "status": LqasStatuses.INSCOPE,
+                "nfm_child_absent": 0,
+                "nfm_other": 0,
+                "nfm_non_compliance": 0,
+                "nfm_child_was_asleep": 0,
+                "nfm_house_not_visited": 0,
+                "nfm_child_is_a_visitor": 0,
+                "nfm_vaccinated_but_not_fm": 0,
+                "abs_farm": 0,
+                "abs_other": 0,
+                "abs_market": 0,
+                "abs_school": 0,
+                "abs_travelled": 0,
+                "abs_in_playground": 0,
+                "abs_unknown": 0,
             },
         )
 
         self.assertIsNotNone(instance)
         self.assertEqual(instance.lqas_failed, 5)
         self.assertEqual(instance.lqas_passed, 10)
+        self.assertEqual(instance.lqas_no_data, 0)
+        self.assertEqual(instance.status, LqasStatuses.INSCOPE)
+
+        # Assert NFM (No Finger Mark) fields
+        self.assertEqual(instance.nfm_child_absent, 0)
+        self.assertEqual(instance.nfm_other, 0)
+        self.assertEqual(instance.nfm_non_compliance, 0)
+        self.assertEqual(instance.nfm_child_was_asleep, 0)
+        self.assertEqual(instance.nfm_house_not_visited, 0)
+        self.assertEqual(instance.nfm_child_is_a_visitor, 0)
+        self.assertEqual(instance.nfm_vaccinated_but_not_fm, 0)
+
+        # Assert absence fields
+        self.assertEqual(instance.abs_farm, 0)
+        self.assertEqual(instance.abs_other, 0)
+        self.assertEqual(instance.abs_market, 0)
+        self.assertEqual(instance.abs_school, 0)
+        self.assertEqual(instance.abs_travelled, 0)
+        self.assertEqual(instance.abs_in_playground, 0)
+        self.assertEqual(instance.abs_unknown, 0)
 
         # Test updating existing instance
         updated_instance = manager._safe_update_or_create(
-            model_class=LqasActivityStats,
+            model_class=LqasRoundData,
             lookup_kwargs={"round": self.round, "subactivity": None},
             update_values={
                 "lqas_failed": 7,
                 "lqas_passed": 8,
                 "lqas_no_data": 1,
                 "status": LqasStatuses.INSCOPE,
+                "nfm_child_absent": 0,
+                "nfm_other": 0,
+                "nfm_non_compliance": 0,
+                "nfm_child_was_asleep": 0,
+                "nfm_house_not_visited": 0,
+                "nfm_child_is_a_visitor": 0,
+                "nfm_vaccinated_but_not_fm": 0,
+                "abs_farm": 0,
+                "abs_other": 0,
+                "abs_market": 0,
+                "abs_school": 0,
+                "abs_travelled": 0,
+                "abs_in_playground": 0,
+                "abs_unknown": 0,
             },
         )
 
         self.assertEqual(updated_instance.lqas_failed, 7)
         self.assertEqual(updated_instance.lqas_passed, 8)
         self.assertEqual(updated_instance.lqas_no_data, 1)
+        self.assertEqual(updated_instance.status, LqasStatuses.INSCOPE)
+
+        # Assert NFM (No Finger Mark) fields
+        self.assertEqual(updated_instance.nfm_child_absent, 0)
+        self.assertEqual(updated_instance.nfm_other, 0)
+        self.assertEqual(updated_instance.nfm_non_compliance, 0)
+        self.assertEqual(updated_instance.nfm_child_was_asleep, 0)
+        self.assertEqual(updated_instance.nfm_house_not_visited, 0)
+        self.assertEqual(updated_instance.nfm_child_is_a_visitor, 0)
+        self.assertEqual(updated_instance.nfm_vaccinated_but_not_fm, 0)
+
+        # Assert absence fields
+        self.assertEqual(updated_instance.abs_farm, 0)
+        self.assertEqual(updated_instance.abs_other, 0)
+        self.assertEqual(updated_instance.abs_market, 0)
+        self.assertEqual(updated_instance.abs_school, 0)
+        self.assertEqual(updated_instance.abs_travelled, 0)
+        self.assertEqual(updated_instance.abs_in_playground, 0)
+        self.assertEqual(updated_instance.abs_unknown, 0)
 
         # Verify only one instance exists
-        self.assertEqual(LqasActivityStats.objects.filter(round=self.round, subactivity=None).count(), 1)
+        self.assertEqual(LqasRoundData.objects.filter(round=self.round, subactivity=None).count(), 1)
 
     def test_prefetch_rounds_and_districts_method(self):
         """Test the _prefetch_rounds_and_districts method"""
@@ -573,13 +631,8 @@ class LqasDataManagerTestCase(TestCase):
         manager.parse_json_and_create_lqas_activities(self.sample_lqas_data)
 
         # Verify only one set of records exists
-        self.assertEqual(LqasActivityStats.objects.filter(round=self.round).count(), 1)
-        self.assertEqual(LqasNoMarkStats.objects.filter(round=self.round).count(), 1)
-        self.assertEqual(LqasAbsenceStats.objects.filter(round=self.round).count(), 1)
-        self.assertEqual(LqasEntry.objects.filter(round=self.round).count(), 2)  # one entry per district
-        self.assertEqual(
-            LqasCareGiverStats.objects.filter(lqas_entry__round=self.round).count(), 2
-        )  # one care giver stats per district
+        self.assertEqual(LqasRoundData.objects.filter(round=self.round).count(), 1)
+        self.assertEqual(LqasDistrictData.objects.filter(round=self.round).count(), 2)  # one entry per district
 
     def test_multiple_campaigns_and_rounds(self):
         """Test handling multiple campaigns and rounds"""
@@ -612,6 +665,12 @@ class LqasDataManagerTestCase(TestCase):
                                     "total_child_fmd": 45,
                                     "total_child_checked": 50,
                                     "district": self.district1.id,
+                                    "care_giver_stats": {
+                                        "ratio": 0.9,
+                                        "caregivers_informed": 45,
+                                        "caregivers_informed_ratio": 0.9,
+                                        "health_worker": 30,
+                                    },
                                 },
                             },
                         }
@@ -628,6 +687,12 @@ class LqasDataManagerTestCase(TestCase):
                                     "total_child_fmd": 38,
                                     "total_child_checked": 40,
                                     "district": self.district2.id,
+                                    "care_giver_stats": {
+                                        "ratio": 0.95,
+                                        "caregivers_informed": 38,
+                                        "caregivers_informed_ratio": 0.95,
+                                        "health_worker": 25,
+                                    },
                                 },
                             },
                         }
@@ -639,7 +704,27 @@ class LqasDataManagerTestCase(TestCase):
         manager.parse_json_and_create_lqas_activities(multi_campaign_data)
 
         # Verify data was created for both campaigns
-        self.assertEqual(LqasActivityStats.objects.filter(round=self.round).count(), 1)
-        self.assertEqual(LqasActivityStats.objects.filter(round=round2).count(), 1)
-        self.assertEqual(LqasEntry.objects.filter(round=self.round).count(), 1)
-        self.assertEqual(LqasEntry.objects.filter(round=round2).count(), 1)
+        self.assertEqual(LqasRoundData.objects.filter(round=self.round).count(), 1)
+        self.assertEqual(LqasRoundData.objects.filter(round=round2).count(), 1)
+        self.assertEqual(LqasDistrictData.objects.filter(round=self.round).count(), 1)
+        self.assertEqual(LqasDistrictData.objects.filter(round=round2).count(), 1)
+
+        # Verify specific data for first campaign
+        round_data1 = LqasRoundData.objects.filter(round=self.round).first()
+        self.assertEqual(round_data1.lqas_failed, 2)
+        self.assertEqual(round_data1.lqas_passed, 8)
+
+        district_data1 = LqasDistrictData.objects.filter(round=self.round).first()
+        self.assertEqual(district_data1.total_children_fmd, 45)
+        self.assertEqual(district_data1.total_children_checked, 50)
+        self.assertEqual(district_data1.cg_ratio, 0.9)
+
+        # Verify specific data for second campaign
+        round_data2 = LqasRoundData.objects.filter(round=round2).first()
+        self.assertEqual(round_data2.lqas_failed, 1)
+        self.assertEqual(round_data2.lqas_passed, 9)
+
+        district_data2 = LqasDistrictData.objects.filter(round=round2).first()
+        self.assertEqual(district_data2.total_children_fmd, 38)
+        self.assertEqual(district_data2.total_children_checked, 40)
+        self.assertEqual(district_data2.cg_ratio, 0.95)

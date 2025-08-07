@@ -124,7 +124,7 @@ class LqasDataManager:
                         district_id = district_data["district"]
                         try:
                             district = districts.get(id=district_id)
-                            self._create_lqas_district_data(
+                            self._create_district_data(
                                 round_obj=round_obj, district=district, district_data=district_data
                             )
                         except OrgUnit.DoesNotExist as e:
@@ -168,14 +168,14 @@ class LqasDataManager:
             for round_data in campaign_data.get("rounds", []) or []:
                 try:
                     round_obj = rounds.get(number=round_data["number"], campaign__obr_name=obr_name)
-                    self._update_lqas_round_data(round_obj, round_data)
+                    self._update_round_data(round_obj, round_data)
                     # Update district data
                     districts_results = round_data.get("data", {}) or {}
                     for district_name, district_data in districts_results.items():
                         district_id = district_data["district"]
                         try:
                             district = districts.get(id=district_id)
-                            self._update_lqas_district_data(
+                            self._update_district_data(
                                 round_obj=round_obj, district=district, district_data=district_data
                             )
 
@@ -229,7 +229,7 @@ class LqasDataManager:
         )
         return rounds, districts
 
-    def _create_lqas_round_data(self, round_obj: Round, obr_name: str, round_data, subactivity=None):
+    def _create_round_data(self, round_obj: Round, obr_name: str, round_data, subactivity=None):
         nfm_data = round_data.get("nfm_stats", {}) or {}
         absence_data = round_data.get("nfm_abs_stats", {}) or {}
         try:
@@ -293,29 +293,33 @@ class LqasDataManager:
             update_values=update_values,
         )
 
-    def _create_lqas_district_data(self, round_obj: Round, district: OrgUnit, district_data, subactivity=None):
+    def _get_best_info_source(self, caregiver_data):
+        best_info_source_data = [
+            item
+            for item in caregiver_data.items()
+            if item[0]
+            not in [
+                LqasDistrictData.CG_JSON_KEYS["cg_ratio"],
+                LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed"],
+                LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed_ratio"],
+            ]
+        ]
+        if len(best_info_source_data) == 0:
+            return None, None
+
+        return best_info_source_data[0]
+
+    def _create_district_data(self, round_obj: Round, district: OrgUnit, district_data, subactivity=None):
         try:
             caregiver_data = district_data.get(LqasDistrictData.JSON_KEYS["care_giver_stats"], {})
 
-            best_info_source_data = [
-                item
-                for item in caregiver_data.items()
-                if item[0]
-                not in [
-                    LqasDistrictData.CG_JSON_KEYS["cg_ratio"],
-                    LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed"],
-                    LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed_ratio"],
-                ]
-            ]
-            best_info_source, best_info_source_ratio = best_info_source_data[0]
+            best_info_source, best_info_ratio = self._get_best_info_source(caregiver_data)
 
-            ratio = (caregiver_data.get("ratio", 0) or 0,)
-            caregivers_informed = (caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed"], 0) or 0,)
+            ratio = caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_ratio"], 0) or 0
+            caregivers_informed = caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed"], 0) or 0
             caregivers_informed_ratio = (
-                caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed_ratio"], 0) or 0,
+                caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_caregivers_informed_ratio"], 0) or 0
             )
-            best_info_source = (best_info_source,)
-            best_info_ratio = (best_info_source_ratio,)
 
             lqas_entry = LqasDistrictData.objects.create(
                 round=round_obj,
@@ -332,6 +336,7 @@ class LqasDataManager:
                 cg_caregivers_informed=caregivers_informed,
                 cg_caregivers_informed_ratio=caregivers_informed_ratio,
             )
+            print("ENTRY", lqas_entry)
             return lqas_entry
 
         except (IntegrityError, ValidationError) as e:
@@ -341,21 +346,17 @@ class LqasDataManager:
             self.logger.warning(e)
             raise e
 
-    def _update_lqas_district_data(self, round_obj: Round, district: OrgUnit, district_data, subactivity=None):
+    def _update_district_data(self, round_obj: Round, district: OrgUnit, district_data, subactivity=None):
         caregiver_data = district_data.get(LqasDistrictData.JSON_KEYS["care_giver_stats"], {})
-        best_info_source_data = [
-            item
-            for item in caregiver_data.items()
-            if item[0] not in ["ratio", "caregivers_informed", "caregivers_informed_ratio"]
-        ]
-        best_info_source, best_info_source_ratio = best_info_source_data[0]
+        best_info_source, best_info_source_ratio = self._get_best_info_source(caregiver_data)
+
         update_values = {
             "total_children_fmd": district_data.get(LqasDistrictData.JSON_KEYS["total_children_fmd"], 0) or 0,
             "total_children_checked": district_data.get(LqasDistrictData.JSON_KEYS["total_children_checked"], 0) or 0,
             "total_sites_visited": district_data.get(LqasDistrictData.JSON_KEYS["total_sites_visited"], 0) or 0,
             "status": district_data.get(LqasDistrictData.JSON_KEYS["status"], LqasStatuses.INSCOPE)
             or LqasStatuses.INSCOPE,
-            "cg_ratio": caregiver_data.get("ratio", 0) or 0,
+            "cg_ratio": caregiver_data.get(LqasDistrictData.CG_JSON_KEYS["cg_ratio"], 0) or 0,
             "cg_caregivers_informed": caregiver_data.get("caregivers_informed", 0) or 0,
             "cg_caregivers_informed_ratio": caregiver_data.get("caregivers_informed_ratio", 0) or 0,
             "cg_best_info_source": best_info_source,

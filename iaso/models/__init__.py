@@ -67,6 +67,7 @@ __all__ = [
     "Project",
     "Report",
     "ReportVersion",
+    "Session",
     "SourceVersion",
     "StorageDevice",
     "StorageLogEntry",

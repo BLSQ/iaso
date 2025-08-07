@@ -1,7 +1,11 @@
+from typing import Union
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext as _
 
+from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnit
 
 
@@ -87,12 +91,21 @@ class LqasActivityStats(LqasBaseModel):
         ]
 
 
+class LqasEntryQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        qs = self
+        if user.is_authenticated:
+            qs = qs.filter(round__campaign__account=user.iaso_profile.account)
+        return qs.none()
+
+
 class LqasEntry(LqasDistrictBaseModel):
     total_children_fmd = models.IntegerField()
     total_children_checked = models.IntegerField()
     total_sites_visited = models.IntegerField()
     status = models.CharField(max_length=20, choices=LqasStatuses.choices, default=LqasStatuses.INSCOPE)
-
+    # manager
+    objects = models.Manager.from_queryset(LqasEntryQuerySet)()
     JSON_KEYS = {
         "total_children_fmd": "total_child_fmd",
         "total_children_checked": "total_child_checked",
@@ -115,6 +128,11 @@ class LqasEntry(LqasDistrictBaseModel):
                 name="unique_lqasentry_round_district_no_subactivity",
                 condition=models.Q(subactivity__isnull=True),
             ),
+        ]
+        indexes = [
+            models.Index(fields=["district", "round"]),
+            models.Index(fields=["subactivity", "round"]),
+            models.Index(fields=["district", "round", "subactivity"]),
         ]
 
 

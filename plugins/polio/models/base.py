@@ -338,6 +338,10 @@ class SubActivity(models.Model):
 
     class Meta:
         verbose_name_plural = "subactivities"
+        indexes = [
+            models.Index(fields=["lqas_ended_at"]),
+            models.Index(fields=["end_date"]),
+        ]
 
     def __str__(self):
         return self.name
@@ -366,6 +370,10 @@ class SubActivity(models.Model):
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
+        indexes = [
+            models.Index(fields=["lqas_ended_at"]),
+            models.Index(fields=["ended_at"]),
+        ]
 
     # With the current situation/UI, all rounds must have a start date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL

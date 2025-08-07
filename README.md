@@ -676,6 +676,7 @@ APP_TITLE="<app_title>"
 FAVICON_PATH="<path_in_static_folder>"
 LOGO_PATH="<path_in_static_folder>"
 SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
+HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 ```
 
 > **note**

@@ -5,31 +5,17 @@ from datetime import datetime, timedelta
 import django_filters
 
 from django.db.models import Q, QuerySet
-from rest_framework import permissions, serializers
+from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnit
-from plugins.polio import permissions as polio_permissions
+from plugins.polio.api.lqas_im.permissions import HasPolioAdminPermission, HasPolioPermission
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
 from plugins.polio.models.base import SubActivity
-
-
-class HasPolioPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.has_perm(polio_permissions.POLIO) or request.user.is_superuser
-        )
-
-
-class HasPolioAdminPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.has_perm(polio_permissions.POLIO_CONFIG) or request.user.is_superuser
-        )
 
 
 class LqasImCountryOptionsFilter(django_filters.rest_framework.FilterSet):

@@ -28,6 +28,7 @@ from plugins.polio.api.dashboards.vaccine_stock_history import VaccineStockHisto
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.lqas_im.lqas_im_country import LQASIMCountryViewset
+from plugins.polio.api.lqas_im.lqas_im_country_block import LqasCountryBlockViewset
 from plugins.polio.api.lqas_im.lqas_im_dropdowns import (
     LqasImCampaignOptionsViewset,
     LqasImCountriesOptionsViewset,
@@ -91,6 +92,7 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(
     r"polio/lqasim/countryblockoptions", LqasImCountryBlockOptionsViewSet, basename="lqasimcountryblockoptions"
 )
+router.register(r"polio/lqasim/countryblock", LqasCountryBlockViewset, basename="lqasimcountryblock")
 router.register(r"polio/lqasim/countriesoptions", LqasImCountriesOptionsViewset, basename="lqasimcountriesoptions")
 router.register(r"polio/lqasim/campaignoptions", LqasImCampaignOptionsViewset, basename="lqasimcampaignoptions")
 router.register(r"polio/lqasim/roundoptions", LqasImRoundOptionsViewset, basename="lqasimroundoptions")

@@ -1,3 +1,6 @@
+from typing import Union
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext as _
@@ -109,7 +112,18 @@ class LqasRoundData(models.Model):
         return f"{self._meta.verbose_name} for {self.round}"
 
 
+class LqasDistrictDataQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        qs = self
+        if user.is_authenticated:
+            qs = qs.filter(round__campaign__account=user.iaso_profile.account)
+        return qs.none()
+
+
 class LqasDistrictData(models.Model):
+    # Manager
+    objects = models.Manager.from_queryset(LqasDistrictDataQuerySet)()
+
     round = models.ForeignKey("Round", on_delete=models.CASCADE)
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, null=True, blank=True)
     district = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)

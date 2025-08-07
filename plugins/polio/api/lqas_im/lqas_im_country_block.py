@@ -12,18 +12,24 @@ from rest_framework.exceptions import ValidationError
 from iaso.api.common import ModelViewSet
 from iaso.models.base import Group
 from plugins.polio.api.lqas_im.permissions import HasPolioAdminPermission, HasPolioPermission
-from plugins.polio.models.lqas_im import LqasCareGiverStats, LqasEntry
+from plugins.polio.models.lqas_im import LqasDistrictData
 
 
 class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
     class Meta:
-        model = LqasEntry
-        fields = "__all__"
+        model = LqasDistrictData
+        fields = [
+            "id",
+            "total_children_fmd",
+            "total_children_checked",
+            "total_sites_visited",
+            "status",
+        ]
 
     country_block_id = django_filters.NumberFilter(method="filter_country_block")
     month = django_filters.CharFilter(method="filter_month")
 
-    def filter_country_block(self, queryset: QuerySet[LqasEntry], name: str, value: int):
+    def filter_country_block(self, queryset: QuerySet[LqasDistrictData], name: str, value: int):
         try:
             country_block = Group.objects.get(id=value)
             return queryset.prefetch_related("round__campaign__country").filter(
@@ -32,13 +38,16 @@ class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
         except Group.DoesNotExist as e:
             raise ValidationError(f"Group with id {value} not found")
 
-    def filter_month(self, queryset: QuerySet[LqasEntry], name: str, value: str):
+    def filter_month(self, queryset: QuerySet[LqasDistrictData], name: str, value: str):
         try:
             date_obj = datetime.strptime(value, "%m-%Y")
             first_day = date_obj.replace(day=1)
             last_day = date_obj.replace(day=calendar.monthrange(date_obj.year, date_obj.month)[1])
         except:
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
+
+        # The base queryset already has the necessary fields loaded
+        # No need to add select_related here as it conflicts with .only() from get_queryset
 
         queryset = (
             queryset.annotate(
@@ -69,26 +78,17 @@ class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
         return queryset
 
 
-class LqasCareGiverStatsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = LqasCareGiverStats
-        fields = ["ratio", "best_info_source", "best_info_ratio", "caregivers_informed", "caregivers_informed_ratio"]
-
-
-class LqasCountryBlockSerializer(serializers.ModelSerializer):
+class LqasDistrictDataSerializer(serializers.ModelSerializer):
     district_id = serializers.IntegerField(source="district.id", read_only=True)
     district_name = serializers.CharField(source="district.name", read_only=True)
     region_id = serializers.IntegerField(source="district.parent.id", read_only=True)
     region_name = serializers.CharField(source="district.parent.name", read_only=True)
     round_id = serializers.IntegerField(source="round.id", read_only=True)
     round_number = serializers.IntegerField(source="round.number", read_only=True)
-    obr_name = serializers.CharField(source="round.campaign.name", read_only=True)
-
-    # Only include caregiver_stats if it exists (avoid N+1)
-    caregiver_stats = serializers.SerializerMethodField()
+    obr_name = serializers.CharField(source="round.campaign.obr_name", read_only=True)
 
     class Meta:
-        model = LqasEntry
+        model = LqasDistrictData
         fields = [
             "id",
             "total_children_fmd",
@@ -102,34 +102,25 @@ class LqasCountryBlockSerializer(serializers.ModelSerializer):
             "round_id",
             "round_number",
             "obr_name",
-            "caregiver_stats",
         ]
-
-    def get_caregiver_stats(self, obj):
-        """Only serialize caregiver_stats if it exists to avoid N+1 queries"""
-        if hasattr(obj, "caregiver_stats") and obj.caregiver_stats:
-            return LqasCareGiverStatsSerializer(obj.caregiver_stats).data
-        return None
 
 
 class LqasCountryBlockViewset(ModelViewSet):
     http_method_names = ["get"]
-    model = LqasEntry
+    model = LqasDistrictData
     permission_classes = [HasPolioPermission | HasPolioAdminPermission]
     filterset_class = LqasCountryBlockFilter
     remove_results_key_if_paginated = False
     results_key = "results"
-    serializer_class = LqasCountryBlockSerializer
+    serializer_class = LqasDistrictDataSerializer
 
     def get_queryset(self):
         user = self.request.user
         queryset = (
-            LqasEntry.objects.filter_for_user(user)
-            .select_related(
-                "district", "district__parent", "round", "round__campaign", "subactivity", "round__campaign__country"
-            )
+            LqasDistrictData.objects.filter_for_user(user)
+            .select_related("district", "district__parent", "round", "round__campaign")
             .only(
-                # Core LqasEntry fields
+                # Core LqasDistrictData fields
                 "id",
                 "total_children_fmd",
                 "total_children_checked",
@@ -145,15 +136,7 @@ class LqasCountryBlockViewset(ModelViewSet):
                 # Campaign fields
                 "round__campaign_id",
                 "round__campaign__obr_name",
-                # Subactivity fields
-                "subactivity_id",
-                "subactivity__name",
-                "round__campaign__country_id",
-                "round__campaign__country__name",
             )
-            .prefetch_related(
-                "caregiver_stats",
-            )
+            .order_by("district__name", "round__number")  # Add explicit ordering to avoid pagination warnings
         )
-        print(str(queryset.query))
         return queryset

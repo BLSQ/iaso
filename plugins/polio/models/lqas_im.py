@@ -116,7 +116,7 @@ class LqasDistrictDataQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         qs = self
         if user.is_authenticated:
-            qs = qs.filter(round__campaign__account=user.iaso_profile.account)
+            return qs.filter(round__campaign__account=user.iaso_profile.account)
         return qs.none()
 
 
@@ -171,6 +171,7 @@ class LqasDistrictData(models.Model):
             models.Index(fields=["district", "round"]),
             models.Index(fields=["subactivity", "round"]),
             models.Index(fields=["district", "round", "subactivity"]),
+            models.Index(fields=["round"]),  # Help with round__lqas_ended_at filtering
         ]
 
     def __str__(self):

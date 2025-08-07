@@ -1,6 +1,7 @@
+from unittest import skip
+
 from django.contrib.gis.geos import GEOSGeometry
 from django.test import TestCase
-from unittest import skip
 
 from iaso.utils.gis import simplify_geom
 

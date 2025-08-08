@@ -289,7 +289,7 @@ class LqasCountryBlockFilterTestCase(TestCase):
         queryset = LqasDistrictData.objects.all()
         filter_instance = LqasCountryBlockFilter()
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(ValidationError):
             filter_instance.filter_month(queryset, "month", "invalid-month")
 
     def test_filter_by_country_block(self):

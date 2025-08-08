@@ -390,6 +390,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "comment": "hello world2",
                 "files": [fake_file],
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
@@ -454,6 +455,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                     ]
                 ),
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
@@ -692,6 +694,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "comment": "override me",
                 "files": [fake_file],
             },
+            format="multipart",
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")

@@ -429,6 +429,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 
 SIMPLE_JWT = {

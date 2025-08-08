@@ -50,7 +50,7 @@ class AccountAPITestCase(APITestCase):
         """POST /account/ with auth should result in a 405 as method is not allowed"""
         self.client.force_authenticate(self.jane)
 
-        response = self.client.post("/api/accounts/", {"default_version": self.ghi_version})
+        response = self.client.post("/api/accounts/", {"default_version": self.ghi_version.pk})
         self.assertJSONResponse(response, 405)
 
     def test_account_detail_forbidden(self):

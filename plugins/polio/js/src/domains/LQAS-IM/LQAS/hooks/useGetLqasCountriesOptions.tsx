@@ -6,11 +6,10 @@ import {
     Side,
     UuidAsString,
 } from '../../../../constants/types';
-import { useMemo } from 'react';
-import moment from 'moment';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { getRequest } from 'Iaso/libs/Api';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { useMonthYear } from './useMonthYear';
 
 const getLqasCountriesOptions = (monthYear?: MonthYear) => {
     const endpoint = '/api/polio/lqasim/countriesoptions';
@@ -20,20 +19,6 @@ const getLqasCountriesOptions = (monthYear?: MonthYear) => {
 type UseGetLqasCountriesOptionsArgs = {
     side: Side;
     params: LqasUrlParams;
-};
-
-const useMonthYear = ({
-    side,
-    params,
-}: UseGetLqasCountriesOptionsArgs): MonthYear | undefined => {
-    return useMemo(() => {
-        const currentYear = moment().year().toString();
-        const month = params[`${side}Month`];
-        const year = params[`${side}Year`] ?? currentYear;
-
-        if (month) return `${month}-${year}`;
-        return undefined;
-    }, [side, ...Object.values(params)]);
 };
 
 export const useGetLqasCountriesOptions = ({

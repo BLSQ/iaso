@@ -4,20 +4,16 @@ import {
     useSafeIntl,
     Select,
 } from 'bluesquare-components';
-import { LqasUrlParams } from '..';
 import { Box, Grid } from '@mui/material';
 import MESSAGES from '../../../../constants/messages';
 import { baseUrls } from '../../../../constants/urls';
-import {
-    useGetLqasCampaignsOptions,
-    useGetLqasCountriesOptions,
-} from '../hooks/useGetLqasCountriesOptions';
-import { NumberAsString, Side } from '../../../../constants/types';
-import { DropdownOptions } from 'Iaso/types/utils';
-import { generateYearOptions } from './utils';
+import { Side } from '../../../../constants/types';
+import { generateYearOptions } from '../CountryOverview/utils';
+import { useGetLqasCountryBlockOptions } from '../hooks/useGetLqasCountryBlockOptions';
+import { LqasCountryBlockParams } from './LqasCountryBlock';
 
 type Props = {
-    params: LqasUrlParams;
+    params: LqasCountryBlockParams;
     side: Side;
 };
 
@@ -38,19 +34,19 @@ const monthOptions = [
 
 const yearOptions = generateYearOptions();
 
-const baseUrl = baseUrls.lqasCountry;
+const baseUrl = baseUrls.lqasCountryBlock;
 
-export const LqasCountryFilter: FunctionComponent<Props> = ({
+export const LqasCountryBlockFilter: FunctionComponent<Props> = ({
     params,
     side,
 }) => {
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
 
-    const { data: countriesOptions, isFetching: isFetchingCountriesOptions } =
-        useGetLqasCountriesOptions({ side, params });
-    const { data: campaignsOptions, isFetching: isFetchingCampaignsOptions } =
-        useGetLqasCampaignsOptions({ side, params });
+    const {
+        data: countryBlockOptions,
+        isFetching: isFetchingCountryBlockOptions,
+    } = useGetLqasCountryBlockOptions({ side, params });
 
     const onChange = useCallback(
         (key, value) => {
@@ -59,20 +55,8 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
                 [key]: value,
             };
             if (key === `${side}Month` || key === `${side}Year`) {
-                newParams[`${side}Country`] = undefined;
-                newParams[`${side}Campaign`] = undefined;
-                newParams[`${side}Round`] = undefined;
+                newParams[`${side}CountryBlock`] = undefined;
             }
-
-            if (key === `${side}Country`) {
-                newParams[`${side}Campaign`] = undefined;
-                newParams[`${side}Round`] = undefined;
-            }
-            if (key === `${side}Campaign`) {
-                newParams[`${side}Round`] = undefined;
-            }
-
-            // setFilters(newFilters);
             redirectToReplace(baseUrl, newParams);
         },
         [redirectToReplace, ...Object.values(params), side],
@@ -108,25 +92,15 @@ export const LqasCountryFilter: FunctionComponent<Props> = ({
                 <Grid item xs={12}>
                     <Select
                         keyValue={`${side}Country`}
-                        loading={isFetchingCountriesOptions}
-                        label={formatMessage(MESSAGES.country)}
+                        loading={isFetchingCountryBlockOptions}
+                        label={formatMessage(MESSAGES.countryBlock)}
                         clearable
                         multi={false}
                         value={params[`${side}Country`]}
-                        options={countriesOptions}
-                        onChange={value => onChange(`${side}Country`, value)}
-                    />
-                </Grid>
-                <Grid item xs={12}>
-                    <Select
-                        keyValue={`${side}Campaign`}
-                        loading={isFetchingCampaignsOptions}
-                        label={formatMessage(MESSAGES.campaign)}
-                        clearable
-                        multi={false}
-                        value={params[`${side}Campaign`]}
-                        options={campaignsOptions}
-                        onChange={value => onChange(`${side}Campaign`, value)}
+                        options={countryBlockOptions}
+                        onChange={value =>
+                            onChange(`${side}CountryBlock`, value)
+                        }
                     />
                 </Grid>
             </Grid>

@@ -10,12 +10,14 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { useMemo } from 'react';
 import { calculateChildrenAbsent } from '../../shared/hooks/useRfaTitle';
-import { Campaign } from '../../../..//constants/types';
+import { Campaign, NumberAsString } from '../../../..//constants/types';
 import { isEqual } from 'lodash';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { findDataForShape } from '../../../..//utils';
 import { IN_SCOPE } from '../../shared/constants';
 import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
+import moment from 'moment';
 
 export const makeLqasRatioUnmarked = ({
     data,
@@ -189,4 +191,19 @@ export const useLqasMapHeaderData = ({
         }
         return { startDate, endDate };
     }, [endDate, scopeCount, startDate, withScopeCount]);
+};
+export // AI generated code
+const generateYearOptions = (
+    startYear = 2018,
+): DropdownOptions<NumberAsString>[] => {
+    const currentYear = moment().year();
+
+    const years: DropdownOptions<NumberAsString>[] = [];
+
+    for (let year = currentYear; year >= startYear; year--) {
+        const yearStr = year.toString();
+        years.push({ label: yearStr, value: yearStr });
+    }
+
+    return years;
 };

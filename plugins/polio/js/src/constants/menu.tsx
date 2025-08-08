@@ -11,6 +11,7 @@ import HomeWorkIcon from '@mui/icons-material/HomeWork';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import HiveIcon from '@mui/icons-material/Hive';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
@@ -33,6 +34,7 @@ import {
     imIhhPath,
     imOhhPath,
     lqasAfroPath,
+    lqasCountryBlockPath,
     lqasCountryPath,
     nopvAuthPath,
     notificationPath,
@@ -79,6 +81,12 @@ export const menu: MenuItem[] = [
                         key: 'lqas',
                         permissions: lqasCountryPath.permissions,
                         icon: props => <PhotoSizeSelectActualIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.byCountryBlock,
+                        key: 'countryblock',
+                        permissions: lqasCountryBlockPath.permissions,
+                        icon: props => <HiveIcon {...props} />,
                     },
                     {
                         label: MESSAGES.map,

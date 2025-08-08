@@ -79,6 +79,7 @@
     "iaso.polio.calendar.weeks": "semaine(s)",
     "iaso.polio.calendar.weeksShort": "s.",
     "iaso.polio.campaign.byCountry": "Par pays",
+    "iaso.polio.campaign.byCountryBlock": "Par bloc de pays",
     "iaso.polio.campaign.campaignHistory": "Historique de la campagne",
     "iaso.polio.campaign.campaignHistory.error": "Aucun historique de campagne trouvé",
     "iaso.polio.campaign.campaignlogDetails": "Details de l'historique de la campagne",

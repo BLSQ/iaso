@@ -48,6 +48,7 @@ import {
     EMBEDDED_VACCINE_STOCK_URL,
     baseUrls,
 } from './urls';
+import { LqasCountryBlock } from '../domains/LQAS-IM/LQAS/CountryBlockView/LqasCountryBlock';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -112,6 +113,12 @@ export const lqasCountryPath: RoutePath = {
     baseUrl: baseUrls.lqasCountry,
     routerUrl: `${baseUrls.lqasCountry}/*`,
     element: <Lqas />,
+    permissions: [POLIO, POLIO_ADMIN],
+};
+export const lqasCountryBlockPath: RoutePath = {
+    baseUrl: baseUrls.lqasCountryBlock,
+    routerUrl: `${baseUrls.lqasCountryBlock}/*`,
+    element: <LqasCountryBlock />,
     permissions: [POLIO, POLIO_ADMIN],
 };
 
@@ -268,6 +275,7 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     embeddedVaccineRepositoryPath,
     embeddedVaccineStockPath,
     lqasCountryPath,
+    lqasCountryBlockPath,
     lqasAfroPath,
     imGlobalPath,
     imIhhPath,

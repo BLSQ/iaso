@@ -26,6 +26,7 @@ export const CONFIG_BASE_URL = 'polio/config';
 export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
 export const LQAS_BASE_URL = 'polio/lqas/lqas';
+export const LQAS_COUNTRYBLOCK_URL = 'polio/lqas/countryblock';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const IM_GLOBAL = 'polio/im/global';
 export const IM_OHH = 'polio/im/ohh';
@@ -160,6 +161,19 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'rightCampaign',
             'rightCountry',
             'rightRound',
+            'rightMonth',
+            'rightYear',
+            'rightTab',
+        ],
+    },
+    lqasCountryBlock: {
+        url: LQAS_COUNTRYBLOCK_URL,
+        params: [
+            'leftCountryBlock',
+            'leftMonth',
+            'leftYear',
+            'leftTab',
+            'rightCountryBlock',
             'rightMonth',
             'rightYear',
             'rightTab',
@@ -343,6 +357,7 @@ export type PolioBaseUrls = {
     calendar: string;
     vaccineRepository: string;
     lqasCountry: string;
+    lqasCountryBlock: string;
     lqasAfro: string;
     imGlobal: string;
     imHH: string;

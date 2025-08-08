@@ -80,6 +80,7 @@
     "iaso.polio.calendar.weeks": "week(s)",
     "iaso.polio.calendar.weeksShort": "w.",
     "iaso.polio.campaign.byCountry": "By country",
+    "iaso.polio.campaign.byCountryBlock": "By country block",
     "iaso.polio.campaign.campaignHistory": "Campaign History",
     "iaso.polio.campaign.campaignHistory.error": "Can't find an history with this campaign id",
     "iaso.polio.campaign.campaignlogDetails": "Campaign log details",

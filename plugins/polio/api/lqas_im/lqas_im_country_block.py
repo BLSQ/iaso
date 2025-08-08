@@ -32,9 +32,11 @@ class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
     def filter_country_block(self, queryset: QuerySet[LqasDistrictData], name: str, value: int):
         try:
             country_block = Group.objects.get(id=value)
+
             return queryset.prefetch_related("round__campaign__country").filter(
-                round__campaign__country__in=country_block.org_units.all()
+                round__campaign__country__id__in=country_block.org_units.all().values_list("id", flat=True)
             )
+
         except Group.DoesNotExist as e:
             raise ValidationError(f"Group with id {value} not found")
 
@@ -45,9 +47,6 @@ class LqasCountryBlockFilter(django_filters.rest_framework.FilterSet):
             last_day = date_obj.replace(day=calendar.monthrange(date_obj.year, date_obj.month)[1])
         except:
             raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
-
-        # The base queryset already has the necessary fields loaded
-        # No need to add select_related here as it conflicts with .only() from get_queryset
 
         queryset = (
             queryset.annotate(
@@ -118,7 +117,12 @@ class LqasCountryBlockViewset(ModelViewSet):
         user = self.request.user
         queryset = (
             LqasDistrictData.objects.filter_for_user(user)
-            .select_related("district", "district__parent", "round", "round__campaign")
+            .select_related(
+                "district",
+                "district__parent",
+                "round",
+                "round__campaign",
+            )
             .only(
                 # Core LqasDistrictData fields
                 "id",

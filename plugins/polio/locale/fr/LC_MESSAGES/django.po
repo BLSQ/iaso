@@ -592,29 +592,17 @@ msgstr "3lqasoversampled"
 msgid "inScope"
 msgstr "inScope"
 
-#: plugins/polio/models/lqas_im.py:74 plugins/polio/models/lqas_im.py:75
-msgid "LQAS Activity Statistics"
-msgstr "Statistiques d'activité LQAS"
+#: plugins/polio/models/lqas_im.py:74
+msgid "LQAS Round Data"
+msgstr "Données de round LQAS"
 
-#: plugins/polio/models/lqas_im.py:105
+#: plugins/polio/models/lqas_im.py:140
 msgid "LQAS Entry"
 msgstr "Entrée LQAS"
 
-#: plugins/polio/models/lqas_im.py:106
+#: plugins/polio/models/lqas_im.py:141
 msgid "LQAS Entries"
 msgstr "Entrées LQAS"
-
-#: plugins/polio/models/lqas_im.py:130
-msgid "LQAS Care Giver Statistics"
-msgstr "Statistiques des soignants LQAS"
-
-#: plugins/polio/models/lqas_im.py:153 plugins/polio/models/lqas_im.py:154
-msgid "LQAS No Finger Mark Statistics"
-msgstr "Statistiques LQAS enfants non-marqués"
-
-#: plugins/polio/models/lqas_im.py:190 plugins/polio/models/lqas_im.py:191
-msgid "LQAS Absent Children Statistics"
-msgstr "Statistiques des enfants absents LQAS"
 
 #: plugins/polio/permissions.py:136
 msgid "Polio"

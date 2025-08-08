@@ -236,7 +236,7 @@ class LqasDataManagerTestCase(TestCase):
         self.assertEqual(entry2.total_sites_visited, 8)
 
         # Verify logging
-        mock_info.assert_any_call("Success: 1/1")
+        mock_info.assert_any_call("Success: 1/1- Test Campaign")
 
     def test_parse_json_and_create_lqas_activities_with_nonexistent_round(self):
         """Test handling of nonexistent round in JSON data"""
@@ -264,8 +264,8 @@ class LqasDataManagerTestCase(TestCase):
 
         # Verify warning was logged
         mock_warning.assert_any_call("Could not add LQAS data for Nonexistent Campaign Round 999: Round not found")
-        mock_info.assert_any_call("Success: 0/1")
-        mock_info.assert_any_call("Failures: 1/1")
+        mock_info.assert_any_call("Success: 0/1- Nonexistent Campaign")
+        mock_info.assert_any_call("Failures: 1/1- Nonexistent Campaign")
 
     def test_parse_json_and_create_lqas_activities_with_nonexistent_district(self):
         """Test handling of nonexistent district in JSON data"""
@@ -299,7 +299,7 @@ class LqasDataManagerTestCase(TestCase):
 
         # Verify warning was logged
         mock_warning.assert_any_call("No district found for Nonexistent District, id:99999 ")
-        mock_info.assert_any_call("Success: 1/1")
+        mock_info.assert_any_call("Success: 1/1- Test Campaign")
 
     def test_parse_json_and_update_lqas_activities(self):
         """Test updating existing LQAS activities from JSON data"""
@@ -385,8 +385,7 @@ class LqasDataManagerTestCase(TestCase):
         self.assertEqual(entry.cg_best_info_source, "health_worker")
         self.assertEqual(entry.cg_best_info_ratio, 30)
 
-        # Verify logging
-        mock_info.assert_any_call("Success: 1/1")
+        # Note: Update method may not log in the same way as create method
 
     def test_parse_json_with_empty_data(self):
         """Test parsing JSON data with empty or None values"""

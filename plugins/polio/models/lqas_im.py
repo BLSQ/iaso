@@ -1,7 +1,11 @@
+from typing import Union
+
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.translation import gettext as _
 
+from iaso.models import OrgUnit
 from iaso.models.org_unit import OrgUnit
 
 
@@ -108,7 +112,18 @@ class LqasRoundData(models.Model):
         return f"{self._meta.verbose_name} for {self.round}"
 
 
+class LqasDistrictDataQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        qs = self
+        if user.is_authenticated:
+            return qs.filter(round__campaign__account=user.iaso_profile.account)
+        return qs.none()
+
+
 class LqasDistrictData(models.Model):
+    # Manager
+    objects = models.Manager.from_queryset(LqasDistrictDataQuerySet)()
+
     round = models.ForeignKey("Round", on_delete=models.CASCADE)
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, null=True, blank=True)
     district = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
@@ -151,6 +166,12 @@ class LqasDistrictData(models.Model):
                 name="unique_lqasentry_round_district_no_subactivity",
                 condition=models.Q(subactivity__isnull=True),
             ),
+        ]
+        indexes = [
+            models.Index(fields=["district", "round"]),
+            models.Index(fields=["subactivity", "round"]),
+            models.Index(fields=["district", "round", "subactivity"]),
+            models.Index(fields=["round"]),  # Help with round__lqas_ended_at filtering
         ]
 
     def __str__(self):

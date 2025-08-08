@@ -146,3 +146,6 @@ django-ses==2.6.1
 gpxpy==1.4.0
 snaql==0.4.2
 tsp-solver2==0.4.1
+
+# Azure blob storage.
+azure-storage-blob==12.19.0

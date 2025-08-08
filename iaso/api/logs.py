@@ -1,6 +1,5 @@
 from typing import Union
 
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator
@@ -19,6 +18,7 @@ from iaso.models import Form, Instance, OrgUnit
 from iaso.models.base import Profile
 from iaso.models.org_unit import OrgUnitChangeRequest
 from iaso.models.payments import Payment, PaymentLot
+from iaso.plugins import is_polio_plugin_active
 
 
 def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
@@ -49,8 +49,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return profiles.filter(id=obj.id).exists() and user.has_perm(core_permissions.USERS_ADMIN)
 
     # Now checking models that are part of plugins
-    plugins = settings.PLUGINS
-    if "polio" in plugins:
+    if is_polio_plugin_active():
         from plugins.polio import permissions as polio_permissions
         from plugins.polio.models import Campaign
 

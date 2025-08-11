@@ -31,6 +31,7 @@ from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
+from ..plugins import is_polio_plugin_active
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
@@ -63,7 +64,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
             request.user.has_perm(core_permissions.REGISTRY_WRITE),
             request.user.has_perm(core_permissions.REGISTRY_READ),
         ]
-        if "polio" in settings.PLUGINS:
+        if is_polio_plugin_active():
             from plugins.polio import permissions as polio_permissions
 
             required_perms.append(request.user.has_perm(polio_permissions.POLIO))

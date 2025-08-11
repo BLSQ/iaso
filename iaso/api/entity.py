@@ -20,9 +20,10 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import ENTITY_API
-from hat.menupermissions import models as permission
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
@@ -129,7 +130,7 @@ class EntityViewSet(ModelViewSet):
         DjangoFilterBackend,
         DeletionFilterBackend,
     ]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES)]  # type: ignore
 
     def get_serializer_class(self):
         return EntitySerializer

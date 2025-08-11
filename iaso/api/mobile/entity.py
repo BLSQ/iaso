@@ -3,7 +3,8 @@ from rest_framework import filters, permissions, serializers
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
@@ -148,7 +149,7 @@ class MobileEntityViewSet(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES)]  # type: ignore
 
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)
@@ -186,7 +187,7 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = filter_for_mobile_entity(queryset, self.request)
 
         queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
-
+        queryset = queryset.distinct("id")
         return queryset.order_by("id")
 
 
@@ -217,7 +218,7 @@ class MobileEntityDeletedViewSet(ModelViewSet):
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.ENTITIES),
+        HasPermission(core_permissions.ENTITIES),
     ]  # type: ignore
 
     def pagination_class(self):

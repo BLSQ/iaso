@@ -64,6 +64,7 @@
     "iaso.changeRequest.reject": "Rechazar todo",
     "iaso.changeRequest.seeApprovedChanges": "Ver cambio(s) aprobado(s)",
     "iaso.changeRequest.seeRejectedChanges": "Ver cambio(s) rechazado(s)",
+    "iaso.changeRequest.showValuesAtCreation": "Mostrar valores al crear",
     "iaso.completeness.chooseParent": "Seleccione un formulario o una unidad organizativa padre para habilitar",
     "iaso.completeness.formsFilledDirect": "# Formularios completados (directo)",
     "iaso.completeness.formsFilledWithDescendants": "# Formularios completados (con descendientes)",

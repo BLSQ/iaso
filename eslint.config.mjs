@@ -1,4 +1,3 @@
-/* eslint-disable import/extensions */
 import { defineConfig, globalIgnores } from 'eslint/config';
 import { fixupConfigRules, fixupPluginRules } from '@eslint/compat';
 import prettierPlugin from 'eslint-plugin-prettier';
@@ -75,45 +74,26 @@ export default defineConfig([
             ecmaVersion: 2020,
             sourceType: 'module',
 
-            parserOptions: {
-                ecmaFeatures: {
-                    jsx: true,
-                },
-            },
+            parserOptions: { ecmaFeatures: { jsx: true } },
         },
 
         settings: {
             react: { version: '^17.0.0' },
             'import/resolver': {
-                node: {
-                    extensions: ['.js', '.jsx', '.ts', '.tsx'],
-                },
-
-                webpack: {
-                    config: 'frontend/webpack_dev.js',
-                },
+                node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
             },
         },
 
         rules: {
             '@typescript-eslint/no-unused-vars': [
                 'error',
-                {
-                    argsIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                },
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
 
             'import/extensions': [
                 'error',
                 'ignorePackages',
-                {
-                    js: 'off',
-                    jsx: 'off',
-                    ts: 'off',
-                    tsx: 'off',
-                    mjs: 'off',
-                },
+                { js: 'off', jsx: 'off', ts: 'off', tsx: 'off', mjs: 'off' },
             ],
 
             camelcase: 'off',
@@ -132,22 +112,12 @@ export default defineConfig([
             'jsx-a11y/no-noninteractive-element-to-interactive-role': 'off',
             'linebreak-style': 'off',
 
-            'max-len': [
-                'warn',
-                {
-                    code: 200,
-                },
-            ],
+            'max-len': ['warn', { code: 200 }],
 
             'no-bitwise': 'warn',
             'no-case-declarations': 'warn',
 
-            'no-console': [
-                'error',
-                {
-                    allow: ['warn', 'error'],
-                },
-            ],
+            'no-console': ['error', { allow: ['warn', 'error'] }],
 
             'no-const-assign': 'warn',
             'no-continue': 'warn',
@@ -163,10 +133,7 @@ export default defineConfig([
 
             'no-unused-vars': [
                 'error',
-                {
-                    argsIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                },
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
 
             'prefer-arrow-callback': 'error',
@@ -179,9 +146,7 @@ export default defineConfig([
 
             'react/jsx-filename-extension': [
                 1,
-                {
-                    extensions: ['.js', '.jsx'],
-                },
+                { extensions: ['.js', '.jsx'] },
             ],
 
             'react/jsx-indent': ['error', 4],
@@ -198,9 +163,7 @@ export default defineConfig([
 
             'react/prefer-stateless-function': [
                 0,
-                {
-                    ignorePureComponents: true,
-                },
+                { ignorePureComponents: true },
             ],
 
             'react/prop-types': 'warn',
@@ -251,9 +214,7 @@ export default defineConfig([
             sourceType: 'module',
 
             parserOptions: {
-                ecmaFeatures: {
-                    jsx: true,
-                },
+                ecmaFeatures: { jsx: true },
 
                 project: './tsconfig.json',
             },
@@ -263,22 +224,14 @@ export default defineConfig([
             'import/extensions': [
                 'error',
                 'ignorePackages',
-                {
-                    js: 'off',
-                    jsx: 'off',
-                    ts: 'off',
-                    tsx: 'off',
-                },
+                { js: 'off', jsx: 'off', ts: 'off', tsx: 'off' },
             ],
 
             '@typescript-eslint/ban-ts-comment': 'off',
             '@typescript-eslint/no-explicit-any': 0,
             '@typescript-eslint/no-unused-vars': [
                 'error',
-                {
-                    argsIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                },
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
             '@typescript-eslint/no-unused-expressions': 'error',
 
@@ -300,22 +253,12 @@ export default defineConfig([
             'jsx-a11y/no-noninteractive-element-to-interactive-role': 'off',
             'linebreak-style': 'off',
 
-            'max-len': [
-                'warn',
-                {
-                    code: 200,
-                },
-            ],
+            'max-len': ['warn', { code: 200 }],
 
             'no-bitwise': 'warn',
             'no-case-declarations': 'warn',
 
-            'no-console': [
-                'error',
-                {
-                    allow: ['warn', 'error'],
-                },
-            ],
+            'no-console': ['error', { allow: ['warn', 'error'] }],
 
             'no-const-assign': 'warn',
             'no-continue': 'warn',
@@ -331,10 +274,7 @@ export default defineConfig([
 
             'no-unused-vars': [
                 'error',
-                {
-                    argsIgnorePattern: '^_',
-                    varsIgnorePattern: '^_',
-                },
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
             ],
 
             'no-use-before-define': 0,
@@ -347,9 +287,7 @@ export default defineConfig([
 
             'react/jsx-filename-extension': [
                 1,
-                {
-                    extensions: ['.js', '.jsx', '.tsx', '.ts'],
-                },
+                { extensions: ['.js', '.jsx', '.tsx', '.ts'] },
             ],
 
             'react/jsx-indent': ['error', 4],
@@ -363,9 +301,7 @@ export default defineConfig([
 
             'react/prefer-stateless-function': [
                 0,
-                {
-                    ignorePureComponents: true,
-                },
+                { ignorePureComponents: true },
             ],
 
             'react/prop-types': 'off',

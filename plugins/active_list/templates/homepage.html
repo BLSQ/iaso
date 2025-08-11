@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Accueil - SNGD-FILE ACTIVE{% endblock %}
+
+{% block breadcrumb %}
+<div class="breadcrumb">
+    <i class="fas fa-home"></i>
+    <span>Accueil</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="homepage-container">
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">
+                <i class="fas fa-heart-pulse text-primary"></i>
+                Bienvenue sur SNGD-FILE ACTIVE
+            </h1>
+            <p class="mb-0 text-secondary">Système de gestion de la file active des patients</p>
+        </div>
+        
+        <div class="homepage-grid">
+            <div class="homepage-card">
+                <a href="{% url 'patient_list' %}">
+                    <i class="fas fa-users"></i>
+                    <span>Listing des patients</span>
+                    <small class="text-secondary">Consulter la liste des patients par établissement et période</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'validation' %}">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Validation District</span>
+                    <small class="text-secondary">Valider les données saisies et les rapports au niveau district</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'validation_region' %}">
+                    <i class="fas fa-check-double"></i>
+                    <span>Validation Région</span>
+                    <small class="text-secondary">Valider les districts au niveau régional</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'upload' %}">
+                    <i class="fas fa-upload"></i>
+                    <span>Charger les données</span>
+                    <small class="text-secondary">Importer les rapports Excel de la file active</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'imports_list' %}">
+                    <i class="fas fa-file-import"></i>
+                    <span>Historique des imports</span>
+                    <small class="text-secondary">Consulter tous les imports de données effectués</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="{% url 'patient_search' %}">
+                    <i class="fas fa-search"></i>
+                    <span>Rechercher un patient</span>
+                    <small class="text-secondary">Recherche avancée dans la base de données</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="https://api.openhexa.org/superset/dashboard/95b9c0e0-bcff-45d0-bf72-1f6cb155ff65/" target="_blank">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Tableau de bord</span>
+                    <small class="text-secondary">Visualisations et indicateurs de performance</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="https://api.openhexa.org/superset/dashboard/649eb933-13f1-4dc9-b1ff-dd3beb5fa703/" target="_blank">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Tableau de complétude</span>
+                    <small class="text-secondary">Suivi de la complétude des rapports</small>
+                </a>
+            </div>
+            
+            <div class="homepage-card">
+                <a href="https://dashboards-civ.bluesquare.org/explore/?form_data_key=jdaoFbl8OpZdc9oFfoGb3Pxrt5yIAj88WNquP64y-drXr5fqr8zNgz1jUT5ejBxS&viz_type=pivot_table_v2&datasource=1__table&datasource_id=1&datasource_type=table" target="_blank">
+                    <i class="fas fa-table"></i>
+                    <span>Rapports TCD</span>
+                    <small class="text-secondary">Générer des rapports avec tableau croisé dynamique</small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.homepage-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.homepage-card small {
+    font-size: 0.8rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.text-primary { color: var(--primary-color) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+</style>
+{% endblock %}

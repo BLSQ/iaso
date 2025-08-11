@@ -190,12 +190,14 @@ originals
 /site/**/*/
 
 *.code-workspace
+
+# Other IASO parts to ignore (plugins, setuper info...)
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
 plugins/snt_malaria
-
 plugins/snt-malaria
+plugins/saas
 
 # some local env config to be ignored
 .direnv

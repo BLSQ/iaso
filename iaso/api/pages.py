@@ -2,7 +2,8 @@ from django.utils.translation import gettext_lazy as _
 from django_filters.rest_framework import BooleanFilter, CharFilter, FilterSet
 from rest_framework import permissions, serializers
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import ModelViewSet
 from iaso.models import Page, User
 
@@ -23,8 +24,8 @@ class PagesSerializer(serializers.ModelSerializer):
 
 class PagesPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perm = permission.PAGES
-        write_perm = permission.PAGE_WRITE
+        read_perm = core_permissions.PAGES
+        write_perm = core_permissions.PAGE_WRITE
 
         if request.method in permissions.SAFE_METHODS and request.user and request.user.has_perm(read_perm):
             return True
@@ -67,7 +68,7 @@ class PagesViewSet(ModelViewSet):
 
         users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
         queryset = Page.objects.filter(users__in=users)
-        if user.has_perm(permission.PAGES) and not user.has_perm(permission.PAGE_WRITE):
+        if user.has_perm(core_permissions.PAGES) and not user.has_perm(core_permissions.PAGE_WRITE):
             queryset = queryset.filter(users=user)
 
         return queryset.order_by(*order).distinct()

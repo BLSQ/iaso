@@ -1,24 +1,19 @@
-import { Grid, Typography } from '@mui/material';
-import {
-    LoadingSpinner,
-    useRedirectTo,
-    useSafeIntl,
-} from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import React, { useMemo, useCallback } from 'react';
+import { Grid, Typography } from '@mui/material';
+import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import * as Permission from '../../../utils/permissions.ts';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { postGeoPkg } from '../requests';
 import { VersionDescription } from './VersionDescription.tsx';
-import { userHasPermission } from '../../users/utils';
-import * as Permission from '../../../utils/permissions.ts';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const initialFormState = () => ({
     file: null,
@@ -31,12 +26,10 @@ const ImportGeoPkgDialog = ({
     sourceId,
     sourceName,
     versionNumber,
-    projects,
 }) => {
     const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] =
         useFormState(initialFormState());
-    const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
     const mutation = useSnackMutation(
@@ -101,9 +94,7 @@ const ImportGeoPkgDialog = ({
         MESSAGES.gpkgTitle
     );
 
-    const allowConfirm = Boolean(
-        !mutation.isLoading && form.file.value && form.project.value,
-    );
+    const allowConfirm = Boolean(!mutation.isLoading && form.file.value);
 
     const hasTaskPermission = userHasPermission(
         Permission.DATA_TASKS,
@@ -160,20 +151,6 @@ const ImportGeoPkgDialog = ({
                         required
                         onChange={setFormField}
                     />
-                    <InputComponent
-                        type="select"
-                        keyValue="project"
-                        value={form.project.value}
-                        errors={form.project.errors}
-                        labelString={formatMessage(MESSAGES.project)}
-                        options={projects.map(project => ({
-                            label: project.name,
-                            value: project.id,
-                        }))}
-                        clearable
-                        required
-                        onChange={setFormField}
-                    />
                     {!versionNumber && (
                         <VersionDescription
                             formValue={form.versionDescription.value}
@@ -190,7 +167,6 @@ const ImportGeoPkgDialog = ({
 
 ImportGeoPkgDialog.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
-    projects: PropTypes.array.isRequired,
     versionNumber: PropTypes.number,
     sourceId: PropTypes.number.isRequired,
     sourceName: PropTypes.string.isRequired,

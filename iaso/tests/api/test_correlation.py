@@ -54,7 +54,7 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         with open("iaso/tests/fixtures/land_speeder.xml") as fp:
-            self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+            self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
         self.assertEqual(response.status_code, 200)
         instance = m.Instance.objects.get(uuid=uuid)
         self.assertTrue(str(instance.correlation_id).startswith(str(instance.id)))
@@ -93,7 +93,7 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
-            self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+            self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         instance = m.Instance.objects.get(uuid=uuid)
 
@@ -145,7 +145,7 @@ class CorrelationAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION="Token: {0}".format(jwt_token.json()["access"]))
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
-            response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
+            response_form = self.client.post("/sync/form_upload/", {"xml_submission_file": fp}, format="multipart")
 
         updated_instance = Instance.objects.get(uuid=anonymous_uploaded_instance.uuid)
 

@@ -1,8 +1,121 @@
+from django.db.models import Q
+
+from iaso.models.metric import MetricValue
 from iaso.test import TestCase
-from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_q
+from iaso.utils.jsonlogic import instance_jsonlogic_to_q, jsonlogic_to_exists_q_clauses, jsonlogic_to_q
 
 
 class JsonLogicTests(TestCase):
+    def setUp(self):
+        self.id_field_name = "metric_type_id"
+        self.group_by_field_name = "org_unit_id"
+
+    def test_jsonlogic_to_exists_q_clauses__simple(self) -> None:
+        """Test a simple JsonLogic query to ensure it returns a Q object."""
+        filters = {"==": [{"var": 22}, 1]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1.0) LIMIT 1)'
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__simple(self) -> None:
+        """Test a simple JsonLogic query to ensure it returns a Q object."""
+        filters = {"!=": [{"var": 22}, 1]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE NOT (EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1.0) LIMIT 1))'
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+        print(q)
+        querySet = MetricValue.objects.filter(q)
+        print(f"raw {querySet.raw}")
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__simple_string_value(self) -> None:
+        """Test a simple JsonLogic query to ensure it returns a Q object."""
+        filters = {"==": [{"var": 22}, "coucou"]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE EXISTS("
+            'SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."string_value" = coucou) LIMIT 1)'
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, self.id_field_name, self.group_by_field_name)
+
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__simple_and(self) -> None:
+        filters = {"and": [{">=": [{"var": "23"}, 900]}, {"==": [{"var": "22"}, 700]}]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE ("
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '
+            "AND "
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 700.0) LIMIT 1)'
+            ")"
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__simple_or(self) -> None:
+        filters = {"or": [{">=": [{"var": "23"}, 900]}, {"==": [{"var": "22"}, 700]}]}
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", "iaso_metricvalue"."org_unit_id", '
+            '"iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE ("
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '
+            "OR "
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 700.0) LIMIT 1)'
+            ")"
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
+        self.assertIsInstance(q, Q)
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
+    def test_jsonlogic_to_exists_q_clauses__complex(self) -> None:
+        filters = {
+            "or": [
+                {">=": [{"var": "23"}, 900]},
+                {"==": [{"var": "22"}, 700]},
+                {"and": [{"<=": [{"var": "23"}, 1500]}, {"==": [{"var": "24"}, 1000]}]},
+            ]
+        }
+        expectedQuerySet = (
+            'SELECT "iaso_metricvalue"."id", "iaso_metricvalue"."metric_type_id", '
+            '"iaso_metricvalue"."org_unit_id", "iaso_metricvalue"."year", "iaso_metricvalue"."value", "iaso_metricvalue"."string_value" '
+            'FROM "iaso_metricvalue" '
+            "WHERE ("
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" >= 900.0) LIMIT 1) '
+            "OR "
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 22 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 700.0) LIMIT 1) '
+            "OR ("
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 23 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" <= 1500.0) LIMIT 1) '
+            "AND "
+            'EXISTS(SELECT 1 AS "a" FROM "iaso_metricvalue" U0 WHERE (U0."metric_type_id" = 24 AND U0."org_unit_id" = ("iaso_metricvalue"."org_unit_id") AND U0."value" = 1000.0) LIMIT 1)'
+            ")"
+            ")"
+        )
+        q = jsonlogic_to_exists_q_clauses(filters, MetricValue.objects, "metric_type_id", "org_unit_id")
+        querySet = MetricValue.objects.filter(q)
+        self.assertEqual(str(querySet.query), expectedQuerySet)
+
     def test_jsonlogic_to_q_filters_base(self) -> None:
         """The base case of jsonlogic_to_q works as expected."""
         filters = {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, "25"]}]}

@@ -34,11 +34,7 @@ import { RegistryParams } from './types';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
 const styles: SxStyles = {
-    breadCrumbContainer: {
-        '& nav': {
-            display: 'inline-block',
-        },
-    },
+    breadCrumbContainer: { '& nav': { display: 'inline-block' } },
     treeContainer: {
         top: '-2px',
         position: 'relative',
@@ -69,7 +65,7 @@ const styles: SxStyles = {
 
 const baseUrl = baseUrls.registry;
 export const Registry: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as RegistryParams;
+    const params = useParamsObject(baseUrl) as unknown as RegistryParams;
     const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
     const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<
@@ -116,9 +112,7 @@ export const Registry: FunctionComponent = () => {
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
             if (newOrgUnit?.id) {
-                redirectTo(`/${baseUrl}`, {
-                    orgUnitId: `${newOrgUnit.id}`,
-                });
+                redirectTo(`/${baseUrl}`, { orgUnitId: `${newOrgUnit.id}` });
             }
         },
         [redirectTo],
@@ -126,9 +120,7 @@ export const Registry: FunctionComponent = () => {
 
     const handleChildrenChange = useCallback(
         (newChildren: OrgUnit) => {
-            const newParams = {
-                ...params,
-            };
+            const newParams = { ...params };
             // Need to check the id because clicking on the marker will somehow still pass
             // an object with the coordinates
             if (newChildren?.id) {

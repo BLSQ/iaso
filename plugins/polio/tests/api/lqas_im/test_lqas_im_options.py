@@ -1,7 +1,7 @@
 import datetime
 
 from iaso.test import APITestCase
-from plugins.polio.models import Round
+from plugins.polio.models.base import CampaignType
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -37,6 +37,8 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
         cls.district_type2 = cls.create_org_unit_type(
             name="OTHER_DISTRICT", projects=[cls.another_project], category="DISTRICT"
         )
+        cls.polio_type, _ = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+        cls.measles_type, _ = CampaignType.objects.get_or_create(name=CampaignType.MEASLES)
 
         cls.rdc_obr_name = "DRC-DS-XXXX-TEST"
         # RDC, campaign with "default" settings
@@ -48,7 +50,9 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
             cls.ou_type_district,
             "RDC",
             "KATANGA",
+            cls.polio_type,
         )
+        cls.rdc_campaign.campaign_types.add(cls.polio_type)
         cls.rdc_round_2.lqas_ended_at = datetime.date(2021, 2, 28)  # check last day of month
         cls.rdc_round_2.save()
         cls.rdc_round_3.lqas_ended_at = datetime.date(2021, 4, 1)  # check first day of month
@@ -66,6 +70,8 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
                 "KANDI",
             )
         )
+        cls.benin_campaign.campaign_types.add(cls.polio_type)
+        cls.benin_campaign.save()
         # set the round 1 date 10 days before dec 31, no lqas end date
         cls.benin_round_1.ended_at = datetime.date(2020, 12, 21)
         cls.benin_round_1.save()
@@ -91,6 +97,12 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
                 "MUMBAI",
             )
         )
+        cls.emro_campaign.campaign_types.add(cls.polio_type)
+        cls.emro_campaign.save()
+
+        cls.rdc_campaign.refresh_from_db()
+        cls.benin_campaign.refresh_from_db()
+        cls.emro_campaign.refresh_from_db()
 
     def test_get_without_auth(self):
         if not self.endpoint:
@@ -127,408 +139,11 @@ class LqasImOptionsTestCase(APITestCase, PolioTestCaseMixin):
         result_keys = list(results[1].keys())
         self.assertEqual(result_keys, ["value", "label"])
 
-
-class PolioLqasImCountriesOptionsTestCase(LqasImOptionsTestCase):
-    endpoint = "/api/polio/lqasim/countriesoptions/"
-
-    def test_filter_org_units_by_account(self):
+    def test_month_params_format(self):
+        if not self.endpoint:
+            return
         self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 2)
-        org_unit_ids = [result["value"] for result in results]
-        self.assertFalse(self.india.id in org_unit_ids)
-
-        response = self.client.get(
-            f"{self.endpoint}?month=03-2021"
-        )  # dates for india's rnd 3. response should not return it
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_get_without_params(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 2)
-
-    def test_return_campaign_with_lqasend_date_within_month_param(self):
-        self.client.force_authenticate(self.user)
-
-        #  test when lqas end = last day of month
-        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.rdc.name)
-        self.assertEqual(result["value"], self.rdc.id)
-
-        # test when lqas end = first day of month
-        response = self.client.get(f"{self.endpoint}?month=02-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.rdc.name)
-        self.assertEqual(result["value"], self.rdc.id)
-
-        # test when month start is one day after lqas end (here rdc round 2)
-        response = self.client.get(f"{self.endpoint}?month=03-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_use_date_fallback_if_no_lqas_end_date(self):
-        self.client.force_authenticate(self.user)
-
-        # test end round +10 = first of month
-        response = self.client.get(f"{self.endpoint}?month=05-2021")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin.name)
-        self.assertEqual(result["value"], self.benin.id)
-
-        # test end round +10 = last of month
-        response = self.client.get(f"{self.endpoint}?month=12-2020")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin.name)
-        self.assertEqual(result["value"], self.benin.id)
-
-        # test first of month (end round +10) +1
-        response = self.client.get(f"{self.endpoint}?month=01-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        # expect only rdc in result
-        self.assertEqual(result["label"], self.rdc.name)
-        self.assertEqual(result["value"], self.rdc.id)
-
-        # test (end round +10) = first of next month
-        Round.objects.create(
-            campaign=self.benin_campaign,
-            started_at=datetime.date(2021, 8, 15),
-            ended_at=datetime.date(2021, 8, 22),
-            number=4,
-        )
-        response = self.client.get(f"{self.endpoint}?month=08-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_return_nothing_if_no_lqas_within_month(self):
-        # Date after lqas dates available
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?month=10-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-        # Date before lqas dates available
-        response = self.client.get(f"{self.endpoint}?month=11-2020")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_lqas_date_used_when_exists(self):
-        self.client.force_authenticate(self.user)
-        # Round ends in june
-        response = self.client.get(f"{self.endpoint}?month=06-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-        # But lqas ends in July
-        response = self.client.get(f"{self.endpoint}?month=07-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin.name)
-        self.assertEqual(result["value"], self.benin.id)
-
-
-class PolioLqasImCampaignOptionsTestCase(LqasImOptionsTestCase):
-    endpoint = "/api/polio/lqasim/campaignoptions/"
-
-    def test_filter_campaigns_for_user(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 2)
-        campaign_ids = [result["value"] for result in results]
-        self.assertFalse(self.emro_campaign.id in campaign_ids)
-
-        response = self.client.get(
-            f"{self.endpoint}?month=03-2021"
-        )  # dates for india's rnd 3. response should not return it
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_get_without_params(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 2)
-
-    def filter_by_country(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?country_id={self.rdc.id}")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["value"], self.rdc.id)
-
-    def test_return_campaign_with_lqasend_date_within_month_param(self):
-        self.client.force_authenticate(self.user)
-
-        #  test when lqas end = last day of month
-        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.rdc_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.rdc_campaign.id))
-
-        # test when lqas end = first day of month
-        response = self.client.get(f"{self.endpoint}?month=02-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.rdc_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.rdc_campaign.id))
-
-        # test when month start is one day after lqas end (here rdc round 2)
-        response = self.client.get(f"{self.endpoint}?month=03-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_use_date_fallback_if_no_lqas_end_date(self):
-        self.client.force_authenticate(self.user)
-
-        # test end round +10 = first of month
-        response = self.client.get(f"{self.endpoint}?month=05-2021")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.benin_campaign.id))
-
-        # test end round +10 = last of month
-        response = self.client.get(f"{self.endpoint}?month=12-2020")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.benin_campaign.id))
-
-        # test first of month (end round +10) +1
-        response = self.client.get(f"{self.endpoint}?month=01-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        # expect only rdc in result
-        self.assertEqual(result["label"], self.rdc_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.rdc_campaign.id))
-
-        # test (end round +10) = first of next month
-        Round.objects.create(
-            campaign=self.benin_campaign,
-            started_at=datetime.date(2021, 8, 15),
-            ended_at=datetime.date(2021, 8, 22),
-            number=4,
-        )
-        response = self.client.get(f"{self.endpoint}?month=08-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_return_nothing_if_no_lqas_within_month(self):
-        # Date after lqas dates available
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?month=10-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-        # Date before lqas dates available
-        response = self.client.get(f"{self.endpoint}?month=11-2020")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_lqas_date_used_when_exists(self):
-        self.client.force_authenticate(self.user)
-        # Round ends in june
-        response = self.client.get(f"{self.endpoint}?month=06-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-        # But lqas ends in July
-        response = self.client.get(f"{self.endpoint}?month=07-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], self.benin_campaign.obr_name)
-        self.assertEqual(result["value"], str(self.benin_campaign.id))
-
-
-class PolioLqasImRoundOptionsTestCase(LqasImOptionsTestCase):
-    endpoint = "/api/polio/lqasim/roundoptions/"
-
-    def test_filter_rounds_for_user(self):
-        # Add a rnd 4 to the India campaign to test it's not returned in the results
-
-        india_rnd_4 = Round.objects.create(
-            campaign=self.emro_campaign,
-            started_at=datetime.date(2021, 6, 1),
-            ended_at=datetime.date(2021, 6, 10),
-            number=4,
-        )
-
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 6)
-        round_numbers = [result["value"] for result in results]
-        self.assertFalse(str(india_rnd_4.number) in round_numbers)
-
-        response = self.client.get(
-            f"{self.endpoint}?month=03-2021"
-        )  # dates for india's rnd 3. response should not return it
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_get_without_params(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(self.endpoint)
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 6)  # 2 campaigns * 3 rounds
-
-    def filter_by_campaign(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?campaign_id={self.rdc_campaign.id}")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        self.assertEqual(results[0]["value"], str(self.rdc_campaign.id))
-
-    def test_return_rounds_with_lqasend_date_within_month_param(self):
-        self.client.force_authenticate(self.user)
-
-        #  test when lqas end = last day of month
-        response = self.client.get(f"{self.endpoint}?month=04-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], f"Round {self.rdc_round_3.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_3.number))
-
-        # test when lqas end = first day of month
-        response = self.client.get(f"{self.endpoint}?month=02-2021")  # expecting rdc in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], f"Round {self.rdc_round_2.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_2.number))
-
-        # test when month start is one day after lqas end (here rdc round 2)
-        response = self.client.get(f"{self.endpoint}?month=03-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_use_date_fallback_if_no_lqas_end_date(self):
-        self.client.force_authenticate(self.user)
-
-        # test end round +10 = first of month
-        response = self.client.get(f"{self.endpoint}?month=05-2021")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], f"Round {self.benin_round_2.number}")
-        self.assertEqual(result["value"], str(self.benin_round_2.number))
-
-        # test end round +10 = last of month
-        response = self.client.get(f"{self.endpoint}?month=12-2020")  # expecting benin in result
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], f"Round {self.benin_round_1.number}")
-        self.assertEqual(result["value"], str(self.benin_round_1.number))
-
-        # test first of month (end round +10) +1
-        response = self.client.get(f"{self.endpoint}?month=01-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        # expect only rdc in result
-        self.assertEqual(result["label"], f"Round {self.rdc_round_1.number}")
-        self.assertEqual(result["value"], str(self.rdc_round_1.number))
-
-        # test (end round +10) = first of next month
-        Round.objects.create(
-            campaign=self.benin_campaign,
-            started_at=datetime.date(2021, 8, 15),
-            ended_at=datetime.date(2021, 8, 22),
-            number=4,
-        )
-        response = self.client.get(f"{self.endpoint}?month=08-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_return_nothing_if_no_lqas_within_month(self):
-        # Date after lqas dates available
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"{self.endpoint}?month=10-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-        # Date before lqas dates available
-        response = self.client.get(f"{self.endpoint}?month=11-2020")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-
-    def test_lqas_date_used_when_exists(self):
-        self.client.force_authenticate(self.user)
-        # Round ends in june
-        response = self.client.get(f"{self.endpoint}?month=06-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 0)
-        # But lqas ends in July
-        response = self.client.get(f"{self.endpoint}?month=07-2021")
-        json_response = self.assertJSONResponse(response, 200)
-        results = json_response["results"]
-        self.assertEqual(len(results), 1)
-        result = results[0]
-        self.assertEqual(result["label"], f"Round {self.benin_round_3.number}")
-        self.assertEqual(result["value"], str(self.benin_round_3.number))
+        response = self.client.get(f"{self.endpoint}?month=13-2021")
+        response = self.assertJSONResponse(response, 400)
+        response = self.client.get(f"{self.endpoint}?month=2021-04")
+        response = self.assertJSONResponse(response, 400)

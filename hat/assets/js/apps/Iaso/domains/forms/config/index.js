@@ -1,10 +1,14 @@
-import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
+import {
+    userHasAccessToModule,
+    userHasOneOfPermissions,
+    userHasPermission,
+} from '../../users/utils';
 import { FormActions } from '../components/FormActions.tsx';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
@@ -90,8 +94,14 @@ const getActionsColWidth = user => {
     return width;
 };
 
-export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
+export const useFormsTableColumns = ({
+    orgUnitId,
+    showDeleted,
+    showInstancesCount,
+}) => {
     const user = useCurrentUser();
+    const hasDhis2Module = userHasAccessToModule('DHIS2_MAPPING', user);
+
     const { formatMessage } = useSafeIntl();
 
     return useMemo(() => {
@@ -131,10 +141,6 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                         .join(', '),
             },
             {
-                Header: formatMessage(MESSAGES.records),
-                accessor: 'instances_count',
-            },
-            {
                 Header: formatMessage(MESSAGES.actions),
                 resizable: false,
                 sortable: false,
@@ -147,11 +153,18 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                             orgUnitId={orgUnitId}
                             baseUrls={baseUrls}
                             showDeleted={showDeleted}
+                            hasDhis2Module={hasDhis2Module}
                         />
                     );
                 },
             },
         ];
+        if (showInstancesCount) {
+            cols.splice(6, 0, {
+                Header: formatMessage(MESSAGES.records),
+                accessor: 'instances_count',
+            });
+        }
         if (showDeleted) {
             cols.splice(1, 0, {
                 Header: formatMessage(MESSAGES.deleted_at),
@@ -160,7 +173,14 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
             });
         }
         return cols;
-    }, [formatMessage, orgUnitId, showDeleted, user]);
+    }, [
+        formatMessage,
+        hasDhis2Module,
+        orgUnitId,
+        showDeleted,
+        user,
+        showInstancesCount,
+    ]);
 };
 
 export const requiredFields = [

@@ -51,6 +51,8 @@ const useStyles = makeStyles(theme => ({
 
 const Instances = () => {
     const params = useParamsObject(baseUrl);
+
+    const isSearchActive = params?.isSearchActive === 'true';
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const queryClient = useQueryClient();
@@ -105,7 +107,7 @@ const Instances = () => {
         snackErrorMsg: snackMessages.fetchInstanceDictError,
         options: {
             keepPreviousData: true,
-            enabled: !isLoadingPossibleFields && showTable,
+            enabled: !isLoadingPossibleFields && showTable && isSearchActive,
         },
     });
     // Move to delete when we port dialog to react-query
@@ -205,24 +207,26 @@ const Instances = () => {
                         </Grid>
                     </Grid>
                 )}
-                <Box display="flex" justifyContent="flex-end">
-                    <Tooltip
-                        title={
-                            isSingleFormSearch
-                                ? ''
-                                : formatMessage(MESSAGES.filterParam)
-                        }
-                        arrow
-                    >
-                        <Box>
-                            <DownloadButtonsComponent
-                                csvUrl={getExportUrl(params, 'csv')}
-                                xlsxUrl={getExportUrl(params, 'xlsx')}
-                                disabled={!isSingleFormSearch}
-                            />
-                        </Box>
-                    </Tooltip>
-                </Box>
+                {isSearchActive && (
+                    <Box display="flex" justifyContent="flex-end">
+                        <Tooltip
+                            title={
+                                isSingleFormSearch
+                                    ? ''
+                                    : formatMessage(MESSAGES.filterParam)
+                            }
+                            arrow
+                        >
+                            <Box>
+                                <DownloadButtonsComponent
+                                    csvUrl={getExportUrl(params, 'csv')}
+                                    xlsxUrl={getExportUrl(params, 'xlsx')}
+                                    disabled={!isSingleFormSearch}
+                                />
+                            </Box>
+                        </Tooltip>
+                    </Box>
+                )}
                 {showTable && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}
@@ -252,6 +256,11 @@ const Instances = () => {
                         extraProps={{
                             loading: fetchingList,
                         }}
+                        noDataMessage={
+                            !isSearchActive
+                                ? MESSAGES.searchToSeeSubmissions
+                                : undefined
+                        }
                     />
                 )}
                 {tab === 'map' && (

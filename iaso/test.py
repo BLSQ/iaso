@@ -21,6 +21,8 @@ from django.utils import timezone
 from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
+import iaso.permissions as core_permissions
+
 from hat.api_import.models import APIImport
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
@@ -46,11 +48,15 @@ class IasoTestCaseMixin:
 
         if permissions is not None:
             content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+            core_permission_models = core_permissions.permission_models
+            for model in core_permission_models:
+                content_types.append(ContentType.objects.get_for_model(model))
 
             for plugin in settings.PLUGINS:
                 try:
-                    permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
-                    content_types.append(ContentType.objects.get_for_model(permission_model))
+                    plugin_permission_models = import_module(f"plugins.{plugin}.permissions").permission_models
+                    for model in plugin_permission_models:
+                        content_types.append(ContentType.objects.get_for_model(model))
                 except ImportError:
                     pass
 

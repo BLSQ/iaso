@@ -29,16 +29,16 @@ django.setup()
 
 def test_azure_storage():
     """Test Azure Storage configuration."""
-    print("🔍 Testing Azure Storage Configuration...")
+    print("Testing Azure Storage Configuration...")
     print("=" * 50)
 
     # Check if Azure Storage is enabled
     if not getattr(settings, "USE_AZURE_STORAGE", False):
-        print("❌ Azure Storage is not enabled.")
+        print("Azure Storage is not enabled.")
         print("   Set USE_AZURE_STORAGE=true in your environment variables.")
         return False
 
-    print("✅ Azure Storage is enabled")
+    print("Azure Storage is enabled")
 
     # Check required environment variables
     required_vars = [
@@ -52,17 +52,17 @@ def test_azure_storage():
             missing_vars.append(var)
 
     if missing_vars:
-        print(f"❌ Missing required environment variables: {', '.join(missing_vars)}")
+        print(f"Missing required environment variables: {', '.join(missing_vars)}")
         return False
 
-    print("✅ Required environment variables are set")
+    print("Required environment variables are set")
 
     # Check storage backend
     if not hasattr(settings, "DEFAULT_FILE_STORAGE"):
-        print("❌ DEFAULT_FILE_STORAGE is not configured")
+        print("DEFAULT_FILE_STORAGE is not configured")
         return False
 
-    print(f"✅ Storage backend: {settings.DEFAULT_FILE_STORAGE}")
+    print(f"Storage backend: {settings.DEFAULT_FILE_STORAGE}")
 
     # Test file operations
     try:
@@ -70,72 +70,72 @@ def test_azure_storage():
         test_content = "This is a test media file for Azure Storage configuration."
         test_filename = f"test_azure_media_{os.getpid()}.txt"
 
-        print(f"📤 Testing media file upload: {test_filename}")
+        print(f"Testing media file upload: {test_filename}")
         file_path = default_storage.save(test_filename, ContentFile(test_content))
-        print(f"✅ Media file uploaded successfully: {file_path}")
+        print(f"Media file uploaded successfully: {file_path}")
 
         # Test media file read
-        print("📖 Testing media file read...")
+        print("Testing media file read...")
         with default_storage.open(file_path, "r") as f:
             content = f.read()
             if content == test_content:
-                print("✅ Media file content matches")
+                print("Media file content matches")
             else:
-                print("❌ Media file content does not match")
+                print("Media file content does not match")
                 return False
 
         # Test media file URL
-        print("🔗 Testing media file URL...")
+        print("Testing media file URL...")
         file_url = default_storage.url(file_path)
-        print(f"✅ Media file URL: {file_url}")
+        print(f"Media file URL: {file_url}")
 
         # Test static file upload (using staticfiles storage)
         if hasattr(settings, "STATICFILES_STORAGE"):
-            print(f"📁 Static storage backend: {settings.STATICFILES_STORAGE}")
+            print(f"Static storage backend: {settings.STATICFILES_STORAGE}")
 
             static_test_content = "This is a test static file for Azure Storage configuration."
             static_test_filename = f"test_azure_static_{os.getpid()}.txt"
 
-            print(f"📤 Testing static file upload: {static_test_filename}")
+            print(f"Testing static file upload: {static_test_filename}")
             static_file_path = staticfiles_storage.save(static_test_filename, ContentFile(static_test_content))
-            print(f"✅ Static file uploaded successfully: {static_file_path}")
+            print(f"Static file uploaded successfully: {static_file_path}")
 
             # Test static file URL
-            print("🔗 Testing static file URL...")
+            print("Testing static file URL...")
             static_file_url = staticfiles_storage.url(static_file_path)
-            print(f"✅ Static file URL: {static_file_url}")
+            print(f"Static file URL: {static_file_url}")
 
             # Test static file read
-            print("📖 Testing static file read...")
+            print("Testing static file read...")
             with staticfiles_storage.open(static_file_path, "r") as f:
                 static_content = f.read()
                 if static_content == static_test_content:
-                    print("✅ Static file content matches")
+                    print("Static file content matches")
                 else:
-                    print("❌ Static file content does not match")
+                    print("Static file content does not match")
                     return False
 
             # Clean up static file
-            print("🗑️ Testing static file deletion...")
+            print("Testing static file deletion...")
             staticfiles_storage.delete(static_file_path)
-            print("✅ Static file deleted successfully")
+            print("Static file deleted successfully")
 
         # Test media file deletion
-        print("🗑️ Testing media file deletion...")
+        print("Testing media file deletion...")
         default_storage.delete(file_path)
-        print("✅ Media file deleted successfully")
+        print("Media file deleted successfully")
 
-        print("\n🎉 All Azure Storage tests passed!")
+        print("\nAll Azure Storage tests passed!")
         return True
 
     except Exception as e:
-        print(f"❌ Error during storage test: {e}")
+        print(f"Error during storage test: {e}")
         return False
 
 
 def check_environment():
     """Check environment variables."""
-    print("🔧 Environment Variables Check:")
+    print("Environment Variables Check:")
     print("-" * 30)
 
     env_vars = [
@@ -163,7 +163,7 @@ def check_environment():
 
 def check_container_structure():
     """Check and explain the container structure."""
-    print("\n📁 Container Structure:")
+    print("\nContainer Structure:")
     print("-" * 30)
     container_name = os.environ.get("AZURE_CONTAINER_NAME", "iaso")
     account_name = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME", "your_account")
@@ -178,7 +178,7 @@ def check_container_structure():
 
 
 if __name__ == "__main__":
-    print("🚀 Iaso Azure Storage Configuration Test")
+    print("Iaso Azure Storage Configuration Test")
     print("=" * 50)
 
     # Check environment variables
@@ -192,9 +192,9 @@ if __name__ == "__main__":
     success = test_azure_storage()
 
     if success:
-        print("\n✅ Azure Storage is properly configured!")
+        print("\nAzure Storage is properly configured!")
         sys.exit(0)
     else:
-        print("\n❌ Azure Storage configuration has issues.")
+        print("\nAzure Storage configuration has issues.")
         print("   Please check the error messages above and fix the configuration.")
         sys.exit(1)

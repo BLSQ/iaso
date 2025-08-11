@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-16 15:51+0000\n"
+"POT-Creation-Date: 2025-08-05 09:52+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -17,27 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
-
-#: hat/menupermissions/models.py
-msgid "Plannings"
-msgstr "Planifications"
-
-#: hat/templates/iaso/forgot_password.html
-#: hat/templates/iaso/reset_password_confirmation.html
-msgid "Submit"
-msgstr "Envoyer"
-
-#: hat/menupermissions/models.py
-msgid "Devices"
-msgstr "Appareils"
-
-#: hat/templates/iaso/login.html
-msgid "Please login to see this page."
-msgstr "Veuillez vous connecter pour voir cette page."
-
-#: hat/templates/iaso/login.html
-msgid "Login"
-msgstr "Connexion"
 
 #: hat/menupermissions/models.py
 msgid "Areas"
@@ -62,6 +41,10 @@ msgstr "Analyse des cas"
 #: hat/menupermissions/models.py
 msgid "Coordinations"
 msgstr "Coordinations"
+
+#: hat/menupermissions/models.py
+msgid "Devices"
+msgstr "Appareils"
 
 #: hat/menupermissions/models.py
 msgid "Téléchargement de données"
@@ -102,6 +85,10 @@ msgstr "Microplanification"
 #: hat/menupermissions/models.py
 msgid "Modifications"
 msgstr "Modifications"
+
+#: hat/menupermissions/models.py
+msgid "Plannings"
+msgstr "Planifications"
 
 #: hat/menupermissions/models.py
 msgid "Plannings template"
@@ -180,6 +167,11 @@ msgid "English"
 msgstr "Anglais"
 
 #: hat/templates/iaso/forgot_password.html
+#: hat/templates/iaso/reset_password_confirmation.html
+msgid "Submit"
+msgstr "Envoyer"
+
+#: hat/templates/iaso/forgot_password.html
 #: hat/templates/iaso/forgot_password_confirmation.html
 msgid "Go back to login"
 msgstr "Retour à la connexion"
@@ -211,8 +203,16 @@ msgstr ""
 "          "
 
 #: hat/templates/iaso/login.html
+msgid "Please login to see this page."
+msgstr "Veuillez vous connecter pour voir cette page."
+
+#: hat/templates/iaso/login.html
 msgid "Your username and password didn't match. Please try again."
 msgstr "Nom d'utilisateur ou mot de passe incorrect."
+
+#: hat/templates/iaso/login.html
+msgid "Login"
+msgstr "Connexion"
 
 #: hat/templates/iaso/login.html
 msgid "Learn more"

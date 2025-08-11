@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-23 09:15+0000\n"
+"POT-Creation-Date: 2025-08-05 09:57+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -352,10 +352,6 @@ msgid "Success"
 msgstr "Succès"
 
 #: iaso/models/base.py
-msgid "Polio"
-msgstr "Polio"
-
-#: iaso/models/base.py
 msgid "SINGLE"
 msgstr "UNIQUE"
 
@@ -375,6 +371,38 @@ msgstr ""
 #: iaso/models/base.py
 msgid "The submission must be an instance of a reference form."
 msgstr "La soumission doit être une instance d'un formulaire de référence."
+
+#: iaso/models/base.py
+msgid "Data collection options"
+msgstr "Options de collection de données"
+
+#: iaso/models/base.py
+msgid "Refresh options"
+msgstr "Options de rafraichissement"
+
+#: iaso/models/base.py
+msgid "Geographic options"
+msgstr "Options géographiques"
+
+#: iaso/models/base.py
+msgid "Data Validation"
+msgstr "Validation de données"
+
+#: iaso/models/base.py iaso/permissions.py
+msgid "Entities"
+msgstr "Entités"
+
+#: iaso/models/base.py
+msgid "Planning"
+msgstr "Planification"
+
+#: iaso/models/base.py
+msgid "Specific options"
+msgstr "Options spécifiques"
+
+#: iaso/models/base.py
+msgid "Not specified"
+msgstr "Génériques"
 
 #: iaso/models/base.py
 msgid "Immediate export of instances to DHIS2"
@@ -402,38 +430,6 @@ msgstr ""
 "L'enregistrement d'un formulaire comme finalisé sur mobile déclenche une "
 "tentative de téléchargement immédiatement + à chaque fois que le réseau "
 "devient disponible"
-
-#: iaso/models/base.py
-msgid "Data collection options"
-msgstr "Options de collection de données"
-
-#: iaso/models/base.py
-msgid "Refresh options"
-msgstr "Options de rafraichissement"
-
-#: iaso/models/base.py
-msgid "Geographic options"
-msgstr "Options géographiques"
-
-#: iaso/models/base.py
-msgid "Data Validation"
-msgstr "Validation de données"
-
-#: iaso/models/base.py
-msgid "Entities"
-msgstr "Entités"
-
-#: iaso/models/base.py
-msgid "Planning"
-msgstr "Planification"
-
-#: iaso/models/base.py
-msgid "Specific options"
-msgstr "Options spécifiques"
-
-#: iaso/models/base.py
-msgid "Not specified"
-msgstr "Génériques"
 
 #: iaso/models/comment.py
 msgid "content type"
@@ -570,6 +566,18 @@ msgid "Create change request if form is reference form"
 msgstr ""
 "Créer une demande de modification si le formulaire est un formulaire de "
 "référence"
+
+#: iaso/models/metric.py
+msgid "Threshold"
+msgstr "Seuil"
+
+#: iaso/models/metric.py
+msgid "Linear"
+msgstr "Linéaire"
+
+#: iaso/models/metric.py
+msgid "Ordinal"
+msgstr "Ordinal"
 
 #: iaso/models/org_unit.py
 msgid "Country"
@@ -878,3 +886,6 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "Polio"
+#~ msgstr "Polio"

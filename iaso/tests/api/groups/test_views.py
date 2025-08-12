@@ -436,6 +436,105 @@ class GroupsAPITestCase(APITestCase):
         for item in data:
             self.assertIn("Default source", item["label"])
 
+    def test_export_groups_in_xlsx(self):
+        """GET /groups/export/ with xlsx format"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/export/?file_format=xlsx")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
+
+        self.assertEqual(
+            excel_columns,
+            [
+                "ID",
+                "Source ref",
+                "Name",
+                "Data source",
+                "Version",
+            ],
+        )
+        self.assertEqual(
+            excel_data,
+            {
+                "ID": {
+                    0: self.group_1.id,
+                    1: self.group_2.id,
+                },
+                "Source ref": {
+                    0: self.group_1.source_ref,
+                    1: self.group_2.source_ref,
+                },
+                "Name": {
+                    0: self.group_1.name,
+                    1: self.group_2.name,
+                },
+                "Data source": {
+                    0: self.data_source.name,
+                    1: self.data_source.name,
+                },
+                "Version": {
+                    0: self.source_version_1.number,
+                    1: self.source_version_2.number,
+                },
+            },
+        )
+
+    def test_export_groups_in_csv(self):
+        """GET /groups/export/ with csv format"""
+
+        self.group_1.source_ref = "group_1_ref"
+        self.group_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/export/?file_format=csv")
+        data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
+        columns = data[0]
+
+        self.assertEqual(
+            columns,
+            [
+                "ID",
+                "Source ref",
+                "Name",
+                "Data source",
+                "Version",
+            ],
+        )
+        self.assertEqual(len(data), 3)  # Header + 2 rows
+        self.assertEqual(
+            data[1],
+            [
+                str(self.group_1.id),
+                self.group_1.source_ref,
+                self.group_1.name,
+                self.data_source.name,
+                str(self.source_version_1.number),
+            ],
+        )
+        self.assertEqual(
+            data[2],
+            [
+                str(self.group_2.id),
+                "",  # group_2 has no source_ref, so the result is an empty string
+                self.group_2.name,
+                self.data_source.name,
+                str(self.source_version_2.number),
+            ],
+        )
+
+    def test_export_groups_no_auth(self):
+        """GET /groups/export/ without auth should result in a 401"""
+
+        response = self.client.get("/api/groups/export/?file_format=xlsx")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_export_groups_no_perms(self):
+        """GET /groups/export/ with authenticated user without the right permission should result in a 403"""
+
+        self.client.force_authenticate(self.chewbacca)
+        response = self.client.get("/api/groups/export/?file_format=csv")
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
+
     def assertValidGroupListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data, expected_length=expected_length, results_key="groups", paginated=paginated

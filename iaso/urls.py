@@ -58,7 +58,7 @@ from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
-from .api.groups import GroupsViewSet
+from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.instances.instances import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet

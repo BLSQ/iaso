@@ -147,14 +147,13 @@ class LqasDataManager:
                     total_failed += 1
                     total_parsed += 1
                     continue
-
-        self.logger.info(f"Success: {total_created}/{total_parsed}")
-        self.logger.info(f"Failures: {total_failed}/{total_parsed}")
+        self.logger.info(f"Success: {total_created}/{total_parsed}- {obr_name}")
+        self.logger.info(f"Failures: {total_failed}/{total_parsed}- {obr_name}")
         if len(districts_not_found):
             self.logger.warning("Some districts were not found which can lead to incomplete data for some rounds")
-            self.logger.warning(f"DISTRICTS NOT FOUND: {districts_not_found}")
+            self.logger.warning(f"DISTRICTS NOT FOUND: {districts_not_found}- {obr_name}")
         if len(rounds_not_found) > 0:
-            self.logger.warning(f"Rounds not found: {rounds_not_found}")
+            self.logger.warning(f"Rounds not found: {rounds_not_found}- {obr_name}")
 
     def parse_json_and_update_lqas_activities(self, lqas_json_data):
         data_to_parse = lqas_json_data["stats"]
@@ -194,13 +193,13 @@ class LqasDataManager:
                     total_failed += 1
                     total_parsed += 1
                     continue
-        self.logger.info(f"Success: {total_updated}/{total_parsed}")
-        self.logger.info(f"Failures: {total_failed}/{total_parsed}")
+        self.logger.info(f"Success: {total_updated}/{total_parsed} - {obr_name}")
+        self.logger.info(f"Failures: {total_failed}/{total_parsed} - {obr_name}")
         if len(districts_not_found) > 0:
             self.logger.warning("Some districts were not found which can lead to incomplete data for some rounds")
-            self.logger.warning(f"DISTRICTS NOT FOUND: {districts_not_found}")
+            self.logger.warning(f"DISTRICTS NOT FOUND: {districts_not_found} - {obr_name}")
         if len(rounds_not_found) > 0:
-            self.logger.warning(f"Rounds not found: {rounds_not_found}")
+            self.logger.warning(f"Rounds not found: {rounds_not_found} - {obr_name}")
 
     def _prefetch_rounds_and_districts(self, lqas_json_data):
         data_to_parse = lqas_json_data["stats"]

@@ -83,7 +83,7 @@
         "moment": "^2.29.4",
         "node-fetch": "^2.6.7",
         "notistack": "^3.0.1",
-        "npm": "10.5.2",
+        "npm": "10.9.3",
         "pdfjs-dist": "^4.8.69",
         "polyfill-object.fromentries": "^1.0.1",
         "prop-types": "^15.7.2",

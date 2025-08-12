@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:20.13.1-bullseye-slim AS npmbuilder
+FROM node:22.18.0-bullseye-slim AS npmbuilder
 ENV PROJECT_ROOT=/opt
 
 WORKDIR /opt/app
@@ -24,7 +24,7 @@ COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@10.5.2
+RUN npm install -g npm@10.9.3
 
 RUN rm -rf node_modules
 RUN npm cache clean --force

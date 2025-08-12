@@ -102,23 +102,26 @@ export const useFeatureFlagColumns = (
                 align: 'center',
                 width: 50,
                 Cell: settings => {
-                    const title = MESSAGES[
-                        `${settings.row.original.code.toLowerCase()}_tooltip`
-                    ]
-                        ? MESSAGES[
-                              `${settings.row.original.code.toLowerCase()}_tooltip`
-                          ]
-                        : settings.row.original.name;
-                    return !settings.row.original.group ? (
-                        <FeatureFlagTooltipCell
-                            title={formatMessage(title)}
-                            iconVariant={
-                                settings.row.original.is_dangerous
-                                    ? 'warning'
-                                    : 'info'
-                            }
-                        />
-                    ) : (
+                    if (!settings.row.original.code) {
+                        const title = MESSAGES[
+                            `${settings.row.original.code.toLowerCase()}_tooltip`
+                        ]
+                            ? MESSAGES[
+                                  `${settings.row.original.code.toLowerCase()}_tooltip`
+                              ]
+                            : settings.row.original.name;
+                        return (
+                            <FeatureFlagTooltipCell
+                                title={formatMessage(title)}
+                                iconVariant={
+                                    settings.row.original.is_dangerous
+                                        ? 'warning'
+                                        : 'info'
+                                }
+                            />
+                        );
+                    }
+                    return (
                         <FeatureFlagToggleCell
                             collapsed={settings.row.original.collapsed}
                             onToggle={() =>

@@ -416,7 +416,10 @@ export const useMenuItems = (): MenuItems => {
     }
 
     // add feature flags
-    if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
+    if (
+        hasFeatureFlag(currentUser, SHOW_PAGES) &&
+        !basicItems.find(item => item.key === 'pages')
+    ) {
         basicItems.push({
             label: formatMessage(MESSAGES.pages),
             key: 'pages',

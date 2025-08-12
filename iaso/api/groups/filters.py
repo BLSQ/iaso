@@ -12,9 +12,9 @@ class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
 
 class GroupListFilter(django_filters.rest_framework.FilterSet):
     search = django_filters.CharFilter(field_name="name", lookup_expr="icontains", label=_("Search by name"))
-    version = django_filters.NumberFilter(field_name="source_version_id", label=_("Version ID"))
-    dataSource = django_filters.NumberFilter(field_name="source_version__data_source_id", label=_("Data Source ID"))
-    projectIds = NumberInFilter(
+    source_version_id = django_filters.NumberFilter(label=_("Version ID"))
+    data_source_id = django_filters.NumberFilter(field_name="source_version__data_source_id", label=_("Data Source ID"))
+    project_ids = NumberInFilter(
         field_name="source_version__data_source__projects__id",
         widget=CSVWidget,
         label=_("Project IDs (comma-separated)"),

@@ -9,7 +9,7 @@ def _create_new_group(name, source_version):
     return m.Group.objects.create(
         name=name,
         source_ref=name,
-        source_version=source_version,
+        source_version_id=source_version.id,
     )
 
 
@@ -95,7 +95,7 @@ class GroupListFilterTestCase(APITestCase):
         self.assertEqual(len(data), 6)  # there are only 6 groups in account_1
 
         # Same call, but filtering on source_version_1
-        response = self.client.get(f"{self.BASE_URL}?file_format=csv&version={self.source_version_1.id}")
+        response = self.client.get(f"{self.BASE_URL}?file_format=csv&source_version_id={self.source_version_1.id}")
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
         data.pop(0)  # Remove header
@@ -114,7 +114,7 @@ class GroupListFilterTestCase(APITestCase):
         self.assertEqual(len(data), 6)  # there are only 6 groups in account_1
 
         # Same call, but filtering on data_source_2
-        response = self.client.get(f"{self.BASE_URL}?file_format=csv&dataSource={self.data_source_2.id}")
+        response = self.client.get(f"{self.BASE_URL}?file_format=csv&data_source_id={self.data_source_2.id}")
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
         data.pop(0)  # Remove header
@@ -150,7 +150,7 @@ class GroupListFilterTestCase(APITestCase):
         self.assertEqual(len(data), 8)  # there are only 8 groups in account_1 (6 + 2 new ones)
 
         # Same call, but filtering on project_1
-        response = self.client.get(f"{self.BASE_URL}?file_format=csv&projectIds={self.project_1.id}")
+        response = self.client.get(f"{self.BASE_URL}?file_format=csv&project_ids={self.project_1.id}")
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
         data.pop(0)  # Remove header
@@ -162,7 +162,7 @@ class GroupListFilterTestCase(APITestCase):
         )
 
         # When providing both project IDs, all groups are there
-        response = self.client.get(f"{self.BASE_URL}?file_format=csv&projectIds={self.project_1.id},{new_project.id}")
+        response = self.client.get(f"{self.BASE_URL}?file_format=csv&project_ids={self.project_1.id},{new_project.id}")
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
         data.pop(0)  # Remove header
@@ -187,7 +187,7 @@ class GroupListFilterTestCase(APITestCase):
         """
         self.client.force_authenticate(self.user_1)
         response = self.client.get(
-            f"{self.BASE_URL}?file_format=csv&version={self.source_version_1.id}&dataSource={self.data_source_2.id}"
+            f"{self.BASE_URL}?file_format=csv&source_version_id={self.source_version_1.id}&data_source_id={self.data_source_2.id}"
         )
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
@@ -199,7 +199,7 @@ class GroupListFilterTestCase(APITestCase):
         """
         self.client.force_authenticate(self.user_1)
         response = self.client.get(
-            f"{self.BASE_URL}?file_format=csv&version={self.source_version_2.id}&projectIds={self.project_2.id}"
+            f"{self.BASE_URL}?file_format=csv&source_version_id={self.source_version_2.id}&project_ids={self.project_2.id}"
         )
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 
@@ -211,7 +211,7 @@ class GroupListFilterTestCase(APITestCase):
         """
         self.client.force_authenticate(self.user_1)
         response = self.client.get(
-            f"{self.BASE_URL}?file_format=csv&dataSource={self.data_source_1.id}&projectIds={self.project_1.id}"
+            f"{self.BASE_URL}?file_format=csv&data_source_id={self.data_source_1.id}&project_ids={self.project_1.id}"
         )
         data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
 

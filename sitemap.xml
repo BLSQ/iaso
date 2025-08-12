@@ -9,6 +9,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/AWS-Deployment.html"/>
     </url>
     <url>
+        <loc>NoneAzure-Storage-Configuration.html</loc>
+        <lastmod>2025-08-12</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/Azure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/Azure-Storage-Configuration.html"/>
+    </url>
+    <url>
         <loc>Noneindex.html</loc>
         <lastmod>2025-08-12</lastmod>
         <changefreq>daily</changefreq>
@@ -489,6 +497,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/AWS-Deployment.html"/>
     </url>
     <url>
+        <loc>Nonefr/Azure-Storage-Configuration.html</loc>
+        <lastmod>2025-08-12</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/Azure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/Azure-Storage-Configuration.html"/>
+    </url>
+    <url>
         <loc>Nonefr/index.html</loc>
         <lastmod>2025-08-12</lastmod>
         <changefreq>daily</changefreq>
@@ -967,6 +983,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/AWS-Deployment.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="NoneAWS-Deployment.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/AWS-Deployment.html"/>
+    </url>
+    <url>
+        <loc>Nonees/Azure-Storage-Configuration.html</loc>
+        <lastmod>2025-08-12</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/Azure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="NoneAzure-Storage-Configuration.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/Azure-Storage-Configuration.html"/>
     </url>
     <url>
         <loc>Nonees/index.html</loc>

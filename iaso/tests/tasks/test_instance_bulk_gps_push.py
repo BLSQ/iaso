@@ -3,10 +3,10 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
 from rest_framework import status
 
-from hat.menupermissions import models as am
 from iaso import models as m
 from iaso.api.query_params import ORG_UNIT_TYPE_ID, USER_IDS
 from iaso.models import QUEUED, Task
+from iaso.permissions import CorePermissionSupport
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -134,7 +134,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
     def test_no_permission_instances(self):
         """POST /api/tasks/create/instancebulkgpspush/ without instances permissions"""
         # Adding org unit permission to user
-        content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
+        content_type = ContentType.objects.get_for_model(CorePermissionSupport)
         self.user_no_perms.user_permissions.add(
             Permission.objects.filter(codename="iaso_org_units", content_type=content_type).first().id
         )
@@ -150,7 +150,7 @@ class InstanceBulkPushGpsAPITestCase(TaskAPITestCase):
     def test_no_permission_org_units(self):
         """POST /api/tasks/create/instancebulkgpspush/ without orgunit permissions"""
         # Adding instances permission to user
-        content_type = ContentType.objects.get_for_model(am.CustomPermissionSupport)
+        content_type = ContentType.objects.get_for_model(CorePermissionSupport)
         self.user_no_perms.user_permissions.add(
             Permission.objects.filter(codename="iaso_submissions", content_type=content_type).first().id
         )

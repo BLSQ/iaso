@@ -10,10 +10,12 @@ from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
+from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnit
 from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
+from plugins.polio.models.base import SubActivity
 
 
 class HasPolioPermission(permissions.BasePermission):
@@ -195,3 +197,80 @@ class LqasImRoundOptionsViewset(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         return Round.objects.filter_for_user(user).filter(on_hold=False)
+
+
+class CountryBlockDropDownSerializer(serializers.ModelSerializer):
+    label = serializers.CharField(source="name")
+    value = serializers.IntegerField(source="id")
+
+    class Meta:
+        model = Group
+        fields = ["value", "label"]
+
+
+class LqasImCountryBlockOptionsFilter(django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = Group
+        fields = ["id"]
+
+    month = django_filters.CharFilter(method="filter_month")
+
+    def filter_month(self, queryset: QuerySet[Group], name: str, value: str):
+        try:
+            date_obj = datetime.strptime(value, "%m-%Y")
+            first_day = date_obj.replace(day=1)
+            last_day = date_obj.replace(day=calendar.monthrange(date_obj.year, date_obj.month)[1])
+        except:
+            raise ValidationError({"month": [f"Cannot convert {value} to date object"]})
+
+        with_lqas_end_date = Q(lqas_ended_at__isnull=False, lqas_ended_at__gte=first_day, lqas_ended_at__lte=last_day)
+        # When no lqas end date we use round date +10 as fallback option (same convention used in Openhexa pipeline)
+        without_lqas_end_date = Q(
+            lqas_ended_at__isnull=True,
+            ended_at__gte=first_day
+            - timedelta(
+                days=10
+            ),  # since we can't use ended_at +10 >= first_day, we compare ended_at with first_day -10
+            ended_at__lte=last_day - timedelta(days=10),  # same logic as above
+        )
+        subactivity_with_lqas_end_date = Q(
+            lqas_ended_at__isnull=False, lqas_ended_at__gte=first_day, lqas_ended_at__lte=last_day
+        )
+        # When no lqas end date we use round date +10 as fallback option (same convention used in Openhexa pipeline)
+        subactivity_without_lqas_end_date = Q(
+            lqas_ended_at__isnull=True,
+            end_date__gte=first_day
+            - timedelta(
+                days=10
+            ),  # since we can't use ended_at +10 >= first_day, we compare ended_at with first_day -10
+            end_date__lte=last_day - timedelta(days=10),  # same logic as above
+        )
+
+        # Find subactivities within the date-month period
+        sub_activities_with_lqas = SubActivity.objects.filter(
+            subactivity_with_lqas_end_date | subactivity_without_lqas_end_date
+        ).values_list("id")
+        with_subactivity = Q(sub_activities__id__in=sub_activities_with_lqas)
+
+        countries_with_lqas = (
+            Round.objects.filter(campaign__is_test=False)
+            .filter(campaign__on_hold=False)
+            .filter(on_hold=False)
+            .filter(with_lqas_end_date | without_lqas_end_date | with_subactivity)
+            .values_list("campaign__country__id")
+        )
+
+        return queryset.filter(org_units__id__in=countries_with_lqas).distinct("id")
+
+
+class LqasImCountryBlockOptionsViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [HasPolioPermission | HasPolioAdminPermission]
+    filterset_class = LqasImCountryBlockOptionsFilter
+    remove_results_key_if_paginated = False
+    results_key = "results"
+    serializer_class = CountryBlockDropDownSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        return Group.objects.filter_for_user(user).filter(block_of_countries=True)

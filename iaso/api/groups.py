@@ -3,7 +3,8 @@ from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.group_sets.serializers import GroupSetSerializer
 from iaso.models import DataSource, Group, Project, SourceVersion
 
@@ -102,7 +103,7 @@ class GroupDropdownSerializer(serializers.ModelSerializer):
 class GroupsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{permission.ORG_UNITS}", "{permission.ORG_UNITS_READ}" and "{permission.COMPLETENESS_STATS}" permission
+    This API is restricted to users having the "{core_permissions.ORG_UNITS}", "{core_permissions.ORG_UNITS_READ}" and "{core_permissions.COMPLETENESS_STATS}" permission
 
     GET /api/groups/
     GET /api/groups/<id>
@@ -113,7 +114,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.ORG_UNITS, permission.ORG_UNITS_READ, permission.COMPLETENESS_STATS),  # type: ignore
+        HasPermission(core_permissions.ORG_UNITS, core_permissions.ORG_UNITS_READ, core_permissions.COMPLETENESS_STATS),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

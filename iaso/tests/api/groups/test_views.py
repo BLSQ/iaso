@@ -1,6 +1,5 @@
 import typing
 
-from django.db.models import Q
 from django.utils.timezone import now
 from rest_framework import status
 
@@ -166,8 +165,10 @@ class GroupsAPITestCase(APITestCase):
 
     def test_groups_create_multiple_with_blank_source_ref(self):
         """POST /groups/ another group with blank source ref"""
-        source_ref_filter = Q(source_ref="") | Q(source_ref__isnull=True)
-        count_before = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        self.group_2.source_ref = ""
+        self.group_2.save()
+
+        count_before = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
         self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
 
         self.client.force_authenticate(self.yoda)
@@ -178,14 +179,14 @@ class GroupsAPITestCase(APITestCase):
         response = self.client.post("/api/groups/", data=data, format="json")
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-        count_after = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        count_after = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
         self.assertEqual(count_before + 1, count_after)
 
         # Multiple groups can be created with blank source_ref
         response = self.client.post("/api/groups/", data=data, format="json")  # posting the same thing again
         self.assertJSONResponse(response, status.HTTP_201_CREATED)
 
-        last_count = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        last_count = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
         self.assertEqual(count_after + 1, last_count)
 
     def test_groups_partial_update_ok(self):
@@ -203,6 +204,34 @@ class GroupsAPITestCase(APITestCase):
         self.group_1.refresh_from_db()
         self.assertEqual("test group (updated)", self.group_1.name)
         self.assertEqual(1, self.group_1.source_version.number)
+
+    def test_groups_partial_update_with_blank_source_ref(self):
+        """PATCH /groups/<group_id>: removing a source_ref doesn't crash"""
+        self.group_2.source_ref = ""
+        self.group_2.save()
+
+        count_before = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
+
+        # Preparing a new group with a source ref
+        new_group = m.Group.objects.create(
+            name="new group",
+            source_version=self.source_version_2,  # default version
+            source_ref="some_source_ref",
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/groups/{new_group.id}/", data={"source_ref": ""}, format="json")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertValidGroupData(response_data)
+
+        new_group.refresh_from_db()
+        self.assertEqual(new_group.source_ref, "")
+
+        count_blank_source_refs = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_blank_source_refs, 2)
 
     def test_groups_update_not_implemented(self):
         """PUT /groups/<group_id>: 405"""

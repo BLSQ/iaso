@@ -1,5 +1,6 @@
 import typing
 
+from django.db.models import Q
 from django.utils.timezone import now
 from rest_framework import status
 
@@ -162,6 +163,30 @@ class GroupsAPITestCase(APITestCase):
             "This source ref is already used by another group in your default version",
             status_code=status.HTTP_400_BAD_REQUEST,
         )
+
+    def test_groups_create_multiple_with_blank_source_ref(self):
+        """POST /groups/ another group with blank source ref"""
+        source_ref_filter = Q(source_ref="") | Q(source_ref__isnull=True)
+        count_before = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
+
+        self.client.force_authenticate(self.yoda)
+        data = {
+            "name": "Is this going to trigger an error?",
+            "source_ref": "",
+        }
+        response = self.client.post("/api/groups/", data=data, format="json")
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        count_after = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        self.assertEqual(count_before + 1, count_after)
+
+        # Multiple groups can be created with blank source_ref
+        response = self.client.post("/api/groups/", data=data, format="json")  # posting the same thing again
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        last_count = m.Group.objects.filter(source_ref_filter, source_version=self.source_version_2).count()
+        self.assertEqual(count_after + 1, last_count)
 
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""

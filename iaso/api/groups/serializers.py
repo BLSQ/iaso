@@ -44,7 +44,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         default_version = self._fetch_user_default_source_version()
-        if "source_ref" in attrs:
+        if "source_ref" in attrs and attrs["source_ref"]:
             # Check if the source_ref is already used by another group
             potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
             if potential_group.exists():

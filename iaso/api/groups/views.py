@@ -158,7 +158,7 @@ class GroupsViewSet(ModelViewSet):
         serializer = self.get_serializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
 
-        file_format = serializer.validated_data.get("file_format", None)
+        file_format = serializer.validated_data["file_format"]
         now = timezone.now()
         file_name = f"groups_{now.strftime('%Y-%m-%d-%H-%M-%S')}"
 

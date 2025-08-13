@@ -69,6 +69,7 @@ from ..models import (
     PotentialPayment,
     Profile,
     Project,
+    ProjectFeatureFlags,
     Report,
     ReportVersion,
     SourceVersion,
@@ -415,10 +416,19 @@ class ProjectAdmin(admin.ModelAdmin):
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
 
+@admin.register(ProjectFeatureFlags)
+@admin_attr_decorator
+class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
+    list_display = ("featureflag", "project", "configuration")
+    list_filter = ("project",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 @admin.register(FeatureFlag)
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name", "requires_authentication")
+    list_display = ("code", "name", "requires_authentication", "configuration_schema")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Link)

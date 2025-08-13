@@ -68,7 +68,7 @@ class Project(models.Model):
     # The `needs_authentication` boolean field existed before the feature flags.
     # Use feature flags instead.
     needs_authentication = models.BooleanField(default=False)
-    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
+    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True, through="ProjectFeatureFlags")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)

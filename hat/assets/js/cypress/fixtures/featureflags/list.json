@@ -54,6 +54,26 @@
             "description": "Uploader les formulaires dès qu'une connexion internet se présente. Upload immédiat des formulaires \"finalisés\"",
             "created_at": 1593012611.488891,
             "updated_at": 1608655329.956441
+        },
+        {
+            "id": 9,
+            "code": "WITH_CONFIGURATION",
+            "name": "A feature flag with configuration",
+            "description": "This feature flag has two absolutely useless configuration",
+            "configuration": {
+                "first": {
+                    "type": "int",
+                    "default": 0,
+                    "description": "This is an int"
+                },
+                "second": {
+                    "type": "text",
+                    "default": null,
+                    "description": "This is some text"
+                }
+            },
+            "created_at": 1593012611.488891,
+            "updated_at": 1608655329.956441
         }
     ]
 }

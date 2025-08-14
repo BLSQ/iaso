@@ -540,4 +540,9 @@ def generate_manifest_structure(content: list[str]) -> str:
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset(mobile=True).exclude(form_versions=None)
+        return (
+            super()
+            .get_queryset(mobile=True)
+            .exclude(form_versions=None)
+            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
+        )

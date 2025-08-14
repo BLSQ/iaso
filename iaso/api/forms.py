@@ -17,13 +17,14 @@ import iaso.permissions as core_permissions
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
-from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.models import Form, FormAttachment, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
+from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from .projects import ProjectSerializer
 from .serializers import AppIdSerializer
 
@@ -43,15 +44,6 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
             .filter(id=obj.id)
             .exists()
         )
-
-
-class FormPredefinedFilterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FormPredefinedFilter
-        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
 
 class FormSerializer(DynamicFieldsModelSerializer):

@@ -6,6 +6,7 @@ from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType, Session
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
+from .metric import MetricType, MetricValue
 from .microplanning import Planning, Team
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
@@ -44,6 +45,8 @@ __all__ = [
     "Instance",
     "InstanceFile",
     "InstanceQuerySet",
+    "MetricType",
+    "MetricValue",
     "OrgUnit",
     "OrgUnitChangeRequest",
     "OrgUnitChangeRequestConfiguration",
@@ -57,6 +60,7 @@ __all__ = [
     "Project",
     "Report",
     "ReportVersion",
+    "Session",
     "SourceVersion",
     "StorageDevice",
     "StorageLogEntry",

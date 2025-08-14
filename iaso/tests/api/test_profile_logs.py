@@ -8,8 +8,9 @@ import pytz
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
 
+import iaso.permissions as core_permissions
+
 from hat.audit.models import Modification
-from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.test import APITestCase
@@ -226,18 +227,18 @@ class ProfileLogsTestCase(APITestCase):
         )
         # Users.
         cls.user_with_permission_1 = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[permission._USERS_ADMIN]
+            username="janedoe", account=cls.account, permissions=[core_permissions._USERS_ADMIN]
         )
         cls.user_with_permission_2 = cls.create_user_with_profile(
-            username="bordoe", account=cls.account, permissions=[permission._USERS_ADMIN]
+            username="bordoe", account=cls.account, permissions=[core_permissions._USERS_ADMIN]
         )
         cls.user_without_permission = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[permission._FORMS]
+            username="jim", account=cls.account, permissions=[core_permissions._FORMS]
         )
         cls.edited_user_1 = cls.create_user_with_profile(
             username="jam",
             account=cls.account,
-            permissions=[permission._USERS_MANAGED],
+            permissions=[core_permissions._USERS_MANAGED],
             language="en",
         )
         cls.edited_user_2 = cls.create_user_with_profile(

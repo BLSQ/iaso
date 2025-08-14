@@ -14,7 +14,17 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeatureFlag
 
-        fields = ["id", "code", "name", "requires_authentication", "description", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "code",
+            "name",
+            "requires_authentication",
+            "category",
+            "is_dangerous",
+            "description",
+            "created_at",
+            "updated_at",
+        ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -39,7 +49,17 @@ class FeatureFlagViewSet(ModelViewSet):
 
     def get_queryset(self):
         featureflags = FeatureFlag.objects.all()
-        return featureflags.order_by("name")
+
+        # Filter out MOBILE_NO_ORG_UNIT if account doesn't have SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG
+        request = self.request
+        if request and request.user.is_authenticated:
+            user_account = request.user.iaso_profile.account
+            account_feature_flags = user_account.feature_flags.values_list("code", flat=True)
+
+            if "SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG" not in account_feature_flags:
+                featureflags = featureflags.exclude(code="MOBILE_NO_ORG_UNIT")
+
+        return featureflags.order_by_category_then_order()
 
     @action(methods=["GET"], detail=False)
     def except_no_activated_modules(self, request):

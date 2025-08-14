@@ -50,7 +50,7 @@ class CsvCampaignScopesExportViewTestCase(APITestCase):
             parent=cls.org_unit_b,
         )
 
-        cls.group = m.Group.objects.create(name="Group", domain="POLIO", source_version=cls.source_version)
+        cls.group = m.Group.objects.create(name="Group", source_version=cls.source_version)
         cls.group.org_units.add(cls.org_unit_a)
         cls.group.org_units.add(cls.org_unit_b)
         cls.group.org_units.add(cls.org_unit_c)

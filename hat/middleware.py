@@ -1,5 +1,6 @@
 from threading import local
 
+
 _thread_locals = local()
 
 
@@ -23,10 +24,10 @@ def get_current_user():
 def set_current_user(user=None):
     request = get_current_request()
     if request:
-        setattr(request, "user", user)
+        request.user = user
 
 
-class ThreadLocalMiddleware(object):
+class ThreadLocalMiddleware:
     """
     Middleware to add the HttpRequest to thread local storage
     """

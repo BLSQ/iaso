@@ -13,7 +13,8 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource, Task
@@ -27,15 +28,8 @@ logger = logging.getLogger(__name__)
 class ImportGpkgSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImportGPKG
-        fields = ["id", "file", "project", "data_source", "version_number", "description", "created_at", "updated_at"]
+        fields = ["id", "file", "data_source", "version_number", "description", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
-
-    def validate_project(self, project):
-        user = self.context["request"].user
-        account = user.iaso_profile.account
-        if project not in account.project_set.all():
-            raise ValidationError("Unauthorized project")
-        return project
 
     def validate_data_source(self, data_source):
         user = self.context["request"].user
@@ -47,7 +41,7 @@ class ImportGpkgSerializer(serializers.ModelSerializer):
 
 # noinspection PyMethodMayBeStatic
 class ImportGPKGViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.SOURCES)]  # type: ignore
     serializer_class = ImportGpkgSerializer
 
     def create(self, request):

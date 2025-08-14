@@ -13,7 +13,10 @@ class Migration(migrations.Migration):
             app_config.models_module = None
 
         Permission = apps.get_model("auth", "Permission")
-        permissions = Permission.objects.get(codename="iaso_update_submission")
+        try:
+            permissions = Permission.objects.get(codename="iaso_update_submission")
+        except Permission.DoesNotExist:  # The CustomPermissionSupport model is no longer used, so it can't be found and no permissions were created by create_permissions()
+            return  # this migration is not needed on a fresh DB
 
         User = apps.get_model("auth", "User")
 
@@ -25,6 +28,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("menupermissions", "0026_auto_20220325_1437"),
+        ("contenttypes", "0002_remove_content_type_name"),  # Making sure to use the freshest version of ContentType
     ]
 
     operations = [

@@ -1,4 +1,10 @@
 /* eslint-disable react/no-array-index-key */
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import Add from '@mui/icons-material/Add';
 import { AppBar, Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -11,32 +17,22 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
 
 import { isEqual } from 'lodash';
-import { useCurrentUser } from '../../../utils/usersUtils';
-
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { SearchButton } from '../../../components/SearchButton';
-import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
-
-import { OrgUnitParams } from '../types/orgUnit';
 
 import { getChipColors } from '../../../constants/chipColors';
 import { baseUrls } from '../../../constants/urls';
 
-import { Count } from '../hooks/requests/useGetOrgUnits';
-import { Search } from '../types/search';
-
-import { decodeSearch } from '../utils';
-
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { ORG_UNITS } from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { Count } from '../hooks/requests/useGetOrgUnits';
 import MESSAGES from '../messages';
+import { OrgUnitParams } from '../types/orgUnit';
+import { Search } from '../types/search';
+import { decodeSearch } from '../utils';
+import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
 
 type Props = {
     params: OrgUnitParams;
@@ -86,9 +82,13 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const defaultSource = useMemo(
-        () => currentUser?.account?.default_version?.data_source,
+    const defaultVersion = useMemo(
+        () => currentUser?.account?.default_version,
         [currentUser],
+    );
+    const defaultSource = useMemo(
+        () => defaultVersion?.data_source,
+        [defaultVersion],
     );
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
@@ -100,11 +100,21 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
+        const tempSearches = [...searches].map(s => {
+            const newSearch = { ...s };
+            // isAdded is added while creating a new search,
+            // it is removed while clicking on search,
+            // this avoid to launch a search if we add a new tab without clicking on search
+            if (s.isAdded) {
+                delete newSearch.isAdded;
+            }
+            return newSearch;
+        });
         const tempParams = {
             ...params,
             locationLimit,
             page: 1,
-            searches,
+            searches: tempSearches,
         };
         onSearch(tempParams);
     }, [params, locationLimit, searches, onSearch]);
@@ -141,7 +151,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         },
         [redirectTo],
     );
-
     // update filter state if search changed in the url
     useSkipEffectOnMount(() => {
         if (!isEqual(decodeSearch(decodeURI(params.searches)), searches)) {
@@ -149,6 +158,20 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         }
     }, [params.searches]);
 
+    const defaultItem = useMemo(
+        () => ({
+            validation_status: 'all',
+            color: getChipColors(
+                searches.length + 1,
+                false,
+                searches.map(search => `#${search.color}`),
+            ).replace('#', ''),
+            source: defaultSource && defaultSource.id,
+            version: defaultVersion?.id,
+            isAdded: true,
+        }),
+        [searches, defaultSource, defaultVersion],
+    );
     return (
         <>
             <AppBar
@@ -165,15 +188,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         ...params,
                         searches: JSON.stringify(searches),
                     }}
-                    defaultItem={{
-                        validation_status: 'all',
-                        color: getChipColors(
-                            searches.length + 1,
-                            false,
-                            searches.map(search => `#${search.color}`),
-                        ).replace('#', ''),
-                        source: defaultSource && defaultSource.id,
-                    }}
+                    defaultItem={defaultItem}
                     paramKey="searches"
                     tabParamKey="searchTabIndex"
                     onTabChange={newParams => {
@@ -216,7 +231,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                         <Box display="inline-block" mr={2}>
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 className={classnames(classes.button)}
                                 color="primary"
                                 onClick={() =>

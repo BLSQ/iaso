@@ -3,7 +3,8 @@ import typing
 from django.utils.timezone import now
 from rest_framework import status
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -34,7 +35,6 @@ class GroupsAPITestCase(APITestCase):
 
         cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version_1)
         cls.group_2 = m.Group.objects.create(name="Assemblies", source_version=cls.source_version_2)
-        cls.group_3 = m.Group.objects.create(name="Hidden", source_version=cls.source_version_1, domain="POLIO")
 
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
@@ -46,7 +46,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
 
     def test_groups_list_wrong_permission(self):
-        f"""GET /groups/ with authenticated user, without the {permission.ORG_UNITS} permission"""
+        f"""GET /groups/ with authenticated user, without the {core_permissions.ORG_UNITS} permission"""
 
         self.client.force_authenticate(self.chewbacca)
         response = self.client.get("/api/groups/")
@@ -207,6 +207,234 @@ class GroupsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
+
+    # Dropdown tests
+    def test_dropdown_authenticated_user_ok(self):
+        """GET /groups/dropdown/ with authenticated user - happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
+
+        # Check first item structure
+        first_item = data[0]
+        self.assertHasField(first_item, "id", int)
+        self.assertHasField(first_item, "name", str)
+        self.assertHasField(first_item, "label", str)
+
+        # Check label format: "name (datasource - version)"
+        self.assertIn("(", first_item["label"])
+        self.assertIn(")", first_item["label"])
+
+    def test_dropdown_anonymous_user_with_app_id_ok(self):
+        """GET /groups/dropdown/ with anonymous user and valid app_id - happy path"""
+
+        response = self.client.get(f"/api/groups/dropdown/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 0)
+
+    def test_dropdown_anonymous_user_without_app_id_fails(self):
+        """GET /groups/dropdown/ with anonymous user without app_id - should fail"""
+
+        response = self.client.get("/api/groups/dropdown/")
+        self.assertJSONResponse(response, 400)
+
+        data = response.json()
+        self.assertIn("Parameter app_id is missing", str(data))
+
+    def test_dropdown_with_default_version_filter(self):
+        """GET /groups/dropdown/ with defaultVersion=true filter"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/?defaultVersion=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only return groups from the default version (source_version_2)
+        for item in data:
+            # The label should contain the default version number
+            self.assertIn("Default source - 2", item["label"])
+
+    def test_dropdown_with_version_filter(self):
+        """GET /groups/dropdown/ with specific version filter"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/groups/dropdown/?version={self.source_version_1.id}")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only return groups from the specified version
+        for item in data:
+            self.assertIn("Default source - 1", item["label"])
+
+    def test_dropdown_with_data_source_filter(self):
+        """GET /groups/dropdown/ with dataSource filter"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/groups/dropdown/?dataSource={self.data_source.id}")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only return groups from the specified data source
+        for item in data:
+            self.assertIn("Default source", item["label"])
+
+    def test_dropdown_with_data_source_ids_filter(self):
+        """GET /groups/dropdown/ with dataSourceIds filter"""
+
+        # Create a second data source for testing
+        second_data_source = m.DataSource.objects.create(name="Second source")
+        second_version = m.SourceVersion.objects.create(data_source=second_data_source, number=1)
+        second_group = m.Group.objects.create(name="Second Group", source_version=second_version)
+
+        # Add second data source to the project
+        self.project_1.data_sources.add(second_data_source)
+        self.project_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/groups/dropdown/?dataSourceIds={self.data_source.id},{second_data_source.id}")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should return groups from both specified data sources
+        data_source_names = ["Default source", "Second source"]
+        for item in data:
+            self.assertTrue(any(name in item["label"] for name in data_source_names))
+
+    def test_dropdown_with_search_filter(self):
+        """GET /groups/dropdown/ with search filter"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/?search=Councils")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only return groups matching the search term
+        for item in data:
+            self.assertIn("Councils", item["name"])
+
+    def test_dropdown_with_block_of_countries_filter(self):
+        """GET /groups/dropdown/ with blockOfCountries filter"""
+
+        # Create a group with block_of_countries=True
+        block_group = m.Group.objects.create(
+            name="Countries Block", source_version=self.source_version_1, block_of_countries=True
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/?blockOfCountries=true")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only return groups with block_of_countries=True
+        for item in data:
+            self.assertEqual("Countries Block", item["name"])
+
+    def test_dropdown_with_order_parameter(self):
+        """GET /groups/dropdown/ with order parameter"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/?order=name")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+        self.assertGreater(len(data), 1)
+
+        # Check that items are ordered by name
+        names = [item["name"] for item in data]
+        self.assertEqual(names, sorted(names))
+
+    def test_dropdown_pagination(self):
+        """GET /groups/dropdown/ with pagination"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/dropdown/?limit=1&page=1")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        # Should return paginated response structure
+        self.assertHasField(data, "groups", list)
+        self.assertHasField(data, "page", int)
+        self.assertHasField(data, "pages", int)
+        self.assertHasField(data, "limit", int)
+        self.assertHasField(data, "count", int)
+
+        self.assertEqual(len(data["groups"]), 1)
+        self.assertEqual(data["page"], 1)
+        self.assertEqual(data["limit"], 1)
+
+    def test_dropdown_invalid_app_id_fails(self):
+        """GET /groups/dropdown/ with invalid app_id - should fail"""
+
+        response = self.client.get("/api/groups/dropdown/?app_id=invalid_app_id")
+        self.assertJSONResponse(response, 400)
+
+        data = response.json()
+        self.assertIn("No project found", str(data))
+
+    def test_dropdown_user_from_different_account(self):
+        """GET /groups/dropdown/ with user from different account - should only see their groups"""
+
+        # Create a group for the marvel account
+        marvel_data_source = m.DataSource.objects.create(name="Marvel source")
+        marvel_version = m.SourceVersion.objects.create(data_source=marvel_data_source, number=1)
+        marvel_group = m.Group.objects.create(name="Marvel Group", source_version=marvel_version)
+
+        # Add marvel data source to marvel project
+        marvel_project = m.Project.objects.create(
+            name="Marvel Project", app_id="marvel.project", account=self.raccoon.iaso_profile.account
+        )
+        marvel_project.data_sources.add(marvel_data_source)
+        marvel_project.save()
+
+        # Set default version for marvel account
+        marvel_account = self.raccoon.iaso_profile.account
+        marvel_account.default_version = marvel_version
+        marvel_account.save()
+
+        self.client.force_authenticate(self.raccoon)
+        response = self.client.get("/api/groups/dropdown/")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only see groups from their account
+        for item in data:
+            self.assertIn("Marvel source", item["label"])
+
+    def test_dropdown_anonymous_user_different_project(self):
+        """GET /groups/dropdown/ with anonymous user and different project app_id"""
+
+        response = self.client.get(f"/api/groups/dropdown/?app_id={self.project_2.app_id}")
+        self.assertJSONResponse(response, 200)
+
+        data = response.json()
+        self.assertIsInstance(data, list)
+
+        # Should only see groups from the specified project
+        for item in data:
+            self.assertIn("Default source", item["label"])
 
     def assertValidGroupListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

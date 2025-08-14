@@ -1267,6 +1267,7 @@
     "iaso.projets.featureflag.tooltip.mobile_force_forms_update": "Force les utilisateurs à mettre à jour les versions de formulaires s'il y a eu des mises à jour (l'appareil doit avoir une connexion pour que cela fonctionne)",
     "iaso.projets.featureflag.tooltip.mobile_force_ou_update": "Force les utilisateurs à mettre à jour les données géographiques s'il y a eu des changements (l'appareil doit avoir une connexion pour que cela fonctionne)",
     "iaso.projets.featureflag.tooltip.mobile_org_unit_registry": "Onglet pour gérer et proposer des changements aux unités d'organisation",
+    "iaso.projets.featureflag.tooltip.mobile_change_requests_tab": "Onglet permettant de proposer des changements aux unités d'organisation",
     "iaso.projets.featureflag.tooltip.mobile_submission_incomplete_by_default": "Désactive la pré-sélection de l'option 'Finalisé' à la fin d'un formulaire",
     "iaso.projets.featureflag.tooltip.org_unit_change_request": "Possibilité de proposer des changements aux unités d'organisation et à leurs formulaires de référence associés",
     "iaso.projets.featureflag.tooltip.planning": "Onglet permettant de collecter les données liées à un Planning défini au préalable via le web. Les utilisateurs ne voient que les points leur étant assigné.",

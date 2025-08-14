@@ -355,9 +355,10 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
-        response = c.get(
-            "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
-        )  # this should have 2 results
+        with self.assertNumQueries(10):
+            response = c.get(
+                "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
+            )  # this should have 2 results
         json_response = json.loads(response.content)
         org_unit_types = json_response["orgUnitTypes"]
         self.assertEqual(len(org_unit_types), 2)

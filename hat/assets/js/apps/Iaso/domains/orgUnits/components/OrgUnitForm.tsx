@@ -1,4 +1,3 @@
-/* eslint-disable react/function-component-definition */
 import React, {
     FunctionComponent,
     useCallback,

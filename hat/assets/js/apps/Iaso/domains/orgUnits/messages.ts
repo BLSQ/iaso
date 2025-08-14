@@ -609,6 +609,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.searchToSeeOrgUnits',
         defaultMessage: 'Click "Search" button to see org units',
     },
+    addChild: {
+        id: 'iaso.orgUnits.addChild',
+        defaultMessage: 'Add child',
+    },
 });
 
 export default MESSAGES;

@@ -90,7 +90,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-
+    const { parentOrgUnitId } = params;
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
@@ -101,10 +101,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
+    const parentId = isNewOrgunit
+        ? parentOrgUnitId
+        : orgUnitState.parent.value?.id;
     const { data: parentOrgunit } = useGetOrgUnit(
-        orgUnitState.parent.value
-            ? `${orgUnitState.parent.value.id}`
-            : undefined,
+        parentId ? `${parentId}` : undefined,
     );
 
     const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(

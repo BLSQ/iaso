@@ -164,6 +164,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
             'referenceFormId',
             'instanceId',
+            'parentOrgUnitId',
             ...paginationPathParams,
             ...orgUnitDetailsChildrenParams,
             ...orgUnitDetailsLinkParams,

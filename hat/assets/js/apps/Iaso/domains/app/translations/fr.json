@@ -35,6 +35,7 @@
     "iaso.assignment.clickRowToUnAssign": "Sélectionnez la ligne pour désassigner l'unité d'org.",
     "iaso.assignment.count": "Nombre d'assignations",
     "iaso.assignment.inAnotherTeam": "dans une autre équipe",
+    "iaso.orgUnits.addChild": "Ajouter un enfant",
     "iaso.assignment.label": "Affectation",
     "iaso.assignment.map.disabled": "Déjà assigné",
     "iaso.assignment.map.parent": "Parent",

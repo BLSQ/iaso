@@ -2,12 +2,11 @@ from django.contrib.auth.models import Permission, User
 
 from hat.menupermissions.constants import (
     DEFAULT_ACCOUNT_FEATURE_FLAGS,
-    MODULE_PERMISSIONS,
     MODULES,
 )
-from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 from iaso.test import APITestCase
+from iaso.utils.module_permissions import account_module_permissions
 
 
 class SetupAccountApiTestCase(APITestCase):
@@ -124,15 +123,9 @@ class SetupAccountApiTestCase(APITestCase):
         has_all_perms = True
 
         account = m.Account.objects.filter(name="unittest_account")
-        account_modules = account.first().modules
-        permission_codenames = []
-        for module in account_modules:
-            permission_codenames = permission_codenames + MODULE_PERMISSIONS[module]
-        all_permissions = filter(
-            lambda permission_module: permission_module in permission_codenames,
-            CustomPermissionSupport.get_full_permission_list(),
-        )
-        for perm in Permission.objects.filter(codename__in=all_permissions):
+        modules_permissions = account_module_permissions(account.first().modules)
+
+        for perm in Permission.objects.filter(codename__in=modules_permissions):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 

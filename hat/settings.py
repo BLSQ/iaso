@@ -437,6 +437,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 
 SIMPLE_JWT = {
@@ -643,6 +644,7 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

@@ -2,9 +2,11 @@ from typing import List
 
 from django.db import connection
 
-from ..common import PotentialDuplicate  # type: ignore
+from iaso.models.base import Task
+
+from ..common import PotentialDuplicate
 from .base import DeduplicationAlgorithm
-from .finalize import finalize_from_task
+from .finalize import create_entity_duplicates
 
 
 LEVENSHTEIN_MAX_DISTANCE = 3
@@ -14,18 +16,21 @@ ABOVE_SCORE_DISPLAY = 50
 # CREATE EXTENSION fuzzystrmatch;
 
 
-def _build_query(params):
-    the_fields = params.get("fields", [])
+def _build_query(params, start_id, end_id):
+    reference_form_fields = params.get("fields", [])
+
     custom_params = params.get("parameters", {})
     levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
     above_score_display = custom_params.get("above_score_display", ABOVE_SCORE_DISPLAY)
-    n = len(the_fields)
+
+    n = len(reference_form_fields)
     fc_arr = []
     query_params = []
-    for field in the_fields:
+    for field in reference_form_fields:
         f_name = field.get("name")
         f_type = field.get("type")
-        if f_type == "number" or f_type == "integer" or f_type == "decimal":
+
+        if f_type in ["number", "integer", "decimal"]:
             # if field is a number we need to get as a result the difference between the two numbers
             # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
             fc_arr.append(
@@ -35,9 +40,11 @@ def _build_query(params):
                 "ELSE NULL END))"
             )
             query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
+
         elif f_type == "text" or f_type is None:  # Handle both text and undefined types as text
             fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
             query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+
         elif f_type == "calculate":
             # Handle type casting based on field name suffix
             if f_name.endswith(("__int__", "__integer__")):
@@ -79,6 +86,7 @@ def _build_query(params):
                     "ELSE NULL END))"
                 )
                 query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
+
             # For boolean types, compare as 0/1
             elif cast_type == "boolean":
                 fc_arr.append(
@@ -92,8 +100,9 @@ def _build_query(params):
                     "ELSE NULL END))"
                 )
                 query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name])
+
             # For date/time types, compare as timestamps
-            if cast_type == "date":
+            elif cast_type == "date":
                 fc_arr.append(
                     "(1.0 - (CASE "
                     "WHEN (instance1.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' AND (instance2.json->>%s) ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}' "
@@ -101,6 +110,7 @@ def _build_query(params):
                     "ELSE NULL END))"
                 )
                 query_params.extend([f_name, f_name, f_name, f_name])
+
             elif cast_type == "time":
                 fc_arr.append(
                     "(1.0 - (CASE "
@@ -109,6 +119,7 @@ def _build_query(params):
                     "ELSE NULL END))"
                 )
                 query_params.extend([f_name, f_name, f_name, f_name])
+
             elif cast_type == "timestamp":
                 fc_arr.append(
                     "(1.0 - (CASE "
@@ -119,90 +130,119 @@ def _build_query(params):
                 query_params.extend([f_name, f_name, f_name, f_name])
 
     fields_comparison = " + ".join(fc_arr)
-
-    query_params.extend([params.get("entity_type_id"), params.get("entity_type_id"), above_score_display])
+    query_params = [params.get("entity_type_id"), start_id, end_id] + query_params + [above_score_display]
 
     return (
         query_params,
         f"""
-    SELECT * FROM (
+    WITH filtered_entities AS (
+        SELECT id, attributes_id
+        FROM iaso_entity
+        WHERE entity_type_id = %s AND deleted_at IS NULL
+        ORDER BY id
+    ),
+    entity1_batch AS (
+        SELECT id, attributes_id
+        FROM filtered_entities
+        WHERE id BETWEEN %s AND %s
+    ),
+    entity_pairs AS (
         SELECT
-        entity1.id,
-        entity2.id,
-        cast(GREATEST(LEAST(
-            COALESCE(
-                ({fields_comparison}) / NULLIF({n}, 0) * 100,
-                0
-            ),
-            100
-        ), 0) as smallint) as score
-        FROM iaso_entity entity1, iaso_entity entity2, iaso_instance instance1, iaso_instance instance2
-        WHERE entity1.id != entity2.id
-        AND entity1.attributes_id = instance1.id
-        AND entity2.attributes_id = instance2.id
-        AND entity1.created_at > entity2.created_at
-        AND entity1.entity_type_id = %s
-        AND entity2.entity_type_id = %s
-        AND entity1.deleted_at IS NULL
-        AND entity2.deleted_at IS NULL
-        AND NOT EXISTS (SELECT id FROM iaso_entityduplicate WHERE iaso_entityduplicate.entity1_id = entity1.id AND iaso_entityduplicate.entity2_id = entity2.id)
-    ) AS subquery_high_score WHERE score > %s ORDER BY score DESC
+            entity1.id AS entity_id1,
+            entity2.id AS entity_id2,
+            ({fields_comparison}) / NULLIF({n}, 0) * 100 AS raw_score
+        FROM entity1_batch AS entity1
+        JOIN filtered_entities AS entity2 ON entity1.id > entity2.id
+        JOIN iaso_instance AS instance1 ON entity1.attributes_id = instance1.id
+        JOIN iaso_instance AS instance2 ON entity2.attributes_id = instance2.id
+        WHERE NOT EXISTS (
+            SELECT 1
+            FROM iaso_entityduplicate AS d
+            WHERE d.entity1_id = entity1.id
+              AND d.entity2_id = entity2.id
+        )
+    ),
+    scored_pairs AS (
+        SELECT
+            entity_id1,
+            entity_id2,
+            CAST(
+                GREATEST(
+                    LEAST(COALESCE(raw_score, 0), 100),
+                    0
+                ) AS SMALLINT
+            ) AS score
+        FROM entity_pairs
+    )
+    SELECT *
+    FROM scored_pairs
+    WHERE score > %s;
     """,
     )
 
 
-@DeduplicationAlgorithm.register("levenshtein")
-class InverseAlgorithm(DeduplicationAlgorithm):
+class LevenshteinAlgorithm(DeduplicationAlgorithm):
     """
     This algorithm has the following custom parameters:
     levenshtein_max_distance: the maximum distance for the levenshtein algorithm (defaults to LEVENSHTEIN_MAX_DISTANCE)
     above_score_display: the minimum score to display (defaults to ABOVE_SCORE_DISPLAY)
     """
 
-    def run(self, params, task=None) -> List[PotentialDuplicate]:
-        count = 100
-
-        task.report_progress_and_stop_if_killed(
-            progress_value=0,
-            end_value=count,
-            progress_message="Started Levenshtein Algorithm",
-        )
+    def run(self, params: dict, task: Task) -> List[PotentialDuplicate]:
+        task.report_progress_and_stop_if_killed(progress_message="Started Levenshtein Algorithm")
 
         cursor = connection.cursor()
         potential_duplicates = []
-        try:
-            the_params, the_query = _build_query(params)
+        batch_size = 100
 
-            # Log the generated query and parameters just before execution
-            task.report_progress_and_stop_if_killed(
-                progress_value=10,
-                end_value=count,
-                progress_message="=== SQL Query ===\n"
-                + the_query
-                + "\n=== Parameters ===\n"
-                + str(the_params)
-                + "\n=== End Query ===",
+        try:
+            cursor.execute(
+                """
+                SELECT MIN(id), MAX(id), COUNT(*)
+                FROM iaso_entity 
+                WHERE entity_type_id = %s AND deleted_at IS NULL
+            """,
+                [params.get("entity_type_id")],
             )
 
-            cursor.execute(the_query, the_params)
+            min_id, max_id, total_entities = cursor.fetchone()
 
-            while True:
-                records = cursor.fetchmany(size=100)
+            if not min_id or total_entities == 0:
+                task.report_progress_and_stop_if_killed(progress_message="No entities found")
+                return potential_duplicates
 
-                if not records:
-                    break
+            batch_num = 0
+            current_id = min_id
 
-                for record in records:
+            while current_id <= max_id:
+                batch_num += 1
+                batch_end_id = min(current_id + batch_size - 1, max_id)
+
+                the_params, the_query = _build_query(params, current_id, batch_end_id)
+
+                msg = (
+                    f"Total entities: {total_entities}\n"
+                    f"Processing batch {batch_num}: entities #{current_id} to #{batch_end_id}\n"
+                    f"SQL Query Parameters: {the_params}\n"
+                )
+                if batch_num == 1:
+                    msg_query = f"=== Start SQL Query ===\n{the_query}\n=== End SQL Query ===\n"
+                    task.report_progress_and_stop_if_killed(progress_message=msg + msg_query)
+                else:
+                    task.report_progress_and_stop_if_killed(progress_message=msg)
+
+                cursor.execute(the_query, the_params)
+
+                for record in cursor.fetchall():
                     potential_duplicates.append(PotentialDuplicate(record[0], record[1], record[2]))
+
+                current_id = batch_end_id + 1  # Move to the next batch.
+
         finally:
             cursor.close()
 
-        task.report_progress_and_stop_if_killed(
-            progress_value=100,
-            end_value=count,
-            progress_message="Ended Levenshtein Algorithm",
-        )
+        task.report_progress_and_stop_if_killed(progress_message="Ended Levenshtein Algorithm")
 
-        finalize_from_task(task, potential_duplicates)
+        create_entity_duplicates(task, potential_duplicates)
 
         return potential_duplicates

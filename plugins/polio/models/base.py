@@ -685,7 +685,6 @@ class Campaign(SoftDeletableModel):
         on_delete=models.SET_NULL,
         related_name="campaigns",
         default=None,
-        limit_choices_to={"domain": "POLIO"},
     )
 
     onset_at = models.DateField(

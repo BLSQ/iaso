@@ -3,7 +3,8 @@ import typing
 from django.utils.timezone import now
 from rest_framework import status
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -34,7 +35,6 @@ class GroupsAPITestCase(APITestCase):
 
         cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version_1)
         cls.group_2 = m.Group.objects.create(name="Assemblies", source_version=cls.source_version_2)
-        cls.group_3 = m.Group.objects.create(name="Hidden", source_version=cls.source_version_1, domain="POLIO")
 
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
@@ -46,7 +46,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
 
     def test_groups_list_wrong_permission(self):
-        f"""GET /groups/ with authenticated user, without the {permission.ORG_UNITS} permission"""
+        f"""GET /groups/ with authenticated user, without the {core_permissions.ORG_UNITS} permission"""
 
         self.client.force_authenticate(self.chewbacca)
         response = self.client.get("/api/groups/")

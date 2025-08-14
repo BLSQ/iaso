@@ -281,7 +281,9 @@ class EnketoAPITestCase(APITestCase):
                 .replace("REPLACEuserID", str(self.yoda.id))
                 .encode(),
             )
-            self.client.post("/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f})
+            self.client.post(
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
+            )
 
             instance = self.form_1.instances.first()
 
@@ -310,7 +312,7 @@ class EnketoAPITestCase(APITestCase):
                 .encode(),
             )
             response = self.client.post(
-                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
+                "/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}, format="multipart"
             )
 
             instance = self.form_1.instances.first()

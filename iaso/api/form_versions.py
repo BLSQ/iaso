@@ -224,6 +224,8 @@ class FormVersionsViewSet(ModelViewSet):
         if mapped_filter:
             queryset = queryset.filter(mapped=(mapped_filter == "true"))
 
+        queryset = queryset.select_related("form").prefetch_related("mapping_versions")
+
         queryset = queryset.order_by(*orders)
 
         return queryset

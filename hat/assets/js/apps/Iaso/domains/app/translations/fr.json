@@ -74,6 +74,7 @@
     "iaso.changeRequest.restoreOrgUnitChangesCount": "Restaurer {count} demande(s) de changement",
     "iaso.changeRequest.seeApprovedChanges": "Voir le(s) changement(s) approuvé(s)",
     "iaso.changeRequest.seeRejectedChanges": "Voir le(s) changement(s) rejeté(s)",
+    "iaso.changeRequest.showValuesAtCreation": "Montrer les valeurs à la création",
     "iaso.completeness.chooseParent": "Selectionnez un formulaire ou une unité d'org parente pour activer",
     "iaso.completeness.formsFilledDirect": "# Formulaires remplis (direct)",
     "iaso.completeness.formsFilledWithDescendants": "# Formulaires remplis (avec niv. inf.)",

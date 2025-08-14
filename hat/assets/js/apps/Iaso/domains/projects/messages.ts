@@ -323,6 +323,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Enables the possibility to save entities data on an NFC card',
     },
+    mobile_change_requests_tab_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_change_requests_tab',
+        defaultMessage: 'Tab enabling display of change requests (read only)',
+    },
     mobile_org_unit_registry_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_org_unit_registry',
         defaultMessage:

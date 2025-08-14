@@ -1,13 +1,11 @@
 import logging
 
 from django.contrib.auth.models import Permission, User
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
-from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.models import (
     Account,
@@ -112,12 +110,7 @@ class SetupAccountSerializer(serializers.Serializer):
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)
 
-        permissions_to_add = filter(
-            lambda permission_module: permission_module in modules_permissions,
-            CustomPermissionSupport.get_full_permission_list(),
-        )
-        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-        user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
+        user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
         return validated_data
 
 

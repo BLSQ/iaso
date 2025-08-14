@@ -2,27 +2,18 @@ import typing
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID, FORM_ID
-from iaso.test import APITestCase
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
 BASE_URL = "/api/formpredefinedfilters/"
 
 
-class FormPredefinedFilterViewsTestCase(APITestCase):
+class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = account = m.Account.objects.create(name="Account")
-
-        cls.user_with_rights = cls.create_user_with_profile(
-            username="Authorized",
-            account=account,
-            permissions=["iaso_forms"],
-        )
-        cls.user_without_rights = cls.create_user_with_profile(
-            username="Unauthorized",
-            account=account,
-            permissions=[],
-        )
+        cls.account2 = account2 = m.Account.objects.create(name="Account2")
+        cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(account, ["iaso_forms"])
 
         cls.unauthenticated_project = unauthenticated_project = m.Project.objects.create(
             name="Unauthenticated Project",
@@ -35,23 +26,31 @@ class FormPredefinedFilterViewsTestCase(APITestCase):
             account=account,
             needs_authentication=True,
         )
+        account2_project = m.Project.objects.create(
+            name="Account2 Project",
+            app_id="unaccessible",
+            account=account2,
+        )
         cls.form1 = form1 = m.Form.objects.create(name="Form1", legend_threshold=10)
         cls.form2 = form2 = m.Form.objects.create(name="Form2", legend_threshold=10)
+        form3 = m.Form.objects.create(name="Form3", legend_threshold=10)
 
-        unauthenticated_project.forms.add(form1)
-        unauthenticated_project.forms.add(form2)
-        unauthenticated_project.save()
+        unauthenticated_project.forms.set([form1, form2])
+        authenticated_project.forms.set([form1, form2])
+        account2_project.forms.set([form3])
 
-        authenticated_project.forms.add(form1)
-        authenticated_project.forms.add(form2)
-        authenticated_project.save()
+        m.FormPredefinedFilter.objects.create(
+            form=form3,
+            name="Unaccessible Filter",
+            short_name="Hu-Ho!",
+            json_logic="""{}""",
+        )
 
     def test_formpredefinedfilters_list_without_auth(self):
         f"""GET {BASE_URL} without auth: 0 result"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 200)
-        self.assertValidFiltersListData(response.json(), 0)
+        self.assertJSONResponse(response, 401)
 
     def test_formpredefinedfilters_list_without_auth_for_project_requiring_auth(self):
         f"""GET {BASE_URL} without auth for project which requires it: 401"""
@@ -66,12 +65,19 @@ class FormPredefinedFilterViewsTestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFiltersListData(response.json(), 0)
 
-    def test_formpredefinedfilters_list_with_wrong_form_id(self):
+    def test_formpredefinedfilters_list_with_invalid_form_id(self):
         f"""GET {BASE_URL} with invalid form id: 404"""
 
         self.client.force_authenticate(user=self.user_with_rights)
         response = self.client.get(BASE_URL, {FORM_ID: 1000})
         self.assertJSONResponse(response, 404)
+
+    def test_formpredefinedfilters_list_with_wrong_form_id(self):
+        f"""GET {BASE_URL} with wrong form id: 400"""
+
+        self.client.force_authenticate(user=self.user_with_rights)
+        response = self.client.get(BASE_URL, {FORM_ID: "FooBar"})
+        self.assertJSONResponse(response, 400)
 
     def test_formpredefinedfilters_create_get_delete(self):
         self.client.force_authenticate(self.user_with_rights)
@@ -94,8 +100,12 @@ class FormPredefinedFilterViewsTestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFiltersListData(response.json(), 1)
-        self.assertEqual(response.json().get("form_predefined_filters")[0].get("name"), "test")
-        id = response.json().get("form_predefined_filters")[0].get("id")
+        first_predefined_filter = response.json().get("form_predefined_filters")[0]
+        self.assertEqual(first_predefined_filter.get("name"), "test")
+        self.assertEqual(first_predefined_filter.get("form_id"), self.form1.id)
+        self.assertEqual(first_predefined_filter.get("short_name"), "short_test")
+        self.assertEqual(first_predefined_filter.get("json_logic"), """{"key":1}""")
+        id = first_predefined_filter.get("id")
 
         response = self.client.get(
             path=BASE_URL,
@@ -119,7 +129,11 @@ class FormPredefinedFilterViewsTestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFiltersListData(response.json(), 1)
-        self.assertEqual(response.json().get("form_predefined_filters")[0].get("name"), "test2")
+        first_predefined_filter = response.json().get("form_predefined_filters")[0]
+        self.assertEqual(first_predefined_filter.get("name"), "test2")
+        self.assertEqual(first_predefined_filter.get("form_id"), self.form1.id)
+        self.assertEqual(first_predefined_filter.get("short_name"), "short_test")
+        self.assertEqual(first_predefined_filter.get("json_logic"), """{"key":1}""")
 
         response = self.client.delete(path=f"{BASE_URL}{id}/")
         self.assertJSONResponse(response, 204)

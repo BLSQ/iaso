@@ -16,7 +16,7 @@ class FormIdSerializer(serializers.Serializer):
             form_id = serializer.validated_data[FORM_ID]
         """
 
-    form_id = serializers.CharField(allow_blank=False)
+    form_id = serializers.IntegerField(required=False, default=None)
 
 
 class FormPredefinedFilterSerializer(serializers.ModelSerializer):

@@ -1,5 +1,6 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import exceptions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
@@ -8,7 +9,8 @@ from iaso.api.common import ModelViewSet
 from iaso.api.form_predefined_filters.permissions import HasFormPredefinedFilterPermission
 from iaso.api.form_predefined_filters.serializers import FormIdSerializer, FormPredefinedFilterSerializer
 from iaso.api.query_params import FORM_ID
-from iaso.models import Form, FormPredefinedFilter
+from iaso.api.serializers import AppIdSerializer
+from iaso.models import Form, FormPredefinedFilter, Project
 
 
 class FormPredefinedFiltersViewSet(ModelViewSet):
@@ -33,12 +35,30 @@ class FormPredefinedFiltersViewSet(ModelViewSet):
     def get_queryset(self, mobile=False):
         orders = self.request.query_params.get("order", "name").split(",")
         queryset = FormPredefinedFilter.objects
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
+        if app_id is not None:
+            try:
+                Project.objects.get_for_user_and_app_id(user=self.request.user, app_id=app_id)
+            except Project.DoesNotExist:
+                if self.request.user.is_anonymous:
+                    raise exceptions.NotAuthenticated
+                raise exceptions.NotFound(f"Project not found for {app_id}")
+            queryset = queryset.filter(form__projects__app_id=app_id)
+        elif self.request.user.is_anonymous:
+            raise exceptions.NotAuthenticated
+        else:
+            profile = self.request.user.iaso_profile
+            queryset = queryset.filter(form__projects__account=profile.account)
+
+        # We don't send filters for deleted forms
+        queryset = queryset.filter(form__deleted_at=None)
+
         serializer = FormIdSerializer(data=self.request.query_params)
-        form_id = serializer.validated_data[FORM_ID] if serializer.is_valid(raise_exception=False) else None
+        form_id = serializer.validated_data[FORM_ID] if serializer.is_valid(raise_exception=True) else None
         if form_id:
             form = get_object_or_404(Form.objects, id=form_id)
             queryset = queryset.filter(form=form)
-        return queryset.order_by(*orders)
+        return queryset.order_by(*orders).distinct()
 
     form_id_param = openapi.Parameter(
         name=FORM_ID,

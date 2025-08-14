@@ -37,32 +37,37 @@ class FormsVersionAPITestCase(APITestCase):
             account=star_wars,
             needs_authentication=True,
         )
-        cls.project.unit_types.add(cls.sith_council)
+        # In case there are more than one project targeting the same form, multiple form versions could be returned
+        # This is here to make sure form versions are not duplicated.
+        # This is not an issue with form versions because of the `Count` made on `mapping_versions` but this is here
+        # to ensure we have no regressions in the future.
+        cls.project2 = m.Project.objects.create(
+            name="Copy of Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics.copy",
+            account=star_wars,
+            needs_authentication=True,
+        )
+        cls.project.unit_types.set([cls.sith_council])
+        cls.project2.unit_types.set([cls.sith_council])
 
         cls.form_1 = m.Form.objects.create(
             name="New Land Speeder concept",  # no form_id yet (no version)
             period_type="QUARTER",
             single_per_period=True,
         )
-        cls.form_1.org_unit_types.add(cls.sith_council)
-        cls.form_1.save()
-        cls.project.forms.add(cls.form_1)
-        cls.project.save()
-
+        cls.form_1.org_unit_types.set([cls.sith_council])
         cls.form_2 = m.Form.objects.create(
             name="Death Start survey", form_id="sample2", period_type="MONTH", single_per_period=False
         )
-        cls.form_2.org_unit_types.add(cls.sith_council)
-        cls.form_1.save()
+        cls.form_2.org_unit_types.set([cls.sith_council])
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
         with open("iaso/tests/fixtures/odk_form_valid_no_settings.xlsx", "rb") as xls_file:
             cls.form_2.form_versions.create(
                 file=form_2_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
             )
-        cls.project.forms.add(cls.form_2)
-
-        cls.project.save()
+        cls.project.forms.set([cls.form_1, cls.form_2])
+        cls.project2.forms.set([cls.form_1, cls.form_2])
 
     def test_form_version_to_questions_by_path(self):
         self.client.force_authenticate(self.yoda)
@@ -156,6 +161,7 @@ class FormsVersionAPITestCase(APITestCase):
             response = self.client.get("/api/formversions/")
         self.assertJSONResponse(response, 200)
         form_versions_data = response.json()["form_versions"]
+        self.assertEqual(len(form_versions_data), 1)
 
         for form_version_data in form_versions_data:
             self.assertValidFormVersionData(form_version_data)

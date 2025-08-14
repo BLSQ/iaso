@@ -883,7 +883,6 @@ class VaccineRequestFormViewSet(ModelViewSet):
         NoFormDjangoFilterBackend,
         VRFCustomOrderingFilter,
         VRFCustomFilter,
-        DjangoFilterBackend,
         filters.OrderingFilter,
     ]
     filterset_class = VaccineRequestFormFilterSet

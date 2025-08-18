@@ -147,6 +147,26 @@ PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
 
 When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.
 
+## Analytics Integration
+
+### Plausible Analytics
+
+To enable Plausible analytics tracking, set the following environment variable:
+
+```
+ENABLE_ANALYTICS=true
+```
+
+When enabled, Iaso will automatically generate and include Plausible analytics scripts on all pages for authenticated users. The system tracks:
+
+- **Page views**: All page visits
+- **Custom events**: User login events with account details
+- **User information**: Username, user ID, account name, and account ID
+
+**Note**: Analytics is disabled by default and only works when explicitly enabled via the environment variable.
+
+For detailed setup instructions, see [Plausible Analytics Setup](../analytics/plausible-setup.md).
+
 ## Frontend Configuration
 
 ### Development Settings

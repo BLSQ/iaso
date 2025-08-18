@@ -31,6 +31,9 @@
       {{ analytic_script | safe }}
     {% endfor %} 
   {% endif %}
+  {% if ANALYTICS_DATA %}
+    {% include "iaso/analytics/plausible.html" %}
+  {% endif %}
 </head>
 
 <body class="iaso">

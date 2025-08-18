@@ -103,6 +103,7 @@ DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() 
 CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
 CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
+ENABLE_ANALYTICS = os.environ.get("ENABLE_ANALYTICS", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 

@@ -1,0 +1,18 @@
+{% if ANALYTICS_DATA %}
+<script defer data-domain="{{ ANALYTICS_DATA.domain }}" src="https://plausible.io/js/script.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.plausible) {
+        // Track user login event with account details
+        window.plausible('User Login', {
+            props: {
+                username: '{{ ANALYTICS_DATA.username }}',
+                user_id: {{ ANALYTICS_DATA.user_id }},
+                account_name: '{{ ANALYTICS_DATA.account_name }}',
+                account_id: {{ ANALYTICS_DATA.account_id }}
+            }
+        });
+    }
+});
+</script>
+{% endif %}

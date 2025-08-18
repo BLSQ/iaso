@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -49,6 +49,18 @@ class OrgUnitTypeViewSet(ModelViewSet):
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
+
+        queryset = queryset.prefetch_related("allow_creating_sub_unit_types")
+
+        app_id = self.request.query_params.get(APP_ID)
+        if app_id:
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id),
+                    to_attr="filtered_allow_creating_sub_unit_types",
+                )
+            )
 
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 

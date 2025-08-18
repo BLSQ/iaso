@@ -23,7 +23,6 @@ def _build_query(params, start_id, end_id):
     levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
     above_score_display = custom_params.get("above_score_display", ABOVE_SCORE_DISPLAY)
 
-    n = len(reference_form_fields)
     fc_arr = []
     query_params = []
     for field in reference_form_fields:
@@ -41,9 +40,19 @@ def _build_query(params, start_id, end_id):
             )
             query_params.extend([f_name, f_name, f_name, f_name, f_name, f_name, f_name, f_name])
 
-        elif f_type == "text" or f_type is None:  # Handle both text and undefined types as text
-            fc_arr.append("(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
-            query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+        elif f_type == "text" or f_type is None:
+            # Handles both text and undefined types as text.
+            # Returns NULL when either field is empty/NULL instead of calculating Levenshtein distance.
+            fc_arr.append(
+                "(CASE "
+                "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                "THEN (1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float)) "
+                "ELSE NULL "
+                "END)"
+            )
+            query_params.extend(
+                [f_name, f_name, f_name, f_name, f_name, f_name, levenshtein_max_distance, levenshtein_max_distance]
+            )
 
         elif f_type == "calculate":
             # Handle type casting based on field name suffix
@@ -62,11 +71,18 @@ def _build_query(params, start_id, end_id):
             elif f_name.endswith(("__date_time__", "__datetime__")):
                 cast_type = "timestamp"
             else:
-                # Default to text comparison if no type suffix is found
+                # Default to text comparison if no type suffix is found.
+                # Returns NULL when either field is empty/NULL instead of calculating Levenshtein distance.
                 fc_arr.append(
-                    "(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))"
+                    "(CASE "
+                    "WHEN (instance1.json->>%s) IS NOT NULL AND (instance1.json->>%s) != '' AND (instance2.json->>%s) IS NOT NULL AND (instance2.json->>%s) != '' "
+                    "THEN (1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float)) "
+                    "ELSE NULL "
+                    "END)"
                 )
-                query_params.extend([f_name, f_name, levenshtein_max_distance, levenshtein_max_distance])
+                query_params.extend(
+                    [f_name, f_name, f_name, f_name, f_name, f_name, levenshtein_max_distance, levenshtein_max_distance]
+                )
                 continue
 
             # For numeric types, use the same comparison as numbers
@@ -129,7 +145,7 @@ def _build_query(params, start_id, end_id):
                 )
                 query_params.extend([f_name, f_name, f_name, f_name])
 
-    fields_comparison = " + ".join(fc_arr)
+    fields_comparison = ", ".join(fc_arr)
     query_params = [params.get("entity_type_id"), start_id, end_id] + query_params + [above_score_display]
 
     return (
@@ -150,7 +166,11 @@ def _build_query(params, start_id, end_id):
         SELECT
             entity1.id AS entity_id1,
             entity2.id AS entity_id2,
-            ({fields_comparison}) / NULLIF({n}, 0) * 100 AS raw_score
+            (
+                SELECT AVG(field_score) * 100  -- AVG() automatically ignores NULL values.
+                FROM (VALUES {fields_comparison}) AS t(field_score) 
+                WHERE field_score IS NOT NULL
+            ) AS raw_score
         FROM entity1_batch AS entity1
         JOIN filtered_entities AS entity2 ON entity1.id > entity2.id
         JOIN iaso_instance AS instance1 ON entity1.attributes_id = instance1.id

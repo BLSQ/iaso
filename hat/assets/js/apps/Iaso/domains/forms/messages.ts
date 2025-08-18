@@ -735,6 +735,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.queryBuilder.jsonTab',
         defaultMessage: 'Json',
     },
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
+    },
 });
 
 export default MESSAGES;

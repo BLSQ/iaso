@@ -136,9 +136,9 @@ export type FormPredefinedFilter = {
     updated_at: number;
 };
 export type FormPredefinedFilterForm = {
-    name: string;
-    short_name: string;
-    json_logic: JSONValue;
+    name?: string;
+    short_name?: string;
+    json_logic?: JSONValue;
 };
 type Errors = string[];
 

@@ -11,7 +11,6 @@ import {
 } from 'bluesquare-components';
 
 import { useFormik } from 'formik';
-import * as yup from 'yup';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { PredefinedFilterModalButton } from 'Iaso/domains/forms/components/PredefinedFilterModalButton';
@@ -25,6 +24,8 @@ import {
 } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { useGetFieldsForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
+import { isEqual } from 'lodash';
+import * as yup from 'yup';
 import MESSAGES from '../messages';
 
 type Props = {
@@ -70,15 +71,17 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
         setFieldTouched,
     } = useFormik<FormPredefinedFilterForm>({
         initialValues: {
-            name: predefinedFilter?.name || '',
-            short_name: predefinedFilter?.short_name || '',
-            json_logic: predefinedFilter?.json_logic || {},
+            name: predefinedFilter?.name,
+            short_name: predefinedFilter?.short_name,
+            json_logic: predefinedFilter?.json_logic,
         },
         validationSchema: configValidationSchema,
         onSubmit: (newValues: FormPredefinedFilterForm) => {
             save({
                 id: predefinedFilter?.id || 0,
-                ...newValues,
+                name: newValues.name || '',
+                short_name: newValues.short_name || '',
+                json_logic: newValues.json_logic || {},
                 form_id,
                 created_at:
                     predefinedFilter?.created_at || new Date().getTime(),
@@ -100,14 +103,34 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
         formatMessage,
         messages: MESSAGES,
     });
-    const [tab, setTab] = useState('query');
+    const [tab, setTab] = useState<'infos' | 'query' | 'json'>('infos');
+    const handleChangeQuery = useCallback(
+        (result: JsonLogicResult) => {
+            let parsedValue;
+            if (
+                result?.logic &&
+                fields &&
+                !isEqual(values.json_logic, result.logic)
+            ) {
+                parsedValue = parseJson({
+                    value: result.logic as JSONValue,
+                    fields,
+                });
+                setFieldTouched('json_logic');
+                setFieldValue('json_logic', parsedValue);
+            }
+        },
+        [fields, setFieldTouched, setFieldValue, values],
+    );
     return (
         <ConfirmCancelModal
-            allowConfirm={isValid && !isSaving && !isSubmitting}
+            allowConfirm={
+                !isEqual(touched, {}) && isValid && !isSaving && !isSubmitting
+            }
             titleMessage={formatMessage(
-                id
-                    ? MESSAGES.predefinedFiltersAddModalTitle
-                    : MESSAGES.predefinedFiltersEditModalTitle,
+                Boolean(id)
+                    ? MESSAGES.predefinedFiltersEditModalTitle
+                    : MESSAGES.predefinedFiltersAddModalTitle,
             )}
             onConfirm={handleSubmit}
             onCancel={() => {
@@ -120,48 +143,45 @@ const PredefinedfilterModal: FunctionComponent<Props> = ({
             dataTestId={dataTestId || ''}
             id={id?.toString() || ''}
             onClose={() => null}
+            maxWidth={tab === 'query' ? 'lg' : 'sm'}
         >
-            <InputComponent
-                type="text"
-                keyValue="name"
-                onChange={onChange}
-                errors={getErrors('name')}
-                value={values.name}
-                required
-                label={MESSAGES.name}
-            />
-            <InputComponent
-                type="text"
-                keyValue="short_name"
-                onChange={onChange}
-                required
-                errors={getErrors('name')}
-                value={values.short_name}
-                label={MESSAGES.short_name}
-            />
             <>
                 <Tabs value={tab} onChange={(_, newtab) => setTab(newtab)}>
+                    <Tab value="infos" label={formatMessage(MESSAGES.infos)} />
                     <Tab
                         value="query"
                         label={formatMessage(MESSAGES.queryTab)}
                     />
                     <Tab value="json" label={formatMessage(MESSAGES.jsonTab)} />
                 </Tabs>
+                {tab === 'infos' && (
+                    <Box>
+                        <InputComponent
+                            type="text"
+                            keyValue="name"
+                            onChange={onChange}
+                            errors={getErrors('name')}
+                            value={values.name}
+                            required
+                            label={MESSAGES.name}
+                        />
+                        <InputComponent
+                            type="text"
+                            keyValue="short_name"
+                            onChange={onChange}
+                            required
+                            errors={getErrors('short_name')}
+                            value={values.short_name}
+                            label={MESSAGES.short_name}
+                        />
+                    </Box>
+                )}
                 {tab === 'query' && (
                     <Box mt={2}>
                         <QueryBuilder
-                            logic={values.json_logic}
+                            logic={values.json_logic || {}}
                             fields={fields}
-                            onChange={(result: JsonLogicResult) => {
-                                let parsedValue;
-                                if (result?.logic && fields)
-                                    parsedValue = parseJson({
-                                        value: result.logic,
-                                        fields,
-                                    });
-                                setFieldTouched('json_logic');
-                                setFieldValue('json_logic', parsedValue);
-                            }}
+                            onChange={handleChangeQuery}
                         />
                     </Box>
                 )}

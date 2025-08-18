@@ -66,6 +66,7 @@ export const useGetColumns = (
                                 save={save}
                                 isSaving={isSaving}
                                 form_id={params.formId}
+                                id={settings.row.original.id}
                                 predefinedFilter={settings.row.original}
                             />
                             <DeleteDialog

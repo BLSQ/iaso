@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
-from django.db import connection
 
 import iaso.models.base as base
 
@@ -55,10 +54,6 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
 class EntitiesDuplicationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # this needs to be run as a new DB is created every time
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch ;")
-
         default_account = m.Account.objects.create(name="Default account")
 
         cls.default_account = default_account

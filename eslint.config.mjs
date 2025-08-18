@@ -80,6 +80,10 @@ export default defineConfig([
         settings: {
             react: { version: '^17.0.0' },
             'import/resolver': {
+                typescript: {
+                    alwaysTryTypes: true,
+                    project: './tsconfig.json',
+                },
                 node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
             },
         },
@@ -243,6 +247,17 @@ export default defineConfig([
                 ecmaFeatures: { jsx: true },
 
                 project: './tsconfig.json',
+            },
+        },
+
+        settings: {
+            react: { version: '^17.0.0' },
+            'import/resolver': {
+                typescript: {
+                    alwaysTryTypes: true,
+                    project: './tsconfig.json',
+                },
+                node: { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
             },
         },
 

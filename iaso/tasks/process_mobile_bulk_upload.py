@@ -144,9 +144,21 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     api_import.has_problem = False
     api_import.exception = ""
     api_import.save()
-
     message = result_message(user, project, start_date, start_time, stats)
-    the_task.report_success_with_result(message=message)
+
+    # Trypelim-specific
+    # Trigger a task to notify relevant coordinations of confirmed cases
+    if instance_ids := created_objects_ids["instance"]:
+        confirmation_ids = (
+            positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
+        )
+
+        logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
+        if confirmation_ids and user:
+            notify_coordinations(user, confirmation_ids)
+
+        # Add confirmation stats to the task message
+        message += f"Number of new positive confirmations: {len(confirmation_ids)}\n"
 
     # Trypelim-specific
     # Notify a SNS topic with basic import stats
@@ -156,18 +168,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     except Exception as e:
         logger.exception("Failed to publish to SNS" + str(e))
 
-    # Trypelim-specific
-    # Trigger a task to notify relevant coordinations of confirmed cases
-    if instance_ids := created_objects_ids["instance"]:
-        logger.info("Checking for confirmed cases in bulk upload.")
-
-        confirmation_ids = (
-            positive_instance_qs(Instance.objects).filter(id__in=instance_ids).values_list("id", flat=True)
-        )
-
-        logger.info(f"Bulk upload id={api_import_id} imported {len(confirmation_ids)} confirmations.")
-        if confirmation_ids and user:
-            notify_coordinations(user, confirmation_ids)
+    the_task.report_success_with_result(message=message)
 
 
 def read_json_file_from_zip(zip_ref, filename):
@@ -331,11 +332,12 @@ def result_message(user, project, start_date, start_time, stats):
         msg = f"Mobile bulk import successful for project {project.name}."
 
     msg += f"""
-    Started: {start_date!s}, time spent: {time.time() - start_time} sec
-    Number of imported org units: {stats["new_org_units"]}
-    Number of imported form submissions: {stats["new_instances"]}
-    Number of imported submission attachments: {stats["new_instance_files"]}
-    Number of imported org unit change requests: {stats["new_change_requests"]}
-            """
+Started: {start_date!s}, time spent: {time.time() - start_time} sec
+
+Number of imported org units: {stats["new_org_units"]}
+Number of imported form submissions: {stats["new_instances"]}
+Number of imported submission attachments: {stats["new_instance_files"]}
+Number of imported org unit change requests: {stats["new_change_requests"]}
+"""
 
     return msg

@@ -35,6 +35,8 @@ class FormPredefinedFiltersViewSet(ModelViewSet):
     def get_queryset(self, mobile=False):
         orders = self.request.query_params.get("order", "name").split(",")
         queryset = FormPredefinedFilter.objects
+        # We don't send filters for deleted forms
+        queryset = queryset.filter(form__deleted_at=None)
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
         if app_id is not None:
             try:
@@ -50,13 +52,13 @@ class FormPredefinedFiltersViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
             queryset = queryset.filter(form__projects__account=profile.account)
 
-        # We don't send filters for deleted forms
-        queryset = queryset.filter(form__deleted_at=None)
-
         serializer = FormIdSerializer(data=self.request.query_params)
         form_id = serializer.validated_data[FORM_ID] if serializer.is_valid(raise_exception=True) else None
         if form_id:
-            form = get_object_or_404(Form.objects, id=form_id)
+            form = get_object_or_404(
+                queryset=Form.objects.filter_for_user_and_app_id(self.request.user, app_id).distinct(),
+                id=form_id,
+            )
             queryset = queryset.filter(form=form)
         return queryset.order_by(*orders).distinct()
 

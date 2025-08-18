@@ -33,7 +33,7 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
         )
         cls.form1 = form1 = m.Form.objects.create(name="Form1", legend_threshold=10)
         cls.form2 = form2 = m.Form.objects.create(name="Form2", legend_threshold=10)
-        form3 = m.Form.objects.create(name="Form3", legend_threshold=10)
+        cls.form3 = form3 = m.Form.objects.create(name="Form3", legend_threshold=10)
 
         unauthenticated_project.forms.set([form1, form2])
         authenticated_project.forms.set([form1, form2])
@@ -61,7 +61,8 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
     def test_formpredefinedfilters_list_without_auth_for_project_not_requiring_auth(self):
         f"""GET {BASE_URL} without auth for project which doesn't requires it: 200"""
 
-        response = self.client.get(BASE_URL, {APP_ID: self.unauthenticated_project.app_id})
+        with self.assertNumQueries(3):
+            response = self.client.get(BASE_URL, {APP_ID: self.unauthenticated_project.app_id})
         self.assertJSONResponse(response, 200)
         self.assertValidFiltersListData(response.json(), 0)
 
@@ -79,6 +80,12 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
         response = self.client.get(BASE_URL, {FORM_ID: "FooBar"})
         self.assertJSONResponse(response, 400)
 
+    def test_formpredefinedfilters_from_other_account(self):
+        f"""GET {BASE_URL} from other account: 404"""
+        self.client.force_authenticate(user=self.user_with_rights)
+        response = self.client.get(BASE_URL, {FORM_ID: self.form3.id})
+        self.assertJSONResponse(response, 404)
+
     def test_formpredefinedfilters_create_get_delete(self):
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.post(
@@ -93,11 +100,12 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
         )
         self.assertJSONResponse(response, 201)
 
-        response = self.client.get(
-            path=BASE_URL,
-            data={"form_id": self.form1.id},
-            format="json",
-        )
+        with self.assertNumQueries(2):
+            response = self.client.get(
+                path=BASE_URL,
+                data={"form_id": self.form1.id},
+                format="json",
+            )
         self.assertJSONResponse(response, 200)
         self.assertValidFiltersListData(response.json(), 1)
         first_predefined_filter = response.json().get("form_predefined_filters")[0]

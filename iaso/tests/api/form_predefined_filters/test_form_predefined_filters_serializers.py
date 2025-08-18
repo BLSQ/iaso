@@ -25,5 +25,4 @@ class FormPredefinedFilterSerializersTestCase(TestCase):
             "updated_at": self.form_predefined_filter.updated_at.timestamp(),
         }
 
-        with self.assertNumQueries(0):
-            self.assertEqual(serializer.data, expected_data)
+        self.assertEqual(serializer.data, expected_data)

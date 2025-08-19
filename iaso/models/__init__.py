@@ -17,6 +17,16 @@ from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
+from .stocks import (
+    StockImpacts,
+    StockItem,
+    StockItemRule,
+    StockKeepingUnit,
+    StockKeepingUnitChildren,
+    StockLedgerItem,
+    StockRulesVersion,
+    StockRulesVersionsStatus,
+)
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .tenant_users import TenantUser
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
@@ -68,6 +78,14 @@ __all__ = [
     "Report",
     "ReportVersion",
     "SourceVersion",
+    "StockKeepingUnit",
+    "StockKeepingUnitChildren",
+    "StockImpacts",
+    "StockItem",
+    "StockItemRule",
+    "StockLedgerItem",
+    "StockRulesVersion",
+    "StockRulesVersionsStatus",
     "StorageDevice",
     "StorageLogEntry",
     "StoragePassword",

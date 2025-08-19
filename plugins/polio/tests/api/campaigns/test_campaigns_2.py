@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from typing import List
 from unittest import mock, skip
@@ -560,10 +561,11 @@ class PolioAPITestCase(APITestCase):
         c2_round_2 = c2.rounds.create(
             number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7)
         )
+        file_name = "calendar_2022-10-01"
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar_2022-10-01.xlsx")
-        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+        self.assertEqual(response.get("Content-Disposition"), f"attachment; filename={file_name}.xlsx")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name=file_name)
 
         excel_columns = excel_data.columns.ravel()
         self.assertEqual(excel_columns[0], "COUNTRY")
@@ -576,6 +578,8 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
         self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
 
+        self._clean_up_tmp_file(file_name)
+
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """
         When a campaign was not linked to a country, export XLSX calendar triggered an error('NoneType' object has no attribute 'id'):
@@ -584,12 +588,15 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(obr_name="orb campaign", account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
+        file_name = "calendar_2022-10-01"
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
-        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name=file_name)
 
         data_dict = excel_data.to_dict()
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
+
+        self._clean_up_tmp_file(file_name)
 
     def test_create_calendar_xlsx_sheet_round_with_no_end_date(self):
         """
@@ -606,12 +613,15 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", account=self.account)
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
+        file_name = "calendar_2022-10-01"
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
-        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name=file_name)
 
         data_dict = excel_data.to_dict()
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, round))
+
+        self._clean_up_tmp_file(file_name)
 
     def test_create_calendar_xlsx_sheet_without_test_campaigns(self):
         """
@@ -627,12 +637,15 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(country_id=org_unit.id, obr_name="orb campaign", is_test=True, account=self.account)
         c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
 
+        file_name = "calendar_2022-10-01"
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
-        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name=file_name)
 
         data_dict = excel_data.to_dict()
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
+
+        self._clean_up_tmp_file(file_name)
 
     def test_create_calendar_xlsx_sheet_with_separate_scopes_per_round(self):
         """
@@ -685,10 +698,11 @@ class PolioAPITestCase(APITestCase):
         c.separate_scopes_per_round = True
         c.save()
         c.refresh_from_db()
+        file_name = "calendar_2022-10-01"
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar_2022-10-01.xlsx")
-        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name=file_name)
 
         excel_columns = excel_data.columns.ravel()
         self.assertEqual(excel_columns[0], "COUNTRY")
@@ -698,6 +712,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
+        self._clean_up_tmp_file(file_name)
 
     @staticmethod
     def format_date_to_test(campaign, round):
@@ -730,3 +745,8 @@ class PolioAPITestCase(APITestCase):
         payload = {"id": "bd656a6b-f67e-4a1e-95ee-1bef8f36239a"}
         response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 404)
+
+    def _clean_up_tmp_file(self, file_name):
+        # Some tests here create a tmp file through /api/polio/campaigns/create_calendar_xlsx_sheet/
+        if os.path.exists(file_name):
+            os.remove(file_name)

@@ -387,6 +387,14 @@ msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
 
+#: iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+
+#: iaso/api/stocks/filters.py
+msgid "SKUs - SKU IDs (comma-separated)"
+msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
+
 #: iaso/models/base.py
 msgid "Aggregate"
 msgstr "Agrégé"

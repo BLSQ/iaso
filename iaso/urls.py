@@ -93,6 +93,18 @@ from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
+from .api.stocks.views import (
+    StockItemRuleViewSet,
+    StockItemViewSet,
+    StockKeepingUnitViewSet,
+    StockLedgerItemViewSet,
+    StockRulesVersionViewSet,
+)
+from .api.stocks.views_mobile import (
+    StockKeepingUnitMobileViewSet,
+    StockLedgerItemMobileViewSet,
+    StockRulesVersionMobileViewSet,
+)
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
@@ -222,6 +234,15 @@ router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
 router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
 router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
 router.register(r"openhexa/pipelines", OpenHexaPipelinesViewSet, basename="openhexa-pipelines")
+
+router.register(r"stockkeepingunits", StockKeepingUnitViewSet, basename="stockkeepingunits")
+router.register(r"stockitems", StockItemViewSet, basename="stockitems")
+router.register(r"stockledgeritems", StockLedgerItemViewSet, basename="stockledgeritems")
+router.register(r"stockitemrules", StockItemRuleViewSet, basename="stockitemrules")
+router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stockrulesversions")
+router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
+router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
+router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

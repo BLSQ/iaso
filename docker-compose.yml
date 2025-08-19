@@ -53,6 +53,7 @@ services:
             ENKETO_SIGNING_SECRET: supersecret
             ENKETO_URL: http://enketo:8005/
             FAVICON_PATH:
+            FILE_SERVER_URL:  # optional: your ngrok URL
             GOOGLE_API_KEY_BASE64:
             LIVE_COMPONENTS:
             LOGO_PATH:

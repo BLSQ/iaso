@@ -6,6 +6,14 @@ This guide explains how to set up and configure Plausible analytics in Iaso.
 
 Iaso supports Plausible analytics integration for tracking user activity and account usage. The system automatically generates analytics scripts and tracks custom events with user and account information.
 
+### Analytics Levels
+
+The system provides different levels of analytics tracking:
+
+1. **Basic Tracking**: Page views for all users (domain only)
+2. **Enhanced Tracking**: Custom events with user/account data for authenticated users
+3. **Future**: Custom analytics scripts for specific customer requirements
+
 ## Prerequisites
 
 - A Plausible account and subscription
@@ -114,7 +122,7 @@ You can create custom views to analyze:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ENABLE_ANALYTICS` | `false` | Enable/disable analytics globally |
+| `ENABLE_ANALYTICS` | `true` | Enable/disable analytics globally |
 
 ### Analytics Data Tracked
 
@@ -122,13 +130,19 @@ You can create custom views to analyze:
 - All page visits are automatically tracked
 - Domain is automatically detected from the request
 
-#### Custom Events
+#### Custom Events (Authenticated Users Only)
 - **Event**: "User Login"
 - **Properties**:
   - `username`: User's username
   - `user_id`: User's unique ID
   - `account_name`: Account/organization name
   - `account_id`: Account's unique ID
+
+#### Non-Connected Pages
+For pages without user authentication (embeddable pages, public pages, etc.):
+- **Only domain tracking**: Basic page views are tracked
+- **No user data**: No custom events or user properties
+- **Privacy-focused**: Minimal data collection for anonymous users
 
 ## Privacy and Security
 
@@ -218,6 +232,17 @@ The system is designed to support multiple analytics providers. Future versions 
 - Google Analytics
 - Matomo
 - Custom analytics solutions
+
+### Custom Analytics Scripts (Future Feature)
+
+The `analytics_script` field in the Account model is preserved for future use:
+
+- **Current**: Not used in the new analytics system
+- **Future**: Will allow customers to specify custom analytics scripts
+- **Implementation**: Will be added in a future version
+- **Use Case**: For customers who need specific analytics providers or configurations
+
+**Note**: The current system uses automatic Plausible script generation. Custom scripts will be implemented as an additional feature.
 
 ## Support
 

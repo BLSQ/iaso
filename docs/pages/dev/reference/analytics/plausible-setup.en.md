@@ -72,7 +72,6 @@ To see user and account data in your Plausible dashboard, you need to add custom
 3. **Click "Add custom property"**
 4. **Enter the property details:**
    - **Name**: `username`
-   - **Type**: String
 5. **Repeat for all properties**
 6. **Save each property**
 
@@ -115,6 +114,128 @@ You can create custom views to analyze:
 - **Account Usage**: Usage per account/organization
 - **Feature Usage**: Which features are used most
 - **User Journeys**: Individual user behavior patterns
+
+## Plausible Filters and Iaso Pages
+
+Iaso supports creating pages with raw HTML, Superset dashboards, or embedded Plausible dashboards. You can use Plausible's filtering capabilities to create targeted analytics views.
+
+### Filtering by User Properties
+
+Plausible allows filtering results using URL parameters. You can create Iaso pages that show filtered analytics data:
+
+#### Filter for Non-Connected Pages
+To show only analytics for non-authenticated users (pages without user data):
+```
+https://plausible.io/your-domain.com?f=is,props:username,(none)
+```
+
+#### Filter by Account
+To show analytics for a specific account:
+```
+https://plausible.io/your-domain.com?f=is,props:account_id,123
+```
+
+#### Filter by Username
+To show analytics for a specific user:
+```
+https://plausible.io/your-domain.com?f=is,props:username,john_doe
+```
+
+### Creating Iaso Pages with Filtered Analytics
+
+#### 1. Raw HTML Page
+Create a page with embedded Plausible dashboard:
+
+```html
+<iframe 
+    src="https://plausible.io/your-domain.com?f=is,props:account_id,123" 
+    width="100%" 
+    height="600px"
+    frameborder="0">
+</iframe>
+```
+
+
+#### 2. Plausible Dashboard Page
+Create a dedicated analytics page:
+
+```html
+<!-- Full analytics dashboard -->
+<iframe 
+    src="https://plausible.io/your-domain.com?f=is,props:username,(none)&period=30d" 
+    width="100%" 
+    height="800px">
+</iframe>
+```
+
+### Common Filter Patterns
+
+#### Account-Specific Dashboards
+```
+# Dashboard for specific account
+https://plausible.io/your-domain.com?f=is,props:account_id,678&period=30d
+
+# Dashboard for account by name
+https://plausible.io/your-domain.com?f=is,props:account_name,WHO%20Country%20Office
+```
+
+#### User-Specific Views
+```
+# Analytics for specific user
+https://plausible.io/your-domain.com?f=is,props:username,john_doe&period=7d
+
+# Analytics for users in specific account
+https://plausible.io/your-domain.com?f=is,props:account_id,678&f=is,props:username,(not%20none)
+```
+
+#### Anonymous vs Authenticated Users
+```
+# Only anonymous users (non-connected pages)
+https://plausible.io/your-domain.com?f=is,props:username,(none)
+
+# Only authenticated users
+https://plausible.io/your-domain.com?f=is,props:username,(not%20none)
+```
+
+### Filter URL Parameters
+
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `f=is,props:username,(none)` | Filter for anonymous users | Non-connected pages |
+| `f=is,props:account_id,123` | Filter by account ID | Account-specific dashboard |
+| `f=is,props:account_name,WHO` | Filter by account name | Organization dashboard |
+| `f=is,props:user_id,456` | Filter by user ID | User-specific analytics |
+| `period=30d` | Time period | Last 30 days |
+| `period=7d` | Time period | Last 7 days |
+| `period=1m` | Time period | Last month |
+
+### Creating Multi-Account Dashboards
+
+For organizations managing multiple accounts, you can create comparison dashboards:
+
+```html
+<!-- Compare multiple accounts -->
+<iframe 
+    src="https://plausible.io/your-domain.com?f=is,props:account_id,123&f=is,props:account_id,456&period=30d" 
+    width="100%" 
+    height="600px">
+</iframe>
+```
+
+### Using Plausible Dashboards in Iaso Pages
+
+To create analytics dashboards in Iaso pages, use the **iframe option** with a specific Plausible URL:
+
+```html
+<iframe 
+    src="https://plausible.io/your-domain.com?f=is,props:account_id,123&period=30d" 
+    width="100%" 
+    height="600px"
+    frameborder="0">
+</iframe>
+```
+
+This allows you to embed filtered Plausible analytics directly into your Iaso pages.
 
 ## Configuration Options
 

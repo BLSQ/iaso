@@ -39,6 +39,7 @@ _REPORTS = "iaso_reports"
 _SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
 _SOURCES_CAN_CHANGE_DEFAULT_VERSION = "iaso_sources_can_change_default_version"
+_STOCK_MANAGEMENT = "iaso_stock_management"
 _STORAGE = "iaso_storages"
 _SUBMISSIONS = "iaso_submissions"
 _SUBMISSIONS_UPDATE = "iaso_update_submission"
@@ -83,6 +84,7 @@ REPORTS = _PREFIX + _REPORTS
 SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
 SOURCES_CAN_CHANGE_DEFAULT_VERSION = _PREFIX + _SOURCES_CAN_CHANGE_DEFAULT_VERSION
+STOCK_MANAGEMENT = _PREFIX + _STOCK_MANAGEMENT
 STORAGE = _PREFIX + _STORAGE
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
 SUBMISSIONS_UPDATE = _PREFIX + _SUBMISSIONS_UPDATE
@@ -217,6 +219,9 @@ module_permissions = {
         "iaso_org_unit_change_request_review",
         "iaso_org_unit_change_request_configurations",
     ],
+    "STOCK_MANAGEMENT": [
+        "iaso_stock_management",
+    ],
 }
 
 
@@ -274,6 +279,7 @@ class CorePermissionSupport(models.Model):
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),
             (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
+            (_STOCK_MANAGEMENT, ("Stock Management")),
         )
 
 

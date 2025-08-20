@@ -290,6 +290,7 @@
     "iaso.forms.closed": "Closed",
     "iaso.forms.create": "Create form",
     "iaso.forms.created_at": "Created",
+    "iaso.forms.created_by": "Created by",
     "iaso.forms.createLegend": "Create legend",
     "iaso.forms.creator": "Creator",
     "iaso.forms.custom": "Custom",

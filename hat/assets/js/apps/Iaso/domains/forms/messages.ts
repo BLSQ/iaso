@@ -137,6 +137,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated',
     },
+    created_by: {
+        id: 'iaso.forms.created_by',
+        defaultMessage: 'Created by',
+    },
+    updated_by: {
+        id: 'iaso.forms.updated_by',
+        defaultMessage: 'Updated by',
+    },
     subSource: {
         id: 'iaso.forms.subSource',
         defaultMessage: 'Sub-Source',

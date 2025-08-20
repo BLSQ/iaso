@@ -55,7 +55,7 @@ from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
-from .api.form_versions import FormVersionsViewSet
+from .api.form_versions.views import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
 from .api.groups.views import GroupsViewSet

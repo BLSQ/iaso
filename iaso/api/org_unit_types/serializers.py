@@ -86,7 +86,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
-            ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
+            ).filter(Q(org_unit_type__id=obj.id))
             return orgUnits.count()
         return None
 
@@ -199,7 +199,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
         ):
             orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
                 self.context["request"].user, self.context["request"].query_params.get("app_id")
-            ).filter(Q(validation_status=OrgUnit.VALIDATION_VALID) & Q(org_unit_type__id=obj.id))
+            ).filter(Q(org_unit_type__id=obj.id))
             return orgUnits.count()
         return None
 

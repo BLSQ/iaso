@@ -690,6 +690,7 @@
     "iaso.label.operationType": "Operation type",
     "iaso.label.orgUnit": "Org units",
     "iaso.label.orgUnitChangeRequestConfigurations": "Change requests configuration",
+    "iaso.label.orgUnitCount": "Org units count",
     "iaso.label.orgUnitList": "Org units list",
     "iaso.label.orgUnitParent": "Parent {index}",
     "iaso.label.orgunitreferenceinstance": "Reference submission",

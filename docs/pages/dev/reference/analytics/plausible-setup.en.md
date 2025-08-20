@@ -296,7 +296,7 @@ For pages without user authentication (embeddable pages, public pages, etc.):
    - Verify Plausible script is loading
 
 4. **Check network requests**:
-   - Ensure requests to `plausible.io` are not blocked
+   - Ensure requests to `plausible.io` are not blocked (i.e. by your ad blocker)
    - Check for CORS issues
 
 ### Custom Properties Not Showing

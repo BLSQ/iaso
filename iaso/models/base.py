@@ -145,6 +145,8 @@ class Account(models.Model):
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
+    # analytics_script is no longer used (replaced by the plausible setup) - it's kept in case we need another
+    # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
 

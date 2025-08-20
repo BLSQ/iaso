@@ -1268,6 +1268,7 @@
     "iaso.projets.featureflag.tooltip.forms_auto_upload": "Finalized forms are automatically synchronized provided the user has connectivity",
     "iaso.projets.featureflag.tooltip.gps_tracking": "Tracks the user's position",
     "iaso.projets.featureflag.tooltip.limit_ou_download_to_roots": "Downloads only the geo data of the zone assigned to the user (for offline use). This allows the download of less heavy data files.",
+    "iaso.projets.featureflag.tooltip.mobile_change_requests_tab": "Tab enabling display of change requests (read only)",
     "iaso.projets.featureflag.tooltip.mobile_check_forms_update": "Notify the user when new form versions have been uploaded on the web (provided the device has connectivity)",
     "iaso.projets.featureflag.tooltip.mobile_check_ou_update": "Notify the user when changes to the geo data (Org units) have been done on the web (provided the device has connectivity)",
     "iaso.projets.featureflag.tooltip.mobile_entity_limited_search": "Limits the entities search to the device level. This is avoid use of mobile data.",

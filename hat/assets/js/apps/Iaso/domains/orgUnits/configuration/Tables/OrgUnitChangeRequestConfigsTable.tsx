@@ -6,6 +6,7 @@ import React, {
     useMemo,
 } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { ProjectChip } from 'Iaso/domains/projects/components/ProjectChip';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
@@ -37,7 +38,7 @@ const useColumns = (
             {
                 Header: formatMessage(MESSAGES.project),
                 id: 'project',
-                accessor: row => row.project.name,
+                accessor: row => <ProjectChip project={row.project} />,
             },
             {
                 Header: formatMessage(MESSAGES.type),

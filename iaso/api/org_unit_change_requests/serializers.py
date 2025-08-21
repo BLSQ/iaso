@@ -185,7 +185,10 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
         if obj.org_unit.org_unit_type is None:
             return []
-        return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
+        return [
+            {"id": project.id, "name": project.name, "color": project.color}
+            for project in obj.org_unit.org_unit_type.projects.all()
+        ]
 
     def get_payment_status(self, obj: OrgUnitChangeRequest):
         payment = obj.payment

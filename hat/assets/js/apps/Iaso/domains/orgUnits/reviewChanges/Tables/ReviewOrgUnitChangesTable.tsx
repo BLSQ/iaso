@@ -4,13 +4,14 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import EditIcon from '@mui/icons-material/Settings';
 import DeleteIcon from '@mui/icons-material/Delete';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import EditIcon from '@mui/icons-material/Settings';
 import { Box } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
 import Color from 'color';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { BreakWordCell } from '../../../../components/Cells/BreakWordCell';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../../components/Cells/UserCell';
@@ -20,8 +21,8 @@ import { ColumnCell } from '../../../../types/general';
 import { useTableSelection } from '../../../../utils/table';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { BulkDeleteDialog } from '../Components/BulkDeleteDialog';
+import { MultiActionsDialog } from '../Components/MultiActionsDialog';
 import { colorCodes } from '../Components/ReviewOrgUnitChangesInfos';
 import { PAYMENTS_MODULE } from '../constants';
 import { IconButton } from '../details';
@@ -51,13 +52,12 @@ const useColumns = (): Column[] => {
                 id: 'projects',
                 accessor: 'projects',
                 sortable: false,
+                width: 250,
                 Cell: ({
                     row: { original: changeRequest },
                 }: ColumnCell<OrgUnitChangeRequest>): ReactElement | string => {
                     const { projects } = changeRequest;
-                    return projects.length > 0
-                        ? projects.map(project => project.name).join(', ')
-                        : textPlaceholder;
+                    return <ProjectChips projects={projects} />;
                 },
             },
             {

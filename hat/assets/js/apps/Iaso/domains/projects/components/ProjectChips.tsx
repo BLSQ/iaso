@@ -17,7 +17,7 @@ export const ProjectChips: FunctionComponent<Props> = ({ projects }) => {
             sx={{
                 display: 'flex',
                 flexWrap: 'wrap',
-                gap: 1,
+                gap: 0.5,
                 justifyContent: 'center',
             }}
         >

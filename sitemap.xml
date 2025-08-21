@@ -249,6 +249,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/payments/payments.html"/>
     </url>
     <url>
+        <loc>Nonepages/dev/reference/analytics/plausible-setup.html</loc>
+        <lastmod>2025-08-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/analytics/plausible-setup.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/reference/audit/audit.html</loc>
         <lastmod>2025-08-21</lastmod>
         <changefreq>daily</changefreq>
@@ -737,6 +745,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments/payments.html"/>
     </url>
     <url>
+        <loc>Nonefr/pages/dev/reference/analytics/plausible-setup.html</loc>
+        <lastmod>2025-08-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/analytics/plausible-setup.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/reference/audit/audit.html</loc>
         <lastmod>2025-08-21</lastmod>
         <changefreq>daily</changefreq>
@@ -1223,6 +1239,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/API/payments/payments.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/API/payments/payments.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/API/payments/payments.html"/>
+    </url>
+    <url>
+        <loc>Nonees/pages/dev/reference/analytics/plausible-setup.html</loc>
+        <lastmod>2025-08-21</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/pages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonepages/dev/reference/analytics/plausible-setup.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/pages/dev/reference/analytics/plausible-setup.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/reference/audit/audit.html</loc>

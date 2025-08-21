@@ -1050,6 +1050,19 @@ for status monitoring), you can set the environment variable <code>MAINTENANCE_M
 <pre><code>PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
 </code></pre>
 <p>When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.</p>
+<h2 id="analytics-integration">Analytics Integration<a class="headerlink" href="#analytics-integration" title="Permanent link">#</a></h2>
+<h3 id="plausible-analytics">Plausible Analytics<a class="headerlink" href="#plausible-analytics" title="Permanent link">#</a></h3>
+<p>To enable Plausible analytics tracking, set the following environment variable:</p>
+<pre><code>ENABLE_ANALYTICS=true
+</code></pre>
+<p>When enabled, Iaso will automatically generate and include Plausible analytics scripts on all pages for authenticated users. The system tracks:</p>
+<ul>
+<li><strong>Page views</strong>: All page visits</li>
+<li><strong>Custom events</strong>: User login events with account details</li>
+<li><strong>User information</strong>: Username, user ID, account name, and account ID</li>
+</ul>
+<p><strong>Note</strong>: Analytics is disabled by default and only works when explicitly enabled via the environment variable.</p>
+<p>For detailed setup instructions, see <a href="../analytics/plausible-setup.html">Plausible Analytics Setup</a>.</p>
 <h2 id="frontend-configuration">Frontend Configuration<a class="headerlink" href="#frontend-configuration" title="Permanent link">#</a></h2>
 <h3 id="development-settings">Development Settings<a class="headerlink" href="#development-settings" title="Permanent link">#</a></h3>
 <table>

@@ -1,0 +1,1638 @@
+
+<!doctype html>
+<html lang="es" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Plausible Analytics Setup - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#plausible-analytics-setup" class="md-skip">
+          Saltar a contenido
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabecera">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Plausible Analytics Setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Seleccionar idioma">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../pages/dev/reference/analytics/plausible-setup.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../fr/pages/dev/reference/analytics/plausible-setup.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="plausible-setup.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Búsqueda" placeholder="Búsqueda" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Buscar">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpiar" aria-label="Limpiar" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando búsqueda
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navegación" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Ir al repositorio" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Inicio
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guía de usuario
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guía de usuario
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Conceptos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Módulos
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plataforma Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Aplicación Móvil
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Desarrolladores
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Desarrolladores
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Referencias
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Referencias
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks & worker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../env_variables/env_variables.html" class="md-nav__link">
+        Environnement variables
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modelos
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modelos
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guías
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guías
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup a dev environment
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          Más sobre IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          Más sobre IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Sitio web de IASO
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Notas de versión
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Sitio web de Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Tabla de contenidos">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Tabla de contenidos
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analytics-levels" class="md-nav__link">
+    Analytics Levels
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    Prerequisites
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-1-enable-analytics" class="md-nav__link">
+    Step 1: Enable Analytics
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 1: Enable Analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variable" class="md-nav__link">
+    Environment Variable
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-2-add-your-domain-to-plausible" class="md-nav__link">
+    Step 2: Add Your Domain to Plausible
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-3-configure-custom-properties" class="md-nav__link">
+    Step 3: Configure Custom Properties
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 3: Configure Custom Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-custom-properties" class="md-nav__link">
+    Required Custom Properties
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-to-add-custom-properties" class="md-nav__link">
+    How to Add Custom Properties
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-4-verify-setup" class="md-nav__link">
+    Step 4: Verify Setup
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 4: Verify Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#check-analytics-script" class="md-nav__link">
+    Check Analytics Script
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#check-network-requests" class="md-nav__link">
+    Check Network Requests
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-view-analytics-data" class="md-nav__link">
+    Step 5: View Analytics Data
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: View Analytics Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-events" class="md-nav__link">
+    Custom Events
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dashboard-views" class="md-nav__link">
+    Dashboard Views
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#plausible-filters-and-iaso-pages" class="md-nav__link">
+    Plausible Filters and Iaso Pages
+  </a>
+  
+    <nav class="md-nav" aria-label="Plausible Filters and Iaso Pages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filtering-by-user-properties" class="md-nav__link">
+    Filtering by User Properties
+  </a>
+  
+    <nav class="md-nav" aria-label="Filtering by User Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filter-for-non-connected-pages" class="md-nav__link">
+    Filter for Non-Connected Pages
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-by-account" class="md-nav__link">
+    Filter by Account
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-by-username" class="md-nav__link">
+    Filter by Username
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-iaso-pages-with-filtered-analytics" class="md-nav__link">
+    Creating Iaso Pages with Filtered Analytics
+  </a>
+  
+    <nav class="md-nav" aria-label="Creating Iaso Pages with Filtered Analytics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-raw-html-page" class="md-nav__link">
+    1. Raw HTML Page
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-plausible-dashboard-page" class="md-nav__link">
+    2. Plausible Dashboard Page
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#common-filter-patterns" class="md-nav__link">
+    Common Filter Patterns
+  </a>
+  
+    <nav class="md-nav" aria-label="Common Filter Patterns">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#account-specific-dashboards" class="md-nav__link">
+    Account-Specific Dashboards
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#user-specific-views" class="md-nav__link">
+    User-Specific Views
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anonymous-vs-authenticated-users" class="md-nav__link">
+    Anonymous vs Authenticated Users
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter-url-parameters" class="md-nav__link">
+    Filter URL Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#creating-multi-account-dashboards" class="md-nav__link">
+    Creating Multi-Account Dashboards
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-plausible-dashboards-in-iaso-pages" class="md-nav__link">
+    Using Plausible Dashboards in Iaso Pages
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-options" class="md-nav__link">
+    Configuration Options
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#environment-variables" class="md-nav__link">
+    Environment Variables
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#analytics-data-tracked" class="md-nav__link">
+    Analytics Data Tracked
+  </a>
+  
+    <nav class="md-nav" aria-label="Analytics Data Tracked">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#page-views" class="md-nav__link">
+    Page Views
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-events-authenticated-users-only" class="md-nav__link">
+    Custom Events (Authenticated Users Only)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#non-connected-pages" class="md-nav__link">
+    Non-Connected Pages
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#privacy-and-security" class="md-nav__link">
+    Privacy and Security
+  </a>
+  
+    <nav class="md-nav" aria-label="Privacy and Security">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#data-privacy" class="md-nav__link">
+    Data Privacy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#security-considerations" class="md-nav__link">
+    Security Considerations
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    Troubleshooting
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#analytics-not-working" class="md-nav__link">
+    Analytics Not Working
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-properties-not-showing" class="md-nav__link">
+    Custom Properties Not Showing
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#development-testing" class="md-nav__link">
+    Development Testing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-configuration" class="md-nav__link">
+    Advanced Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#custom-event-tracking" class="md-nav__link">
+    Custom Event Tracking
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-analytics-providers" class="md-nav__link">
+    Multiple Analytics Providers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-analytics-scripts-future-feature" class="md-nav__link">
+    Custom Analytics Scripts (Future Feature)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#support" class="md-nav__link">
+    Support
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#related-documentation" class="md-nav__link">
+    Related Documentation
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/analytics/plausible-setup.en.md" title="Editar esta página" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="plausible-analytics-setup">Plausible Analytics Setup<a class="headerlink" href="#plausible-analytics-setup" title="Permanent link">#</a></h1>
+<p>This guide explains how to set up and configure Plausible analytics in Iaso.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>Iaso supports Plausible analytics integration for tracking user activity and account usage. The system automatically generates analytics scripts and tracks custom events with user and account information.</p>
+<h3 id="analytics-levels">Analytics Levels<a class="headerlink" href="#analytics-levels" title="Permanent link">#</a></h3>
+<p>The system provides different levels of analytics tracking:</p>
+<ol>
+<li><strong>Basic Tracking</strong>: Page views for all users (domain only)</li>
+<li><strong>Enhanced Tracking</strong>: Custom events with user/account data for authenticated users</li>
+<li><strong>Future</strong>: Custom analytics scripts for specific customer requirements</li>
+</ol>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">#</a></h2>
+<ul>
+<li>A Plausible account and subscription</li>
+<li>Access to your Iaso instance</li>
+<li>Domain name for your Iaso instance</li>
+</ul>
+<h2 id="step-1-enable-analytics">Step 1: Enable Analytics<a class="headerlink" href="#step-1-enable-analytics" title="Permanent link">#</a></h2>
+<h3 id="environment-variable">Environment Variable<a class="headerlink" href="#environment-variable" title="Permanent link">#</a></h3>
+<p>Add the following environment variable to enable analytics:</p>
+<pre><code class="language-bash">ENABLE_ANALYTICS=true
+</code></pre>
+<p><strong>Docker Compose:</strong></p>
+<pre><code class="language-yaml"># docker-compose.yml
+services:
+  iaso:
+    environment:
+      ENABLE_ANALYTICS: &quot;true&quot;
+</code></pre>
+<p><strong>Environment File:</strong></p>
+<pre><code class="language-bash"># .env
+ENABLE_ANALYTICS=true
+</code></pre>
+<h2 id="step-2-add-your-domain-to-plausible">Step 2: Add Your Domain to Plausible<a class="headerlink" href="#step-2-add-your-domain-to-plausible" title="Permanent link">#</a></h2>
+<ol>
+<li><strong>Log into your Plausible dashboard</strong></li>
+<li><strong>Add a new site</strong> with your Iaso domain</li>
+<li><strong>Enter your domain</strong> (e.g., <code>your-iaso-instance.com</code>)</li>
+<li><strong>Save the site</strong></li>
+</ol>
+<h2 id="step-3-configure-custom-properties">Step 3: Configure Custom Properties<a class="headerlink" href="#step-3-configure-custom-properties" title="Permanent link">#</a></h2>
+<p>To see user and account data in your Plausible dashboard, you need to add custom properties:</p>
+<h3 id="required-custom-properties">Required Custom Properties<a class="headerlink" href="#required-custom-properties" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Property Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username</code></td>
+<td>String</td>
+<td>User's username</td>
+</tr>
+<tr>
+<td><code>user_id</code></td>
+<td>Number</td>
+<td>User's unique ID</td>
+</tr>
+<tr>
+<td><code>account_name</code></td>
+<td>String</td>
+<td>Account/organization name</td>
+</tr>
+<tr>
+<td><code>account_id</code></td>
+<td>Number</td>
+<td>Account's unique ID</td>
+</tr>
+</tbody>
+</table>
+<h3 id="how-to-add-custom-properties">How to Add Custom Properties<a class="headerlink" href="#how-to-add-custom-properties" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Go to your site in Plausible</strong></li>
+<li><strong>Navigate to Settings</strong> → <strong>Custom Properties</strong></li>
+<li><strong>Click "Add custom property"</strong></li>
+<li><strong>Enter the property details:</strong></li>
+<li><strong>Name</strong>: <code>username</code></li>
+<li><strong>Repeat for all properties</strong></li>
+<li><strong>Save each property</strong></li>
+</ol>
+<h2 id="step-4-verify-setup">Step 4: Verify Setup<a class="headerlink" href="#step-4-verify-setup" title="Permanent link">#</a></h2>
+<h3 id="check-analytics-script">Check Analytics Script<a class="headerlink" href="#check-analytics-script" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Enable analytics</strong>: <code>ENABLE_ANALYTICS=true</code></li>
+<li><strong>Access your Iaso instance</strong></li>
+<li><strong>Log in as a user</strong></li>
+<li><strong>Open browser developer tools</strong></li>
+<li><strong>Check the page source</strong> for the Plausible script:
+   ```html
+ <br />
+<script defer data-domain="your-domain.com" src="https://plausible.io/js/script.js"></script></li>
+</ol>
+<p>```</p>
+<h3 id="check-network-requests">Check Network Requests<a class="headerlink" href="#check-network-requests" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Open browser developer tools</strong></li>
+<li><strong>Go to Network tab</strong></li>
+<li><strong>Refresh the page</strong></li>
+<li><strong>Look for requests to <code>plausible.io</code></strong></li>
+<li><strong>Verify custom events are being sent</strong></li>
+</ol>
+<h2 id="step-5-view-analytics-data">Step 5: View Analytics Data<a class="headerlink" href="#step-5-view-analytics-data" title="Permanent link">#</a></h2>
+<h3 id="custom-events">Custom Events<a class="headerlink" href="#custom-events" title="Permanent link">#</a></h3>
+<p>In your Plausible dashboard, you'll see:</p>
+<ul>
+<li><strong>Event Name</strong>: "User Login"</li>
+<li><strong>Properties</strong>: All user and account details</li>
+<li><strong>Timing</strong>: When users log in and access pages</li>
+</ul>
+<h3 id="dashboard-views">Dashboard Views<a class="headerlink" href="#dashboard-views" title="Permanent link">#</a></h3>
+<p>You can create custom views to analyze:</p>
+<ul>
+<li><strong>User Activity</strong>: Most active users</li>
+<li><strong>Account Usage</strong>: Usage per account/organization</li>
+<li><strong>Feature Usage</strong>: Which features are used most</li>
+<li><strong>User Journeys</strong>: Individual user behavior patterns</li>
+</ul>
+<h2 id="plausible-filters-and-iaso-pages">Plausible Filters and Iaso Pages<a class="headerlink" href="#plausible-filters-and-iaso-pages" title="Permanent link">#</a></h2>
+<p>Iaso supports creating pages with raw HTML, Superset dashboards, or embedded Plausible dashboards. You can use Plausible's filtering capabilities to create targeted analytics views.</p>
+<h3 id="filtering-by-user-properties">Filtering by User Properties<a class="headerlink" href="#filtering-by-user-properties" title="Permanent link">#</a></h3>
+<p>Plausible allows filtering results using URL parameters. You can create Iaso pages that show filtered analytics data:</p>
+<h4 id="filter-for-non-connected-pages">Filter for Non-Connected Pages<a class="headerlink" href="#filter-for-non-connected-pages" title="Permanent link">#</a></h4>
+<p>To show only analytics for non-authenticated users (pages without user data):</p>
+<pre><code>https://plausible.io/your-domain.com?f=is,props:username,(none)
+</code></pre>
+<h4 id="filter-by-account">Filter by Account<a class="headerlink" href="#filter-by-account" title="Permanent link">#</a></h4>
+<p>To show analytics for a specific account:</p>
+<pre><code>https://plausible.io/your-domain.com?f=is,props:account_id,123
+</code></pre>
+<h4 id="filter-by-username">Filter by Username<a class="headerlink" href="#filter-by-username" title="Permanent link">#</a></h4>
+<p>To show analytics for a specific user:</p>
+<pre><code>https://plausible.io/your-domain.com?f=is,props:username,john_doe
+</code></pre>
+<h3 id="creating-iaso-pages-with-filtered-analytics">Creating Iaso Pages with Filtered Analytics<a class="headerlink" href="#creating-iaso-pages-with-filtered-analytics" title="Permanent link">#</a></h3>
+<h4 id="1-raw-html-page">1. Raw HTML Page<a class="headerlink" href="#1-raw-html-page" title="Permanent link">#</a></h4>
+<p>Create a page with embedded Plausible dashboard:</p>
+<pre><code class="language-html">&lt;iframe 
+    src=&quot;https://plausible.io/your-domain.com?f=is,props:account_id,123&quot; 
+    width=&quot;100%&quot; 
+    height=&quot;600px&quot;
+    frameborder=&quot;0&quot;&gt;
+&lt;/iframe&gt;
+</code></pre>
+<h4 id="2-plausible-dashboard-page">2. Plausible Dashboard Page<a class="headerlink" href="#2-plausible-dashboard-page" title="Permanent link">#</a></h4>
+<p>Create a dedicated analytics page:</p>
+<pre><code class="language-html">&lt;!-- Full analytics dashboard --&gt;
+&lt;iframe 
+    src=&quot;https://plausible.io/your-domain.com?f=is,props:username,(none)&amp;period=30d&quot; 
+    width=&quot;100%&quot; 
+    height=&quot;800px&quot;&gt;
+&lt;/iframe&gt;
+</code></pre>
+<h3 id="common-filter-patterns">Common Filter Patterns<a class="headerlink" href="#common-filter-patterns" title="Permanent link">#</a></h3>
+<h4 id="account-specific-dashboards">Account-Specific Dashboards<a class="headerlink" href="#account-specific-dashboards" title="Permanent link">#</a></h4>
+<pre><code># Dashboard for specific account
+https://plausible.io/your-domain.com?f=is,props:account_id,678&amp;period=30d
+
+# Dashboard for account by name
+https://plausible.io/your-domain.com?f=is,props:account_name,WHO%20Country%20Office
+</code></pre>
+<h4 id="user-specific-views">User-Specific Views<a class="headerlink" href="#user-specific-views" title="Permanent link">#</a></h4>
+<pre><code># Analytics for specific user
+https://plausible.io/your-domain.com?f=is,props:username,john_doe&amp;period=7d
+
+# Analytics for users in specific account
+https://plausible.io/your-domain.com?f=is,props:account_id,678&amp;f=is,props:username,(not%20none)
+</code></pre>
+<h4 id="anonymous-vs-authenticated-users">Anonymous vs Authenticated Users<a class="headerlink" href="#anonymous-vs-authenticated-users" title="Permanent link">#</a></h4>
+<pre><code># Only anonymous users (non-connected pages)
+https://plausible.io/your-domain.com?f=is,props:username,(none)
+
+# Only authenticated users
+https://plausible.io/your-domain.com?f=is,props:username,(not%20none)
+</code></pre>
+<h3 id="filter-url-parameters">Filter URL Parameters<a class="headerlink" href="#filter-url-parameters" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>f=is,props:username,(none)</code></td>
+<td>Filter for anonymous users</td>
+<td>Non-connected pages</td>
+</tr>
+<tr>
+<td><code>f=is,props:account_id,123</code></td>
+<td>Filter by account ID</td>
+<td>Account-specific dashboard</td>
+</tr>
+<tr>
+<td><code>f=is,props:account_name,WHO</code></td>
+<td>Filter by account name</td>
+<td>Organization dashboard</td>
+</tr>
+<tr>
+<td><code>f=is,props:user_id,456</code></td>
+<td>Filter by user ID</td>
+<td>User-specific analytics</td>
+</tr>
+<tr>
+<td><code>period=30d</code></td>
+<td>Time period</td>
+<td>Last 30 days</td>
+</tr>
+<tr>
+<td><code>period=7d</code></td>
+<td>Time period</td>
+<td>Last 7 days</td>
+</tr>
+<tr>
+<td><code>period=1m</code></td>
+<td>Time period</td>
+<td>Last month</td>
+</tr>
+</tbody>
+</table>
+<h3 id="creating-multi-account-dashboards">Creating Multi-Account Dashboards<a class="headerlink" href="#creating-multi-account-dashboards" title="Permanent link">#</a></h3>
+<p>For organizations managing multiple accounts, you can create comparison dashboards:</p>
+<pre><code class="language-html">&lt;!-- Compare multiple accounts --&gt;
+&lt;iframe 
+    src=&quot;https://plausible.io/your-domain.com?f=is,props:account_id,123&amp;f=is,props:account_id,456&amp;period=30d&quot; 
+    width=&quot;100%&quot; 
+    height=&quot;600px&quot;&gt;
+&lt;/iframe&gt;
+</code></pre>
+<h3 id="using-plausible-dashboards-in-iaso-pages">Using Plausible Dashboards in Iaso Pages<a class="headerlink" href="#using-plausible-dashboards-in-iaso-pages" title="Permanent link">#</a></h3>
+<p>To create analytics dashboards in Iaso pages, use the <strong>iframe option</strong> with a specific Plausible URL:</p>
+<pre><code class="language-html">&lt;iframe 
+    src=&quot;https://plausible.io/your-domain.com?f=is,props:account_id,123&amp;period=30d&quot; 
+    width=&quot;100%&quot; 
+    height=&quot;600px&quot;
+    frameborder=&quot;0&quot;&gt;
+&lt;/iframe&gt;
+</code></pre>
+<p>This allows you to embed filtered Plausible analytics directly into your Iaso pages.</p>
+<h2 id="configuration-options">Configuration Options<a class="headerlink" href="#configuration-options" title="Permanent link">#</a></h2>
+<h3 id="environment-variables">Environment Variables<a class="headerlink" href="#environment-variables" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ENABLE_ANALYTICS</code></td>
+<td><code>true</code></td>
+<td>Enable/disable analytics globally</td>
+</tr>
+</tbody>
+</table>
+<h3 id="analytics-data-tracked">Analytics Data Tracked<a class="headerlink" href="#analytics-data-tracked" title="Permanent link">#</a></h3>
+<h4 id="page-views">Page Views<a class="headerlink" href="#page-views" title="Permanent link">#</a></h4>
+<ul>
+<li>All page visits are automatically tracked</li>
+<li>Domain is automatically detected from the request</li>
+</ul>
+<h4 id="custom-events-authenticated-users-only">Custom Events (Authenticated Users Only)<a class="headerlink" href="#custom-events-authenticated-users-only" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Event</strong>: "User Login"</li>
+<li><strong>Properties</strong>:</li>
+<li><code>username</code>: User's username</li>
+<li><code>user_id</code>: User's unique ID</li>
+<li><code>account_name</code>: Account/organization name</li>
+<li><code>account_id</code>: Account's unique ID</li>
+</ul>
+<h4 id="non-connected-pages">Non-Connected Pages<a class="headerlink" href="#non-connected-pages" title="Permanent link">#</a></h4>
+<p>For pages without user authentication (embeddable pages, public pages, etc.):
+- <strong>Only domain tracking</strong>: Basic page views are tracked
+- <strong>No user data</strong>: No custom events or user properties
+- <strong>Privacy-focused</strong>: Minimal data collection for anonymous users</p>
+<h2 id="privacy-and-security">Privacy and Security<a class="headerlink" href="#privacy-and-security" title="Permanent link">#</a></h2>
+<h3 id="data-privacy">Data Privacy<a class="headerlink" href="#data-privacy" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>No PII</strong>: Usernames are typically not personally identifiable</li>
+<li><strong>Account Level</strong>: Focuses on organizational usage patterns</li>
+<li><strong>GDPR Compliant</strong>: Plausible is privacy-focused by design</li>
+<li><strong>No Cookies</strong>: Plausible doesn't use cookies</li>
+</ul>
+<h3 id="security-considerations">Security Considerations<a class="headerlink" href="#security-considerations" title="Permanent link">#</a></h3>
+<ul>
+<li><strong>HTTPS Only</strong>: Analytics only works over HTTPS in production</li>
+<li><strong>Domain Validation</strong>: Only tracks on the configured domain</li>
+<li><strong>User Consent</strong>: Consider implementing user consent if required</li>
+</ul>
+<h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
+<h3 id="analytics-not-working">Analytics Not Working<a class="headerlink" href="#analytics-not-working" title="Permanent link">#</a></h3>
+<ol>
+<li>
+<p><strong>Check environment variable</strong>:
+   <code>bash
+   echo $ENABLE_ANALYTICS</code></p>
+</li>
+<li>
+<p><strong>Verify domain in Plausible</strong>:</p>
+</li>
+<li>Ensure your domain is added to Plausible</li>
+<li>
+<p>Check for typos in the domain name</p>
+</li>
+<li>
+<p><strong>Check browser console</strong>:</p>
+</li>
+<li>Look for JavaScript errors</li>
+<li>
+<p>Verify Plausible script is loading</p>
+</li>
+<li>
+<p><strong>Check network requests</strong>:</p>
+</li>
+<li>Ensure requests to <code>plausible.io</code> are not blocked (i.e. by your ad blocker)</li>
+<li>Check for CORS issues</li>
+</ol>
+<h3 id="custom-properties-not-showing">Custom Properties Not Showing<a class="headerlink" href="#custom-properties-not-showing" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Verify property names</strong>: Must match exactly (case-sensitive)</li>
+<li><strong>Check property types</strong>: Ensure correct data types</li>
+<li><strong>Wait for data</strong>: Custom properties may take time to appear</li>
+<li><strong>Check event data</strong>: Verify events are being sent with properties</li>
+</ol>
+<h3 id="development-testing">Development Testing<a class="headerlink" href="#development-testing" title="Permanent link">#</a></h3>
+<p>For local development:</p>
+<ol>
+<li>
+<p><strong>Use a test domain</strong>:
+   <code>bash
+   # In /etc/hosts
+   127.0.0.1 test-iaso.local</code></p>
+</li>
+<li>
+<p><strong>Add test domain to Plausible</strong>:</p>
+</li>
+<li>
+<p>Add <code>test-iaso.local</code> as a site in Plausible</p>
+</li>
+<li>
+<p><strong>Enable analytics locally</strong>:
+   <code>bash
+   ENABLE_ANALYTICS=true</code></p>
+</li>
+<li>
+<p><strong>Access via test domain</strong>:
+   <code>http://test-iaso.local:8081</code></p>
+</li>
+</ol>
+<h2 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">#</a></h2>
+<h3 id="custom-event-tracking">Custom Event Tracking<a class="headerlink" href="#custom-event-tracking" title="Permanent link">#</a></h3>
+<p>You can extend the analytics system to track additional events:</p>
+<pre><code class="language-javascript">// Example: Track feature usage
+window.plausible('Feature Used', {
+    props: {
+        feature: 'data_export',
+        username: 'user123',
+        account_name: 'WHO'
+    }
+});
+</code></pre>
+<h3 id="multiple-analytics-providers">Multiple Analytics Providers<a class="headerlink" href="#multiple-analytics-providers" title="Permanent link">#</a></h3>
+<p>The system is designed to support multiple analytics providers. Future versions may include:</p>
+<ul>
+<li>Google Analytics</li>
+<li>Matomo</li>
+<li>Custom analytics solutions</li>
+</ul>
+<h3 id="custom-analytics-scripts-future-feature">Custom Analytics Scripts (Future Feature)<a class="headerlink" href="#custom-analytics-scripts-future-feature" title="Permanent link">#</a></h3>
+<p>The <code>analytics_script</code> field in the Account model is preserved for future use:</p>
+<ul>
+<li><strong>Current</strong>: Not used in the new analytics system</li>
+<li><strong>Future</strong>: Will allow customers to specify custom analytics scripts</li>
+<li><strong>Implementation</strong>: Will be added in a future version</li>
+<li><strong>Use Case</strong>: For customers who need specific analytics providers or configurations</li>
+</ul>
+<p><strong>Note</strong>: The current system uses automatic Plausible script generation. Custom scripts will be implemented as an additional feature.</p>
+<h2 id="support">Support<a class="headerlink" href="#support" title="Permanent link">#</a></h2>
+<p>For issues with:</p>
+<ul>
+<li><strong>Iaso Analytics Integration</strong>: Check this documentation</li>
+<li><strong>Plausible Service</strong>: Contact Plausible support</li>
+<li><strong>Custom Properties</strong>: Refer to Plausible documentation</li>
+</ul>
+<h2 id="related-documentation">Related Documentation<a class="headerlink" href="#related-documentation" title="Permanent link">#</a></h2>
+<ul>
+<li><a href="../env_variables/env_variables.html">Environment Variables</a></li>
+<li><a href="../../deployment/docker.md">Docker Configuration</a></li>
+<li><a href="../../legal/privacy.md">Privacy Policy</a></li>
+</ul>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copiado al portapapeles", "clipboard.copy": "Copiar al portapapeles", "search.result.more.one": "1 m\u00e1s en esta p\u00e1gina", "search.result.more.other": "# m\u00e1s en esta p\u00e1gina", "search.result.none": "No se encontraron documentos", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Teclee para comenzar b\u00fasqueda", "search.result.term.missing": "Falta", "select.version": "Seleccionar versi\u00f3n"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

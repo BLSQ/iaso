@@ -120,6 +120,19 @@ class Account(models.Model):
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
 
+    @property
+    def short_sanitized_name(self):
+        """
+        Short sanitized name mainly used in file path storage
+        """
+        text = self.name.lower()
+        text = re.sub(r"\s+", "_", text)
+        text = re.sub(r"[^a-z0-9_]", "", text)
+        text = re.sub(r"_+", "_", text)
+        text = text[:30]
+        text = text.strip("_")
+        return text if text else "invalid_name"
+
     def as_dict(self):
         return {
             "name": self.name,

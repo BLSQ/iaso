@@ -619,7 +619,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.client.force_authenticate(self.yoda)
 
         parent = m.OrgUnit.objects.create(name="Country", version=self.sw_version, validation_status="VALID")
-        for i in range(3):
+        for i in range(6):
             child = m.OrgUnit.objects.create(
                 name=f"Level {i + 1}", version=self.sw_version, validation_status="VALID", parent=parent
             )
@@ -627,7 +627,7 @@ class InstancesAPITestCase(TaskAPITestCase):
 
         instance = self.create_form_instance(form=self.form_1, org_unit=parent, project=self.project)
 
-        with self.assertNumQueries(20):
+        with self.assertNumQueries(18):
             response = self.client.get(f"/api/instances/{instance.id}/")
         self.assertEqual(response.status_code, 200)
 

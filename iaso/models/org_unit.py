@@ -495,8 +495,12 @@ class OrgUnit(TreeModel):
             ),
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
-            "parent_name": self.parent.name if self.parent else None,
-            "parent": (self._get_parent_dict(light_parents, light_parents) if self.parent else None),
+            "parent_name": (
+                self._prefetched_ancestors[self.parent_id].name
+                if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors
+                else (self.parent.name if self.parent_id else None)
+            ),
+            "parent": (self._get_parent_dict(light_parents, light_parents) if self.parent_id else None),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

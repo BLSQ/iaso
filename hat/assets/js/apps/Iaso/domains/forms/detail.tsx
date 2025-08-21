@@ -254,7 +254,7 @@ const FormDetail: FunctionComponent = () => {
                         <Button
                             data-id="form-detail-cancel"
                             className={classes.marginLeft}
-                            disabled={isNew ? false : !isFormModified}
+                            disabled={!isNew && !isFormModified}
                             variant="contained"
                             onClick={handleCancel}
                         >

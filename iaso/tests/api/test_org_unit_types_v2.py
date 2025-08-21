@@ -414,6 +414,30 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.delete(f"{self.BASE_URL}{self.org_unit_type_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
+    def test_org_unit_type_delete_with_associated_org_units(self):
+        """DELETE /orgunittypes/<org_unit_type_id> with associated org units should fail"""
+        m.OrgUnit.objects.create(
+            name="Test OU 1",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            version=self.version_1,
+        )
+        m.OrgUnit.objects.create(
+            name="Test OU 2",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+            version=self.version_1,
+        )
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.delete(f"{self.BASE_URL}{self.org_unit_type_1.id}/", format="json")
+
+        self.assertIn(response.status_code, [400])
+
+        # Verify the org unit type still exists
+        self.org_unit_type_1.refresh_from_db()
+        self.assertIsNotNone(self.org_unit_type_1.id)
+
     def test_org_unit_type_dropdown(self):
         # Default path that returns all OUTs to which the user has access
         self.client.force_authenticate(self.jane)

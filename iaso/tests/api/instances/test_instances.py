@@ -612,6 +612,25 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 3)
 
+    def test_instance_details_retrieve(self):
+        """
+        GET /instances/{instanceid}/ shouldn't have N+1 queries with deep org unit hierarchy.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        parent = m.OrgUnit.objects.create(name="Country", version=self.sw_version, validation_status="VALID")
+        for i in range(3):
+            child = m.OrgUnit.objects.create(
+                name=f"Level {i + 1}", version=self.sw_version, validation_status="VALID", parent=parent
+            )
+            parent = child
+
+        instance = self.create_form_instance(form=self.form_1, org_unit=parent, project=self.project)
+
+        with self.assertNumQueries(20):
+            response = self.client.get(f"/api/instances/{instance.id}/")
+        self.assertEqual(response.status_code, 200)
+
     def test_instance_details_by_id_ok_soft_deleted(self):
         """GET /instances/{instanceid}/"""
 

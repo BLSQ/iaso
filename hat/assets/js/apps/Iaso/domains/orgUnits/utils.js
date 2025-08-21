@@ -151,14 +151,6 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getOrgUnitProjects = orgUnit => (
-    <span>
-        {orgUnit.projects?.length > 0
-            ? orgUnit.projects.map(project => project.name).join(', ')
-            : textPlaceholder}
-    </span>
-);
-
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];
     links?.forEach(l => {

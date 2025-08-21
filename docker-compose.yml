@@ -46,6 +46,7 @@ services:
             DISABLE_PASSWORD_LOGINS:
             DNS_DOMAIN:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
+            ENABLE_ANALYTICS:
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
             ENKETO_SIGNING_SECRET: supersecret
@@ -87,7 +88,6 @@ services:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
-            ENABLE_ANALYTICS:
         logging: &iaso_logging
             driver: 'json-file'
             options:

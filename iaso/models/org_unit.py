@@ -511,7 +511,9 @@ class OrgUnit(TreeModel):
             "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
-            res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
+            res["groups"] = sorted(
+                [group.as_dict(with_counts=False) for group in self.groups.all()], key=lambda x: x["id"]
+            )
             res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
             res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
             res["source"] = self.version.data_source.name if self.version else None

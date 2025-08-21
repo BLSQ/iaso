@@ -693,6 +693,7 @@
     "iaso.label.operationType": "Type d'opération",
     "iaso.label.orgUnit": "Unités d'org.",
     "iaso.label.orgUnitChangeRequestConfigurations": "Configuration des demandes de changement",
+    "iaso.label.orgUnitCount": "Unité(s) d'org.",
     "iaso.label.orgUnitList": "Liste d'unité d'organisation",
     "iaso.label.orgUnitParent": "Parent {index}",
     "iaso.label.orgunitreferenceinstance": "Soumission de référence",

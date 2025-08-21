@@ -692,6 +692,24 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidOrgUnitData(response.json())
         self.assertEqual(response.data["reference_instances"], [])
 
+    def test_org_unit_retrieve_with_deep_hierarchy(self):
+        """
+        GET /orgunits/<org_unit_id>/ shouldn't have N+1 queries with deep hierarchy.
+        """
+        self.client.force_authenticate(self.yoda)
+
+        parent = self.jedi_council_corruscant
+        for i in range(3):
+            child = m.OrgUnit.objects.create(
+                name=f"Deep Level {i + 1}", version=parent.version, validation_status="VALID", parent=parent
+            )
+            parent = child
+
+        with self.assertNumQueries(15):
+            response = self.client.get(f"/api/orgunits/{parent.id}/")
+
+        self.assertEqual(response.status_code, 200)
+
     def test_org_unit_retrieve_geo_json(self):
         org_unit = self.jedi_squad_endor
 

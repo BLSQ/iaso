@@ -17,7 +17,7 @@ import iaso.permissions as core_permissions
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
-from iaso.models import Form, FormAttachment, OrgUnit, OrgUnitType, Project, FormVersion
+from iaso.models import Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
@@ -47,7 +47,6 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
 
 
 class FormVersionNestedSerializer(serializers.ModelSerializer):
-
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 

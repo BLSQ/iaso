@@ -1252,6 +1252,8 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "period": self.period,
             "project_name": self.project.name if self.project else None,
+            "project_color": self.project.color if self.project else None,
+            "project_id": self.project.id if self.project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (

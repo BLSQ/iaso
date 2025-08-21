@@ -27,7 +27,7 @@ from iaso.models.org_unit import OrgUnitQuerySet
 class NestedProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ["id", "name"]
+        fields = ["id", "name", "color"]
 
 
 class NestedTeamSerializer(serializers.ModelSerializer):

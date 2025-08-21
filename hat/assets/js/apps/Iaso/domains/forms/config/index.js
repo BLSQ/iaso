@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
@@ -134,7 +135,7 @@ export const useFormsTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.projects),
                 accessor: 'projects',
-                Cell: settings => settings.value.map(p => p.name).join(', '),
+                Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {
                 Header: formatMessage(MESSAGES.name),

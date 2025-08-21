@@ -1,12 +1,12 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Box, Chip, Switch } from '@mui/material';
+import { Box, Switch } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
 import { FeatureFlagToggleCell } from './components/FeatureFlagsToggleCell';
 import { FeatureFlagTooltipCell } from './components/FeatureFlagTooltipCell';
+import { ProjectChip } from './components/ProjectChip';
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
 import { FeatureFlag } from './types/featureFlag';
@@ -23,20 +23,7 @@ export const useColumns = (
                 Header: formatMessage(MESSAGES.projectName),
                 accessor: 'name',
                 Cell: settings => {
-                    const textColor = Color(
-                        settings.row.original.color,
-                    ).isDark()
-                        ? 'white'
-                        : 'black';
-                    return (
-                        <Chip
-                            label={settings.row.original.name}
-                            sx={{
-                                backgroundColor: settings.row.original.color,
-                                color: textColor,
-                            }}
-                        />
-                    );
+                    return <ProjectChip project={settings.row.original} />;
                 },
             },
             {

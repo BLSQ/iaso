@@ -317,11 +317,12 @@ class OrgUnit(TreeModel):
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
-    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
     default_image = models.ForeignKey(
         "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
     )
     code = models.TextField(blank=True, db_index=True)  # DHIS2 code
+
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
         indexes = [
@@ -495,11 +496,7 @@ class OrgUnit(TreeModel):
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": (
-                self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-                if self.parent
-                else None
-            ),
+            "parent": (self._get_parent_dict(light_parents, light_parents) if self.parent else None),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
@@ -521,6 +518,7 @@ class OrgUnit(TreeModel):
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
             res["version_id"] = self.version.id if self.version else None
+
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 
@@ -528,6 +526,13 @@ class OrgUnit(TreeModel):
             res["instances_count"] = self.instances_count
 
         return res
+
+    def _get_parent_dict(self, light=False, light_parents=True):
+        if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors:
+            parent = self._prefetched_ancestors[self.parent_id]
+            parent._prefetched_ancestors = self._prefetched_ancestors
+            return parent.as_dict_with_parents(light=light, light_parents=light_parents)
+        return self.parent.as_dict_with_parents(light=light, light_parents=light_parents)
 
     def as_small_dict(self):
         res = {

@@ -521,8 +521,7 @@ Test and serving forms from Iaso mobile application
 To test your forms on the mobile app follow those steps:
 
 ### 1 - Setup Ngrok
-Download and setup Ngrok on https://ngrok.com/. Once Ngrok installed and running you must add your ngrok server url
-to your environment variables (```FILE_SERVER_URL```)
+Download and setup Ngrok on https://ngrok.com/. Start it with `ngrok http 8081`.
 
 ### 2 - Set up the mobile app
 Once Ngrok installed and running you have to run the app in developer mode (tap 10 times on the Iaso icon at start ) and connect the mobile app to your server
@@ -535,7 +534,6 @@ Testing and service forms from Iaso App In Android Studio Emulator
 
 In this case you don't need Ngrok, the emulator considers that `10.0.2.2` points to `127.0.0.1` on the computer running the emulator, so if you have for example your django server running on `http://127.0.0.1:8001` (In android emulator this becomes `http://10.0.2.2:8001`
 
-You can just add to your environment variables the following: `FILE_SERVER_URL="http://10.0.2.2:8001"`
 
 SSO with DHIS2
 --------------------------

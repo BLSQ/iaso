@@ -17,7 +17,7 @@ import iaso.permissions as core_permissions
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
-from iaso.models import Form, FormAttachment, OrgUnit, OrgUnitType, Project
+from iaso.models import Form, FormAttachment, OrgUnit, OrgUnitType, Project, FormVersion
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
@@ -44,6 +44,16 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
             .filter(id=obj.id)
             .exists()
         )
+
+
+class FormVersionNestedSerializer(serializers.ModelSerializer):
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
+    class Meta:
+        model = FormVersion
+        fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -132,7 +142,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
     )
-    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
+    latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     predefined_filters = FormPredefinedFilterSerializer(many=True)
@@ -143,10 +153,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
     possible_fields_with_latest_version = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):

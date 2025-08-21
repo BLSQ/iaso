@@ -900,7 +900,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 geo_queryset = self.get_queryset().filter(id=ancestor.id)
                 ancestor_dict["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
                 break
-            ancestor = ancestor.parent
+            ancestor = ancestors_dict.get(ancestor.parent_id) if ancestor.parent_id else None
             ancestor_dict = ancestor_dict["parent"]
 
         res["geo_json"] = None

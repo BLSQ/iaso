@@ -699,13 +699,13 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         parent = self.jedi_council_corruscant
-        for i in range(3):
+        for i in range(6):
             child = m.OrgUnit.objects.create(
                 name=f"Deep Level {i + 1}", version=parent.version, validation_status="VALID", parent=parent
             )
             parent = child
 
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(13):
             response = self.client.get(f"/api/orgunits/{parent.id}/")
 
         self.assertEqual(response.status_code, 200)

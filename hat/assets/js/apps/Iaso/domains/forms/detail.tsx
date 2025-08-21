@@ -206,11 +206,7 @@ const FormDetail: FunctionComponent = () => {
     );
 
     const handleCancel = useCallback(() => {
-        if (isNew) {
-            goBack();
-        } else {
-            handleReset();
-        }
+        isNew ? goBack() : handleReset();
     }, [goBack, handleReset, isNew]);
 
     const handleChangeTab = (newTab: string) => {

@@ -7,6 +7,7 @@ from .entity import Entity, EntityType
 from .feature_flags import FeatureFlag, ProjectFeatureFlags
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
+from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
 from .metric import MetricType, MetricValue
 from .microplanning import Planning, Team
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitType
@@ -46,6 +47,7 @@ __all__ = [
     "FormVersion",
     "ImportGPKG",
     "Instance",
+    "InstanceLock",
     "InstanceFile",
     "InstanceQuerySet",
     "MetricType",

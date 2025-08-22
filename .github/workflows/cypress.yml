@@ -158,19 +158,14 @@ jobs:
                   node-version: '22.18.0'
                   cache: npm
 
-            - name: Cache dependencies
-              id: cache
-              uses: actions/cache@v4
-              with:
-                  path: ./node_modules
-                  key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
-
             - name: upgrade npm
               run: |
                   npm install --global npm@10.9.3
 
             - run: npm ci
-              if: steps.cache.outputs.cache-hit != 'true'
+
+            - name: Install Cypress binary
+              run: npx cypress install
 
             - name: Wait for server to be ready
               run: |

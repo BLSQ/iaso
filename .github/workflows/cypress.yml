@@ -130,8 +130,6 @@ jobs:
                     PLUGINS: polio
                 ports:
                     - 8081:8081
-                # Health check to ensure the server is ready
-                options: --health-cmd "curl -f http://localhost:8081/ || exit 1" --health-interval 10s --health-timeout 5s --health-retries 5
         steps:
             - name: Checkout repository (dispatch)
               uses: actions/checkout@v4
@@ -178,15 +176,35 @@ jobs:
               run: |
                 echo "Waiting for server to be ready..."
                 for i in {1..30}; do
-                  if curl -f http://localhost:8081/ > /dev/null 2>&1; then
-                    echo "Server is ready!"
-                    break
+                  # Try curl first, fallback to wget if curl not available
+                  if command -v curl >/dev/null 2>&1; then
+                    if curl -f http://localhost:8081/ > /dev/null 2>&1; then
+                      echo "Server is ready!"
+                      break
+                    fi
+                  elif command -v wget >/dev/null 2>&1; then
+                    if wget --no-verbose --tries=1 --spider http://localhost:8081/ > /dev/null 2>&1; then
+                      echo "Server is ready!"
+                      break
+                    fi
+                  else
+                    # Fallback: try to connect using /dev/tcp (bash built-in)
+                    if timeout 5 bash -c "</dev/tcp/localhost/8081" 2>/dev/null; then
+                      echo "Server is ready!"
+                      break
+                    fi
                   fi
                   echo "Attempt $i/30: Server not ready, waiting 2 seconds..."
                   sleep 2
                 done
                 # Final check
-                curl -f http://localhost:8081/ || (echo "Server failed to start" && exit 1)
+                if command -v curl >/dev/null 2>&1; then
+                  curl -f http://localhost:8081/ || (echo "Server failed to start" && exit 1)
+                elif command -v wget >/dev/null 2>&1; then
+                  wget --no-verbose --tries=1 --spider http://localhost:8081/ || (echo "Server failed to start" && exit 1)
+                else
+                  timeout 5 bash -c "</dev/tcp/localhost/8081" || (echo "Server failed to start" && exit 1)
+                fi
 
             - name: Run Cypress tests
               run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'

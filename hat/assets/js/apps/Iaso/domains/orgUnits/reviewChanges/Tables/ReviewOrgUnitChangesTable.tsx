@@ -52,7 +52,7 @@ const useColumns = (): Column[] => {
                 id: 'projects',
                 accessor: 'projects',
                 sortable: false,
-                width: 250,
+                width: 300,
                 Cell: ({
                     row: { original: changeRequest },
                 }: ColumnCell<OrgUnitChangeRequest>): ReactElement | string => {

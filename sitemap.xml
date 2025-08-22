@@ -25,6 +25,14 @@
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/index.html"/>
     </url>
     <url>
+        <loc>Nonedecisions/0000-use-one-api-endpoint-per-operation.html</loc>
+        <lastmod>2025-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+    </url>
+    <url>
         <loc>Nonepages/dev/how_to/add_new_permission/add_new_permission.html</loc>
         <lastmod>2025-08-22</lastmod>
         <changefreq>daily</changefreq>
@@ -521,6 +529,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/index.html"/>
     </url>
     <url>
+        <loc>Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html</loc>
+        <lastmod>2025-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+    </url>
+    <url>
         <loc>Nonefr/pages/dev/how_to/add_new_permission/add_new_permission.html</loc>
         <lastmod>2025-08-22</lastmod>
         <changefreq>daily</changefreq>
@@ -1015,6 +1031,14 @@
         <xhtml:link rel="alternate" hreflang="es" href="Nonees/index.html"/>
         <xhtml:link rel="alternate" hreflang="en" href="Noneindex.html"/>
         <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/index.html"/>
+    </url>
+    <url>
+        <loc>Nonees/decisions/0000-use-one-api-endpoint-per-operation.html</loc>
+        <lastmod>2025-08-22</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="es" href="Nonees/decisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedecisions/0000-use-one-api-endpoint-per-operation.html"/>
+        <xhtml:link rel="alternate" hreflang="fr" href="Nonefr/decisions/0000-use-one-api-endpoint-per-operation.html"/>
     </url>
     <url>
         <loc>Nonees/pages/dev/how_to/add_new_permission/add_new_permission.html</loc>

@@ -15,6 +15,8 @@ export default function DeleteDialog({
     disabled,
     keyName,
     iconColor,
+    Trigger,
+    triggerProps,
 }) {
     const closeThenOnConfirm = useCallback(
         closeDialog => {
@@ -33,17 +35,21 @@ export default function DeleteDialog({
             titleMessage={titleMessage}
             dataTestId={`delete-dialog-${keyName}`}
             onConfirm={closeThenOnConfirm}
-            renderTrigger={({ openDialog }) => (
-                <IconButtonComponent
-                    onClick={openDialog}
-                    dataTestId={`delete-dialog-button-${keyName}`}
-                    disabled={disabled}
-                    icon="delete"
-                    tooltipMessage={MESSAGES.delete}
-                    color={iconColor}
-                    {...iconButtonExtraProps}
-                />
-            )}
+            renderTrigger={({ openDialog }) =>
+                Trigger ? (
+                    <Trigger onClick={openDialog} {...triggerProps} />
+                ) : (
+                    <IconButtonComponent
+                        onClick={openDialog}
+                        dataTestId={`delete-dialog-button-${keyName}`}
+                        disabled={disabled}
+                        icon="delete"
+                        tooltipMessage={MESSAGES.delete}
+                        color={iconColor}
+                        {...iconButtonExtraProps}
+                    />
+                )
+            }
         >
             <div id={`delete-dialog-${keyName}`}>
                 {message && (
@@ -61,6 +67,8 @@ DeleteDialog.defaultProps = {
     keyName: 'key',
     message: null,
     iconColor: 'action',
+    Trigger: null,
+    triggerProps: {},
 };
 DeleteDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,
@@ -69,4 +77,6 @@ DeleteDialog.propTypes = {
     disabled: PropTypes.bool,
     keyName: PropTypes.string,
     iconColor: PropTypes.string,
+    Trigger: PropTypes.elementType,
+    triggerProps: PropTypes.object,
 };

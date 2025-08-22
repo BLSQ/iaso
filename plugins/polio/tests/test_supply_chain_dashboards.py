@@ -257,6 +257,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         vrf1 = results[0]
 
         # Check if the latest dates are returned
+        self.assertEqual(vrf1["id"], self.vrf.id)
         self.assertEqual(vrf1["form_a_reception_date"], str(self.form_a.form_a_reception_date))
         self.assertEqual(
             vrf1["destruction_report_reception_date"],
@@ -266,5 +267,6 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         vrf2 = results[1]
 
         # Check if the latest dates are returned
+        self.assertEqual(vrf2["id"], new_vrf.id)
         self.assertEqual(vrf2["form_a_reception_date"], str(new_forma.form_a_reception_date))
         self.assertEqual(vrf2["destruction_report_reception_date"], str(last_dr.rrt_destruction_report_reception_date))

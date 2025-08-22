@@ -24,7 +24,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
+from django.db.models import Case, Count, Exists, F, FilteredRelation, Func, OuterRef, Q, When
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -145,6 +145,8 @@ class Account(models.Model):
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
+    # analytics_script is no longer used (replaced by the plausible setup) - it's kept in case we need another
+    # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
 
@@ -440,15 +442,7 @@ class Link(models.Model):
         }
 
 
-GROUP_DOMAIN = [
-    ("POLIO", _("Polio")),
-]
-
-
-class DefaultGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain=None)
-
+class GroupQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
         queryset = self
@@ -461,11 +455,6 @@ class DefaultGroupManager(models.Manager):
         return queryset
 
 
-class DomainGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain__isnull=False)
-
-
 class Group(models.Model):
     """Group of OrgUnit.
 
@@ -474,7 +463,6 @@ class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
-    domain = models.CharField(max_length=10, choices=GROUP_DOMAIN, null=True, blank=True)
     block_of_countries = models.BooleanField(
         default=False
     )  # This field is used to mark a group containing only countries
@@ -484,12 +472,7 @@ class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultGroupManager()
-    all_objects = models.Manager()
-    domain_objects = DomainGroupManager()
-
-    class Meta:
-        base_manager_name = "all_objects"
+    objects = models.Manager.from_queryset(GroupQuerySet)()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
@@ -1774,7 +1757,37 @@ class ExportStatus(models.Model):
         return "ExportStatus " + str(self.id)
 
 
+class FeatureFlagQuerySet(models.QuerySet):
+    category_order = [
+        "DCO",
+        "REO",
+        "GEO",
+        "DAV",
+        "ENT",
+        "PLA",
+        "SPO",
+        "NA",
+    ]
+
+    def order_by_category_then_order(self):
+        category_ordering = Case(
+            *[When(category=cat, then=pos) for pos, cat in enumerate(self.category_order)],
+            output_field=models.IntegerField(),
+        )
+        return self.annotate(category_order=category_ordering).order_by("category_order", "order")
+
+
 class FeatureFlag(models.Model):
+    class FeatureFlagCategory(models.TextChoices):
+        DATA_COLLECTION_OPTIONS = "DCO", _("Data collection options")
+        REFRESH_OPTIONS = "REO", _("Refresh options")
+        GEOGRAPHIC_OPTIONS = "GEO", _("Geographic options")
+        DATA_VALIDATION = "DAV", _("Data Validation")
+        ENTITIES = "ENT", _("Entities")
+        PLANNING = "PLA", _("Planning")
+        SPECIFIC_OPTIONS = "SPO", _("Specific options")
+        NA = "NA", _("Not specified")
+
     INSTANT_EXPORT = "INSTANT_EXPORT"
     TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
@@ -1817,8 +1830,12 @@ class FeatureFlag(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
+    category = models.TextField(choices=FeatureFlagCategory.choices, default=FeatureFlagCategory.NA)
+    order = models.PositiveSmallIntegerField(default=0)
+    is_dangerous = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = FeatureFlagQuerySet.as_manager()
 
     def __str__(self):
         return self.name

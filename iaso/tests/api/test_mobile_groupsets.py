@@ -114,7 +114,8 @@ class MobileGroupSetsAPITestCase(APITestCase):
         }
 
         # Groups with `source_version_1`.
-        response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_cameroon.app_id})
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_cameroon.app_id})
         self.assertJSONResponse(response, 200)
         self.assertEqual(json.dumps(response.data), json.dumps([record_cameroon]))
 
@@ -136,7 +137,8 @@ class MobileGroupSetsAPITestCase(APITestCase):
 
         # Groups with `source_version_2`.
         ## Without all versions
-        response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_nigeria.app_id})
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/mobile/group_sets/", {APP_ID: self.project_nigeria.app_id})
         self.assertEqual(json.dumps(response.data), json.dumps([record_nigeria, record_nigeria_2]))
 
     def test_api_mobile_groupsets_list_with_app_id_and_authenticated(self):

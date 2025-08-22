@@ -73,7 +73,7 @@ More documentation on the Front End part is present in
 Data Model / Glossary
 ---------------------
 
-Some terminology in Iaso come from DHIS2, some from ODK which mean that it can be a bit confusing.
+IASO inspired its terminology both from ODK and from DHIS2.
 We will highlight some equivalences that might help you.
 
 This is not (yet) the complete Data Model, but here are the main concepts/model in Iaso:
@@ -676,6 +676,7 @@ APP_TITLE="<app_title>"
 FAVICON_PATH="<path_in_static_folder>"
 LOGO_PATH="<path_in_static_folder>"
 SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
+HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 ```
 
 > **note**

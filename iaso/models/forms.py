@@ -286,6 +286,12 @@ class FormVersion(models.Model):
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_created_set"
+    )
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_updated_set"
+    )
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
     possible_fields = models.JSONField(

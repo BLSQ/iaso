@@ -21,6 +21,8 @@ from django.utils import timezone
 from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
+import iaso.permissions as core_permissions
+
 from hat.api_import.models import APIImport
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
@@ -46,11 +48,15 @@ class IasoTestCaseMixin:
 
         if permissions is not None:
             content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+            core_permission_models = core_permissions.permission_models
+            for model in core_permission_models:
+                content_types.append(ContentType.objects.get_for_model(model))
 
             for plugin in settings.PLUGINS:
                 try:
-                    permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
-                    content_types.append(ContentType.objects.get_for_model(permission_model))
+                    plugin_permission_models = import_module(f"plugins.{plugin}.permissions").permission_models
+                    for model in plugin_permission_models:
+                        content_types.append(ContentType.objects.get_for_model(model))
                 except ImportError:
                     pass
 
@@ -126,14 +132,14 @@ class IasoTestCaseMixin:
         clear_url_caches()
 
     @staticmethod
-    def create_base_users(account, permissions):
+    def create_base_users(account, permissions, user_name="user"):
         # anonymous user and user without needed permissions
         anon = AnonymousUser()
         user_no_perms = IasoTestCaseMixin.create_user_with_profile(
-            username="user_no_perm", account=account, permissions=[]
+            username=f"{user_name}_no_perm", account=account, permissions=[]
         )
 
-        user = IasoTestCaseMixin.create_user_with_profile(username="user", account=account, permissions=permissions)
+        user = IasoTestCaseMixin.create_user_with_profile(username=user_name, account=account, permissions=permissions)
         return [user, anon, user_no_perms]
 
     @staticmethod

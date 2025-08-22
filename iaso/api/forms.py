@@ -12,15 +12,16 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from hat.menupermissions import models as permission
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
 from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
-from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
@@ -32,7 +33,7 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
 
-        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
+        return request.user.is_authenticated and request.user.has_perm(core_permissions.FORMS)
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -243,7 +244,7 @@ class FormsViewSet(ModelViewSet):
     f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{permission.FORMS}"  permission.
+    having the "{core_permissions.FORMS}"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -539,4 +540,9 @@ def generate_manifest_structure(content: list[str]) -> str:
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset(mobile=True).exclude(form_versions=None)
+        return (
+            super()
+            .get_queryset(mobile=True)
+            .exclude(form_versions=None)
+            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
+        )

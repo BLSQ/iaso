@@ -13,9 +13,9 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import get from 'lodash/get';
 
-import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { useGetFeatureFlags } from '../hooks/requests';
 import MESSAGES from '../messages';

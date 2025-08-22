@@ -44,6 +44,7 @@ export const useGetProjectsDropdownOptions = (
                     return {
                         value: asString ? project.id?.toString() : project.id,
                         label: project.name,
+                        color: project.color,
                     };
                 });
             },

@@ -152,7 +152,8 @@ class FormsVersionAPITestCase(APITestCase):
         """GET /formversions/: allowed"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get("/api/formversions/")
+        with self.assertNumQueries(2):
+            response = self.client.get("/api/formversions/")
         self.assertJSONResponse(response, 200)
         form_versions_data = response.json()["form_versions"]
 
@@ -172,12 +173,14 @@ class FormsVersionAPITestCase(APITestCase):
 
     def test_form_versions_update(self):
         """PUT /formversions/<form_id>: ok"""
+        form_version = self.form_2.form_versions.first()
+        self.assertIsNone(form_version.updated_by)
         self.client.force_authenticate(self.yoda)
 
         start_period = "BIG BANG"
         end_period = "DOOMSDAY"
         response = self.client.put(
-            f"/api/formversions/{self.form_2.form_versions.first().id}/",
+            f"/api/formversions/{form_version.id}/",
             data={
                 "end_period": end_period,
                 "form_id": self.form_2.id,
@@ -189,9 +192,25 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["start_period"], start_period)
         self.assertEqual(response_data["end_period"], end_period)
+        # checking what is returned by the serializer
+        self.assertEqual(
+            response_data["updated_by"],
+            {
+                "id": self.yoda.id,
+                "username": self.yoda.username,
+                "first_name": self.yoda.first_name,
+                "last_name": self.yoda.last_name,
+            },
+        )
+
+        # checking result in DB
+        form_version.refresh_from_db()
+        self.assertEqual(form_version.updated_by, self.yoda)
 
     def test_form_versions_patch(self):
         """PUT /formversions/<form_id>: ok"""
+        form_version = self.form_2.form_versions.first()
+        self.assertIsNone(form_version.updated_by)
         self.client.force_authenticate(self.yoda)
 
         start_period = "BIG BANG"
@@ -209,6 +228,9 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["start_period"], start_period)
         self.assertEqual(response_data["end_period"], end_period)
+
+        form_version.refresh_from_db()
+        self.assertEqual(form_version.updated_by, self.yoda)
 
     def test_form_versions_destroy(self):
         """DELETE /formversions/<form_id>: not authorized for now"""
@@ -242,6 +264,8 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
         self.assertRegex(created_version.xls_file.name, r"forms/new_land_speeder_concept_2020022401(.*).xlsx")
+        self.assertEqual(created_version.created_by, self.yoda)
+        self.assertEqual(created_version.updated_by, self.yoda)
 
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)

@@ -227,7 +227,7 @@ const Instances = () => {
                         </Tooltip>
                     </Box>
                 )}
-                {showTable && isSearchActive && (
+                {showTable && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}
                         pages={data?.pages}
@@ -256,6 +256,11 @@ const Instances = () => {
                         extraProps={{
                             loading: fetchingList,
                         }}
+                        noDataMessage={
+                            !isSearchActive
+                                ? MESSAGES.searchToSeeSubmissions
+                                : undefined
+                        }
                     />
                 )}
                 {tab === 'map' && (

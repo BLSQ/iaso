@@ -204,6 +204,12 @@ const FormDetail: FunctionComponent = () => {
             formatMessage,
         ],
     );
+
+    const handleCancel = useCallback(
+        () => (isNew ? goBack() : handleReset()),
+        [goBack, handleReset, isNew],
+    );
+
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
         const newParams = {
@@ -249,9 +255,9 @@ const FormDetail: FunctionComponent = () => {
                         <Button
                             data-id="form-detail-cancel"
                             className={classes.marginLeft}
-                            disabled={!isFormModified}
+                            disabled={!isNew && !isFormModified}
                             variant="contained"
-                            onClick={() => handleReset()}
+                            onClick={handleCancel}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>

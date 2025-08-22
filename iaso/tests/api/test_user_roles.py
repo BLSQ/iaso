@@ -146,7 +146,7 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["name"], payload["name"])
-        self.assertEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
+        self.assertCountEqual(r["editable_org_unit_type_ids"], [self.org_unit_type.id, new_org_unit_type.id])
 
     def test_partial_update_no_permission(self):
         self.client.force_authenticate(self.user_with_no_permissions)

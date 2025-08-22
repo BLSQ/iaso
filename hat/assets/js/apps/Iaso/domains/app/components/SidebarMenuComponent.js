@@ -27,7 +27,7 @@ import { baseUrls } from '../../../constants/urls.ts';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useSidebar } from '../contexts/SideBarContext.tsx';
-import { Logo } from './Logo.tsx';
+import { LogoAndTitle } from './LogoAndTitle.tsx';
 import MenuItem from './MenuItemComponent';
 
 import MESSAGES from './messages';
@@ -38,7 +38,7 @@ const styles = theme => ({
         ...theme.mixins.toolbar,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
         height: 90,
@@ -102,7 +102,7 @@ const SidebarMenu = ({ classes, location }) => {
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
                 <Link className={classes.homeLink} to={`/${baseUrls.home}`}>
-                    <Logo />
+                    <LogoAndTitle />
                 </Link>
                 <IconButton
                     className={classes.menuButton}

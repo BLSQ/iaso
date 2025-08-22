@@ -153,7 +153,11 @@ class MultiTenantTestCase(APITestCase):
 
         # now uploading the file content, so that it will appear in /instances/ for the Star Wars account
         with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as fp:
-            c.post("/sync/form_upload/", {"name": "hydroponics_test_upload.xml", "xml_submission_file": fp})
+            c.post(
+                "/sync/form_upload/",
+                {"name": "hydroponics_test_upload.xml", "xml_submission_file": fp},
+                format="multipart",
+            )
 
         response = yoda_client.get("/api/instances/", accept="application/json")
         self.assertEqual(response.status_code, 200)  # yoda authorized to see Star Wars data

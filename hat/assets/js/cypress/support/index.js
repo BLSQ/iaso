@@ -22,6 +22,12 @@ import 'cypress-file-upload';
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
+// Global before hook to ensure server is ready
+before(() => {
+    // Wait for server to be ready before any tests start
+    cy.waitForServer();
+});
+
 Cypress.on('uncaught:exception', (err, _runnable, _promise) => {
     if (
         err.message.includes('AbortError') ||

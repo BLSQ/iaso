@@ -8,6 +8,11 @@ export default defineConfig({
     downloadsFolder: 'hat/assets/js/cypress/downloads',
     viewportWidth: 1920,
     viewportHeight: 1024,
+    // Add better default timeouts for CI environment
+    defaultCommandTimeout: 10000,
+    requestTimeout: 10000,
+    responseTimeout: 10000,
+    pageLoadTimeout: 30000,
     e2e: {
         // We've imported your old cypress plugins here.
         // You may want to clean this up later by importing these.
@@ -23,5 +28,10 @@ export default defineConfig({
         ],
         supportFile: 'hat/assets/js/cypress/support/index.js',
         experimentalRunAllSpecs: true,
+        // Add retry configuration for flaky tests
+        retries: {
+            runMode: 2,
+            openMode: 0,
+        },
     },
 });

@@ -104,16 +104,19 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
     def get_creator(self, org_unit):
-        creator = None
-        if org_unit.creator is not None:
-            creator = f"{org_unit.creator.username}"
-            if org_unit.creator.first_name:
-                creator = f"{creator} ({org_unit.creator.first_name}"
-            if org_unit.creator.last_name:
-                creator = f"{creator}{org_unit.creator.last_name})"
-            elif org_unit.creator.first_name:
-                creator = f"{creator})"
-        return creator
+        if not org_unit.creator:
+            return None
+
+        username = org_unit.creator.username
+        first_name = org_unit.creator.first_name
+        last_name = org_unit.creator.last_name
+        if first_name and last_name:
+            return f"{username} ({first_name} {last_name})"
+        if first_name:
+            return f"{username} ({first_name})"
+        if last_name:
+            return f"{username} ({last_name})"
+        return username
 
     def get_projects(self, org_unit):
         return [project.as_dict() for project in org_unit.org_unit_type.projects.all()]

@@ -961,6 +961,9 @@ BEANSTALK_SQS_URL
 </tr>
 </tbody>
 </table>
+<h1 id="compression">Compression<a class="headerlink" href="#compression" title="Permanent link">#</a></h1>
+<p>You can enable compression of responses using the django middleware <code>GZipMiddleware</code> by setting the environment variable <code>ENABLE_GZIP</code> to <code>"true"</code>.
+Default is <code>"false"</code> since it is generally better to do compression at the web server level (e.g., Nginx or Apache).</p>
 <h1 id="security-settings">Security Settings<a class="headerlink" href="#security-settings" title="Permanent link">#</a></h1>
 <h2 id="django-settings">Django settings<a class="headerlink" href="#django-settings" title="Permanent link">#</a></h2>
 <p>Iaso allows to set some of Django security settings as environment variable. To activate these features

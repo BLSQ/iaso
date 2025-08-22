@@ -19,7 +19,7 @@
     
     
       
-        <title>Env variables - IASO</title>
+        <title>Variables d'environnement - IASO</title>
       
     
     
@@ -73,7 +73,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#traduction-francaise-bientot-disponible" class="md-skip">
+        <a href="#variables-denvironnement" class="md-skip">
           Aller au contenu
         </a>
       
@@ -107,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Env variables
+              Variables d'environnement
             
           </span>
         </div>
@@ -475,14 +475,16 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
-          Env variables
+          Variables d'environnement
           <span class="md-nav__icon md-icon"></span>
         </label>
       
       <a href="env_variables.html" class="md-nav__link md-nav__link--active">
-        Env variables
+        Variables d'environnement
       </a>
       
         
@@ -490,6 +492,8 @@
 <nav class="md-nav md-nav--secondary" aria-label="Table des matières">
   
   
+  
+    
   
   
     <label class="md-nav__title" for="__toc">
@@ -499,8 +503,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#traduction-francaise-bientot-disponible" class="md-nav__link">
-    Traduction française bientôt disponible
+  <a href="#connexion-a-la-base-de-donnees" class="md-nav__link">
+    Connexion à la base de données
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liees-a-aws" class="md-nav__link">
+    Liées à AWS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liees-a-clamav" class="md-nav__link">
+    Liées à ClamAV
   </a>
   
 </li>
@@ -771,6 +789,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -779,8 +799,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#traduction-francaise-bientot-disponible" class="md-nav__link">
-    Traduction française bientôt disponible
+  <a href="#connexion-a-la-base-de-donnees" class="md-nav__link">
+    Connexion à la base de données
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liees-a-aws" class="md-nav__link">
+    Liées à AWS
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#liees-a-clamav" class="md-nav__link">
+    Liées à ClamAV
   </a>
   
 </li>
@@ -809,9 +843,222 @@
   
 
 
-  <h1>Env variables</h1>
-
-<h2 id="traduction-francaise-bientot-disponible">Traduction française bientôt disponible<a class="headerlink" href="#traduction-francaise-bientot-disponible" title="Permanent link">#</a></h2>
+<h1 id="variables-denvironnement">Variables d'environnement<a class="headerlink" href="#variables-denvironnement" title="Permanent link">#</a></h1>
+<h2 id="connexion-a-la-base-de-donnees">Connexion à la base de données<a class="headerlink" href="#connexion-a-la-base-de-donnees" title="Permanent link">#</a></h2>
+<p>L'URL est construite à partir des variables d'environnement suivantes :</p>
+<ul>
+<li><code>RDS_USERNAME</code></li>
+<li><code>RDS_PASSWORD</code></li>
+<li><code>RDS_HOSTNAME</code></li>
+<li><code>RDS_DB_NAME</code></li>
+<li><code>RDS_PORT</code></li>
+</ul>
+<p>Le tableau de bord SQL utilise un utilisateur et un mot de passe dédiés avec un accès en <strong>lecture seule</strong> aux données :</p>
+<ul>
+<li><code>DB_READONLY_USERNAME</code></li>
+<li><code>DB_READONLY_PASSWORD</code></li>
+</ul>
+<h2 id="liees-a-aws">Liées à AWS<a class="headerlink" href="#liees-a-aws" title="Permanent link">#</a></h2>
+<p>Le stockage des divers fichiers comme les <strong>ressources statiques</strong> (JS/CSS, etc.) et les <strong>formulaires bruts</strong> (xlsform, soumissions XML et médias) se fait sur S3 ou via une API compatible S3 (comme MinIO).</p>
+<ul>
+<li><code>AWS_ACCESS_KEY_ID</code></li>
+<li><code>AWS_SECRET_ACCESS_KEY</code></li>
+<li><code>AWS_S3_REGION_NAME</code></li>
+<li><code>AWS_STORAGE_BUCKET_NAME</code></li>
+<li><code>AWS_S3_ENDPOINT_URL</code> : (utilisé par exemple pour pointer vers MinIO)</li>
+</ul>
+<p>Pour les <strong>tâches asynchrones</strong> :</p>
+<ul>
+<li><code>BACKGROUND_TASK_SERVICE</code> : par défaut <code>SQS</code>. Valeurs possibles : <code>SQS</code>, <code>POSTGRES</code></li>
+<li><code>BEANSTALK_SQS_REGION</code></li>
+<li><code>BEANSTALK_SQS_URL</code></li>
+</ul>
+<hr />
+<h2 id="liees-a-clamav">Liées à ClamAV<a class="headerlink" href="#liees-a-clamav" title="Permanent link">#</a></h2>
+<p>Si les variables requises ne sont pas définies, <strong>ClamAV ne sera pas configuré</strong> et Iaso ne pourra pas scanner les fichiers téléchargés.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Nom</th>
+<th align="left">Optionnel</th>
+<th align="left">Valeur par défaut</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>CLAMAV_ACTIVE</code></td>
+<td align="left">false</td>
+<td align="left"><code>False</code></td>
+<td align="left">Indique si les fichiers téléchargés doivent être scannés avec ClamAV.</td>
+</tr>
+<tr>
+<td align="left"><code>CLAMAV_FQDN</code></td>
+<td align="left">false</td>
+<td align="left"><code>www.some-url.com</code></td>
+<td align="left">Adresse que Iaso peut utiliser pour joindre ClamAV - <strong>FQDN, pas une URL complète</strong> (ex. <code>clamav.mywebsite.com</code>).</td>
+</tr>
+<tr>
+<td align="left"><code>CLAMAV_PORT</code></td>
+<td align="left">true</td>
+<td align="left"><code>3310</code></td>
+<td align="left">Port que Iaso peut utiliser pour joindre ClamAV.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="compression">Compression<a class="headerlink" href="#compression" title="Permanent link">#</a></h1>
+<p>Vous pouvez activer la <strong>compression des réponses</strong> en utilisant le middleware Django <code>GZipMiddleware</code>. Pour ce faire, définissez la variable d'environnement <code>ENABLE_GZIP</code> à <code>"true"</code>.</p>
+<p>La valeur par défaut est <code>"false"</code>, car il est généralement préférable d'effectuer la compression au niveau du serveur web (par exemple, Nginx ou Apache).</p>
+<hr />
+<h1 id="parametres-de-securite">Paramètres de sécurité<a class="headerlink" href="#parametres-de-securite" title="Permanent link">#</a></h1>
+<h2 id="parametres-django">Paramètres Django<a class="headerlink" href="#parametres-django" title="Permanent link">#</a></h2>
+<p>Iaso permet de définir certains paramètres de sécurité de Django comme variables d'environnement. Pour activer ces fonctionnalités, définissez la variable d'environnement à <code>"true"</code>. La valeur par défaut est <code>"false"</code>.</p>
+<ul>
+<li><code>CSRF_COOKIE_HTTPONLY</code></li>
+<li><code>CSRF_COOKIE_SECURE</code></li>
+<li><code>SESSION_COOKIE_SECURE</code></li>
+</ul>
+<h2 id="cors">CORS<a class="headerlink" href="#cors" title="Permanent link">#</a></h2>
+<p>Il est possible de configurer un serveur IASO avec <strong>CORS</strong> autorisant l'accès depuis n'importe quel serveur en définissant la variable d'environnement <code>"ENABLE_CORS"</code>.</p>
+<p>La valeur par défaut est <code>"true"</code>.</p>
+<h2 id="desactivation-de-la-connexion-par-mot-de-passe">Désactivation de la connexion par mot de passe<a class="headerlink" href="#desactivation-de-la-connexion-par-mot-de-passe" title="Permanent link">#</a></h2>
+<p>Définissez la variable d'environnement <code>DISABLE_PASSWORD_LOGINS</code> à la valeur <code>"true"</code> si vous souhaitez <strong>désactiver la connexion par mot de passe</strong> :</p>
+<ul>
+<li>Sur la page de connexion de base.</li>
+<li>Pour se connecter à l'administration.</li>
+<li>Via <code>/api/token</code>, qui est utilisé par défaut par l'application mobile.</li>
+</ul>
+<h2 id="liees-a-sentry">Liées à Sentry<a class="headerlink" href="#liees-a-sentry" title="Permanent link">#</a></h2>
+<p>Si vous ne fournissez pas de <code>SENTRY_URL</code>, <strong>Sentry ne sera pas configuré</strong>.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Nom</th>
+<th align="left">Optionnel</th>
+<th align="left">Valeur par défaut</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>SENTRY_URL</code></td>
+<td align="left">true</td>
+<td align="left">-</td>
+<td align="left">URL spécifique à votre compte Sentry.</td>
+</tr>
+<tr>
+<td align="left"><code>SENTRY_ENVIRONMENT</code></td>
+<td align="left">true</td>
+<td align="left"><code>development</code></td>
+<td align="left">Environnement (dev, staging, prod, etc.).</td>
+</tr>
+<tr>
+<td align="left"><code>SENTRY_TRACES_SAMPLE_RATE</code></td>
+<td align="left">true</td>
+<td align="left"><code>0.1</code></td>
+<td align="left">Flottant entre 0 et 1 : envoie 10 % des traces.</td>
+</tr>
+<tr>
+<td align="left"><code>SENTRY_ERRORS_SAMPLE_RATE</code></td>
+<td align="left">true</td>
+<td align="left"><code>1.0</code></td>
+<td align="left">Flottant entre 0 et 1 : envoie toutes les erreurs.</td>
+</tr>
+<tr>
+<td align="left"><code>SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE</code></td>
+<td align="left">true</td>
+<td align="left"><code>0.8</code></td>
+<td align="left">Flottant entre 0 et 1 : envoie 80 % des erreurs HTTP.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="mode-maintenance">Mode maintenance<a class="headerlink" href="#mode-maintenance" title="Permanent link">#</a></h2>
+<p><code>MAINTENANCE_MODE</code> (la valeur par défaut est <code>"false"</code>)</p>
+<p>Si vous devez configurer IASO en mode maintenance, ce qui signifie qu'il affichera sur <code>/</code> une page indiquant que le serveur est en maintenance, et donnera une réponse 404 à toutes les requêtes (sauf pour <code>/health</code> ou <code>/_health</code>, que nous encourageons à utiliser pour la surveillance de l'état), vous pouvez définir la variable d'environnement <code>MAINTENANCE_MODE</code> à la valeur <code>"true"</code>.</p>
+<h2 id="url-en-savoir-plus">URL "En savoir plus"<a class="headerlink" href="#url-en-savoir-plus" title="Permanent link">#</a></h2>
+<p>La variable d'environnement <code>LEARN_MORE_URL</code> est utilisée pour spécifier une URL qui sera affichée sur la page de connexion. Si elle est définie, les utilisateurs peuvent cliquer sur un lien <strong>"En savoir plus"</strong> ou sur le logo pour visiter cette URL. Si <code>LEARN_MORE_URL</code> n'est pas définie, le logo ne sera pas cliquable et le lien ne sera pas affiché.</p>
+<ul>
+<li><code>LEARN_MORE_URL</code></li>
+</ul>
+<p>Dans nos environnements, cela sera lié à <code>https://www.openiaso.com/</code>. Pour les environnements clients, cela peut être supprimé ou personnalisé selon les besoins.</p>
+<h2 id="integration-product-fruits">Intégration Product Fruits<a class="headerlink" href="#integration-product-fruits" title="Permanent link">#</a></h2>
+<p>Pour activer l'intégration Product Fruits, définissez la variable d'environnement suivante :</p>
+<ul>
+<li><code>PRODUCT_FRUITS_WORKSPACE_CODE=VOTRE_CODE</code></li>
+</ul>
+<p>Lorsque cette variable est définie, Product Fruits sera activé et seuls le nom et l'ID du compte seront envoyés au service. Cela permet l'intégration des utilisateurs et la découverte des fonctionnalités.</p>
+<hr />
+<h2 id="configuration-frontend">Configuration Frontend<a class="headerlink" href="#configuration-frontend" title="Permanent link">#</a></h2>
+<h3 id="parametres-de-developpement">Paramètres de développement<a class="headerlink" href="#parametres-de-developpement" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th align="left">Nom</th>
+<th align="left">Optionnel</th>
+<th align="left">Valeur par défaut</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>WEBPACK_HOST</code></td>
+<td align="left">true</td>
+<td align="left"><code>localhost</code></td>
+<td align="left">Hôte du serveur de développement.</td>
+</tr>
+<tr>
+<td align="left"><code>WEBPACK_PORT</code></td>
+<td align="left">true</td>
+<td align="left"><code>3000</code></td>
+<td align="left">Port du serveur de développement.</td>
+</tr>
+<tr>
+<td align="left"><code>WEBPACK_PROTOCOL</code></td>
+<td align="left">true</td>
+<td align="left"><code>http</code></td>
+<td align="left">Protocole du serveur de développement.</td>
+</tr>
+<tr>
+<td align="left"><code>WEBPACK_PATH</code></td>
+<td align="left">true</td>
+<td align="left"><code>./assets/webpack/</code></td>
+<td align="left">Chemin des fichiers de sortie webpack.</td>
+</tr>
+<tr>
+<td align="left"><code>OLD_BROWSER</code></td>
+<td align="left">true</td>
+<td align="left"><code>false</code></td>
+<td align="left">Active le mode de compatibilité pour les navigateurs plus anciens.</td>
+</tr>
+<tr>
+<td align="left"><code>LIVE_COMPONENTS</code></td>
+<td align="left">true</td>
+<td align="left"><code>false</code></td>
+<td align="left">Utilise les composants <code>bluesquare-components</code> locaux pour le développement.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="parametres-de-langue">Paramètres de langue<a class="headerlink" href="#parametres-de-langue" title="Permanent link">#</a></h3>
+<table>
+<thead>
+<tr>
+<th align="left">Nom</th>
+<th align="left">Optionnel</th>
+<th align="left">Valeur par défaut</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><code>AVAILABLE_LANGUAGES</code></td>
+<td align="left">true</td>
+<td align="left"><code>en,fr</code></td>
+<td align="left">Liste des langues prises en charge, séparées par des virgules.</td>
+</tr>
+</tbody>
+</table>
 
 
 

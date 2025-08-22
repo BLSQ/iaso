@@ -123,7 +123,7 @@ describe('Duplicate entities list', () => {
         });
     });
 
-    describe.only('Table', () => {
+    describe('Table', () => {
         beforeEach(() => {
             mockPage();
         });

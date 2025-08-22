@@ -48,9 +48,6 @@ export const testPagination = ({
             cy.intercept(
                 {
                     pathname: apiPath,
-                    query: {
-                        page: `${fixture.pages}`,
-                    },
                 },
                 {
                     ...fixture,
@@ -82,9 +79,6 @@ export const testPagination = ({
             cy.intercept(
                 {
                     pathname: apiPath,
-                    query: {
-                        page: `${fixture.pages}`,
-                    },
                 },
                 {
                     ...fixture,

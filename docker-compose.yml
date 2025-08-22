@@ -47,6 +47,7 @@ services:
             DNS_DOMAIN:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
             ENABLE_ANALYTICS:
+            ENABLE_GZIP: ${ENABLE_GZIP:-false}
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
             ENKETO_SIGNING_SECRET: supersecret

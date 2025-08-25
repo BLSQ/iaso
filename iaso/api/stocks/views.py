@@ -328,6 +328,7 @@ class StockRulesVersionViewSet(viewsets.ModelViewSet):
     ]
     http_method_names = ["get", "post", "patch", "delete"]
     pagination_class = StockKeepingUnitPagination
+    lookup_url_kwarg = "version_id"
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
@@ -368,6 +369,6 @@ class StockRulesVersionViewSet(viewsets.ModelViewSet):
 
         version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         v_orig = get_object_or_404(StockRulesVersion, id=version_id)
-        new_v = make_deep_copy_with_relations(v_orig)
+        new_v = make_deep_copy_with_relations(v_orig, self.request)
         serialized_data = StockRulesVersionSerializer(new_v, context=self.get_serializer_context()).data
         return Response(serialized_data)

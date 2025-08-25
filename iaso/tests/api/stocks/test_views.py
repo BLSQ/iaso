@@ -792,3 +792,17 @@ class StockRulesVersionAPITestCase(APITestCase):
         response = self.client.get(f"{RULES_VERSION_URL}{self.version_1.pk}/")
         self.assertJSONResponse(response, 200)
         self.assertIsNotNone(response.json()["deleted_at"])
+
+    def test_copy_without_rights(self):
+        self.client.force_authenticate(self.user_without_rights)
+        response = self.client.post(f"{RULES_VERSION_URL}{self.version_1.pk}/copy/")
+        self.assertJSONResponse(response, 403)
+
+    def test_copy_with_rights(self):
+        self.client.force_authenticate(self.user_with_rights)
+        response = self.client.post(f"{RULES_VERSION_URL}{self.version_1.pk}/copy/")
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual("Copy of version_1", response.json()["name"])
+        self.assertEqual(2, len(response.json()["rules"]))
+        self.assertEqual(StockRulesVersionsStatus.DRAFT, response.json()["status"])

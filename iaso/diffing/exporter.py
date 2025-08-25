@@ -8,7 +8,7 @@ from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
 
 from iaso.diffing import Differ
-from iaso.models import generate_id_for_dhis_2
+from iaso.utils.dhis2 import generate_id_for_dhis_2
 
 from .comparisons import Comparison, Diff, as_field_types
 

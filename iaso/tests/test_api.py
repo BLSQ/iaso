@@ -356,6 +356,18 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         with self.assertNumQueries(10):
+            # filter_for_user_and_app_id
+            #   1. SELECT Projects
+            #   2. SELECT Projects
+            #   4. PREFETCH OrgUnitType.projects
+            #   5. PREFETCH OrgUnitType.projects.account
+            #   6. PREFETCH OrgUnitType.projects.feature_flags
+            #   7. PREFETCH OrgUnitType.allow_creating_sub_unit_types
+            #   8. PREFETCH OrgUnitType.reference_forms
+            #   9. PREFETCH OrgUnitType.sub_unit_types
+            # get_queryset
+            #   3. SELECT DISTINCT OrgUnitType
+            #   10. PREFETCH OrgUnitType.allow_creating_sub_unit_types - based on app_id
             response = c.get(
                 "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
             )  # this should have 2 results

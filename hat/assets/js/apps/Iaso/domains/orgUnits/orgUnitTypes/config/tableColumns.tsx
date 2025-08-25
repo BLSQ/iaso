@@ -5,6 +5,7 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import { baseUrls } from '../../../../constants/urls';
@@ -26,7 +27,8 @@ export const useGetColumns = (): Column[] => {
         {
             Header: formatMessage(MESSAGES.projects),
             accessor: 'projects',
-            Cell: settings => settings.value.map(p => p.name).join(', '),
+            width: 300,
+            Cell: settings => <ProjectChips projects={settings.value} />,
         },
         {
             Header: formatMessage(MESSAGES.subUnitTypes),

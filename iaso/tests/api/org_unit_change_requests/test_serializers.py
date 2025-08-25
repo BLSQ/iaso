@@ -185,7 +185,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "groups": [
                     {"id": self.group.id, "name": "Group"},
                 ],
-                "projects": [{"id": self.project.id, "name": self.project.name}],
+                "projects": [{"id": self.project.id, "name": self.project.name, "color": self.project.color}],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",

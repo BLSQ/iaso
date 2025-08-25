@@ -126,6 +126,8 @@ const mockSaveCall = (method, i, pathname, p) => {
         },
         req => {
             interceptFlag = true;
+            console.log('Request body:', JSON.stringify(req.body, null, 2));
+            console.log('Expected body:', JSON.stringify(p, null, 2));
             expect(req.body).to.deep.equal(p);
             req.reply({
                 statusCode: 200,
@@ -246,14 +248,14 @@ describe('Projects', () => {
                 listFixture.projects[theIndex].feature_flags.forEach(
                     featureFlag => {
                         cy.get(
-                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                         ).uncheck();
                     },
                 );
 
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 
@@ -300,7 +302,7 @@ describe('Projects', () => {
                 testDialogContent(newProject);
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 

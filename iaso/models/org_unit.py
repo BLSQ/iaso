@@ -88,7 +88,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         queryset = self.prefetch_related(
             "projects",
             "projects__account",
-            "projects__feature_flags",
+            "projects__projectfeatureflags_set",
             "allow_creating_sub_unit_types",
             "reference_forms",
             "sub_unit_types",

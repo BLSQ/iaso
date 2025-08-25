@@ -55,6 +55,7 @@ from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
+from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
 from .api.form_versions.views import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
@@ -142,6 +143,7 @@ router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"formattachments", FormAttachmentsViewSet, basename="formattachments")
+router.register(r"formpredefinedfilters", FormPredefinedFiltersViewSet, basename="formpredefinedfilters")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")

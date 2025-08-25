@@ -19,6 +19,7 @@ import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import { useQueryClient } from 'react-query';
+import { FormPredefinedFilters } from 'Iaso/domains/forms/components/FormPredefinedFilters';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -296,6 +297,12 @@ const FormDetail: FunctionComponent = () => {
                                     value="attachments"
                                     label={formatMessage(MESSAGES.attachments)}
                                 />
+                                <Tab
+                                    value="filters"
+                                    label={formatMessage(
+                                        MESSAGES.predefinedFilters,
+                                    )}
+                                />
                             </Tabs>
                         </Box>
                         {tab === 'versions' && (
@@ -309,6 +316,9 @@ const FormDetail: FunctionComponent = () => {
                         )}
                         {tab === 'attachments' && (
                             <FormAttachments params={params} />
+                        )}
+                        {tab === 'filters' && (
+                            <FormPredefinedFilters params={params} />
                         )}
                     </>
                 )}

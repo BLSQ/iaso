@@ -16,7 +16,6 @@ import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
 import { ProjectChip } from '../projects/components/ProjectChip';
-import { Project } from '../projects/types/project';
 import { userHasOneOfPermissions, userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
 

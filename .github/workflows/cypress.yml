@@ -158,19 +158,48 @@ jobs:
                   node-version: '22.18.0'
                   cache: npm
 
-            - name: Cache dependencies
-              id: cache
-              uses: actions/cache@v4
-              with:
-                  path: ./node_modules
-                  key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
-
             - name: upgrade npm
               run: |
                   npm install --global npm@10.9.3
 
             - run: npm ci
-              if: steps.cache.outputs.cache-hit != 'true'
+
+            - name: Install Cypress binary
+              run: npx cypress install
+
+            - name: Wait for server to be ready
+              run: |
+                echo "Waiting for server to be ready..."
+                for i in {1..30}; do
+                  # Try curl first, fallback to wget if curl not available
+                  if command -v curl >/dev/null 2>&1; then
+                    if curl -f http://localhost:8081/ > /dev/null 2>&1; then
+                      echo "Server is ready!"
+                      break
+                    fi
+                  elif command -v wget >/dev/null 2>&1; then
+                    if wget --no-verbose --tries=1 --spider http://localhost:8081/ > /dev/null 2>&1; then
+                      echo "Server is ready!"
+                      break
+                    fi
+                  else
+                    # Fallback: try to connect using /dev/tcp (bash built-in)
+                    if timeout 5 bash -c "</dev/tcp/localhost/8081" 2>/dev/null; then
+                      echo "Server is ready!"
+                      break
+                    fi
+                  fi
+                  echo "Attempt $i/30: Server not ready, waiting 2 seconds..."
+                  sleep 2
+                done
+                # Final check
+                if command -v curl >/dev/null 2>&1; then
+                  curl -f http://localhost:8081/ || (echo "Server failed to start" && exit 1)
+                elif command -v wget >/dev/null 2>&1; then
+                  wget --no-verbose --tries=1 --spider http://localhost:8081/ || (echo "Server failed to start" && exit 1)
+                else
+                  timeout 5 bash -c "</dev/tcp/localhost/8081" || (echo "Server failed to start" && exit 1)
+                fi
 
             - name: Run Cypress tests
               run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'

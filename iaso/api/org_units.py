@@ -873,15 +873,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
+        prefetch_args = ["reference_instances", "org_unit_type__sub_unit_types", "groups"]
+        related_args = ["parent", "org_unit_type", "version__data_source__credentials"]
+
         org_unit: OrgUnit = get_object_or_404(
-            self.get_queryset().prefetch_related("reference_instances"),
+            self.get_queryset().select_related(*related_args).prefetch_related(*prefetch_args),
             pk=pk,
         )
-
         # Count instances for the Org unit and its descendants.
         org_unit.instances_count = org_unit.descendants().aggregate(Count("instance"))["instance__count"]
 
         self.check_object_permissions(request, org_unit)
+
+        # Fetch all ancestors in a single query to avoid N+1 problems.
+        ancestors = list(org_unit.ancestors().select_related(*related_args).prefetch_related(*prefetch_args))
+        ancestors_dict = {ancestor.id: ancestor for ancestor in ancestors}
+        org_unit._prefetched_ancestors = ancestors_dict
 
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
 
@@ -893,7 +900,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 geo_queryset = self.get_queryset().filter(id=ancestor.id)
                 ancestor_dict["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
                 break
-            ancestor = ancestor.parent
+            ancestor = ancestors_dict.get(ancestor.parent_id) if ancestor.parent_id else None
             ancestor_dict = ancestor_dict["parent"]
 
         res["geo_json"] = None

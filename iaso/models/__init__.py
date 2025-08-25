@@ -4,6 +4,7 @@ from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVe
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
+from .feature_flags import FeatureFlag, ProjectFeatureFlags
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
 from .metric import MetricType, MetricValue
@@ -37,6 +38,8 @@ __all__ = [
     "EntityDuplicate",
     "EntityDuplicateAnalyzis",
     "EntityType",
+    "FeatureFlag",
+    "ProjectFeatureFlags",
     "Form",
     "FormAttachment",
     "FormPredefinedFilter",

@@ -1870,3 +1870,100 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         main_user.refresh_from_db()
         self.assertEqual(main_user.check_password("new_p4ssword"), True)
+
+    def test_list_profiles_sorted_by_annotated_first_user_role(self):
+        """
+        Test that profiles are properly sorted by their alphabetically first user role.
+        """
+        data_manager_group = Group.objects.create(name=f"{self.account.pk}_Data manager")
+        gpei_group = Group.objects.create(name=f"{self.account.pk}_GPEI coordinators")
+        zulu_group = Group.objects.create(name=f"{self.account.pk}_Zulu role")
+
+        data_manager_role = m.UserRole.objects.create(group=data_manager_group, account=self.account)
+        gpei_role = m.UserRole.objects.create(group=gpei_group, account=self.account)
+        zulu_role = m.UserRole.objects.create(group=zulu_group, account=self.account)
+
+        # Clear the users.
+        self.account.profile_set.exclude(user_id=self.john.pk).delete()
+
+        # User 1: multiple roles starting with "Data manager" (should be first).
+        user1 = self.create_user_with_profile(
+            username="user_multi_data", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+        )
+        user1.iaso_profile.user_roles.set([data_manager_role, gpei_role])
+
+        # User 2: single role "GPEI" (should be middle).
+        user2 = self.create_user_with_profile(
+            username="user_single_gpei", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+        )
+        user2.iaso_profile.user_roles.set([gpei_role])
+
+        # User 3: single role "Zulu" (should be last)
+        user3 = self.create_user_with_profile(
+            username="user_single_zulu", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+        )
+        user3.iaso_profile.user_roles.set([zulu_role])
+
+        # User 4: multiple roles starting with "GPEI coordinators" (should be between user1 and user3)
+        user4 = self.create_user_with_profile(
+            username="user_multi_gpei", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+        )
+        user4.iaso_profile.user_roles.set([gpei_role, zulu_role])
+
+        self.client.force_authenticate(self.john)
+
+        # Test ascending order.
+
+        response = self.client.get("/api/profiles/?order=annotated_first_user_role&limit=10")
+        self.assertJSONResponse(response, 200)
+
+        actual_order = []
+        for profile in response.json()["profiles"]:
+            if not profile["user_roles"]:
+                actual_order.append(None)
+                continue
+            role_id = profile["user_roles"][0]
+            group_name = m.UserRole.objects.get(id=role_id).group.name
+            actual_order.append(group_name)
+
+        expected_order = [
+            f"{self.account.pk}_Data manager",
+            f"{self.account.pk}_GPEI coordinators",
+            f"{self.account.pk}_GPEI coordinators",
+            f"{self.account.pk}_Zulu role",
+            None,
+        ]
+
+        self.assertEqual(
+            actual_order,
+            expected_order,
+            f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
+        )
+
+        # Test descending order.
+
+        response = self.client.get("/api/profiles/?order=-annotated_first_user_role&limit=10")
+        self.assertJSONResponse(response, 200)
+
+        actual_order = []
+        for profile in response.json()["profiles"]:
+            if not profile["user_roles"]:
+                actual_order.append(None)
+                continue
+            role_id = profile["user_roles"][0]
+            group_name = m.UserRole.objects.get(id=role_id).group.name
+            actual_order.append(group_name)
+
+        expected_order = [
+            None,
+            f"{self.account.pk}_Zulu role",
+            f"{self.account.pk}_GPEI coordinators",
+            f"{self.account.pk}_GPEI coordinators",
+            f"{self.account.pk}_Data manager",
+        ]
+
+        self.assertEqual(
+            actual_order,
+            expected_order,
+            f"Users not sorted correctly by first role. Expected: {expected_order}, got: {actual_order}",
+        )

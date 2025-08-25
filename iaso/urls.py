@@ -96,6 +96,13 @@ from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
+from .api.stocks.views import (
+    StockItemRuleViewSet,
+    StockItemViewSet,
+    StockKeepingUnitViewSet,
+    StockLedgerItemViewSet,
+    StockRulesVersionViewSet,
+)
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
@@ -224,6 +231,12 @@ router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken
 router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
 router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
 router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
+
+router.register(r"stockkeepingunits", StockKeepingUnitViewSet, basename="stockkeepingunits")
+router.register(r"stockitems", StockItemViewSet, basename="stockitems")
+router.register(r"stockledgeritems", StockLedgerItemViewSet, basename="stockledgeritems")
+router.register(r"stockitemrules", StockItemRuleViewSet, basename="stockitemrules")
+router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stockrulesversions")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

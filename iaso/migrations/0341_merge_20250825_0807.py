@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0340_featureflag_configuration_projectfeatureflags_and_more'),
-        ('iaso', '0340_formversion_created_by_formversion_updated_by'),
+        ("iaso", "0340_featureflag_configuration_projectfeatureflags_and_more"),
+        ("iaso", "0340_formversion_created_by_formversion_updated_by"),
     ]
 
-    operations = [
-    ]
+    operations = []

@@ -37,7 +37,6 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
-from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.emoji import fix_emoji
@@ -1506,15 +1505,6 @@ class InstanceFile(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "instance_id": self.instance_id,
-            "file": self.file.url if self.file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "file_type": get_file_type(self.file),
-        }
 
 
 class ProfileQuerySet(models.QuerySet):

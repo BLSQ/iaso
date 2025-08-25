@@ -330,16 +330,6 @@ class FormVersion(models.Model):
     def questions_by_path(self):
         return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
 
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "version_id": self.version_id,
-            "file": self.file.url,
-            "xls_file": self.xls_file.url if self.xls_file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
-
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
 

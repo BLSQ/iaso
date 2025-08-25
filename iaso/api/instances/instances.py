@@ -226,10 +226,10 @@ class InstancesViewSet(viewsets.ViewSet):
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = InstanceFileSerializer(page, many=True)
+            serializer = InstanceFileSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = InstanceFileSerializer(queryset, many=True)
+        serializer = InstanceFileSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     @action(["GET"], detail=False)

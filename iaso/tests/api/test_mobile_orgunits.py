@@ -338,7 +338,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                             {
                                 "id": instance_file1.pk,
                                 "instance_id": instance2.pk,
-                                "file": "/media/test1.jpg",
+                                "file": "http://testserver/media/test1.jpg",
                                 "created_at": 1698310800.0,
                                 "file_type": "image/jpeg",
                                 "name": None,

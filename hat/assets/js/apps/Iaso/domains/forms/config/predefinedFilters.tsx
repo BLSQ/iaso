@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from 'react';
+import React, { ReactElement, ReactNode, useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
@@ -17,14 +17,14 @@ export const useGetColumns = (
     count: number,
     save: (filter: FormPredefinedFilter) => void,
     isSaving: boolean,
+    getHumanReadableJsonLogic: (
+        logic: Record<string, string>,
+    ) => string | ReactNode,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deletePredefinedFilter } = useDeletePredefinedFilter(
         params,
         count,
-    );
-    const getHumanReadableJsonLogic = useHumanReadableJsonLogicForForm(
-        params.formId,
     );
     return useMemo(
         () => [

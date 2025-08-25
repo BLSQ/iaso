@@ -5,6 +5,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { PredefinedFilterModal } from 'Iaso/domains/forms/components/PredefinedFilterModal';
 import { useGetPredefinedFilters } from 'Iaso/domains/forms/hooks/useGetPredefinedFilters';
 import { useSaveFormPredefinedFilter } from 'Iaso/domains/forms/hooks/useSaveFormPredefinedFilter';
+import { useHumanReadableJsonLogicForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
 import { useGetColumns } from '../config/predefinedFilters';
 
 import { FormParams } from '../types/forms';
@@ -22,11 +23,15 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
     const { mutateAsync: save, isLoading: isSaving } =
         useSaveFormPredefinedFilter();
 
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogicForForm(
+        params.formId,
+    );
     const columns = useGetColumns(
         params,
         predefinedFilters?.count ?? 0,
         save,
         isSaving,
+        getHumanReadableJsonLogic,
     );
     return (
         <Box>
@@ -55,6 +60,7 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
                 paramsPrefix="predefinedFilters"
                 extraProps={{
                     loading: isFetchingPredefinedFilters,
+                    getHumanReadableJsonLogic,
                 }}
             />
         </Box>

@@ -330,6 +330,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.isSoftDeleted',
         defaultMessage: 'Show only deleted',
     },
+    showValuesAtCreation: {
+        id: 'iaso.changeRequest.showValuesAtCreation',
+        defaultMessage: 'Show values at creation',
+    },
 });
 
 export default MESSAGES;

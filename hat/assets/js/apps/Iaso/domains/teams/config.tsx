@@ -1,14 +1,14 @@
 import React, { ReactElement } from 'react';
 
 import { Column, IntlFormatMessage } from 'bluesquare-components';
-import MESSAGES from './messages';
-
-import { Team } from './types/team';
-
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { ProjectChip } from '../projects/components/ProjectChip';
 import { CreateEditTeam } from './components/CreateEditTeam';
 import { TypeCell } from './components/TypeCell';
 import { UsersTeamsCell } from './components/UsersTeamsCell';
+import MESSAGES from './messages';
+
+import { Team } from './types/team';
 
 export const teamColumns = (
     formatMessage: IntlFormatMessage,
@@ -24,7 +24,9 @@ export const teamColumns = (
             Header: formatMessage(MESSAGES.project),
             accessor: 'project_details',
             id: 'project__name',
-            Cell: settings => settings.row.original.project_details.name
+            Cell: settings => (
+                <ProjectChip project={settings.row.original.project_details} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.name),

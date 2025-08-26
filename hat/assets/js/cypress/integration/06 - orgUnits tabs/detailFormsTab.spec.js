@@ -34,7 +34,6 @@ const testRowContent = (index, form = formsList.forms[index]) => {
         .find('td')
         .eq(5)
         .should('contain', form.org_unit_types[0].name);
-    cy.get('@row').find('td').eq(6).should('contain', form.instances_count);
     cy.get('@row').find('td').last().find('button').should('have.length', 2);
 };
 
@@ -47,13 +46,9 @@ const goToPage = () => {
         fixture: 'profiles/me/superuser.json',
     });
 
-    cy.intercept(
-        'GET',
-        ` /api/forms/?orgUnitId=${orgUnit.id}&order=name&limit=10&page=1`,
-        {
-            fixture: `forms/list.json`,
-        },
-    ).as('getForms');
+    cy.intercept('GET', ` /api/forms/*`, {
+        fixture: `forms/list.json`,
+    }).as('getForms');
 
     cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
         fixture: 'orgunits/details.json',
@@ -86,7 +81,7 @@ describe('forms tab', () => {
                 cy.get('@table').find('tbody').find('tr').as('rows');
                 cy.get('@rows').should('have.length', formsList.count);
                 cy.get('@rows').eq(0).as('row');
-                cy.get('@row').find('td').should('have.length', 8);
+                cy.get('@row').find('td').should('have.length', 7);
                 cy.get('@row').find('td').eq(1).as('nameCol');
 
                 cy.get('@nameCol').should(
@@ -99,8 +94,8 @@ describe('forms tab', () => {
         testTablerender({
             baseUrl,
             rows: formsList.forms.length,
-            columns: 8,
-            apiPath: `forms/?orgUnitId=${orgUnit.id}&order=name&limit=10&page=1`,
+            columns: 7,
+            apiPath: `forms/*`,
             apiKey: `forms`,
             withVisit: false,
             selector: '[data-test="forms-tab"] table',
@@ -131,7 +126,7 @@ describe('forms tab', () => {
 
     describe('Actions buttons', () => {
         it('should contain a link with the right href', () => {
-            const submissionsHref = `/dashboard/forms/submissions/formIds/1/levels/${orgUnit.id}/tab/list`;
+            const submissionsHref = `/dashboard/forms/submissions/formIds/1/isSearchActive/true/levels/${orgUnit.id}/tab/list`;
 
             cy.wait('@getOuDetail').then(() => {
                 cy.get('table').as('table');

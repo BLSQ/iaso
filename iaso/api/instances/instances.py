@@ -226,10 +226,10 @@ class InstancesViewSet(viewsets.ViewSet):
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = InstanceFileSerializer(page, many=True)
+            serializer = InstanceFileSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = InstanceFileSerializer(queryset, many=True)
+        serializer = InstanceFileSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     @action(["GET"], detail=False)
@@ -568,14 +568,32 @@ class InstancesViewSet(viewsets.ViewSet):
                 "instancelock_set__top_org_unit",
                 "instancelock_set__locked_by",
                 "instancelock_set__unlocked_by",
+                "org_unit__groups",
+                "org_unit__org_unit_type__sub_unit_types",
                 "org_unit__reference_instances",
-                "org_unit__org_unit_type__reference_forms",
+            )
+            .select_related(
+                "org_unit",
+                "org_unit__parent",
+                "org_unit__org_unit_type",
+                "org_unit__version__data_source__credentials",
             )
             .with_status()
         )
         instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
+
+        if instance.org_unit:
+            # Fetch all ancestors in a single query to avoid N+1 problems
+            # because `as_full_model()` will call `org_unit.as_dict_with_parents()`.
+            ancestors = list(
+                instance.org_unit.ancestors()
+                .select_related("version__data_source__credentials", "org_unit_type")
+                .prefetch_related("reference_instances", "org_unit_type__sub_unit_types", "groups")
+            )
+            ancestors_dict = {ancestor.id: ancestor for ancestor in ancestors}
+            instance.org_unit._prefetched_ancestors = ancestors_dict
 
         response = instance.as_full_model(with_entity=True)
 

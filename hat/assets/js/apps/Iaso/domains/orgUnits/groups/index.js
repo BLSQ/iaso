@@ -17,6 +17,8 @@ import MESSAGES from './messages';
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
+import DownloadButtonsComponent from 'Iaso/components/DownloadButtonsComponent';
+import { usePrepareGroupExportUrls } from 'Iaso/domains/orgUnits/groups/hooks/usePrepareGroupExportUrls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -31,6 +33,7 @@ const Groups = () => {
     const { data, isFetching } = useGetGroups(params);
     const { mutate: deleteGroup, isLoading: deleting } = useDeleteGroups();
     const { mutateAsync: saveGroup, isLoading: saving } = useSaveGroups();
+    const { csvUrl, xlsxUrl } = usePrepareGroupExportUrls(params);
 
     const isLoading = isFetching || deleting || saving;
     return (
@@ -61,6 +64,20 @@ const Groups = () => {
                         params={params}
                     />
                 </Box>
+                {data && data?.groups?.length > 0 && (
+                    <Box
+                        mt={1}
+                        mb={2}
+                        display="flex"
+                        justifyContent="flex-end"
+                        alignItems="end"
+                    >
+                        <DownloadButtonsComponent
+                            csvUrl={csvUrl}
+                            xlsxUrl={xlsxUrl}
+                        />
+                    </Box>
+                )}
 
                 <Table
                     data={data?.groups ?? []}

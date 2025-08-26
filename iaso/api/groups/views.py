@@ -1,14 +1,18 @@
 from django.db.models import Count
+from django.http import HttpResponse, StreamingHttpResponse
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import iaso.permissions as core_permissions
 
-from iaso.api.group_sets.serializers import GroupSetSerializer
-from iaso.models import DataSource, Group, Project, SourceVersion
-
-from .common import HasPermission, ModelViewSet, TimestampField
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.groups.filters import GroupListFilter
+from iaso.api.groups.serializers import GroupDropdownSerializer, GroupExportSerializer, GroupSerializer
+from iaso.models import Group, Project, SourceVersion
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -21,83 +25,6 @@ class HasGroupPermission(permissions.BasePermission):
         account_ids = [p.account_id for p in projects]
 
         return user_account.id in account_ids
-
-
-class DataSourceSerializerForGroup(serializers.ModelSerializer):
-    class Meta:
-        model = DataSource
-        fields = ["id", "name"]
-
-
-class SourceVersionSerializerForGroup(serializers.ModelSerializer):
-    class Meta:
-        model = SourceVersion
-        fields = ["id", "number", "data_source"]
-
-    data_source = DataSourceSerializerForGroup()
-
-
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = [
-            "id",
-            "name",
-            "source_ref",
-            "source_version",
-            "group_sets",
-            "org_unit_count",
-            "created_at",
-            "updated_at",
-            "block_of_countries",  # It's used to mark a group containing only countries
-        ]
-        read_only_fields = ["id", "source_version", "group_sets", "org_unit_count", "created_at", "updated_at"]
-        ref_name = "iaso_group_serializer"
-
-    source_version = SourceVersionSerializerForGroup(read_only=True)
-    group_sets = GroupSetSerializer(many=True, read_only=True)
-    org_unit_count = serializers.IntegerField(read_only=True)
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-
-    def validate(self, attrs):
-        default_version = self._fetch_user_default_source_version()
-        if "source_ref" in attrs:
-            # Check if the source_ref is already used by another group
-            potential_group = Group.objects.filter(source_ref=attrs["source_ref"], source_version=default_version)
-            if potential_group.exists():
-                raise serializers.ValidationError(
-                    {"source_ref": "This source ref is already used by another group in your default version"}
-                )
-
-        return super().validate(attrs)
-
-    def create(self, validated_data):
-        default_version = self._fetch_user_default_source_version()
-        validated_data["source_version"] = default_version
-        return super().create(validated_data)
-
-    def _fetch_user_default_source_version(self):
-        profile = self.context["request"].user.iaso_profile
-        version = profile.account.default_version
-        if version is None:
-            raise serializers.ValidationError("This account has no default version")
-        return version
-
-
-class GroupDropdownSerializer(serializers.ModelSerializer):
-    label = serializers.SerializerMethodField()
-
-    def get_label(self, obj):
-        datasource = obj.source_version.data_source.name
-        version_number = obj.source_version.number
-        name = obj.name
-        return f"{name} ({datasource} - {version_number})"
-
-    class Meta:
-        model = Group
-        fields = ["id", "name", "label"]
-        read_only_fields = ["id", "name", "label"]
 
 
 class GroupsViewSet(ModelViewSet):
@@ -221,3 +148,74 @@ class GroupsViewSet(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["GET"], serializer_class=GroupExportSerializer)
+    def export(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        filtered_queryset = GroupListFilter(request.query_params, queryset=queryset).qs
+        ordered_queryset = filtered_queryset.distinct("id").order_by("id")
+
+        serializer = self.get_serializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+
+        file_format = serializer.validated_data["file_format"]
+        now = timezone.now()
+        file_name = f"groups_{now.strftime('%Y-%m-%d-%H-%M-%S')}"
+
+        if file_format == "csv":
+            return self._export_to_csv(ordered_queryset, file_name)
+        if file_format == "xlsx":
+            return self._export_to_xlsx(ordered_queryset, file_name)
+
+        return None
+
+    def _export_to_csv(self, queryset, file_name):
+        columns = [
+            _("ID"),
+            _("Source ref"),
+            _("Name"),
+            _("Data source"),
+            _("Version"),
+        ]
+        response = StreamingHttpResponse(
+            streaming_content=(
+                iter_items(
+                    queryset,
+                    Echo(),
+                    columns,
+                    lambda group: self._get_table_row(group),
+                )
+            ),
+            content_type="text/csv",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.csv"'
+        return response
+
+    def _export_to_xlsx(self, queryset, file_name):
+        columns = [
+            {"title": _("ID"), "width": 10},
+            {"title": _("Source ref"), "width": 20},
+            {"title": _("Name"), "width": 50},
+            {"title": _("Data source"), "width": 30},
+            {"title": _("Version"), "width": 10},
+        ]
+        response = HttpResponse(
+            generate_xlsx(
+                _("Groups"),
+                columns,
+                queryset,
+                lambda group, row_num: self._get_table_row(group),
+            ),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{file_name}.xlsx"'
+        return response
+
+    def _get_table_row(self, group: Group):
+        return [
+            group.id,
+            group.source_ref,
+            group.name,
+            group.source_version.data_source.name,
+            group.source_version.number,
+        ]

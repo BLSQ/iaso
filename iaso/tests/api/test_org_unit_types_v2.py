@@ -105,7 +105,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
             self.assertEqual(len(org_unit_type_data["projects"]), 1)
 
     def test_org_unit_types_list_count_valid_orgunits(self):
-        """GET /orgunittypes/ with checks on the count of valid org units"""
+        """GET /orgunittypes/ with checks on the count of org units (all validation statuses)"""
 
         # Prepare org units
         ou_type1_ok = m.OrgUnit.objects.create(
@@ -145,8 +145,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         result_out_1 = response_data[0]
         total_org_units_type_1 = m.OrgUnit.objects.filter(org_unit_type=self.org_unit_type_1).count()
         self.assertEqual(result_out_1["name"], self.org_unit_type_1.name)
-        self.assertEqual(result_out_1["units_count"], 1)
-        self.assertLess(result_out_1["units_count"], total_org_units_type_1)
+        self.assertEqual(result_out_1["units_count"], 3)
+        self.assertEqual(result_out_1["units_count"], total_org_units_type_1)
 
         result_out_2 = response_data[1]
         total_org_units_type_2 = m.OrgUnit.objects.filter(org_unit_type=self.org_unit_type_2).count()
@@ -413,6 +413,30 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.delete(f"{self.BASE_URL}{self.org_unit_type_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
+
+    def test_org_unit_type_delete_with_associated_org_units(self):
+        """DELETE /orgunittypes/<org_unit_type_id> with associated org units should fail"""
+        m.OrgUnit.objects.create(
+            name="Test OU 1",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            version=self.version_1,
+        )
+        m.OrgUnit.objects.create(
+            name="Test OU 2",
+            org_unit_type=self.org_unit_type_1,
+            validation_status=m.OrgUnit.VALIDATION_NEW,
+            version=self.version_1,
+        )
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.delete(f"{self.BASE_URL}{self.org_unit_type_1.id}/", format="json")
+
+        self.assertIn(response.status_code, [400])
+
+        # Verify the org unit type still exists
+        self.org_unit_type_1.refresh_from_db()
+        self.assertIsNotNone(self.org_unit_type_1.id)
 
     def test_org_unit_type_dropdown(self):
         # Default path that returns all OUTs to which the user has access

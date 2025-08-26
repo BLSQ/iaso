@@ -620,6 +620,7 @@ class PlanningTestCase(APITestCase):
                 "project_details": {
                     "id": self.planning.project.id,
                     "name": self.planning.project.name,
+                    "color": self.planning.project.color,
                 },
                 "org_unit": self.planning.org_unit_id,
                 "org_unit_details": {

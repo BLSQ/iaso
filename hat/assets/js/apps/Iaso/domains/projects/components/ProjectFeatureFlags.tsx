@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 
-import { FeatureFlag } from '../types/featureFlag';
+import { FeatureFlag, ProjectFeatureFlag } from '../types/featureFlag';
 import { FeatureFlagsSwitches } from './FeatureFlagsSwitches';
 
 export type Form = {
@@ -9,32 +9,23 @@ export type Form = {
 };
 
 type Props = {
-    setFieldValue: (key: string, value: string) => void;
-    projectFeatureFlagsValues: (string | number)[];
-    featureFlags?: FeatureFlag[];
+    onFeatureFlagsChanged: (value: FeatureFlag[]) => void;
+    projectFeatureFlags: ProjectFeatureFlag[];
+    featureFlags: FeatureFlag[];
     isFetchingFeatureFlag: boolean;
 };
 
 const ProjectFeatureFlags: FunctionComponent<Props> = ({
-    setFieldValue,
-    projectFeatureFlagsValues = [],
+    onFeatureFlagsChanged,
+    projectFeatureFlags = [],
     featureFlags = [],
     isFetchingFeatureFlag,
 }) => {
-    const [featureFlagsValues, setFeatureFlagsValues] = useState<
-        (string | number)[]
-    >(projectFeatureFlagsValues);
-
-    const handleFeatureFlagChange = newFeatureFlags => {
-        setFeatureFlagsValues(newFeatureFlags);
-        setFieldValue('feature_flags', newFeatureFlags);
-    };
-
     return (
         <FeatureFlagsSwitches
             featureFlags={featureFlags}
-            projectFeatureFlagsValues={featureFlagsValues}
-            handleChange={handleFeatureFlagChange}
+            projectFeatureFlags={projectFeatureFlags}
+            onFeatureFlagsChanged={onFeatureFlagsChanged}
             isLoading={isFetchingFeatureFlag}
         />
     );

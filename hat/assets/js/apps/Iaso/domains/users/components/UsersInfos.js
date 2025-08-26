@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import React, { useCallback, useMemo } from 'react';
 import { Alert, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -10,9 +9,8 @@ import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useAppLocales } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
-import { userHasAccessToModule } from '../utils.js';
-
 import MESSAGES from '../messages.ts';
+import { userHasAccessToModule } from '../utils.js';
 
 const useStyles = makeStyles(theme => ({
     alert: {
@@ -40,7 +38,6 @@ const UsersInfos = ({
 
     if (currentUser.send_email_invitation) {
         if (sendUserEmailInvitation) {
-            // eslint-disable-next-line no-param-reassign
             currentUser.send_email_invitation.value = false;
         }
         if (currentUser.send_email_invitation.value) {
@@ -60,6 +57,7 @@ const UsersInfos = ({
             return {
                 value: project.value,
                 label: project.label,
+                color: project.color,
             };
         });
     }, [allProjects, loggedUser]);

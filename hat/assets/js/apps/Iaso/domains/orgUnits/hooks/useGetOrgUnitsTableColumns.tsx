@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { makeStyles } from '@mui/styles';
-import Color from 'color';
 import {
     commonStyles,
     useSafeIntl,
@@ -8,12 +7,14 @@ import {
     IntlFormatMessage,
     textPlaceholder,
 } from 'bluesquare-components';
+import Color from 'color';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { ActionCell } from '../components/ActionCell';
 import OrgUnitTooltip from '../components/OrgUnitTooltip';
 import MESSAGES from '../messages';
-import { useGetStatusMessage, getOrgUnitProjects } from '../utils';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { Search } from '../types/search';
-import { ActionCell } from '../components/ActionCell';
+import { useGetStatusMessage } from '../utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,7 +50,10 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                 Header: formatMessage(MESSAGES.projects),
                 accessor: 'projects',
                 sortable: false,
-                Cell: settings => getOrgUnitProjects(settings.row.original),
+                width: 300,
+                Cell: settings => (
+                    <ProjectChips projects={settings.row.original.projects} />
+                ),
             },
 
             {

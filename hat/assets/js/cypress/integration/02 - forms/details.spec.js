@@ -164,7 +164,7 @@ describe('Forms details', () => {
             testTablerender({
                 baseUrl,
                 rows: 3,
-                columns: 4,
+                columns: 8,
                 apiKey: 'formversions',
             });
             it('has "Create" button', () => {

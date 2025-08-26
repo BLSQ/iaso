@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, Skeleton } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';

@@ -806,6 +806,10 @@ class NoFormDjangoFilterBackend(DjangoFilterBackend):
     def to_html(self, request, queryset, view):
         return ""
 
+    def get_schema_operation_parameters(self, view):
+        # Delegate to parent for schema generation to avoid duplicates
+        return []
+
 
 class VaccineRequestFormFilterSet(django_filters.FilterSet):
     round_id = django_filters.NumberFilter(field_name="rounds", label=_("Round ID"))

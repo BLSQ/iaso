@@ -7,10 +7,18 @@ from django.shortcuts import render
 from django.views.decorators.http import require_http_methods
 
 from hat.__version__ import VERSION
-from iaso.models.base import Account
 
 
-def _base_iaso(request: HttpRequest, analytics_scripts: list[str] = []) -> HttpResponse:
+def _should_enable_analytics(request: HttpRequest) -> bool:
+    """Check if analytics should be enabled based on environment variable"""
+    return getattr(settings, "ENABLE_ANALYTICS", False)
+
+
+def _get_domain_from_request(request: HttpRequest) -> str:
+    return request.get_host().split(":")[0]
+
+
+def _base_iaso(request: HttpRequest, analytics_data: dict = None) -> HttpResponse:
     try:
         USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
     except ObjectDoesNotExist:
@@ -22,8 +30,8 @@ def _base_iaso(request: HttpRequest, analytics_scripts: list[str] = []) -> HttpR
         "VERSION": VERSION,
     }
 
-    if analytics_scripts:
-        variables_to_render["ANALYTICS_SCRIPTS"] = list(analytics_scripts)
+    if analytics_data:
+        variables_to_render["ANALYTICS_DATA"] = analytics_data
 
     return render(
         request,
@@ -35,16 +43,34 @@ def _base_iaso(request: HttpRequest, analytics_scripts: list[str] = []) -> HttpR
 @login_required(login_url="/login/")
 @require_http_methods(["GET"])
 def iaso(request: HttpRequest) -> HttpResponse:
-    return _base_iaso(request)
+    analytics_data = None
+
+    if _should_enable_analytics(request):
+        domain = _get_domain_from_request(request)
+        user_account = request.user.iaso_profile.account
+        analytics_data = {
+            "domain": domain,
+            "username": request.user.username,
+            "user_id": request.user.id,
+            "account_name": user_account.name,
+            "account_id": user_account.id,
+        }
+
+    return _base_iaso(request, analytics_data=analytics_data)
 
 
 @require_http_methods(["GET"])
 def embeddable_iaso(request: HttpRequest) -> HttpResponse:
     """Embeddable iaso page without login requirement and with correct header"""
-    all_analytics_scripts = set(
-        [account.analytics_script for account in Account.objects.all() if account.analytics_script]
-    )
-    response = _base_iaso(request, all_analytics_scripts)
+    analytics_data = None
+
+    if _should_enable_analytics(request):
+        domain = _get_domain_from_request(request)
+        analytics_data = {
+            "domain": domain,
+        }
+
+    response = _base_iaso(request, analytics_data=analytics_data)
     response["X-Frame-Options"] = "ALLOW"
     return response
 

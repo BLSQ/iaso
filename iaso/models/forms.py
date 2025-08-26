@@ -286,6 +286,12 @@ class FormVersion(models.Model):
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_created_set"
+    )
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_updated_set"
+    )
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
     possible_fields = models.JSONField(
@@ -323,16 +329,6 @@ class FormVersion(models.Model):
 
     def questions_by_path(self):
         return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "version_id": self.version_id,
-            "file": self.file.url,
-            "xls_file": self.xls_file.url if self.xls_file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)

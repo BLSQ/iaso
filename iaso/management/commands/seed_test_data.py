@@ -407,8 +407,6 @@ class Command(BaseCommand):
         print("For Iaso mobile")
         print("  now you need to start ngrok")
         print("     with : ngrok http 8081")
-        print("     adapt .env and set the FILE_SERVER_URL to the ngrok https url in Forwarding section")
-        print("     restart iaso (so .env is reloaded) : docker compose up")
         print("  install the generic iaso mobile app and launch the app")
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")

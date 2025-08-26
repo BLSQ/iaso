@@ -5,12 +5,13 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { OrgUnitsTypesDialog } from '../components/OrgUnitsTypesDialog';
-import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from '../messages';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import { baseUrls } from '../../../../constants/urls';
+import { OrgUnitsTypesDialog } from '../components/OrgUnitsTypesDialog';
+import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
+import MESSAGES from '../messages';
 
 export const baseUrl = baseUrls.orgUnitTypes;
 
@@ -26,7 +27,8 @@ export const useGetColumns = (): Column[] => {
         {
             Header: formatMessage(MESSAGES.projects),
             accessor: 'projects',
-            Cell: settings => settings.value.map(p => p.name).join(', '),
+            width: 300,
+            Cell: settings => <ProjectChips projects={settings.value} />,
         },
         {
             Header: formatMessage(MESSAGES.subUnitTypes),
@@ -39,7 +41,7 @@ export const useGetColumns = (): Column[] => {
             accessor: 'short_name',
         },
         {
-            Header: formatMessage(MESSAGES.validatedOrgUnitCount),
+            Header: formatMessage(MESSAGES.orgUnitCount),
             accessor: 'units_count',
             sortable: false,
             Cell: settings => formatThousand(settings.value),
@@ -87,9 +89,8 @@ export const useGetColumns = (): Column[] => {
                         }
                         titleMessage={MESSAGES.delete}
                         message={MESSAGES.deleteWarning}
-                        onConfirm={closeDialog => {
+                        onConfirm={() => {
                             deleteType(settings.row.original.id);
-                            closeDialog();
                         }}
                     />
                 </section>

@@ -13,8 +13,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../../../components/FilterButton';
 import DatesRange from '../../../../components/filters/DatesRange';
 import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -542,9 +542,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     label={MESSAGES.isSoftDeleted}
                 />
                 <Box mt={2} mb={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

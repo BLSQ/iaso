@@ -4,14 +4,14 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import { SearchButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
+import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import { BulkImportNotificationModal } from '../Modals/NotificationsBulkImportModal';
 import { CreateNotificationModal } from '../Modals/NotificationsCreateEditModal';
 import { NotificationsMetaData, NotificationsParams } from '../types';
-import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     params: NotificationsParams;
@@ -84,9 +84,9 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     justifyContent="flex-end"
                 >
                     <Box mt={2}>
-                        <FilterButton
+                        <SearchButton
                             disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                         />
                     </Box>
                 </Grid>

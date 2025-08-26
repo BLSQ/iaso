@@ -15,6 +15,7 @@ import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel.tsx';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
 import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import { ProjectChip } from '../projects/components/ProjectChip';
 import { userHasOneOfPermissions, userHasPermission } from '../users/utils';
 import MESSAGES from './messages';
 
@@ -135,7 +136,11 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
         renderValue: data => data.project_name || textPlaceholder,
         Cell: settings => {
-            return settings.row.original.project_name || textPlaceholder;
+            const fakeProject = {
+                name: settings.row.original.project_name,
+                color: settings.row.original.project_color,
+            };
+            return <ProjectChip project={fakeProject} />;
         },
     },
     {

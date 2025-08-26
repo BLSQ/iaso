@@ -32,7 +32,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install -g npm@10.5.2
+    npm install -g npm@10.9.3
     node -v
     npm -v
     npm ci

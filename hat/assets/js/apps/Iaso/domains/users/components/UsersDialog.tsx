@@ -194,7 +194,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 maxWidth="md"
                 open={isOpen}
-                closeDialog={() => null}
+                closeDialog={closeDialog}
                 allowConfirm={
                     !(
                         user.user_name.value === '' ||
@@ -202,9 +202,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     )
                 }
                 onClose={() => null}
-                onCancel={() => {
-                    closeDialog();
-                }}
+                onCancel={closeDialog}
                 id="user-dialog"
                 dataTestId="user-dialog"
             >

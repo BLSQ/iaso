@@ -163,6 +163,32 @@ class GroupsAPITestCase(APITestCase):
             status_code=status.HTTP_400_BAD_REQUEST,
         )
 
+    def test_groups_create_multiple_with_blank_source_ref(self):
+        """POST /groups/ another group with blank source ref"""
+        self.group_2.source_ref = ""
+        self.group_2.save()
+
+        count_before = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
+
+        self.client.force_authenticate(self.yoda)
+        data = {
+            "name": "Is this going to trigger an error?",
+            "source_ref": "",
+        }
+        response = self.client.post("/api/groups/", data=data, format="json")
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        count_after = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_before + 1, count_after)
+
+        # Multiple groups can be created with blank source_ref
+        response = self.client.post("/api/groups/", data=data, format="json")  # posting the same thing again
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+
+        last_count = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_after + 1, last_count)
+
     def test_groups_partial_update_ok(self):
         """PATCH /groups/<group_id>: happy path (validation is already covered by create tests)"""
 
@@ -178,6 +204,34 @@ class GroupsAPITestCase(APITestCase):
         self.group_1.refresh_from_db()
         self.assertEqual("test group (updated)", self.group_1.name)
         self.assertEqual(1, self.group_1.source_version.number)
+
+    def test_groups_partial_update_with_blank_source_ref(self):
+        """PATCH /groups/<group_id>: removing a source_ref doesn't crash"""
+        self.group_2.source_ref = ""
+        self.group_2.save()
+
+        count_before = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_before, 1)  # we already have a group with blank source_ref
+
+        # Preparing a new group with a source ref
+        new_group = m.Group.objects.create(
+            name="new group",
+            source_version=self.source_version_2,  # default version
+            source_ref="some_source_ref",
+        )
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(f"/api/groups/{new_group.id}/", data={"source_ref": ""}, format="json")
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+
+        response_data = response.json()
+        self.assertValidGroupData(response_data)
+
+        new_group.refresh_from_db()
+        self.assertEqual(new_group.source_ref, "")
+
+        count_blank_source_refs = m.Group.objects.filter(source_ref="", source_version=self.source_version_2).count()
+        self.assertEqual(count_blank_source_refs, 2)
 
     def test_groups_update_not_implemented(self):
         """PUT /groups/<group_id>: 405"""
@@ -435,6 +489,105 @@ class GroupsAPITestCase(APITestCase):
         # Should only see groups from the specified project
         for item in data:
             self.assertIn("Default source", item["label"])
+
+    def test_export_groups_in_xlsx(self):
+        """GET /groups/export/ with xlsx format"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/export/?file_format=xlsx")
+        excel_columns, excel_data = self.assertXlsxFileResponse(response)
+
+        self.assertEqual(
+            excel_columns,
+            [
+                "ID",
+                "Source ref",
+                "Name",
+                "Data source",
+                "Version",
+            ],
+        )
+        self.assertEqual(
+            excel_data,
+            {
+                "ID": {
+                    0: self.group_1.id,
+                    1: self.group_2.id,
+                },
+                "Source ref": {
+                    0: self.group_1.source_ref,
+                    1: self.group_2.source_ref,
+                },
+                "Name": {
+                    0: self.group_1.name,
+                    1: self.group_2.name,
+                },
+                "Data source": {
+                    0: self.data_source.name,
+                    1: self.data_source.name,
+                },
+                "Version": {
+                    0: self.source_version_1.number,
+                    1: self.source_version_2.number,
+                },
+            },
+        )
+
+    def test_export_groups_in_csv(self):
+        """GET /groups/export/ with csv format"""
+
+        self.group_1.source_ref = "group_1_ref"
+        self.group_1.save()
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/export/?file_format=csv")
+        data = self.assertCsvFileResponse(response, streaming=True, return_as_lists=True)
+        columns = data[0]
+
+        self.assertEqual(
+            columns,
+            [
+                "ID",
+                "Source ref",
+                "Name",
+                "Data source",
+                "Version",
+            ],
+        )
+        self.assertEqual(len(data), 3)  # Header + 2 rows
+        self.assertEqual(
+            data[1],
+            [
+                str(self.group_1.id),
+                self.group_1.source_ref,
+                self.group_1.name,
+                self.data_source.name,
+                str(self.source_version_1.number),
+            ],
+        )
+        self.assertEqual(
+            data[2],
+            [
+                str(self.group_2.id),
+                "",  # group_2 has no source_ref, so the result is an empty string
+                self.group_2.name,
+                self.data_source.name,
+                str(self.source_version_2.number),
+            ],
+        )
+
+    def test_export_groups_no_auth(self):
+        """GET /groups/export/ without auth should result in a 401"""
+
+        response = self.client.get("/api/groups/export/?file_format=xlsx")
+        self.assertJSONResponse(response, status.HTTP_401_UNAUTHORIZED)
+
+    def test_export_groups_no_perms(self):
+        """GET /groups/export/ with authenticated user without the right permission should result in a 403"""
+
+        self.client.force_authenticate(self.chewbacca)
+        response = self.client.get("/api/groups/export/?file_format=csv")
+        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
 
     def assertValidGroupListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(

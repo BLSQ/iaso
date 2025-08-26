@@ -55,5 +55,5 @@ class InstancesMobileViewSet(ModelViewSet):
         self.paginator.results_key = "attachments"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10
         page = self.paginator.paginate_queryset(queryset, request)
-        serializer = InstanceFileSerializer(page, many=True)
+        serializer = InstanceFileSerializer(page, many=True, context=self.get_serializer_context())
         return self.paginator.get_paginated_response(serializer.data)

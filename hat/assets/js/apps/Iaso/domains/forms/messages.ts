@@ -137,6 +137,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated',
     },
+    created_by: {
+        id: 'iaso.forms.created_by',
+        defaultMessage: 'Created by',
+    },
+    updated_by: {
+        id: 'iaso.forms.updated_by',
+        defaultMessage: 'Updated by',
+    },
     subSource: {
         id: 'iaso.forms.subSource',
         defaultMessage: 'Sub-Source',
@@ -276,6 +284,10 @@ const MESSAGES = defineMessages({
     short_name: {
         id: 'iaso.orgUnits.shortName',
         defaultMessage: 'Short name',
+    },
+    json_logic: {
+        id: 'iaso.form.jsonLogic',
+        defaultMessage: 'JSON Logic',
     },
     parent_name: {
         id: 'iaso.orgUnits.parent_name',
@@ -545,6 +557,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.attachment',
         defaultMessage: 'Attachment',
     },
+    predefinedFilters: {
+        id: 'iaso.form.predefinedFilters',
+        defaultMessage: 'Predefined filters',
+    },
     file: {
         id: 'iaso.instance.file',
         defaultMessage: 'File',
@@ -552,6 +568,10 @@ const MESSAGES = defineMessages({
     deleteAttachment: {
         id: 'iaso.label.deleteAttachment',
         defaultMessage: 'Delete attachment : {attachmentName}',
+    },
+    deletePredefinedFilter: {
+        id: 'iaso.label.deletePredefinedFilter',
+        defaultMessage: 'Delete predefined filter : {name}',
     },
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
@@ -565,6 +585,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.confirm',
         defaultMessage: 'Confirm',
     },
+    add: {
+        id: 'iaso.form.add',
+        defaultMessage: 'Add',
+    },
     addUpdate: {
         id: 'iaso.form.addUpdate',
         defaultMessage: 'Add / Update',
@@ -577,6 +601,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.attachments.attachmentModalContent',
         defaultMessage:
             'If a file with the same name already exists, it will be overridden. Once a file is overridden, it cannot be recovered',
+    },
+    predefinedFiltersAddModalTitle: {
+        id: 'iaso.form.predefinedFiltersAddModalTitle',
+        defaultMessage: 'Add predefined filter',
+    },
+    predefinedFiltersEditModalTitle: {
+        id: 'iaso.form.predefinedFiltersEditModalTitle',
+        defaultMessage: 'Edit predefined filter',
     },
     uploadError: {
         id: 'iaso.attachments.uploadError',
@@ -694,6 +726,18 @@ const MESSAGES = defineMessages({
     searchToSeeForms: {
         id: 'iaso.forms.searchToSeeForms',
         defaultMessage: 'Click "Search" button to see forms',
+    },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
     },
 });
 

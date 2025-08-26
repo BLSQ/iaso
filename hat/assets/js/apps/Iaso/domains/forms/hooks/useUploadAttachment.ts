@@ -3,7 +3,7 @@ import { postRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
 
-const uploadAttachment = (files: File[], formId: string) => {
+const uploadAttachment = (files: File[], formId: number) => {
     const fileData = { file: files[0] };
     return postRequest({
         url: '/api/formattachments/',
@@ -14,7 +14,7 @@ const uploadAttachment = (files: File[], formId: string) => {
     });
 };
 
-export const useUploadAttachment = (formId: string): UseMutationResult => {
+export const useUploadAttachment = (formId: number): UseMutationResult => {
     return useSnackMutation<any, any, any, any>({
         mutationFn: file => uploadAttachment(file, formId),
         invalidateQueryKey: 'formAttachments',

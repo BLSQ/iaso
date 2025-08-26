@@ -4,16 +4,16 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { CreateEditTeam } from './components/CreateEditTeam';
-import { TeamParams } from './types/team';
-import { TeamFilters } from './components/TeamFilters';
-import { useGetTeams } from './hooks/requests/useGetTeams';
-import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { baseUrls } from '../../constants/urls';
-import { teamColumns } from './config';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import MESSAGES from './messages';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CreateEditTeam } from './components/CreateEditTeam';
+import { TeamFilters } from './components/TeamFilters';
+import { teamColumns } from './config';
+import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
+import { useGetTeams } from './hooks/requests/useGetTeams';
+import MESSAGES from './messages';
+import { TeamParams } from './types/team';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

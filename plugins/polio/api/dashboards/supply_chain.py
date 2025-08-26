@@ -159,9 +159,11 @@ class VaccineRequestFormDashboardViewSet(ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        return VaccineRequestForm.objects.filter(
-            campaign__account=self.request.user.iaso_profile.account
-        ).select_related("campaign__country")
+        return (
+            VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+            .select_related("campaign__country")
+            .order_by("id")
+        )
 
 
 class VaccinePreAlertDashboardSerializer(serializers.ModelSerializer):

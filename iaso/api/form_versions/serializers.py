@@ -1,21 +1,22 @@
 import typing
 
-from django.db.models import BooleanField, Count, TextField, Value
-from django.db.models.expressions import Case, When
-from django.db.models.functions import Concat
-from rest_framework import exceptions, parsers, serializers
+from django.contrib.auth.models import User
+from rest_framework import exceptions, serializers
 from rest_framework.fields import Field
 
-from iaso.api.query_params import APP_ID
-from iaso.models import FeatureFlag, Form, FormVersion, Project
+from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
+from iaso.api.forms import HasFormPermission
+from iaso.models import Form, FormVersion
 from iaso.odk import parsing, validate_xls_form
 
-from .common import DynamicFieldsModelSerializer, ModelViewSet, TimestampField
-from .forms import HasFormPermission
-from .serializers import AppIdSerializer
+
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+        ref_name = "UserNestedSerializerForFormVersions"
 
 
-# noinspection PyMethodMayBeStatic
 class FormVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = FormVersion
@@ -31,6 +32,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "md5",
             "created_at",
             "updated_at",
+            "created_by",
+            "updated_by",
             "start_period",
             "end_period",
             "mapping_versions",
@@ -48,6 +51,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
             "created_at",
             "updated_at",
+            "created_by",
+            "updated_by",
             "start_period",
             "end_period",
             "mapping_versions",
@@ -63,6 +68,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "md5",
             "created_at",
             "updated_at",
+            "created_by",
+            "updated_by",
             "descriptor",
             "possible_fields",
         ]
@@ -78,6 +85,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     mapping_versions = serializers.SerializerMethodField()
     start_period = serializers.CharField(required=False, default=None)
     end_period = serializers.CharField(required=False, default=None)
+    created_by = UserNestedSerializer(required=False)
+    updated_by = UserNestedSerializer(required=False)
 
     def get_form_name(self, form_version):
         return form_version.form.name
@@ -135,6 +144,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def create(self, validated_data):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+        validated_data["updated_by"] = user
         try:
             return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
         except Exception as e:
@@ -144,88 +156,6 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     def update(self, form_version, validated_data):
         form_version.start_period = validated_data.pop("start_period", None)
         form_version.end_period = validated_data.pop("end_period", None)
+        form_version.updated_by = self.context["request"].user
         form_version.save()
         return form_version
-
-
-class HasFormVersionPermission(HasFormPermission):
-    def has_object_permission(self, request, view, obj) -> bool:
-        if not self.has_permission(request, view):
-            return False
-
-        ok_forms = Form.objects_include_deleted.filter_for_user_and_app_id(
-            request.user, request.query_params.get(APP_ID)
-        )
-
-        return ok_forms.filter(id=obj.form_id).exists()
-
-
-class FormVersionsViewSet(ModelViewSet):
-    f"""Form versions API
-
-    This API is open to anonymous users only if `{FeatureFlag.REQUIRE_AUTHENTICATION}` is not set and an `{APP_ID}`
-    parameter is given.
-
-    GET /api/formversions/
-    GET /api/formversions/<id>
-    POST /api/formversions/
-    PUT /api/formversions/<id>  -- can only update start_period and end_period
-    PATCH /api/formversions/<id>  -- can only update start_period and end_period
-    """
-
-    serializer_class = FormVersionSerializer
-    permission_classes = [HasFormVersionPermission]
-    results_key = "form_versions"
-    queryset = FormVersion.objects.all()
-    parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
-    http_method_names = ["get", "put", "post", "head", "options", "trace", "patch"]
-
-    def get_queryset(self):
-        orders = self.request.query_params.get("order", "full_name").split(",")
-        mapped_filter = self.request.query_params.get("mapped", "")
-
-        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
-        if app_id is not None:
-            try:
-                Project.objects.get_for_user_and_app_id(user=self.request.user, app_id=app_id)
-            except Project.DoesNotExist:
-                if self.request.user.is_anonymous:
-                    raise exceptions.NotAuthenticated
-                raise exceptions.NotFound(f"Project not found for {app_id}")
-            queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
-        elif self.request.user.is_anonymous:
-            raise exceptions.NotAuthenticated
-        else:
-            profile = self.request.user.iaso_profile
-            queryset = FormVersion.objects.filter(form__projects__account=profile.account)
-
-        # We don't send versions for deleted forms
-        queryset = queryset.filter(form__deleted_at=None)
-        search_name = self.request.query_params.get("search_name", None)
-        if search_name:
-            queryset = queryset.filter(form__name__icontains=search_name)
-        form_id = self.request.query_params.get("form_id", None)
-        if form_id:
-            queryset = queryset.filter(form__id=form_id)
-        version_id = self.request.query_params.get("version_id", None)
-        if version_id:
-            queryset = queryset.filter(version_id=version_id)
-
-        queryset = queryset.annotate(
-            full_name=Concat("form__name", Value(" - V"), "version_id", output_field=TextField())
-        )
-
-        queryset = queryset.annotate(mapping_versions_count=Count("mapping_versions"))
-
-        queryset = queryset.annotate(
-            mapped=Case(When(mapping_versions_count__gt=0, then=True), default=False, output_field=BooleanField())
-        )
-
-        if mapped_filter:
-            queryset = queryset.filter(mapped=(mapped_filter == "true"))
-
-        queryset = queryset.select_related("form").prefetch_related("mapping_versions")
-
-        queryset = queryset.order_by(*orders)
-
-        return queryset

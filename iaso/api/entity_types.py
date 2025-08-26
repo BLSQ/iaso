@@ -25,6 +25,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",
+            "prevent_add_if_duplicate_found",
         ]
 
     created_at = TimestampField(read_only=True)
@@ -76,6 +77,7 @@ class EntityTypeViewSet(ModelViewSet):
             entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
             entity_type.fields_list_view = request.data.get("fields_list_view", None)
             entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
+            entity_type.prevent_add_if_duplicate_found = request.data.get("prevent_add_if_duplicate_found", False)
             entity_type.save()
             return Response(entity_type.as_dict())
         except:

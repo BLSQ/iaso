@@ -1,15 +1,15 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Box, Chip, Switch } from '@mui/material';
+import { Box, Switch } from '@mui/material';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
 import { FeatureFlagToggleCell } from './components/FeatureFlagsToggleCell';
 import { FeatureFlagTooltipCell } from './components/FeatureFlagTooltipCell';
+import { ProjectChip } from './components/ProjectChip';
 import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
-import { FeatureFlag } from './types/featureFlag';
+import { FeatureFlag, ProjectFeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
 
 export const baseUrl = baseUrls.projects;
@@ -23,20 +23,7 @@ export const useColumns = (
                 Header: formatMessage(MESSAGES.projectName),
                 accessor: 'name',
                 Cell: settings => {
-                    const textColor = Color(
-                        settings.row.original.color,
-                    ).isDark()
-                        ? 'white'
-                        : 'black';
-                    return (
-                        <Chip
-                            label={settings.row.original.name}
-                            sx={{
-                                backgroundColor: settings.row.original.color,
-                                color: textColor,
-                            }}
-                        />
-                    );
+                    return <ProjectChip project={settings.row.original} />;
                 },
             },
             {
@@ -90,7 +77,7 @@ export const useColumns = (
 export const useFeatureFlagColumns = (
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
     toggleFeatureGroup: (group: string) => void,
-    featureFlagsValues: (string | number)[],
+    featureFlagsValues: ProjectFeatureFlag[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -102,13 +89,15 @@ export const useFeatureFlagColumns = (
                 align: 'center',
                 width: 50,
                 Cell: settings => {
-                    const title = MESSAGES[
-                        `${settings.row.original.code.toLowerCase()}_tooltip`
-                    ]
-                        ? MESSAGES[
-                              `${settings.row.original.code.toLowerCase()}_tooltip`
-                          ]
-                        : settings.row.original.name;
+                    const title =
+                        settings.row.original?.code &&
+                        MESSAGES[
+                            `${settings.row.original.code.toLowerCase()}_tooltip`
+                        ]
+                            ? MESSAGES[
+                                  `${settings.row.original.code.toLowerCase()}_tooltip`
+                              ]
+                            : settings.row.original.name;
                     return !settings.row.original.group ? (
                         <FeatureFlagTooltipCell
                             title={formatMessage(title)}
@@ -159,10 +148,10 @@ export const useFeatureFlagColumns = (
                     return !settings.row.original.group ? (
                         <Switch
                             data-test="featureFlag-checkbox"
-                            id={`featureFlag-checkbox-${settings.row.original.id}`}
+                            id={`featureFlag-checkbox-${settings.row.original.code}`}
                             checked={Boolean(
-                                featureFlagsValues.includes(
-                                    settings.row.original.id,
+                                featureFlagsValues.find(
+                                    ff => ff.id === settings.row.original.id,
                                 ),
                             )}
                             onChange={e => {
@@ -171,7 +160,7 @@ export const useFeatureFlagColumns = (
                                     e.target.checked,
                                 );
                             }}
-                            name={settings.row.original.id}
+                            name={settings.row.original.code}
                             color="primary"
                         />
                     ) : (

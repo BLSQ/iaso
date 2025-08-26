@@ -873,12 +873,23 @@ class OrgUnitChangeRequest(SoftDeletableModel):
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
+                current_reference_instances = list(self.org_unit.reference_instances.all())
+
                 self.org_unit.reference_instances.clear()
-                new_reference_instances = [
+
+                new_reference_instances = list(self.new_reference_instances.all())
+                new_reference_forms_ids = self.new_reference_instances.values_list("form_id", flat=True)
+
+                for instance in current_reference_instances:
+                    if instance.form_id not in new_reference_forms_ids:
+                        new_reference_instances.append(instance)
+
+                new_ou_reference_instances = [
                     OrgUnitReferenceInstance(org_unit_id=self.org_unit.pk, form_id=instance.form_id, instance=instance)
-                    for instance in self.new_reference_instances.all()
+                    for instance in new_reference_instances
                 ]
-                OrgUnitReferenceInstance.objects.bulk_create(new_reference_instances)
+
+                OrgUnitReferenceInstance.objects.bulk_create(new_ou_reference_instances)
             # Handle non m2m fields.
             else:
                 new_value = getattr(self, field_name)

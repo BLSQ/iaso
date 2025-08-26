@@ -77,8 +77,8 @@ def set_feature_flag_category_and_is_dangerous(apps, schema_editor):
     all_feature_flags = FeatureFlag.objects.all()
     for flag in all_feature_flags:
         code = flag.code
-        category = feature_flag_code_to_category.get(code)
-        order = feature_flag_code_to_order.get(code)
+        category = feature_flag_code_to_category.get(code, "NA")
+        order = feature_flag_code_to_order.get(code, 99)
         flag.category = category
         flag.order = order
         flag.is_dangerous = True if category == "SPO" else False

@@ -11,6 +11,8 @@ import {
 } from 'bluesquare-components';
 
 import { useFormik } from 'formik';
+import { isEqual } from 'lodash';
+import * as yup from 'yup';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { PredefinedFilterModalButton } from 'Iaso/domains/forms/components/PredefinedFilterModalButton';
@@ -24,8 +26,6 @@ import {
 } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { useGetFieldsForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
 import { useTranslatedErrors } from 'Iaso/libs/validation';
-import { isEqual } from 'lodash';
-import * as yup from 'yup';
 import MESSAGES from '../messages';
 
 type Props = {

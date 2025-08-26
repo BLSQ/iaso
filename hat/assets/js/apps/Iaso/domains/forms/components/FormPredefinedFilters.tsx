@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -6,7 +6,10 @@ import { PredefinedFilterModal } from 'Iaso/domains/forms/components/PredefinedF
 import { useGetPredefinedFilters } from 'Iaso/domains/forms/hooks/useGetPredefinedFilters';
 import { useSaveFormPredefinedFilter } from 'Iaso/domains/forms/hooks/useSaveFormPredefinedFilter';
 import { useHumanReadableJsonLogicForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
-import { useGetColumns } from '../config/predefinedFilters';
+import {
+    useGetMainColumns,
+    useGetActionColumns,
+} from '../config/predefinedFilters';
 
 import { FormParams } from '../types/forms';
 
@@ -26,12 +29,16 @@ export const FormPredefinedFilters: FunctionComponent<Props> = ({ params }) => {
     const getHumanReadableJsonLogic = useHumanReadableJsonLogicForForm(
         params.formId,
     );
-    const columns = useGetColumns(
-        params,
-        predefinedFilters?.count ?? 0,
+    const mainColumns = useGetMainColumns(getHumanReadableJsonLogic);
+    const actionColumns = useGetActionColumns(
         save,
         isSaving,
-        getHumanReadableJsonLogic,
+        params,
+        predefinedFilters?.count ?? 0,
+    );
+    const columns = useMemo(
+        () => [...mainColumns, ...actionColumns],
+        [mainColumns, actionColumns],
     );
     return (
         <Box>

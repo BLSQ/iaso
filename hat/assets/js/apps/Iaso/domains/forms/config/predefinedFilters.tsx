@@ -8,24 +8,15 @@ import {
     FormParams,
     FormPredefinedFilter,
 } from 'Iaso/domains/forms/types/forms';
-import { useHumanReadableJsonLogicForForm } from 'Iaso/domains/workflows/hooks/useHumanReadableJsonLogicForForm';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from '../messages';
 
-export const useGetColumns = (
-    params: FormParams,
-    count: number,
-    save: (filter: FormPredefinedFilter) => void,
-    isSaving: boolean,
+export const useGetMainColumns = (
     getHumanReadableJsonLogic: (
         logic: Record<string, string>,
     ) => string | ReactNode,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deletePredefinedFilter } = useDeletePredefinedFilter(
-        params,
-        count,
-    );
     return useMemo(
         () => [
             {
@@ -54,6 +45,25 @@ export const useGetColumns = (
                 accessor: 'updated_at',
                 Cell: DateTimeCell,
             },
+        ],
+        [formatMessage, getHumanReadableJsonLogic],
+    );
+};
+
+export const useGetActionColumns = (
+    save: (filter: FormPredefinedFilter) => void,
+    isSaving: boolean,
+    params: FormParams,
+    count: number,
+) => {
+    const { formatMessage } = useSafeIntl();
+
+    const { mutateAsync: deletePredefinedFilter } = useDeletePredefinedFilter(
+        params,
+        count,
+    );
+    return useMemo(
+        () => [
             {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'actions',
@@ -93,13 +103,6 @@ export const useGetColumns = (
                 },
             },
         ],
-        [
-            deletePredefinedFilter,
-            formatMessage,
-            getHumanReadableJsonLogic,
-            isSaving,
-            params.formId,
-            save,
-        ],
+        [deletePredefinedFilter, formatMessage, isSaving, params.formId, save],
     );
 };

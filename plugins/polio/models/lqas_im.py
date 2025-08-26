@@ -168,7 +168,6 @@ class LqasDistrictData(models.Model):
             ),
         ]
         indexes = [
-            models.Index(fields=["district", "round"]),
             models.Index(fields=["subactivity", "round"]),
             models.Index(fields=["district", "round", "subactivity"]),
             models.Index(fields=["round"]),  # Help with round__lqas_ended_at filtering

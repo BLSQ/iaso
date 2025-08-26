@@ -1,9 +1,7 @@
-import { Theme } from '@mui/material/styles';
-import L from 'leaflet';
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-import { Popup, useMap } from 'react-leaflet';
 
 import { Box, Card, CardContent, CardMedia, Grid } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
 
 import {
@@ -13,15 +11,18 @@ import {
     mapPopupStyles,
     useSafeIntl,
 } from 'bluesquare-components';
+import L from 'leaflet';
+import { Popup, useMap } from 'react-leaflet';
+import { useGetForm } from 'Iaso/domains/forms/requests';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
-import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 import { baseUrls } from '../../../../constants/urls';
 import { usePopupState } from '../../../../utils/map/usePopupState';
 import { useGetInstance } from '../../../registry/hooks/useGetInstances';
+import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import { INSTANCE_MAP_METAS_FIELDS } from '../../constants';
+import InstanceDetailsInfos from '../InstanceDetailsInfos';
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...(commonStyles(theme) as Record<string, any>),
@@ -62,9 +63,13 @@ export const InstancePopup: FunctionComponent<Props> = ({
             map.closePopup(popup.current);
         }
     }, [currentInstance, map, popup, replaceLocation]);
-
+    const { data: currentForm } = useGetForm(
+        currentInstance?.form_id,
+        'label_keys,possible_fields',
+    );
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
-
+    console.log('currentForm', currentForm);
+    console.log('currentInstance', currentInstance);
     return (
         <Popup className={classes.popup} ref={popup} pane="popupPane">
             {isLoading && <LoadingSpinner />}

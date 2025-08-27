@@ -1,9 +1,11 @@
 import operator
+import os
 import random
 import re
 import time
 import typing
 
+from datetime import date
 from functools import reduce
 from io import StringIO
 from logging import getLogger
@@ -25,7 +27,6 @@ from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
@@ -38,6 +39,46 @@ from .org_unit import OrgUnit, OrgUnitReferenceInstance
 
 
 logger = getLogger(__name__)
+
+
+def instance_upload_to_for_file_field(instance, filename):
+    account_name = "unknown_account"  # instances can be created anonymously
+
+    today = date.today()
+    year_month = today.strftime("%Y_%m")
+
+    user = instance.created_by
+    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
+    if iaso_profile:
+        account = user.iaso_profile.account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    return os.path.join(
+        account_name,
+        "instances",
+        year_month,
+        filename,
+    )
+
+
+def instance_file_upload_to_for_file_field(instance_file, filename):
+    account_name = "unknown_account"  # instance files can be created anonymously
+
+    today = date.today()
+    year_month = today.strftime("%Y_%m")
+
+    user = getattr(instance_file.instance, "created_by", None)
+    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
+    if iaso_profile:
+        account = user.iaso_profile.account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    return os.path.join(
+        account_name,
+        "instance_files",
+        year_month,
+        filename,
+    )
 
 
 class InstanceQuerySet(django_cte.CTEQuerySet):
@@ -367,8 +408,6 @@ class Instance(models.Model):
     Note that instances are called "Submissions" in the UI
     """
 
-    UPLOADED_TO = "instances/"
-
     STATUS_READY = "READY"
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
@@ -396,7 +435,7 @@ class Instance(models.Model):
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)  # form.name
-    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    file = models.FileField(upload_to=instance_upload_to_for_file_field, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -864,8 +903,6 @@ class InstanceFileExtensionManager(models.Manager):
 
 
 class InstanceFile(models.Model):
-    UPLOADED_TO = "instancefiles/"
-
     #  According to frontend, we need to filter by file extension, see hat/assets/js/apps/Iaso/utils/filesUtils.ts
     IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "webp"]
     VIDEO_EXTENSIONS = ["mp4", "mov"]
@@ -875,7 +912,7 @@ class InstanceFile(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    file = models.FileField(upload_to=instance_file_upload_to_for_file_field, null=True, blank=True)
     deleted = models.BooleanField(default=False)
 
     objects = models.Manager()

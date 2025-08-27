@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.files import File
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
 
@@ -669,3 +670,134 @@ class ReferenceInstanceTestCase(TestCase):
         self.assertFalse(self.instance.is_reference_instance)
         m.OrgUnitReferenceInstance.objects.create(org_unit=self.org_unit, instance=self.instance, form=self.form)
         self.assertTrue(self.instance.is_reference_instance)
+
+
+class BaseUploadToTestCase(TestCase, IasoTestCaseMixin):
+    def setUp(self):
+        # Preparing test data
+        account_1_name = "test account 1"
+        self.account_1, self.data_source_1, self.version_1, self.project_1 = (
+            self.create_account_datasource_version_project("source 1", account_1_name, "project 1")
+        )
+        account_2_name = "***///"
+        self.account_2, self.data_source_2, self.version_2, self.project_2 = (
+            self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
+        )
+
+        self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
+        self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
+        self.user_no_profile = m.User.objects.create(
+            username="user no profile", first_name="User", last_name="NoProfile"
+        )
+
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUp()
+
+
+class InstanceUploadToTestCase(BaseUploadToTestCase):
+    def test_upload_to_happy_path(self):
+        # Upload with a user that belongs to a (correctly named) account
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                created_by=self.user_1,
+                file=UploadedFile(xml_file),
+            )
+
+        expected_file_name = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/instances/{instance.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance.file.name, expected_file_name)
+
+    def test_upload_to_anonymous_user(self):
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                file=UploadedFile(xml_file),
+            )
+
+        expected_file_name = f"unknown_account/instances/{instance.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance.file.name, expected_file_name)
+
+    def test_upload_to_invalid_account_name(self):
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                created_by=self.user_2,
+                file=UploadedFile(xml_file),
+            )
+
+        expected_file_name = (
+            f"invalid_name_{self.account_2.id}/instances/{instance.created_at.strftime('%Y_%m')}/test.xml"
+        )
+        self.assertEqual(instance.file.name, expected_file_name)
+
+    def test_upload_to_user_no_profile(self):
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                created_by=self.user_no_profile,
+                file=UploadedFile(xml_file),
+            )
+
+        expected_file_name = f"unknown_account/instances/{instance.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance.file.name, expected_file_name)
+
+
+class InstanceFileUploadToTestCase(BaseUploadToTestCase):
+    def test_upload_to_happy_path(self):
+        # Upload with a user that belongs to a (correctly named) account
+        instance = m.Instance.objects.create(
+            created_by=self.user_1,
+        )
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance_file = m.InstanceFile.objects.create(
+                file=UploadedFile(xml_file),
+                instance=instance,
+            )
+
+        expected_file_name = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/instance_files/{instance_file.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance_file.file.name, expected_file_name)
+
+    def test_upload_to_anonymous_user(self):
+        instance = m.Instance.objects.create()
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance_file = m.InstanceFile.objects.create(
+                file=UploadedFile(xml_file),
+                instance=instance,
+            )
+
+        expected_file_name = f"unknown_account/instance_files/{instance_file.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance_file.file.name, expected_file_name)
+
+    def test_upload_to_invalid_account_name(self):
+        instance = m.Instance.objects.create(
+            created_by=self.user_2,
+        )
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance_file = m.InstanceFile.objects.create(
+                file=UploadedFile(xml_file),
+                instance=instance,
+            )
+
+        expected_file_name = (
+            f"invalid_name_{self.account_2.id}/instance_files/{instance_file.created_at.strftime('%Y_%m')}/test.xml"
+        )
+        self.assertEqual(instance_file.file.name, expected_file_name)
+
+    def test_upload_to_user_no_profile(self):
+        instance = m.Instance.objects.create(
+            created_by=self.user_no_profile,
+        )
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance_file = m.InstanceFile.objects.create(
+                file=UploadedFile(xml_file),
+                instance=instance,
+            )
+
+        expected_file_name = f"unknown_account/instance_files/{instance_file.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance_file.file.name, expected_file_name)
+
+    def test_upload_to_no_instance(self):
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            instance_file = m.InstanceFile.objects.create(
+                file=UploadedFile(xml_file),
+            )
+
+        expected_file_name = f"unknown_account/instance_files/{instance_file.created_at.strftime('%Y_%m')}/test.xml"
+        self.assertEqual(instance_file.file.name, expected_file_name)

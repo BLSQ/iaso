@@ -11,6 +11,7 @@ import pytz
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
+from django.core.files.storage import default_storage
 from django.test import TestCase
 
 from beanstalk_worker.services import TestTaskService
@@ -18,6 +19,7 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
+from iaso.models.instances import instance_file_upload_to_for_file_field, instance_upload_to_for_file_field
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
 
 
@@ -47,6 +49,11 @@ CORRECT_FILES_FOR_DISASI_ONLY_ZIP = [
 
 DEFAULT_CREATED_AT = datetime.datetime(2024, 4, 1, 0, 0, 5, tzinfo=pytz.UTC)
 DEFAULT_CREATED_AT_STR = "2024-04-01"
+
+DISASI_MAKULO_INSTANCE_FILE_NAME = (
+    "a5362052-408f-44f8-8abc-2a520c01ea10/16_12_127775b2-06a2-4ae6-b2bd-cf64143a9dfe_2024-04-05_16-09-42.xml"
+)
+DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME = "a5362052-408f-44f8-8abc-2a520c01ea10/1712326156339.webp"
 
 
 def zip_fixture_dir(subdir=""):
@@ -129,6 +136,9 @@ class ProcessMobileBulkUploadTest(TestCase):
             id=1, name="Participant", reference_form=self.form_registration
         )
 
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+
     def _create_zip_file(self):
         # Create the zip file: we create it on the fly to be able to clearly
         # see the contents in our repo. We then mock the file download method
@@ -184,6 +194,19 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(catt_instance.instancefile_set.count(), 1)
         image = catt_instance.instancefile_set.first()
         self.assertEqual(image.name, "1712326156339.webp")
+
+        # Checking if files are uploaded to the correct location
+        generated_file_name = instance_upload_to_for_file_field(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
+        # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
+        # it's therefore impossible to strictly check for equality
+        expected_file_name = generated_file_name[:85]
+        self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
+        # same issue about name length for InstanceFile
+        generated_attachment_name = instance_file_upload_to_for_file_field(
+            image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME
+        )
+        expected_attachment_name = generated_attachment_name[:85]
+        self.assertTrue(image.file.name.startswith(expected_attachment_name))
 
         # Entity 2: Patrice Akambu
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)

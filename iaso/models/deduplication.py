@@ -19,6 +19,8 @@ class TypeOfRelation(models.TextChoices):
 
 
 class EntityDuplicateAnalyzis(models.Model):
+    SUPPORTED_FIELD_TYPES = ["number", "integer", "decimal", "text", "calculate", None]
+
     algorithm = models.CharField(
         max_length=20, choices=PossibleAlgorithms.choices, default=PossibleAlgorithms.LEVENSHTEIN
     )

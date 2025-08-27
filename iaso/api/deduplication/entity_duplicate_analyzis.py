@@ -30,22 +30,13 @@ class AnalyzePostBodySerializer(serializers.Serializer):
         possible_fields = e_type.reference_form.possible_fields
 
         for f_name in data["fields"]:
-            # Ensure the field exists on the reference form.
             try:
                 field = [f for f in possible_fields if f["name"] == f_name]
                 field = field[0]
             except IndexError:
                 raise serializers.ValidationError(f"Field `{f_name}` does not exist on reference form.")
 
-            # Ensure the field type is supported by the Levenshtein algorithm.
-            if field["type"] not in [
-                "number",
-                "integer",
-                "decimal",
-                "text",
-                "calculate",
-                None,
-            ]:
+            if field["type"] not in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES:
                 raise serializers.ValidationError(f"Field `{f_name}` has an unsupported type `{field['type']}`.")
 
         return data

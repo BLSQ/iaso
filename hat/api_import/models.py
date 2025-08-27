@@ -1,3 +1,7 @@
+import os.path
+
+from datetime import date
+
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import CASCADE
@@ -9,6 +13,26 @@ IMPORT_TYPE = (
     ("bulk", "Bulk Org Units and Instances"),
     ("storageLog", "Storage logs"),
 )
+
+
+def api_import_upload_to_for_file_field(api_import, filename):
+    account_name = "unknown_account"  # uploads can be anonymous
+
+    today = date.today()
+    year_month = today.strftime("%Y_%m")
+
+    user = api_import.user
+    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
+    if iaso_profile:
+        account = user.iaso_profile.account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    return os.path.join(
+        account_name,
+        "api_imports",
+        year_month,
+        filename,
+    )
 
 
 class APIImport(models.Model):
@@ -30,7 +54,7 @@ class APIImport(models.Model):
     headers = models.JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
-    file = models.FileField(upload_to="mobilebulkuploads", null=True, blank=True)
+    file = models.FileField(upload_to=api_import_upload_to_for_file_field, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (

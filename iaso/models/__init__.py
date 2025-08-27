@@ -1,4 +1,5 @@
 from .base import *
+from .bulk_create_user_csv_file import BulkCreateUserCsvFile
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis

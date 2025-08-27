@@ -888,13 +888,6 @@ class ExportStatus(models.Model):
         return "ExportStatus " + str(self.id)
 
 
-class BulkCreateUserCsvFile(models.Model):
-    file = models.FileField(blank=False, null=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
-    account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
-
-
 class UserRole(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { Accordion } from '../../../../components/Accordion/Accordion';
-import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
-import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
+import { Accordion } from 'Iaso/components/Accordion/Accordion';
+import { AccordionDetails } from 'Iaso/components/Accordion/AccordionDetails';
+import { AccordionSummary } from 'Iaso/components/Accordion/AccordionSummary';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
 import { ExtendedNestedGroup, OrgUnitChangeRequestDetails } from '../types';
@@ -59,7 +59,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                             color: isHighlighted,
                                         }}
                                     >
-                                        {(value.left === true && name) || '--'}
+                                        {(value.left && name) || '--'}
                                     </TableCell>
                                     <TableCell
                                         sx={{
@@ -71,7 +71,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                                 isHighlighted,
                                         }}
                                     >
-                                        {(value.right === true && name) || '--'}
+                                        {(value.right && name) || '--'}
                                     </TableCell>
                                 </TableRow>
                             );

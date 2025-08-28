@@ -456,12 +456,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="formversion",
             name="file",
-            field=models.FileField(upload_to=iaso.models.forms._form_version_upload_to),
+            field=models.FileField(upload_to=iaso.models.forms.form_version_upload_to),
         ),
         migrations.AddField(
             model_name="formversion",
             name="xls_file",
-            field=models.FileField(blank=True, null=True, upload_to=iaso.models.forms._form_version_upload_to),
+            field=models.FileField(blank=True, null=True, upload_to=iaso.models.forms.form_version_upload_to),
         ),
         migrations.AddField(
             model_name="form",

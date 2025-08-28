@@ -30,10 +30,8 @@ class AnalyzePostBodySerializer(serializers.Serializer):
         possible_fields = e_type.reference_form.possible_fields
 
         for f_name in data["fields"]:
-            try:
-                field = [f for f in possible_fields if f["name"] == f_name]
-                field = field[0]
-            except IndexError:
+            field = next((f for f in possible_fields if f["name"] == f_name), None)
+            if not field:
                 raise serializers.ValidationError(f"Field `{f_name}` does not exist on reference form.")
 
             if field["type"] not in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES:

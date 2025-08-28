@@ -31,6 +31,7 @@ from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 from iaso.utils.emoji import fix_emoji
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.jsonlogic import instance_jsonlogic_to_q
+from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from ..utils.dhis2 import generate_id_for_dhis_2
 from .device import Device, DeviceOwnership
@@ -41,17 +42,10 @@ from .org_unit import OrgUnit, OrgUnitReferenceInstance
 logger = getLogger(__name__)
 
 
-def instance_upload_to_for_file_field(instance, filename):
-    account_name = "unknown_account"  # instances can be created anonymously
-
+def instance_upload_to_for_file_field(instance, filename: str):
     today = date.today()
     year_month = today.strftime("%Y_%m")
-
-    user = instance.created_by
-    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
-    if iaso_profile:
-        account = user.iaso_profile.account
-        account_name = f"{account.short_sanitized_name}_{account.id}"
+    account_name = get_account_name_based_on_user(instance.created_by)
 
     return os.path.join(
         account_name,
@@ -61,17 +55,11 @@ def instance_upload_to_for_file_field(instance, filename):
     )
 
 
-def instance_file_upload_to_for_file_field(instance_file, filename):
-    account_name = "unknown_account"  # instance files can be created anonymously
-
+def instance_file_upload_to_for_file_field(instance_file, filename: str):
     today = date.today()
     year_month = today.strftime("%Y_%m")
-
     user = getattr(instance_file.instance, "created_by", None)
-    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
-    if iaso_profile:
-        account = user.iaso_profile.account
-        account_name = f"{account.short_sanitized_name}_{account.id}"
+    account_name = get_account_name_based_on_user(user)
 
     return os.path.join(
         account_name,

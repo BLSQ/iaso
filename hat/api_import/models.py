@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import CASCADE
 
+from iaso.utils.models.upload_to import get_account_name_based_on_user
+
 
 IMPORT_TYPE = (
     ("orgUnit", "Org Unit"),
@@ -15,17 +17,10 @@ IMPORT_TYPE = (
 )
 
 
-def api_import_upload_to_for_file_field(api_import, filename):
-    account_name = "unknown_account"  # uploads can be anonymous
-
+def api_import_upload_to_for_file_field(api_import, filename: str):
     today = date.today()
     year_month = today.strftime("%Y_%m")
-
-    user = api_import.user
-    iaso_profile = getattr(user, "iaso_profile", None)  # anonymous users don't even have the iaso_profile relation
-    if iaso_profile:
-        account = user.iaso_profile.account
-        account_name = f"{account.short_sanitized_name}_{account.id}"
+    account_name = get_account_name_based_on_user(api_import.user)
 
     return os.path.join(
         account_name,

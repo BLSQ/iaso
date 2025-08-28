@@ -57,12 +57,7 @@ def form_attachment_upload_to(form_attachment: "FormAttachment", filename: str):
 
     underscored_form_name = slugify_underscore(form_attachment.form.name)
 
-    return os.path.join(
-        account_name,
-        "form_attachments",
-        underscored_form_name,
-        filename
-    )
+    return os.path.join(account_name, "form_attachments", underscored_form_name, filename)
 
 
 class FormQuerySet(models.QuerySet):

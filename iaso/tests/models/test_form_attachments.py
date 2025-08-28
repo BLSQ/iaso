@@ -1,9 +1,8 @@
-from django.contrib.auth.models import User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 
 from iaso.models import Form, FormAttachment
-from iaso.test import TestCase, IasoTestCaseMixin
+from iaso.test import IasoTestCaseMixin, TestCase
 
 
 class FormAttachmentTestCase(TestCase, IasoTestCaseMixin):
@@ -37,7 +36,9 @@ class FormAttachmentTestCase(TestCase, IasoTestCaseMixin):
                 form=self.form_1,
             )
 
-        expected_file_name = f"{self.account_1.short_sanitized_name}_{self.account_1.id}/form_attachments/form_1/safe.jpg"
+        expected_file_name = (
+            f"{self.account_1.short_sanitized_name}_{self.account_1.id}/form_attachments/form_1/safe.jpg"
+        )
         self.assertEqual(form_attachment.file.name, expected_file_name)
 
     def test_upload_to_no_account(self):
@@ -51,7 +52,7 @@ class FormAttachmentTestCase(TestCase, IasoTestCaseMixin):
                 form=self.form_1,
             )
 
-        expected_file_name = f"unknown_account/form_attachments/form_1/safe.jpg"
+        expected_file_name = "unknown_account/form_attachments/form_1/safe.jpg"
         self.assertEqual(form_attachment.file.name, expected_file_name)
 
     def test_upload_to_invalid_account_name(self):

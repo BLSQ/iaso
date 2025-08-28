@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             field=models.FileField(
                 blank=True,
                 null=True,
-                upload_to=hat.api_import.models.api_import_upload_to_for_file_field,
+                upload_to=hat.api_import.models.api_import_upload_to,
             ),
         ),
     ]

@@ -1,6 +1,6 @@
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from hat.api_import.models import APIImport, api_import_upload_to_for_file_field
+from hat.api_import.models import APIImport, api_import_upload_to
 from iaso.models import Account, FeatureFlag, Project, Task
 from iaso.test import APITestCase
 
@@ -40,7 +40,7 @@ class MobileBulkUploadsAPITestCase(APITestCase):
         self.assertFalse(api_import.has_problem)
         self.assertIsNotNone(api_import.file)
 
-        expected_file_name = api_import_upload_to_for_file_field(api_import, file_name)
+        expected_file_name = api_import_upload_to(api_import, file_name)
         self.assertEqual(api_import.file.name, expected_file_name)
 
     def test_success_unauthenticated(self):

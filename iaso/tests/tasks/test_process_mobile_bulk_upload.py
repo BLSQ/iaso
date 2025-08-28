@@ -19,7 +19,7 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, Modification
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
-from iaso.models.instances import instance_file_upload_to_for_file_field, instance_upload_to_for_file_field
+from iaso.models.instances import instance_file_upload_to, instance_upload_to
 from iaso.tasks.process_mobile_bulk_upload import process_mobile_bulk_upload
 
 
@@ -196,15 +196,13 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.assertEqual(image.name, "1712326156339.webp")
 
         # Checking if files are uploaded to the correct location
-        generated_file_name = instance_upload_to_for_file_field(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
+        generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
         # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
         # it's therefore impossible to strictly check for equality
         expected_file_name = generated_file_name[:85]
         self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
         # same issue about name length for InstanceFile
-        generated_attachment_name = instance_file_upload_to_for_file_field(
-            image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME
-        )
+        generated_attachment_name = instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
         expected_attachment_name = generated_attachment_name[:85]
         self.assertTrue(image.file.name.startswith(expected_attachment_name))
 

@@ -17,7 +17,7 @@ IMPORT_TYPE = (
 )
 
 
-def api_import_upload_to_for_file_field(api_import, filename: str):
+def api_import_upload_to(api_import: "APIImport", filename: str):
     today = date.today()
     year_month = today.strftime("%Y_%m")
     account_name = get_account_name_based_on_user(api_import.user)
@@ -49,7 +49,7 @@ class APIImport(models.Model):
     headers = models.JSONField(null=True, blank=True)
     has_problem = models.BooleanField(default=False)
     exception = models.TextField(blank=True, default="")
-    file = models.FileField(upload_to=api_import_upload_to_for_file_field, null=True, blank=True)
+    file = models.FileField(upload_to=api_import_upload_to, null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s - %s" % (

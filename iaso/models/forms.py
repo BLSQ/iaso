@@ -47,6 +47,24 @@ def form_version_upload_to(form_version: "FormVersion", filename: str):
     )
 
 
+def form_attachment_upload_to(form_attachment: "FormAttachment", filename: str):
+    account_name = "unknown_account"  # some uploads can be anonymous
+
+    form_projects = form_attachment.form.projects
+    if form_projects.exists():
+        account = form_projects.first().account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    underscored_form_name = slugify_underscore(form_attachment.form.name)
+
+    return os.path.join(
+        account_name,
+        "form_attachments",
+        underscored_form_name,
+        filename
+    )
+
+
 class FormQuerySet(models.QuerySet):
     def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
         """Checks whether the provided form_id is already in a form that is:
@@ -378,12 +396,9 @@ class FormAttachment(models.Model):
     class Meta:
         unique_together = [["form", "name"]]
 
-    def form_folder(self, filename):
-        return "/".join(["form_attachments", str(self.form.id), filename])
-
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_folder)
+    file = models.FileField(upload_to=form_attachment_upload_to)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)

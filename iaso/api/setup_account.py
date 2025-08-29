@@ -35,6 +35,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_username = serializers.CharField(max_length=150, required=True)
     user_first_name = serializers.CharField(max_length=30, required=False)
     user_last_name = serializers.CharField(max_length=150, required=False)
+    user_email = serializers.EmailField(required=False)
     password = serializers.CharField(required=True)
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
@@ -53,6 +54,11 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_user_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("user_name_already_exist")
+        return value
+
+    def validate_user_email(self, value):
+        if value and User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("user_email_already_exist")
         return value
 
     def validate_modules(self, modules):
@@ -83,6 +89,7 @@ class SetupAccountSerializer(serializers.Serializer):
             password=validated_data["password"],
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
+            email=validated_data.get("user_email", ""),
         )
 
         module_codenames = [module["codename"] for module in MODULES]

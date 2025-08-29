@@ -108,6 +108,141 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
 
+    def test_setup_account_create_with_email(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        user = m.User.objects.get(username="unittest_username")
+        self.assertEqual(user.email, "test@example.com")
+
+    def test_setup_account_create_with_first_last_name_and_email(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_first_name": "unittest_first_name",
+            "user_last_name": "unittest_last_name",
+            "user_email": "test@example.com",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        user = m.User.objects.get(username="unittest_username")
+        self.assertEqual(user.first_name, "unittest_first_name")
+        self.assertEqual(user.last_name, "unittest_last_name")
+        self.assertEqual(user.email, "test@example.com")
+
+    def test_setup_account_duplicate_email(self):
+        self.client.force_authenticate(self.admin)
+        # Create a user with the email first
+        existing_user = m.User.objects.create_user(
+            username="existing_user", email="test@example.com", password="password"
+        )
+
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("user_email", j)
+
+    def test_setup_account_without_email(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 201)
+        user = m.User.objects.get(username="unittest_username")
+        self.assertEqual(user.email, "")  # Empty string when no email provided
+
+    def test_setup_account_invalid_email_format(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "invalid-email-format",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("user_email", j)
+
+    def test_setup_account_invalid_email_format_no_at(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "testexample.com",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("user_email", j)
+
+    def test_setup_account_invalid_email_format_no_domain(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("user_email", j)
+
+    def test_setup_account_valid_email_formats(self):
+        self.client.force_authenticate(self.admin)
+        valid_emails = [
+            "test@example.com",
+            "user.name@domain.co.uk",
+            "user+tag@example.org",
+            "123@numbers.com",
+            "user@subdomain.example.com",
+        ]
+
+        for email in valid_emails:
+            with self.subTest(email=email):
+                data = {
+                    "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
+                    "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
+                    "user_email": email,
+                    "password": "unittest_password",
+                    "modules": self.MODULES,
+                }
+                response = self.client.post("/api/setupaccount/", data=data, format="json")
+                self.assertEqual(response.status_code, 201, f"Failed for email: {email}")
+
     def test_setup_account_has_all_perms(self):
         self.client.force_authenticate(self.admin)
         data = {

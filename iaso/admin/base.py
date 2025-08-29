@@ -73,6 +73,12 @@ from ..models import (
     Report,
     ReportVersion,
     SourceVersion,
+    StockItem,
+    StockItemRule,
+    StockKeepingUnit,
+    StockKeepingUnitChildren,
+    StockLedgerItem,
+    StockRulesVersion,
     StorageDevice,
     StorageLogEntry,
     StoragePassword,
@@ -741,6 +747,64 @@ class InstanceLockAdmin(admin.ModelAdmin):
 class StorageLogEntryInline(admin.TabularInline):
     model = StorageLogEntry
     raw_id_fields = ("entity", "instances", "org_unit", "performed_by")
+
+
+@admin.register(StockItem)
+class StockItemAdmin(admin.ModelAdmin):
+    fields = ("org_unit", "sku", "value", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("org_unit", "sku", "value")
+    list_filter = ("org_unit", "sku")
+
+
+@admin.register(StockItemRule)
+class StockItemRuleAdmin(admin.ModelAdmin):
+    fields = ("sku", "form", "version", "impact", "question", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("sku", "form", "question", "created_at")
+    list_filter = ("sku", "form", "impact")
+
+
+@admin.register(StockKeepingUnit)
+class StockKeepingUnitAdmin(admin.ModelAdmin):
+    fields = (
+        "account",
+        "name",
+        "short_name",
+        "projects",
+        "org_unit_types",
+        "created_at",
+        "updated_at",
+        "created_by",
+        "updated_by",
+    )
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("account", "name", "short_name")
+    list_filter = ("account", "name", "short_name")
+
+
+@admin.register(StockKeepingUnitChildren)
+class StockKeepingUnitChildrenAdmin(admin.ModelAdmin):
+    fields = ("parent", "child", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("parent", "child", "value")
+    list_filter = ("parent", "child")
+
+
+@admin.register(StockLedgerItem)
+class StockLedgerItemAdmin(admin.ModelAdmin):
+    fields = ("sku", "org_unit", "submission", "question", "impact", "value", "created_at", "created_by")
+    readonly_fields = ("created_at", "created_by")
+    list_display = ("sku", "org_unit", "question", "impact", "value", "created_at")
+    list_filter = ("sku", "org_unit", "impact")
+
+
+@admin.register(StockRulesVersion)
+class StockRuleVersionAdmin(admin.ModelAdmin):
+    fields = ("account", "name", "status", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("account", "name", "status")
+    list_filter = ("account", "status")
 
 
 @admin.register(StorageDevice)

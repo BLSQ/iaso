@@ -755,6 +755,39 @@
     1. Deduplication Algorithms
   </a>
   
+    <nav class="md-nav" aria-label="1. Deduplication Algorithms">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entity-similarity-parameters" class="md-nav__link">
+    Entity Similarity Parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Entity Similarity Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-levenshtein_max_distance-max_distance" class="md-nav__link">
+    1. levenshtein_max_distance (max_distance)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-above_score_display-percentage-similarity" class="md-nav__link">
+    2. above_score_display (percentage similarity)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -892,6 +925,37 @@
 </ul>
 </li>
 </ul>
+<h4 id="entity-similarity-parameters">Entity Similarity Parameters<a class="headerlink" href="#entity-similarity-parameters" title="Permanent link">#</a></h4>
+<p>When comparing entities (e.g. health facilities, campaigns) Iaso uses the Levenshtein distance algorithm to detect similar names. Two parameters control which matches are considered relevant:</p>
+<h5 id="1-levenshtein_max_distance-max_distance">1. <code>levenshtein_max_distance</code> (max_distance)<a class="headerlink" href="#1-levenshtein_max_distance-max_distance" title="Permanent link">#</a></h5>
+<p>Represents the maximum number of single-character edits (insertions, deletions, substitutions) allowed between two strings.</p>
+<p>If the Levenshtein distance between two names is greater than this value, the match is discarded.</p>
+<p>This is a hard cutoff independent of string length.</p>
+<p><strong>Examples</strong> (max_distance = 2):</p>
+<ul>
+<li>"kitten" vs "sitten" → distance = 1 → ✅ kept</li>
+<li>"kitten" vs "sittin" → distance = 2 → ✅ kept  </li>
+<li>"kitten" vs "sitting" → distance = 3 → ❌ rejected</li>
+</ul>
+<p>Use this to prevent unrelated matches from being considered, even if they score relatively high on percentage similarity for long strings.</p>
+<h5 id="2-above_score_display-percentage-similarity">2. <code>above_score_display</code> (percentage similarity)<a class="headerlink" href="#2-above_score_display-percentage-similarity" title="Permanent link">#</a></h5>
+<p>Represents the minimum normalized similarity score required to display a potential match in the UI.</p>
+<p>The score is computed as:</p>
+<pre><code>similarity = (1 - levenshtein(a,b) / max(len(a), len(b))) × 100
+</code></pre>
+<p>Expressed as a percentage between 0% (completely different) and 100% (exact match).</p>
+<p><strong>Examples</strong>:</p>
+<ul>
+<li>
+<p>"kitten" vs "sitting" → distance = 3, max length = 7
+  → similarity = 1 - 3/7 = 0.57 → 57%</p>
+</li>
+<li>
+<p>"hopital" vs "hospital" → distance = 1, max length = 8
+  → similarity = 1 - 1/8 = 0.875 → 87.5%</p>
+</li>
+</ul>
+<p>If <code>above_score_display = 80</code>, then only matches with similarity ≥ 80% are displayed.</p>
 <h3 id="2-add-a-deduplication-algorithm">2. Add a Deduplication Algorithm<a class="headerlink" href="#2-add-a-deduplication-algorithm" title="Permanent link">#</a></h3>
 <p>To add an algorithm:</p>
 <ol>

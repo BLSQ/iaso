@@ -1,12 +1,11 @@
 from django.core.exceptions import ValidationError
 from django.core.files import File
-from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.odk import parsing
-from iaso.test import APITestCase, IasoTestCaseMixin, TestCase
+from iaso.test import APITestCase, FileUploadToTestCase, IasoTestCaseMixin, TestCase
 
 
 class InstanceBase(IasoTestCaseMixin):
@@ -672,27 +671,14 @@ class ReferenceInstanceTestCase(TestCase):
         self.assertTrue(self.instance.is_reference_instance)
 
 
-class BaseUploadToTestCase(TestCase, IasoTestCaseMixin):
+class BaseUploadToTestCase(FileUploadToTestCase):
     def setUp(self):
-        # Preparing test data
-        account_1_name = "test account 1"
-        self.account_1, self.data_source_1, self.version_1, self.project_1 = (
-            self.create_account_datasource_version_project("source 1", account_1_name, "project 1")
-        )
-        account_2_name = "***///"
-        self.account_2, self.data_source_2, self.version_2, self.project_2 = (
-            self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
-        )
-
+        super().setUp()
         self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
         self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
         self.user_no_profile = m.User.objects.create(
             username="user no profile", first_name="User", last_name="NoProfile"
         )
-
-        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
-        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
-        super().setUp()
 
 
 class InstanceUploadToTestCase(BaseUploadToTestCase):

@@ -1,23 +1,13 @@
 from django.contrib.auth.models import User
-from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
 
 from iaso.models import Form, FormVersion
-from iaso.test import IasoTestCaseMixin, TestCase
+from iaso.test import FileUploadToTestCase
 
 
-class FormVersionTestCase(TestCase, IasoTestCaseMixin):
+class FormVersionTestCase(FileUploadToTestCase):
     def setUp(self):
-        # Preparing test data
-        account_1_name = "test account 1"
-        self.account_1, self.data_source_1, self.version_1, self.project_1 = (
-            self.create_account_datasource_version_project("source 1", account_1_name, "project 1")
-        )
-        account_2_name = "***///"
-        self.account_2, self.data_source_2, self.version_2, self.project_2 = (
-            self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
-        )
-
+        super().setUp()
         self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
         self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
         self.user_no_profile = User.objects.create(username="user no profile", first_name="User", last_name="NoProfile")
@@ -27,10 +17,6 @@ class FormVersionTestCase(TestCase, IasoTestCaseMixin):
 
         self.form_2 = Form.objects.create(name="Form-2***///")
         self.project_2.forms.set([self.form_2])
-
-        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
-        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
-        super().setUp()
 
     def test_upload_to_happy_path(self):
         # Upload with a user that belongs to a (correctly named) account

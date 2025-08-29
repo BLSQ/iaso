@@ -16,6 +16,7 @@ from django.db import migrations, models
 
 import iaso.models.base
 import iaso.models.forms
+import iaso.utils.dhis2 as dhis2
 
 
 # Functions from the following migrations need manual copying.
@@ -254,7 +255,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="instance",
             name="export_id",
-            field=models.TextField(blank=True, default=iaso.models.base.generate_id_for_dhis_2, null=True),
+            field=models.TextField(blank=True, default=dhis2.generate_id_for_dhis_2, null=True),
         ),
         migrations.AlterField(
             model_name="instance",
@@ -455,12 +456,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="formversion",
             name="file",
-            field=models.FileField(upload_to=iaso.models.forms._form_version_upload_to),
+            field=models.FileField(upload_to=iaso.models.forms.form_version_upload_to),
         ),
         migrations.AddField(
             model_name="formversion",
             name="xls_file",
-            field=models.FileField(blank=True, null=True, upload_to=iaso.models.forms._form_version_upload_to),
+            field=models.FileField(blank=True, null=True, upload_to=iaso.models.forms.form_version_upload_to),
         ),
         migrations.AddField(
             model_name="form",

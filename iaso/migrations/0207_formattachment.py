@@ -18,7 +18,7 @@ class Migration(migrations.Migration):
             fields=[
                 ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.TextField()),
-                ("file", models.FileField(upload_to=iaso.models.forms.FormAttachment.form_folder)),
+                ("file", models.FileField(upload_to=iaso.models.forms.form_attachment_upload_to)),
                 ("md5", models.CharField(max_length=32)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),

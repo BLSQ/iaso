@@ -1,3 +1,4 @@
+import os
 import pathlib
 import typing
 
@@ -12,6 +13,7 @@ from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
 from iaso.utils.encryption import calculate_md5
+from iaso.utils.models.upload_to import get_account_name_based_on_user
 
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
@@ -29,6 +31,33 @@ from .project import Project
 
 CR_MODE_NONE = "CR_MODE_NONE"
 CR_MODE_IF_REFERENCE_FORM = "CR_MODE_IF_REFERENCE_FORM"
+
+
+def form_version_upload_to(form_version: "FormVersion", filename: str):
+    # Updating the previous upload_to to include the account name
+    account_name = get_account_name_based_on_user(form_version.created_by)
+    underscored_form_name = slugify_underscore(form_version.form.name)
+    path = pathlib.Path(filename)
+    new_file_name = f"{underscored_form_name}_{form_version.version_id}{path.suffix}"
+
+    return os.path.join(
+        account_name,
+        "form_versions",
+        new_file_name,
+    )
+
+
+def form_attachment_upload_to(form_attachment: "FormAttachment", filename: str):
+    account_name = "unknown_account"  # some uploads can be anonymous
+
+    form_projects = form_attachment.form.projects
+    if form_projects.exists():
+        account = form_projects.first().account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    underscored_form_name = slugify_underscore(form_attachment.form.name)
+
+    return os.path.join(account_name, "form_attachments", underscored_form_name, filename)
 
 
 class FormQuerySet(models.QuerySet):
@@ -209,13 +238,6 @@ class Form(SoftDeletableModel):
         self.possible_fields = _reformat_questions(all_questions)
 
 
-def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
-    path = pathlib.Path(filename)
-    underscored_form_name = slugify_underscore(instance.form.name)
-
-    return f"forms/{underscored_form_name}_{instance.version_id}{path.suffix}"
-
-
 class FormVersionQuerySet(models.QuerySet):
     def latest_version(self, form: Form) -> "typing.Optional[FormVersion]":
         try:
@@ -279,9 +301,9 @@ class FormVersion(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
-    file = models.FileField(upload_to=_form_version_upload_to)
+    file = models.FileField(upload_to=form_version_upload_to)
     md5 = models.CharField(blank=True, max_length=32)
-    xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
+    xls_file = models.FileField(upload_to=form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
@@ -369,12 +391,9 @@ class FormAttachment(models.Model):
     class Meta:
         unique_together = [["form", "name"]]
 
-    def form_folder(self, filename):
-        return "/".join(["form_attachments", str(self.form.id), filename])
-
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_folder)
+    file = models.FileField(upload_to=form_attachment_upload_to)
     file_last_scan = models.DateTimeField(blank=True, null=True)
     file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)

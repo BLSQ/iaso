@@ -4,6 +4,7 @@ import io
 import jsonschema
 
 from django.contrib.auth.models import Permission, User
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
@@ -94,6 +95,11 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.version2 = version2
         cls.account1 = account1
 
+    def setUp(self):
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUp()
+
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
@@ -114,6 +120,13 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.language, "fr")
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(org_unit_ids, [9999])
+
+        # Checking that the file was uploaded to the right location
+        file_upload = m.BulkCreateUserCsvFile.objects.first()
+        # The API endpoint changes the file name after processing - doing this with file.save() generates a random suffix
+        # This means that it's impossible to check for strict equality
+        expected_file_name = f"{self.account1.short_sanitized_name}_{self.account1.id}/bulk_create_user_csv/{file_upload.created_at.strftime('%Y_%m')}/{file_upload.id}"
+        self.assertTrue(file_upload.file.name.startswith(expected_file_name))
 
     def test_upload_valid_csv_with_perms(self):
         with self.assertNumQueries(92):
@@ -257,8 +270,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
         csv_file = BulkCreateUserCsvFile.objects.last()
 
-        file = open(csv_file.file.path)
-        reader = csv.reader(file)
+        reader = csv.reader(csv_file.file.open("r"))
         i = 0
         csv_indexes = []
         for row in reader:

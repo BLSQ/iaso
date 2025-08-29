@@ -5,7 +5,7 @@ import duckdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import connection, models
-from django.db.models import F, Func, IntegerField, Max
+from django.db.models import F, FloatField, Func, IntegerField, Max
 from django.db.models.expressions import RawSQL
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
@@ -128,19 +128,22 @@ def build_submissions_queryset(qs, form_id):
     return qs
 
 
-def build_orgunit_queryset(qs):
+def build_pyramid_queryset(qs):
     ancestor_fields = ["id", "name", "source_ref", "closed_date", "validation_status"]
     org_unit_fields = [
         "id",
         "name",
         "source_ref",
+        "code",
         "created_at",
-        "updated_at",
         "source_created_at",
+        "creator__username",  # TODO sad to not be aligned with submission : created_by__username, created_by_id
+        "creator_id",
+        "updated_at",  # no updated_by ?
         "opening_date",
         "closed_date",
         "validation_status",
-        "version_id",
+        "version_id",  # source_version_id would be a better name
         "path",
     ]
     # aliases, assignment, campaigns, campaigns_country, catchment,
@@ -185,10 +188,47 @@ def build_orgunit_queryset(qs):
         output_field=IntegerField(),
     )
     geojson_annotations = {
-        "geom_geojson": Cast(Func(F("geom"), function="ST_AsGeoJSON"), output_field=JSONField()),
-        "location_geojson": Cast(Func(F("location"), function="ST_AsGeoJSON"), output_field=JSONField()),
-        "simplified_geom_geojson": Cast(Func(F("simplified_geom"), function="ST_AsGeoJSON"), output_field=JSONField()),
+        f"{model_prefix}geom_geojson": Cast(Func(F("geom"), function="ST_AsGeoJSON"), output_field=JSONField()),
+        f"{model_prefix}location_geojson": Cast(Func(F("location"), function="ST_AsGeoJSON"), output_field=JSONField()),
+        f"{model_prefix}simplified_geom_geojson": Cast(
+            Func(F("simplified_geom"), function="ST_AsGeoJSON"), output_field=JSONField()
+        ),
+        f"{model_prefix}longitude": Func(
+            F("location"),
+            function="ST_X",
+            template="ST_X((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}latitude": Func(
+            F("location"),
+            function="ST_Y",
+            template="ST_Y((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}altitude": Func(
+            F("location"),
+            function="ST_Z",
+            template="ST_Z((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}biggest_polygon_geojson": RawSQL(
+            """
+        CASE
+          WHEN geom IS NULL THEN NULL
+          ELSE (
+            SELECT ST_AsGeoJSON((dp).geom)::json
+            FROM ST_Dump(geom::geometry) AS dp
+            ORDER BY ST_Area((dp).geom) DESC
+            LIMIT 1
+          )
+        END
+        """,
+            [],  # no parameters
+            output_field=JSONField(),
+        ),
     }
+    # ideally since it will be used for superset, add a column with the biggest polygon to ease visualisation
+    # currently superset only support polygon, not multi polygons
 
     all_keys = [
         *org_unit_annotations.keys(),
@@ -200,6 +240,7 @@ def build_orgunit_queryset(qs):
 
     for k in all_keys:
         print(k)
+
     return (
         qs.values("id")
         .annotate(**org_unit_annotations)

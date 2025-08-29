@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User
 from django.core.files.uploadedfile import UploadedFile
 
 from iaso.models import BulkCreateUserCsvFile
@@ -8,12 +7,6 @@ from iaso.test import FileUploadToTestCase
 class BulkCreateUserCsvFileTestCase(FileUploadToTestCase):
     FILE_NAME = "test_user_bulk_create_valid.csv"
     FILE_PATH = f"iaso/tests/fixtures/{FILE_NAME}"
-
-    def setUp(self):
-        super().setUp()
-        self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
-        self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
-        self.user_no_profile = User.objects.create(username="user no profile", first_name="User", last_name="NoProfile")
 
     def test_upload_to_happy_path(self):
         # Upload with a user that belongs to a (correctly named) account

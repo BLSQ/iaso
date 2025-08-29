@@ -11,7 +11,7 @@ import pandas as pd
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser, Permission
+from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.core.files.storage import default_storage
@@ -388,6 +388,10 @@ class FileUploadToTestCase(TestCase, IasoTestCaseMixin):
         self.account_2, self.data_source_2, self.version_2, self.project_2 = (
             self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
         )
+
+        self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
+        self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
+        self.user_no_profile = User.objects.create(username="user no profile", first_name="User", last_name="NoProfile")
 
         # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
         default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py

@@ -1,35 +1,49 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, ReactNode, FC } from 'react';
 import { Grid, Typography } from '@mui/material';
-import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
-import PropTypes from 'prop-types';
+import {
+    LoadingSpinner,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
+import InputComponent from 'Iaso/components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import { baseUrls } from '../../../constants/urls.ts';
+import { baseUrls } from '../../../constants/urls';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks.ts';
-import * as Permission from '../../../utils/permissions.ts';
+import { useSnackMutation } from '../../../libs/apiHooks';
+import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import { postGeoPkg } from '../requests';
-import { VersionDescription } from './VersionDescription.tsx';
+import { VersionDescription } from './VersionDescription';
+
+type Props = {
+    renderTrigger: ReactNode;
+    sourceId: string;
+    sourceName: string;
+    versionNumber: number | null;
+};
 
 const initialFormState = () => ({
     file: null,
     project: null,
     versionDescription: '',
+    default_valid: false,
 });
 
-const ImportGeoPkgDialog = ({
+export const ImportGeoPkgDialog: FC<Props> = ({
     renderTrigger,
     sourceId,
     sourceName,
     versionNumber,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const [form, setFormField, , setFormState] =
         useFormState(initialFormState());
+
     const redirectTo = useRedirectTo();
 
     const mutation = useSnackMutation(
@@ -47,6 +61,7 @@ const ImportGeoPkgDialog = ({
                 file: form.file.value,
                 project: form.project.value,
                 data_source: sourceId,
+                default_valid: form.default_valid.value || false,
                 version_number:
                     versionNumber !== null && versionNumber !== undefined
                         ? versionNumber.toString()
@@ -65,6 +80,7 @@ const ImportGeoPkgDialog = ({
             form.file.value,
             form.project.value,
             form.versionDescription.value,
+            form.default_valid.value,
             mutation,
             redirectTo,
             reset,
@@ -159,20 +175,17 @@ const ImportGeoPkgDialog = ({
                             }}
                         />
                     )}
+                    <InputComponent
+                        type="checkbox"
+                        keyValue="default_valid"
+                        labelString={formatMessage(
+                            MESSAGES.gpkgValidPerDefault,
+                        )}
+                        value={form.default_valid.value}
+                        onChange={setFormField}
+                    />
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
     );
 };
-
-ImportGeoPkgDialog.propTypes = {
-    renderTrigger: PropTypes.func.isRequired,
-    versionNumber: PropTypes.number,
-    sourceId: PropTypes.number.isRequired,
-    sourceName: PropTypes.string.isRequired,
-};
-ImportGeoPkgDialog.defaultProps = {
-    versionNumber: null,
-};
-
-export { ImportGeoPkgDialog };

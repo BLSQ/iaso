@@ -25,6 +25,48 @@ Currently, only the Levenshtein algorithm is supported:
     - Boolean fields: Direct comparison
     - Date/Time fields: Compares timestamps
 
+#### Entity Similarity Parameters
+
+When comparing entities (e.g. health facilities, campaigns) Iaso uses the Levenshtein distance algorithm to detect similar names. Two parameters control which matches are considered relevant:
+
+##### 1. `levenshtein_max_distance` (max_distance)
+
+Represents the maximum number of single-character edits (insertions, deletions, substitutions) allowed between two strings.
+
+If the Levenshtein distance between two names is greater than this value, the match is discarded.
+
+This is a hard cutoff independent of string length.
+
+**Examples** (max_distance = 2):
+
+- "kitten" vs "sitten" → distance = 1 → ✅ kept
+- "kitten" vs "sittin" → distance = 2 → ✅ kept  
+- "kitten" vs "sitting" → distance = 3 → ❌ rejected
+
+Use this to prevent unrelated matches from being considered, even if they score relatively high on percentage similarity for long strings.
+
+##### 2. `above_score_display` (percentage similarity)
+
+Represents the minimum normalized similarity score required to display a potential match in the UI.
+
+The score is computed as:
+
+```
+similarity = (1 - levenshtein(a,b) / max(len(a), len(b))) × 100
+```
+
+Expressed as a percentage between 0% (completely different) and 100% (exact match).
+
+**Examples**:
+
+- "kitten" vs "sitting" → distance = 3, max length = 7
+  → similarity = 1 - 3/7 = 0.57 → 57%
+
+- "hopital" vs "hospital" → distance = 1, max length = 8
+  → similarity = 1 - 1/8 = 0.875 → 87.5%
+
+If `above_score_display = 80`, then only matches with similarity ≥ 80% are displayed.
+
 ### 2. Add a Deduplication Algorithm
 
 To add an algorithm:

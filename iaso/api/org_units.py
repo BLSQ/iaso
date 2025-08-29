@@ -1,5 +1,6 @@
 import json
 import logging
+import tempfile
 
 from copy import deepcopy
 from datetime import datetime
@@ -12,7 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import Count, IntegerField, Q, Value
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import FileResponse, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import permissions, viewsets
@@ -26,6 +27,7 @@ from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
+from iaso.exports import parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
@@ -181,6 +183,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         csv_format = bool(request.query_params.get("csv"))
         xlsx_format = bool(request.query_params.get("xlsx"))
         gpkg_format = bool(request.query_params.get("gpkg"))
+        parquet_format = request.GET.get("parquet", None)
         is_export = any([csv_format, xlsx_format, gpkg_format])
 
         with_shapes = request.GET.get("withShapes", None)
@@ -220,6 +223,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
         queryset = queryset.order_by(*order)
+
+        if parquet_format:
+            return self.anwser_with_parquet_file(request, queryset, profile)
 
         if not is_export:
             if limit and not as_location:
@@ -425,6 +431,33 @@ class OrgUnitViewSet(viewsets.ViewSet):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
         filename = f"{filename}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
+
+        return response
+
+    def anwser_with_parquet_file(self, request, queryset, profile):
+        user_account_name = profile.account.name if profile else ""
+        environment = settings.ENVIRONMENT
+        filename = "org_units"
+        filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+        # validate no unsupported/extra params is passed
+        allowed_params = {"parquet", "order", "searches"}
+        received_params = set(request.GET.keys())
+
+        unknown = received_params - allowed_params
+        if unknown:
+            return JsonResponse(
+                {"error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}"},
+                status=409,
+            )
+
+        # actually return parquet file
+        export_queryset = parquet.build_pyramid_queryset(queryset)
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+
+        response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename + ".parquet")
 
         return response
 

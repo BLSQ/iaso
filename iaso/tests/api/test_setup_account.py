@@ -277,3 +277,210 @@ class SetupAccountApiTestCase(APITestCase):
             response.json()["detail"],
             "You do not have permission to perform this action.",
         )
+
+    def test_setup_account_creates_org_unit_type(self):
+        """Test that setup account creates an org unit type"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that org unit type was created
+        org_unit_type = m.OrgUnitType.objects.filter(name="Main org unit type").first()
+        self.assertIsNotNone(org_unit_type)
+        self.assertEqual(org_unit_type.short_name, "Main ou type")
+        self.assertEqual(org_unit_type.depth, 0)
+
+        # Check that org unit type is linked to the project
+        project = m.Project.objects.filter(name="Main Project").first()
+        self.assertIsNotNone(project)
+        self.assertIn(org_unit_type, project.unit_types.all())
+
+    def test_setup_account_creates_org_unit(self):
+        """Test that setup account creates an org unit"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that org unit was created
+        org_unit = m.OrgUnit.objects.filter(name="Main org unit").first()
+        self.assertIsNotNone(org_unit)
+        self.assertEqual(org_unit.validation_status, "VALID")
+
+        # Check that org unit is linked to the org unit type
+        org_unit_type = m.OrgUnitType.objects.filter(name="Main org unit type").first()
+        self.assertEqual(org_unit.org_unit_type, org_unit_type)
+
+    def test_setup_account_creates_form(self):
+        """Test that setup account creates a demo form"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that form was created
+        form = m.Form.objects.filter(name="Demo Form").first()
+        self.assertIsNotNone(form)
+        # The form_id is automatically generated from the Excel file, so we just check it exists
+        self.assertIsNotNone(form.form_id)
+        self.assertEqual(form.location_field, "gps")
+
+        # Check that form is linked to the org unit type
+        org_unit_type = m.OrgUnitType.objects.filter(name="Main org unit type").first()
+        self.assertIn(org_unit_type, form.org_unit_types.all())
+
+        # Check that form is linked to the project
+        project = m.Project.objects.filter(name="Main Project").first()
+        self.assertIn(project, form.projects.all())
+
+    def test_setup_account_creates_form_version(self):
+        """Test that setup account creates a form version"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that form version was created
+        form = m.Form.objects.filter(name="Demo Form").first()
+        self.assertIsNotNone(form)
+        self.assertEqual(form.form_versions.count(), 1)
+
+        form_version = form.form_versions.first()
+        self.assertIsNotNone(form_version.xls_file)
+        self.assertIsNotNone(form_version.file)
+
+    def test_setup_account_links_profile_to_project(self):
+        """Test that setup account links the user profile to the project"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that profile is linked to the project
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        project = m.Project.objects.filter(name="Main Project").first()
+        self.assertIn(project, profile.projects.all())
+
+    def test_setup_account_default_modules(self):
+        """Test that setup account uses default modules when none provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": ["DEFAULT", "DATA_COLLECTION_FORMS"],  # Explicitly provide default modules
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that default modules are used
+        account = m.Account.objects.get(name="unittest_account")
+        expected_modules = ["DEFAULT", "DATA_COLLECTION_FORMS"]
+        self.assertEqual(account.modules, expected_modules)
+
+    def test_setup_account_serializer_default_modules(self):
+        """Test that the serializer has the correct default modules"""
+        serializer = self.get_serializer_instance()
+        self.assertEqual(serializer.fields["modules"].initial, ["DEFAULT", "DATA_COLLECTION_FORMS"])
+
+    def get_serializer_instance(self):
+        """Helper method to get a serializer instance for testing"""
+        from iaso.api.setup_account import SetupAccountSerializer
+
+        return SetupAccountSerializer()
+
+    def test_setup_account_demo_form_file_usage(self):
+        """Test that the demo form file is actually used to create the form version"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that form version was created with the demo form file
+        form = m.Form.objects.filter(name="Demo Form").first()
+        self.assertIsNotNone(form)
+
+        form_version = form.form_versions.first()
+        self.assertIsNotNone(form_version)
+        self.assertIsNotNone(form_version.xls_file)
+        self.assertIsNotNone(form_version.file)
+
+        # Verify the form descriptor was populated
+        self.assertIsNotNone(form_version.form_descriptor)
+
+        # Verify the form has possible fields populated
+        self.assertIsNotNone(form.possible_fields)
+
+    def test_setup_account_complete_integration(self):
+        """Test that setup account creates a complete integrated environment"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Verify all components are created and linked
+        account = m.Account.objects.get(name="unittest_account")
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        project = m.Project.objects.get(name="Main Project", account=account)
+        org_unit_type = m.OrgUnitType.objects.get(name="Main org unit type")
+        org_unit = m.OrgUnit.objects.get(name="Main org unit")
+        form = m.Form.objects.get(name="Demo Form")
+
+        # Check account-project relationship
+        self.assertEqual(project.account, account)
+
+        # Check project-org_unit_type relationship
+        self.assertIn(org_unit_type, project.unit_types.all())
+
+        # Check org_unit-org_unit_type relationship
+        self.assertEqual(org_unit.org_unit_type, org_unit_type)
+
+        # Check form-project relationship
+        self.assertIn(project, form.projects.all())
+
+        # Check form-org_unit_type relationship
+        self.assertIn(org_unit_type, form.org_unit_types.all())
+
+        # Check profile-project relationship
+        self.assertIn(project, profile.projects.all())
+
+        # Check user has permissions
+        self.assertTrue(user.user_permissions.count() > 0)

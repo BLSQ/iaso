@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth.models import Permission, User
+from django.core.files import File
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -11,10 +12,15 @@ from iaso.models import (
     Account,
     AccountFeatureFlag,
     DataSource,
+    Form,
+    FormVersion,
+    OrgUnit,
+    OrgUnitType,
     Profile,
     Project,
     SourceVersion,
 )
+from iaso.odk import parsing
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -31,7 +37,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
     user_manual_path = serializers.CharField(required=False)
-    modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
+    modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
@@ -105,7 +111,39 @@ class SetupAccountSerializer(serializers.Serializer):
         data_source.default_version = source_version
         data_source.save()
 
-        Profile.objects.create(account=account, user=user)
+        # Create a main org unit type for immediate use
+        main_org_unit_type = OrgUnitType.objects.create(
+            name="Main org unit type",
+            short_name="Main ou type",
+            depth=0,
+        )
+        main_org_unit_type.projects.set([initial_project])
+
+        # Create a main org unit using the created type
+        OrgUnit.objects.create(
+            name="Main org unit",
+            org_unit_type=main_org_unit_type,
+            version=source_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+
+        # Create a demo form using the demo form file
+        demo_form = Form.objects.create(
+            name="Demo Form",
+            form_id="demo_form",
+            location_field="gps",
+        )
+        demo_form.org_unit_types.add(main_org_unit_type)
+        demo_form.projects.add(initial_project)
+
+        # Create the first version of the form using the demo form file
+        with open("setuper/data/demo_form.xlsx", "rb") as demo_form_file:
+            survey = parsing.parse_xls_form(demo_form_file)
+            demo_form_file.seek(0)  # Reset file pointer to beginning
+            FormVersion.objects.create_for_form_and_survey(form=demo_form, survey=survey, xls_file=File(demo_form_file))
+
+        profile = Profile.objects.create(account=account, user=user)
+        profile.projects.add(initial_project)
 
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)

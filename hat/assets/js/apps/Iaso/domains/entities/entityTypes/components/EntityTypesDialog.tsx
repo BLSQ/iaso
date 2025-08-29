@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Switch } from '@mui/material';
+import { Box } from '@mui/material';
 import {
     IconButton,
     IntlFormatMessage,
@@ -10,6 +10,7 @@ import {
     AddButton,
     InputWithInfos,
     DndSelect,
+    LoadingSpinner,
 } from 'bluesquare-components';
 import { FormikProps, FormikProvider, useFormik } from 'formik';
 import { size } from 'lodash';
@@ -20,8 +21,8 @@ import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { SxStyles } from 'Iaso/types/general';
 import InputComponent from '../../../../components/forms/InputComponent';
 
-import { baseUrls } from '../../../../constants/urls';
-import { useTranslatedErrors } from '../../../../libs/validation';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useTranslatedErrors } from 'Iaso/libs/validation';
 import { formatLabel } from '../../../instances/utils';
 import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
 import MESSAGES from '../messages';
@@ -230,126 +231,150 @@ const EntityTypesDialog: FunctionComponent<Props> = ({
                             </Box>
                         </Box>
                     )}
-                    {isOpen && !isFetchingForm && (
+                    {isOpen && (
                         <>
-                            {isNew && (
-                                <InputComponent
-                                    required
-                                    keyValue="reference_form"
-                                    errors={getErrors('reference_form')}
-                                    onChange={onChange}
-                                    disabled={isFetchingForms}
-                                    loading={isFetchingForms}
-                                    value={values.reference_form || null}
-                                    type="select"
-                                    options={
-                                        formsList?.map(t => ({
-                                            label: t.name,
-                                            value: t.id,
-                                        })) || []
-                                    }
-                                    label={MESSAGES.referenceForm}
-                                />
+                            {isFetchingForm ? (
+                                <LoadingSpinner />
+                            ) : (
+                                <>
+                                    {isNew && (
+                                        <InputComponent
+                                            required
+                                            keyValue="reference_form"
+                                            errors={getErrors('reference_form')}
+                                            onChange={onChange}
+                                            disabled={isFetchingForms}
+                                            loading={isFetchingForms}
+                                            value={
+                                                values.reference_form || null
+                                            }
+                                            type="select"
+                                            options={
+                                                formsList?.map(t => ({
+                                                    label: t.name,
+                                                    value: t.id,
+                                                })) || []
+                                            }
+                                            label={MESSAGES.referenceForm}
+                                        />
+                                    )}
+                                    <InputComponent
+                                        keyValue="name"
+                                        onChange={onChange}
+                                        value={values.name}
+                                        errors={getErrors('name')}
+                                        type="text"
+                                        label={MESSAGES.name}
+                                        required
+                                    />
+                                    <Box sx={styles.inputWithInfos}>
+                                        <InputWithInfos
+                                            infos={formatMessage(
+                                                MESSAGES.infosFieldsListView,
+                                            )}
+                                        >
+                                            <DndSelect
+                                                options={possibleFieldsOptions}
+                                                label={formatMessage(
+                                                    MESSAGES.fieldsListView,
+                                                )}
+                                                value={selectedFieldsListView}
+                                                onChange={value => {
+                                                    onChange(
+                                                        'fields_list_view',
+                                                        value,
+                                                    );
+                                                }}
+                                                disabled={
+                                                    !values.reference_form
+                                                }
+                                                isRequired
+                                                helperText={helperText}
+                                                keyValue="fields_list_view"
+                                            />
+                                        </InputWithInfos>
+                                    </Box>
+
+                                    <Box sx={styles.inputWithInfos}>
+                                        <InputWithInfos
+                                            infos={formatMessage(
+                                                MESSAGES.infosFieldsDetailInfoView,
+                                            )}
+                                        >
+                                            <DndSelect
+                                                options={possibleFieldsOptions}
+                                                label={formatMessage(
+                                                    MESSAGES.fieldsDetailInfoView,
+                                                )}
+                                                value={
+                                                    selectedFieldsDetailInfoView
+                                                }
+                                                onChange={value => {
+                                                    onChange(
+                                                        'fields_detail_info_view',
+                                                        value,
+                                                    );
+                                                }}
+                                                disabled={
+                                                    !values.reference_form
+                                                }
+                                                isRequired
+                                                helperText={helperText}
+                                                keyValue="fields_detail_info_view"
+                                            />
+                                        </InputWithInfos>
+                                    </Box>
+
+                                    <Box sx={styles.inputWithInfos}>
+                                        <InputWithInfos
+                                            infos={formatMessage(
+                                                MESSAGES.infosFieldsDuplicateSearch,
+                                            )}
+                                        >
+                                            <DndSelect
+                                                options={possibleFieldsOptions}
+                                                label={formatMessage(
+                                                    MESSAGES.fieldsDuplicateSearch,
+                                                )}
+                                                value={
+                                                    selectedFieldsDuplicateSearch
+                                                }
+                                                onChange={value => {
+                                                    onChange(
+                                                        'fields_duplicate_search',
+                                                        value,
+                                                    );
+                                                }}
+                                                disabled={
+                                                    !values.reference_form
+                                                }
+                                                helperText={helperText}
+                                                keyValue="fields_duplicate_search"
+                                            />
+                                        </InputWithInfos>
+                                    </Box>
+
+                                    <Box sx={styles.inputWithInfos}>
+                                        <InputComponent
+                                            label={
+                                                MESSAGES.preventAddIfDuplicateFound
+                                            }
+                                            value={
+                                                values.prevent_add_if_duplicate_found
+                                            }
+                                            onChange={onChange}
+                                            type="checkbox"
+                                            disabled={
+                                                !values.reference_form ||
+                                                size(
+                                                    values.fields_duplicate_search,
+                                                ) === 0
+                                            }
+                                            keyValue="prevent_add_if_duplicate_found"
+                                        />
+                                    </Box>
+                                </>
                             )}
-                            <InputComponent
-                                keyValue="name"
-                                onChange={onChange}
-                                value={values.name}
-                                errors={getErrors('name')}
-                                type="text"
-                                label={MESSAGES.name}
-                                required
-                            />
-                            <Box sx={styles.inputWithInfos}>
-                                <InputWithInfos
-                                    infos={formatMessage(
-                                        MESSAGES.infosFieldsListView,
-                                    )}
-                                >
-                                    <DndSelect
-                                        options={possibleFieldsOptions}
-                                        label={formatMessage(
-                                            MESSAGES.fieldsListView,
-                                        )}
-                                        value={selectedFieldsListView}
-                                        onChange={value => {
-                                            onChange('fields_list_view', value);
-                                        }}
-                                        disabled={!values.reference_form}
-                                        isRequired
-                                        helperText={helperText}
-                                        keyValue="fields_list_view"
-                                    />
-                                </InputWithInfos>
-                            </Box>
-
-                            <Box sx={styles.inputWithInfos}>
-                                <InputWithInfos
-                                    infos={formatMessage(
-                                        MESSAGES.infosFieldsDetailInfoView,
-                                    )}
-                                >
-                                    <DndSelect
-                                        options={possibleFieldsOptions}
-                                        label={formatMessage(
-                                            MESSAGES.fieldsDetailInfoView,
-                                        )}
-                                        value={selectedFieldsDetailInfoView}
-                                        onChange={value => {
-                                            onChange(
-                                                'fields_detail_info_view',
-                                                value,
-                                            );
-                                        }}
-                                        disabled={!values.reference_form}
-                                        isRequired
-                                        helperText={helperText}
-                                        keyValue="fields_detail_info_view"
-                                    />
-                                </InputWithInfos>
-                            </Box>
-
-                            <Box sx={styles.inputWithInfos}>
-                                <InputWithInfos
-                                    infos={formatMessage(
-                                        MESSAGES.infosFieldsDuplicateSearch,
-                                    )}
-                                >
-                                    <DndSelect
-                                        options={possibleFieldsOptions}
-                                        label={formatMessage(
-                                            MESSAGES.fieldsDuplicateSearch,
-                                        )}
-                                        value={selectedFieldsDuplicateSearch}
-                                        onChange={value => {
-                                            onChange(
-                                                'fields_duplicate_search',
-                                                value,
-                                            );
-                                        }}
-                                        disabled={!values.reference_form}
-                                        helperText={helperText}
-                                        keyValue="fields_duplicate_search"
-                                    />
-                                </InputWithInfos>
-                            </Box>
-
-                            <Box sx={styles.inputWithInfos}>
-                                <InputComponent
-                                    label={MESSAGES.preventAddIfDuplicateFound}
-                                    value={
-                                        values.prevent_add_if_duplicate_found
-                                    }
-                                    onChange={onChange}
-                                    type="checkbox"
-                                    disabled={
-                                        !values.reference_form ||
-                                        size(values.fields_duplicate_search) ===
-                                            0
-                                    }
-                                    keyValue="prevent_add_if_duplicate_found"
-                                />
-                            </Box>
                         </>
                     )}
                 </div>

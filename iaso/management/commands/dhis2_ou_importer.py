@@ -133,8 +133,8 @@ class Command(BaseCommand):
                     )
                     return
                 deleted = OrgUnit.objects.filter(version=version).delete()
-                iaso_logger.warning(deleted)
-                iaso_logger.warning(("%d org units records deleted" % version_count).upper())
+                iaso_logger.warn(deleted)
+                iaso_logger.warn(("%d org units records deleted" % version_count).upper())
 
             type_dict = {}
             if org_unit_type_csv_file:

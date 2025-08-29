@@ -12,17 +12,19 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
-from hat.menupermissions import models as permission
-from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
+from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
-from ..permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
+from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from .projects import ProjectSerializer
 from .serializers import AppIdSerializer
 
@@ -32,7 +34,7 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
 
-        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
+        return request.user.is_authenticated and request.user.has_perm(core_permissions.FORMS)
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -44,13 +46,13 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         )
 
 
-class FormPredefinedFilterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FormPredefinedFilter
-        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
-
+class FormVersionNestedSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    class Meta:
+        model = FormVersion
+        fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -139,7 +141,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
     )
-    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
+    latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     predefined_filters = FormPredefinedFilterSerializer(many=True)
@@ -150,10 +152,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
     possible_fields_with_latest_version = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):
@@ -169,15 +167,19 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):
+        possible_fields = [
+            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
+        ]
+
         latest_version = obj.latest_version
         if not latest_version:
-            return obj.possible_fields
+            return possible_fields
 
         # Get the field names from the latest version
         latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
 
         # Add a flag to each possible field indicating if it's part of the latest version
-        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
@@ -243,7 +245,7 @@ class FormsViewSet(ModelViewSet):
     f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{permission.FORMS}"  permission.
+    having the "{core_permissions.FORMS}"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -298,7 +300,11 @@ class FormsViewSet(ModelViewSet):
             queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
         requested_fields = self.request.query_params.get("fields")
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+
+        is_request_from_manifest = self.request.path.endswith("/manifest/")
+        default_order = "id" if is_request_from_manifest else "instance_updated_at"
+
+        order = self.request.query_params.get("order", default_order).split(",")
 
         if is_field_referenced("has_mappings", requested_fields, order):
             queryset = queryset.annotate(
@@ -315,10 +321,10 @@ class FormsViewSet(ModelViewSet):
         else:
             profile = False
 
-        if is_field_referenced("instance_updated_at", requested_fields, order):
+        if is_field_referenced("instance_updated_at", requested_fields, order) and not is_request_from_manifest:
             queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 
-        enable_count = is_field_referenced("instances_count", requested_fields, order)
+        enable_count = is_field_referenced("instances_count", requested_fields, order) and not is_request_from_manifest
 
         if not mobile and enable_count:
             if profile and profile.org_units.exists():
@@ -370,20 +376,23 @@ class FormsViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
 
-        # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
-        # TODO
-        #  - be smarter cfr is_field_referenced
-        #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
-        queryset = queryset.prefetch_related(
-            "form_versions",
-            "projects",
-            "projects__feature_flags",
-            "reference_of_org_unit_types",
-            "org_unit_types",
-            "org_unit_types__reference_forms",
-            "org_unit_types__sub_unit_types",
-            "org_unit_types__allow_creating_sub_unit_types",
-        )
+        # spare 8 or more sql when not needed
+        if not is_request_from_manifest:
+            # prefetch all relations returned by default ex /api/forms/?order=name&limit=50&page=1
+            # TODO
+            #  - be smarter cfr is_field_referenced
+            #  - wild guess form_versions is no more needed cfr with_latest_version that is "optimizing" it
+
+            queryset = queryset.prefetch_related(
+                "form_versions",
+                "projects",
+                "projects__feature_flags",
+                "reference_of_org_unit_types",
+                "org_unit_types",
+                "org_unit_types__reference_forms",
+                "org_unit_types__sub_unit_types",
+                "org_unit_types__allow_creating_sub_unit_types",
+            )
 
         # optimize latest version loading to not trigger a select n+1 on form_version
         queryset = queryset.with_latest_version()
@@ -532,4 +541,9 @@ def generate_manifest_structure(content: list[str]) -> str:
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset(mobile=True).exclude(form_versions=None)
+        return (
+            super()
+            .get_queryset(mobile=True)
+            .exclude(form_versions=None)
+            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
+        )

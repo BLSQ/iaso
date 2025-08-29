@@ -4,8 +4,10 @@ from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVe
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
+from .feature_flags import FeatureFlag, ProjectFeatureFlags
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
+from .metric import MetricType, MetricValue
 from .microplanning import Planning, Team
 from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
@@ -36,6 +38,8 @@ __all__ = [
     "EntityDuplicate",
     "EntityDuplicateAnalyzis",
     "EntityType",
+    "FeatureFlag",
+    "ProjectFeatureFlags",
     "Form",
     "FormAttachment",
     "FormPredefinedFilter",
@@ -44,6 +48,8 @@ __all__ = [
     "Instance",
     "InstanceFile",
     "InstanceQuerySet",
+    "MetricType",
+    "MetricValue",
     "OrgUnit",
     "OrgUnitChangeRequest",
     "OrgUnitChangeRequestConfiguration",

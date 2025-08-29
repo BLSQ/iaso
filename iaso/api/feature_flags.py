@@ -14,7 +14,18 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeatureFlag
 
-        fields = ["id", "code", "name", "requires_authentication", "description", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "code",
+            "name",
+            "requires_authentication",
+            "category",
+            "is_dangerous",
+            "description",
+            "configuration_schema",
+            "created_at",
+            "updated_at",
+        ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -49,7 +60,7 @@ class FeatureFlagViewSet(ModelViewSet):
             if "SHOW_MOBILE_NO_ORGUNIT_PROJECT_FEATURE_FLAG" not in account_feature_flags:
                 featureflags = featureflags.exclude(code="MOBILE_NO_ORG_UNIT")
 
-        return featureflags.order_by("name")
+        return featureflags.order_by_category_then_order()
 
     @action(methods=["GET"], detail=False)
     def except_no_activated_modules(self, request):

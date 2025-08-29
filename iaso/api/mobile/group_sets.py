@@ -77,5 +77,6 @@ class MobileGroupSetsViewSet(ListModelMixin, GenericViewSet):
         qs = qs.annotate(
             annotated_erased=ExpressionWrapper(~Q(source_version=default_version), output_field=BooleanField())
         )
+        qs = qs.prefetch_related("groups")
 
         return qs

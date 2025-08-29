@@ -270,7 +270,8 @@ class TeamAPITestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
@@ -597,7 +598,8 @@ class PlanningTestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/microplanning/plannings/", format="json")
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/microplanning/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
@@ -618,6 +620,7 @@ class PlanningTestCase(APITestCase):
                 "project_details": {
                     "id": self.planning.project.id,
                     "name": self.planning.project.name,
+                    "color": self.planning.project.color,
                 },
                 "org_unit": self.planning.org_unit_id,
                 "org_unit_details": {

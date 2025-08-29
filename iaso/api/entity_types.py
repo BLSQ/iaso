@@ -4,7 +4,8 @@ from rest_framework import filters, serializers, status
 from rest_framework.response import Response
 from unidecode import unidecode
 
-from hat.menupermissions import models as permission
+import iaso.permissions as core_permissions
+
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Entity, EntityType
 
@@ -24,6 +25,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "fields_detail_info_view",
             "fields_list_view",
             "fields_duplicate_search",
+            "prevent_add_if_duplicate_found",
         ]
 
     created_at = TimestampField(read_only=True)
@@ -63,7 +65,7 @@ class EntityTypeViewSet(ModelViewSet):
         Needs iaso_entity_type_write permission
         """
 
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         name = request.data.get("name", None)
@@ -75,6 +77,7 @@ class EntityTypeViewSet(ModelViewSet):
             entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
             entity_type.fields_list_view = request.data.get("fields_list_view", None)
             entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
+            entity_type.prevent_add_if_duplicate_found = request.data.get("prevent_add_if_duplicate_found", False)
             entity_type.save()
             return Response(entity_type.as_dict())
         except:
@@ -87,7 +90,7 @@ class EntityTypeViewSet(ModelViewSet):
         Needs iaso_entity_type_write permission
         """
 
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
         name = request.data.get("name", None)
         account = request.data.get("account", None)
@@ -105,7 +108,7 @@ class EntityTypeViewSet(ModelViewSet):
         Provides an API to delete the an entity type
         Needs iaso_entity_type_write permission
         """
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         obj = get_object_or_404(EntityType, pk=pk)

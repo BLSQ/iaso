@@ -23,11 +23,11 @@ from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
+import iaso.permissions as core_permissions
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
 from hat.common.utils import queryset_iterator
-from hat.menupermissions import models as permission
 from iaso.api import common
 from iaso.api.comment import UserSerializerForComment
 from iaso.api.common import (
@@ -100,10 +100,10 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm(permission.FORMS)
-            or request.user.has_perm(permission.SUBMISSIONS)
-            or request.user.has_perm(permission.REGISTRY_WRITE)
-            or request.user.has_perm(permission.REGISTRY_READ)
+            request.user.has_perm(core_permissions.FORMS)
+            or request.user.has_perm(core_permissions.SUBMISSIONS)
+            or request.user.has_perm(core_permissions.REGISTRY_WRITE)
+            or request.user.has_perm(core_permissions.REGISTRY_READ)
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -124,10 +124,10 @@ class HasInstanceBulkPermission(permissions.BasePermission):
 
     def has_permission(self, request: Request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(permission.FORMS)
-            or request.user.has_perm(permission.SUBMISSIONS)
-            or request.user.has_perm(permission.REGISTRY_WRITE)
-            or request.user.has_perm(permission.REGISTRY_READ)
+            request.user.has_perm(core_permissions.FORMS)
+            or request.user.has_perm(core_permissions.SUBMISSIONS)
+            or request.user.has_perm(core_permissions.REGISTRY_WRITE)
+            or request.user.has_perm(core_permissions.REGISTRY_READ)
         )
 
 
@@ -180,7 +180,7 @@ class InstancesViewSet(viewsets.ViewSet):
     f"""Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
-    to authenticated users having the "{permission.FORMS}" permission.
+    to authenticated users having the "{core_permissions.FORMS}" core_permissions.
 
     GET /api/instances/
     GET /api/instances/<id>
@@ -193,8 +193,12 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         request = self.request
-        queryset: InstanceQuerySet = Instance.objects.order_by("-id")
-        queryset = queryset.filter_for_user(request.user).filter_on_user_projects(user=request.user)
+        queryset: InstanceQuerySet = (
+            Instance.objects.order_by("-id")
+            .filter_for_user(request.user)
+            .filter_on_user_projects(user=request.user)
+            .select_related("form", "created_by", "last_modified_by")
+        )
         return queryset
 
     def _get_filtered_attachments_queryset(self, request):
@@ -222,10 +226,10 @@ class InstancesViewSet(viewsets.ViewSet):
         paginator = common.Paginator()
         page = paginator.paginate_queryset(queryset, request)
         if page is not None:
-            serializer = InstanceFileSerializer(page, many=True)
+            serializer = InstanceFileSerializer(page, many=True, context={"request": request})
             return paginator.get_paginated_response(serializer.data)
 
-        serializer = InstanceFileSerializer(queryset, many=True)
+        serializer = InstanceFileSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
     @action(["GET"], detail=False)
@@ -564,14 +568,32 @@ class InstancesViewSet(viewsets.ViewSet):
                 "instancelock_set__top_org_unit",
                 "instancelock_set__locked_by",
                 "instancelock_set__unlocked_by",
+                "org_unit__groups",
+                "org_unit__org_unit_type__sub_unit_types",
                 "org_unit__reference_instances",
-                "org_unit__org_unit_type__reference_forms",
+            )
+            .select_related(
+                "org_unit",
+                "org_unit__parent",
+                "org_unit__org_unit_type",
+                "org_unit__version__data_source__credentials",
             )
             .with_status()
         )
         instance: Instance = get_object_or_404(queryset, pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
+
+        if instance.org_unit:
+            # Fetch all ancestors in a single query to avoid N+1 problems
+            # because `as_full_model()` will call `org_unit.as_dict_with_parents()`.
+            ancestors = list(
+                instance.org_unit.ancestors()
+                .select_related("version__data_source__credentials", "org_unit_type")
+                .prefetch_related("reference_instances", "org_unit_type__sub_unit_types", "groups")
+            )
+            ancestors_dict = {ancestor.id: ancestor for ancestor in ancestors}
+            instance.org_unit._prefetched_ancestors = ancestors_dict
 
         response = instance.as_full_model(with_entity=True)
 
@@ -963,11 +985,8 @@ def import_data(instances, user, app_id):
                 oucr.org_unit = instance.org_unit
                 if user and not user.is_anonymous:
                     oucr.created_by = user
-                previous_reference_instances = list(instance.org_unit.reference_instances.all())
-                new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
-                new_reference_instances.append(instance)
                 oucr.save()
-                oucr.new_reference_instances.set(new_reference_instances)
+                oucr.new_reference_instances.set([instance])
                 oucr.requested_fields = ["new_reference_instances"]
                 oucr.save()
 

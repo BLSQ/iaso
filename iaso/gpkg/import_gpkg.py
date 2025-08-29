@@ -305,7 +305,7 @@ def import_gpkg_file2(
 
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
-    ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.all_objects.filter(source_version=version)}
+    ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.objects.filter(source_version=version)}
     with sqlite3.connect(filename) as conn:
         cur = conn.cursor()
         rows = cur.execute("select ref, name from groups")

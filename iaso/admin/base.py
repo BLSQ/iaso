@@ -56,6 +56,8 @@ from ..models import (
     Mapping,
     MappingVersion,
     MatchingAlgorithm,
+    MetricType,
+    MetricValue,
     OrgUnit,
     OrgUnitChangeRequest,
     OrgUnitChangeRequestConfiguration,
@@ -67,6 +69,7 @@ from ..models import (
     PotentialPayment,
     Profile,
     Project,
+    ProjectFeatureFlags,
     Report,
     ReportVersion,
     SourceVersion,
@@ -413,10 +416,19 @@ class ProjectAdmin(admin.ModelAdmin):
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
 
+@admin.register(ProjectFeatureFlags)
+@admin_attr_decorator
+class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
+    list_display = ("featureflag", "project", "configuration")
+    list_filter = ("project",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 @admin.register(FeatureFlag)
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name", "requires_authentication")
+    list_display = ("code", "name", "requires_authentication", "configuration_schema")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Link)
@@ -443,8 +455,8 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
-    search_fields = ("name", "source_version", "domain")
-    list_display = ("name", "source_version", "created_at", "org_unit_count", "domain", "source_ref")
+    search_fields = ("name", "source_version")
+    list_display = ("name", "source_version", "created_at", "org_unit_count", "source_ref")
 
     def org_unit_count(self, obj):
         return obj.org_units.count()
@@ -562,6 +574,7 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     search_fields = [
+        "id",
         "uuid",
         "account__name",
         "entity_type__name",
@@ -820,6 +833,7 @@ class PageAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("entity1", "entity2", "analyze")
 
     @admin_attr_decorator
     def entity1_desc(self, obj):
@@ -843,6 +857,8 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 @admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    autocomplete_fields = ("task",)
+    search_fields = ("id",)
 
 
 @admin.register(OrgUnitChangeRequest)
@@ -978,6 +994,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
+    autocomplete_fields = ("user", "created_by", "updated_by", "payment_lot")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
@@ -997,6 +1014,7 @@ class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
     search_fields = ("id",)
+    autocomplete_fields = ("created_by", "updated_by", "task")
 
     def payment_ids(self, obj):
         payments = obj.payments.all()
@@ -1143,6 +1161,31 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
                 "created_by",
             )
         )
+
+
+@admin.register(MetricType)
+class MetricTypeAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "account",
+        "name",
+        "category",
+        "source",
+        "units",
+        "created_at",
+        "updated_at",
+    )
+    search_fields = ("name", "description", "source", "units", "comments")
+    list_filter = ("account", "source")
+    ordering = ("name",)
+
+
+@admin.register(MetricValue)
+class MetricValueAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit",)
+    list_display = ("metric_type", "org_unit", "year", "value")
+    search_fields = ("metric_type__name", "org_unit__name")
+    list_filter = ("metric_type", "year")
 
 
 admin.site.register(AccountFeatureFlag)

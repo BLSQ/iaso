@@ -37,7 +37,6 @@ from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
-from iaso.utils.file_utils import get_file_type
 
 from .. import periods
 from ..utils.emoji import fix_emoji
@@ -145,6 +144,8 @@ class Account(models.Model):
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
+    # analytics_script is no longer used (replaced by the plausible setup) - it's kept in case we need another
+    # specific analytics setup for a specific account
     analytics_script = models.TextField(blank=True, null=True)
     custom_translations = models.JSONField(null=True, blank=True)
 
@@ -440,15 +441,7 @@ class Link(models.Model):
         }
 
 
-GROUP_DOMAIN = [
-    ("POLIO", _("Polio")),
-]
-
-
-class DefaultGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain=None)
-
+class GroupQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         profile = user.iaso_profile
         queryset = self
@@ -461,11 +454,6 @@ class DefaultGroupManager(models.Manager):
         return queryset
 
 
-class DomainGroupManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(domain__isnull=False)
-
-
 class Group(models.Model):
     """Group of OrgUnit.
 
@@ -474,7 +462,6 @@ class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
-    domain = models.CharField(max_length=10, choices=GROUP_DOMAIN, null=True, blank=True)
     block_of_countries = models.BooleanField(
         default=False
     )  # This field is used to mark a group containing only countries
@@ -484,12 +471,7 @@ class Group(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = DefaultGroupManager()
-    all_objects = models.Manager()
-    domain_objects = DomainGroupManager()
-
-    class Meta:
-        base_manager_name = "all_objects"
+    objects = models.Manager.from_queryset(GroupQuerySet)()
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
@@ -1269,6 +1251,8 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "period": self.period,
             "project_name": self.project.name if self.project else None,
+            "project_color": self.project.color if self.project else None,
+            "project_id": self.project.id if self.project else None,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "created_by": (
@@ -1522,15 +1506,6 @@ class InstanceFile(models.Model):
     def __str__(self):
         return "%s " % (self.name,)
 
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "instance_id": self.instance_id,
-            "file": self.file.url if self.file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "file_type": get_file_type(self.file),
-        }
-
 
 class ProfileQuerySet(models.QuerySet):
     def with_editable_org_unit_types(self):
@@ -1772,56 +1747,6 @@ class ExportStatus(models.Model):
 
     def __str__(self):
         return "ExportStatus " + str(self.id)
-
-
-class FeatureFlag(models.Model):
-    INSTANT_EXPORT = "INSTANT_EXPORT"
-    TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
-    REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
-    FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
-    LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
-    HOME_OFFLINE = "HOME_OFFLINE"
-
-    FEATURE_FLAGS = {
-        (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
-        (
-            TAKE_GPS_ON_FORM,
-            "Mobile: take GPS on new form",
-            False,
-            _("GPS localization on start of instance on mobile"),
-        ),
-        (
-            REQUIRE_AUTHENTICATION,
-            "Mobile: authentication required",
-            _("Require authentication on mobile"),
-        ),
-        (
-            LIMIT_OU_DOWNLOAD_TO_ROOTS,
-            False,
-            "Mobile: Limit download of orgunit to what the user has access to",
-            _(
-                "Mobile: Limit download of orgunit to what the user has access to",
-            ),
-        ),
-        (
-            FORMS_AUTO_UPLOAD,
-            "",
-            False,
-            _(
-                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
-            ),
-        ),
-    }
-
-    code = models.CharField(max_length=100, null=False, blank=False, unique=True)
-    name = models.CharField(max_length=100, null=False, blank=False)
-    requires_authentication = models.BooleanField(default=False)
-    description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
 
 
 class BulkCreateUserCsvFile(models.Model):

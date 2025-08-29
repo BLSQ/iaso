@@ -231,7 +231,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                         <Box display="inline-block" mr={2}>
                             <Button
-                                variant="contained"
+                                variant="outlined"
                                 className={classnames(classes.button)}
                                 color="primary"
                                 onClick={() =>

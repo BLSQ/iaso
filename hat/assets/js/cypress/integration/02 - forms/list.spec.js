@@ -67,8 +67,9 @@ describe('Forms', () => {
             testTablerender({
                 baseUrl,
                 rows: 11,
-                columns: 8,
+                columns: 7,
                 apiKey: 'forms',
+                searchButton: '[data-test="search-button"]',
             });
         });
         describe('Create button', () => {
@@ -103,7 +104,7 @@ describe('Forms', () => {
             beforeEach(() => {
                 goToPage();
             });
-            testSearchField(search, searchWithForbiddenChars);
+            testSearchField(search, searchWithForbiddenChars, 'forms');
         });
         describe('Show deleted checkbox', () => {
             beforeEach(() => {
@@ -120,30 +121,32 @@ describe('Forms', () => {
             it('should be disabled', () => {
                 cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
-                    .should('equal', 'disabled');
+                    .should('not.equal', 'disabled');
             });
             it('action should deep link active search', () => {
                 cy.get('#search-search').type(search);
                 cy.get('[data-test="search-button"]').click();
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}`,
+                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}/isSearchActive/true`,
                 );
             });
         });
         describe('Table', () => {
             it('should render results', () => {
                 goToPage();
+                cy.get('[data-test="search-button"]').click();
                 table = cy.get('table');
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.forms.length);
-                rows.eq(0).find('td').should('have.length', 8);
+                rows.eq(0).find('td').should('have.length', 7);
             });
 
             describe('Action column', () => {
                 it('should display 6 buttons if user has all rights', () => {
                     goToPage();
+                    cy.get('[data-test="search-button"]').click();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
@@ -155,6 +158,7 @@ describe('Forms', () => {
                         permissions: [Permission.FORMS],
                         is_superuser: false,
                     });
+                    cy.get('[data-test="search-button"]').click();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
@@ -166,6 +170,7 @@ describe('Forms', () => {
                         permissions: [Permission.SUBMISSIONS],
                         is_superuser: false,
                     });
+                    cy.get('[data-test="search-button"]').click();
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
@@ -177,6 +182,7 @@ describe('Forms', () => {
                     });
                     it('should display download button', () => {
                         goToPage();
+                        cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
                         const actionCol = row.find('td').last();
@@ -184,16 +190,18 @@ describe('Forms', () => {
                     });
 
                     it('should not display download button if no latest_form_version', () => {
+                        cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(1);
-                        const latestCol = row.find('td').eq(7);
+                        const latestCol = row.find('td').eq(6);
                         latestCol.find('button').eq(5).should('not.exist');
                     });
 
                     it('should not display XLS and XML link if download button not clicked', () => {
+                        cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(7);
+                        const latestCol = row.find('td').eq(6);
                         latestCol.find('button').eq(5);
                         cy.get('a')
                             .filter((index, element) => {
@@ -205,9 +213,10 @@ describe('Forms', () => {
                     });
 
                     it('should display XLS and XML link if download button clicked', () => {
+                        cy.get('[data-test="search-button"]').click();
                         table = cy.get('table');
                         row = table.find('tbody').find('tr').eq(0);
-                        const latestCol = row.find('td').eq(7);
+                        const latestCol = row.find('td').eq(6);
                         latestCol.find('button').eq(5).click();
                         cy.get('ul').get('li').eq(0).should('have.text', 'XLS');
                         cy.get('ul').get('li').eq(1).should('have.text', 'XML');
@@ -218,6 +227,7 @@ describe('Forms', () => {
         describe('Exports buttons', () => {
             it('should be visible if we have results', () => {
                 goToPage(superUser, null, 'forms/list.json');
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getForms').then(() => {
                     cy.get('[data-test="csv-export-button"]')
                         .as('csvButton')
@@ -229,6 +239,7 @@ describe('Forms', () => {
             });
             it("should be disabled if we don't have results", () => {
                 goToPage(superUser, null, 'forms/empty.json');
+                cy.get('[data-test="search-button"]').click();
                 cy.wait('@getForms').then(() => {
                     cy.get('[data-test="csv-export-button"]').should(
                         'have.attr',
@@ -241,6 +252,19 @@ describe('Forms', () => {
                         'true',
                     );
                 });
+            });
+        });
+        describe('Instance count column', () => {
+            it('should be visible show instance count is enabled', () => {
+                goToPage({
+                    ...superUser,
+                    permissions: [Permission.INSTANCES],
+                });
+                cy.get('#check-box-showInstancesCount').check();
+                cy.get('[data-test="search-button"]').click();
+                table = cy.get('table');
+                const rows = table.find('tbody').find('tr');
+                rows.eq(0).find('td').should('have.length', 8);
             });
         });
     });
@@ -271,10 +295,13 @@ describe('Forms', () => {
                     });
                 },
             ).as('getFormsWithParams');
+
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getFormsWithParams');
         });
         it('should be called with search params', () => {
             goToPage(superUser, null, 'forms/list.json');
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getForms').then(() => {
                 cy.get('#search-search').type(search);
                 cy.fillMultiSelect('#orgUnitTypeIds', [0, 1], false);
@@ -293,6 +320,7 @@ describe('Forms', () => {
                         projectsIds: '1,2',
                         search: 'ZELDA',
                         showDeleted: 'true',
+                        fields: 'id,name,form_id,device_field,location_field,org_unit_types,org_unit_type_ids,projects,project_ids,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,instance_updated_at,created_at,updated_at,deleted_at,derived,label_keys,possible_fields,legend_threshold,has_mappings',
                     });
                 });
             });

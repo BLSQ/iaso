@@ -16,14 +16,15 @@ from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
 from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
-from iaso.permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -141,10 +142,10 @@ class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm(permission.FORMS)
-                or request.user.has_perm(permission.ORG_UNITS)
-                or request.user.has_perm(permission.ORG_UNITS_READ)
-                or request.user.has_perm(permission.SUBMISSIONS)
+                request.user.has_perm(core_permissions.FORMS)
+                or request.user.has_perm(core_permissions.ORG_UNITS)
+                or request.user.has_perm(core_permissions.ORG_UNITS_READ)
+                or request.user.has_perm(core_permissions.SUBMISSIONS)
             )
         ):
             return False
@@ -337,7 +338,9 @@ class MobileOrgUnitViewSet(ModelViewSet):
         self.paginator.results_key = "instances"
         self.paginator.page_size = self.paginator.get_page_size(request) or 10
         paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
-        serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
+        serializer = ReferenceInstancesSerializer(
+            paginated_reference_instances, many=True, context=self.get_serializer_context()
+        )
         return self.get_paginated_response(serializer.data)
 
 

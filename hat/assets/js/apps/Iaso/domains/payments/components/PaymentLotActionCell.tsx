@@ -3,11 +3,12 @@ import SendIcon from '@mui/icons-material/Send';
 import { ExternalLinkIconButton, IconButton } from 'bluesquare-components';
 import React, { ReactElement, useCallback } from 'react';
 import { PaymentLot } from '../types';
+import { useLocale } from '../../app/contexts/LocaleContext';
 
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
 import MESSAGES from '../messages';
 import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from 'Iaso/constants/urls';
 
 interface ActionCellProps<T> {
     row: {
@@ -18,6 +19,7 @@ export const PaymentLotActionCell = ({
     row: { original: paymentLot },
 }: ActionCellProps<PaymentLot>): ReactElement => {
     const { mutateAsync: markAsSent } = useMarkPaymentsAsSent();
+    const { locale } = useLocale();
 
     const handleSend = useCallback(() => {
         markAsSent({
@@ -60,7 +62,7 @@ export const PaymentLotActionCell = ({
                 <ExternalLinkIconButton
                     tooltipMessage={MESSAGES.download_payments}
                     overrideIcon={FileDownloadIcon}
-                    url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
+                    url={`/api/payments/lots/${paymentLot.id}/?xlsx=true&lang=${locale}`}
                 />
             )}
         </>

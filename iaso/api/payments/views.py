@@ -6,7 +6,8 @@ from django.db import models, transaction
 from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext as _
+from django.utils import translation
+from django.utils.translation import get_language_from_request, gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
@@ -14,10 +15,11 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
-from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
@@ -78,7 +80,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -281,6 +283,13 @@ class PaymentLotsViewSet(ModelViewSet):
 
             forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
 
+            # The frontend is using `ExternalLinkIconButton` which creates a direct browser link,
+            # thus bypassing the default API client that adds the `Accept-Language` header.
+            # So the Django backend defaults to the default "en" setting.
+            # We pass the language in the querystring as a quick solution.
+            language = self.request.GET.get("lang") or get_language_from_request(self.request)
+            translation.activate(language)
+
             if csv_format:
                 return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
             if xlsx_format:
@@ -428,7 +437,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -581,7 +590,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

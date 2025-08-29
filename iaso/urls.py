@@ -55,16 +55,18 @@ from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
-from .api.form_versions import FormVersionsViewSet
+from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
+from .api.form_versions.views import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.group_sets.views import GroupSetsViewSet
-from .api.groups import GroupsViewSet
+from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.instances.instances import InstancesViewSet
 from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
+from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
@@ -87,7 +89,7 @@ from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
-from .api.permissions import PermissionsViewSet
+from .api.permissions.permissions import PermissionsViewSet
 from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.profiles.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
@@ -141,6 +143,7 @@ router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"formattachments", FormAttachmentsViewSet, basename="formattachments")
+router.register(r"formpredefinedfilters", FormPredefinedFiltersViewSet, basename="formpredefinedfilters")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
@@ -218,6 +221,9 @@ router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
 router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
 router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken")
+router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
+router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
+router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

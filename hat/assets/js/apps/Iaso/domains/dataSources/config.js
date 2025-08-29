@@ -1,18 +1,15 @@
 import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-// eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
+
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import { Tooltip } from '@mui/material';
-import {
-    IconButton,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import { baseUrls } from '../../constants/urls.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { ProjectChips } from '../projects/components/ProjectChips';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
 import { SyncDialog } from './components/sync/SyncDialog';
 import { VersionsDialog } from './components/VersionsDialog';
@@ -53,14 +50,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                 sortable: false,
                 Cell: settings => {
                     const projects = settings.row.original.projects.flat();
-                    if (!projects) {
-                        return textPlaceholder;
-                    }
-                    const projectNames = [];
-                    projects.forEach(project => {
-                        projectNames.push(project.name);
-                    });
-                    return projectNames.join(', ');
+                    return <ProjectChips projects={projects} />;
                 },
             },
             {

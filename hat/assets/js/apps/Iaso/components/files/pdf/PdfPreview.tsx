@@ -29,7 +29,7 @@ import MESSAGES from './messages';
 // Note: The PDF file itself is not transferred to the worker; only the processing is offloaded.
 // This is necessary for the react-pdf library to function correctly.
 if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+    pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@5.3.31/build/pdf.worker.min.mjs`;
 }
 
 type PdfPreviewProps = {

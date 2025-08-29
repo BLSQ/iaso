@@ -1,12 +1,12 @@
-from django.db.models import Q
+from django.db.models import Prefetch, Q
 from rest_framework import permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
 
-from ...permissions import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (
@@ -39,7 +39,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
         if t.org_units.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSet, self).destroy(request, pk)
 
     def get_queryset(self):
@@ -49,6 +49,18 @@ class OrgUnitTypeViewSet(ModelViewSet):
         search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
+
+        queryset = queryset.prefetch_related("allow_creating_sub_unit_types")
+
+        app_id = self.request.query_params.get(APP_ID)
+        if app_id:
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id),
+                    to_attr="filtered_allow_creating_sub_unit_types",
+                )
+            )
 
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
@@ -76,7 +88,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
         if t.org_units.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSetV2, self).destroy(request, pk)
 
     def get_queryset(self):

@@ -63,5 +63,6 @@ def theme(request: HttpRequest) -> Dict[str, Any]:
             "FAVICON_PATH": settings.FAVICON_PATH,
             "APP_TITLE": settings.APP_TITLE,
             "SHOW_NAME_WITH_LOGO": settings.SHOW_NAME_WITH_LOGO,
+            "HIDE_BASIC_NAV_ITEMS": settings.HIDE_BASIC_NAV_ITEMS,
         },
     }

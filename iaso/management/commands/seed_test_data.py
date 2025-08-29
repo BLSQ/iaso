@@ -536,6 +536,9 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
+        out = OrgUnitType.objects.filter(org_units__version=source_version).distinct()
+        form.org_unit_types.set(out)
+
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:

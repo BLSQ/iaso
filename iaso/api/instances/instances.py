@@ -464,27 +464,7 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
 
         if parquet_format:
-            allowed_params = {"form_ids", "parquet", "showDeleted", "startPeriod", "endPeriod", "orgUnitParentId"}
-            received_params = set(request.GET.keys())
-
-            unknown = received_params - allowed_params
-            if unknown:
-                return JsonResponse(
-                    {"error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}"},
-                    status=409,
-                )
-
-            form_ids = filters["form_ids"]
-            form = Form.objects.get(pk=form_ids)
-            export_queryset = parquet.build_submissions_queryset(queryset, form.id)
-
-            tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
-
-            parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
-
-            response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="submissions.parquet")
-
-            return response
+            return self.anwser_with_parquet_file(request, filters, queryset)
 
         if not file_export:
             if limit:
@@ -536,6 +516,31 @@ class InstancesViewSet(viewsets.ViewSet):
 
         # This is a CSV/XLSX file export
         return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+
+    def anwser_with_parquet_file(self, request, filters, queryset):
+        # validate no unsupported/extra params is passed
+        allowed_params = {"form_ids", "parquet", "showDeleted", "startPeriod", "endPeriod", "orgUnitParentId"}
+        received_params = set(request.GET.keys())
+
+        unknown = received_params - allowed_params
+        if unknown:
+            return JsonResponse(
+                {"error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}"},
+                status=409,
+            )
+
+        # actually return parquet file
+        form_ids = filters["form_ids"]
+        form = Form.objects.get(pk=form_ids)
+        export_queryset = parquet.build_submissions_queryset(queryset, form.id)
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+
+        response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="submissions.parquet")
+
+        return response
 
     @action(detail=True, methods=["POST"])
     def add_lock(self, request, pk):

@@ -6,7 +6,7 @@ from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Q, QuerySet
+from django.db.models import Min, Q, QuerySet
 from django.db.transaction import atomic
 from django.http import HttpRequest, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -274,26 +274,33 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles = request.GET.get("userRoles", None)
         if user_roles:
             user_roles = user_roles.split(",")
-        managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         teams = request.GET.get("teams", None)
         if teams:
             teams = teams.split(",")
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
-        queryset = get_filtered_profiles(
-            queryset=self.get_queryset(),
-            user=request.user,
-            search=search,
-            perms=perms,
-            location=location,
-            org_unit_type=org_unit_type,
-            parent_ou=parent_ou,
-            children_ou=children_ou,
-            projects=projects,
-            user_roles=user_roles,
-            teams=teams,
-            managed_users_only=managed_users_only,
-            ids=ids,
-        ).order_by("id")
+        queryset = (
+            get_filtered_profiles(
+                queryset=self.get_queryset(),
+                user=request.user,
+                search=search,
+                perms=perms,
+                location=location,
+                org_unit_type=org_unit_type,
+                parent_ou=parent_ou,
+                children_ou=children_ou,
+                projects=projects,
+                user_roles=user_roles,
+                teams=teams,
+                managed_users_only=managed_users_only,
+                ids=ids,
+            )
+            .annotate(
+                # Adds a sortable field containing each user's alphabetically first role name,
+                # enabling consistent frontend sorting of users with multiple roles.
+                annotated_first_user_role=Min("user_roles__group__name")
+            )
+            .order_by("id")
+        )
 
         queryset = queryset.prefetch_related(
             "user",

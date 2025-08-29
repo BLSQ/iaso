@@ -1,14 +1,14 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
-import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import DatesRange from '../../../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
-import { FilterButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { usePeriodOptions } from '../utils';
-import { AfroMapParams } from '../types';
+import { SearchButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../../../../constants/messages';
 import { baseUrls } from '../../../../../constants/urls';
+import { AfroMapParams } from '../types';
+import { usePeriodOptions } from '../utils';
 
 type Props = {
     params: AfroMapParams;
@@ -115,9 +115,9 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid container item xs={12} sm={6} justifyContent="flex-end">
                 <Box mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

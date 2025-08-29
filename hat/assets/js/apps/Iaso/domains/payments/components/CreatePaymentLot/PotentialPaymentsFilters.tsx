@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { Box, Grid } from '@mui/material';
 import { selectionInitialState, useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
 
 import DatesRange from '../../../../components/filters/DatesRange';
 import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
@@ -127,9 +127,9 @@ export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={onSearch}
+                        onSearch={onSearch}
                     />
                 </Box>
             </Grid>

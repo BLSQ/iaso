@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid } from '@mui/material';
+import { SearchButton } from 'Iaso/components/SearchButton';
+import DatesRange from '../../../components/filters/DatesRange';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import DatesRange from '../../../components/filters/DatesRange';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import MESSAGES from '../messages';
 import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect';
-import { FilterButton } from '../../../components/FilterButton';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import MESSAGES from '../messages';
 
 type Props = {
     params: Record<string, string>;
@@ -76,9 +76,9 @@ export const UsersHistoryFilters: FunctionComponent<Props> = ({ params }) => {
             <Grid container justifyContent="flex-end">
                 <Grid item xs={12} md={4} lg={3}>
                     <Box mt={2} display="flex" justifyContent="flex-end">
-                        <FilterButton
+                        <SearchButton
                             disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                         />
                     </Box>
                 </Grid>

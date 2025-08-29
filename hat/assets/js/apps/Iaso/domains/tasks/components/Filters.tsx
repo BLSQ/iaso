@@ -2,19 +2,19 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { SearchButton } from 'Iaso/components/SearchButton';
 import DatesRange from '../../../components/filters/DatesRange';
-import InputComponent from '../../../components/forms/InputComponent';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect';
-import { DropdownOptions } from '../../../types/utils';
-import { FilterButton } from '../../../components/FilterButton';
+import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
-import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
 import { useFilterState } from '../../../hooks/useFilterState';
+import { DropdownOptions } from '../../../types/utils';
+import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
 
+import { useGetTaskTypes } from '../hooks/api';
 import MESSAGES from '../messages';
 import { TaskParams } from '../types';
-import { useGetTaskTypes } from '../hooks/api';
 
 const baseUrl = baseUrls.tasks;
 type Props = { params: TaskParams };
@@ -103,9 +103,9 @@ export const TaskFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

@@ -227,6 +227,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'missingSubmissionVisible',
             'showTooltip',
             'clusterEnabled',
+            'periodType',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('orgUnitList'),
             ...paginationPathParamsWithPrefix('missingSubmissions'),

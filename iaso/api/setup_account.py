@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.models import Permission, User
 from django.core.files import File
+from django.utils.translation import gettext as _
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
@@ -36,8 +37,11 @@ class SetupAccountSerializer(serializers.Serializer):
     user_first_name = serializers.CharField(max_length=30, required=False)
     user_last_name = serializers.CharField(max_length=150, required=False)
     user_email = serializers.EmailField(required=False)
-    password = serializers.CharField(required=True)
+    password = serializers.CharField(required=False)
     user_manual_path = serializers.CharField(required=False)
+    email_invitation = serializers.BooleanField(
+        required=False, default=False, help_text="Send email invitation to user to set up password"
+    )
     modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
     feature_flags = serializers.JSONField(
@@ -60,6 +64,21 @@ class SetupAccountSerializer(serializers.Serializer):
         if value and User.objects.filter(email=value).exists():
             raise serializers.ValidationError("user_email_already_exist")
         return value
+
+    def validate(self, data):
+        password = data.get("password", "")
+        email_invitation = data.get("email_invitation", False)
+        user_email = data.get("user_email", "")
+
+        # If email invitation is True, email is required
+        if email_invitation and not user_email:
+            raise serializers.ValidationError({"user_email": _("Email is required when email_invitation is True")})
+
+        # If email invitation is False, password is required
+        if not email_invitation and not password:
+            raise serializers.ValidationError({"password": _("Password is required when email_invitation is False")})
+
+        return data
 
     def validate_modules(self, modules):
         if len(modules) == 0:
@@ -84,13 +103,30 @@ class SetupAccountSerializer(serializers.Serializer):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
         source_version = SourceVersion.objects.create(data_source=data_source, number=1)
 
-        user = User.objects.create_user(
-            username=validated_data["user_username"],
-            password=validated_data["password"],
-            first_name=validated_data.get("user_first_name", ""),
-            last_name=validated_data.get("user_last_name", ""),
-            email=validated_data.get("user_email", ""),
-        )
+        # Create user with or without password based on email invitation
+        email_invitation = validated_data.get("email_invitation", False)
+        password = validated_data.get("password", "")
+
+        if email_invitation and not password:
+            # Create user without password when sending email invitation only
+            user = User.objects.create_user(
+                username=validated_data["user_username"],
+                password=None,  # Will be set later via email invitation
+                first_name=validated_data.get("user_first_name", ""),
+                last_name=validated_data.get("user_last_name", ""),
+                email=validated_data.get("user_email", ""),
+            )
+            user.set_unusable_password()
+            user.save()
+        else:
+            # Create user with password (either password only or password + email invitation)
+            user = User.objects.create_user(
+                username=validated_data["user_username"],
+                password=password,
+                first_name=validated_data.get("user_first_name", ""),
+                last_name=validated_data.get("user_last_name", ""),
+                email=validated_data.get("user_email", ""),
+            )
 
         module_codenames = [module["codename"] for module in MODULES]
 
@@ -156,6 +192,25 @@ class SetupAccountSerializer(serializers.Serializer):
         modules_permissions = account_module_permissions(account_modules)
 
         user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
+
+        # Send email invitation if requested
+        if email_invitation and user.email:
+            from iaso.api.profiles.profiles import ProfilesViewSet
+
+            profile_viewset = ProfilesViewSet()
+            profile_viewset.request = self.context.get("request")
+
+            # Get the profile for the user
+            profile = Profile.objects.get(user=user, account=account)
+
+            # Send email invitation using existing logic
+            profile_viewset.send_email_invitation(
+                profile=profile,
+                email_subject=profile_viewset.get_subject_by_language(profile_viewset, "en"),
+                email_message=profile_viewset.get_message_by_language(profile_viewset, "en"),
+                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, "en"),
+            )
+
         return validated_data
 
 

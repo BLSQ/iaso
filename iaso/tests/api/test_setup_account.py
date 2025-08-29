@@ -44,6 +44,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "Zelda",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -57,6 +58,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "Korogu",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -70,6 +72,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "link",
             "password": "unittest_password",
+            "email_invitation": False,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -83,6 +86,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -99,6 +103,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "unittest_first_name",
             "user_last_name": "unittest_last_name",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -115,6 +120,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_username": "unittest_username",
             "user_email": "test@example.com",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -132,6 +138,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_last_name": "unittest_last_name",
             "user_email": "test@example.com",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -243,12 +250,77 @@ class SetupAccountApiTestCase(APITestCase):
                 response = self.client.post("/api/setupaccount/", data=data, format="json")
                 self.assertEqual(response.status_code, 201, f"Failed for email: {email}")
 
+    def test_setup_account_email_invitation_with_password(self):
+        """Test that email invitation works when both password and email_invitation are provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "password": "unittest_password",
+            "email_invitation": True,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        user = m.User.objects.get(username="unittest_username")
+        self.assertEqual(user.email, "test@example.com")
+        # User should have a usable password since password was provided
+        self.assertTrue(user.has_usable_password())
+
+    def test_setup_account_email_invitation_without_password(self):
+        """Test that email invitation works when only email_invitation is True"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "email_invitation": True,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        user = m.User.objects.get(username="unittest_username")
+        self.assertEqual(user.email, "test@example.com")
+        # User should have unusable password since no password was provided
+        self.assertFalse(user.has_usable_password())
+
+    def test_setup_account_email_invitation_no_email(self):
+        """Test that email invitation fails when email_invitation is True but no email provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "email_invitation": True,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("user_email", j)
+
+    def test_setup_account_no_password_no_email_invitation(self):
+        """Test that setup fails when neither password nor email_invitation is provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("password", j)
+
     def test_setup_account_has_all_perms(self):
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -277,6 +349,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "initial_project_account test-appid",
             "user_username": "username",
             "password": "password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
 
@@ -303,6 +376,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
             "feature_flags": [
                 "ALLOW_CATCHMENT_EDITION",
@@ -325,6 +399,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "firstname",
             "user_last_name": "lastname",
             "password": "password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -420,6 +495,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -443,6 +519,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -464,6 +541,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -491,6 +569,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -512,6 +591,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -530,6 +610,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": ["DEFAULT", "DATA_COLLECTION_FORMS"],  # Explicitly provide default modules
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -558,6 +639,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -585,6 +667,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "email_invitation": False,
             "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")

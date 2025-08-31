@@ -27,7 +27,7 @@ class MultiTenantAuthBackendTestCase(TestCase):
         user.save()
 
         result = self.backend.authenticate(self.request, username="single_user", password="password")
-        self.assertIsNone(result)
+        self.assertEqual(result, user)
 
     def test_authenticate_with_tenant_users_returns_most_recent(self):
         main_user = User.objects.create(username="main_user")

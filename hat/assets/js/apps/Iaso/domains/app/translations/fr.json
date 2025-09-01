@@ -142,6 +142,7 @@
     "iaso.datasources.gpkg.title.update": "Mise à jour de {sourceName} - {versionNumber}",
     "iaso.datasources.gpkg.tooltip": "Importer depuis un fichier GeoPackage",
     "iaso.datasources.gpkg.validByDefault": "Mettre le statut des org units sur \"Valid\"",
+    "iaso.datasources.gpkg.validByDefaultTooltip": "Le statut des unités d'organisation sera défini sur \"Valid\" au lieu de \"New\". Désélectionnez cette case si vous préférez conserver le statut sur \"New\".",
     "iaso.dataSources.importFromDhis2": "Importer une nouvelle version depuis DHIS2",
     "iaso.datasources.label.chooseVersionNumber": "Choisir le numéro de version",
     "iaso.datasources.label.credentials": "Identifiants",

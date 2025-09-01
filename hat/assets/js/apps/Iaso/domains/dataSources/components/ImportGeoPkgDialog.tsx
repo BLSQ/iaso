@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback, ReactNode, FC } from 'react';
-import { Grid, Typography } from '@mui/material';
+import { Box, Grid, Tooltip, Typography } from '@mui/material';
 import {
     LoadingSpinner,
     useRedirectTo,
@@ -175,13 +175,37 @@ export const ImportGeoPkgDialog: FC<Props> = ({
                             }}
                         />
                     )}
-                    <InputComponent
-                        type="checkbox"
-                        keyValue="default_valid"
-                        labelString={formatMessage(MESSAGES.gpkgValidByDefault)}
-                        value={form.default_valid.value}
-                        onChange={setFormField}
-                    />
+                    <Tooltip
+                        arrow
+                        placement="top-start"
+                        title={formatMessage(
+                            MESSAGES.gpkgValidByDefaultTooltip,
+                        )}
+                        PopperProps={{
+                            modifiers: [
+                                {
+                                    name: 'offset',
+                                    options: {
+                                        offset: [0, -30],
+                                    },
+                                },
+                            ],
+                        }}
+                    >
+                        <Box
+                            sx={{ display: 'inline-block', marginTop: 'none' }}
+                        >
+                            <InputComponent
+                                type="checkbox"
+                                keyValue="default_valid"
+                                labelString={formatMessage(
+                                    MESSAGES.gpkgValidByDefault,
+                                )}
+                                value={form.default_valid.value}
+                                onChange={setFormField}
+                            />
+                        </Box>
+                    </Tooltip>
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

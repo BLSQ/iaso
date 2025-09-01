@@ -1,9 +1,8 @@
 import os
 
-from datetime import date
-
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils import timezone
 
 from iaso.models import Account
 
@@ -11,7 +10,7 @@ from iaso.models import Account
 def bulk_create_user_csv_file_upload_to(bulk_create, filename):
     account_name = "unknown_account"  #  shouldn't be unknown, but the model is nullable
 
-    today = date.today()
+    today = timezone.now().date()
     year_month = today.strftime("%Y_%m")
 
     account = bulk_create.account

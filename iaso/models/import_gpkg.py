@@ -1,8 +1,7 @@
 import os
 
-from datetime import date
-
 from django.db import models
+from django.utils import timezone
 
 from iaso.models import DataSource
 
@@ -11,7 +10,7 @@ def import_gpkg_upload_to(import_gpkg: "ImportGPKG", filename: str):
     # Updating the previous upload_to to include the account name
     account_name = "unknown_account"  # uploads shouldn't be anonymous, but maybe we can't find the account
 
-    today = date.today()
+    today = timezone.now().date()
     year_month = today.strftime("%Y_%m")
 
     projects = import_gpkg.data_source.projects

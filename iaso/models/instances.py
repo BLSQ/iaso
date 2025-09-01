@@ -5,7 +5,6 @@ import re
 import time
 import typing
 
-from datetime import date
 from functools import reduce
 from io import StringIO
 from logging import getLogger
@@ -25,6 +24,7 @@ from django.db import models
 from django.db.models import Count, Exists, F, FilteredRelation, Func, OuterRef, Q
 from django.db.models.functions import Coalesce
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from iaso.utils import extract_form_version_id, flat_parse_xml_soup
@@ -43,7 +43,7 @@ logger = getLogger(__name__)
 
 
 def instance_upload_to(instance: "Instance", filename: str):
-    today = date.today()
+    today = timezone.now().date()
     year_month = today.strftime("%Y_%m")
     account_name = get_account_name_based_on_user(instance.created_by)
 
@@ -56,7 +56,7 @@ def instance_upload_to(instance: "Instance", filename: str):
 
 
 def instance_file_upload_to(instance_file: "InstanceFile", filename: str):
-    today = date.today()
+    today = timezone.now().date()
     year_month = today.strftime("%Y_%m")
     user = getattr(instance_file.instance, "created_by", None)
     account_name = get_account_name_based_on_user(user)

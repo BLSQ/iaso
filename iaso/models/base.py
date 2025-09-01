@@ -1,4 +1,3 @@
-import re
 import typing
 
 from logging import getLogger
@@ -13,6 +12,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils import timezone
 from django.utils.functional import cached_property
+from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
@@ -125,13 +125,14 @@ class Account(models.Model):
         """
         Short sanitized name mainly used in file path storage
         """
-        text = self.name.lower()
-        text = re.sub(r"\s+", "_", text)
-        text = re.sub(r"[^a-z0-9_]", "", text)
-        text = re.sub(r"_+", "_", text)
-        text = text[:30]
+        if not self.name or not self.name.strip():
+            return "invalid_name"
+
+        text = slugify(self.name, allow_unicode=False)
+        text = text.replace("-", "_")[:30]
         text = text.strip("_")
-        return text if text else "invalid_name"
+
+        return text if len(text) >= 1 else "invalid_name"
 
     def as_dict(self):
         return {

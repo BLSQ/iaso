@@ -927,9 +927,7 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">189</span>
 <span class="normal">190</span>
 <span class="normal">191</span>
 <span class="normal">192</span>
@@ -1021,7 +1019,9 @@ submission</p>
 <span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
-<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">Entity</span><span class="p">(</span><span class="n">SoftDeletableModel</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;An entity represents a physical object or person with a known Entity Type</span>
 
 <span class="sd">    Contrary to forms, they are not linked to a specific OrgUnit.</span>
@@ -1150,9 +1150,7 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">260</span>
-<span class="normal">261</span>
-<span class="normal">262</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">262</span>
 <span class="normal">263</span>
 <span class="normal">264</span>
 <span class="normal">265</span>
@@ -1171,7 +1169,9 @@ submission</p>
 <span class="normal">278</span>
 <span class="normal">279</span>
 <span class="normal">280</span>
-<span class="normal">281</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span> <span class="nf">soft_delete_with_instances_and_pending_duplicates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">audit_source</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This method does a proper soft-deletion of the entity:</span>
 <span class="sd">    - soft delete the entity</span>
@@ -1228,9 +1228,7 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
-<span class="normal">45</span>
-<span class="normal">46</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
 <span class="normal">49</span>
@@ -1270,7 +1268,9 @@ submission</p>
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
-<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="normal">86</span>
+<span class="normal">87</span>
+<span class="normal">88</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>  <span class="c1"># Example: &quot;Child under 5&quot;</span>

@@ -178,9 +178,7 @@ export const ImportGeoPkgDialog: FC<Props> = ({
                     <InputComponent
                         type="checkbox"
                         keyValue="default_valid"
-                        labelString={formatMessage(
-                            MESSAGES.gpkgValidPerDefault,
-                        )}
+                        labelString={formatMessage(MESSAGES.gpkgValidByDefault)}
                         value={form.default_valid.value}
                         onChange={setFormField}
                     />

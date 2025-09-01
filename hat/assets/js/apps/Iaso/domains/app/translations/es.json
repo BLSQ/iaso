@@ -130,6 +130,7 @@
     "iaso.datasources.gpkg.title": "Importar desde GeoPackage",
     "iaso.datasources.gpkg.title.update": "Actualizar {sourceName} - {versionNumber}",
     "iaso.datasources.gpkg.tooltip": "Importar desde un archivo GeoPackage",
+    "iaso.datasources.gpkg.validByDefault": "Hacer que el estado de las unidades organizativas sea \"Valid\"",
     "iaso.dataSources.importFromDhis2": "Importar una nueva versión desde DHIS2",
     "iaso.datasources.label.chooseVersionNumber": "Elegir número de versión",
     "iaso.datasources.label.credentials": "Credenciales",

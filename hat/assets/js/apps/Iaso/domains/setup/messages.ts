@@ -56,11 +56,11 @@ export const MESSAGES = defineMessages({
     },
     email_invitation: {
         defaultMessage: 'Send email invitation to set password',
-        id: 'iaso.setup.emailInvitation',
+        id: 'iaso.label.emailInvitation',
     },
     language: {
         defaultMessage: 'Language',
-        id: 'iaso.label.language',
+        id: 'iaso.users.dialog.locale',
     },
     password: {
         defaultMessage: 'Password',

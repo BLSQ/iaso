@@ -80,30 +80,35 @@ class EntitiesDuplicationFiltersAPITestCase(APITestCase):
         m.EntityDuplicate.objects.create(entity1=entity2, entity2=entity3, analyze=analysis_2, similarity_score=85)
 
         # Test filtering by first analysis.
-        response_filtered_1 = self.client.get(f"/api/entityduplicates/?analyze={analysis_1.id}")
-        self.assertEqual(response_filtered_1.status_code, 200)
-        filtered_duplicates_1 = response_filtered_1.data["results"]
+        response = self.client.get(f"/api/entityduplicates/?analyze_id={analysis_1.id}")
+        self.assertEqual(response.status_code, 200)
+        filtered_duplicates_1 = response.data["results"]
         self.assertEqual(len(filtered_duplicates_1), 2)
         for duplicate in filtered_duplicates_1:
             self.assertEqual(duplicate["analyzis"][0]["analyze_id"], analysis_1.id)
 
         # Test filtering by second analysis.
-        response_filtered_2 = self.client.get(f"/api/entityduplicates/?analyze={analysis_2.id}")
-        self.assertEqual(response_filtered_2.status_code, 200)
-        filtered_duplicates_2 = response_filtered_2.data["results"]
+        response = self.client.get(f"/api/entityduplicates/?analyze_id={analysis_2.id}")
+        self.assertEqual(response.status_code, 200)
+        filtered_duplicates_2 = response.data["results"]
         self.assertEqual(len(filtered_duplicates_2), 1)
         for duplicate in filtered_duplicates_2:
             self.assertEqual(duplicate["analyzis"][0]["analyze_id"], analysis_2.id)
 
         # Get all duplicates without any filter (should include both analyses).
-        response_all = self.client.get("/api/entityduplicates/")
-        self.assertEqual(response_all.status_code, 200)
-        total_duplicates = len(response_all.data["results"])
+        response = self.client.get("/api/entityduplicates/")
+        self.assertEqual(response.status_code, 200)
+        total_duplicates = len(response.data["results"])
         self.assertEqual(total_duplicates, 3)
         self.assertGreaterEqual(total_duplicates, len(filtered_duplicates_1))
         self.assertGreaterEqual(total_duplicates, len(filtered_duplicates_2))
 
         # Filter by non-existent analyze ID (should return no results).
-        response_empty = self.client.get("/api/entityduplicates/?analyze=99999")
-        self.assertEqual(response_empty.status_code, 200)
-        self.assertEqual(len(response_empty.data["results"]), 0)
+        response = self.client.get("/api/entityduplicates/?analyze_id=99999")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data["results"]), 0)
+
+        # Filter by invalid ID (should return no results).
+        response = self.client.get("/api/entityduplicates/?analyze_id=FOO")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("The `analyze_id` parameter must be an integer.", response.content.decode())

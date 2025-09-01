@@ -228,6 +228,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'showTooltip',
             'clusterEnabled',
             'periodType',
+            'startPeriod',
+            'endPeriod',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('orgUnitList'),
             ...paginationPathParamsWithPrefix('missingSubmissions'),

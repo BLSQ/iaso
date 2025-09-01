@@ -22,6 +22,9 @@ type ApiParams = {
     org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
     project_ids?: string;
+    periodType?: string;
+    startPeriod?: string;
+    endPeriod?: string;
 };
 
 type InstanceApi = {

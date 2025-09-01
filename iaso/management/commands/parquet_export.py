@@ -42,7 +42,7 @@ class Command(BaseCommand):
         if mode == "pyramid":
             version_id = options["version_id"]
             parquet.export_django_query_to_parquet_via_duckdb(
-                parquet.build_pyramid_queryset(m.OrgUnit.objects.filter(version_id=version_id)),
+                parquet.build_pyramid_queryset(m.OrgUnit.objects.filter(version_id=version_id), extra_fields=[":all"]),
                 "./media/pyramid.parquet",
             )
 

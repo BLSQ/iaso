@@ -1,11 +1,13 @@
 import os
 import time
 
+from typing import Sequence
+
 import duckdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import connection, models
-from django.db.models import F, FloatField, Func, IntegerField, Max
+from django.db.models import F, FloatField, Func, IntegerField, Max, QuerySet
 from django.db.models.expressions import RawSQL
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
@@ -102,7 +104,9 @@ def build_submissions_queryset(qs, form_id):
         "deleted",
         "export_id",
     ]
-    model_prefix = "submission_"
+    model_prefix = "iaso_subm_"
+
+    # TODO is ref submission
 
     # accuracy, attributes, correlation_id, created_by, created_by_id,
     # device, device_id, entity, export_id, exportstatus, file, file_name, form,
@@ -135,7 +139,71 @@ def build_submissions_queryset(qs, form_id):
     return qs
 
 
-def build_pyramid_queryset(qs):
+def build_geojson_annotations(model_prefix: str, extra_fields: Sequence[str]):
+    possible_geojson_annotations = {
+        f"{model_prefix}geom_geojson": Cast(Func(F("geom"), function="ST_AsGeoJSON"), output_field=JSONField()),
+        f"{model_prefix}location_geojson": Cast(Func(F("location"), function="ST_AsGeoJSON"), output_field=JSONField()),
+        f"{model_prefix}simplified_geom_geojson": Cast(
+            Func(F("simplified_geom"), function="ST_AsGeoJSON"), output_field=JSONField()
+        ),
+        f"{model_prefix}longitude": Func(
+            F("location"),
+            function="ST_X",
+            template="ST_X((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}latitude": Func(
+            F("location"),
+            function="ST_Y",
+            template="ST_Y((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}altitude": Func(
+            F("location"),
+            function="ST_Z",
+            template="ST_Z((%(expressions)s)::geometry)",
+            output_field=FloatField(),
+        ),
+        f"{model_prefix}biggest_polygon_geojson": RawSQL(
+            """
+         CASE
+           WHEN simplified_geom IS NULL THEN NULL
+           ELSE (
+             SELECT ST_AsGeoJSON((dp).geom)::json
+             FROM ST_Dump(simplified_geom::geometry) AS dp
+             ORDER BY ST_Area((dp).geom) DESC
+             LIMIT 1
+           )
+         END
+         """,
+            [],  # no parameters
+            output_field=JSONField(),
+        ),
+    }
+
+    # ideally since it will be used for superset, add a column with the biggest polygon to ease visualisation
+    # currently superset only support polygon, not multi polygons
+
+    default_geo_fields = [f"{model_prefix}longitude", f"{model_prefix}latitude", f"{model_prefix}altitude"]
+    if ":all" in extra_fields:
+        extra_fields = [
+            "geom_geojson",
+            "location_geojson",
+            "simplified_geom_geojson",
+            "biggest_polygon_geojson",
+        ]
+
+    selected_fields = default_geo_fields + [f"{model_prefix}{f}" for f in extra_fields]
+    geojson_annotations = {
+        k: possible_geojson_annotations[k]
+        for k in selected_fields
+        if (k in possible_geojson_annotations or ":all" in extra_fields)
+    }
+
+    return geojson_annotations
+
+
+def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
     ancestor_fields = ["id", "name", "source_ref", "closed_date", "validation_status"]
     org_unit_fields = [
         "id",
@@ -154,15 +222,15 @@ def build_pyramid_queryset(qs):
         "path",
     ]
     # aliases, assignment, campaigns, campaigns_country, catchment,
-    # closed_date, code, countryusersgroup, created_at, creator, creator_id,
+    # countryusersgroup,
     # custom, default_image, default_image_id, destination_set, extra_fields,
     # geom, geom_ref, gps_source, groups, iaso_profile, id, instance, instance_lock,
     # jsondatastore, location, name, opening_date, org_unit_change_parents_set,
     # orgunit, orgunitchangerequest,
-    #  orgunitreferenceinstance, parent, parent_id, path, planning, polio_notifications,
-    # record, reference_instances, simplified_geom, source_created_at, source_ref,
-    # source_set, storagedevice, storagelogentry, sub_source, updated_at, uuid, vaccine_stocks,
-    # vaccineauthorization, validated, validation_status, version, version_id
+    # orgunitreferenceinstance, parent, parent_id, path, planning, polio_notifications,
+    # record, reference_instances, simplified_geom,
+    # source_set, storagedevice, storagelogentry, sub_source,  uuid, vaccine_stocks,
+    # vaccineauthorization, validated, version
 
     max_ancestor_level = qs.aggregate(max_level=Max(RawSQL("array_length(string_to_array(path::text, '.'), 1)", [])))[
         "max_level"
@@ -200,48 +268,8 @@ def build_pyramid_queryset(qs):
         (),
         output_field=IntegerField(),
     )
-    geojson_annotations = {
-        f"{model_prefix}geom_geojson": Cast(Func(F("geom"), function="ST_AsGeoJSON"), output_field=JSONField()),
-        f"{model_prefix}location_geojson": Cast(Func(F("location"), function="ST_AsGeoJSON"), output_field=JSONField()),
-        f"{model_prefix}simplified_geom_geojson": Cast(
-            Func(F("simplified_geom"), function="ST_AsGeoJSON"), output_field=JSONField()
-        ),
-        f"{model_prefix}longitude": Func(
-            F("location"),
-            function="ST_X",
-            template="ST_X((%(expressions)s)::geometry)",
-            output_field=FloatField(),
-        ),
-        f"{model_prefix}latitude": Func(
-            F("location"),
-            function="ST_Y",
-            template="ST_Y((%(expressions)s)::geometry)",
-            output_field=FloatField(),
-        ),
-        f"{model_prefix}altitude": Func(
-            F("location"),
-            function="ST_Z",
-            template="ST_Z((%(expressions)s)::geometry)",
-            output_field=FloatField(),
-        ),
-        f"{model_prefix}biggest_polygon_geojson": RawSQL(
-            """
-        CASE
-          WHEN geom IS NULL THEN NULL
-          ELSE (
-            SELECT ST_AsGeoJSON((dp).geom)::json
-            FROM ST_Dump(geom::geometry) AS dp
-            ORDER BY ST_Area((dp).geom) DESC
-            LIMIT 1
-          )
-        END
-        """,
-            [],  # no parameters
-            output_field=JSONField(),
-        ),
-    }
-    # ideally since it will be used for superset, add a column with the biggest polygon to ease visualisation
-    # currently superset only support polygon, not multi polygons
+
+    geojson_annotations = build_geojson_annotations(model_prefix, extra_fields)
 
     all_keys = [
         *org_unit_annotations.keys(),
@@ -249,10 +277,6 @@ def build_pyramid_queryset(qs):
         *level_annotations.keys(),
         *geojson_annotations.keys(),
     ]
-    all_keys.sort()
-
-    for k in all_keys:
-        print(k)
 
     return (
         qs.values("id")

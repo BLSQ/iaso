@@ -440,7 +440,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         filename = "org_units"
         filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
         # validate no unsupported/extra params is passed
-        allowed_params = {"parquet", "order", "searches"}
+        allowed_params = {"parquet", "order", "searches", "extra_fields"}
         received_params = set(request.GET.keys())
 
         unknown = received_params - allowed_params
@@ -450,8 +450,28 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 status=409,
             )
 
-        # actually return parquet file
-        export_queryset = parquet.build_pyramid_queryset(queryset)
+        extra_fields_raw = request.GET.get("extra_fields", "")
+        extra_fields = [x for x in extra_fields_raw.split(",") if x]
+
+        possible_extra_fields = [
+            "geom_geojson",
+            "location_geojson",
+            "simplified_geom_geojson",
+            "biggest_polygon_geojson",
+            ":all",
+        ]
+
+        unknown_extra_fields = set(extra_fields) - set(possible_extra_fields)
+
+        if unknown_extra_fields:
+            return JsonResponse(
+                {
+                    "error": f"Unknown extra_fields for parquet exports: {', '.join(unknown_extra_fields)}, only supported {', '.join(possible_extra_fields)}."
+                },
+                status=409,
+            )
+
+        export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 

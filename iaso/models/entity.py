@@ -27,7 +27,7 @@ from django.db import models
 from django.db.models import Case, F, Prefetch, Q, When
 
 from hat.audit.models import log_modification
-from iaso.models import Account, Form, Instance, OrgUnit, Project
+from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import ValidationStatus
 from iaso.utils.jsonlogic import jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
@@ -36,6 +36,8 @@ from iaso.utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
     SoftDeletableModel,
 )
+
+from .forms import Form
 
 
 # TODO: Remove blank=True, null=True on FK once the models are sets and validated

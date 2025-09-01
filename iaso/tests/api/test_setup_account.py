@@ -92,6 +92,15 @@ class SetupAccountApiTestCase(APITestCase):
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
+
+        # Check that created_account_id is returned in response
+        response_data = response.json()
+        self.assertIn("created_account_id", response_data)
+
+        # Verify the created account exists and matches the ID in response
+        created_account = m.Account.objects.get(name="unittest_account")
+        self.assertEqual(response_data["created_account_id"], created_account.id)
+
         self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
@@ -392,6 +401,11 @@ class SetupAccountApiTestCase(APITestCase):
         account = response.json()
         self.assertEqual(account["feature_flags"], data["feature_flags"])
 
+        # Check that created_account_id is returned in response
+        self.assertIn("created_account_id", account)
+        created_account = m.Account.objects.get(name="unittest_account")
+        self.assertEqual(account["created_account_id"], created_account.id)
+
     def test_setup_account_without_feature_flags(self):
         self.client.force_authenticate(self.admin)
         data = {
@@ -468,7 +482,13 @@ class SetupAccountApiTestCase(APITestCase):
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(response.json()["account_name"], data["account_name"])
+        response_data = response.json()
+        self.assertEqual(response_data["account_name"], data["account_name"])
+
+        # Check that created_account_id is returned in response
+        self.assertIn("created_account_id", response_data)
+        created_account = m.Account.objects.get(name="account_multi_account")
+        self.assertEqual(response_data["created_account_id"], created_account.id)
 
     def test_create_new_account_via_no_super_user_multi_account(self):
         new_user = m.User.objects.create(
@@ -845,6 +865,8 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(audit_data["status"], "success")
         self.assertEqual(audit_data["requesting_user"], self.admin.username)
         self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertIn("created_account_id", audit_data)
+        self.assertNotEqual(audit_data["created_account_id"], "0")  # Should be a real account ID
         # Verify modules and feature_flags are proper arrays (not JSON strings)
         self.assertIsInstance(audit_data["modules"], list)
         self.assertIsInstance(audit_data["feature_flags"], list)
@@ -963,6 +985,8 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(audit_data["status"], "success")
         self.assertEqual(audit_data["requesting_user"], self.admin.username)
         self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertIn("created_account_id", audit_data)
+        self.assertNotEqual(audit_data["created_account_id"], "0")  # Should be a real account ID
         # Verify modules and feature_flags are proper arrays (not JSON strings)
         self.assertIsInstance(audit_data["modules"], list)
         self.assertIsInstance(audit_data["feature_flags"], list)
@@ -1003,6 +1027,8 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(audit_data["requesting_user"], self.admin.username)
         self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
         self.assertEqual(audit_data["status"], "success")
+        self.assertIn("created_account_id", audit_data)
+        self.assertNotEqual(audit_data["created_account_id"], "0")  # Should be a real account ID
         # Verify modules and feature_flags are proper arrays (not JSON strings)
         self.assertIsInstance(audit_data["modules"], list)
         self.assertIsInstance(audit_data["feature_flags"], list)
@@ -1030,6 +1056,34 @@ class SetupAccountApiTestCase(APITestCase):
         # Verify that requesting_user is captured (should be admin in this case)
         self.assertEqual(audit_data["requesting_user"], self.admin.username)
         self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertIn("created_account_id", audit_data)
+        self.assertNotEqual(audit_data["created_account_id"], "0")  # Should be a real account ID
         # Verify modules and feature_flags are proper arrays (not JSON strings)
         self.assertIsInstance(audit_data["modules"], list)
         self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_returns_created_account_id(self):
+        """Test that setup account returns the created account ID in the response"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "test_created_id_account",
+            "user_username": "test_created_id_user",
+            "password": "test_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that response contains created_account_id
+        response_data = response.json()
+        self.assertIn("created_account_id", response_data)
+        self.assertIsInstance(response_data["created_account_id"], int)
+
+        # Verify that the returned ID matches the actual created account
+        created_account = m.Account.objects.get(name="test_created_id_account")
+        self.assertEqual(response_data["created_account_id"], created_account.id)
+
+        # Verify the account was properly created with expected properties
+        self.assertEqual(created_account.name, data["account_name"])
+        self.assertEqual(created_account.modules, data["modules"])

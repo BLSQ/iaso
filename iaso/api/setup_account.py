@@ -56,6 +56,7 @@ class SetupAccountSerializer(serializers.Serializer):
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
     )
+    created_account_id = serializers.IntegerField(read_only=True)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -223,6 +224,7 @@ class SetupAccountSerializer(serializers.Serializer):
                 email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, profile.language),
             )
 
+        validated_data["created_account_id"] = account.id
         return validated_data
 
 
@@ -258,6 +260,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             audit_data.update(
                 {
                     "status": "success",
+                    "created_account_id": response.data["created_account_id"],
                 }
             )
 
@@ -267,7 +270,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             Modification.objects.create(
                 user=request.user,
                 content_type=account_content_type,
-                object_id="0",  # Use 0 as placeholder since we don't have a specific object ID
+                object_id=response.data["created_account_id"],
                 past_value=[],
                 new_value=[audit_data],
                 source=SETUP_ACCOUNT_API,

@@ -28,6 +28,11 @@ class ST_Z(Func):
     output_field = models.FloatField()
 
 
+# make field name less "django" by replacing __ with _ for ex
+def normalize_field_name(field_name):
+    return field_name.replace("__", "_")
+
+
 def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     start = time.perf_counter()
 
@@ -111,12 +116,14 @@ def build_submissions_queryset(qs, form_id):
     # Status,
     # Entité,
 
-    prefixed_fields = {f"{model_prefix}{f}": F(f) for f in model_fields}
-    prefixed_fields["submission_form_version_id"] = KeyTextTransform("_version", "json")
-    prefixed_fields["submission_longitude"] = ST_X(F("location"))
-    prefixed_fields["submission_latitude"] = ST_Y(F("location"))
-    prefixed_fields["submission_altitude"] = ST_Z(F("location"))
-    prefixed_fields["submission_accuracy"] = F("accuracy")
+    prefixed_fields = {f"{model_prefix}{normalize_field_name(f)}": F(f) for f in model_fields}
+
+    # less standard fields that needs some functions
+    prefixed_fields[f"{model_prefix}form_version_id"] = KeyTextTransform("_version", "json")
+    prefixed_fields[f"{model_prefix}longitude"] = ST_X(F("location"))
+    prefixed_fields[f"{model_prefix}latitude"] = ST_Y(F("location"))
+    prefixed_fields[f"{model_prefix}altitude"] = ST_Z(F("location"))
+    prefixed_fields[f"{model_prefix}accuracy"] = F("accuracy")
 
     qs = (
         qs.values("id")
@@ -137,7 +144,7 @@ def build_pyramid_queryset(qs):
         "code",
         "created_at",
         "source_created_at",
-        "creator__username",  # TODO sad to not be aligned with submission : created_by__username, created_by_id
+        "creator__username",
         "creator_id",
         "updated_at",  # no updated_by ?
         "opening_date",
@@ -175,11 +182,17 @@ def build_pyramid_queryset(qs):
             """
             level_annotations[field_alias] = RawSQL(sql, [])
 
+    # sad to not be aligned with submission : created_by__username, created_by_id
+    # so adding aliases
+    aliases = {"creator__username": "created_by__username", "creator_id": "created_by_id"}
+
     model_prefix = "org_unit_"
     org_unit_annotations = {}
     for f in org_unit_fields:
         # avoid prefixing already prefix field like org_unit_type
-        key = f if f.startswith(model_prefix) else f"{model_prefix}{f}"
+        field = aliases.get(f) or f
+        field = normalize_field_name(field)
+        key = f if f.startswith(model_prefix) else normalize_field_name(f"{model_prefix}{field}")
         org_unit_annotations[key] = F(f)
 
     level_annotation = RawSQL(

@@ -20,7 +20,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         mode = options["mode"]
+
         # docker compose run iaso manage parquet_export --mode pyramid --version-id 2
+        # duckdb -c 'describe "./media/pyramid.parquet"; select * from "./media/pyramid.parquet";'
         if mode == "pyramid":
             version_id = options["version_id"]
             parquet.export_django_query_to_parquet_via_duckdb(
@@ -29,6 +31,7 @@ class Command(BaseCommand):
             )
 
         # docker compose run iaso manage parquet_export --mode submissions --form-id 12
+        # duckdb -c 'describe "./media/submissions.parquet"; select * from "./media/submissions.parquet";'
 
         if mode == "submissions":
             form_id = options["form_id"]

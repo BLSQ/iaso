@@ -1,12 +1,15 @@
+import json
 import logging
 
 from django.contrib.auth.models import Permission, User
+from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.utils.translation import gettext as _
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
+from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.models import (
@@ -226,3 +229,100 @@ class SetupAccountSerializer(serializers.Serializer):
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
     permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Prepare audit data for logging
+        audit_data = {
+            "account_name": request.data.get("account_name", ""),
+            "user_username": request.data.get("user_username", ""),
+            "user_first_name": request.data.get("user_first_name", ""),
+            "user_last_name": request.data.get("user_last_name", ""),
+            "user_email": request.data.get("user_email", ""),
+            "email_invitation": request.data.get("email_invitation", False),
+            "language": request.data.get("language", "en"),
+            "modules": request.data.get("modules", []),
+            "feature_flags": request.data.get("feature_flags", []),
+            "requesting_user": request.user.username if request.user else None,
+            "requesting_user_id": request.user.id if request.user else None,
+        }
+
+        # Ensure modules and feature_flags are proper lists, not JSON strings
+        if isinstance(audit_data["modules"], str):
+            try:
+                audit_data["modules"] = json.loads(audit_data["modules"])
+            except (json.JSONDecodeError, TypeError):
+                audit_data["modules"] = []
+
+        if isinstance(audit_data["feature_flags"], str):
+            try:
+                audit_data["feature_flags"] = json.loads(audit_data["feature_flags"])
+            except (json.JSONDecodeError, TypeError):
+                audit_data["feature_flags"] = []
+
+        # Clean up the audit data using JSON serialization/deserialization
+        # This removes all formatting characters and ensures proper data types
+        try:
+            audit_data = json.loads(json.dumps(audit_data))
+        except (json.JSONDecodeError, TypeError):
+            # If JSON processing fails, keep the original data
+            pass
+
+        try:
+            # Call the parent create method
+            response = super().create(request, *args, **kwargs)
+
+            # Log successful account creation
+            audit_data.update(
+                {
+                    "status": "success",
+                }
+            )
+
+            # Create audit log for successful operation
+            # Use Account content type since we're creating an account
+            account_content_type = ContentType.objects.get_for_model(Account)
+            Modification.objects.create(
+                user=request.user,
+                content_type=account_content_type,
+                object_id="0",  # Use 0 as placeholder since we don't have a specific object ID
+                past_value=[],
+                new_value=[audit_data],
+                source=SETUP_ACCOUNT_API,
+            )
+
+            logger.info(
+                f"Account setup completed successfully: {audit_data['account_name']} by user {request.user.username if request.user else 'unknown'}",
+                extra={"audit_data": audit_data},
+            )
+
+            return response
+
+        except Exception as e:
+            # Log failed account creation
+            audit_data.update(
+                {
+                    "status": "error",
+                    "error_message": str(e),
+                    "error_type": type(e).__name__,
+                }
+            )
+
+            # Create audit log for failed operation
+            # Use Account content type since we're trying to create an account
+            account_content_type = ContentType.objects.get_for_model(Account)
+            Modification.objects.create(
+                user=request.user,
+                content_type=account_content_type,
+                object_id="0",  # Use 0 as placeholder since no account was created
+                past_value=[],
+                new_value=[audit_data],
+                source=SETUP_ACCOUNT_API,
+            )
+
+            logger.error(
+                f"Account setup failed: {audit_data['account_name']} by user {request.user.username if request.user else 'unknown'}: {str(e)}",
+                extra={"audit_data": audit_data, "exception": e},
+            )
+
+            # Re-raise the exception to maintain normal error handling
+            raise

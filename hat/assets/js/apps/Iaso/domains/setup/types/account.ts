@@ -3,8 +3,11 @@ export type SaveAccountQuery = {
     user_username: string;
     user_first_name: string;
     user_last_name: string;
+    user_email?: string;
     password: string;
-    modules: Module[];
+    email_invitation: boolean;
+    language: string;
+    modules: string[];
 };
 
 export type Module = {

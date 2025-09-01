@@ -42,9 +42,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_email = serializers.EmailField(required=False)
     password = serializers.CharField(required=False)
     user_manual_path = serializers.CharField(required=False)
-    email_invitation = serializers.BooleanField(
-        required=False, default=False, help_text="Send email invitation to user to set up password"
-    )
+    email_invitation = serializers.BooleanField(required=False, default=False)
     language = serializers.ChoiceField(
         choices=[("en", "English"), ("fr", "Français")],
         required=False,

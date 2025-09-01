@@ -39,3 +39,8 @@ class Command(BaseCommand):
             parquet.export_django_query_to_parquet_via_duckdb(
                 parquet.build_submissions_queryset(m.Instance.objects, form_id), "./media/submissions.parquet"
             )
+
+        # once the 2 files exist
+
+        # duckdb -c ' select  level_2_name, level_3_name, level_4_name, org_unit_name,  submission_org_unit_name from "./media/submissions.parquet"  left outer join "./media/pyramid.parquet" on "submission_org_unit_id"="org_unit_id";'
+        # duckdb -box -c 'DESCRIBE select * from "./media/submissions.parquet"  left outer join "./media/pyramid.parquet" on "submission_org_unit_id"="org_unit_id";'

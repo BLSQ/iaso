@@ -923,5 +923,13 @@ msgstr "Virus détecté"
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
 
+#: iaso/api/setup_account.py
+msgid "Email is required when email_invitation is True"
+msgstr "L'email est requis lorsque l'invitation par email est activée"
+
+#: iaso/api/setup_account.py
+msgid "Password is required when email_invitation is False"
+msgstr "Le mot de passe est requis lorsque l'invitation par email est désactivée"
+
 #~ msgid "Polio"
 #~ msgstr "Polio"

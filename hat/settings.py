@@ -705,8 +705,12 @@ THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR"
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
 HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 
+# https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/#specifying-authentication-backends
+# When somebody calls `django.contrib.auth.authenticate()`, Django tries authenticating
+# across all of its authentication backends. If the first authentication method fails,
+# Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "iaso.auth.backends.MultiTenantAuthBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 

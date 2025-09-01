@@ -8,6 +8,7 @@ import iaso.models.base as base
 
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
+from iaso.api.deduplication.entity_duplicate_analyzis import AnalyzePostBodySerializer
 from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
 
@@ -1030,3 +1031,57 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         duplicates = response_duplicates.data["results"]
 
         self.assertEqual(len(duplicates), 0)
+
+    def test_analyze_post_body_serializer_validate_method(self):
+        """
+        Test the validation logic in `AnalyzePostBodySerializer.validate()`.
+        """
+
+        # Test valid data.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "Nom", "age__int__"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        validated_data = serializer.validated_data
+        self.assertEqual(validated_data["algorithm"], "levenshtein")
+        self.assertEqual(validated_data["fields"], ["Prenom", "Nom", "age__int__"])
+
+        # Test EntityType does not exist.
+        data = {"algorithm": "levenshtein", "entity_type_id": "99999", "fields": ["Prenom"], "parameters": []}
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Entity type does not exist.", str(serializer.errors))
+
+        # Test invalid field name.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "non_existent_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `non_existent_field` does not exist on reference form.", str(serializer.errors))
+
+        # Test unsupported field type.
+        self.default_form.possible_fields += [
+            {
+                "name": "unsupported_field",
+                "type": "select one",  # "select one" is not in the supported types list.
+                "label": "Unsupported Field",
+            }
+        ]
+        self.default_form.save()
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "unsupported_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `unsupported_field` has an unsupported type `select one`.", str(serializer.errors))

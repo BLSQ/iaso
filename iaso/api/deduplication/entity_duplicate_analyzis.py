@@ -8,20 +8,9 @@ import iaso.models.base as base
 import iaso.permissions as core_permissions
 
 from iaso.api.common import HasPermission, ModelViewSet, Paginator
-from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
+from iaso.models import EntityDuplicateAnalyzis, EntityType
 from iaso.models.deduplication import PossibleAlgorithms
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
-
-
-def field_exists(f: Form, field_name: str) -> bool:
-    try:
-        for field in f.possible_fields:
-            if field["name"] == field_name:
-                return True
-
-        return False
-    except:
-        return False
 
 
 class AnalyzePostBodySerializer(serializers.Serializer):
@@ -34,13 +23,19 @@ class AnalyzePostBodySerializer(serializers.Serializer):
         data = super().validate(data)
 
         try:
-            e_type = EntityType.objects.get(pk=data["entity_type_id"])
-        except Entity.DoesNotExist:
-            raise serializers.ValidationError("Entity type does not exist")
+            e_type = EntityType.objects.select_related("reference_form").get(pk=data["entity_type_id"])
+        except EntityType.DoesNotExist:
+            raise serializers.ValidationError("Entity type does not exist.")
+
+        possible_fields = e_type.reference_form.possible_fields
 
         for f_name in data["fields"]:
-            if not field_exists(e_type.reference_form, f_name):
-                raise serializers.ValidationError(f"Field {f_name} does not exist on reference form")
+            field = next((f for f in possible_fields if f["name"] == f_name), None)
+            if not field:
+                raise serializers.ValidationError(f"Field `{f_name}` does not exist on reference form.")
+
+            if field["type"] not in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES:
+                raise serializers.ValidationError(f"Field `{f_name}` has an unsupported type `{field['type']}`.")
 
         return data
 

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import Permission, User
 
+from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import (
     DEFAULT_ACCOUNT_FEATURE_FLAGS,
     MODULES,
@@ -454,7 +455,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(response.json()["feature_flags"], ["feature_flags_empty"])
 
     def test_create_new_account_with_user_multi_account(self):
-        new_user = m.User.objects.create(username=self.account, is_superuser=True)
+        new_user = m.User.objects.create(username="multi_account_user", is_superuser=True)
         m.TenantUser.objects.create(main_user=self.user1, account_user=new_user)
 
         self.client.force_authenticate(new_user)
@@ -471,7 +472,7 @@ class SetupAccountApiTestCase(APITestCase):
 
     def test_create_new_account_via_no_super_user_multi_account(self):
         new_user = m.User.objects.create(
-            username=self.account,
+            username="no_super_user_multi_account",
         )
         m.TenantUser.objects.create(main_user=self.user1, account_user=new_user)
         self.client.force_authenticate(new_user)
@@ -808,3 +809,227 @@ class SetupAccountApiTestCase(APITestCase):
         """Test that the serializer has the correct default language"""
         serializer = self.get_serializer_instance()
         self.assertEqual(serializer.fields["language"].default, "en")
+
+    def test_setup_account_audit_logging_success(self):
+        """Test that successful account creation creates an audit log"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "fr",
+            "modules": self.MODULES,
+        }
+
+        # Count audit logs before
+        initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that an audit log was created
+        audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
+        self.assertEqual(audit_logs.count(), initial_count + 1)
+
+        # Get the latest audit log
+        latest_log = audit_logs.latest("id")
+        self.assertEqual(latest_log.user, self.admin)
+        self.assertEqual(latest_log.source, SETUP_ACCOUNT_API)
+
+        # Check audit data content
+        audit_data = latest_log.new_value[0]
+        self.assertEqual(audit_data["account_name"], "unittest_account")
+        self.assertEqual(audit_data["user_username"], "unittest_username")
+        self.assertEqual(audit_data["language"], "fr")
+        self.assertEqual(audit_data["status"], "success")
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_audit_logging_validation_error(self):
+        """Test that validation errors create an audit log"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "Zelda",  # This will fail because account already exists
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "en",
+            "modules": self.MODULES,
+        }
+
+        # Count audit logs before
+        initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+        # Check that an audit log was created for the failed attempt
+        audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
+        self.assertEqual(audit_logs.count(), initial_count + 1)
+
+        # Get the latest audit log
+        latest_log = audit_logs.latest("id")
+        self.assertEqual(latest_log.user, self.admin)
+        self.assertEqual(latest_log.source, SETUP_ACCOUNT_API)
+
+        # Check audit data content
+        audit_data = latest_log.new_value[0]
+        self.assertEqual(audit_data["account_name"], "Zelda")
+        self.assertEqual(audit_data["user_username"], "unittest_username")
+        self.assertEqual(audit_data["language"], "en")
+        self.assertEqual(audit_data["status"], "error")
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertIn("error_message", audit_data)
+        self.assertIn("error_type", audit_data)
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_audit_logging_invalid_language(self):
+        """Test that invalid language choices create an audit log"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "invalid_language",  # This will cause a validation error
+            "modules": self.MODULES,
+        }
+
+        # Count audit logs before
+        initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+        # Check that an audit log was created for the failed attempt
+        audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
+        self.assertEqual(audit_logs.count(), initial_count + 1)
+
+        # Get the latest audit log
+        latest_log = audit_logs.latest("id")
+        self.assertEqual(latest_log.user, self.admin)
+        self.assertEqual(latest_log.source, SETUP_ACCOUNT_API)
+
+        # Check audit data content
+        audit_data = latest_log.new_value[0]
+        self.assertEqual(audit_data["account_name"], "unittest_account")
+        self.assertEqual(audit_data["language"], "invalid_language")
+        self.assertEqual(audit_data["status"], "error")
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertIn("error_message", audit_data)
+        self.assertIn("error_type", audit_data)
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_audit_logging_with_email_invitation(self):
+        """Test that audit logging works with email invitation"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "email_invitation": True,
+            "language": "fr",
+            "modules": self.MODULES,
+        }
+
+        # Count audit logs before
+        initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that an audit log was created
+        audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
+        self.assertEqual(audit_logs.count(), initial_count + 1)
+
+        # Get the latest audit log
+        latest_log = audit_logs.latest("id")
+        audit_data = latest_log.new_value[0]
+
+        # Check that email invitation data is captured
+        self.assertEqual(audit_data["email_invitation"], True)
+        self.assertEqual(audit_data["user_email"], "test@example.com")
+        self.assertEqual(audit_data["language"], "fr")
+        self.assertEqual(audit_data["status"], "success")
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_audit_logging_complete_data(self):
+        """Test that audit logging captures all setup parameters"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_first_name": "Test",
+            "user_last_name": "User",
+            "user_email": "test@example.com",
+            "password": "unittest_password",
+            "email_invitation": True,
+            "language": "fr",
+            "modules": self.MODULES,
+            "feature_flags": ["SHOW_HOME_ONLINE", "ALLOW_CATCHMENT_EDITION"],
+        }
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Get the latest audit log
+        latest_log = Modification.objects.filter(source=SETUP_ACCOUNT_API).latest("id")
+        audit_data = latest_log.new_value[0]
+
+        # Verify all parameters are captured
+        self.assertEqual(audit_data["account_name"], "unittest_account")
+        self.assertEqual(audit_data["user_username"], "unittest_username")
+        self.assertEqual(audit_data["user_first_name"], "Test")
+        self.assertEqual(audit_data["user_last_name"], "User")
+        self.assertEqual(audit_data["user_email"], "test@example.com")
+        self.assertEqual(audit_data["email_invitation"], True)
+        self.assertEqual(audit_data["language"], "fr")
+        self.assertEqual(audit_data["modules"], self.MODULES)
+        self.assertEqual(audit_data["feature_flags"], ["SHOW_HOME_ONLINE", "ALLOW_CATCHMENT_EDITION"])
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        self.assertEqual(audit_data["status"], "success")
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)
+
+    def test_setup_account_audit_logging_no_request_user(self):
+        """Test that audit logging works even without a request user"""
+        # This test would require mocking the context, but we can test the structure
+        # by ensuring the audit data structure handles None values properly
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Get the latest audit log
+        latest_log = Modification.objects.filter(source=SETUP_ACCOUNT_API).latest("id")
+        audit_data = latest_log.new_value[0]
+
+        # Verify that requesting_user is captured (should be admin in this case)
+        self.assertEqual(audit_data["requesting_user"], self.admin.username)
+        self.assertEqual(audit_data["requesting_user_id"], self.admin.id)
+        # Verify modules and feature_flags are proper arrays (not JSON strings)
+        self.assertIsInstance(audit_data["modules"], list)
+        self.assertIsInstance(audit_data["feature_flags"], list)

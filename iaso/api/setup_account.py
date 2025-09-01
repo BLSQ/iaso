@@ -1,4 +1,3 @@
-import json
 import logging
 
 from django.contrib.auth.models import Permission, User
@@ -25,6 +24,7 @@ from iaso.models import (
     SourceVersion,
 )
 from iaso.odk import parsing
+from iaso.utils import parse_json_field
 from iaso.utils.module_permissions import account_module_permissions
 
 
@@ -246,26 +246,9 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "requesting_user_id": request.user.id if request.user else None,
         }
 
-        # Ensure modules and feature_flags are proper lists, not JSON strings
-        if isinstance(audit_data["modules"], str):
-            try:
-                audit_data["modules"] = json.loads(audit_data["modules"])
-            except (json.JSONDecodeError, TypeError):
-                audit_data["modules"] = []
-
-        if isinstance(audit_data["feature_flags"], str):
-            try:
-                audit_data["feature_flags"] = json.loads(audit_data["feature_flags"])
-            except (json.JSONDecodeError, TypeError):
-                audit_data["feature_flags"] = []
-
-        # Clean up the audit data using JSON serialization/deserialization
-        # This removes all formatting characters and ensures proper data types
-        try:
-            audit_data = json.loads(json.dumps(audit_data))
-        except (json.JSONDecodeError, TypeError):
-            # If JSON processing fails, keep the original data
-            pass
+        # Parse JSON fields that might come as strings
+        parse_json_field(audit_data, "modules", [])
+        parse_json_field(audit_data, "feature_flags", [])
 
         try:
             # Call the parent create method

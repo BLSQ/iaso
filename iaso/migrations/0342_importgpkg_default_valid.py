@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0341_merge_20250825_0807'),
+        ("iaso", "0341_merge_20250825_0807"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='importgpkg',
-            name='default_valid',
+            model_name="importgpkg",
+            name="default_valid",
             field=models.BooleanField(default=False),
         ),
     ]

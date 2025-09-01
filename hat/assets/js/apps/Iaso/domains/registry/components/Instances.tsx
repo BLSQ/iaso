@@ -76,8 +76,8 @@ export const Instances: FunctionComponent<Props> = ({
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
             if (key == 'periodType' || value === null) {
-                delete params?.startPeriod;
-                delete params?.endPeriod;
+                delete params.startPeriod;
+                delete params.endPeriod;
             }
             redirectToReplace(baseUrls.registry, {
                 ...params,

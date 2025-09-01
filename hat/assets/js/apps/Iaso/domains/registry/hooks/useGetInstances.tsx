@@ -48,6 +48,9 @@ export const useGetInstanceApi = (
         org_unit_status: orgUnitStatus,
         planning_ids: params.planningIds,
         project_ids: params.projectIds,
+        periodType: params.periodType,
+        startPeriod: params.startPeriod,
+        endPeriod: params.endPeriod,
     };
     const url = makeUrlWithParams(
         '/api/instances/',

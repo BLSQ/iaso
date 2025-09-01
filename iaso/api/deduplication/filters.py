@@ -220,6 +220,16 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class AnalyzeFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        analyze_id = request.query_params.get("analyze")
+
+        if analyze_id:
+            queryset = queryset.filter(analyze__id=analyze_id)
+
+        return queryset
+
+
 class CustomOrderingFilter(filters.OrderingFilter):
     def get_ordering(self, request, queryset, view):
         ordering = super().get_ordering(request, queryset, view)

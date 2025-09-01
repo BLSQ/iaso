@@ -42,6 +42,12 @@ class SetupAccountSerializer(serializers.Serializer):
     email_invitation = serializers.BooleanField(
         required=False, default=False, help_text="Send email invitation to user to set up password"
     )
+    language = serializers.ChoiceField(
+        choices=[("en", "English"), ("fr", "Français")],
+        required=False,
+        default="en",
+        help_text="Language for the user interface and email invitations",
+    )
     modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
     analytics_script = serializers.CharField(required=False)
     feature_flags = serializers.JSONField(
@@ -185,7 +191,10 @@ class SetupAccountSerializer(serializers.Serializer):
             demo_form_file.seek(0)  # Reset file pointer to beginning
             FormVersion.objects.create_for_form_and_survey(form=demo_form, survey=survey, xls_file=File(demo_form_file))
 
-        profile = Profile.objects.create(account=account, user=user)
+        # Get language from validated data, defaulting to English
+        language = validated_data.get("language", "en")
+
+        profile = Profile.objects.create(account=account, user=user, language=language)
         profile.projects.add(initial_project)
 
         # Get all permissions linked to the modules
@@ -203,12 +212,12 @@ class SetupAccountSerializer(serializers.Serializer):
             # Get the profile for the user
             profile = Profile.objects.get(user=user, account=account)
 
-            # Send email invitation using existing logic
+            # Send email invitation using existing logic with profile language
             profile_viewset.send_email_invitation(
                 profile=profile,
-                email_subject=profile_viewset.get_subject_by_language(profile_viewset, "en"),
-                email_message=profile_viewset.get_message_by_language(profile_viewset, "en"),
-                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, "en"),
+                email_subject=profile_viewset.get_subject_by_language(profile_viewset, profile.language),
+                email_message=profile_viewset.get_message_by_language(profile_viewset, profile.language),
+                email_html_message=profile_viewset.get_html_message_by_language(profile_viewset, profile.language),
             )
 
         return validated_data

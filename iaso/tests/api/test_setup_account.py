@@ -702,3 +702,109 @@ class SetupAccountApiTestCase(APITestCase):
 
         # Check user has permissions
         self.assertTrue(user.user_permissions.count() > 0)
+
+    def test_setup_account_language_default_english(self):
+        """Test that language defaults to English when not provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that profile has English as default language
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        self.assertEqual(profile.language, "en")
+
+    def test_setup_account_language_french(self):
+        """Test that French language is properly saved"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "fr",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that profile has French language
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        self.assertEqual(profile.language, "fr")
+
+    def test_setup_account_language_english_explicit(self):
+        """Test that English language is properly saved when explicitly provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "en",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that profile has English language
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        self.assertEqual(profile.language, "en")
+
+    def test_setup_account_language_invalid_choice(self):
+        """Test that invalid language choices are rejected"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "language": "es",  # Invalid choice
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        j = response.json()
+        self.assertIn("language", j)
+
+    def test_setup_account_language_with_email_invitation(self):
+        """Test that language is used in email invitation"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "user_email": "test@example.com",
+            "email_invitation": True,
+            "language": "fr",
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that profile has French language
+        user = m.User.objects.get(username="unittest_username")
+        profile = user.iaso_profile
+        self.assertEqual(profile.language, "fr")
+
+    def test_setup_account_language_serializer_choices(self):
+        """Test that the serializer has the correct language choices"""
+        serializer = self.get_serializer_instance()
+        language_field = serializer.fields["language"]
+        # Django ChoiceField returns OrderedDict, so we convert to list for comparison
+        expected_choices = [("en", "English"), ("fr", "Français")]
+        actual_choices = list(language_field.choices.items())
+        self.assertEqual(actual_choices, expected_choices)
+        self.assertEqual(language_field.default, "en")
+
+    def test_setup_account_language_serializer_default(self):
+        """Test that the serializer has the correct default language"""
+        serializer = self.get_serializer_instance()
+        self.assertEqual(serializer.fields["language"].default, "en")

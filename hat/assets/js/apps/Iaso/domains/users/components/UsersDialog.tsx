@@ -171,7 +171,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
         ];
     }, [allUserRolesPermissions, user.user_permissions.value]);
-
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
@@ -205,6 +204,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 onCancel={closeDialog}
                 id="user-dialog"
                 dataTestId="user-dialog"
+                closeOnConfirm={false}
             >
                 <Tabs
                     id="user-dialog-tabs"

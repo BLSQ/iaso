@@ -23,7 +23,7 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             path,
             source=ig.data_source,
             version_number=ig.version_number,
-            validation_status="NEW",
+            validation_status="VALID" if ig.default_valid else "NEW",
             user=user,
             description=ig.description,
             task=task,

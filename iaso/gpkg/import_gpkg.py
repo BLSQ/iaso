@@ -146,7 +146,8 @@ def create_or_update_orgunit(
     name = validate_required_property(props, "name")
     orgunit.name = name
     orgunit.org_unit_type = data["type"]
-    if orgunit.validation_status is None:
+
+    if validation_status is not None:
         orgunit.validation_status = validation_status
     # Validate required ref
     ref = validate_required_property(props, "ref")
@@ -278,6 +279,9 @@ def import_gpkg_file2(
     description,
     task,
 ):
+    print(
+        f"Importing GPKG file {filename} to source {source} version {version_number}, validation status {validation_status}"
+    )
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0

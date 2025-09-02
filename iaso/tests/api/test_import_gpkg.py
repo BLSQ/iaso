@@ -49,7 +49,9 @@ class ImportGpkgAPITestCase(TaskAPITestCase):
         expected_file_name = import_gpkg_upload_to(import_gpkg, self.FILE_NAME)
         self.assertEqual(import_gpkg.file.name, expected_file_name)
 
-        self.runAndValidateTask(import_gpkg, "SUCCESS")
+        task = self.assertValidTaskAndInDB(task_data, status="QUEUED")
+
+        self.runAndValidateTask(task, "SUCCESS")
 
         orgUnits = OrgUnit.objects.filter(version=self.source_version.id)
         self.assertEqual(orgUnits.count(), 3)

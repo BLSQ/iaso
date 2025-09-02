@@ -131,6 +131,7 @@
     "iaso.dataSources.dhisName": "DHIS2 name",
     "iaso.dataSources.dhisPassword": "DHIS2 password",
     "iaso.dataSources.dhisUrl": "DHIS2 url",
+    "iaso.datasources.downloadGpkg": "Download GeoPackage",
     "iaso.datasources.emptyProjectsError": "Please choose at least one project",
     "iaso.datasources.exportMessageDisabled": "Please select a data source with DHIS2 credentials to enable export",
     "iaso.datasources.geoPkg": "Import GeoPackage",

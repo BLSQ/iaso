@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import Add from '@mui/icons-material/Add';
 import { Box, Button } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from 'Iaso/constants/urls';
@@ -47,30 +48,31 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
                 params={paramsWithDefaultValue}
                 groups={groups}
             />
-            {Boolean(data?.orgunits?.length) && (
-                <Box
-                    mt={2}
-                    display="inline-flex"
-                    justifyContent="flex-end"
-                    style={{ width: '100%' }}
-                >
+            <Box
+                mt={2}
+                display="inline-flex"
+                justifyContent="flex-end"
+                style={{ width: '100%' }}
+            >
+                {Boolean(data?.orgunits?.length) && (
                     <DownloadButtonsComponent
                         csvUrl={csvUrl}
                         xlsxUrl={xlsxUrl}
                         gpkgUrl={gpkgUrl}
                         disabled={loading}
                     />
-                    <Button
-                        variant="outlined"
-                        color="primary"
-                        target="_blank"
-                        sx={{ ml: theme => theme.spacing(1) }}
-                        href={`/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/0/parentOrgUnitId/${params.orgUnitId}`}
-                    >
-                        {formatMessage(MESSAGES.addChild)}
-                    </Button>
-                </Box>
-            )}
+                )}
+                <Button
+                    variant="contained"
+                    color="primary"
+                    target="_blank"
+                    sx={{ ml: theme => theme.spacing(1) }}
+                    href={`/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/0/parentOrgUnitId/${params.orgUnitId}`}
+                >
+                    <Add fontSize="small" />
+                    {formatMessage(MESSAGES.addChild)}
+                </Button>
+            </Box>
             <OrgUnitChildrenTable
                 baseUrl={baseUrl}
                 params={paramsWithDefaultValue}

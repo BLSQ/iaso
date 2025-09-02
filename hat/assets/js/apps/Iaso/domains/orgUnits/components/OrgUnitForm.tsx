@@ -87,7 +87,10 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
-        newOrgUnit.parent_id = newOrgUnit.parent?.id;
+        newOrgUnit.parent_id =
+            isNewOrgunit && params.parentOrgUnitId && !newOrgUnit.parent?.id
+                ? params.parentOrgUnitId
+                : newOrgUnit.parent?.id;
         saveOrgUnit(
             newOrgUnit as OrgUnit,
             savedOrgUnit => {

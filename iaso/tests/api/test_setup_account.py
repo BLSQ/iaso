@@ -249,16 +249,15 @@ class SetupAccountApiTestCase(APITestCase):
         ]
 
         for email in valid_emails:
-            with self.subTest(email=email):
-                data = {
-                    "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
-                    "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
-                    "user_email": email,
-                    "password": "unittest_password",
-                    "modules": self.MODULES,
-                }
-                response = self.client.post("/api/setupaccount/", data=data, format="json")
-                self.assertEqual(response.status_code, 201, f"Failed for email: {email}")
+            data = {
+                "account_name": f"unittest_account_{email.replace('@', '_').replace('.', '_')}",
+                "user_username": f"unittest_username_{email.replace('@', '_').replace('.', '_')}",
+                "user_email": email,
+                "password": "unittest_password",
+                "modules": self.MODULES,
+            }
+            response = self.client.post("/api/setupaccount/", data=data, format="json")
+            self.assertEqual(response.status_code, 201, f"Failed for email: {email}")
 
     def test_setup_account_email_invitation_with_password(self):
         """Test that email invitation works when both password and email_invitation are provided"""
@@ -820,7 +819,7 @@ class SetupAccountApiTestCase(APITestCase):
         serializer = self.get_serializer_instance()
         language_field = serializer.fields["language"]
         # Django ChoiceField returns OrderedDict, so we convert to list for comparison
-        expected_choices = [("en", "English"), ("fr", "Français")]
+        expected_choices = [("fr", "French"), ("en", "English")]
         actual_choices = list(language_field.choices.items())
         self.assertEqual(actual_choices, expected_choices)
         self.assertEqual(language_field.default, "en")

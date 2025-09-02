@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
@@ -44,7 +45,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     email_invitation = serializers.BooleanField(required=False, default=False)
     language = serializers.ChoiceField(
-        choices=settings.LANGUAGES
+        choices=settings.LANGUAGES,
         required=False,
         default="en",
         help_text="Language for the user interface and email invitations",

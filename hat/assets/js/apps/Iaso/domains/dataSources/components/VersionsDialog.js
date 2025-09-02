@@ -4,6 +4,7 @@ import Public from '@mui/icons-material/Public';
 import { Button, DialogActions, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
+    IconButton,
     commonStyles,
     DHIS2Svg,
     Table,
@@ -11,13 +12,11 @@ import {
 } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
+import { userHasAccessToModule } from 'Iaso/domains/users/utils';
 import DialogComponent from '../../../components/dialogs/DialogComponent';
-import MESSAGES from '../messages';
-import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
-import { AddTask } from './AddTaskComponent';
-import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
+import MESSAGES from '../messages';
 import {
     getSortedSourceVersions,
     getTablePages,
@@ -25,7 +24,9 @@ import {
     handleSort,
     handleTableParamsChange,
 } from '../utils';
-import { userHasAccessToModule } from 'Iaso/domains/users/utils';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
+import { AddTask } from './AddTaskComponent';
+import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {

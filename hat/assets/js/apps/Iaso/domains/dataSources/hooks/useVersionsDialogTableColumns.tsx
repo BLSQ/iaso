@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Tooltip } from '@mui/material';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import DownloadIcon from '@mui/icons-material/Download';
+import { Tooltip, IconButton as MuiIconButton, Link, Box } from '@mui/material';
+import { Column, useSafeIntl, IconButton } from 'bluesquare-components';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { AddTask } from '../components/AddTaskComponent';
 import { CopySourceVersion } from '../components/CopySourceVersion/CopySourceVersion';
@@ -26,7 +27,9 @@ export const useVersionsDialogTableColumns = (
                         <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
                             <CheckCircleIcon color="primary" />
                         </Tooltip>
-                    ) : null;
+                    ) : (
+                        <></>
+                    );
                 },
             },
             {
@@ -64,6 +67,19 @@ export const useVersionsDialogTableColumns = (
                     if (source.read_only) {
                         return <span>{formatMessage(MESSAGES.readOnly)}</span>;
                     }
+                    const searches = [
+                        {
+                            version: settings.row.original.id,
+                            validation_status: 'all',
+                        },
+                    ];
+
+                    const encodedSearches = encodeURIComponent(
+                        JSON.stringify(searches),
+                    );
+
+                    const gpkgUrl = `/api/orgunits/?searches=${encodedSearches}&gpkg=true`;
+                    console.log(gpkgUrl);
                     return (
                         <>
                             <EditSourceVersion
@@ -111,6 +127,19 @@ export const useVersionsDialogTableColumns = (
                                 }
                                 dataSourceName={source.name}
                             />
+                            <Tooltip
+                                title={formatMessage(MESSAGES.downloadGpkg)}
+                            >
+                                <MuiIconButton size="small" sx={{ padding: 1 }}>
+                                    <Link
+                                        href={gpkgUrl}
+                                        download
+                                        lineHeight={0.6}
+                                    >
+                                        <DownloadIcon color="action" />
+                                    </Link>
+                                </MuiIconButton>
+                            </Tooltip>
                         </>
                     );
                 },
@@ -118,6 +147,7 @@ export const useVersionsDialogTableColumns = (
         ],
         [
             formatMessage,
+            hasDhis2Module,
             source.credentials,
             source.default_version?.id,
             source.id,

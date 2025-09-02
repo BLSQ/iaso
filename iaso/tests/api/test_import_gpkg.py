@@ -2,10 +2,11 @@ from rest_framework import status
 
 from iaso.models import ImportGPKG
 from iaso.models.import_gpkg import import_gpkg_upload_to
-from iaso.test import APITestCase
+from iaso.models.org_unit import OrgUnit
+from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
-class ImportGpkgAPITestCase(APITestCase):
+class ImportGpkgAPITestCase(TaskAPITestCase):
     FILE_NAME = "minimal.gpkg"
     FILE_PATH = f"iaso/tests/fixtures/gpkg/{FILE_NAME}"
 
@@ -28,6 +29,7 @@ class ImportGpkgAPITestCase(APITestCase):
                     "data_source": self.data_source.id,
                     "version_number": 1,
                     "description": "test import",
+                    "default_valid": True,
                 },
                 format="multipart",
             )
@@ -46,3 +48,11 @@ class ImportGpkgAPITestCase(APITestCase):
 
         expected_file_name = import_gpkg_upload_to(import_gpkg, self.FILE_NAME)
         self.assertEqual(import_gpkg.file.name, expected_file_name)
+
+        self.runAndValidateTask(import_gpkg, "SUCCESS")
+
+        orgUnits = OrgUnit.objects.filter(version=self.source_version.id)
+        self.assertEqual(orgUnits.count(), 3)
+
+        for ou in orgUnits:
+            self.assertEqual(ou.validation_status, OrgUnit.VALIDATION_VALID)

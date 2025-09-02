@@ -4,6 +4,7 @@ from beanstalk_worker import task_decorator
 from iaso.gpkg.import_gpkg import import_gpkg_file2
 from iaso.models import Task
 from iaso.models.import_gpkg import ImportGPKG
+from iaso.models.org_unit import OrgUnit
 
 
 @task_decorator(task_name="import_gpkg_task")
@@ -23,7 +24,7 @@ def import_gpkg_task(import_gpkg_id: int, task: Task):
             path,
             source=ig.data_source,
             version_number=ig.version_number,
-            validation_status="VALID" if ig.default_valid else "NEW",
+            validation_status=OrgUnit.VALIDATION_VALID if ig.default_valid else OrgUnit.VALIDATION_NEW,
             user=user,
             description=ig.description,
             task=task,

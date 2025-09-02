@@ -279,9 +279,6 @@ def import_gpkg_file2(
     description,
     task,
 ):
-    print(
-        f"Importing GPKG file {filename} to source {source} version {version_number}, validation status {validation_status}"
-    )
     if version_number is None:
         last_version = source.versions.all().order_by("number").last()
         version_number = last_version.number + 1 if last_version else 0

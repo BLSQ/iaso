@@ -44,7 +44,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_manual_path = serializers.CharField(required=False)
     email_invitation = serializers.BooleanField(required=False, default=False)
     language = serializers.ChoiceField(
-        choices=[("en", "English"), ("fr", "Français")],
+        choices=settings.LANGUAGES
         required=False,
         default="en",
         help_text="Language for the user interface and email invitations",

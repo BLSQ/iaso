@@ -79,6 +79,10 @@ class SetupAccountSerializer(serializers.Serializer):
         email_invitation = data.get("email_invitation", False)
         user_email = data.get("user_email", "")
 
+        # Parse JSON fields that might come as strings
+        parse_json_field(data, "modules", [])
+        parse_json_field(data, "feature_flags", [])
+
         # If email invitation is True, email is required
         if email_invitation and not user_email:
             raise serializers.ValidationError({"user_email": _("Email is required when email_invitation is True")})
@@ -246,10 +250,6 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
         }
-
-        # Parse JSON fields that might come as strings
-        parse_json_field(audit_data, "modules", [])
-        parse_json_field(audit_data, "feature_flags", [])
 
         try:
             # Call the parent create method

@@ -711,6 +711,7 @@ HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 # Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
     "iaso.auth.backends.MultiTenantAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 

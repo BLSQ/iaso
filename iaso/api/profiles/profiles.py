@@ -1,7 +1,7 @@
 from typing import Any, List, Optional, Union
 
 from django.conf import settings
-from django.contrib.auth import login, models, update_session_auth_hash
+from django.contrib.auth import models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.core.mail import send_mail
@@ -226,12 +226,6 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == PK_ME:
-            # if the user is a main_user, login as an account user
-            # TODO: This is not a clean side-effect and should be improved.
-            if request.user.tenant_users.exists():
-                account_user = request.user.tenant_users.first().account_user
-                account_user.backend = "django.contrib.auth.backends.ModelBackend"
-                login(request, account_user)
             try:
                 queryset = self.get_queryset()
                 profile = queryset.get(user=request.user)

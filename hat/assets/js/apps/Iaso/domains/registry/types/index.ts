@@ -22,7 +22,4 @@ export type RegistryParams = UrlParams & {
     missingSubmissionsOrder?: string;
     missingSubmissionsPage?: string;
     projectIds?: string;
-    periodType?: string;
-    startPeriod?: string;
-    endPeriod?: string;
 };

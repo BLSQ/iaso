@@ -100,7 +100,11 @@ const FormDetail: FunctionComponent = () => {
     ) as unknown as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
-    const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
+    const { data: form, isLoading: isFormLoading } = useGetForm(
+        params.formId,
+        Boolean(params.formId),
+        'id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode',
+    );
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [tab, setTab] = useState(params.tab || 'versions');

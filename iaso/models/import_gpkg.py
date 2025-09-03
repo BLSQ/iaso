@@ -35,3 +35,4 @@ class ImportGPKG(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     version_number = models.IntegerField(blank=True, null=True)
     description = models.CharField(max_length=200, blank=True, null=True)
+    default_valid = models.BooleanField(default=False)

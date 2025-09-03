@@ -1,5 +1,5 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
+import { Box, Grid } from '@mui/material';
 import {
     DatePicker,
     useSafeIntl,
@@ -7,17 +7,17 @@ import {
 } from 'bluesquare-components';
 
 // @ts-ignore
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { apiDateFormat } from 'Iaso/utils/dates';
-import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { StorageDetailsParams } from '../types/storages';
-
+import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
+
 import { useGetOperationsTypes } from '../hooks/useGetOperationsTypes';
 
 import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
+import { StorageDetailsParams } from '../types/storages';
 
 type Props = {
     params: StorageDetailsParams;
@@ -61,9 +61,9 @@ export const LogsFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
             </Grid>
             <Box display="flex" justifyContent="flex-end" mt={2}>
-                <FilterButton
+                <SearchButton
                     disabled={!filtersUpdated}
-                    onFilter={handleSearch}
+                    onSearch={handleSearch}
                 />
             </Box>
         </Box>

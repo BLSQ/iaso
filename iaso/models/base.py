@@ -703,7 +703,7 @@ class Profile(models.Model):
             )
 
     def as_dict(self, small=False):
-        user_roles = self.user_roles.all()
+        user_roles = self.user_roles.all().order_by("group__name")
         user_group_permissions = list(
             map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
         )

@@ -158,155 +158,175 @@ export const Instances: FunctionComponent<Props> = ({
                     </Tabs>
                     <Box mt={2}>
                         <Grid container spacing={1}>
-                            <Grid item xs={4} md={2}>
-                                <InputComponent
-                                    keyValue="formIds"
-                                    clearable={false}
-                                    onChange={handleFilterChange}
-                                    disabled={isFetchingForms}
-                                    loading={isFetchingForms}
-                                    value={formIds}
-                                    type="select"
-                                    options={formsList}
-                                    label={MESSAGES.form}
-                                />
-                            </Grid>
-                            <Grid item xs={4} md={2}>
-                                <InputComponent
-                                    keyValue="periodType"
-                                    clearable
-                                    onChange={handleFilterChange}
-                                    value={periodType}
-                                    type="select"
-                                    options={periodTypeOptions}
-                                    label={MESSAGES.periodType}
-                                />
-                            </Grid>
-                            <Grid item xs={4} md={2}>
-                                <PeriodPicker
-                                    hasError={periodError}
-                                    activePeriodString={startPeriod}
-                                    periodType={periodType || ''}
-                                    title={formatMessage(MESSAGES.startPeriod)}
-                                    keyName="startPeriod"
-                                    onChange={value =>
-                                        handleFilterChange('startPeriod', value)
-                                    }
-                                />
-                            </Grid>
-                            <Grid item xs={4} md={2}>
-                                <PeriodPicker
-                                    hasError={periodError}
-                                    activePeriodString={endPeriod}
-                                    periodType={periodType || ''}
-                                    title={formatMessage(MESSAGES.endPeriod)}
-                                    keyName="endPeriod"
-                                    onChange={value =>
-                                        handleFilterChange('endPeriod', value)
-                                    }
-                                />
-                                {periodError && (
-                                    <Box mt={-1}>
-                                        <Typography
-                                            variant="body1"
-                                            color="error"
-                                            fontSize="small"
-                                        >
-                                            {formatMessage(
-                                                MESSAGES.periodError,
-                                            )}
-                                        </Typography>
-                                    </Box>
-                                )}
-                            </Grid>
-
-                            <Grid
-                                item
-                                container
-                                xs={4}
-                                md={4}
-                                justifyContent="flex-end"
-                                alignItems="baseline"
-                                alignContent="center"
-                            >
-                                {formIds && currentForm && (
-                                    <ColumnSelect
-                                        params={params}
-                                        disabled={!formIds}
-                                        periodType={currentForm.period_type}
-                                        setTableColumns={newCols =>
-                                            setTableColumns(newCols)
-                                        }
-                                        baseUrl={baseUrls.registry}
-                                        labelKeys={currentForm.label_keys || []}
-                                        formDetails={currentForm}
-                                        tableColumns={tableColumns}
-                                        instanceMetasFields={
-                                            INSTANCE_METAS_FIELDS
-                                        }
-                                        // eslint-disable-next-line react/no-unstable-nested-components
-                                        getActionCell={settings => (
-                                            <ActionCell settings={settings} />
-                                        )}
+                            <Grid container spacing={2}>
+                                <Grid item xs={4} md={4}>
+                                    <InputComponent
+                                        keyValue="formIds"
+                                        clearable={false}
+                                        onChange={handleFilterChange}
+                                        disabled={isFetchingForms}
+                                        loading={isFetchingForms}
+                                        value={formIds}
+                                        type="select"
+                                        options={formsList}
+                                        label={MESSAGES.form}
                                     />
-                                )}
-                                <DisplayIfUserHasPerm
-                                    permissions={[Permissions.REGISTRY_WRITE]}
+                                </Grid>
+                                <Grid item xs={2} md={2}>
+                                    <InputComponent
+                                        keyValue="periodType"
+                                        clearable
+                                        onChange={handleFilterChange}
+                                        value={periodType}
+                                        type="select"
+                                        options={periodTypeOptions}
+                                        label={MESSAGES.periodType}
+                                    />
+                                </Grid>
+                                <Grid item xs={4} md={3}>
+                                    <PeriodPicker
+                                        hasError={periodError}
+                                        activePeriodString={startPeriod}
+                                        periodType={periodType || ''}
+                                        title={formatMessage(
+                                            MESSAGES.startPeriod,
+                                        )}
+                                        keyName="startPeriod"
+                                        onChange={value =>
+                                            handleFilterChange(
+                                                'startPeriod',
+                                                value,
+                                            )
+                                        }
+                                    />
+                                </Grid>
+                                <Grid item xs={4} md={3}>
+                                    <PeriodPicker
+                                        hasError={periodError}
+                                        activePeriodString={endPeriod}
+                                        periodType={periodType || ''}
+                                        title={formatMessage(
+                                            MESSAGES.endPeriod,
+                                        )}
+                                        keyName="endPeriod"
+                                        onChange={value =>
+                                            handleFilterChange(
+                                                'endPeriod',
+                                                value,
+                                            )
+                                        }
+                                    />
+                                    {periodError && (
+                                        <Box mt={-1}>
+                                            <Typography
+                                                variant="body1"
+                                                color="error"
+                                                fontSize="small"
+                                            >
+                                                {formatMessage(
+                                                    MESSAGES.periodError,
+                                                )}
+                                            </Typography>
+                                        </Box>
+                                    )}
+                                </Grid>
+                            </Grid>
+                            <Grid container spacing={2}>
+                                <Grid
+                                    item
+                                    container
+                                    xs={12}
+                                    md={12}
+                                    justifyContent="flex-end"
+                                    alignItems="baseline"
+                                    alignContent="right"
                                 >
+                                    {formIds && currentForm && (
+                                        <ColumnSelect
+                                            params={params}
+                                            disabled={!formIds}
+                                            periodType={currentForm.period_type}
+                                            setTableColumns={newCols =>
+                                                setTableColumns(newCols)
+                                            }
+                                            baseUrl={baseUrls.registry}
+                                            labelKeys={
+                                                currentForm.label_keys || []
+                                            }
+                                            formDetails={currentForm}
+                                            tableColumns={tableColumns}
+                                            instanceMetasFields={
+                                                INSTANCE_METAS_FIELDS
+                                            }
+                                            // eslint-disable-next-line react/no-unstable-nested-components
+                                            getActionCell={settings => (
+                                                <ActionCell
+                                                    settings={settings}
+                                                />
+                                            )}
+                                        />
+                                    )}
+                                    <DisplayIfUserHasPerm
+                                        permissions={[
+                                            Permissions.REGISTRY_WRITE,
+                                        ]}
+                                    >
+                                        <Box
+                                            display="flex"
+                                            justifyContent="flex-end"
+                                            width="100%"
+                                            mt={2}
+                                        >
+                                            <DownloadButtonsComponent
+                                                csvUrl={`${apiUrl}&csv=true`}
+                                                xlsxUrl={`${apiUrl}&xlsx=true`}
+                                                disabled={
+                                                    isFetchingList ||
+                                                    data?.count === 0 ||
+                                                    !formIds
+                                                }
+                                            />
+                                        </Box>
+                                    </DisplayIfUserHasPerm>
+
                                     <Box
                                         display="flex"
                                         justifyContent="flex-end"
                                         width="100%"
                                         mt={2}
                                     >
-                                        <DownloadButtonsComponent
-                                            csvUrl={`${apiUrl}&csv=true`}
-                                            xlsxUrl={`${apiUrl}&xlsx=true`}
-                                            disabled={
-                                                isFetchingList ||
-                                                data?.count === 0 ||
-                                                !formIds
-                                            }
-                                        />
+                                        {orgUnitsWithoutCurrentForm &&
+                                            orgUnitsWithoutCurrentForm.count >
+                                                0 && (
+                                                <DisplayIfUserHasPerm
+                                                    strict
+                                                    permissions={[
+                                                        Permissions.REGISTRY_WRITE,
+                                                        Permissions.SUBMISSIONS_UPDATE,
+                                                    ]}
+                                                >
+                                                    <MissingInstanceDialog
+                                                        isFetching={
+                                                            isFetchingOrgUnitsWithoutCurrentForm
+                                                        }
+                                                        formId={formIds}
+                                                        missingOrgUnitsData={
+                                                            orgUnitsWithoutCurrentForm
+                                                        }
+                                                        params={params}
+                                                        iconProps={{
+                                                            count: orgUnitsWithoutCurrentForm.count,
+                                                            params,
+                                                        }}
+                                                        defaultOpen={
+                                                            params.missingSubmissionVisible ===
+                                                            'true'
+                                                        }
+                                                    />
+                                                </DisplayIfUserHasPerm>
+                                            )}
                                     </Box>
-                                </DisplayIfUserHasPerm>
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    width="100%"
-                                    mt={2}
-                                >
-                                    {orgUnitsWithoutCurrentForm &&
-                                        orgUnitsWithoutCurrentForm.count >
-                                            0 && (
-                                            <DisplayIfUserHasPerm
-                                                strict
-                                                permissions={[
-                                                    Permissions.REGISTRY_WRITE,
-                                                    Permissions.SUBMISSIONS_UPDATE,
-                                                ]}
-                                            >
-                                                <MissingInstanceDialog
-                                                    isFetching={
-                                                        isFetchingOrgUnitsWithoutCurrentForm
-                                                    }
-                                                    formId={formIds}
-                                                    missingOrgUnitsData={
-                                                        orgUnitsWithoutCurrentForm
-                                                    }
-                                                    params={params}
-                                                    iconProps={{
-                                                        count: orgUnitsWithoutCurrentForm.count,
-                                                        params,
-                                                    }}
-                                                    defaultOpen={
-                                                        params.missingSubmissionVisible ===
-                                                        'true'
-                                                    }
-                                                />
-                                            </DisplayIfUserHasPerm>
-                                        )}
-                                </Box>
+                                </Grid>
                             </Grid>
                         </Grid>
                         <TableWithDeepLink

@@ -355,6 +355,14 @@ class FormVersion(models.Model):
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "version_id": self.version_id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
 
 def update_possible_fields(sender, instance, **kwargs):
     if not instance.form_descriptor and instance.xls_file:

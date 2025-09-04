@@ -151,14 +151,6 @@ export const useColumns = (
                                 tooltipMessage={MESSAGES.seeDuplicate}
                             />
                         )}
-                        {/* When there's more than one dupe for the entity */}
-                        {settings.row.original.has_duplicates && (
-                            <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
-                                overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicates}
-                            />
-                        )}
                     </>
                 );
             },

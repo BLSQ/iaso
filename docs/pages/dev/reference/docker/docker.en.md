@@ -24,6 +24,7 @@ The following are some examples:
 * Apply pending ORM migrations `docker compose exec iaso ./manage.py migrate`
 * Show ORM migrations          `docker compose exec iaso ./manage.py showmigrations`
 * To run a background worker   `docker compose run iaso manage tasks_worker`
+* Create a new IASO plugin     `docker compose run iaso manage startplugin <plugin_name>`
 
 ### Containers and services
 

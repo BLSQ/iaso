@@ -150,16 +150,22 @@ class EntityViewSet(ModelViewSet):
         groups = self.request.query_params.get("groups", None)
         fields_search = self.request.GET.get("fields_search", None)
 
-        queryset = Entity.objects.filter_for_user(self.request.user)
-
-        queryset = queryset.prefetch_related(
-            "attributes__created_by__teams",
-            "attributes__form",
-            "attributes__org_unit__groups",
-            "attributes__org_unit__org_unit_type",
-            "attributes__org_unit__parent",
-            "attributes__org_unit__version__data_source",
-            "entity_type",
+        queryset = (
+            Entity.objects.filter_for_user(self.request.user)
+            .select_related(
+                "attributes__org_unit",
+                "attributes__created_by",
+                "entity_type",
+            )
+            .prefetch_related(
+                "attributes__created_by__teams",
+                "attributes__form",
+                "attributes__org_unit__groups",
+                "attributes__org_unit__org_unit_type",
+                "attributes__org_unit__parent",
+                "attributes__org_unit__version__data_source",
+                "instances",
+            )
         )
 
         if form_name:
@@ -371,10 +377,8 @@ class EntityViewSet(ModelViewSet):
                 if file_content is not None:
                     name = file_content.get("name")
                 has_duplicates = False
-                duplicate_count = 0
                 if fetch_duplicates:
                     has_duplicates = getattr(entity, "has_duplicates", False)
-                    duplicate_count = getattr(entity, "duplicate_count", 0)
 
                 result = {
                     "id": entity.id,
@@ -387,7 +391,6 @@ class EntityViewSet(ModelViewSet):
                     "last_saved_instance": entity.last_saved_instance,
                     "org_unit": attributes_ou,
                     "has_duplicates": has_duplicates,
-                    "duplicate_count": duplicate_count,
                     "latitude": attributes_latitude,
                     "longitude": attributes_longitude,
                 }

@@ -23,7 +23,7 @@ from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Count, Exists, OuterRef, Prefetch, Q
+from django.db.models import Exists, OuterRef, Prefetch, Q
 
 from hat.audit.models import log_modification
 from iaso.models import Account, Instance, OrgUnit, Project
@@ -170,11 +170,7 @@ class EntityQuerySet(models.QuerySet):
                 EntityDuplicate.objects.filter(
                     Q(entity1=OuterRef("pk")) | Q(entity2=OuterRef("pk")), validation_status=ValidationStatus.PENDING
                 )
-            ),
-            duplicate_count=Count(
-                "duplicates1", filter=Q(duplicates1__validation_status=ValidationStatus.PENDING), distinct=True
             )
-            + Count("duplicates2", filter=Q(duplicates2__validation_status=ValidationStatus.PENDING), distinct=True),
         )
 
 

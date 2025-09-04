@@ -34,7 +34,6 @@ export type Entity = {
     program?: string;
     duplicates?: number[];
     has_duplicates?: boolean;
-    duplicate_count?: number;
     latitude?: number;
     longitude?: number;
     nfc_cards?: number;

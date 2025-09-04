@@ -42,14 +42,15 @@ export const RoundCell: FunctionComponent<Props> = ({
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
     const [self, setSelf] = useState<HTMLElement | null>(null);
     const getCellColor = (vaccine: string) => {
-        if (!hasScope(campaign)) {
-            return DEFAULT_CELL_COLOR;
-        }
-        const vaccineConfig = polioVaccines.find(
-            polioVaccine => polioVaccine.value === vaccine,
-        );
-        const vaccineColor = vaccineConfig?.legendColor || vaccineConfig?.color;
-        return vaccineColor || OTHER_VACCINE_COLOR;
+        return DEFAULT_CELL_COLOR;
+        // if (!hasScope(campaign)) {
+        //     return DEFAULT_CELL_COLOR;
+        // }
+        // const vaccineConfig = polioVaccines.find(
+        //     polioVaccine => polioVaccine.value === vaccine,
+        // );
+        // const vaccineColor = vaccineConfig?.legendColor || vaccineConfig?.color;
+        // return vaccineColor || OTHER_VACCINE_COLOR;
     };
     const handleClick = useCallback(
         (event: React.MouseEvent<HTMLElement>) => {

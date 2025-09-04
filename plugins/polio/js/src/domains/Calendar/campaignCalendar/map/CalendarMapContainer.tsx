@@ -1,14 +1,18 @@
-import { Box } from '@mui/material';
-import { LoadingSpinner } from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
     SetStateAction,
     useState,
 } from 'react';
+import { Box } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
 import { useMapEvent } from 'react-leaflet';
 
 import 'leaflet/dist/leaflet.css';
+import { ColorsHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/ColorsHashedPattern';
+import { PaneWithPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { HASHED_MAP_PATTERN_N_OPV2_B_OPV } from '../../../../constants/virus';
 import { useStyles } from '../Styles';
 import {
     MappedCampaign,
@@ -18,14 +22,10 @@ import {
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
 import { CampaignsLegend } from './CampaignsLegend';
-import { VaccinesLegend } from './VaccinesLegend';
 import { boundariesZoomLimit } from './constants';
 
-import { ColorsHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/ColorsHashedPattern';
-import { PaneWithPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { HASHED_MAP_PATTERN_N_OPV2_B_OPV } from '../../../../constants/virus';
 import { MapRoundSelector } from './MapRoundSelector';
+import { VaccinesLegend } from './VaccinesLegend';
 
 type Props = {
     campaignsShapes: ShapeForCalendarMap[];
@@ -80,9 +80,9 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
                         <CampaignsLegend campaigns={campaigns} />
                     </Box>
                 )}
-                <Box display="flex" justifyContent="flex-end">
+                {/* <Box display="flex" justifyContent="flex-end">
                     <VaccinesLegend />
-                </Box>
+                </Box> */}
             </div>
 
             <PaneWithPattern

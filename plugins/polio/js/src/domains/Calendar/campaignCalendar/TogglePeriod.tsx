@@ -29,7 +29,7 @@ export const TogglePeriod: FunctionComponent<Props> = ({ params, url }) => {
         <ToggleButtonGroup
             color="primary"
             size="small"
-            value={params.periodType || 'quarter'}
+            value={params.periodType || 'semester'}
             exclusive
             onChange={handleChangePeriodType}
         >

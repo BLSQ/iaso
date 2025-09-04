@@ -1121,7 +1121,7 @@ class Campaign(SoftDeletableModel):
                             "id": str(campaign.id),
                             "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"campaignScope-{scope.id}",
-                            "top_level_org_unit_name": scope.campaign.country.name,
+                            "top_level_org_unit_name": scope.campaign.country.name if scope.campaign.country else None,
                         },
                     }
                     features.append(feature)
@@ -1148,7 +1148,7 @@ class Campaign(SoftDeletableModel):
                             "id": str(campaign.id),
                             "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"roundScope-{scope.id}",
-                            "top_level_org_unit_name": campaign.country.name,
+                            "top_level_org_unit_name": campaign.country.name if campaign.country else None,
                             "round_number": scope.round.number,
                         },
                     }

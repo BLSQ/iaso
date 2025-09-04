@@ -5,7 +5,6 @@ import {
     LoadingSpinner,
     commonStyles,
     getTableUrl,
-    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
@@ -25,10 +24,7 @@ import {
     useGetCampaigns,
 } from '../Campaigns/hooks/api/useGetCampaigns';
 import { CampaignsCalendar } from './campaignCalendar';
-import {
-    CampaignsFilters,
-    getRedirectUrl,
-} from './campaignCalendar/CampaignsFilters';
+import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { HasSubActivityLegend } from './campaignCalendar/HasSubActivityLegend';
 import { IsOnHoldLegend } from './campaignCalendar/IsOnHoldLegend';
@@ -72,7 +68,6 @@ export const Calendar: FunctionComponent = () => {
     const currentUser = useCurrentUser();
     const isLogged = Boolean(currentUser);
     const [campaignType, setCampaignType] = useState(params.campaignType);
-    const [isTypeSet, setIsTypeSet] = useState(!!params.campaignType);
 
     const orders = params.order || defaultOrder;
     const queryOptions = useMemo(
@@ -111,10 +106,8 @@ export const Calendar: FunctionComponent = () => {
         queryOptions,
         CAMPAIGNS_ENDPOINT,
         ['calendar-campaigns'],
-        { enabled: isTypeSet },
+        { enabled: true },
     );
-
-    const redirectToReplace = useRedirectToReplace();
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
         : moment();
@@ -174,20 +167,6 @@ export const Calendar: FunctionComponent = () => {
             setCalendarAndMapLoaded(false);
         }
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
-
-    const redirectUrl = getRedirectUrl(true, isEmbedded);
-    useEffect(() => {
-        if (!params.campaignType && !isTypeSet) {
-            setCampaignType('polio');
-            setIsTypeSet(true);
-            redirectToReplace(redirectUrl, {
-                ...params,
-                campaignType: 'polio',
-            });
-        }
-        // only test once to force polio as type
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     return (
         <div>

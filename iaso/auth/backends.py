@@ -22,6 +22,8 @@ class MultiTenantAuthBackend(ModelBackend):
             # When users switch accounts, `login()` is called and automatically updates `last_login`.
             tenant_user = UserModel.objects.filter(tenant_user__main_user=user).order_by("-last_login").first()
             if tenant_user:
+                if not hasattr(tenant_user, "iaso_profile"):
+                    raise ValueError(f"Tenant user `{tenant_user.username}` is missing a `iaso_profile`.")
                 return tenant_user
 
             return user

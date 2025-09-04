@@ -67,13 +67,22 @@ class EntityTestCase(TestCase):
 
         annotated = list(m.Entity.objects.with_duplicates().all())
 
-        self.assertEqual(sorted(annotated[0].duplicate_ids), [annotated[1].id, annotated[2].id])
+        # Entity 0 has 2 duplicates
+        self.assertTrue(annotated[0].has_duplicates)
+        self.assertEqual(annotated[0].duplicate_count, 2)
 
-        self.assertEqual(sorted(annotated[1].duplicate_ids), [annotated[0].id])
-        self.assertEqual(sorted(annotated[2].duplicate_ids), [annotated[0].id])
+        # Entities 1 and 2 each have 1 duplicate (entity 0)
+        self.assertTrue(annotated[1].has_duplicates)
+        self.assertEqual(annotated[1].duplicate_count, 1)
+        self.assertTrue(annotated[2].has_duplicates)
+        self.assertEqual(annotated[2].duplicate_count, 1)
 
-        self.assertEqual(sorted(annotated[3].duplicate_ids), [annotated[4].id])
-        self.assertEqual(sorted(annotated[4].duplicate_ids), [annotated[3].id])
+        # Entities 3 and 4 are duplicates of each other
+        self.assertTrue(annotated[3].has_duplicates)
+        self.assertEqual(annotated[3].duplicate_count, 1)
+        self.assertTrue(annotated[4].has_duplicates)
+        self.assertEqual(annotated[4].duplicate_count, 1)
 
-        # Entity 6 has no duplicates
-        self.assertEqual(sorted(annotated[5].duplicate_ids), [])
+        # Entity 5 has no duplicates
+        self.assertFalse(annotated[5].has_duplicates)
+        self.assertEqual(annotated[5].duplicate_count, 0)

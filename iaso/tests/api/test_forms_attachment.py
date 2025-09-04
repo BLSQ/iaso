@@ -17,6 +17,7 @@ from rest_framework import status
 from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
+from iaso.models.forms import form_attachment_upload_to
 from iaso.test import APITestCase, MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 
@@ -173,9 +174,12 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual("36e9383ddb4944fee0f791eedbab13db", form_attachment_data["md5"])
-        self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
+        form_attachment = self.form_1.attachments.first()
+        self.assertEqual(f"http://testserver{form_attachment.file.url}", form_attachment_data["file"])
         self.assertEqual(VirusScanStatus.PENDING, form_attachment_data["scan_result"])
         self.assertIsNone(form_attachment_data["scan_timestamp"])
+        expected_file_name = form_attachment_upload_to(form_attachment, "logo.png")
+        self.assertEqual(form_attachment.file.name, expected_file_name)
 
     @time_machine.travel(DT, tick=False)
     @override_settings(CLAMAV_ACTIVE=True)

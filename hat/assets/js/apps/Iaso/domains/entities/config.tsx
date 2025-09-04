@@ -144,23 +144,21 @@ export const useColumns = (
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
-                        {settings.row.original.has_duplicates &&
-                            settings.row.original.duplicate_count === 1 && (
-                                <IconButtonComponent
-                                    url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
-                                    overrideIcon={FileCopyIcon}
-                                    tooltipMessage={MESSAGES.seeDuplicate}
-                                />
-                            )}
+                        {settings.row.original.has_duplicates && (
+                            <IconButtonComponent
+                                url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
+                                overrideIcon={FileCopyIcon}
+                                tooltipMessage={MESSAGES.seeDuplicate}
+                            />
+                        )}
                         {/* When there's more than one dupe for the entity */}
-                        {settings.row.original.has_duplicates &&
-                            settings.row.original.duplicate_count > 1 && (
-                                <IconButtonComponent
-                                    url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
-                                    overrideIcon={FileCopyIcon}
-                                    tooltipMessage={MESSAGES.seeDuplicates}
-                                />
-                            )}
+                        {settings.row.original.has_duplicates && (
+                            <IconButtonComponent
+                                url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
+                                overrideIcon={FileCopyIcon}
+                                tooltipMessage={MESSAGES.seeDuplicates}
+                            />
+                        )}
                     </>
                 );
             },

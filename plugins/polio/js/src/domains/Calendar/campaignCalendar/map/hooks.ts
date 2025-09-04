@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
 import moment, { Moment } from 'moment';
 import { Query as RQQuery, useQueries } from 'react-query';
-import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { MergedShapes } from '../../../../constants/types';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
@@ -92,7 +92,6 @@ export const useMergedShapes = ({
 }: UseMergedShapesArgs): UseMergedShapesResult => {
     const { data: mergedShapes, isFetching: isLoadingMergedShapes } =
         useGetMergedCampaignShapes() as UseGetMergedShapesResult;
-
     const firstAndLastRounds = useMemo(() => {
         return findFirstAndLastRounds(campaigns);
     }, [campaigns]);
@@ -106,9 +105,16 @@ export const useMergedShapes = ({
         const shapesForSelectedCampaign = (mergedShapes?.features ?? [])
             .filter(shape => campaignIds.includes(shape.properties.id))
             .map(shape => {
+                const campaign = campaigns.find(
+                    campaign => campaign.id === shape.properties.id,
+                );
                 return {
                     ...shape,
                     cache: mergedShapes?.cache_creation_date ?? 0,
+                    properties: {
+                        ...shape.properties,
+                        color: campaign?.color,
+                    },
                 };
             });
         if (selection === 'all') {

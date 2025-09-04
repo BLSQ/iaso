@@ -31,10 +31,8 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                 data={shape.geo_json}
                                 style={() =>
                                     getGeoJsonStyle(
-                                        campaignShape.vaccine
-                                            ? campaignShape.color
-                                            : OTHER_VACCINE_COLOR,
                                         color || campaignShape.color,
+                                        '#000000',
                                         zoom,
                                     )
                                 }

@@ -15,10 +15,6 @@ type Props = {
     zoom: number;
 };
 
-const getColor = (vaccine: string | undefined) => {
-    const vaccineColor = polioVaccines.find(v => v.value === vaccine)?.color;
-    return vaccineColor || OTHER_VACCINE_COLOR;
-};
 export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     mergedShapes,
     zoom,
@@ -26,7 +22,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     return (
         <Pane name="merged-shapes" key="merged-shapes">
             {mergedShapes?.map(mergedShape => {
-                const color = getColor(mergedShape.properties.vaccine);
+                const color = mergedShape.properties.color;
                 return (
                     <GeoJSON
                         key={`${mergedShape.properties.id}-${mergedShape.properties.round_number}-${mergedShape.properties.vaccine}-${mergedShape.cache}`}

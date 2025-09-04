@@ -75,14 +75,9 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
                     }}
                     iconProps={{ selection, zoom }}
                 />
-                {zoom > boundariesZoomLimit && (
-                    <Box mt={2}>
-                        <CampaignsLegend campaigns={campaigns} />
-                    </Box>
-                )}
-                {/* <Box display="flex" justifyContent="flex-end">
-                    <VaccinesLegend />
-                </Box> */}
+                <Box mt={2}>
+                    <CampaignsLegend campaigns={campaigns} />
+                </Box>
             </div>
 
             <PaneWithPattern

@@ -1,3 +1,4 @@
+import React, { FunctionComponent } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
     Accordion,
@@ -8,11 +9,10 @@ import {
     Typography,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
-import { vaccineOpacity } from '../Styles';
 
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../constants/messages';
+import { vaccineOpacity } from '../Styles';
 import { MappedCampaign } from '../types';
 
 type Props = {
@@ -88,7 +88,8 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                                 <Box
                                     sx={{
                                         ...styles.roundColor,
-                                        borderColor: c.color,
+                                        borderColor: '#000000',
+                                        backgroundColor: c.color,
                                     }}
                                 />
                             </Grid>

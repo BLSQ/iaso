@@ -20,15 +20,14 @@ import uuid
 from copy import copy
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models import Case, F, Prefetch, Q, When
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 
 from hat.audit.models import log_modification
 from iaso.models import Account, Form, Instance, OrgUnit, Project
-from iaso.models.deduplication import ValidationStatus
+from iaso.models.deduplication import EntityDuplicate, ValidationStatus
 from iaso.utils.jsonlogic import jsonlogic_to_q
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -165,22 +164,15 @@ class EntityQuerySet(models.QuerySet):
 
     def with_duplicates(self):
         return self.annotate(
-            duplicate_ids=ArrayAgg(
-                Case(
-                    When(
-                        Q(duplicates1__validation_status=ValidationStatus.PENDING),
-                        then=F("duplicates1__entity2__id"),
-                    ),
-                    When(
-                        Q(duplicates2__validation_status=ValidationStatus.PENDING),
-                        then=F("duplicates2__entity1__id"),
-                    ),
-                    output_field=models.IntegerField(),
-                ),
-                distinct=True,
-                filter=Q(duplicates1__validation_status=ValidationStatus.PENDING)
-                | Q(duplicates2__validation_status=ValidationStatus.PENDING),
+            has_duplicates=Exists(
+                EntityDuplicate.objects.filter(
+                    Q(entity1=OuterRef("pk")) | Q(entity2=OuterRef("pk")), validation_status=ValidationStatus.PENDING
+                )
+            ),
+            duplicate_count=Count(
+                "duplicates1", filter=Q(duplicates1__validation_status=ValidationStatus.PENDING), distinct=True
             )
+            + Count("duplicates2", filter=Q(duplicates2__validation_status=ValidationStatus.PENDING), distinct=True),
         )
 
 

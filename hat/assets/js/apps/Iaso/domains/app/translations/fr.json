@@ -1324,7 +1324,7 @@
     "iaso.search": "Rechercher",
     "iaso.setup.accountName": "Nom du compte",
     "iaso.setup.accountNameAlreadyExist": "Un compte avec ce nom existe déjà",
-    "iaso.setup.accountSetup": "Configuration du compte",
+    "iaso.setup.accountSetup": "Configuration d'un nouveau compte",
     "iaso.setup.confirmMessage": "Compte et profil créés avec succès, veuillez vous déconnecter et vous reconnecter avec le nouveau profil.",
     "iaso.setup.dataSourceNameAlreadyExist": "Une source avec ce nom existe déjà",
     "iaso.setup.modulesEmpty": "Les modules ne doivent pas être vides.",

@@ -115,12 +115,17 @@ export const SetupAccount: FunctionComponent = () => {
         useGetModulesDropDown();
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
+    const hasAccount = Boolean(currentUser.account);
     return (
         <>
             <TopBar
                 displayBackButton={false}
-                displayMenuButton={false}
-                title={formatMessage(MESSAGES.welcome)}
+                displayMenuButton={hasAccount}
+                title={
+                    !hasAccount
+                        ? formatMessage(MESSAGES.welcome)
+                        : formatMessage(MESSAGES.accountSetup)
+                }
             />
             <Paper className={classes.paper}>
                 {isAdmin && (

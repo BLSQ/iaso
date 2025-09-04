@@ -70,7 +70,7 @@ export type User = {
     username: string;
     user_name?: string;
     email: string;
-    account: Account;
+    account?: Account;
     other_accounts: Account[];
     permissions: string[];
     is_staff?: boolean;

@@ -31,9 +31,6 @@ from iaso.models.base import (
     QUEUED,
     DataSource,
     ExternalCredentials,
-    Instance,
-    InstanceFile,
-    InstanceLock,
     Mapping,
     Profile,
     Task,
@@ -41,6 +38,7 @@ from iaso.models.base import (
 from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
+from iaso.models.instances import Instance, InstanceFile, InstanceLock
 from iaso.models.microplanning import Assignment, Planning, Team
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page

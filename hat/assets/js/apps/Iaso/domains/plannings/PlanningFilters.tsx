@@ -1,14 +1,14 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
-import { FilterButton } from '../../components/FilterButton';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import DatesRange from '../../components/filters/DatesRange';
 import InputComponent from '../../components/forms/InputComponent';
-import { useFilterState } from '../../hooks/useFilterState';
-import { PlanningParams } from './types';
-import MESSAGES from './messages';
-import { publishingStatuses } from './constants';
 import { baseUrls } from '../../constants/urls';
+import { useFilterState } from '../../hooks/useFilterState';
+import { publishingStatuses } from './constants';
+import MESSAGES from './messages';
+import { PlanningParams } from './types';
 
 type Props = {
     params: PlanningParams;
@@ -66,9 +66,9 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
                 <Grid container item xs={12} justifyContent="flex-end">
                     <Box mt={2} mb={2}>
-                        <FilterButton
+                        <SearchButton
                             disabled={textSearchError || !filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                         />
                     </Box>
                 </Grid>

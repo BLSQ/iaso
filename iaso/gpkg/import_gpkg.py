@@ -146,7 +146,8 @@ def create_or_update_orgunit(
     name = validate_required_property(props, "name")
     orgunit.name = name
     orgunit.org_unit_type = data["type"]
-    if orgunit.validation_status is None:
+
+    if validation_status is not None:
         orgunit.validation_status = validation_status
     # Validate required ref
     ref = validate_required_property(props, "ref")

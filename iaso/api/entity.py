@@ -370,10 +370,11 @@ class EntityViewSet(ModelViewSet):
                 name = None
                 if file_content is not None:
                     name = file_content.get("name")
-                duplicates = []
-                # not needed for map display or exports
+                has_duplicates = False
+                duplicate_count = 0
                 if fetch_duplicates:
-                    duplicates.extend(entity.duplicate_ids)
+                    has_duplicates = getattr(entity, "has_duplicates", False)
+                    duplicate_count = getattr(entity, "duplicate_count", 0)
 
                 result = {
                     "id": entity.id,
@@ -385,7 +386,8 @@ class EntityViewSet(ModelViewSet):
                     "entity_type": entity.entity_type.name,
                     "last_saved_instance": entity.last_saved_instance,
                     "org_unit": attributes_ou,
-                    "duplicates": duplicates,
+                    "has_duplicates": has_duplicates,
+                    "duplicate_count": duplicate_count,
                     "latitude": attributes_latitude,
                     "longitude": attributes_longitude,
                 }

@@ -3,18 +3,18 @@ import { Box, Button, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import * as Permission from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
-import MESSAGES from '../messages';
-import { ChronogramParams } from '../types';
-import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 import { useOptionChronogram } from '../../api/useOptionChronogram';
+import MESSAGES from '../messages';
+import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
+import { ChronogramParams } from '../types';
 
 type Props = {
     params: ChronogramParams;
@@ -31,8 +31,7 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
     const { data: chronogramMetaData, isFetching: isFetchingMetaData } =
         useOptionChronogram();
 
-    const { data, isFetchingCountriesData: isFetchingCountries } =
-        useGetCountries();
+    const { data, isFetching: isFetchingCountries } = useGetCountries();
     const countriesOptions = (data && data.orgUnits) || [];
 
     const onTimeOptions = [
@@ -102,9 +101,9 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid container item justifyContent="flex-end">
                 <Box mt={2}>
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

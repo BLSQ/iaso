@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-12 16:12+0000\n"
+"POT-Creation-Date: 2025-08-26 15:01+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -342,6 +342,14 @@ msgstr "Format de numéro de téléphone invalide"
 #: iaso/api/profiles/profiles.py
 msgid "Invalid phone number"
 msgstr "Numéro de téléphone invalide"
+
+#: iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+
+#: iaso/api/stocks/filters.py
+msgid "SKUs - SKU IDs (comma-separated)"
+msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
 
 #: iaso/models/base.py
 msgid "Aggregate"

@@ -26,7 +26,7 @@ const useXlsxUrl = allParams => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { tab, ...params } = allParams;
     const safeParams = useUrlParams(
-        { ...params, app_id: 'com.poliooutbreaks.app' },
+        { ...params, app_id: 'campaigns.tracking' },
         defaults,
     );
     const apiParams = useApiParams(safeParams);

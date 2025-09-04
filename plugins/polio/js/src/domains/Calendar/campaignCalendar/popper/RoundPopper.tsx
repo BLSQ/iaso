@@ -69,7 +69,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {
         round: round.id,
-        app_id: 'com.poliooutbreaks.app',
+        app_id: 'campaigns.tracking',
     };
     const url = getTableUrl(
         'polio/campaigns/csv_campaign_scopes_export',

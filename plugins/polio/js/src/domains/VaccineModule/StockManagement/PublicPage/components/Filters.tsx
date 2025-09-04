@@ -81,7 +81,7 @@ export const Filters: FunctionComponent<Props> = ({ params }) => {
         useGetGroupDropdown({
             blockOfCountries: true,
             // hard-coding polio appId here because there's no way to otherwise filter by accountÒ
-            appId: 'com.poliooutbreaks.app',
+            appId: 'campaigns.tracking',
         });
 
     const unusableActionTypeOptions = useUnusableActionTypeOptions();

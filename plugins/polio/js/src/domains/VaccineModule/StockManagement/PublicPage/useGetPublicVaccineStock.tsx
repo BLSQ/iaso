@@ -21,7 +21,7 @@ export const useGetPublicVaccineStock = allParams => {
     const { tab, ...params } = allParams;
     const isUsable = (tab ?? 'usable') === 'usable';
     const safeParams = useUrlParams(
-        { ...params, app_id: 'com.poliooutbreaks.app' },
+        { ...params, app_id: 'campaigns.tracking' },
         defaults,
     );
     const apiParams = useApiParams(safeParams);

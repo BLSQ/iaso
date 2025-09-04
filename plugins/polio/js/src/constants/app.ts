@@ -1,2 +1,2 @@
-const appId = 'com.poliooutbreaks.app';
+const appId = 'campaigns.tracking';
 export { appId };

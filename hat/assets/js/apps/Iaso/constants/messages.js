@@ -226,7 +226,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validation',
     },
     accountSetup: {
-        defaultMessage: 'Account setup',
+        defaultMessage: 'Setup a new account',
         id: 'iaso.setup.accountSetup',
     },
 });

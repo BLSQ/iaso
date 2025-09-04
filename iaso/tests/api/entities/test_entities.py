@@ -231,7 +231,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(7):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]

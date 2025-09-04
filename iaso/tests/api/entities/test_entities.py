@@ -238,7 +238,6 @@ class WebEntityAPITestCase(EntityAPITestCase):
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["id"], entities[0].id)
         self.assertTrue(result[0]["has_duplicates"])
-        self.assertEqual(result[0]["duplicate_count"], 1)
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):

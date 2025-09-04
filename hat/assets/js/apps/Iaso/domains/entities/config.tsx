@@ -144,19 +144,11 @@ export const useColumns = (
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                         />
-                        {settings.row.original.duplicates.length === 1 && (
-                            <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.id},${settings.row.original.duplicates[0]}/`}
-                                overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicate}
-                            />
-                        )}
-                        {/* When there's more than one dupe for the entity */}
-                        {settings.row.original.duplicates.length > 1 && (
+                        {settings.row.original.has_duplicates && (
                             <IconButtonComponent
                                 url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
                                 overrideIcon={FileCopyIcon}
-                                tooltipMessage={MESSAGES.seeDuplicates}
+                                tooltipMessage={MESSAGES.seeDuplicate}
                             />
                         )}
                     </>

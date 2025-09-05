@@ -604,25 +604,6 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertIsNotNone(form_version.xls_file)
         self.assertIsNotNone(form_version.file)
 
-    # def test_setup_account_links_profile_to_project(self):
-    #     """Test that setup account links the user profile to the project"""
-    #     self.client.force_authenticate(self.admin)
-    #     data = {
-    #         "account_name": "unittest_account",
-    #         "user_username": "unittest_username",
-    #         "password": "unittest_password",
-    #         "email_invitation": False,
-    #         "modules": self.MODULES,
-    #     }
-    #     response = self.client.post("/api/setupaccount/", data=data, format="json")
-    #     self.assertEqual(response.status_code, 201)
-
-    #     # Check that profile is linked to the project
-    #     user = m.User.objects.get(username="unittest_username")
-    #     profile = user.iaso_profile
-    #     project = m.Project.objects.filter(name="Main Project").first()
-    #     self.assertIn(project, profile.projects.all())
-
     def test_setup_account_default_modules(self):
         """Test that setup account uses default modules when none provided"""
         self.client.force_authenticate(self.admin)
@@ -719,9 +700,6 @@ class SetupAccountApiTestCase(APITestCase):
 
         # Check form-org_unit_type relationship
         self.assertIn(org_unit_type, form.org_unit_types.all())
-
-        # Check profile-project relationship
-        # self.assertIn(project, profile.projects.all())
 
         # Check user has permissions
         self.assertTrue(user.user_permissions.count() > 0)

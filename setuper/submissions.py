@@ -35,17 +35,17 @@ def submission_org_unit_gps_point(org_unit):
 
 
 def picture_by_org_unit_type_name(org_unit_type_name):
-    org_unit_type_name = org_unit_type_name.strip()
+    org_unit_type = org_unit_type_name.strip()
     picture_name = ""
-    if org_unit_type_name == "Country/Pays - COUN" or org_unit_type_name == "Main org unit type":
+    if org_unit_type == "Country/Pays - COUN" or org_unit_type == "Main org unit type":
         picture_name = "Ministry-of-health.jpg"
-    elif org_unit_type_name == "Region/Région - REG":
+    elif org_unit_type == "Region/Région - REG":
         picture_name = "Regional-health-authority.jpg"
-    elif org_unit_type_name == "District/Zone de santé - DIST":
+    elif org_unit_type == "District/Zone de santé - DIST":
         picture_name = "health-district.jpg"
-    elif org_unit_type_name == "Health area/Aire de santé - AREA":
+    elif org_unit_type == "Health area/Aire de santé - AREA":
         picture_name = "health-area.jpg"
-    elif org_unit_type_name == "Health facility/Formation sanitaire - HF":
+    elif org_unit_type == "Health facility/Formation sanitaire - HF":
         picture_name = "health-facility.jpg"
     return picture_name
 

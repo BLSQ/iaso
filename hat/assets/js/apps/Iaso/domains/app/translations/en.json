@@ -1573,6 +1573,7 @@
     "iaso.users.history.labels.newLocation": "New location",
     "iaso.users.history.labels.pastLocation": "Past location",
     "iaso.users.homePageInfos": "Copy/paste the url after \"dashboard/\"",
+    "iaso.users.invalidEmailFormat": "Invalid email format",
     "iaso.users.isSuperUser": "User is a super admin and has all rights",
     "iaso.users.label.english": "English",
     "iaso.users.label.french": "French",

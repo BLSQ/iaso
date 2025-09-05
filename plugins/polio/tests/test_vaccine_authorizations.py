@@ -7,6 +7,7 @@ from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from beanstalk_worker.services import TestTaskService
@@ -774,7 +775,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         """
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=country/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=country")
 
         self.assertEqual(response.data[0]["country"]["name"], third.country.name)
         self.assertEqual(response.data[1]["country"]["name"], second.country.name)
@@ -782,7 +783,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Descendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-country/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-country")
 
         self.assertEqual(response.data[0]["country"]["name"], fourth.country.name)
         self.assertEqual(response.data[1]["country"]["name"], second.country.name)
@@ -795,12 +796,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # Ascendant
 
         response = self.client.get(
-            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=current_expiration_date/"
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=current_expiration_date"
         )
-
-        self.assertEqual(response.data[0]["current_expiration_date"], second.expiration_date)
-        self.assertEqual(response.data[1]["current_expiration_date"], third.expiration_date)
-        self.assertEqual(response.data[2]["current_expiration_date"], fourth.expiration_date)
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_0 = response_json[0]
+        self.assertEqual(response_0["id"], second.id)
+        self.assertEqual(response_0["current_expiration_date"], second.expiration_date.strftime("%Y-%m-%d"))
+        response_1 = response_json[1]
+        self.assertEqual(response_1["id"], third.id)
+        self.assertEqual(response_1["current_expiration_date"], third.expiration_date.strftime("%Y-%m-%d"))
+        response_2 = response_json[2]
+        self.assertEqual(response_2["id"], fourth.id)
+        self.assertEqual(response_2["current_expiration_date"], fourth.expiration_date.strftime("%Y-%m-%d"))
 
         # Descendant
 
@@ -818,7 +825,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status")
 
         self.assertEqual(response.data[0]["status"], second.status)
         self.assertEqual(response.data[1]["status"], third.status)
@@ -838,7 +845,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=quantity/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=quantity")
 
         self.assertEqual(response.data[0]["status"], second.status)
         self.assertEqual(response.data[1]["status"], third.status)
@@ -883,7 +890,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # Ascendant
 
         response = self.client.get(
-            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=next_expiration_date/"
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=next_expiration_date"
         )
 
         self.assertEqual(response.data[0]["next_expiration_date"], fifth.expiration_date)

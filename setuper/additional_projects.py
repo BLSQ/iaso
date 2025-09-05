@@ -127,10 +127,6 @@ def link_forms_to_new_projects(projects, forms, iaso_client):
                 "project_ids": project_ids,
                 "name": current_form["name"],
                 "org_unit_type_ids": current_form["org_unit_type_ids"],
-                "derived": current_form["derived"],
-                "single_per_period": current_form["single_per_period"],
-                "periods_before_allowed": current_form["periods_before_allowed"],
-                "periods_after_allowed": current_form["periods_after_allowed"],
             }
             iaso_client.patch(f"/api/forms/{current_form['id']}/", json=form_to_update)
 

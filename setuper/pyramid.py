@@ -10,6 +10,7 @@ def setup_orgunits(iaso_client):
         "data_source": data_source_id,
         "version_number": "1",
         "description": "Sample geopackage",
+        "default_valid": True,
     }
 
     test_file = "data/small_sample.gpkg"

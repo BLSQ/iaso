@@ -218,15 +218,19 @@ def setup_entities(account_name, iaso_client, entity_type, new_entity_type):
     limit = 20
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
 
+    # Getting the latest form version for reference form
+    if new_entity_type["reference_form"]["id"]:
+        form = iaso_client.get(f"/api/forms/{new_entity_type['reference_form']['id']}/?fields=latest_form_version")
+        new_entity_type["reference_form"]["latest_form_version"] = form["latest_form_version"]
+        new_entity_type["id"] = entity_type["id"]
+
     print("-- Submitting %d submissions" % limit)
     count = 0
     for orgunit in orgunits:
-        entity_type["reference_form"] = new_entity_type["reference_form"]
-        entity_type["followup_form"] = new_entity_type["followup_form"]
         if entity_type["name"] == "Children less than 5":
-            create_child_entities(account_name, iaso_client, orgunit, entity_type)
+            create_child_entities(account_name, iaso_client, orgunit, new_entity_type)
         elif entity_type["name"] in ["Pregnant women", "Household"]:
-            create_additional_entities(account_name, iaso_client, orgunit, entity_type)
+            create_additional_entities(account_name, iaso_client, orgunit, new_entity_type)
         count = count + 1
     print(
         iaso_client.get("/api/instances", params={"limit": 1})["count"],

@@ -202,7 +202,6 @@ class SetupAccountSerializer(serializers.Serializer):
         language = validated_data.get("language", "en")
 
         profile = Profile.objects.create(account=account, user=user, language=language)
-        profile.projects.add(initial_project)
 
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)

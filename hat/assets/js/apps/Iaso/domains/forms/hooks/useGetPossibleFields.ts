@@ -5,9 +5,9 @@ import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder
 import { getRequest } from '../../../libs/Api';
 import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
-import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
 import MESSAGES from '../messages';
+import { useGetForm } from '../requests';
 import { Form, PossibleField } from '../types/forms';
 
 type Result = {

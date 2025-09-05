@@ -35,8 +35,9 @@ def submission_org_unit_gps_point(org_unit):
 
 
 def picture_by_org_unit_type_name(org_unit_type_name):
+    org_unit_type_name = org_unit_type_name.strip()
     picture_name = ""
-    if org_unit_type_name == "Country/Pays - COUN":
+    if org_unit_type_name == "Country/Pays - COUN" or org_unit_type_name == "Main org unit type":
         picture_name = "Ministry-of-health.jpg"
     elif org_unit_type_name == "Region/Région - REG":
         picture_name = "Regional-health-authority.jpg"

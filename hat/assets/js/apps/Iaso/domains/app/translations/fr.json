@@ -18,6 +18,7 @@
     "blsq.treeview.search.confirm": "Confirmer",
     "blsq.treeview.search.inputLabelObject": "Rechercher",
     "blsq.treeview.search.options.label.clear": "Effacer",
+    "iaso.users.invalidEmailFormat": "Format d'email invalide",
     "blsq.treeview.search.options.label.noOptions": "Aucun résultat trouvé",
     "blsq.treeview.search.results.label.display": "Afficher",
     "blsq.treeview.search.results.label.resultsLower": "résultat(s)",

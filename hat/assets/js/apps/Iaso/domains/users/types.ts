@@ -23,11 +23,12 @@ export type UserDialogData = {
     language: ValueAndErrors<string | null>;
     password: ValueAndErrors<string | null>;
     phone_number: ValueAndErrors<string | null>;
-    country_code: ValueAndErrors<string | null>;
+    country_code: ValueAndErrors<string | number | null>;
     projects: ValueAndErrors<Project[] | null>;
     editable_org_unit_type_ids: ValueAndErrors<number[] | null>;
     user_roles_editable_org_unit_type_ids: ValueAndErrors<number[] | []>;
     has_multiple_accounts: ValueAndErrors<boolean>;
+    organization: ValueAndErrors<string | undefined>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

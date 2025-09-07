@@ -5,21 +5,19 @@ import django.db.models.deletion
 from django.conf import settings
 from django.db import migrations, models
 
-import hat.audit.models
+import hat.api_import.models
 
 
 class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("iaso", "0001_initial"),
-        ("contenttypes", "0002_remove_content_type_name"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name="Modification",
+            name="APIImport",
             fields=[
                 (
                     "id",
@@ -30,42 +28,45 @@ class Migration(migrations.Migration):
                         verbose_name="ID",
                     ),
                 ),
-                ("object_id", models.CharField(db_index=True, max_length=40)),
-                (
-                    "past_value",
-                    models.JSONField(encoder=hat.audit.models.IasoJsonEncoder),
-                ),
-                (
-                    "new_value",
-                    models.JSONField(encoder=hat.audit.models.IasoJsonEncoder),
-                ),
-                ("source", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
-                    "content_type",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="contenttypes.contenttype",
+                    "import_type",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("orgUnit", "Org Unit"),
+                            ("instance", "Form instance"),
+                            ("bulk", "Bulk Org Units and Instances"),
+                            ("storageLog", "Storage logs"),
+                        ],
+                        max_length=25,
+                        null=True,
                     ),
                 ),
+                ("json_body", models.JSONField()),
+                ("headers", models.JSONField(blank=True, null=True)),
+                ("has_problem", models.BooleanField(default=False)),
+                ("exception", models.TextField(blank=True, default="")),
                 (
-                    "org_unit_change_request",
-                    models.ForeignKey(
+                    "file",
+                    models.FileField(
                         blank=True,
                         null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        to="iaso.orgunitchangerequest",
+                        upload_to=hat.api_import.models.api_import_upload_to,
                     ),
                 ),
                 (
                     "user",
                     models.ForeignKey(
-                        blank=True,
                         null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="apiimports",
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],
+            options={
+                "db_table": "vector_control_apiimport",
+            },
         ),
     ]

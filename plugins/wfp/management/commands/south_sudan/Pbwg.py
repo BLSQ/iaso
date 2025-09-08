@@ -23,7 +23,7 @@ class PBWG:
         instances = self.group_visit_by_entity(entities)
 
         # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="PLW").delete()
+        MonthlyStatistics.objects.filter(account=account, programme_type="PLW").delete()
 
         for index, instance in enumerate(instances):
             logger.info(
@@ -150,7 +150,6 @@ class PBWG:
             filter(
                 lambda instance: (
                     instance.get("visits")
-                    and len(instance.get("visits")) > 1
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
                     and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0

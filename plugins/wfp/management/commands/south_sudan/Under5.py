@@ -119,7 +119,6 @@ class Under5:
             filter(
                 lambda instance: (
                     instance.get("visits")
-                    and len(instance.get("visits")) > 1
                     and instance.get("gender") is not None
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
@@ -157,6 +156,7 @@ class Under5:
     def run(self, type):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
+
         beneficiaries = entity_type.retrieve_entities()
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
@@ -164,7 +164,7 @@ class Under5:
         instances = self.group_visit_by_entity(entities)
 
         # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
+        MonthlyStatistics.objects.filter(account=account, programme_type="U5").delete()
 
         for index, instance in enumerate(instances):
             logger.info(

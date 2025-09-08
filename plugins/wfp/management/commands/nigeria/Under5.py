@@ -135,7 +135,7 @@ class NG_Under5:
         instances = self.group_visit_by_entity(entities)
 
         # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
+        MonthlyStatistics.objects.filter(account=account, programme_type="U5").delete()
 
         for index, instance in enumerate(instances):
             logger.info(

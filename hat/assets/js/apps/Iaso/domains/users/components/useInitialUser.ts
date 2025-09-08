@@ -112,6 +112,19 @@ export const useInitialUser = (
                 value: get(data, 'color', ''),
                 errors: [],
             },
+            // Trypelim-specific fields
+            screening_type: {
+                value: get(initialData, 'screening_type', null),
+                errors: [],
+            },
+            tester_type: {
+                value: get(initialData, 'tester_type', null),
+                errors: [],
+            },
+            level: {
+                value: get(initialData, 'level', null),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

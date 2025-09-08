@@ -19,6 +19,7 @@ import { MutateFunction, useQueryClient } from 'react-query';
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
 import { SxStyles } from 'Iaso/types/general';
 import { Profile, useCurrentUser } from 'Iaso/utils/usersUtils';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import * as Permissions from '../../../utils/permissions';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
@@ -72,6 +73,9 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
+
+    // Component for the Trypelim-specific tab
+    const UserProfileTrypelim = useFindCustomComponent('user.profile_trypelim');
 
     const {
         user,
@@ -258,6 +262,14 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
+                    {/* Trypelim-specific tab */}
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="trypelimProfile"
+                        label={'Trypelim'}
+                    />
                     {hasNoOrgUnitManagementWrite ? (
                         <UsersDialogTabDisabled
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
@@ -321,6 +333,13 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                                     ouTypesIds,
                                 )
                             }
+                        />
+                    )}
+                    {/* Trypelim-specific tab */}
+                    {tab === 'trypelimProfile' && (
+                        <UserProfileTrypelim
+                            currentUser={user}
+                            setFieldValue={setFieldValue}
                         />
                     )}
                 </Box>

@@ -21,7 +21,7 @@ export const useGetProfilesApiParams = params => {
           }
         : {};
 
-    const url = makeUrlWithParams(`/api/profiles/`, {
+    const url = makeUrlWithParams(`/api/trypelim/profiles/`, {
         ...apiParams,
         managedUsersOnly: apiParams.managedUsersOnly ?? 'true',
     });

@@ -15,6 +15,7 @@ import {
 } from 'bluesquare-components';
 
 import { OrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import { SxStyles } from 'Iaso/types/general';
 import * as Permissions from '../../../utils/permissions';
 import { useCreateProfile } from '../hooks/useCreateProfile';
@@ -66,6 +67,9 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
     canBypassProjectRestrictions,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    // Component for the Trypelim-specific tab
+    const UserProfileTrypelim = useFindCustomComponent('user.profile_trypelim');
 
     const {
         user,
@@ -247,6 +251,14 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
+                    {/* Trypelim-specific tab */}
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="trypelimProfile"
+                        label={'Trypelim'}
+                    />
                     {hasNoOrgUnitManagementWrite ? (
                         <UsersDialogTabDisabled
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
@@ -310,6 +322,13 @@ const CreateUserDialogComponent: FunctionComponent<Props> = ({
                                     ouTypesIds,
                                 )
                             }
+                        />
+                    )}
+                    {/* Trypelim-specific tab */}
+                    {tab === 'trypelimProfile' && (
+                        <UserProfileTrypelim
+                            currentUser={user}
+                            setFieldValue={setFieldValue}
                         />
                     )}
                 </Box>

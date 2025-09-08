@@ -1,5 +1,4 @@
 import React, { useContext, useMemo } from 'react';
-
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -20,6 +19,7 @@ import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRou
 import Input from '@mui/icons-material/Input';
 import Link from '@mui/icons-material/Link';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PaymentsIcon from '@mui/icons-material/Payments';
 import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
@@ -83,6 +83,104 @@ const menuItems = (
                 pathname?.includes(`entities/list/`),
             extraPath: `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`,
         }));
+    }
+    const settingsSubMenu = [
+        {
+            label: formatMessage(MESSAGES.dataSources),
+            key: 'sources',
+            icon: props => <DnsRoundedIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.dataSourceList),
+                    permissions: paths.dataSourcesPath.permissions,
+                    key: 'list',
+                    icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.matching),
+                    key: 'links',
+                    icon: props => <Link {...props} />,
+                    subMenu: [
+                        {
+                            label: formatMessage(MESSAGES.linksList),
+                            permissions: paths.linksPath.permissions,
+                            key: 'list',
+                            icon: props => <FormatListBulleted {...props} />,
+                        },
+                        {
+                            label: formatMessage(MESSAGES.algorithmsRuns),
+                            permissions: paths.algosPath.permissions,
+                            key: 'runs',
+                            icon: props => <CompareArrows {...props} />,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.tasks),
+            key: 'tasks',
+            permissions: paths.tasksPath.permissions,
+            icon: props => <AssignmentRoundedIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.projects),
+            key: 'projects',
+            permissions: paths.projectsPath.permissions,
+            icon: props => <PhonelinkSetupIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.modules),
+            key: 'modules',
+            permissions: paths.modulesPath.permissions,
+            icon: props => <ViewModuleIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.users),
+            key: 'users',
+            permissions: paths.usersPath.permissions,
+            icon: props => <SupervisorAccount {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.management),
+                    key: 'management',
+                    permissions: paths.usersPath.permissions,
+                    icon: props => <Settings {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.history),
+                    key: 'history',
+                    permissions: paths.usersHistoryPath.permissions,
+                    icon: props => <HistoryIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.userRoles),
+                    key: 'userRoles',
+                    permissions: paths.userRolesPath.permissions,
+                    icon: props => <GroupsIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.teams),
+                    permissions: paths.teamsPath.permissions,
+                    key: 'teams',
+                    icon: props => <Diversity3Icon {...props} />,
+                },
+            ],
+        },
+        {
+            label: formatMessage(MESSAGES.monitoring),
+            key: 'devices',
+            permissions: paths.devicesPath.permissions,
+            icon: props => <ImportantDevicesRoundedIcon {...props} />,
+        },
+    ];
+    if (currentUser.is_staff || currentUser.is_superuser) {
+        settingsSubMenu.push({
+            label: formatMessage(MESSAGES.accountSetup),
+            key: 'setupAccount',
+            permissions: paths.setupAccountPath.permissions,
+            icon: props => <ManageAccountsIcon {...props} />,
+        });
     }
     return [
         {
@@ -239,100 +337,7 @@ const menuItems = (
             label: formatMessage(MESSAGES.config),
             key: 'settings',
             icon: props => <Settings {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.dataSources),
-                    key: 'sources',
-                    icon: props => <DnsRoundedIcon {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.dataSourceList),
-                            permissions: paths.dataSourcesPath.permissions,
-                            key: 'list',
-                            icon: props => <FormatListBulleted {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.matching),
-                            key: 'links',
-                            icon: props => <Link {...props} />,
-                            subMenu: [
-                                {
-                                    label: formatMessage(MESSAGES.linksList),
-                                    permissions: paths.linksPath.permissions,
-                                    key: 'list',
-                                    icon: props => (
-                                        <FormatListBulleted {...props} />
-                                    ),
-                                },
-                                {
-                                    label: formatMessage(
-                                        MESSAGES.algorithmsRuns,
-                                    ),
-                                    permissions: paths.algosPath.permissions,
-                                    key: 'runs',
-                                    icon: props => <CompareArrows {...props} />,
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    label: formatMessage(MESSAGES.tasks),
-                    key: 'tasks',
-                    permissions: paths.tasksPath.permissions,
-                    icon: props => <AssignmentRoundedIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.projects),
-                    key: 'projects',
-                    permissions: paths.projectsPath.permissions,
-                    icon: props => <PhonelinkSetupIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.modules),
-                    key: 'modules',
-                    permissions: paths.modulesPath.permissions,
-                    icon: props => <ViewModuleIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.users),
-                    key: 'users',
-                    permissions: paths.usersPath.permissions,
-                    icon: props => <SupervisorAccount {...props} />,
-                    subMenu: [
-                        {
-                            label: formatMessage(MESSAGES.management),
-                            key: 'management',
-                            permissions: paths.usersPath.permissions,
-                            icon: props => <Settings {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.history),
-                            key: 'history',
-                            permissions: paths.usersHistoryPath.permissions,
-                            icon: props => <HistoryIcon {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.userRoles),
-                            key: 'userRoles',
-                            permissions: paths.userRolesPath.permissions,
-                            icon: props => <GroupsIcon {...props} />,
-                        },
-                        {
-                            label: formatMessage(MESSAGES.teams),
-                            permissions: paths.teamsPath.permissions,
-                            key: 'teams',
-                            icon: props => <Diversity3Icon {...props} />,
-                        },
-                    ],
-                },
-                {
-                    label: formatMessage(MESSAGES.monitoring),
-                    key: 'devices',
-                    permissions: paths.devicesPath.permissions,
-                    icon: props => <ImportantDevicesRoundedIcon {...props} />,
-                },
-            ],
+            subMenu: settingsSubMenu,
         },
         {
             label: formatMessage(MESSAGES.entities),

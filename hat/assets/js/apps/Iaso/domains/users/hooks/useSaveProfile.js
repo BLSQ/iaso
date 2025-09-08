@@ -5,8 +5,8 @@ export const useSaveProfile = () =>
     useSnackMutation(
         body =>
             body.id
-                ? patchRequest(`/api/profiles/${body.id}/`, body)
-                : postRequest('/api/profiles/', body),
+                ? patchRequest(`/api/trypelim/profiles/${body.id}/`, body)
+                : postRequest('/api/trypelim/profiles/', body),
         undefined,
         undefined,
         ['profiles', 'usersHistoryList'],

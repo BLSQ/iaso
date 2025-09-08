@@ -17,6 +17,7 @@ import {
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
+import { useFindCustomComponent } from 'Iaso/plugins/hooks/customComponents';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
@@ -73,6 +74,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const queryClient = useQueryClient();
     const classes: Record<string, string> = useStyles();
 
+    // Component for the Trypelim-specific tab
+    const UserProfileTrypelim = useFindCustomComponent('user.profile_trypelim');
+
     const {
         user,
         setFieldValue,
@@ -81,6 +85,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         hasErrors,
         setEmail,
     } = useInitialUser(initialData);
+
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
     const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
@@ -248,6 +253,14 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
+                    {/* Trypelim-specific tab */}
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="trypelimProfile"
+                        label={'Trypelim'}
+                    />
                     {hasNoOrgUnitManagementWrite ? (
                         <UsersDialogTabDisabled
                             label={formatMessage(MESSAGES.orgUnitWriteTypes)}
@@ -314,6 +327,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                                     ouTypesIds,
                                 )
                             }
+                        />
+                    )}
+                    {/* Trypelim-specific tab */}
+                    {tab === 'trypelimProfile' && (
+                        <UserProfileTrypelim
+                            currentUser={user}
+                            setFieldValue={setFieldValue}
                         />
                     )}
                 </div>

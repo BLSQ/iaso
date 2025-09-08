@@ -15,6 +15,14 @@ from django.db.models.functions import Cast
 import iaso.models as m
 
 
+ALL_OPTIONAL_ORG_UNIT_FIELDS = [
+    "geom_geojson",
+    "location_geojson",
+    "simplified_geom_geojson",
+    "biggest_polygon_geojson",
+]
+
+
 class ST_X(Func):
     function = "ST_X"
     output_field = models.FloatField()
@@ -70,20 +78,7 @@ def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     )
 
 
-def build_submissions_queryset(qs, form_id):
-    form = m.Form.objects.get(pk=form_id)
-    if form.possible_fields == None or len(form.possible_fields) == 0:
-        form.update_possible_fields()
-
-    qs = qs.filter(form_id=form_id)
-
-    possible_fields = form.possible_fields
-
-    json_annotations = {}
-    for field in possible_fields:
-        field_name = field["name"]
-        json_annotations[field_name] = KeyTextTransform(field_name, "json")
-
+def build_submission_annotations():
     model_fields = [
         "id",
         "form_id",
@@ -103,20 +98,20 @@ def build_submissions_queryset(qs, form_id):
         "last_modified_by_id",
         "deleted",
         "export_id",
+        "correlation_id",
     ]
     model_prefix = "iaso_subm_"
 
     # TODO is ref submission
 
-    # accuracy, attributes, correlation_id, created_by, created_by_id,
-    # device, device_id, entity, export_id, exportstatus, file, file_name, form,
-    # form_version, form_version_id, instancefile, instancelock, json,
-    # last_export_success_at, last_modified_by, last_modified_by_id,
-    # location, name,
-    # org_unit, orgunit, orgunitchangerequest, orgunitreferenceinstance,
+    # accuracy, attributes,
+    # device, device_id, entity,
+    # form_version, form_version_id,
+    # last_export_success_at,
+    # name,
+    # orgunitchangerequest, orgunitreferenceinstance,
     # planning, planning_id, project, project_id,
     # storage_log_entries, to_export
-
     # Status,
     # Entité,
 
@@ -128,6 +123,23 @@ def build_submissions_queryset(qs, form_id):
     prefixed_fields[f"{model_prefix}latitude"] = ST_Y(F("location"))
     prefixed_fields[f"{model_prefix}altitude"] = ST_Z(F("location"))
     prefixed_fields[f"{model_prefix}accuracy"] = F("accuracy")
+    return prefixed_fields
+
+
+def build_submissions_queryset(qs, form_id):
+    form = m.Form.objects.get(pk=form_id)
+    if form.possible_fields == None or len(form.possible_fields) == 0:
+        form.update_possible_fields()
+
+    qs = qs.filter(form_id=form_id)
+
+    possible_fields = form.possible_fields
+
+    json_annotations = {}
+    for field in possible_fields:
+        field_name = field["name"]
+        json_annotations[field_name] = KeyTextTransform(field_name, "json")
+    prefixed_fields = build_submission_annotations()
 
     qs = (
         qs.values("id")
@@ -186,12 +198,7 @@ def build_geojson_annotations(model_prefix: str, extra_fields: Sequence[str]):
 
     default_geo_fields = [f"{model_prefix}longitude", f"{model_prefix}latitude", f"{model_prefix}altitude"]
     if ":all" in extra_fields:
-        extra_fields = [
-            "geom_geojson",
-            "location_geojson",
-            "simplified_geom_geojson",
-            "biggest_polygon_geojson",
-        ]
+        extra_fields = ALL_OPTIONAL_ORG_UNIT_FIELDS
 
     selected_fields = default_geo_fields + [f"{model_prefix}{f}" for f in extra_fields]
     geojson_annotations = {
@@ -203,8 +210,39 @@ def build_geojson_annotations(model_prefix: str, extra_fields: Sequence[str]):
     return geojson_annotations
 
 
-def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
+def build_level_annotations(qs: QuerySet[m.OrgUnit]):
+    max_ancestor_level = qs.aggregate(max_level=Max(RawSQL("array_length(string_to_array(path::text, '.'), 1)", [])))[
+        "max_level"
+    ]
+
+    level_annotations = {}
+
+    level_annotation = RawSQL(
+        "array_length(string_to_array(path::text, '.'), 1)",
+        (),
+        output_field=IntegerField(),
+    )
+
+    level_annotations["org_unit_level"] = level_annotation
+
     ancestor_fields = ["id", "name", "source_ref", "closed_date", "validation_status"]
+
+    for level in range(max_ancestor_level or 0):
+        index = level  # 0-based index
+        for field in ancestor_fields:
+            field_alias = f"level_{level + 1}_{field}"
+            sql = f"""
+                (SELECT {field}
+                FROM iaso_orgunit a
+                WHERE a.id = (string_to_array(iaso_orgunit.path::text, '.')::int[])[{index + 1}]
+                LIMIT 1)
+            """
+            level_annotations[field_alias] = RawSQL(sql, [])
+
+    return level_annotations
+
+
+def build_org_unit_annotations(model_prefix):
     org_unit_fields = [
         "id",
         "name",
@@ -220,60 +258,44 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
         "validation_status",
         "version_id",  # source_version_id would be a better name
         "path",
+        "org_unit_type_id",
+        "org_unit_type__name",
     ]
     # aliases, assignment, campaigns, campaigns_country, catchment,
     # countryusersgroup,
     # custom, default_image, default_image_id, destination_set, extra_fields,
     # geom, geom_ref, gps_source, groups, iaso_profile, id, instance, instance_lock,
-    # jsondatastore, location, name, opening_date, org_unit_change_parents_set,
+    # jsondatastore, name,  org_unit_change_parents_set,
     # orgunit, orgunitchangerequest,
     # orgunitreferenceinstance, parent, parent_id, path, planning, polio_notifications,
     # record, reference_instances, simplified_geom,
     # source_set, storagedevice, storagelogentry, sub_source,  uuid, vaccine_stocks,
     # vaccineauthorization, validated, version
 
-    max_ancestor_level = qs.aggregate(max_level=Max(RawSQL("array_length(string_to_array(path::text, '.'), 1)", [])))[
-        "max_level"
-    ]
-
-    level_annotations = {}
-
-    for level in range(max_ancestor_level):
-        index = level  # 0-based index
-        for field in ancestor_fields:
-            field_alias = f"level_{level + 1}_{field}"
-            sql = f"""
-                (SELECT {field}
-                FROM iaso_orgunit a
-                WHERE a.id = (string_to_array(iaso_orgunit.path::text, '.')::int[])[{index + 1}]
-                LIMIT 1)
-            """
-            level_annotations[field_alias] = RawSQL(sql, [])
-
     # sad to not be aligned with submission : created_by__username, created_by_id
     # so adding aliases
     aliases = {"creator__username": "created_by__username", "creator_id": "created_by_id"}
 
-    model_prefix = "org_unit_"
     org_unit_annotations = {}
     for f in org_unit_fields:
         # avoid prefixing already prefix field like org_unit_type
         field = aliases.get(f) or f
         field = normalize_field_name(field)
         key = f if f.startswith(model_prefix) else normalize_field_name(f"{model_prefix}{field}")
-        org_unit_annotations[key] = F(f)
+        org_unit_annotations[normalize_field_name(key)] = F(f)
 
-    level_annotation = RawSQL(
-        "array_length(string_to_array(path::text, '.'), 1)",
-        (),
-        output_field=IntegerField(),
-    )
+    return org_unit_annotations
 
+
+def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str]):
+    model_prefix = "org_unit_"
+
+    org_unit_annotations = build_org_unit_annotations(model_prefix)
+    level_annotations = build_level_annotations(qs)
     geojson_annotations = build_geojson_annotations(model_prefix, extra_fields)
 
     all_keys = [
         *org_unit_annotations.keys(),
-        *["org_unit_level", "org_unit_type_id", "org_unit_type_name"],
         *level_annotations.keys(),
         *geojson_annotations.keys(),
     ]
@@ -281,8 +303,6 @@ def build_pyramid_queryset(qs: QuerySet[m.OrgUnit], extra_fields: Sequence[str])
     return (
         qs.values("id")
         .annotate(**org_unit_annotations)
-        .annotate(org_unit_type_name=F("org_unit_type__name"))
-        .annotate(org_unit_level=level_annotation)
         .annotate(**level_annotations)
         .annotate(**geojson_annotations)
         .values(*all_keys)

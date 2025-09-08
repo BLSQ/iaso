@@ -10,6 +10,12 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = [
+    "anthropometric_admission",
+    "Anthropometric visit child",
+    "anthropometric_admission_otp",
+]
+
 
 class NG_Under5:
     def group_visit_by_entity(self, entities):
@@ -62,19 +68,20 @@ class NG_Under5:
                     current_date = visit.get(
                         "source_created_at",
                         visit.get(
-                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
+                            "_visit_date",
+                            visit.get(
+                                "visit_date",
+                                visit.get("_new_discharged_today", current_date),
+                            ),
                         ),
                     )
 
-                    if form_id in [
-                        "anthropometric_admission",
-                        "Anthropometric visit child",
-                        "anthropometric_admission_otp",
-                    ]:
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
-                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                            "source_created_at",
+                            visit.get("_visit_date", visit.get("visit_date", current_date)),
                         )
                         initial_date = visit_date
 
@@ -92,7 +99,8 @@ class NG_Under5:
                     current_record["duration"] = duration
 
                     visit_date = visit.get(
-                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", current_date)),
                     )
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
@@ -110,6 +118,7 @@ class NG_Under5:
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )
@@ -134,7 +143,7 @@ class NG_Under5:
             )
             instance["journey"] = self.journeyMapper(
                 instance["visits"],
-                ["Anthropometric visit child", "anthropometric_admission", "anthropometric_admission_otp"],
+                ADMISSION_ANTHROPOMETRIC_FORMS,
             )
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:

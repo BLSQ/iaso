@@ -9,6 +9,8 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = ["wfp_coda_pbwg_anthropometric"]
+
 
 class PBWG:
     def run(self, type):
@@ -27,7 +29,7 @@ class PBWG:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], ["wfp_coda_pbwg_anthropometric"])
+            instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
                 beneficiary.gender = ""
@@ -125,8 +127,11 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
-                    if form_id == "wfp_coda_pbwg_anthropometric":
+                    visit_date = visit.get(
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", None)),
+                    )
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_date = visit_date
 
                     if initial_date is not None:
@@ -148,6 +153,7 @@ class PBWG:
                     and len(instance.get("visits")) > 1
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )

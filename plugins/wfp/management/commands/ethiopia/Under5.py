@@ -10,6 +10,8 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = ["ethiopia_anthro_child"]
+
 
 class ET_Under5:
     def group_visit_by_entity(self, entities):
@@ -73,7 +75,7 @@ class ET_Under5:
                         ),
                     )
 
-                    if form_id == "ethiopia_anthro_child":
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
@@ -121,6 +123,7 @@ class ET_Under5:
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )
@@ -142,7 +145,7 @@ class ET_Under5:
             logger.info(
                 f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
-            instance["journey"] = self.journeyMapper(instance["visits"], ["ethiopia_anthro_child"])
+            instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
             beneficiary = Beneficiary()
             if (
                 instance["entity_id"] not in existing_beneficiaries

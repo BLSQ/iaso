@@ -678,7 +678,7 @@ class ETL:
         weight_loss = 0
 
         weight_difference = 0
-        if initial_weight is not None and current_weight is not None and current_weight != "":
+        if initial_weight is not None and initial_weight != "" and current_weight is not None and current_weight != "":
             initial_weight = float(initial_weight)
             current_weight = float(current_weight)
             weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
@@ -796,3 +796,7 @@ class ETL:
                 f"---------------------------------------- Journey N° {(index + 1)} -----------------------------------"
             )
             self.save_monthly_journey(journey, account)
+
+    def admission_forms(self, visits, admission_forms):
+        admission_visits = [visit for visit in visits if visit["form_id"] in admission_forms]
+        return admission_visits

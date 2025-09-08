@@ -9,6 +9,8 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = ["ng_pbwg_anthropometric"]
+
 
 class NG_PBWG:
     def run(self, type):
@@ -26,7 +28,7 @@ class NG_PBWG:
                 f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
             )
 
-            instance["journey"] = self.journeyMapper(instance["visits"], ["ng_pbwg_anthropometric"])
+            instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
             beneficiary = Beneficiary()
 
             if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
@@ -125,8 +127,11 @@ class NG_PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    visit_date = visit.get("source_created_at", visit.get("_visit_date", visit.get("visit_date", None)))
-                    if form_id == "ng_pbwg_anthropometric":
+                    visit_date = visit.get(
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", None)),
+                    )
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_date = visit_date
 
                     if initial_date is not None:

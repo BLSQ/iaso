@@ -65,8 +65,10 @@ class Under5:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    if current_record.get("weight_kgs", None) is not None:
+                    if current_record.get("weight_kgs", None) is not None and current_record.get("weight_kgs") != "":
                         current_weight = current_record.get("weight_kgs", None)
+                    elif current_record.get("weight_kgs") == "":
+                        current_weight = 0
                     elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
                         current_weight = current_record.get("previous_weight_kgs__decimal__", None)
                     current_date = visit.get(
@@ -122,6 +124,7 @@ class Under5:
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )

@@ -34,7 +34,7 @@ export const InstancesLabelKeys: FunctionComponent<Props> = ({
     );
     return (
         <>
-            {currentForm?.label_keys.map((labelKey: string) => (
+            {currentForm?.label_keys.slice(0, 10).map((labelKey: string) => (
                 <InstanceDetailsField
                     key={labelKey}
                     label={getLabelKeyLabel(labelKey)}

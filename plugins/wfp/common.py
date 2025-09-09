@@ -744,7 +744,8 @@ class ETL:
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
-            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id")
+            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id", "visit__date")
+            .prefetch_related("beneficiary", "visit", "journey", "org_unit")
             .filter(
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,

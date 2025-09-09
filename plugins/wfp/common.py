@@ -1,5 +1,4 @@
 import logging
-
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
@@ -47,6 +46,8 @@ class ETL:
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
+            .select_related("entity__deleted_at")
+            .prefetch_related("entity", "form", "org_unit")
             .values(
                 "id",
                 "created_at",

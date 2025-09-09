@@ -7,7 +7,7 @@ import duckdb
 
 from django.contrib.postgres.fields import JSONField
 from django.db import connection, models
-from django.db.models import F, FloatField, Func, IntegerField, Max, QuerySet
+from django.db.models import Exists, F, FloatField, Func, IntegerField, Max, OuterRef, QuerySet
 from django.db.models.expressions import RawSQL
 from django.db.models.fields.json import KeyTextTransform
 from django.db.models.functions import Cast
@@ -117,7 +117,10 @@ def build_submission_annotations():
 
     prefixed_fields = {f"{model_prefix}{normalize_field_name(f)}": F(f) for f in model_fields}
 
-    # less standard fields that needs some functions
+    # less standard fields that needs some functions or more complex calculation
+    prefixed_fields[f"{model_prefix}is_reference"] = Exists(
+        m.OrgUnitReferenceInstance.objects.filter(org_unit_id=OuterRef("org_unit_id"), instance_id=OuterRef("pk"))
+    )
     prefixed_fields[f"{model_prefix}form_version_id"] = KeyTextTransform("_version", "json")
     prefixed_fields[f"{model_prefix}longitude"] = ST_X(F("location"))
     prefixed_fields[f"{model_prefix}latitude"] = ST_Y(F("location"))

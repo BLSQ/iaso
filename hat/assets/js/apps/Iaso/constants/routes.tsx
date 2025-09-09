@@ -1,4 +1,5 @@
 import React, { ReactElement } from 'react';
+import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
@@ -408,6 +409,12 @@ export const lotsPaymentsPath = {
     element: <LotsPayments />,
 };
 
+export const pipelineDetailsPath = {
+    baseUrl: baseUrls.pipelinedetails,
+    routerUrl: `${baseUrls.pipelinedetails}/*`,
+    permissions: [],
+    element: <PipelineDetails />,
+};
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
@@ -496,4 +503,5 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     potentialPaymentsPath,
     lotsPaymentsPath,
     bonusPath,
+    pipelineDetailsPath,
 ];

@@ -117,9 +117,11 @@ class PipelineDetailView(APIView):
                             parameters {
                                 type
                                 name
+                                code
                                 default
                                 choices
                                 required
+                                multiple
                             }
                         }
                     }

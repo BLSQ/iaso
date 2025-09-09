@@ -269,6 +269,7 @@ urlpatterns = urlpatterns + [
     path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
+    path("openhexa/", include("iaso.api.openhexa.urls")),
     path("", include(router.urls)),
 ]
 # External Auth

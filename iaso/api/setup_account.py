@@ -16,12 +16,14 @@ from iaso.models import (
     Account,
     AccountFeatureFlag,
     DataSource,
+    FeatureFlag,
     Form,
     FormVersion,
     OrgUnit,
     OrgUnitType,
     Profile,
     Project,
+    ProjectFeatureFlags,
     SourceVersion,
 )
 from iaso.odk import parsing
@@ -160,6 +162,26 @@ class SetupAccountSerializer(serializers.Serializer):
 
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
 
+        # Add project feature flags
+        try:
+            # Get the feature flags that should be added to the project
+            require_auth_flag = FeatureFlag.objects.get(code=FeatureFlag.REQUIRE_AUTHENTICATION)
+            forms_auto_upload_flag = FeatureFlag.objects.get(code=FeatureFlag.FORMS_AUTO_UPLOAD)
+
+            # Create ProjectFeatureFlags entries
+            ProjectFeatureFlags.objects.create(
+                project=initial_project, featureflag=require_auth_flag, configuration=None
+            )
+            ProjectFeatureFlags.objects.create(
+                project=initial_project, featureflag=forms_auto_upload_flag, configuration=None
+            )
+
+            logger.info(f"Added project feature flags to project {initial_project.name}")
+        except FeatureFlag.DoesNotExist as e:
+            logger.warning(f"Could not find required feature flags: {e}")
+        except Exception as e:
+            logger.error(f"Error adding project feature flags: {e}")
+
         # Link data source to projects and source version
         data_source.projects.set([initial_project])
         data_source.default_version = source_version
@@ -244,6 +266,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "language": request.data.get("language", "en"),
             "modules": request.data.get("modules", []),
             "feature_flags": request.data.get("feature_flags", []),
+            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD],
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
         }

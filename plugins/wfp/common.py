@@ -1,10 +1,12 @@
 import logging
+
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
 
 from dateutil.relativedelta import *
-from django.db.models import CharField, Value
+from django.core.paginator import Paginator
+from django.db.models import CharField, Count, Value
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -66,7 +68,8 @@ class ETL:
                 "source_created_at",
             )
         )
-        return beneficiaries
+
+        return Paginator(beneficiaries, 150)
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -744,7 +747,7 @@ class ETL:
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
-            Step.objects.select_related("visit", "visit__journey", "visit__org_unit_id", "visit__date")
+            Step.objects.select_related("visit", "visit__journey", "visit__org_unit")
             .prefetch_related("beneficiary", "visit", "journey", "org_unit")
             .filter(
                 visit__journey__programme_type=programme,

@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { LinksFilter } from './LinksFilter';
+import { DataSource } from 'Iaso/domains/dataSources/types/dataSources';
 import { LinksTableWithDownloads } from '../../../links/components/LinksTableWithDownloads';
-import { DropdownOptions } from '../../../../types/utils';
+import { LinksFilter } from './LinksFilter';
 
 type Props = {
     baseUrl: string;
     params: Record<string, string>;
     paramsPrefix: string;
-    sources: DropdownOptions<number>[];
+    sources: DataSource[];
     isLoadingSources: boolean;
 };
 

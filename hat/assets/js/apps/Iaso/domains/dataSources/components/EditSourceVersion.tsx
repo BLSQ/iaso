@@ -77,11 +77,11 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
             titleMessage={{
                 ...MESSAGES.editSourceVersion,
             }}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
             onCancel={onCancel}
             allowConfirm={allowConfirm}
             // This is to avoid complaints from TS compiler
+            additionalButton={false}
+            additionalMessage={undefined}
             allowConfimAdditionalButton={undefined}
             onAdditionalButtonClick={undefined}
         >

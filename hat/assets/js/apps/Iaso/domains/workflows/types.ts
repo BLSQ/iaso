@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { EntityType } from '../entities/entityTypes/types/entityType';
 import { FieldType } from '../forms/types/forms';

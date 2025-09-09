@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import { Box, useTheme } from '@mui/material';
 import {
     IconButton,
@@ -7,23 +14,16 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useFetchOrgUnits } from '../../../registry/hooks/useGetOrgUnit';
 import { OrgUnit } from '../../types/orgUnit';
 import { orgUnitLabelString } from '../../utils';
+import { MESSAGES } from './messages';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
+import { getChildrenData, getRootData, searchOrgUnits } from './requests';
 import { Settings, SettingsPopper } from './SettingsPopper';
 import { SourceDescription } from './SourceDescription';
 import { TreeViewLabel } from './TreeViewLabel';
-import { MESSAGES } from './messages';
-import { getChildrenData, getRootData, searchOrgUnits } from './requests';
 import { DEFAULT_CONFIG, useSourceConfig } from './useSourceConfig';
 import {
     formatInitialSelectedIds,
@@ -35,7 +35,6 @@ import {
 type Props = {
     titleMessage: string | IntlMessage;
     toggleOnLabelClick?: boolean;
-    // eslint-disable-next-line no-unused-vars
     onConfirm: (selectedOrgUnits: any) => void;
     multiselect?: boolean;
     initialSelection?: OrgUnit | OrgUnit[];
@@ -78,7 +77,8 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
 }) => {
     const theme = useTheme();
     const { formatMessage } = useSafeIntl();
-    const { fetchOrgUnit, isFetching: isFetchingOrgUnit } = useFetchOrgUnits(appId);
+    const { fetchOrgUnit, isFetching: isFetchingOrgUnit } =
+        useFetchOrgUnits(appId);
     const [settings, setSettings] = useState<Settings>({
         displayTypes: true,
         statusSettings: DEFAULT_CONFIG,

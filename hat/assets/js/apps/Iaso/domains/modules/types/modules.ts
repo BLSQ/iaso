@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 
 export type Module = {
@@ -12,8 +11,5 @@ export type ModulesFilterParams = {
 
 export type ModuleParams = UrlParams &
     ModulesFilterParams & {
-        select?: (
-            // eslint-disable-next-line no-unused-vars
-            data: Array<Module>,
-        ) => Array<any>;
+        select?: (data: Array<Module>) => Array<any>;
     };

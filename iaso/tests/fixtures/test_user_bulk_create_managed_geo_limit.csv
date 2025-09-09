@@ -1,4 +1,4 @@
-username,password,email,first_name,last_name,orgunit,orgunit__source_ref,dhis2_id,,profile_language,permissions,user_roles,projects,phone_number
-broly,yOdnjdln8!,biobroly@bluesquarehub.com,broly,bio,1112,,,,fr,,,,
-ferdinand,dEF80s:ghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,1112,,,,fr,,,,
-rsfg,frdgEF73f9!,,feesf,dsfsf,1112,,,,FR,,,,
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,dhis2_id,organization,profile_language,permissions,user_roles,projects,phone_number,editable_org_unit_types
+broly,yOdnjdln8!,biobroly@bluesquarehub.com,broly,bio,1112,,,,fr,,,Project name,,
+ferdinand,dEF80s:ghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,1112,,,,fr,,,Project name,,
+rsfg,frdgEF73f9!,,feesf,dsfsf,1112,,,,FR,,,,,

@@ -7,7 +7,7 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/users/management`;
 
 let interceptFlag = false;
 const orgUnitTreeIndexSearch = 2;
@@ -40,8 +40,8 @@ const goToPage = (
     cy.intercept('GET', '/api/permissions/grouped_permissions', {
         fixture: 'permissions/grouped.json',
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', {
+        fixture: 'orgunittypes/dropdown-list.json',
     });
     cy.intercept('GET', '/api/microplanning/teams/*', {
         fixture: 'teams/list.json',
@@ -71,7 +71,7 @@ const goToPage = (
 const openDialogForUserIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').eq(6);
+    const actionCol = row.find('td').eq(7);
     const editButton = actionCol.find('button').first();
     editButton.click();
     cy.get('#user-profile-dialog').should('be.visible');
@@ -149,7 +149,7 @@ describe('Users', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.profiles.length);
-                rows.eq(0).find('td').should('have.length', 8);
+                rows.eq(0).find('td').should('have.length', 9);
             });
         });
 
@@ -158,11 +158,11 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
-                const actionCol = row.find('td').eq(6);
+                const actionCol = row.find('td').eq(7);
                 actionCol.find('button').should('have.length', 3);
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const actionColCurrentUser = row.find('td').eq(6);
+                const actionColCurrentUser = row.find('td').eq(7);
                 actionColCurrentUser.find('button').should('have.length', 2);
             });
         });
@@ -178,9 +178,10 @@ describe('Users', () => {
                     cy.testInputValue(`#input-text-${f}`, '');
                 });
                 cy.testInputValue(`#projects`, '');
-                cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
+
+                cy.testInputValue(`#user_roles`, '');
                 cy.get('[data-test="permission-checkbox"] input').each($el => {
                     expect($el).to.not.be.checked;
                 });
@@ -197,7 +198,7 @@ describe('Users', () => {
                         listFixture.profiles[userIndex][f],
                     );
                 });
-                cy.testInputValue('#language', 'English version');
+                cy.testInputValue('#language', 'English');
 
                 cy.testMultiSelect(
                     `#projects`,
@@ -215,7 +216,9 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(2);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('#permission-checkbox-iaso_forms').should('be.checked');
+                cy.get('#check-box-permission-checkbox-iaso_forms').should(
+                    'be.checked',
+                );
                 cy.get('#user-dialog-tabs').find('button').eq(2).click();
 
                 cy.get('.MuiTreeView-root').should(

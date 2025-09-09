@@ -15,7 +15,8 @@ export const testPageFilters = (
         const { value, type, selector, clear } = filters[keyName];
         switch (type) {
             case 'text': {
-                cy.get(selector).type('{selectall}').type(value);
+                cy.get(selector).type('{selectall}');
+                cy.get(selector).type(value);
                 break;
             }
             case 'multi': {

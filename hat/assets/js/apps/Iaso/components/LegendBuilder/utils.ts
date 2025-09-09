@@ -32,16 +32,18 @@ export const getRangeValues = (
 };
 export const getThresHoldLabels = (
     scaleThreshold?: ScaleThreshold,
+    unit: string = '%',
 ): string[] => {
     const domain = scaleThreshold?.domain ?? [];
-    const labels = domain.map((percent, index, array) => {
+    const labels = domain.map((value, index, array) => {
         if (index === 0) {
-            return `< ${percent}%`;
+            return `< ${value}`;
         }
-        return `${array[index - 1]}% - ${percent}%`;
+        return `${array[index - 1]}-${value}`;
     });
     if (domain.length > 0) {
-        labels.push(`> ${domain[domain.length - 1]}%`);
+        labels.push(`> ${domain[domain.length - 1]}`);
     }
-    return labels;
+
+    return unit ? labels.map(l => `${l}${unit}`) : labels;
 };

@@ -1,10 +1,12 @@
 import enum
 import logging
+
 from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-from rest_framework.exceptions import ValidationError
+
 import pytz
+
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
@@ -13,12 +15,13 @@ from django.utils.timezone import make_aware
 from django.utils.translation import gettext as _
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, ValidationError
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet, ViewSet
 from rest_framework_csv.renderers import CSVRenderer
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
+
 from hat.api_import.models import APIImport
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.models.payments import PaymentStatuses
@@ -48,9 +51,11 @@ EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
 
 
 class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.CharField(source="get_full_name")
+
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "username"]
+        fields = ["id", "first_name", "last_name", "username", "full_name"]
 
 
 def safe_api_import(key: str, fallback_status=200):
@@ -78,7 +83,7 @@ def safe_api_import(key: str, fallback_status=200):
                 with transaction.atomic():
                     response = f(self, api_import, request, *args, **kwargs)
             except Exception as e:
-                logger.error("Exception" + str(e))  # For logs
+                logger.exception("Exception" + str(e))  # For logs
                 api_import.has_problem = True
                 api_import.exception = format_exc()
                 response = Response({"res": "a problem happened, but your data was saved"}, status=fallback_status)
@@ -246,6 +251,11 @@ class Paginator(pagination.PageNumberPagination):
         )
 
 
+class EtlPaginator(Paginator):
+    page_size = 20
+    max_page_size = 1000
+
+
 class ModelViewSet(BaseModelViewSet):
     results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
@@ -286,8 +296,7 @@ class ModelViewSet(BaseModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
             return Response({self.get_results_key(): serializer.data})
-        else:
-            return Response(serializer.data)
+        return Response(serializer.data)
 
     def perform_destroy(self, instance):
         """Handle ProtectedError (prevent deletion of instances when linked to protected models)"""
@@ -302,6 +311,25 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class EtlModelViewset(ModelViewSet):
+    """
+    Sub class of ModelViewset that enforces the presence of pagination queryparams for GET requests.
+    Imposes the use of Paginator as pagination class
+    Use case: dashboard endpoints that will try to fetch all instances of a model
+    """
+
+    pagination_class = EtlPaginator
+
+    def get_pagination_class(self):
+        custom_pagination_class = getattr(self, "pagination_class", None)
+        if custom_pagination_class and not issubclass(custom_pagination_class, EtlPaginator):
+            raise TypeError(
+                f"The pagination_class must be a subclass of {EtlPaginator.__name__}. "
+                f"Received: {custom_pagination_class.__name__}."
+            )
+        return custom_pagination_class
 
 
 class ChoiceEnum(enum.Enum):
@@ -428,27 +456,20 @@ class GenericReadWritePerm(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             can_get = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(self.read_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(self.read_perm)
+            ) or request.user.is_superuser
             return can_get
-        elif (
+        if (
             request.method == "POST"
             or request.method == "PUT"
             or request.method == "PATCH"
             or request.method == "DELETE"
         ):
             can_post = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(self.write_perm)
-                or request.user.is_superuser
-            )
+                request.user and request.user.is_authenticated and request.user.has_perm(self.write_perm)
+            ) or request.user.is_superuser
             return can_post
-        else:
-            return False
+        return False
 
 
 class Custom403Exception(APIException):

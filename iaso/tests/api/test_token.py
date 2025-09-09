@@ -1,7 +1,11 @@
 from unittest import mock
 
+import jwt
+
+from django.contrib.auth.models import User
 from django.core.files import File
 
+from hat.settings import SECRET_KEY
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -20,7 +24,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
     def test_acquire_token_and_authenticate(self):
         """Test that token authentication is possible."""
         response = self.client.post(
-            f"/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
+            "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -30,7 +34,7 @@ class DisableLoginTokenAPITestCase(APITestCase):
         with self.settings(DISABLE_PASSWORD_LOGINS=True):
             self.reload_urls(urlconfs)
             response = self.client.post(
-                f"/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
+                "/api/token/", data={"username": "test_user", "password": "IMomLove"}, format="json"
             )
             self.assertEqual(response.status_code, 404)
         self.reload_urls(urlconfs)
@@ -41,8 +45,8 @@ class TokenAPITestCase(APITestCase):
     def setUpTestData(cls):
         data_source = m.DataSource.objects.create(name="counsil")
         version = m.SourceVersion.objects.create(data_source=data_source, number=1)
-        star_wars = m.Account.objects.create(name="Star Wars", default_version=version)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
+        cls.default_account = m.Account.objects.create(name="Star Wars", default_version=version)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.default_account)
 
         cls.yoda.set_password("IMomLove")
         cls.yoda.save()
@@ -54,7 +58,7 @@ class TokenAPITestCase(APITestCase):
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens",
             app_id="stars.empire.agriculture.hydroponics",
-            account=star_wars,
+            account=cls.default_account,
             needs_authentication=True,
         )
 
@@ -81,11 +85,14 @@ class TokenAPITestCase(APITestCase):
         cls.project.save()
 
     def authenticate_using_token(self):
-        response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
+        response = self.client.post("/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
         access_token = response_data.get("access")
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        self.assertEqual(payload["user_id"], self.yoda.id)
+
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token}")
         return response_data
 
@@ -102,6 +109,14 @@ class TokenAPITestCase(APITestCase):
         form_ids = [f["id"] for f in response_data["forms"]]
 
         self.assertTrue(self.form_2.id in form_ids)
+
+    def test_incorrect_username_or_password(self):
+        response = self.client.post("/api/token/", data={"username": "yoda", "password": "incorrect"}, format="json")
+        self.assertJSONResponse(response, 401)
+        self.assertEqual(
+            response.json()["detail"],
+            "No active account found with the given credentials",
+        )
 
     def test_acquire_token_and_post_instance(self):
         """Test upload to a project that requires authentication"""
@@ -174,7 +189,7 @@ class TokenAPITestCase(APITestCase):
         # Unauthenticated case is already tested in test_api
         response_data = self.authenticate_using_token()
         refresh_token = response_data.get("refresh")
-        response = self.client.post(f"/api/token/refresh/", data={"refresh": refresh_token}, format="json")
+        response = self.client.post("/api/token/refresh/", data={"refresh": refresh_token}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
@@ -190,14 +205,14 @@ class TokenAPITestCase(APITestCase):
         """Test invalid authentication tokens"""
         # Unauthenticated case is already tested in test_api
 
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  ")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer  ")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
         self.assertJSONResponse(response, 401)
 
-        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  WRONG")
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer  WRONG")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
@@ -272,3 +287,99 @@ class TokenAPITestCase(APITestCase):
             has_problems=True,
             exception_contains_string="Could not find project for user",
         )
+
+    def test_multi_account_user(self):
+        main_user = User.objects.create(username="main_user")
+        main_user.set_password("MainPass1")
+        main_user.save()
+
+        account_a = self.default_account
+        m.Project.objects.create(app_id="account.a", account=account_a)
+        account_user_a = self.create_user_with_profile(username="User_A", account=account_a)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_a)
+
+        data_source_b = m.DataSource.objects.create(name="Source B")
+        version_b = m.SourceVersion.objects.create(data_source=data_source_b, number=1)
+        account_b = m.Account.objects.create(name="Account B", default_version=version_b)
+        m.Project.objects.create(app_id="account.b", account=account_b)
+        account_user_b = self.create_user_with_profile(username="User_B", account=account_b)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_b)
+
+        login = {"username": "main_user", "password": "MainPass1"}
+
+        # Login with main user and app_id for Account A
+        response = self.client.post("/api/token/?app_id=account.a", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+        access_token = response.json().get("access")
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        # returns token for account_user_a
+        self.assertEqual(payload["user_id"], account_user_a.id)
+
+        # Login with main user and app_id for Account B
+        response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+        access_token = response.json().get("access")
+        payload = jwt.decode(access_token, SECRET_KEY, algorithms=["HS256"])
+        # returns token for account_user_a
+        self.assertEqual(payload["user_id"], account_user_b.id)
+
+    def test_multi_account_user_incorrect_app_id(self):
+        main_user = User.objects.create(username="main_user")
+        main_user.set_password("MainPass1")
+        main_user.save()
+
+        account_a = self.default_account
+        m.Project.objects.create(app_id="account.a", account=account_a)
+        account_user_a = self.create_user_with_profile(username="User_A", account=account_a)
+        m.TenantUser.objects.create(main_user=main_user, account_user=account_user_a)
+
+        # Create account B with project, but without link to main user
+        data_source_b = m.DataSource.objects.create(name="Source B")
+        version_b = m.SourceVersion.objects.create(data_source=data_source_b, number=1)
+        account_b = m.Account.objects.create(name="Account B", default_version=version_b)
+        m.Project.objects.create(app_id="account.b", account=account_b)
+
+        login = {"username": "main_user", "password": "MainPass1"}
+
+        # Login with main user and app_id for Account B
+        response = self.client.post("/api/token/?app_id=account.b", data=login, format="json")
+        self.assertJSONResponse(response, 401)
+        self.assertEqual(
+            response.json()["detail"],
+            "No active account found with the given credentials.",
+        )
+
+        # Login with main user and non-existent app_id
+        response = self.client.post("/api/token/?app_id=account.c", data=login, format="json")
+        self.assertJSONResponse(response, 404)
+        self.assertEqual(
+            response.json()["detail"],
+            "Unknown project.",
+        )
+
+    def test_user_with_project_restrictions(self):
+        user = self.yoda
+        authorized_project = self.project
+        unauthorized_project = m.Project.objects.create(
+            name="Unauthorized project",
+            app_id="unauthorized.project",
+            account=self.default_account,
+            needs_authentication=True,
+        )
+        login = {"username": user.username, "password": "IMomLove"}
+
+        # Without project restrictions.
+        self.assertEqual(0, user.iaso_profile.projects.count())
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        # With project restrictions.
+        user.iaso_profile.projects.set([authorized_project])
+        self.assertEqual(1, user.iaso_profile.projects.count())
+
+        response = self.client.post(f"/api/token/?app_id={authorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.post(f"/api/token/?app_id={unauthorized_project.app_id}", data=login, format="json")
+        self.assertJSONResponse(response, 403)
+        self.assertEqual(response.data["detail"], "You don't have access to this project.")

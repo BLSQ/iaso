@@ -1,29 +1,26 @@
-/* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable camelcase */
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Box, Divider, Grid } from '@mui/material';
+import { IconButton, useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
-    useState,
-    useMemo,
     useEffect,
+    useMemo,
+    useState,
 } from 'react';
-import { Grid, Box, Divider } from '@mui/material';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import {
-    IconButton,
-    useSafeIntl,
-    useRedirectTo,
-} from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 import {
     useCopyDataSourceVersion,
     useDataSourceAsDropDown,
     useDataSourceVersions,
 } from '../../requests';
-import { baseUrls } from '../../../../constants/urls';
-import InputComponent from '../../../../components/forms/InputComponent';
 import { WarningMessage } from './CopyVersionWarnings';
+import { userHasPermission } from '../../../users/utils';
+import * as Permission from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 
 type Props = {
     dataSourceId: number;
@@ -80,6 +77,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceId,
     dataSourceVersionNumber,
 }) => {
+    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const [destinationSourceId, setDestinationSourceId] =
@@ -98,7 +96,8 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         [allSourceVersions, destinationSourceId, formatMessage],
     );
     const nextVersionNumber =
-        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1].value ?? 1;
+        // eslint-disable-next-line no-unsafe-optional-chaining
+        sourceVersionsDropDown[sourceVersionsDropDown?.length - 1]?.value ?? 1;
     const [destinationVersionNumber, setDestinationVersionNumber] =
         useState(nextVersionNumber);
     const warningVersionNumber = destinationVersionNumber ?? nextVersionNumber;
@@ -157,6 +156,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             setDestinationVersionNumber(nextVersionNumber);
     }, [destinationVersionNumber, nextVersionNumber]);
 
+    const hasTaskPermission = userHasPermission(
+        Permission.DATA_TASKS,
+        currentUser,
+    );
+
     return (
         <ConfirmCancelDialogComponent
             id="copySourceVersionModal"
@@ -172,13 +176,15 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
                     versionNumber: dataSourceVersionNumber,
                 },
             }}
-            additionalButton
-            additionalMessage={MESSAGES.goToCurrentTask}
-            onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
             dataTestId="copy-source-version-modal"
             allowConfirm={allowConfirm}
-            allowConfimAdditionalButton={allowConfirm}
+            allowConfimAdditionalButton={allowConfirm && hasTaskPermission}
+            additionalButton={hasTaskPermission}
+            additionalMessage={
+                hasTaskPermission ? MESSAGES.goToCurrentTask : undefined
+            }
+            onAdditionalButtonClick={hasTaskPermission ? onRedirect : undefined}
         >
             <>
                 <Box mb={2}>

@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from iaso.models import OrgUnit
+
+from iaso.models import Account, OrgUnit
 from plugins.wfp.models import *
+
 
 GENDERS = [("Male", _("Male")), ("Female", _("Female"))]
 
@@ -46,6 +48,12 @@ ADMISSION_TYPES = [
     ("transfer_from_other_tsfp", _("Transfer from other TSFP")),
 ]
 
+RATION_SIZE = [
+    ("full", _("Full")),
+    ("partial", _("Partial")),
+    ("none", _("None")),
+    ("More", _("More")),
+]
 
 # WFP Models
 
@@ -54,6 +62,7 @@ class Beneficiary(models.Model):
     birth_date = models.DateField()
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     entity_id = models.IntegerField(null=True, blank=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
 
 
 class Journey(models.Model):
@@ -84,5 +93,24 @@ class Visit(models.Model):
 class Step(models.Model):
     assistance_type = models.CharField(max_length=255)
     quantity_given = models.FloatField()
+    ration_size = models.CharField(max_length=50, choices=RATION_SIZE, null=True, blank=True)
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
+
+
+class MonthlyStatistics(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    month = models.CharField(max_length=8, null=True, blank=True)
+    year = models.CharField(max_length=6, null=True, blank=True)
+    gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
+    admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
+    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
+    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
+    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
+    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
+    number_visits = models.IntegerField(default=0)
+    given_sachet_rusf = models.FloatField(null=True, blank=True)
+    given_sachet_rutf = models.FloatField(null=True, blank=True)
+    given_quantity_csb = models.FloatField(null=True, blank=True)
+    given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)

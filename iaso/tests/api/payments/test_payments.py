@@ -1,8 +1,7 @@
+from hat.audit import models as am
+from iaso import models as m
 from iaso.models.payments import PaymentStatuses
 from iaso.test import APITestCase
-from iaso import models as m
-from hat.audit import models as am
-from django.utils.translation import override
 
 
 class PaymentViewSetAPITestCase(APITestCase):
@@ -45,19 +44,19 @@ class PaymentViewSetAPITestCase(APITestCase):
 
     def test_list(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/")
+        response = self.client.get("/api/payments/")
         r = self.assertJSONResponse(response, 200)
         results = r["results"]
         result = results[0]
-        self.assertEquals(len(results), 1)
+        self.assertEqual(len(results), 1)
         change_requests = result["change_requests"]
         change_request = result["change_requests"][0]
-        self.assertEquals(len(change_requests), 1)
-        self.assertEquals(change_request["id"], self.change_request.pk)
-        self.assertEquals(result["user"]["id"], self.payment_beneficiary.pk)
-        self.assertEquals(result["created_by"], self.user.pk)
-        self.assertEquals(result["payment_lot"], self.payment_lot.pk)
-        self.assertEquals(result["status"], self.payment.status)
+        self.assertEqual(len(change_requests), 1)
+        self.assertEqual(change_request["id"], self.change_request.pk)
+        self.assertEqual(result["user"]["id"], self.payment_beneficiary.pk)
+        self.assertEqual(result["created_by"], self.user.pk)
+        self.assertEqual(result["payment_lot"], self.payment_lot.pk)
+        self.assertEqual(result["status"], self.payment.status)
 
     def test_retrieve(self):
         self.client.force_authenticate(user=self.user)
@@ -65,12 +64,12 @@ class PaymentViewSetAPITestCase(APITestCase):
         result = self.assertJSONResponse(response, 200)
         change_requests = result["change_requests"]
         change_request = result["change_requests"][0]
-        self.assertEquals(len(change_requests), 1)
-        self.assertEquals(change_request["id"], self.change_request.pk)
-        self.assertEquals(result["user"]["id"], self.payment_beneficiary.pk)
-        self.assertEquals(result["created_by"], self.user.pk)
-        self.assertEquals(result["payment_lot"], self.payment_lot.pk)
-        self.assertEquals(result["status"], self.payment.status)
+        self.assertEqual(len(change_requests), 1)
+        self.assertEqual(change_request["id"], self.change_request.pk)
+        self.assertEqual(result["user"]["id"], self.payment_beneficiary.pk)
+        self.assertEqual(result["created_by"], self.user.pk)
+        self.assertEqual(result["payment_lot"], self.payment_lot.pk)
+        self.assertEqual(result["status"], self.payment.status)
 
     def test_update_status(self):
         self.client.force_authenticate(user=self.user)
@@ -84,7 +83,7 @@ class PaymentViewSetAPITestCase(APITestCase):
 
     def test_dropdown_options(self):
         self.client.force_authenticate(user=self.user)
-        response = self.client.get(f"/api/payments/options/")
+        response = self.client.get("/api/payments/options/")
         r = self.assertJSONResponse(response, 200)
         for item in r:
             if item["value"] == PaymentStatuses.PENDING:

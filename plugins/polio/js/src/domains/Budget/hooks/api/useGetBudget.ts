@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { groupBy } from 'lodash';
 import { useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
@@ -77,7 +76,6 @@ const budgetDetailsFields: string[] = [
 ];
 export const useGetBudget = (
     id: number,
-    // eslint-disable-next-line no-unused-vars
     onSuccess: (data: BudgetDetail) => void = () => null,
 ): UseQueryResult<BudgetDetail, Error> => {
     return useSnackQuery({
@@ -99,7 +97,6 @@ export const useGetBudget = (
 };
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
-        // eslint-disable-next-line no-unused-vars
         ([, value]) => value !== undefined,
     );
     if (!params.order) {

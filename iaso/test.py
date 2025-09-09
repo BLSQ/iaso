@@ -1,20 +1,31 @@
+import csv
 import importlib
+import io
 import typing
+
+from importlib import import_module
 from unittest import mock
 
-from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
+import numpy as np
+import pandas as pd
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
-from django.http import StreamingHttpResponse, HttpResponse
+from django.core.files.storage import default_storage
+from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
 from django.utils import timezone
+from jinja2 import Environment, FileSystemLoader
+from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
-from hat.menupermissions.models import CustomPermissionSupport
+import iaso.permissions as core_permissions
+
 from hat.api_import.models import APIImport
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 
 
@@ -37,8 +48,22 @@ class IasoTestCaseMixin:
         m.Profile.objects.create(user=user, account=account)
 
         if permissions is not None:
-            content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-            user.user_permissions.set(Permission.objects.filter(codename__in=permissions, content_type=content_type))
+            content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
+            core_permission_models = core_permissions.permission_models
+            for model in core_permission_models:
+                content_types.append(ContentType.objects.get_for_model(model))
+
+            for plugin in settings.PLUGINS:
+                try:
+                    plugin_permission_models = import_module(f"plugins.{plugin}.permissions").permission_models
+                    for model in plugin_permission_models:
+                        content_types.append(ContentType.objects.get_for_model(model))
+                except ImportError:
+                    pass
+
+            user.user_permissions.set(
+                Permission.objects.filter(codename__in=permissions, content_type__in=content_types)
+            )
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
@@ -107,6 +132,52 @@ class IasoTestCaseMixin:
             importlib.reload(importlib.import_module(urlconf))
         clear_url_caches()
 
+    @staticmethod
+    def create_base_users(account, permissions, user_name="user"):
+        # anonymous user and user without needed permissions
+        anon = AnonymousUser()
+        user_no_perms = IasoTestCaseMixin.create_user_with_profile(
+            username=f"{user_name}_no_perm", account=account, permissions=[]
+        )
+
+        user = IasoTestCaseMixin.create_user_with_profile(username=user_name, account=account, permissions=permissions)
+        return [user, anon, user_no_perms]
+
+    @staticmethod
+    def create_account_datasource_version_project(source_name, account_name, project_name, app_id=None):
+        """Create a project and all related data: account, data source, source version"""
+        data_source = m.DataSource.objects.create(name=source_name)
+        source_version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        account = m.Account.objects.create(name=account_name, default_version=source_version)
+        app_id = app_id or f"{project_name}.app"
+        project = m.Project.objects.create(name=project_name, app_id=app_id, account=account)
+        data_source.projects.set([project])
+
+        return [account, data_source, source_version, project]
+
+    @staticmethod
+    def create_org_unit_type(name, projects, category=None):
+        type_category = category if category else name
+        org_unit_type = m.OrgUnitType.objects.create(name=name, category=type_category)
+        org_unit_type.projects.set(projects)
+        org_unit_type.save()
+        return org_unit_type
+
+    @staticmethod
+    def create_valid_org_unit(name, type, version):
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=type,
+            version=version,
+            name=name,
+        )
+        return org_unit
+
+    def load_fixture_with_jinja_template(self, path_to_fixtures: str, fixture_name: str, context: dict = {}) -> str:
+        # Loads a fixture with Jinja2 templating support - context contains all variables
+        env = Environment(loader=FileSystemLoader(path_to_fixtures))
+        template = env.get_template(fixture_name)
+        return template.render(context)
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
@@ -146,12 +217,6 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         expected_attachment_filename: str = None,
         streaming: bool = False,
     ):
-        if streaming:
-            self.assertIsInstance(response, StreamingHttpResponse)
-            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
-            self.assertIsInstance(list(response.streaming_content), list)
-        else:
-            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response["Content-Type"])
 
@@ -159,6 +224,61 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
+
+        content = response.getvalue()
+
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
+        return content
+
+    def assertCsvFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+        return_as_lists: bool = False,
+        return_as_str: bool = False,
+    ):
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="text/csv",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        decoded_response = content.decode("utf-8")
+
+        if return_as_lists:
+            response_string = "".join(s for s in decoded_response)
+            reader = csv.reader(io.StringIO(response_string), delimiter=",")
+            return list(reader)
+        if return_as_str:
+            return decoded_response.replace("\r\n", "\n").strip()
+        return None
+
+    def assertXlsxFileResponse(
+        self,
+        response: typing.Any,
+        expected_name: str = None,
+        streaming: bool = False,
+    ) -> tuple[list, dict]:
+        content = self.assertFileResponse(
+            response,
+            expected_status_code=200,
+            expected_content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            expected_attachment_filename=expected_name,
+            streaming=streaming,
+        )
+        excel_data = pd.read_excel(content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+
+        return excel_columns, data_dict
 
     def assertValidListData(
         self,
@@ -242,3 +362,44 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(task.name, name)
 
         return task
+
+    def assertValidSimpleSchema(self, data: typing.Mapping, schema: typing.Mapping):
+        for field, expected_type in schema.items():
+            self.assertIn(field, data)
+            if isinstance(expected_type, list):
+                self.assertTrue(any(isinstance(data[field], t) for t in expected_type))
+            else:
+                self.assertIsInstance(data[field], expected_type)
+
+
+class FileUploadToTestCase(TestCase, IasoTestCaseMixin):
+    """
+    Common setup for testing file upload_to functions that rely on account and user information.
+    On every test, the default_storage is cleared to avoid name conflicts.
+    """
+
+    def setUp(self):
+        # Preparing test data
+        account_1_name = "test account 1"
+        self.account_1, self.data_source_1, self.version_1, self.project_1 = (
+            self.create_account_datasource_version_project("source 1", account_1_name, "project 1")
+        )
+        account_2_name = "***///"
+        self.account_2, self.data_source_2, self.version_2, self.project_2 = (
+            self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
+        )
+
+        self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
+        self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
+        self.user_no_profile = User.objects.create(username="user no profile", first_name="User", last_name="NoProfile")
+
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUp()
+
+
+class MockClamavScanResults:
+    def __init__(self, state, details, passed):
+        self.state = state
+        self.details = details
+        self.passed = passed

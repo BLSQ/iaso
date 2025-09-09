@@ -27,7 +27,7 @@ import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { useSavePage } from '../hooks/useSavePage';
 
 import MESSAGES from '../messages';
-import { PAGES_TYPES, IFRAME, TEXT, RAW } from '../constants';
+import { PAGES_TYPES, IFRAME, TEXT, RAW, SUPERSET } from '../constants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -61,8 +61,10 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
 
     const defaultValues = {
         type: selectedPage?.type ?? RAW,
-        needs_authentication: !(selectedPage?.needs_authentication ?? false),
     };
+    if (!selectedPage) {
+        defaultValues['needs_authentication'] = false;
+    }
     const getSchema = () => {
         return yup.lazy(vals => {
             const type = get(vals, 'type');
@@ -81,7 +83,20 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                               .string()
                               .trim()
                               .url(formatMessage(MESSAGES.urlNotValid))
-                        : yup.string().trim(),
+                        : type === SUPERSET
+                          ? yup.string().trim().nullable()
+                          : yup.string().trim(),
+                superset_dashboard_id:
+                    type === SUPERSET
+                        ? yup
+                              .string()
+                              .trim()
+                              .required(
+                                  formatMessage(
+                                      MESSAGES.supersetDashboardIdRequired,
+                                  ),
+                              )
+                        : yup.string().trim().nullable(),
                 type: yup.string().trim().required(),
             });
         });
@@ -233,13 +248,25 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                         />
                                     </Grid>
                                     <Grid xs={12} md={12} item>
-                                        <Field
-                                            label={contentLabel}
-                                            name="content"
-                                            multiline={type === RAW}
-                                            component={contentComponent}
-                                            className={classes.input}
-                                        />
+                                        {type === SUPERSET && (
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES.superset_dashboard_id,
+                                                )}
+                                                name="superset_dashboard_id"
+                                                component={TextInput}
+                                                className={classes.input}
+                                            />
+                                        )}
+                                        {type !== SUPERSET && (
+                                            <Field
+                                                label={contentLabel}
+                                                name="content"
+                                                multiline={type === RAW}
+                                                component={contentComponent}
+                                                className={classes.input}
+                                            />
+                                        )}
                                     </Grid>
                                 </Grid>
                             </Grid>

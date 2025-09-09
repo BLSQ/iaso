@@ -1,13 +1,15 @@
 import logging
 
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
-from hat.menupermissions import models as permission
+
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +42,10 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         dhis2_password = attrs.get("dhis2_password", None)
         if not (
             (dhis2_url and dhis2_login and dhis2_password)
-            or source.credentials
-            and (source.credentials.url and source.credentials.login and source.credentials.password)
+            or (
+                source.credentials
+                and (source.credentials.url and source.credentials.login and source.credentials.password)
+            )
         ):
             raise serializers.ValidationError("No valid credentials exist for this source, please provide them")
 
@@ -50,7 +54,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.SOURCES)]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):

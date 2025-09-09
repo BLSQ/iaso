@@ -1,11 +1,3 @@
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import {
-    IntlFormatMessage,
-    commonStyles,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
@@ -14,30 +6,37 @@ import React, {
     useMemo,
     useState,
 } from 'react';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    InputWithInfos,
+    IntlFormatMessage,
+    commonStyles,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 
 import DatesRange from '../../../components/filters/DatesRange';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 import InputComponent from '../../../components/forms/InputComponent';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { getChipColors } from '../../../constants/chipColors';
 
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
-import { useGetDataSources } from '../hooks/requests/useGetDataSources';
-import { useGetGroups } from '../hooks/requests/useGetGroups';
-import { useGetOrgUnit } from './TreeView/requests';
-
-import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useGetGroupDropdown } from '../hooks/requests/useGetGroups';
 import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
+import { useGetOrgUnitValidationStatus } from '../hooks/utils/useGetOrgUnitValidationStatus';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DataSource } from '../types/dataSources';
 import { Search } from '../types/search';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from './TreeView/requests';
 
 type Props = {
     searches: [Search];
@@ -45,10 +44,8 @@ type Props = {
     setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
-    // eslint-disable-next-line no-unused-vars
     setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
-    // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
@@ -83,10 +80,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     locationLimit,
     setLocationLimit,
 }) => {
-    const classes: Record<string, string> = useStyles();
-    const { formatMessage }: { formatMessage: IntlFormatMessage } =
-        useSafeIntl();
-    const currentUser = useCurrentUser();
+    // STATES
     const [dataSourceId, setDataSourceId] = useState<number | undefined>(
         currentSearch?.source ? parseInt(currentSearch?.source, 10) : undefined,
     );
@@ -101,72 +95,88 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const [initialOrgUnitId, setInitialOrgUnitId] = useState<
         string | undefined
     >(currentSearch?.levels);
-    const [filters, setFilters] = useState<Record<string, any>>(currentSearch);
     const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
+    const [filters, setFilters] = useState<Record<string, any>>(currentSearch);
+    // STATES
+
+    // DATA
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-
-    useSkipEffectOnMount(() => {
-        setInitialOrgUnitId(currentSearch?.levels);
-    }, [currentSearch?.levels]);
-
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources(true);
-
-    const getVersionLabel = useGetVersionLabel(dataSources);
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
-    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         dataSourceId,
         sourceVersionId,
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypes(projectId);
-
-    const instancesOptions = useInstancesOptions();
-
+        useGetOrgUnitTypesDropdownOptions({ projectId, sourceVersionId });
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true);
-    const handleChange = (key, value) => {
-        const newFilters: Record<string, unknown> = {
-            ...filters,
-        };
-        if (key === 'version') {
-            setSourceVersionId(parseInt(value, 10));
-        }
-        if (key === 'source') {
-            setInitialOrgUnitId(undefined);
-            setSourceVersionId(undefined);
-            setDataSourceId(parseInt(value, 10));
-            delete newFilters.levels;
-            delete newFilters.orgUnitParentId;
-        }
-        if (key === 'levels') {
-            setInitialOrgUnitId(value);
-        }
-        if (key === 'project') {
-            setInitialOrgUnitId(undefined);
-            newFilters.orgUnitTypeId = undefined;
-            setProjectId(parseInt(value, 10));
-        }
-        if ((!value || value === '') && newFilters[key]) {
-            delete newFilters[key];
-        } else {
-            newFilters[key] = value;
-        }
-        if (newFilters.source && newFilters.version) {
-            delete newFilters.source;
-        }
-        setFilters(newFilters);
-        const tempSearches: [Record<string, unknown>] = [...searches];
-        tempSearches[searchIndex] = newFilters;
-        setSearches(tempSearches);
-    };
-    const currentColor = filters?.color
-        ? `#${filters.color}`
-        : getChipColors(searchIndex);
+    } = useGetOrgUnitValidationStatus(true);
+    // DATA
+
+    const getNewSourceVersionId = useCallback(
+        (newDataSourceId: number) => {
+            const dataSource = dataSources?.find(
+                src => src?.original?.id === newDataSourceId,
+            );
+            const versions = dataSource?.original?.versions || [];
+            return (
+                dataSource?.original?.default_version?.id ||
+                (versions.length > 0
+                    ? versions[versions.length - 1]?.id
+                    : undefined)
+            );
+        },
+        [dataSources],
+    );
+
+    // EVENTS
+    const handleChange = useCallback(
+        (key, value) => {
+            const newFilters: Record<string, unknown> = {
+                ...filters,
+            };
+            if (key === 'version') {
+                setSourceVersionId(parseInt(value, 10));
+            }
+            if (key === 'source') {
+                setInitialOrgUnitId(undefined);
+                const newDataSourceId = parseInt(value, 10);
+                const newSourceVersionId =
+                    getNewSourceVersionId(newDataSourceId);
+                setSourceVersionId(newSourceVersionId);
+                newFilters.version = newSourceVersionId?.toString();
+                setDataSourceId(newDataSourceId);
+                delete newFilters.levels;
+                delete newFilters.orgUnitParentId;
+            }
+            if (key === 'levels') {
+                setInitialOrgUnitId(value);
+            }
+            if (key === 'project') {
+                setInitialOrgUnitId(undefined);
+                newFilters.orgUnitTypeId = undefined;
+                setProjectId(parseInt(value, 10));
+            }
+            if ((!value || value === '') && newFilters[key]) {
+                delete newFilters[key];
+            } else {
+                newFilters[key] = value;
+            }
+            if (newFilters.source && newFilters.version) {
+                delete newFilters.source;
+            }
+            setFilters(newFilters);
+            const tempSearches: [Record<string, unknown>] = [...searches];
+            tempSearches[searchIndex] = newFilters;
+            setSearches(tempSearches);
+        },
+        [filters, searches, searchIndex, setSearches, getNewSourceVersionId],
+    );
 
     const handleLocationLimitChange = useCallback(
         (key: string, value: number) => {
@@ -174,6 +184,31 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         },
         [setLocationLimit],
     );
+    // EVENTS
+
+    const currentColor = filters?.color
+        ? `#${filters.color}`
+        : getChipColors(searchIndex);
+
+    // HOOKS
+    const currentUser = useCurrentUser();
+    const instancesOptions = useInstancesOptions();
+    const getVersionLabel = useGetVersionLabel(dataSources);
+    const classes: Record<string, string> = useStyles();
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+    // HOOKS
+
+    // USE EFFECTS
+    useSkipEffectOnMount(() => {
+        setInitialOrgUnitId(currentSearch?.levels);
+    }, [currentSearch?.levels]);
+
+    useSkipEffectOnMount(() => {
+        if (filters !== currentSearch) {
+            setFilters(currentSearch);
+        }
+    }, [currentSearch]);
 
     // Splitting this effect from the one below, so we can use the deps array
     useEffect(() => {
@@ -195,54 +230,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dataSourceId, dataSources, filters?.version]);
 
-    useEffect(() => {
-        // if no dataSourceId or sourceVersionId are provided, use the default from user
-        if (
-            !dataSourceId &&
-            !sourceVersionId &&
-            !filters?.version &&
-            currentUser?.account?.default_version?.data_source?.id &&
-            !filters?.group
-        ) {
-            // TO-DO => IA-1491 when coming from groups page, we need to prefill source and version from the selected group !
-            setDataSourceId(
-                filters?.source ??
-                    currentUser?.account?.default_version?.data_source?.id,
-            );
-            setSourceVersionId(
-                filters?.version ?? currentUser?.account?.default_version?.id,
-            );
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
-    // Set the version to the dataSources default version when changing source, or the first version if no default is set
-    useEffect(() => {
-        if (dataSourceId) {
-            const dataSource = dataSources?.find(
-                src => src?.original?.id === dataSourceId,
-            );
-            if (
-                dataSource &&
-                !dataSource.original?.versions.find(
-                    version => version.id === sourceVersionId,
-                )
-            ) {
-                const selectedVersion =
-                    dataSource.original?.default_version?.id ||
-                    dataSource.original?.versions[
-                        dataSource.original.versions.length - 1
-                    ]?.id;
-                setSourceVersionId(selectedVersion);
-            }
-        }
-    }, [dataSourceId, sourceVersionId, dataSources]);
-
-    useSkipEffectOnMount(() => {
-        if (filters !== currentSearch) {
-            setFilters(currentSearch);
-        }
-    }, [currentSearch]);
     const versionsDropDown = useMemo(() => {
         if (!dataSources || !dataSourceId) return [];
         return (
@@ -259,7 +247,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
-                <Box mt={4} mb={4}>
+                <Box mt={4} mb={2}>
                     <ColorPicker
                         currentColor={currentColor}
                         onChangeColor={color =>
@@ -267,16 +255,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputComponent
-                    type="select"
-                    disabled={isFetchingProjects}
-                    keyValue="project"
-                    onChange={handleChange}
-                    value={!isFetchingProjects && projectId}
-                    label={MESSAGES.project}
-                    options={projects}
-                    loading={isFetchingProjects}
-                />
                 <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
                     <InputComponent
                         keyValue="search"
@@ -289,6 +267,16 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         onErrorChange={hasError => setTextSearchError(hasError)}
                     />
                 </InputWithInfos>
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingProjects}
+                    keyValue="project"
+                    onChange={handleChange}
+                    value={!isFetchingProjects && projectId}
+                    label={MESSAGES.project}
+                    options={projects}
+                    loading={isFetchingProjects}
+                />
                 <InputComponent
                     type="select"
                     disabled={isFetchingDataSources}

@@ -10,7 +10,6 @@ import { useIsPolioCampaignCheck } from './useIsPolioCampaignCheck';
 type ValidationResult = Record<string, string> & { _error?: any };
 
 export const useValidateCampaign = (): ((
-    // eslint-disable-next-line no-unused-vars
     values: CampaignFormValues,
 ) => Promise<ValidationResult>) => {
     const { plainSchema, polioSchema } = useFormValidator();

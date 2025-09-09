@@ -1,17 +1,20 @@
+import decimal
 import uuid
 
-from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
+from rest_framework import serializers
+
 from hat.audit.audit_logger import AuditLogger
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API
+from iaso.api.common import TimestampField
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.models.payments import PaymentStatuses
-from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
-from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
-from iaso.api.common import TimestampField
 from iaso.utils import geojson_queryset
+from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
+from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
+from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -180,7 +183,12 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
     def get_current_org_unit_type_projects(self, obj: OrgUnitChangeRequest):
-        return [{"id": project.id, "name": project.name} for project in obj.org_unit.org_unit_type.projects.all()]
+        if obj.org_unit.org_unit_type is None:
+            return []
+        return [
+            {"id": project.id, "name": project.name, "color": project.color}
+            for project in obj.org_unit.org_unit_type.projects.all()
+        ]
 
     def get_payment_status(self, obj: OrgUnitChangeRequest):
         payment = obj.payment
@@ -221,6 +229,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "uuid",
+            "kind",
             "status",
             "created_by",
             "created_at",
@@ -284,6 +293,13 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         required=False,
         allow_null=True,
     )
+    new_location_accuracy = RoundedDecimalField(
+        max_digits=7,
+        decimal_places=2,
+        rounding=decimal.ROUND_HALF_UP,
+        required=False,
+        allow_null=True,
+    )
     new_reference_instances = IdOrUuidRelatedField(
         many=True,
         queryset=Instance.objects.all(),
@@ -341,7 +357,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
         if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
             raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
-        elif (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
+        if (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
             raise serializers.ValidationError("`new_opening_date` must be before the current org_unit closed date.")
 
         if org_unit and new_parent:
@@ -399,6 +415,71 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
 
         if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
+
+        return validated_data
+
+
+class OrgUnitChangeRequestBulkReviewSerializer(serializers.Serializer):
+    """
+    Bulk-approve or bulk-reject `OrgUnitChangeRequest`s.
+    """
+
+    # Selection.
+    select_all = serializers.BooleanField(default=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    # Review data.
+    status = serializers.ChoiceField(choices=OrgUnitChangeRequest.Statuses, default=None)
+    rejection_comment = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_status(self, value):
+        approved = OrgUnitChangeRequest.Statuses.APPROVED
+        rejected = OrgUnitChangeRequest.Statuses.REJECTED
+        if value not in [approved, rejected]:
+            raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
+        return value
+
+    def validate(self, validated_data):
+        # Selection.
+        select_all = validated_data["select_all"]
+        selected_ids = validated_data["selected_ids"]
+        unselected_ids = validated_data["unselected_ids"]
+        # Review data.
+        status = validated_data["status"]
+        rejection_comment = validated_data["rejection_comment"]
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
+
+        if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
+            raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        return validated_data
+
+
+class OrgUnitChangeRequestBulkDeleteSerializer(serializers.Serializer):
+    """
+    Bulk-delete or bulk-restore `OrgUnitChangeRequest`s.
+    """
+
+    select_all = serializers.BooleanField(default=False)
+    selected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    unselected_ids = serializers.ListField(child=serializers.IntegerField(min_value=1), required=False, default=[])
+    restore = serializers.BooleanField(default=False)
+
+    def validate(self, validated_data):
+        select_all = validated_data["select_all"]
+        selected_ids = validated_data["selected_ids"]
+        unselected_ids = validated_data["unselected_ids"]
+
+        if select_all and selected_ids:
+            raise serializers.ValidationError("You cannot set both `select_all` and `selected_ids`.")
+
+        if unselected_ids and not select_all:
+            raise serializers.ValidationError("You cannot set `unselected_ids` without `select_all`.")
 
         return validated_data
 

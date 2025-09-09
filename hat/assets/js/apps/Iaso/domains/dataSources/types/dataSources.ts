@@ -1,6 +1,5 @@
 import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
 
-/* eslint-disable camelcase */
 export type Project = {
     name: string;
 };

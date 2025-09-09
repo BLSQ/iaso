@@ -97,10 +97,30 @@ export const getFirstAllowedUrl = (
             untestedPermissions.splice(i, 1);
         }
     });
-    const newPath = routes.find(p => p.permissions?.some(kp => kp === newRoot));
+    const newPath = routes
+        .filter(route => route.baseUrl !== 'secret')
+        .find(p => p.permissions?.some(kp => kp === newRoot));
     if (newPath) {
         return newPath.baseUrl;
     }
     if (untestedPermissions.length === 0) return undefined;
     return getFirstAllowedUrl(rootPermissions, untestedPermissions, routes);
+};
+
+/**
+ * Check if user account has access to specified module.
+ *
+ * @param {String} module
+ * @param {Object} user
+ * @return {Boolean} - Returns true if user account has specified module, otherwise false.
+ */
+export const userHasAccessToModule = (module, user) => {
+    if (!user) {
+        return false;
+    }
+    if (user?.account?.modules.includes(module)) {
+        return true;
+    }
+
+    return false;
 };

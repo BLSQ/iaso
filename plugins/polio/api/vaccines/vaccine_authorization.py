@@ -1,6 +1,7 @@
 import datetime
 import datetime as dt
 import itertools
+
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -10,16 +11,16 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from hat.menupermissions import models as permission
 from iaso.api.common import (
+    Custom403Exception,
     DeletionFilterBackend,
     GenericReadWritePerm,
     ModelViewSet,
     Paginator,
     TimestampField,
-    Custom403Exception,
 )
 from iaso.models import OrgUnit
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
 
@@ -30,7 +31,7 @@ def check_for_already_validated_authorization(status, country):
             status="VALIDATED", country=country, deleted_at__isnull=True
         )
         if validated_vaccine_auth:
-            raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
+            raise Custom403Exception({"error": "A vaccine authorization is already validated for this country"})
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -110,8 +111,8 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
 
 class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-    write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+    read_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+    write_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])

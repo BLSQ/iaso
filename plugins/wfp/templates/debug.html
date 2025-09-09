@@ -25,11 +25,13 @@
         </tr>
         <tr>
             <th>First Name</th>
-            <td>{{ entity.attributes.json.first_name}}</td>
+            <td>{{ info.first_name }}</td>
         </tr>
         <tr>
             <th>Last Name</th>
-            <td>{{ entity.attributes.json.last_name}}</td>
+            <td>{{ info.last_name }} {{ info.fathers_name }}
+                {{ info.grand_fathers_name }} {{ info.husband_father_name }}
+                {{ info.grandfather_name }}</td>
         </tr>
         <tr>
             <th>Gender</th>
@@ -38,7 +40,7 @@
         <tr>
             <th>Link</th>
             <td><a
-                    href="/dashboard/entities/details/accountId/1/entityId/{{entity.id}}">/dashboard/entities/details/accountId/1/entityId/{{entity.id}}</a>
+                    href="/dashboard/entities/details/accountId/{{beneficiary.account.id}}/entityId/{{entity.id}}">/dashboard/entities/details/accountId/{{beneficiary.account.id}}/entityId/{{entity.id}}</a>
             </td>
         </tr>
     </table>

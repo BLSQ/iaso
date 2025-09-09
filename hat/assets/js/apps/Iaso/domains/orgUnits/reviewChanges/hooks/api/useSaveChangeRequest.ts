@@ -10,12 +10,12 @@ export type UseSaveChangeRequestQueryData = {
 };
 
 export const useSaveChangeRequest = (
-    closeDialog: () => void,
+    onSuccess: () => void,
     id: number,
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: UseSaveChangeRequestQueryData) =>
             patchRequest(`/api/orgunits/changes/${id}/`, data),
         invalidateQueryKey: ['getApprovalProposal', 'getApprovalProposals'],
-        options: { onSuccess: () => closeDialog() },
+        options: { onSuccess },
     });

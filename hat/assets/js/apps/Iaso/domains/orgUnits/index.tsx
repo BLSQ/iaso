@@ -1,56 +1,38 @@
 import React, {
     FunctionComponent,
+    useCallback,
     useMemo,
     useState,
-    useEffect,
-    useCallback,
 } from 'react';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
-    useSafeIntl,
     LoadingSpinner,
-    useSkipEffectOnMount,
     makeRedirectionUrl,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { useQueryClient } from 'react-query';
-
-// COMPONENTS
 import { useNavigate } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
+import { getChipColors } from '../../constants/chipColors';
+import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import { OrgUnitsMap } from './components/OrgUnitsMap';
 import { TableList } from './components/TableList';
-// COMPONENTS
-
-// TYPES
-import { OrgUnitParams } from './types/orgUnit';
-import { Search } from './types/search';
-// TYPES
-
-// UTILS
-import { decodeSearch } from './utils';
-import { convertObjectToString } from '../../utils/dataManipulation';
-import { getChipColors } from '../../constants/chipColors';
-// UTILS
-
-// CONSTANTS
-import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
-// CONSTANTS
-
-// HOOKS
+import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import {
     useGetOrgUnits,
     useGetOrgUnitsLocations,
 } from './hooks/requests/useGetOrgUnits';
-import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
-// HOOKS
+import MESSAGES from './messages';
+import { OrgUnitParams } from './types/orgUnit';
+import { Search } from './types/search';
+
+import { decodeSearch } from './utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -81,24 +63,16 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-// type Props = {
-//     params: OrgUnitParams;
-// };
-
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS
-    const params = useParamsObject(baseUrl) as OrgUnitParams;
-    const queryClient = useQueryClient();
+    const params = useParamsObject(baseUrl) as unknown as OrgUnitParams;
     const navigate = useNavigate();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     // HOOKS
 
     // STATE
-    const [resetPageToOne, setResetPageToOne] = useState<string>('');
-    const [deletedTab, setDeletedTab] = useState<boolean>(false);
-    const [refresh, setRefresh] = useState<boolean>(false);
     const [tab, setTab] = useState<string>(params.tab ?? 'list');
     // STATE
 
@@ -124,22 +98,20 @@ export const OrgUnits: FunctionComponent = () => {
     // REQUESTS HOOKS
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
-    const {
-        data: orgUnitsData,
-        isFetching: isFetchingOrgUnits,
-        refetch: fetchOrgUnits,
-    } = useGetOrgUnits({
-        params: apiParams,
-        isSearchActive,
-    });
+    const { data: orgUnitsData, isFetching: isFetchingOrgUnits } =
+        useGetOrgUnits({
+            params: apiParams,
+            isSearchActive,
+            enabled: isSearchActive, // this is required to count result in search tab
+        });
     const {
         data: orgUnitsDataLocation,
         isFetching: isFetchingOrgUnitsDataLocation,
-        refetch: fetchOrgUnitsLocations,
     } = useGetOrgUnitsLocations({
         params: apiParamsLocations,
         searches,
         isSearchActive,
+        enabled: tab === 'map' && isSearchActive,
     });
     // REQUESTS HOOKS
 
@@ -160,16 +132,8 @@ export const OrgUnits: FunctionComponent = () => {
         [searches],
     );
 
-    const handleSearch = useCallback(() => {
-        if (isSearchActive) {
-            fetchOrgUnits();
-            fetchOrgUnitsLocations();
-        }
-    }, [fetchOrgUnits, fetchOrgUnitsLocations, isSearchActive]);
-
     const onSearch = useCallback(
         newParams => {
-            // handleTableSelection('reset');
             const tempParams = {
                 ...newParams,
                 searches: JSON.stringify(newParams.searches),
@@ -177,11 +141,9 @@ export const OrgUnits: FunctionComponent = () => {
             if (newParams.searchActive !== 'true') {
                 tempParams.searchActive = true;
             }
-            setResetPageToOne(convertObjectToString(tempParams));
             navigate(makeRedirectionUrl(baseUrl, tempParams), {
                 replace: true,
             });
-            setRefresh(true);
         },
         [navigate],
     );
@@ -199,39 +161,6 @@ export const OrgUnits: FunctionComponent = () => {
     );
     // TABS
 
-    // onload, if searchActive is true and cache empty => set launch search
-    useEffect(() => {
-        if (isSearchActive) {
-            const cachedOrgUnits = queryClient.getQueryData(['orgunits']);
-            const cachedLocations = queryClient.getQueryData([
-                'orgunitslocations',
-            ]);
-            if (!cachedOrgUnits || !cachedLocations) {
-                handleSearch();
-            }
-        }
-    }, [handleSearch, isSearchActive, queryClient]);
-
-    // trigger search on order, page size and page
-    useSkipEffectOnMount(() => {
-        handleSearch();
-    }, [params.order, params.page, params.pageSize]);
-
-    // trigger search after delete tab redirection
-    useSkipEffectOnMount(() => {
-        if (isSearchActive && deletedTab) {
-            setDeletedTab(false);
-            handleSearch();
-        }
-    }, [apiParams.searches]);
-
-    useSkipEffectOnMount(() => {
-        if (refresh) {
-            setRefresh(false);
-            handleSearch();
-        }
-    }, [searches, refresh]);
-
     const isLoading =
         isFetchingOrgUnits ||
         isSavingMulti ||
@@ -239,7 +168,7 @@ export const OrgUnits: FunctionComponent = () => {
     return (
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
 
             <Box className={classes.container}>
                 <OrgUnitFiltersContainer
@@ -248,7 +177,6 @@ export const OrgUnits: FunctionComponent = () => {
                     currentTab={tab}
                     paramsSearches={searches || []}
                     counts={(!isLoading && orgUnitsData?.counts) || []}
-                    setDeletedTab={setDeletedTab}
                 />
                 {tab === 'list' &&
                     orgUnitsData &&
@@ -267,57 +195,48 @@ export const OrgUnits: FunctionComponent = () => {
                             />
                         </Box>
                     )}
-                <Box px={4}>
-                    {orgUnitsData && (
-                        <>
-                            <Tabs
-                                value={tab}
-                                classes={{
-                                    root: classes.tabs,
-                                }}
-                                className={classes.marginBottom}
-                                indicatorColor="primary"
-                                onChange={(event, newtab) =>
-                                    handleChangeTab(newtab)
-                                }
-                            >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                            </Tabs>
-                            {tab === 'list' && (
-                                <TableList
-                                    params={params}
-                                    saveMulti={saveMulti}
-                                    resetPageToOne={resetPageToOne}
-                                    orgUnitsData={orgUnitsData}
-                                />
-                            )}
 
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
-                                <div className={classes.containerMarginNeg}>
-                                    <OrgUnitsMap
-                                        getSearchColor={getSearchColor}
-                                        orgUnits={
-                                            orgUnitsDataLocation || {
-                                                locations: [],
-                                                shapes: [],
-                                            }
-                                        }
-                                    />
-                                </div>
-                            </div>
-                        </>
+                <Box px={4}>
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                        }}
+                        className={classes.marginBottom}
+                        indicatorColor="primary"
+                        onChange={(event, newtab) => handleChangeTab(newtab)}
+                    >
+                        <Tab
+                            value="list"
+                            label={formatMessage(MESSAGES.list)}
+                        />
+                        <Tab
+                            value="map"
+                            label={formatMessage(MESSAGES.map)}
+                            disabled={!isSearchActive}
+                        />
+                    </Tabs>
+                    {tab === 'list' && (
+                        <TableList
+                            params={params}
+                            saveMulti={saveMulti}
+                            orgUnitsData={orgUnitsData}
+                        />
                     )}
+
+                    <Box className={tab === 'map' ? '' : classes.hiddenOpacity}>
+                        <Box className={classes.containerMarginNeg}>
+                            <OrgUnitsMap
+                                getSearchColor={getSearchColor}
+                                orgUnits={
+                                    orgUnitsDataLocation || {
+                                        locations: [],
+                                        shapes: [],
+                                    }
+                                }
+                            />
+                        </Box>
+                    </Box>
                 </Box>
             </Box>
         </>

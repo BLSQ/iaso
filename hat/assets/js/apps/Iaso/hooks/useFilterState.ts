@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import {
@@ -10,10 +10,9 @@ import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
 export type FilterState = {
     filters: Record<string, any>;
     handleSearch: () => void;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (keyValue: string, value: unknown) => void;
+    changeAndSearch: (keyValue: string, value: unknown) => void;
     filtersUpdated: boolean;
-    // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (updated: boolean) => void;
     setFilters: React.Dispatch<Record<string, any>>;
 };
@@ -111,6 +110,37 @@ export const useFilterState = ({
         [filters, updateFilters],
     );
 
+    const changeAndSearch = useCallback(
+        (key, value) => {
+            const newFilters = {
+                ...filters,
+                [key]: value !== null ? value : undefined,
+            };
+            const tempParams = { ...params, ...newFilters };
+            if (withPagination) {
+                tempParams.page = '1';
+            }
+            if (searchActive && Object.keys(params).includes(searchActive)) {
+                tempParams[searchActive] = 'true';
+            }
+            if (saveSearchInHistory) {
+                redirectTo(baseUrl, tempParams);
+            } else {
+                redirectToReplace(baseUrl, tempParams);
+            }
+        },
+        [
+            baseUrl,
+            filters,
+            params,
+            redirectTo,
+            redirectToReplace,
+            saveSearchInHistory,
+            searchActive,
+            withPagination,
+        ],
+    );
+
     useEffect(() => {
         setFilters(removePaginationParams(params));
     }, [params]);
@@ -122,20 +152,26 @@ export const useFilterState = ({
             handleSearch,
             filtersUpdated,
             setFiltersUpdated,
+            changeAndSearch,
             setFilters: updateFilters,
         };
-    }, [filters, handleChange, handleSearch, filtersUpdated, updateFilters]);
+    }, [
+        filters,
+        handleChange,
+        handleSearch,
+        filtersUpdated,
+        changeAndSearch,
+        updateFilters,
+    ]);
 };
 
 type MultiTreeviewArgs = {
     paramIds: string | undefined;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (key: string, value: (string | number)[] | undefined) => void;
 };
 
 type MultiTreeviewFilter = {
     initialOrgUnits: OrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     handleOrgUnitChange: (orgUnits: (number | string)[] | undefined) => void;
 };
 
@@ -167,13 +203,11 @@ export const useMultiTreeviewFilterState = ({
 
 type TreeviewArgs = {
     paramId: string | undefined;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (key: string, value: (string | number)[] | undefined) => void;
 };
 
 type TreeviewFilter = {
     initialOrgUnit: OrgUnit;
-    // eslint-disable-next-line no-unused-vars
     handleOrgUnitChange: (orgUnit: OrgUnit | undefined) => void;
 };
 
@@ -203,13 +237,11 @@ export const useTreeviewFilterState = ({
 
 type CheckBoxFilterArgs = {
     keyValue: string;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (key: string, value: boolean) => void;
     initialValue?: boolean;
 };
 
 type CheckBoxFilter = {
-    // eslint-disable-next-line no-unused-vars
     handleCheckboxChange: (key: string, value: boolean) => void;
     checkBoxValue: boolean;
 };

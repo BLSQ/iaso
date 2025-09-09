@@ -6,11 +6,12 @@ import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testTopBar } from '../../support/testTopBar';
 import orgUnitTypes from '../../fixtures/orgunittypes/page1_limit20.json';
+import outypesDropDownList from '../../fixtures/orgunittypes/dropdown-dummy-sub-org-unit-type-list.json';
 import outypesList from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/types/order/name/pageSize/20/page/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/types/order/name/pageSize/20/page/1`;
 
 // TODO populate list
 const interceptList = ['profiles', 'projects', 'forms'];
@@ -19,7 +20,11 @@ describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
-        cy.intercept('GET', '/api/v2/orgunittypes/', outypesList);
+        cy.intercept(
+            'GET',
+            '/api/v2/orgunittypes/dropdown/',
+            outypesDropDownList,
+        );
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
                 fixture: `${i}/list.json`,
@@ -151,7 +156,7 @@ describe('Org unit types', () => {
                                 cy.testInputValue('#input-text-depth', '2');
                                 cy.testMultiSelect(
                                     '#sub_unit_type_ids',
-                                    outypesList.orgUnitTypes[0].sub_unit_types,
+                                    outypesDropDownList,
                                 );
                                 cy.testMultiSelect(
                                     '#project_ids',

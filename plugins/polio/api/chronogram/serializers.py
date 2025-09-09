@@ -1,12 +1,9 @@
+from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from django.contrib.auth.models import User
-
-from hat.menupermissions import models as iaso_permission
-
 from iaso.api.common import DynamicFieldsModelSerializer
-
-from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask, Round, Campaign
+from plugins.polio import permissions as polio_permissions
+from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -22,12 +19,12 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
         fields = super().get_fields(*args, **kwargs)
         user = getattr(self.context.get("request", {}), "user", None)
 
-        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM):
+        if user and user.has_perm(polio_permissions.POLIO_CHRONOGRAM):
             return fields
 
         # Restrict writable fields for the `POLIO_CHRONOGRAM_RESTRICTED_WRITE` permission.
-        if user and user.has_perm(iaso_permission.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
-            allowed_fields = ["status", "comment"]
+        if user and user.has_perm(polio_permissions.POLIO_CHRONOGRAM_RESTRICTED_WRITE):
+            allowed_fields = ["status", "user_in_charge", "comment"]
             read_only_fields = [field for field in fields if field not in allowed_fields]
             for field in read_only_fields:
                 fields[field].read_only = True

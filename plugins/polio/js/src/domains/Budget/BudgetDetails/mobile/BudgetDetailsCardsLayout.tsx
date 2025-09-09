@@ -1,14 +1,13 @@
 import { Box, Pagination } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent } from 'react';
 import { Paginated } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { BudgetEventCard } from '../../cards/BudgetEventCard';
 import { BudgetStep } from '../../types';
 
 type Props = {
     budgetDetails: Paginated<BudgetStep>;
     page?: number | string;
-    // eslint-disable-next-line no-unused-vars
     onCardPaginationChange: (value: any, newPage: number) => void;
 };
 

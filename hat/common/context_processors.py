@@ -1,4 +1,6 @@
-from typing import Dict, Any
+import json
+
+from typing import Any, Dict
 
 from django.conf import settings
 from django.http.request import HttpRequest
@@ -20,6 +22,33 @@ def logo_path(request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
 
 
+def sentry_config(request: HttpRequest) -> Dict[str, Any]:
+    config = {
+        "sentry_config": {
+            "SENTRY_URL": settings.SENTRY_URL or None,
+            "SENTRY_ENVIRONMENT": settings.ENVIRONMENT or None,
+            "SENTRY_FRONT_ENABLED": settings.SENTRY_FRONT_ENABLED or None,
+        }
+    }
+    return {"sentry_config": json.dumps(config["sentry_config"])}
+
+
+def available_languages(request: HttpRequest) -> Dict[str, Any]:
+    languages = settings.AVAILABLE_LANGUAGES.split(",")
+    return {"AVAILABLE_LANGUAGES": json.dumps(languages)}
+
+
+def product_fruits_config(request: HttpRequest) -> Dict[str, Any]:
+    config = {
+        "PRODUCT_FRUITS_WORKSPACE_CODE": settings.PRODUCT_FRUITS_WORKSPACE_CODE or None,
+    }
+    return {"product_fruits_config": json.dumps(config)}
+
+
+def learn_more_url(request: HttpRequest) -> Dict[str, Any]:
+    return {"LEARN_MORE_URL": settings.LEARN_MORE_URL}
+
+
 def theme(request: HttpRequest) -> Dict[str, Any]:
     return {
         # TODO: Duplicated data: refactor?
@@ -34,5 +63,6 @@ def theme(request: HttpRequest) -> Dict[str, Any]:
             "FAVICON_PATH": settings.FAVICON_PATH,
             "APP_TITLE": settings.APP_TITLE,
             "SHOW_NAME_WITH_LOGO": settings.SHOW_NAME_WITH_LOGO,
+            "HIDE_BASIC_NAV_ITEMS": settings.HIDE_BASIC_NAV_ITEMS,
         },
     }

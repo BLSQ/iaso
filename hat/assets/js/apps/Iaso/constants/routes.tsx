@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement } from 'react';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
@@ -8,14 +7,15 @@ import { CompletenessStats } from '../domains/completenessStats';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
-import { Beneficiaries } from '../domains/entities';
-import { Details as BeneficiaryDetail } from '../domains/entities/details';
+import { Entities } from '../domains/entities';
+import { Details as EntityDetail } from '../domains/entities/details';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { EntityTypes } from '../domains/entities/entityTypes';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
-import FormsStats from '../domains/forms/stats';
+import { FormsStats } from '../domains/forms/stats';
+import { Welcome } from '../domains/home/components/ExtraGrid/Welcome';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
@@ -25,10 +25,14 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Modules } from '../domains/modules';
 import { OrgUnits } from '../domains/orgUnits';
+import { OrgUnitChangeRequestConfigs } from '../domains/orgUnits/configuration/OrgUnitChangeRequestConfigs';
 import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
+import GroupSets from '../domains/orgUnits/groupSets';
+import GroupSet from '../domains/orgUnits/groupSets/GroupSet';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges';
+import { ReviewOrgUnitChangesDetail } from '../domains/orgUnits/reviewChanges/details';
 import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 import { PotentialPayments } from '../domains/payments/PotentialPayments';
@@ -42,6 +46,7 @@ import Tasks from '../domains/tasks';
 import { Teams } from '../domains/teams';
 import { UserRoles } from '../domains/userRoles';
 import { Users } from '../domains/users';
+import { UsersHistory } from '../domains/users/history/UsersHistory';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
@@ -65,6 +70,12 @@ export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
     routerUrl: `${baseUrls.setupAccount}/*`,
+    permissions: [],
+    element: <SetupAccount />,
+};
+export const setupAccountSettingsPath = {
+    baseUrl: baseUrls.setupAccountSettings,
+    routerUrl: `${baseUrls.setupAccountSettings}/*`,
     permissions: [],
     element: <SetupAccount />,
 };
@@ -170,6 +181,20 @@ export const orgUnitChangeRequestPath = {
     element: <ReviewOrgUnitChanges />,
 };
 
+export const orgUnitChangeRequestDetailPath = {
+    baseUrl: baseUrls.orgUnitsChangeRequestDetail,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestDetail}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    element: <ReviewOrgUnitChangesDetail />,
+};
+
+export const orgUnitsChangeRequestConfiguration = {
+    baseUrl: baseUrls.orgUnitsChangeRequestConfiguration,
+    routerUrl: `${baseUrls.orgUnitsChangeRequestConfiguration}/*`,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUESTS_CONFIGURATION],
+    element: <OrgUnitChangeRequestConfigs />,
+};
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
@@ -217,6 +242,13 @@ export const usersPath = {
     routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
+};
+
+export const usersHistoryPath = {
+    baseUrl: baseUrls.usersHistory,
+    routerUrl: `${baseUrls.usersHistory}/*`,
+    permissions: [Permission.USERS_ADMIN],
+    element: <UsersHistory />,
 };
 
 export const userRolesPath = {
@@ -268,6 +300,20 @@ export const groupsPath = {
     element: <Groups />,
 };
 
+export const groupSetsPath = {
+    baseUrl: baseUrls.groupSets,
+    routerUrl: `${baseUrls.groupSets}/*`,
+    permissions: [Permission.ORG_UNIT_GROUPS],
+    element: <GroupSets />,
+};
+
+export const groupSetDetailPath = {
+    baseUrl: baseUrls.groupSetDetail,
+    routerUrl: `${baseUrls.groupSetDetail}/*`,
+    permissions: [Permission.ORG_UNIT_GROUPS],
+    element: <GroupSet />,
+};
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     routerUrl: `${baseUrls.orgUnitTypes}/*`,
@@ -278,13 +324,13 @@ export const entitiesPath = {
     baseUrl: baseUrls.entities,
     routerUrl: `${baseUrls.entities}/*`,
     permissions: [Permission.ENTITIES],
-    element: <Beneficiaries />,
+    element: <Entities />,
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
     routerUrl: `${baseUrls.entityDetails}/*`,
     permissions: [Permission.ENTITIES],
-    element: <BeneficiaryDetail />,
+    element: <EntityDetail />,
 };
 
 export const entityTypesPath = {
@@ -375,6 +421,13 @@ export const page401 = {
     permissions: [],
 };
 
+export const bonusPath = {
+    baseUrl: baseUrls.hidden,
+    routerUrl: `${baseUrls.hidden}/*`,
+    permissions: [...Object.values(Permission)],
+    element: <Welcome />,
+};
+
 export const page403 = {
     baseUrl: baseUrls.error403,
     routerUrl: baseUrls.error403,
@@ -413,6 +466,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    usersHistoryPath,
     userRolesPath,
     projectsPath,
     dataSourcesPath,
@@ -420,6 +474,8 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     tasksPath,
     devicesPath,
     groupsPath,
+    groupSetsPath,
+    groupSetDetailPath,
     orgUnitTypesPath,
     entityTypesPath,
     pagesPath,
@@ -439,8 +495,11 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsPath,
     workflowsDetailPath,
     orgUnitChangeRequestPath,
+    orgUnitChangeRequestDetailPath,
+    orgUnitsChangeRequestConfiguration,
     registryPath,
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,
+    bonusPath,
 ];

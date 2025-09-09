@@ -1,14 +1,14 @@
 import { useMemo } from 'react';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import { LqasImCampaign } from '../../../../constants/types';
+import { LqasImCampaign } from '../../types';
 import { accessNfmStats } from '../LqasIm';
 
 type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 };
 
 const translateTitle =
@@ -19,11 +19,11 @@ const translateTitle =
 type CalcParams = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: number;
+    round: number | undefined;
     accessor: string;
 };
 
-const calculateChildrenAbsent = ({
+export const calculateChildrenAbsent = ({
     data,
     campaign,
     round,
@@ -38,7 +38,7 @@ export const useRfaTitle = ({
     campaign,
     type,
     selectedRounds,
-}: Params): string[] => {
+}: Params): [string, string] => {
     const { formatMessage } = useSafeIntl();
     const makeTitle = translateTitle(formatMessage);
     const accessor = type === 'lqas' ? 'childabsent' : 'Tot_child_Absent_HH';

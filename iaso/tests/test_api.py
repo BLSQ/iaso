@@ -1,10 +1,11 @@
 import json
 import typing
+
 from math import floor
 
 from rest_framework.test import APIClient
 
-from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, SourceVersion, DataSource
+from ..models import Account, DataSource, Form, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
 from ..test import APITestCase
 
 
@@ -354,9 +355,22 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
-        response = c.get(
-            "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
-        )  # this should have 2 results
+        with self.assertNumQueries(10):
+            # filter_for_user_and_app_id
+            #   1. SELECT Projects
+            #   2. SELECT Projects
+            #   4. PREFETCH OrgUnitType.projects
+            #   5. PREFETCH OrgUnitType.projects.account
+            #   6. PREFETCH OrgUnitType.projects.feature_flags
+            #   7. PREFETCH OrgUnitType.allow_creating_sub_unit_types
+            #   8. PREFETCH OrgUnitType.reference_forms
+            #   9. PREFETCH OrgUnitType.sub_unit_types
+            # get_queryset
+            #   3. SELECT DISTINCT OrgUnitType
+            #   10. PREFETCH OrgUnitType.allow_creating_sub_unit_types - based on app_id
+            response = c.get(
+                "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
+            )  # this should have 2 results
         json_response = json.loads(response.content)
         org_unit_types = json_response["orgUnitTypes"]
         self.assertEqual(len(org_unit_types), 2)

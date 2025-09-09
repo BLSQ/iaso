@@ -7,6 +7,8 @@
 ![Cypress tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/cypress.yml?label=cypress%20tests)
 
 
+Full documentation is at [docs.openiaso.com](https://docs.openiaso.com/)
+
 Introduction
 ============
 
@@ -71,7 +73,7 @@ More documentation on the Front End part is present in
 Data Model / Glossary
 ---------------------
 
-Some terminology in Iaso come from DHIS2, some from ODK which mean that it can be a bit confusing.
+IASO inspired its terminology both from ODK and from DHIS2.
 We will highlight some equivalences that might help you.
 
 This is not (yet) the complete Data Model, but here are the main concepts/model in Iaso:
@@ -109,7 +111,7 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
 * `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.
 
 They are usually generated via `AlgorithmRun`, or the matching is done in a Notebook and uploaded via the API.
-  
+
 
 Development environment
 =======================
@@ -118,14 +120,14 @@ Setup
 -----
 
 
-A running local instance for development can be spin up via docker-compose which will install and
+A running local instance for development can be spin up via docker compose which will install and
 configure all dep in separate container. As such your computer should only need:
 
 -   [git](https://git-scm.com/)
 -   [docker](https://docs.docker.com/engine/installation/)
--   [docker-compose](https://docs.docker.com/compose/)
+-   [docker compose](https://docs.docker.com/compose/)
 
-If docker-compose give you trouble, make sure it can connect to the
+If docker compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
 If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
@@ -157,13 +159,13 @@ cp .env.dist .env
 This will build and download the containers.
 
 ``` bash
-docker-compose build
+docker compose build
 ```
 
 ### 3. Start the database
 
 ``` bash
-docker-compose up db
+docker compose up db
 ```
 (if you get this message: "Database is uninitialized and superuser password is not specified. You must specify POSTGRES_PASSWORD"
  you can set POSTGRES_PASSWORD=postgres in the .env file )
@@ -174,24 +176,38 @@ In a separate bash (without closing yet the started db), launch the migrations
 
 
 ``` bash
-docker-compose run --rm iaso manage migrate
+docker compose run --rm iaso manage migrate
 ```
-(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
+(If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using
 ``` bash
 psql -h localhost -p 5433 -U postgres
 ```
-then type 
+then type
 ``` sql
-create database iaso; 
+create database iaso;
 ```
 to create the missing database.)
+
+(If you get a message saying that /opt/app/entrypoint.sh does not exist, you need to disable auto crlf from github, more details: https://stackoverflow.com/questions/38905135/why-wont-my-docker-entrypoint-sh-execute)
+``` bash
+git config --global core.autocrlf input
+git rm --cached -r .
+git reset --hard
+```
+
+Then rebuild & migration
+
+``` bash
+docker compose build
+docker compose run --rm iaso manage migrate
+```
 
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)
 
 ``` bash
-docker-compose up
+docker compose up
 ```
 If you get a message saying that entrypoint.sh cannot be find and working on **Windows**, the git repository has an entry point script with Unix line endings (\n). But when the repository was checked out on a windows machine, git decided to try and be clever and replace the line endings in the files with windows line endings (\r\n).
 The solution is to disable git's automatic conversion:
@@ -205,7 +221,7 @@ git reset --hard
 ```
 And then rebuild:
 ``` bash
-docker-compose build
+docker compose build
 ```
 
 
@@ -220,7 +236,7 @@ To log in to the app or the Django admin, a superuser needs to be created
 with:
 
 ``` bash
-docker-compose exec iaso ./manage.py createsuperuser
+docker compose exec iaso ./manage.py createsuperuser
 ```
 
 You can now log in at the admin section: `http://localhost:8081/admin`.
@@ -233,14 +249,14 @@ through the Django admin or loaded via fixtures.
 To create the initial account, project and profile, do the following:
 
 ``` bash
-docker-compose exec iaso ./manage.py create_and_import_data
+docker compose exec iaso ./manage.py create_and_import_data
 ```
 
 And run the following command to populate your database with a tree of
 org units (these are childcare schools in the West of DRC):
 
 ``` bash
-docker-compose exec iaso ./manage.py tree_importer \
+docker compose exec iaso ./manage.py tree_importer \
     --org_unit_csv_file testdata/schools.csv \
     --data_dict testdata/data_dict.json \
     --source_name wb_schools_2019 \
@@ -258,7 +274,7 @@ Alternatively to this step and following steps you can import data from DHIS2 se
 Run the following command to create a form:
 
 ``` bash
-docker-compose exec iaso ./manage.py create_form
+docker compose exec iaso ./manage.py create_form
 ```
 
 At this point, if you want to edit forms directly on your machine using
@@ -283,13 +299,13 @@ First find a running version from play.dhis2.org.
 Take the most recent as the other ones may return a 404.
 Follow the link, eg: https://play.im.dhis2.org/stable-2-40-3-1
 In this example the version is 2.40.3.1.
-Pass it to docker-compose run:
+Pass it to docker compose run:
 
 In a new bash, run the command
 
 
 ``` bash
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.3.1
+docker compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.3.1
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -308,7 +324,7 @@ You can do so by adding the following line in your root .env:
 PLUGINS=polio
 ```
 
- 
+
 Run commands inside the docker
 -------------------------------
 
@@ -318,22 +334,22 @@ Each docker container uses the entrypoint.
 The `entrypoint.sh` script offers a range of commands to start services or
 run commands. The full list of commands can be seen in the script. The
 pattern to run a command is
-`docker-compose run <container-name> <entrypoint-command> <...args>`
+`docker compose run <container-name> <entrypoint-command> <...args>`
 
 The following are some examples:
 
-* Run tests                          `docker-compose exec iaso ./manage.py test`
-* Check type hints                   `docker-compose exec iaso mypy .`
-* Create a shell inside the container`docker-compose run iaso bash`
-* Run a shell command                `docker-compose run iaso eval curl http://google.com`
-* Run Django manage.py               `docker-compose exec iaso ./manage.py help`
-* Launch a python shell              `docker-compose exec iaso ./manage.py shell`
-* Launch a postgresql shell          `docker-compose exec iaso ./manage.py dbshell`
-* Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
-* Apply pending ORM migrations       `docker-compose exec iaso ./manage.py migrate`
-* Show ORM migrations                `docker-compose exec iaso ./manage.py showmigrations`
-* Complie SCSS files for templates   `docker-compose exec iaso ./manage.py compilescss`
-* To run a background worker         `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
+* Run tests                          `docker compose exec iaso ./manage.py test`
+* Check type hints                   `docker compose exec iaso mypy .`
+* Create a shell inside the container`docker compose run iaso bash`
+* Run a shell command                `docker compose run iaso eval curl http://google.com`
+* Run Django manage.py               `docker compose exec iaso ./manage.py help`
+* Launch a python shell              `docker compose exec iaso ./manage.py shell`
+* Launch a postgresql shell          `docker compose exec iaso ./manage.py dbshell`
+* Create pending ORM migration files `docker compose exec iaso ./manage.py makemigrations`
+* Apply pending ORM migrations       `docker compose exec iaso ./manage.py migrate`
+* Show ORM migrations                `docker compose exec iaso ./manage.py showmigrations`
+* Complie SCSS files for templates   `docker compose exec iaso ./manage.py compilescss`
+* To run a background worker         `docker compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
 
 Containers and services
 -----------------------
@@ -354,27 +370,27 @@ All the container definitions for development can be found in the
 
 You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
-### note : docker-compose run VS docker-compose exec
+### note : docker compose run VS docker compose exec
 
 Run launch a new docker container, Exec launch a command in the existing container.
 
 So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that it is faster
-but the containers must already be running (launched manually) 
+but the containers must already be running (launched manually)
 
 `run` will launch the entrypoint.sh script but exec will take a bash command to run which is why if you want
 to run the django manage.py you will need to use `run iaso manage` but `exec iaso ./manage.py`
 
 Also take care that `run` unless evoked with the `--rm` will leave you with a lot of left over containers that take up
-disk space and need to be cleaned occasionally with `docker-compose rm` to reclaim disk space.
+disk space and need to be cleaned occasionally with `docker compose rm` to reclaim disk space.
 
 Enketo
 ------
 
-To submit and edit existing form submission from the browser, an Enketo service is needed. 
+To submit and edit existing form submission from the browser, an Enketo service is needed.
 
-To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker-compose with both files.
+To enable the Enketo editor in your local environment, include the additional docker compose configuration file for Enketo. Do so by invoking docker compose with both files.
 ```
-docker-compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
+docker compose -f docker-compose.yml -f docker/docker-compose-enketo.yml up
 ```
 
 No additional configuration is needed. The first time the docker image is launched, it will download dependencies and do a build witch may take a few minutes. Subsequents launches are faster.
@@ -389,23 +405,23 @@ Database restore and dump
 
 To create a copy of your iaso database in a file (dump) you can use:
 ``` bash
-docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
+docker compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
 ```
 
 The dumpfile will be created on your host. The `-Fc` meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use `-Fp`
 
 ### To restore a dump file that you made or that somebody sent you
-0. Ensure the database server is running but not the rest. Close your docker-compose, ensure it is down with `docker-compose down`
-1. Launch the database server with `docker-compose up db` 
+0. Ensure the database server is running but not the rest. Close your docker compose, ensure it is down with `docker compose down`
+1. Launch the database server with `docker compose up db`
 2. Choose a name for you database. In this example  it will be `iaso5`
-   You can list existing databases using `docker-compose exec db psql -U postgres -l`
-3. Create the database `docker-compose exec db psql -U postgres -c "create database iaso5"`
+   You can list existing databases using `docker compose exec db psql -U postgres -l`
+3. Create the database `docker compose exec db psql -U postgres -c "create database iaso5"`
 4. Restore the dump file to put the data in your database
 ``` bash
-cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
+cat iaso.dump | docker compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
 5. Edit your `.env` file to use to this database in the `RDS_DB_NAME` settings.
-6. Start Iaso. Cut your docker-compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker-compose
+6. Start Iaso. Cut your docker compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker compose
 
 Health
 ------
@@ -413,11 +429,11 @@ On the /health/ url you can find listed the Iaso version number, environment, de
 
 Local DHIS2
 -----------
-Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
+Experimental. For development if you need a local dhis2 server, you can spin up one in your docker compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
-Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
+Replace your invocations of `docker compose` by `docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
 ``` bash
-docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
+docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
 The DHIS2 will be available on your computer on http://localhost:8080 and is reachable from Iaso as http://dhis2:8080. The login and password are admin / district. If you use it as an import source do not set a trailing /
@@ -434,20 +450,20 @@ Download the file, stop all the docker, remove the postgres database directory, 
 
 ``` bash
 wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
-docker-compose down
+docker compose down
 sudo rm ../pgdata-dhis2 -r
-docker-compose up db_dhis2
-zcat dhis2-db-sierra-leone.sql.gz| docker-compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
-docker-compose up
+docker compose up db_dhis2
+zcat dhis2-db-sierra-leone.sql.gz| docker compose exec -T db_dhis2 psql -U dhis dhis2 -f /dev/stdin
+docker compose up
 cd Projects/blsq/iaso
-docker-compose up dhis2 db_dhis2
+docker compose up dhis2 db_dhis2
 ```
 
 ### Setting up Single Sign On (SSO) with you local DHIS2
 If you want to test the feature with your local dhis2 you can use the following step. This assumes you are running everything in Dockers
 
 0. Launch DHIS2 with iaso within docker compose
-`docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
+`docker compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
  With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
 1. These step assume you have loaded your DHIS2 with the play test data, but it's not mandatory. To see how to do it, look at previous section
 2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2
@@ -480,25 +496,32 @@ If you want to test the feature with your local dhis2 you can use the following 
 9. Try the feature by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&response_type=code
 
 
+Local ClamAV
+-----------
+[ClamAV](https://docs.clamav.net/) is an open-source antivirus that can be used by Iaso to scan files that are uploaded by users.
+
+This feature is experimental. For development, if you need a local ClamAV server, you can start one up in your docker compose by using the `docker/docker-compose-clamav.yml ` configuration file.
+
+Replace your invocations of `docker compose` by `docker compose -f docker-compose.yml -f docker/docker-compose-clamav.yml`. You need to specify both config files. e.g. to launch the cluster:
+``` bash
+docker compose -f docker-compose.yml -f docker/docker-compose-clamav.yml up
+```
+
+To start scanning files, you'll need to set two environment variables in Iaso:
+- `CLAMAV_ACTIVE` set to `True`, in order to tell the backend that file uploads must be scanned (default = `False`)
+- `CLAMAV_FQDN` set to the address that Iaso can use to reach your ClamAV instance (`localhost` in a local IASO installation without Docker, `clamav` in a IASO installation with Docker)
+
+Iaso and ClamAV will communicate over the default ClamAV port, `3310`, through a TCP socket.
+If you need to use another port, you'll need to edit the `docker/docker-compose-clamav.yml` file and provide the new port to Iaso through the `CLAMAV_PORT` environment variable.
+
+
 Test and serving forms from Iaso mobile application
 -----------
 
 To test your forms on the mobile app follow those steps:
 
 ### 1 - Setup Ngrok
-Download and setup Ngrok on https://ngrok.com/. Once Ngrok installed and running you must add your ngrok server url
-in ```settings.py``` by adding the following line :
-``` python
-FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "YOUR_NGROK_SERVER_URL")
-```
-
-After this step you have to import  ```settings.py``` and add ```FILE_SERVER_URL``` to ```forms.py``` in iaso/models/forms as
-shown on the following lines :
-
-``` python
-"file": settings.FILE_SERVER_URL + self.file.url,
-"xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None
-```
+Download and setup Ngrok on https://ngrok.com/. Start it with `ngrok http 8081`.
 
 ### 2 - Set up the mobile app
 Once Ngrok installed and running you have to run the app in developer mode (tap 10 times on the Iaso icon at start ) and connect the mobile app to your server
@@ -511,30 +534,11 @@ Testing and service forms from Iaso App In Android Studio Emulator
 
 In this case you don't need Ngrok, the emulator considers that `10.0.2.2` points to `127.0.0.1` on the computer running the emulator, so if you have for example your django server running on `http://127.0.0.1:8001` (In android emulator this becomes `http://10.0.2.2:8001`
 
-You can just add at the end of `hat/settings.py` the following :
-
-``` python
-FILE_SERVER_URL = "http://10.0.2.2:8001"
-```
-
-And then in `iaso/models/forms.py` in the import section, add :
-```
-from django.conf import settings
-```
-
-And then in the `as_dict` method of `FormVersion` model, add the `settigs.FILE_SERVER_URL +` part
-
-So that it becomes like :
-
-``` python
-"file": settings.FILE_SERVER_URL + self.file.url,
-"xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None,
-```
 
 SSO with DHIS2
 --------------------------
 You can use DHIS2 as identity provider to login on Iaso. It requires a little configuration on DHIS2 and Iaso in order
-to achieve that. 
+to achieve that.
 
 ### 1 - Setup OAuth2 clients in DHIS2
 In DHIS2 settings you must set up your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
@@ -546,8 +550,8 @@ Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_client
 For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/
 
 ### 2 - Configure the OAuth2 connection in Iaso
-In iaso you must set up your dhis2 server credentials. 
-To do so, go to ```/admin``` and setup as follows :  
+In iaso you must set up your dhis2 server credentials.
+To do so, go to ```/admin``` and setup as follows :
 
 * Name: {your_dhis2_client_id} ( It must be exactly as it is in your DHIS2 client_id and DHIS2 Redirect URIs)
 * Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )
@@ -610,7 +614,7 @@ To do so:
  * place the repository in the parent repository of Iaso `../bluesquare-components/`
  * install the dependency for bluesquare-component by running npm install in its directory
  * set the environment variable `LIVE_COMPONENTS=true`
- * start your docker-compose
+ * start your docker compose
 
 ``` bash
 cd ..
@@ -618,7 +622,7 @@ git clone git@github.com:BLSQ/bluesquare-components.git
 cd  bluesquare-components
 npm install
 cd ../iaso
-LIVE_COMPONENTS=true docker-compose up
+LIVE_COMPONENTS=true docker compose up
 ```
 
 This way the page will reload automatically if you make a change to the bluesquare-components code.
@@ -641,13 +645,37 @@ APP_TITLE="<app_title>"
 FAVICON_PATH="<path_in_static_folder>"
 LOGO_PATH="<path_in_static_folder>"
 SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
+HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 ```
 
 > **note**
 >
 > Those settings are optional and are using a default value if nothing is provided
 
+## Superset Dashboard Integration
 
+Iaso supports embedding [Superset](https://superset.apache.org/) dashboards for advanced analytics and reporting. To configure this integration, you need to set up the following environment variables:
+
+``` bash
+SUPERSET_URL="https://your-superset-instance.com"
+SUPERSET_ADMIN_USERNAME="admin_username"
+SUPERSET_ADMIN_PASSWORD="admin_password"
+```
+
+These credentials must be for an **admin** user of your Superset instance, as they are used by `iaso/api/superset.py` to create guest tokens for dashboard embedding.
+
+### Creating Embedded Superset Pages
+
+Once the environment variables are configured, you can create embedded Superset dashboards through the Django admin interface (for the moment, setting it up via the `/dashboard/pages` is not fully supported yet):
+
+1. Go to `/admin/iaso/page/` in your Iaso instance
+2. Create a new Page with:
+   - **Type**: "Superset dashboard"
+   - **Superset dashboard ID**: The ID of the dashboard in your Superset instance
+   - **Superset dashboard UI config**: Optional JSON configuration for UI customization (you can find examples [in the embedded SDK documentation](https://www.npmjs.com/package/@superset-ui/embedded-sdk))
+   - **Slug**: A unique URL slug for accessing the embedded dashboard
+
+The embedded dashboard will be accessible at `/pages/{your-slug}/` and will use guest token authentication for secure access.
 
 
 Contributing
@@ -661,7 +689,7 @@ system requirements section for the most up-to-date information.
 Code formatting
 ---------------
 
-We have adopted Black [](https://github.com/psf/black) as our code
+We have adopted ruff [](https://github.com/astral-sh/ruff) as our code
 formatting tool. Line length is 120.
 
 The easiest way to use it is to install the pre-commit hook:
@@ -680,62 +708,22 @@ Tests and linting
 For the Python backend, we use the Django builtin test framework. Tests can be executed with
 
 ``` bash
-docker-compose exec iaso ./manage.py test
+docker compose exec iaso ./manage.py test
 ```
-
-Translations
-------------
-
-There are a some user facing text in the Django side, and they require translations. For examples the login and reset password email and their page.
-These are handled separately and differently from the JS frontend translations, and are storer in the folder `hat/locale/`
-
-We only require translations for the html and e-mail template.
-not the python code (e.g. strings on model or the admin), stuff that the end users are going to see directly.
-
-When modifying or adding new strings that require translation, use the following command to
-regenerate the translations file:
-
-```manage.py makemessages --locale=fr --extension txt --extension html```
-
-This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
-translate.
-
-If you get an error about `/opt/app` or cannot accessing docker:
-Change in settings.py LOCALE_PATHS to
-``` python
-LOCALE_PATHS = [ "hat/locale/"]
-```
-
-And specify --ignore
-```bash
-makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
-```
-
-
-After updating it with the translation you need to following command to have
-them reflected in the interface:
-
-```manage.py compilemessages```
-
-This is done automatically when you launch the docker image so if new translations
-you just pulled in git don't appear, relaunch the iaso docker.
-
-
-You do not need to add translation for English as it is the default language, so for now only the French correspondance is needed.
 
 
 Code reloading
 --------------
 
 In development the servers will reload when they detect a file
-change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section. 
+change, either in Python or Javascript. If you need reloading for the bluesquare-components code, see the "Live Bluesquare Components" section.
 
 Troubleshooting
 ---------------
 
 If you need to restart everything
 ``` bash
-docker-compose stop && docker-compose start
+docker compose stop && docker compose start
 ```
 
 If you encounter problems, you can try to rebuild everything from
@@ -743,13 +731,13 @@ scratch.
 
 ``` bash
 # kill containers
-docker-compose kill
+docker compose kill
 # remove `iaso` container
-docker-compose rm -f iaso
+docker compose rm -f iaso
 # build containers
-docker-compose build
+docker compose build
 # start-up containers
-docker-compose up
+docker compose up
 ```
 
 SASS & SCSS
@@ -758,7 +746,7 @@ Scss files are only used to generate the style of the DJango Templates.
 It is not longer part of the webpack app.
 While editing scss files you have to compile it manually with the command:
 
-`docker-compose exec iaso ./manage.py compilescss`
+`docker compose exec iaso ./manage.py compilescss`
 
 If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
 
@@ -786,7 +774,7 @@ Recommended:
   * Docker
 
 External service dependencies:
-* PostgreSQL Server > 10.
+* PostgreSQL Server ≥ 16
 * Enketo > 4.0
 * Access to an SMTP server to send e-mail.
 
@@ -806,14 +794,13 @@ the url. When setting a new server, got to the admin and modify the example.com
 site to point to your server url.
 You can do so at `/admin/sites/site/1/change/`
 
-Some part of the code use DNS_DOMAIN environment variable, please fill it 
+Some part of the code use DNS_DOMAIN environment variable, please fill it
 with the same value.
 
 Please also check the `# Email configuration` section in settings.py and check
 everything is set correctly. Notably the sending address. See the
 [sending email](https://docs.djangoproject.com/en/4.1/topics/email/) section
-in the Django documentation for the possible backends and tweak. 
-`
+in the Django documentation for the possible backends and tweak.
 
 Deployment on AWS Elastic Beanstalk
 ====================================
@@ -839,10 +826,10 @@ These are actually exactly the same steps we use on AWS.
 During local development, by default, the Javascript and CSS will be loaded from
 a webpack server with live reloading of the code. To locally test the compiled
 version as it is in production ( minified and with the same compilation option).
-You can launch docker-compose with the `TEST_PROD=true` environment variable
+You can launch docker compose with the `TEST_PROD=true` environment variable
 set.
 
-e.g `TEST_PROD=true docker-compose up`
+e.g `TEST_PROD=true docker compose up`
 
 This can be useful to reproduce production only bugs. Please also test with this
 configuration whenever you modify webpack.prod.js to validate your changes.
@@ -862,7 +849,7 @@ These functions are marked by the decorator `@task_decorator`. When called, they
 In local development, you can run a worker by using the command:
 
 ```
-docker-compose run iaso manage tasks_worker
+docker compose run iaso manage tasks_worker
 ```
 
 Alternatively, you can call the url `tasks/run_all` which will run all the pending tasks in queue.
@@ -882,7 +869,7 @@ In production on AWS, we use Elastic Beanstalk workers which use a SQS queue. Th
 
 ## Postgres
 
-This is the one you get when running locally with `docker-compose run iaso manage tasks_worker`. Instead of enqueuing the tasks to SQS, we enqueue them to our postgres server.
+This is the one you get when running locally with `docker compose run iaso manage tasks_worker`. Instead of enqueuing the tasks to SQS, we enqueue them to our postgres server.
 
 Our `tasks_worker` process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using PostgreSQL NOTIFY/LISTEN features).
 

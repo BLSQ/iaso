@@ -1,13 +1,14 @@
-import mock
+from unittest import mock
+
 from django.contrib.auth.models import User
 from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
-from iaso.api.microplanning import TeamSerializer, PlanningSerializer, AssignmentSerializer
-from iaso.models import Account, DataSource, SourceVersion, OrgUnit, Form, OrgUnitType
-from iaso.models.microplanning import TeamType, Team, Planning, Assignment
-from iaso.test import IasoTestCaseMixin, APITestCase
+from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
+from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
+from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.test import APITestCase, IasoTestCaseMixin
 
 
 class TeamTestCase(APITestCase, IasoTestCaseMixin):
@@ -269,7 +270,8 @@ class TeamAPITestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
@@ -504,7 +506,7 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(ash_ketchum)
 
         # Fetch the list of teams without any type filter
-        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
 
@@ -538,7 +540,7 @@ class TeamAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         # Fetch the list of teams without any project filter
-        response = self.client.get(f"/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/microplanning/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
 
@@ -585,11 +587,19 @@ class PlanningTestCase(APITestCase):
         cls.form2 = Form.objects.create(name="form2")
         cls.form1.projects.add(project1)
         cls.form2.projects.add(project1)
-        cls.planning = Planning.objects.create(project=project1, name="planning1", team=cls.team1, org_unit=org_unit)
+        cls.planning = Planning.objects.create(
+            project=project1,
+            name="planning1",
+            team=cls.team1,
+            org_unit=org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-10",
+        )
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/microplanning/plannings/", format="json")
+        with self.assertNumQueries(5):
+            response = self.client.get("/api/microplanning/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
@@ -610,6 +620,7 @@ class PlanningTestCase(APITestCase):
                 "project_details": {
                     "id": self.planning.project.id,
                     "name": self.planning.project.name,
+                    "color": self.planning.project.color,
                 },
                 "org_unit": self.planning.org_unit_id,
                 "org_unit_details": {
@@ -620,8 +631,8 @@ class PlanningTestCase(APITestCase):
                 "forms": [],
                 "description": "",
                 "published_at": None,
-                "started_at": None,
-                "ended_at": None,
+                "started_at": "2025-01-01",
+                "ended_at": "2025-01-10",
             },
             r,
         )
@@ -707,6 +718,56 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(mod.past_value[0]["forms"], [])
         self.assertEqual(mod.new_value[0]["forms"], [self.form1.id, self.form2.id])
 
+    def test_patch_api__throw_error_if_published_and_no_started_date(self):
+        planning = Planning.objects.create(
+            name="Planning to modify",
+            project=self.project1,
+            org_unit=self.org_unit,
+            team=self.team1,
+        )
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "published_at": "2022-02-02",
+            "ended_at": "2022-03-03",
+        }
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        print(r)
+        self.assertIsNotNone(r["started_at"])
+        self.assertEqual(r["started_at"][0], "publishedWithoutStartDate")
+
+    def test_patch_api__throw_error_if_published_and_no_ended_date(self):
+        planning = Planning.objects.create(
+            name="Planning to modify",
+            project=self.project1,
+            org_unit=self.org_unit,
+            team=self.team1,
+        )
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+        )
+        self.client.force_authenticate(user_with_perms)
+        data = {
+            "name": "My Planning",
+            "forms": [self.form1.id, self.form2.id],
+            "team": self.team1.id,
+            "team_details": {"id": self.team1.id, "name": self.team1.name},
+            "published_at": "2022-02-02",
+            "started_at": "2022-03-03",
+        }
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
+        r = self.assertJSONResponse(response, 400)
+        print(r)
+        self.assertIsNotNone(r["ended_at"])
+        self.assertEqual(r["ended_at"][0], "publishedWithoutEndDate")
+
     def test_create_api(self):
         user_with_perms = self.create_user_with_profile(
             username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
@@ -765,7 +826,12 @@ class AssignmentAPITestCase(APITestCase):
         OrgUnit.objects.create(version=version, parent=root_org_unit, name="child2")
 
         cls.planning = Planning.objects.create(
-            project=project1, name="planning1", team=cls.team1, org_unit=root_org_unit
+            project=project1,
+            name="planning1",
+            team=cls.team1,
+            org_unit=root_org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-10",
         )
         Assignment.objects.create(
             planning=cls.planning,
@@ -916,7 +982,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(deleted_assignment.deleted_at, None)
         self.assertEqual(Modification.objects.count(), 1)
 
-        response = self.client.delete("/api/microplanning/assignments/{}/".format(deleted_assignment.id))
+        response = self.client.delete(f"/api/microplanning/assignments/{deleted_assignment.id}/")
 
         self.assertJSONResponse(response, 204)
         deleted_assignment.refresh_from_db()
@@ -952,20 +1018,48 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_query_mobile(self):
         p = Planning.objects.create(
-            project=self.project1, name="planning2", team=self.team1, org_unit=self.root_org_unit
+            project=self.project1,
+            name="planning2",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-10",
+            published_at="2025-01-01",
         )
         p.assignment_set.create(org_unit=self.child1, user=self.user)
         p.assignment_set.create(org_unit=self.child2, user=self.user)
 
-        Planning.objects.create(project=self.project1, name="planning3", team=self.team1, org_unit=self.root_org_unit)
+        # This one should not be returned because started_at is None
+        p4 = Planning.objects.create(
+            project=self.project1,
+            name="planning4",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at=None,
+            ended_at="2025-01-10",
+        )
+        p4.assignment_set.create(org_unit=self.child3, user=self.user)
+        p4.assignment_set.create(org_unit=self.child4, user=self.user)
+
+        # This one should not be returned because ended_at is None
+        p5 = Planning.objects.create(
+            project=self.project1,
+            name="planning5",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-10",
+            ended_at=None,
+        )
+        p5.assignment_set.create(org_unit=self.child3, user=self.user)
+        p5.assignment_set.create(org_unit=self.child4, user=self.user)
 
         plannings = Planning.objects.filter(assignment__user=self.user).distinct()
         Planning.objects.update(published_at=now())
-        self.assertEqual(plannings.count(), 2)
+        self.assertEqual(plannings.count(), 4)
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        response = self.client.get("/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         plannings = r["plannings"]
         self.assertEqual(len(plannings), 2)
@@ -1003,7 +1097,7 @@ class AssignmentAPITestCase(APITestCase):
         user = self.create_user_with_profile(username="user2", account=self.account)
         self.client.force_authenticate(user)
 
-        response = self.client.get(f"/api/mobile/plannings/", format="json")
+        response = self.client.get("/api/mobile/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["plannings"]), 0)
 
@@ -1025,5 +1119,5 @@ class AssignmentAPITestCase(APITestCase):
         response = self.client.patch(f"/api/mobile/plannings/{self.planning.id}/", format="json")
         self.assertEqual(response.status_code, 403)
 
-        response = self.client.post(f"/api/mobile/plannings/", data={}, format="json")
+        response = self.client.post("/api/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)

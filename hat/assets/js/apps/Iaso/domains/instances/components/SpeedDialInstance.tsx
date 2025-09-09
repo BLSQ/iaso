@@ -1,15 +1,21 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
 
 import { LoadingSpinner } from 'bluesquare-components';
-import SpeedDialInstanceActions from './SpeedDialInstanceActions';
-import { userHasPermission } from '../../users/utils';
+import { UseMutateAsyncFunction } from 'react-query';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { Instance } from '../types/instance';
+import {
+    useCheckUserHasWritePermissionOnOrgunit,
+    useCurrentUser,
+} from '../../../utils/usersUtils';
+import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
+import { userHasPermission } from '../../users/utils';
+import {
+    useDeleteInstance,
+    useRestoreInstance,
+} from '../hooks/requests/useDeleteInstance';
 import {
     useBaseActions,
     useDeleteAction,
@@ -19,12 +25,9 @@ import {
     useLockAction,
 } from '../hooks/speedDialActions';
 import { useGetFormDefForInstance } from '../hooks/speeddials';
-import {
-    useDeleteInstance,
-    useRestoreInstance,
-} from '../hooks/requests/useDeleteInstance';
-import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
-import * as Permission from '../../../utils/permissions';
+import { ReassignInstancePayload } from '../hooks/useReassignInstance';
+import { Instance } from '../types/instance';
+import SpeedDialInstanceActions from './SpeedDialInstanceActions';
 
 type Props = {
     currentInstance: Instance;
@@ -32,6 +35,12 @@ type Props = {
         instanceId: string;
         referenceFormId?: string;
     };
+    reassignInstance: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >;
 };
 
 const SpeedDialInstance: FunctionComponent<Props> = props => {
@@ -43,16 +52,13 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
             is_instance_of_reference_form: isInstanceOfReferenceForm,
             is_reference_instance: isReferenceInstance,
         },
+        reassignInstance,
     } = props;
     const { data: formDef } = useGetFormDefForInstance(formId);
     const currentUser = useCurrentUser();
     const hasfeatureFlag = hasFeatureFlag(
         currentUser,
         SHOW_LINK_INSTANCE_REFERENCE,
-    );
-    const hasOrgUnitPermission = userHasPermission(
-        Permission.ORG_UNITS,
-        currentUser,
     );
 
     const hasUpdateSubmissionPermission = userHasPermission(
@@ -67,6 +73,9 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         altitude: formAltitude,
     } = currentInstance ?? {};
 
+    const hasOrgUnitPermission = useCheckUserHasWritePermissionOnOrgunit(
+        orgUnit?.org_unit_type_id,
+    );
     const isGpsEqual =
         hasOrgUnitPermission !== null &&
         formLat !== null &&
@@ -77,9 +86,13 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         formAltitude === orgUnit?.altitude;
 
     const isLinkActionEnabled =
-        hasOrgUnitPermission && hasfeatureFlag && isInstanceOfReferenceForm;
+        hasfeatureFlag && isInstanceOfReferenceForm && hasOrgUnitPermission;
 
-    const baseActions = useBaseActions(currentInstance, formDef);
+    const baseActions = useBaseActions(
+        currentInstance,
+        reassignInstance,
+        formDef,
+    );
 
     const editLocationWithInstanceGps =
         useEditLocationWithGpsAction(currentInstance);
@@ -118,7 +131,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const actions = [...baseActions, deleteRestore];
 
-    if (!isGpsEqual && userHasPermission(Permission.ORG_UNITS, currentUser)) {
+    if (!isGpsEqual && hasOrgUnitPermission) {
         actions.unshift(editLocationWithInstanceGps);
     }
 

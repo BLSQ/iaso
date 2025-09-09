@@ -84,7 +84,6 @@ export type Settings = {
 
 type Props = {
     settings: Settings;
-    // eslint-disable-next-line no-unused-vars
     handleChangeSettings: (key: string) => void;
 };
 

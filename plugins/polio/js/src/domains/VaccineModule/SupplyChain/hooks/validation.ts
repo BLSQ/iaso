@@ -16,14 +16,69 @@ yup.addMethod(
                 const valuesArray = Array.isArray(value)
                     ? value
                     : value
-                        .split(',')
-                        .map((v: string | number) => `${v}`.trim());
+                          .split(',')
+                          .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.lotNumberError);
                 }
             }
 
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.string,
+    'PONumberHasNoPrefix',
+    function PONumberHasNoPrefix(formatMessage) {
+        return this.test('PONumberHasNoPrefix', '', (value, context) => {
+            const { path, createError } = context;
+            let errorMessage;
+            if (value) {
+                if (Number.isNaN(parseInt(value.charAt(0), 10))) {
+                    errorMessage = formatMessage(MESSAGES.PoNumberNoPrefix);
+                }
+            }
+
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
+yup.addMethod(
+    yup.string,
+    'hasUniquePONumber',
+    function hasUniquePONumber(formatMessage, dictKey) {
+        return this.test('hasUniquePONumber', '', (value, context) => {
+            // @ts-ignore
+            const { path, createError, from: parents } = context;
+            const pathIndex = parseInt(path.split('[')[1].split(']')[0], 10);
+            const siblingsPONumbers = parents
+                .filter(parent => Object.keys(parent.value).includes(dictKey))
+                .map(parent => parent.value[dictKey])
+                .flat()
+                .filter((_parent, index) => {
+                    return pathIndex !== index;
+                })
+                .map(sibling => sibling.po_number);
+
+            let errorMessage;
+            if (value && siblingsPONumbers.includes(value)) {
+                errorMessage = formatMessage(MESSAGES.uniquePoNumberWarning);
+            }
             if (errorMessage) {
                 return createError({
                     path,
@@ -65,7 +120,6 @@ const useVrfShape = () => {
         quantities_ordered_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -112,6 +166,7 @@ const useVrfShape = () => {
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         comments: yup.string().nullable(),
+        document: yup.mixed().nullable(),
     });
 };
 
@@ -126,6 +181,10 @@ const usePreAlertShape = () => {
         po_number: yup
             .string()
             .nullable()
+            // @ts-ignore
+            .PONumberHasNoPrefix(formatMessage)
+            // @ts-ignore
+            .hasUniquePONumber(formatMessage, 'pre_alerts')
             .required(formatMessage(MESSAGES.requiredField)),
         estimated_arrival_time: yup
             .date()
@@ -138,6 +197,7 @@ const usePreAlertShape = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        file: yup.mixed().nullable(),
     });
 };
 const useArrivalReportShape = () => {
@@ -151,6 +211,10 @@ const useArrivalReportShape = () => {
         po_number: yup
             .string()
             .nullable()
+            // @ts-ignore
+            .PONumberHasNoPrefix(formatMessage)
+            // @ts-ignore
+            .hasUniquePONumber(formatMessage, 'arrival_reports')
             .required(formatMessage(MESSAGES.requiredField)),
         doses_per_vial: yup
             .number()

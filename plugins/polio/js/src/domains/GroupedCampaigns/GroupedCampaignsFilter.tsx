@@ -1,13 +1,12 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid } from '@mui/material';
+import React, { FunctionComponent, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
 
 type Params = PaginationParams & {

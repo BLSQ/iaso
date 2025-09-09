@@ -88,34 +88,28 @@ export const useDuplicationTableColumns = (): Column[] => {
                     const { entity1, entity2, ignored, merged } =
                         settings.row.original;
                     let retVal = (
-                        <>
-                            <IconButton
-                                url={`/${baseUrls.entityDuplicateDetails}/entities/${entity1.id},${entity2.id}`}
-                                overrideIcon={CompareArrowsIcon}
-                                tooltipMessage={MESSAGES.seeDetails}
-                            />
-                        </>
+                        <IconButton
+                            url={`/${baseUrls.entityDuplicateDetails}/entities/${entity1.id},${entity2.id}`}
+                            overrideIcon={CompareArrowsIcon}
+                            tooltipMessage={MESSAGES.seeDetails}
+                        />
                     );
 
                     if (ignored) {
                         retVal = (
-                            <>
-                                <IconButton
-                                    color="disabled"
-                                    overrideIcon={RemoveCircleOutlineIcon}
-                                    tooltipMessage={MESSAGES.alreadyIgnored}
-                                />
-                            </>
+                            <IconButton
+                                color="disabled"
+                                overrideIcon={RemoveCircleOutlineIcon}
+                                tooltipMessage={MESSAGES.alreadyIgnored}
+                            />
                         );
                     } else if (merged) {
                         retVal = (
-                            <>
-                                <IconButton
-                                    color="disabled"
-                                    overrideIcon={MergeIcon}
-                                    tooltipMessage={MESSAGES.alreadyMerged}
-                                />
-                            </>
+                            <IconButton
+                                color="disabled"
+                                overrideIcon={MergeIcon}
+                                tooltipMessage={MESSAGES.alreadyMerged}
+                            />
                         );
                     }
 

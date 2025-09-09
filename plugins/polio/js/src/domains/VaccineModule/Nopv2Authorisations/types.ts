@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 import { NameAndId } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 

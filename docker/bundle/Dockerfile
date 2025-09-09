@@ -2,8 +2,8 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:20.13.1-bullseye-slim as npmbuilder
-ENV PROJECT_ROOT /opt
+FROM node:22.18.0-bullseye-slim AS npmbuilder
+ENV PROJECT_ROOT=/opt
 
 WORKDIR /opt/app
 
@@ -24,7 +24,7 @@ COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@10.5.2
+RUN npm install -g npm@10.9.3
 
 RUN rm -rf node_modules
 RUN npm cache clean --force
@@ -42,7 +42,7 @@ RUN ls ./hat/assets
 
 
 ########### Django Builder ########################################################################
-FROM python:3.9 as base
+FROM python:3.9 AS base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
     gettext \
@@ -61,7 +61,7 @@ COPY . /opt/app
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
 RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
 
-FROM base as dev
+FROM base AS dev
 # Tell iaso backend to Use the assets build by webpack
 # This stage is used by the test_cypres github action. Using --target dev
 ENV TEST_PROD=1
@@ -73,7 +73,7 @@ ENTRYPOINT ["./entrypoint.sh"]
 # Needed for github action since we can't pass a command directly
 CMD ["manage", "testserver", "--no-input", "iaso/fixtures/user.yaml", "--addrport", "0.0.0.0:8081"]
 
-FROM base as prod
+FROM base AS prod
 USER root
 # Only install gunicorn for production
 RUN pip install gunicorn

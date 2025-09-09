@@ -10,26 +10,26 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import base64
-import hashlib
-import html
 import importlib
 import os
-import re
 import sys
-import urllib.parse
+
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
+
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 from requests.exceptions import HTTPError
+from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
+from sentry_sdk.integrations.redis import RedisIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
+
 
 MAINTENANCE_MODE = os.environ.get("MAINTENANCE_MODE", "false").lower() == "true"
 
@@ -60,6 +60,15 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
+
+# Storage provider configuration
+STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
+if USE_S3:
+    STORAGE_PROVIDER = "s3"
+elif USE_AZURE_STORAGE:
+    STORAGE_PROVIDER = "azure"
+
 # Specifying the `STATIC_URL` means that the assets are available at that URL
 #
 # Currently WFP is deploying this way, where the assets are put on a
@@ -75,6 +84,12 @@ else:
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
+SENTRY_FRONT_ENABLED = os.environ.get("SENTRY_FRONT_ENABLED", "false").lower() == "true"
+AVAILABLE_LANGUAGES = os.environ.get("AVAILABLE_LANGUAGES", "en,fr")
+
+PRODUCT_FRUITS_WORKSPACE_CODE = os.environ.get("PRODUCT_FRUITS_WORKSPACE_CODE", "")
+
+LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
 
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
@@ -88,6 +103,7 @@ DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() 
 CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
 CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
+ENABLE_ANALYTICS = os.environ.get("ENABLE_ANALYTICS", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -111,6 +127,7 @@ ENKETO = {
     "ENKETO_DEV": os.getenv("ENKETO_DEV"),
     "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
     "ENKETO_URL": os.getenv("ENKETO_URL"),
+    "ENKETO_SIGNING_SECRET": os.getenv("ENKETO_SIGNING_SECRET", os.getenv("SECRET_KEY")),
     "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
@@ -207,8 +224,16 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
+ENABLE_GZIP = os.environ.get("ENABLE_GZIP", "false").lower() == "true"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+]
+if ENABLE_GZIP:
+    MIDDLEWARE += [
+        "django.middleware.gzip.GZipMiddleware",
+    ]
+MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
 ]
@@ -235,7 +260,8 @@ ROOT_URLCONF = "hat.urls"
 
 if ENABLE_CORS:
     CORS_ORIGIN_ALLOW_ALL = True
-    CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+    # name used in the new version of django-cors-header, for forward compat
+    CORS_ALLOW_ALL_ORIGINS = True
     CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [
@@ -258,6 +284,10 @@ TEMPLATES = [
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
                 "hat.common.context_processors.theme",
+                "hat.common.context_processors.sentry_config",
+                "hat.common.context_processors.product_fruits_config",
+                "hat.common.context_processors.learn_more_url",
+                "hat.common.context_processors.available_languages",
             ]
         },
     }
@@ -274,10 +304,6 @@ DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
 DB_PORT = os.environ.get("RDS_PORT", 5432)
 SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
-print(
-    "DB_NAME",
-    DB_NAME,
-)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
@@ -312,7 +338,8 @@ elif os.environ.get("DB_READONLY_USERNAME"):
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
+        # type: ignore
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
@@ -356,12 +383,20 @@ LANGUAGES = (
 )
 
 LOCALE_PATHS = [
-    "/var/app/current/hat/locale/",
-    "/opt/app/hat/locale/",
-    "hat/locale/",
-    "/opt/app/iaso/locale/",
-    "iaso/locale/",
+    os.path.join(BASE_DIR, "hat/locale/"),
+    os.path.join(BASE_DIR, "iaso/locale/"),
 ]
+
+if os.path.exists("/var/app"):
+    LOCALE_PATHS = [
+        "/var/app/current/hat/locale/",
+        "/opt/app/hat/locale/",
+    ] + LOCALE_PATHS
+
+if os.path.exists("/opt/app"):
+    LOCALE_PATHS = [
+        "/opt/app/iaso/locale/",
+    ] + LOCALE_PATHS
 
 TIME_ZONE = "UTC"
 
@@ -412,9 +447,14 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 
-SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
+    "TOKEN_OBTAIN_SERIALIZER": "iaso.serializers.CustomTokenObtainPairSerializer",
+}
 
 AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
@@ -439,9 +479,13 @@ if USE_S3:
     else:
         STATIC_LOCATION = "iasostatics"
         STATICFILES_STORAGE = "iaso.storage.StaticStorage"
-        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (
+            AWS_STORAGE_BUCKET_NAME,
+            STATIC_LOCATION,
+        )
 
-    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
+    # subdirectories will depend on field
+    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
 
     if S3_ENDPOINT_URL:
         AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
@@ -454,6 +498,55 @@ if USE_S3:
         print(" MEDIA_URL", MEDIA_URL)
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+elif USE_AZURE_STORAGE:
+    # Azure Blob Storage Configuration
+    #
+    # Environment variables needed for Azure Storage:
+    # - AZURE_STORAGE_ACCOUNT_NAME: Your Azure Storage account name
+    # - AZURE_STORAGE_ACCOUNT_KEY: Your Azure Storage account key
+    # - AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
+    # - AZURE_CONTAINER_NAME: Container name for general storage (default: "iaso")
+    # - AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
+    # - STATIC_URL: CDN URL for static files (optional, overrides Azure URLs)
+    #
+    # Storage container and folder structure:
+    # - Single container: "iaso" (or AZURE_CONTAINER_NAME)
+    # - Static files: stored in "static/" folder within the container
+    # - Media files: stored in "media/" folder within the container
+    #
+    # URL patterns:
+    # - With custom domain: https://yourdomain.com/static/ and https://yourdomain.com/media/
+    # - Without custom domain: https://account.blob.core.windows.net/iaso/static/ and https://account.blob.core.windows.net/iaso/media/
+    # - With CDN: Uses STATIC_URL environment variable
+
+    AZURE_STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
+    AZURE_STORAGE_ACCOUNT_KEY = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
+    AZURE_CONTAINER_NAME = os.environ.get("AZURE_CONTAINER_NAME", "iaso")
+    AZURE_CONNECTION_STRING = os.environ.get("AZURE_CONNECTION_STRING")
+    AZURE_CUSTOM_DOMAIN = os.environ.get("AZURE_CUSTOM_DOMAIN")
+
+    # Azure storage settings
+    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
+    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY
+    AZURE_CONNECTION_STRING = AZURE_CONNECTION_STRING
+    AZURE_CUSTOM_DOMAIN = AZURE_CUSTOM_DOMAIN
+
+    # Static files configuration
+    if CDN_URL:
+        # Use CDN URL if provided
+        STATIC_URL = "//%s/static/" % (CDN_URL)
+    elif AZURE_CUSTOM_DOMAIN:
+        # Use custom domain if provided
+        STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/static/"
+        MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
+    else:
+        # Use Azure Blob Storage URLs (single container with folders)
+        STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/static/"
+        MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/media/"
+
+    # Storage backends
+    STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"
+    DEFAULT_FILE_STORAGE = "iaso.storage.AzureMediaStorage"
 else:
     SERVER_URL = os.environ.get("SERVER_URL", "")
     MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX
@@ -514,8 +607,10 @@ if SENTRY_URL:
         if op == "http.server":
             path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
             # Monitoring endpoints
-            if path.startswith("/_health"):
+            if path and path.startswith("/_health"):
                 return 0
+
+        return traces_sample_rate  # Return default sample rate
 
     ignore_logger("django.security.DisallowedHost")
 
@@ -534,12 +629,23 @@ if SENTRY_URL:
         except (IndexError, KeyError, TypeError):
             return errors_sample_rate
 
+    # Build integrations list conditionally
+    integrations = [DjangoIntegration()]
+
+    if USE_CELERY:
+        integrations.append(CeleryIntegration(monitor_beat_tasks=True))
+
+    # Add Redis integration if using Redis for cache or Celery
+    if CACHE_BACKEND == "django_redis.cache.RedisCache" or USE_CELERY:
+        integrations.append(RedisIntegration())
+
     sentry_sdk.init(
         SENTRY_URL,
+        environment=ENVIRONMENT,  # Use the ENVIRONMENT variable
         traces_sample_rate=traces_sample_rate,
         traces_sampler=sentry_tracer_sampler,
         error_sampler=sentry_error_sampler,
-        integrations=[DjangoIntegration()],
+        integrations=integrations,
         send_default_pii=True,
         release=VERSION,
     )
@@ -564,7 +670,8 @@ elif BACKGROUND_BACKEND == "SQS":
     BEANSTALK_WORKER = IS_BACKGROUND_WORKER  # Used to expose extra URLs
     BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
     BEANSTALK_SQS_URL = os.environ.get(
-        "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
+        "BEANSTALK_SQS_URL",
+        "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue",
     )
     BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 else:
@@ -593,12 +700,18 @@ APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
 LOGO_PATH = os.environ.get("LOGO_PATH", "images/logo.png")
 THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
-THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
+THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 
+# https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/#specifying-authentication-backends
+# When somebody calls `django.contrib.auth.authenticate()`, Django tries authenticating
+# across all of its authentication backends. If the first authentication method fails,
+# Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "iaso.auth.backends.MultiTenantAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -611,7 +724,8 @@ CODE_CHALLENGE = generate_pkce()
 SOCIALACCOUNT_PROVIDERS = {}
 
 WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
-ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False  # for now, only WFP uses social_accounts
+# for now, only WFP uses social_accounts
+ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False
 if WFP_AUTH_CLIENT_ID:
     # Activate WFP login
     # activate the wfp_auth plugin only if needed
@@ -646,6 +760,25 @@ CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localho
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
 
+DRF_NESTED_MULTIPART_PARSER = {
+    "querydict": False,
+}
+
+# Superset dashboard/chart embedding configuration
+SUPERSET_URL = os.environ.get("SUPERSET_URL", None)
+SUPERSET_ADMIN_USERNAME = os.environ.get("SUPERSET_ADMIN_USERNAME", None)
+SUPERSET_ADMIN_PASSWORD = os.environ.get("SUPERSET_ADMIN_PASSWORD", None)
+
+# ClamAV - Antivirus configuration
+CLAMAV_ACTIVE = os.environ.get("CLAMAV_ACTIVE", "false").lower() == "true"
+CLAMAV_FQDN = os.environ.get("CLAMAV_FQDN", "www.some-url.com")  # FQDN, not full URL
+CLAMAV_PORT = os.environ.get("CLAMAV_PORT", "3310")
+CLAMAV_CONFIGURATION = {
+    "address": f"{CLAMAV_FQDN}:{CLAMAV_PORT}",
+    "backend": "clamd",  # Using ClamAV daemon
+    "stream": True,  # Streaming file content instead of sending files as is
+}
+
 # Plugin config
 print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
@@ -675,3 +808,15 @@ for plugin_name in PLUGINS:
             f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
+
+# Making sure that files are not stored on disk while running tests
+# This allows faster tests and easier clean up of test files
+if IN_TESTS:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.InMemoryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
+        },
+    }

@@ -1,0 +1,52 @@
+{% load render_bundle from webpack_loader %}
+<!doctype html>
+<html>
+    <head>
+        <title>{{title}}</title>
+        {{ analytics_script | safe }}
+        {% render_bundle 'superset' %}
+    </head>
+
+    <body>
+        <div id="superset-container"></div>
+        {{ config|json_script:'config' }}
+        <script>
+            async function fetchGuestTokenFromBackend(dashboardId) {
+                response = await fetch('/api/superset/token/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        dashboard_id: dashboardId,
+                    }),
+                });
+                const json_resp = await response.json();
+                return json_resp.token;
+            }
+
+            const containerRef = document.getElementById('superset-container');
+            const config = JSON.parse(
+                document.getElementById('config').textContent,
+            );
+
+            window.embedDashboard({
+                id: config.dashboard_id,
+                supersetDomain: config.superset_url,
+                mountPoint: containerRef,
+                fetchGuestToken: () =>
+                    fetchGuestTokenFromBackend(config.dashboard_id),
+                dashboardUiConfig: config.dashboard_ui_config || {},
+            });
+
+            const iframe = containerRef.querySelector('iframe');
+            if (iframe) {
+                iframe.style.width = '100%';
+                iframe.style.height = '97vh';
+                iframe.style.border = '0';
+            }
+        </script>
+
+        {% include "iaso/pages/refresh_data_set_snippet.html" %}
+    </body>
+</html>

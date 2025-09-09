@@ -1,27 +1,24 @@
-import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
-import { ScopeSearch } from './Scopes/ScopeSearch';
-import { ScopeInput } from './ScopeInput';
-import { FilteredDistricts } from './Scopes/types';
+import React, { FunctionComponent } from 'react';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { CampaignFormValues } from '../../../constants/types';
 import { PolioVaccine } from '../../../constants/virus';
+import { ScopeInput } from './ScopeInput';
+import { ScopeSearch } from './Scopes/ScopeSearch';
+import { FilteredDistricts } from './Scopes/types';
 
 type Props = {
     name: string;
     search: string;
     filteredDistricts?: FilteredDistricts[];
     searchScope: boolean;
-    // eslint-disable-next-line no-unused-vars
     setSearchScope: (newSearchScope: boolean) => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
     regionShapes?: OrgUnit[];
     districtShapes?: OrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     setSearch: (newSearch: string) => void;
     page: number;
-    // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     campaign: CampaignFormValues; // See ScopeField props for explanation
     availableVaccines?: PolioVaccine[];

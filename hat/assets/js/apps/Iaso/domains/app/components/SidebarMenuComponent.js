@@ -1,4 +1,5 @@
-/* eslint-disable react/jsx-props-no-spreading */
+import React from 'react';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
     Box,
@@ -13,28 +14,23 @@ import {
     useTheme,
 } from '@mui/material';
 import { withStyles } from '@mui/styles';
-import React from 'react';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
-
-import LanguageSwitch from './LanguageSwitchComponent';
-import { Logo } from './Logo.tsx';
-import MenuItem from './MenuItemComponent';
-
 import { DOC_URL, useMenuItems } from '../../../constants/menu.tsx';
-
-import MESSAGES from './messages';
+import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
 import { baseUrls } from '../../../constants/urls.ts';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useSidebar } from '../contexts/SideBarContext.tsx';
+import { LogoAndTitle } from './LogoAndTitle.tsx';
+import MenuItem from './MenuItemComponent';
+
+import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -42,7 +38,7 @@ const styles = theme => ({
         ...theme.mixins.toolbar,
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'flex-start',
+        justifyContent: 'space-between',
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
         height: 90,
@@ -106,7 +102,7 @@ const SidebarMenu = ({ classes, location }) => {
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
                 <Link className={classes.homeLink} to={`/${baseUrls.home}`}>
-                    <Logo />
+                    <LogoAndTitle />
                 </Link>
                 <IconButton
                     className={classes.menuButton}
@@ -131,7 +127,6 @@ const SidebarMenu = ({ classes, location }) => {
                 ))}
             </List>
             <Box className={classes.user}>
-                <LanguageSwitch />
                 {isMobileLayout && (
                     <Typography
                         variant="body2"

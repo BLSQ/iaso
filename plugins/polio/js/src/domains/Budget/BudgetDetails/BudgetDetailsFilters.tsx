@@ -1,13 +1,11 @@
-/* eslint-disable react/require-default-props */
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, UrlParams } from 'bluesquare-components';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { UrlParams, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { SearchButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
-import MESSAGES from '../../../constants/messages';
-import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../constants/messages';
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
@@ -24,7 +22,6 @@ type Props = {
     stepsList?: DropdownOptions<string>[];
     buttonSize?: 'medium' | 'small' | 'large' | undefined;
     showHidden: boolean;
-    // eslint-disable-next-line no-unused-vars
     setShowHidden: (show: boolean) => void;
 };
 export const BudgetDetailsFilters: FunctionComponent<Props> = ({
@@ -74,9 +71,9 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid container item xs={12} md={8} justifyContent="flex-end">
                     <Box mt={2} mb={isXSLayout ? 2 : 0}>
-                        <FilterButton
+                        <SearchButton
                             disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                             size={buttonSize}
                         />
                     </Box>

@@ -11,9 +11,9 @@ Prerequisites
 Before you can run Cypress, you must have a version of Node.js and npm that matches the current Dockerfile:
 
 - Install [nvm](https://github.com/nvm-sh/nvm) locally
-- `nvm install 20.13.1`
-- `nvm use 20.13.1`
-- `npm install -g npm@10.5.2`
+- `nvm install 22.18.0`
+- `nvm use 22.18.0`
+- `npm install -g npm@10.9.3`
 
 Setup
 -----
@@ -23,7 +23,7 @@ Setup
 - To run the backend on a fresh database instance with a test user you can launch a django testserver. Alternatively see below to run on your current database.
   - in docker:
 ```
-docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
+docker compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
 ```
   - outside docker
 ```

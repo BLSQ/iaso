@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import * as yup from 'yup';
@@ -403,6 +402,7 @@ const useRoundShape = () => {
             .min(0, formatMessage(MESSAGES.positiveRangeInteger))
             .max(100, formatMessage(MESSAGES.positiveRangeInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        on_hold: yup.boolean().nullable(),
     });
 };
 
@@ -435,7 +435,6 @@ export const useFormValidator = () => {
             .isValidOutbreakDeclaration(formatMessage),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
-        detection_rrt_oprtt_approval_at: yup.date().nullable(),
 
         investigation_at: yup
             .date()
@@ -488,8 +487,6 @@ export const useFormValidator = () => {
         who_disbursed_to_co_at: yup.date().nullable(),
         spreadsheet_url: yup.string().url().nullable(),
 
-        eomg: yup.date().nullable(),
-        budget_submitted_at: yup.date().nullable(),
         district_count: yup
             .number()
             .nullable()
@@ -522,6 +519,7 @@ export const useFormValidator = () => {
         gpei_coordinator: yup.string().nullable(),
         is_preventive: yup.bool(),
         is_test: yup.bool(),
+        on_hold: yup.bool(),
         rounds: yup.array(round_shape).nullable(),
     };
     return {

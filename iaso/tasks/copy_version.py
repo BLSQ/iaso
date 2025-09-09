@@ -3,7 +3,8 @@ import logging
 from django.utils.translation import gettext as _
 
 from beanstalk_worker import task_decorator
-from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, ERRORED
+from iaso.models import ERRORED, DataSource, Group, GroupSet, OrgUnit, SourceVersion
+
 
 logger = logging.getLogger(__name__)
 
@@ -48,10 +49,9 @@ def copy_version(
         the_task.status = ERRORED
         the_task.result = {"message": res_string}
         the_task.save()
-        return
-    else:
-        OrgUnit.objects.filter(version=destination_version).delete()
-        logger.debug(("%d org units records deleted" % destination_version_count).upper())
+        return None
+    OrgUnit.objects.filter(version=destination_version).delete()
+    logger.debug(("%d org units records deleted" % destination_version_count).upper())
 
     group_sets = GroupSet.objects.filter(source_version=source_version)
     group_set_matching = {}

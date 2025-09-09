@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     actions: {
         id: 'iaso.label.actions',
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
     },
     details: {
         id: 'iaso.label.details',
@@ -120,6 +120,10 @@ const MESSAGES = defineMessages({
     requiredUuid: {
         id: 'iaso.forms.error.requiredUuid',
         defaultMessage: 'Please use an UUID',
+    },
+    round: {
+        id: 'iaso.polio.label.round',
+        defaultMessage: 'Round',
     },
 });
 

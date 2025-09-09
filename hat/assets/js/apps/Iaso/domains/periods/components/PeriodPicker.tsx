@@ -1,40 +1,43 @@
+import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
-import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 
-import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
 import Typography from '@mui/material/Typography';
+import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';
-import { getPeriodPickerString } from '../utils';
 import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../../utils/featureFlags';
 import { Period, PeriodObject } from '../models';
+import { getPeriodPickerString } from '../utils';
 
+import { useCurrentUser } from '../../../utils/usersUtils';
 import {
     MONTHS,
+    NO_PERIOD,
     PERIOD_TYPE_DAY,
-    PERIOD_TYPE_PLACEHOLDER,
     PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_PLACEHOLDER,
     PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_QUARTER_NOV,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
     QUARTERS,
     QUARTERS_RANGE,
+    QUARTERS_NOV_RANGE,
     SEMESTERS,
     SEMESTERS_RANGE,
-    NO_PERIOD,
+    PERIOD_TYPE_FINANCIAL_NOV,
 } from '../constants';
 import MESSAGES from '../messages';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -69,7 +72,6 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     periodType: string | Record<string, string>;
     title: string;
-    // eslint-disable-next-line no-unused-vars
     onChange: (_) => any;
     activePeriodString?: string;
     hasError?: boolean;
@@ -134,6 +136,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
     );
 
     const getQuarterOptionLabel = (value, label) => {
+        if (periodType === PERIOD_TYPE_QUARTER_NOV) {
+            return `${label} (${formatMessage(
+                QUARTERS_NOV_RANGE[value][0],
+            )}-${formatMessage(QUARTERS_NOV_RANGE[value][1])})`;
+        }
+
         if (hasFeatureFlag(currentUser, HIDE_PERIOD_QUARTER_NAME)) {
             return `${formatMessage(QUARTERS_RANGE[value][0])}-${formatMessage(
                 QUARTERS_RANGE[value][1],
@@ -185,7 +193,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                         ) && (
                             <Grid
                                 item
-                                sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
+                                sm={(periodType === PERIOD_TYPE_YEAR || periodType === PERIOD_TYPE_FINANCIAL_NOV )? 12 : 6}
                             >
                                 <InputComponent
                                     keyValue="year"
@@ -213,6 +221,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
 
                         {(periodType === PERIOD_TYPE_MONTH ||
                             periodType === PERIOD_TYPE_QUARTER ||
+                            periodType === PERIOD_TYPE_QUARTER_NOV ||
                             periodType === PERIOD_TYPE_SIX_MONTH) && (
                             <Grid item sm={6}>
                                 {periodType === PERIOD_TYPE_MONTH && (
@@ -238,7 +247,8 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                         label={MESSAGES.month}
                                     />
                                 )}
-                                {periodType === PERIOD_TYPE_QUARTER && (
+                                {(periodType === PERIOD_TYPE_QUARTER ||
+                                    periodType === PERIOD_TYPE_QUARTER_NOV) && (
                                     <InputComponent
                                         keyValue="quarter"
                                         onChange={handleChange}

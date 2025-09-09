@@ -20,6 +20,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 env/
+.venv/
 build/
 develop-eggs/
 dist/
@@ -112,11 +113,12 @@ bin/
 include/python3.6m
 
 pip-selfcheck.json
-data
+# data
 
 # dev environment
 .env*
 \.idea/*
+\.run/*
 
 
 
@@ -136,6 +138,9 @@ extracted_translation.json
 
 hat/assets/webpack/
 docker/DHIS2_home/
+
+# Auto-generated files
+hat/assets/js/apps/Iaso/bundle/generated/
 
 # enketo build
 docker/enketo/checksum/
@@ -182,9 +187,22 @@ venv
 /lib/**/*
 pyvenv.cfg
 originals
+/site/**/*/
 
 *.code-workspace
+
+# Other IASO parts to ignore (plugins, setuper info...)
 /setuper/credentials.py
 /setuper/generated/
 plugins/trypelim
+plugins/snt_malaria
+plugins/snt-malaria
+plugins/saas
 
+# some local env config to be ignored
+.direnv
+CACHEDIR.TAG
+iaso_3_9_18
+.cursor
+/temp
+iaso-enketo/

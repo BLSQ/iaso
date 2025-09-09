@@ -16,10 +16,12 @@
 // Import commands.js using ES2015 syntax:
 import './commands';
 
+// Import cypress-file-upload plugin
+import 'cypress-file-upload';
+
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-// eslint-disable-next-line no-unused-vars
 Cypress.on('uncaught:exception', (err, _runnable, _promise) => {
     if (
         err.message.includes('AbortError') ||

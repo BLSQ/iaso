@@ -1,14 +1,11 @@
-import datetime
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class PotentialPaymentsViewSetAPITestCase(APITestCase):
     """
     Test actions on the ViewSet.
     """
-
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -17,6 +14,9 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(
             org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
+        )
+        other_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c21gh"
         )
 
         account = m.Account.objects.create(name="Account", default_version=version)
@@ -31,15 +31,23 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
             account=account,
             permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
         )
+        geo_limited_user = cls.create_user_with_profile(
+            username="geo_limited_user",
+            account=account,
+            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+        )
+        geo_limited_user.iaso_profile.org_units.set([other_org_unit])
 
         data_source.projects.set([project])
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
         cls.org_unit = org_unit
+        cls.other_org_unit = other_org_unit
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
+        cls.geo_limited_user = geo_limited_user
         cls.user_with_perm = user_with_perm
         cls.user_from_another_account = user_from_another_account
         cls.version = version
@@ -60,10 +68,21 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
             created_by=self.user_from_another_account,
         )
 
+        self.assertEqual(0, m.PotentialPayment.objects.count())
+        self.assertEqual(3, m.OrgUnitChangeRequest.objects.count())
+        for change_request in m.OrgUnitChangeRequest.objects.all():
+            self.assertIsNone(change_request.payment)
+            self.assertIsNone(change_request.potential_payment)
+
         self.client.force_authenticate(self.user_with_perm)
+
+        with self.assertNumQueries(17):
+            response = self.client.get("/api/potential_payments/")
+            self.assertJSONResponse(response, 200)
 
         response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
+
         # Check that the correct number of PotentialPayment objects were created
         self.assertEqual(2, len(response.data["results"]))
         # Check that the PotentialPayment objects were created for the correct users
@@ -71,6 +90,15 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         self.assertIn(self.user.id, user_ids)
         self.assertIn(self.user_with_perm.id, user_ids)
         self.assertNotIn(self.user_from_another_account.id, user_ids)
+
+        # Check DB objects.
+        self.assertEqual(2, m.PotentialPayment.objects.count())
+
+        potential_payment_1 = m.PotentialPayment.objects.get(user=self.user)
+        self.assertEqual(1, potential_payment_1.change_requests.count())
+
+        potential_payment_2 = m.PotentialPayment.objects.get(user=self.user_with_perm)
+        self.assertEqual(1, potential_payment_2.change_requests.count())
 
     def test_list_without_auth(self):
         response = self.client.get("/api/potential_payments/")
@@ -126,3 +154,24 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
         self.assertEqual(0, len(response.data["results"]))
+
+    def test_geo_limited_user_cannot_see_change_requests_not_in_org_units(self):
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            created_by=self.user_with_perm,
+        )
+        self.client.force_authenticate(self.geo_limited_user)
+        response = self.client.get("/api/potential_payments/")
+        self.assertJSONResponse(response, 200)
+        data = response.json()
+        results = data["results"]
+        print("results", results)
+        self.assertEqual(len(results), 2)
+        for result in results:
+            self.assertFalse(result["can_see_change_requests"])
+            self.assertEqual(len(result["change_requests"]), 1)
+            self.assertFalse(result["change_requests"][0]["can_see_change_request"])

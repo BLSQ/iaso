@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { User, DropdownOptions } from '../types';
 
 export type ChronogramParams = {
@@ -78,6 +76,7 @@ export type DropdownOptionsCampaigns = {
 export type DropdownOptionsRounds = {
     value: number;
     label: string;
+    on_hold: boolean;
     campaign_id: number;
 };
 

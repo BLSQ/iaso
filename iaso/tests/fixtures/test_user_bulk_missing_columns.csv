@@ -1,2 +1,2 @@
-username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,user_roles,projects,phone_number
-johndoeee,john,doe,johndoe@caramail.com,john,doe,,,fr,,,
+username,password,email,first_name,last_name,orgunit,orgunit__source_ref,profile_language,dhis2_id,organization,user_roles,projects,phone_number,editable_org_unit_types
+johndoeee,john,doe,johndoe@caramail.com,john,doe,,,fr,,,,,

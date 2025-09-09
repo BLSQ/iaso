@@ -4,19 +4,19 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
-import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../constants/urls';
+import { PLANNING_WRITE } from '../../utils/permissions';
+import { ProjectChip } from '../projects/components/ProjectChip';
+import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { PLANNING_WRITE } from '../../utils/permissions';
 
 const getAssignmentUrl = (planning: PlanningApi): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
 };
 export const usePlanningColumns = (
-    // eslint-disable-next-line no-unused-vars
     deletePlanning: (id: number) => void,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -36,7 +36,11 @@ export const usePlanningColumns = (
                 Header: formatMessage(MESSAGES.project),
                 accessor: 'project__name',
                 id: 'project__name',
-                Cell: settings => settings.row.original.project_details.name,
+                Cell: settings => (
+                    <ProjectChip
+                        project={settings.row.original.project_details}
+                    />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.orgUnit),

@@ -17,4 +17,23 @@ export const defaultVaccineOptions = [
         label: 'bOPV',
         value: 'bOPV',
     },
+    {
+        label: 'nOPV2 & bOPV',
+        value: 'nOPV2 & bOPV',
+    },
 ];
+
+export const singleVaccinesList = [
+    {
+        label: 'nOPV2',
+        value: 'nOPV2',
+    },
+    {
+        label: 'mOPV2',
+        value: 'mOPV2',
+    },
+    {
+        label: 'bOPV',
+        value: 'bOPV',
+    },
+]

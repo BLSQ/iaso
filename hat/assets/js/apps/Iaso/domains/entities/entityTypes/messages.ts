@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
         id: 'iaso.entityTypes.title',
     },
     referenceForm: {
@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.referenceForm',
     },
     create: {
-        defaultMessage: 'Create beneficiary type',
+        defaultMessage: 'Create entity type',
         id: 'iaso.entityTypes.create',
     },
     cancel: {
@@ -23,7 +23,7 @@ const MESSAGES = defineMessages({
     },
     deleteError: {
         id: 'iaso.snackBar.deleteEntityTypeError',
-        defaultMessage: 'An error occurred while deleting beneficiary type',
+        defaultMessage: 'An error occurred while deleting entity type',
     },
     deleteSuccess: {
         id: 'iaso.snackBar.delete_successful',
@@ -38,13 +38,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.name',
     },
     updateMessage: {
-        defaultMessage: 'Update beneficiary type',
+        defaultMessage: 'Update entity type',
         id: 'iaso.entityTypes.update',
     },
     deleteTitle: {
         id: 'iaso.entityTypes.dialog.deleteTitle',
-        defaultMessage:
-            'Are you sure you want to delete this beneficiary type?',
+        defaultMessage: 'Are you sure you want to delete this entity type?',
     },
     deleteText: {
         id: 'iaso.label.deleteText',
@@ -88,7 +87,7 @@ const MESSAGES = defineMessages({
     },
     entitiesCount: {
         id: 'iaso.entityTypes.count',
-        defaultMessage: 'Beneficiaries count',
+        defaultMessage: 'Entities count',
     },
     fieldsDetailInfoView: {
         id: 'iaso.entityTypes.fieldsDetailInfoView',
@@ -100,7 +99,7 @@ const MESSAGES = defineMessages({
     },
     fieldsDuplicateSearch: {
         id: 'iaso.entityTypes.fieldsDuplicateSearch',
-        defaultMessage: 'Duplicate search fields',
+        defaultMessage: 'Mobile: Entity search fields',
     },
     selectReferenceForm: {
         id: 'iaso.entityTypes.selectReferenceForm',
@@ -110,9 +109,32 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
-    beneficiaries: {
-        id: 'iaso.label.beneficiaries',
-        defaultMessage: 'Beneficiaries',
+    entities: {
+        id: 'iaso.label.entities',
+        defaultMessage: 'Entities',
+    },
+    deprecated: {
+        id: 'iaso.label.deprecated',
+        defaultMessage: 'deprecated',
+    },
+    infosFieldsListView: {
+        id: 'iaso.entityTypes.infosFieldsListView',
+        defaultMessage:
+            'How entities are displayed when they are in a list (both web and mobile)',
+    },
+    infosFieldsDetailInfoView: {
+        id: 'iaso.entityTypes.infosFieldsDetailInfoView',
+        defaultMessage:
+            'Information about the entity displayed in their details screen (both web and mobile)',
+    },
+    infosFieldsDuplicateSearch: {
+        id: 'iaso.entityTypes.infosFieldsDuplicateSearch',
+        defaultMessage:
+            'Entity search fields: Fields that will be compared/searchable when adding a new entity (mobile only)',
+    },
+    preventAddIfDuplicateFound: {
+        id: 'iaso.entityTypes.preventAddIfDuplicateFound',
+        defaultMessage: 'Prevent adding if the search yields a result',
     },
 });
 

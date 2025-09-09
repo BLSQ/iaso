@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
@@ -44,18 +43,20 @@ export const useGetInstanceLogs = (
 };
 
 const getInstanceLogDetail = (
+    instanceId: number | string,
     logId: string | undefined,
 ): Promise<InstanceLogData> => {
-    return getRequest(`/api/logs/${logId}/`);
+    return getRequest(`/api/instances/${instanceId}/instance_logs/${logId}/`);
 };
 export const useGetInstanceLogDetail = (
+    instanceId: number | string,
     logIds: string[],
 ): Array<UseQueryResult<InstanceLogData, unknown>> => {
     // @ts-ignore => ignoring this, useQueies is working with unknown type as you can have multiple calls with multiple types
     return useSnackQueries<InstanceLogData>(
         logIds.map(logId => ({
             queryKey: ['instanceLogDetail', logId],
-            queryFn: () => getInstanceLogDetail(logId),
+            queryFn: () => getInstanceLogDetail(instanceId, logId),
             snackErrorMsg: MESSAGES.fetchLogDetailError,
             dispatchOnError: false,
             options: {

@@ -1,5 +1,5 @@
-import React, { FunctionComponent, ReactNode } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import {
     AddButton,
@@ -7,11 +7,11 @@ import {
     MENU_HEIGHT_WITH_TABS,
     useSafeIntl,
 } from 'bluesquare-components';
-import { grey } from '@mui/material/colors';
+import React, { FunctionComponent, ReactNode } from 'react';
 
 export const useSharedStyles = makeStyles({
     scrollableForm: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS + 200}px)`,
+        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS + 250}px)`,
         overflowY: 'auto',
     },
 });
@@ -21,7 +21,7 @@ type Props = {
     onClick: () => void;
     children: ReactNode;
     titleMessage: IntlMessage;
-    buttonMessage: IntlMessage;
+    buttonMessage: IntlMessage | null;
 };
 
 export const MultiFormTab: FunctionComponent<Props> = ({
@@ -40,9 +40,14 @@ export const MultiFormTab: FunctionComponent<Props> = ({
                     <Typography variant="h5">
                         {formatMessage(titleMessage)}
                     </Typography>
-                    <Box mr={2}>
-                        <AddButton message={buttonMessage} onClick={onClick} />
-                    </Box>
+                    {buttonMessage && (
+                        <Box mr={2}>
+                            <AddButton
+                                message={buttonMessage}
+                                onClick={onClick}
+                            />
+                        </Box>
+                    )}
                 </Grid>
             </Box>
             <Box className={classes.scrollableForm}>{children}</Box>

@@ -1,5 +1,9 @@
-/* eslint-disable camelcase */
 import { IntlFormatMessage } from 'bluesquare-components';
+import MESSAGES from '../../../constants/messages';
+import { imNfmKeys, imRfaKeys } from '../IM/constants';
+import { sumChildrenCheckedIm } from '../IM/utils';
+import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
+import { sumChildrenCheckedLqas } from '../LQAS/utils';
 import {
     BarChartData,
     ConvertedLqasImData,
@@ -10,31 +14,26 @@ import {
     LqasImMapLegendData,
     LqasImParams,
     LqasImRound,
-} from '../../../constants/types';
-import { sumChildrenCheckedLqas } from '../LQAS/utils';
-import MESSAGES from '../../../constants/messages';
-import { sumChildrenCheckedIm } from '../IM/utils';
-import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
-import { imNfmKeys, imRfaKeys } from '../IM/constants';
+} from '../types';
 
 const accessFullRoundData = (
     data: LqasImCampaign,
-    round: number,
+    round?: number,
 ): LqasImRound =>
     data.rounds.find(rnd => rnd.number === round) ?? ({} as LqasImRound);
 
 export const accessDictRound = (
     data: LqasImCampaign,
-    round: number,
+    round?: number,
 ): Record<string, LqasImDistrictData> => {
     return accessFullRoundData(data, round)?.data ?? {};
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number | 'latest',
+    round?: number | 'latest',
 ): LqasImDistrictDataWithNameAndRegion[] => {
     if (round === 'latest') {
-        if (data.rounds.length === 0) return [];
+        if (data.rounds.length === 0 || round === undefined) return [];
         return data.rounds[data.rounds.length - 1].data;
     }
     return data.rounds.find(rnd => rnd.number === round)?.data ?? [];
@@ -42,14 +41,14 @@ export const accessArrayRound = (
 
 export const accessNfmStats = (
     data: LqasImCampaign,
-    round: number,
+    round?: number,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_stats ?? {};
 };
 
 export const accessNfmAbsStats = (
     data: LqasImCampaign,
-    round: number,
+    round?: number,
 ): Record<string, number> => {
     return accessFullRoundData(data, round)?.nfm_abs_stats ?? {};
 };
@@ -87,7 +86,7 @@ const makeCollectionStats = ({
     campaign,
     round,
 }: LqasImParams): LqasImMapLegendData | Record<string, never> => {
-    if (!data || !campaign || !data[campaign]) return {};
+    if (!data || !campaign || !data[campaign] || !round) return {};
     if (type !== 'lqas') {
         const aggregatedData = accessArrayRound(data[campaign], round).reduce(
             (total, current) => {
@@ -156,14 +155,14 @@ export const sortGraphKeys = (
     b: { absValue: number },
 ): number => b.absValue - a.absValue;
 
-const childrenNotMarked = ({
+export const childrenNotMarked = ({
     data,
     campaign,
     round,
 }: {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    round: number;
+    round: number | undefined;
 }): number => {
     if (!data || !campaign || !data[campaign]) return 0;
     const campaignData: Record<string, number> = accessNfmStats(
@@ -185,7 +184,7 @@ export const makeRatioUnmarked = ({
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 }): string[] => {
     const childrenCheckedLeft =
         type === 'lqas'

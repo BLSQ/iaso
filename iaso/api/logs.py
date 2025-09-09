@@ -10,12 +10,15 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
-from iaso.models import OrgUnit, Instance, Form
-from hat.menupermissions import models as permission
+from iaso.models import Form, Instance, OrgUnit
+from iaso.models.base import Profile
 from iaso.models.org_unit import OrgUnitChangeRequest
 from iaso.models.payments import Payment, PaymentLot
+from iaso.plugins import is_polio_plugin_active
 
 
 def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
@@ -25,27 +28,36 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
         return (
-            user.has_perm(permission.SUBMISSIONS) or user.has_perm(permission.SUBMISSIONS_UPDATE)
+            user.has_perm(core_permissions.SUBMISSIONS) or user.has_perm(core_permissions.SUBMISSIONS_UPDATE)
         ) and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return forms.filter(id=obj.id).exists()
     if isinstance(obj, PaymentLot):
         payment_lots = PaymentLot.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
-        return payment_lots.filter(id=obj.id).exists() and user.has_perm(permission.PAYMENTS)
+        return payment_lots.filter(id=obj.id).exists() and user.has_perm(core_permissions.PAYMENTS)
     if isinstance(obj, Payment):
         payments = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
-        return payments.filter(id=obj.id).exists() and user.has_perm(permission.PAYMENTS)
+        return payments.filter(id=obj.id).exists() and user.has_perm(core_permissions.PAYMENTS)
     if isinstance(obj, OrgUnitChangeRequest):
         change_requests = OrgUnitChangeRequest.objects.filter(
             created_by__iaso_profile__account=user.iaso_profile.account
         )
         return change_requests.filter(id=obj.id).exists()
-    # FIXME Hotfix to prevent an error when loading the app without the polio plugins
-    from plugins.polio.models import Campaign
+    if isinstance(obj, Profile):
+        profiles = Profile.objects.filter(account=user.iaso_profile.account)
+        return profiles.filter(id=obj.id).exists() and user.has_perm(core_permissions.USERS_ADMIN)
 
-    if isinstance(obj, Campaign):
-        return user.has_perm(permission.POLIO) and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
+    # Now checking models that are part of plugins
+    if is_polio_plugin_active():
+        from plugins.polio import permissions as polio_permissions
+        from plugins.polio.models import Campaign
+
+        if isinstance(obj, Campaign):
+            return (
+                user.has_perm(polio_permissions.POLIO)
+                and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
+            )
     return False
 
 
@@ -144,8 +156,7 @@ class LogsViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
             return Response(res)
-        else:
-            return Response(map(lambda x: x.as_list(fields), queryset))
+        return Response(map(lambda x: x.as_list(fields), queryset))
 
     def retrieve(self, request, pk=None):
         log = get_object_or_404(Modification, pk=pk)

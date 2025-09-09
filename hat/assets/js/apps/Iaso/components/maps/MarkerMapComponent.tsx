@@ -1,27 +1,26 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import { pink } from '@mui/material/colors';
 import { useTheme } from '@mui/material/styles';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import L from 'leaflet';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     GeoJSON,
     MapContainer,
+    Pane,
     ScaleControl,
     Tooltip,
-    Pane,
 } from 'react-leaflet';
-import L from 'leaflet';
-import { pink } from '@mui/material/colors';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import { Box, Alert, SxProps, Theme } from '@mui/material';
+import { Alert, Box, SxProps, Theme } from '@mui/material';
 import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
-import MarkerComponent from './markers/MarkerComponent';
-import { Tile } from './tools/TilesSwitchControl';
-import { CustomZoomControl } from './tools/CustomZoomControl';
 import { ShortOrgUnit } from '../../domains/orgUnits/types/orgUnit';
-import MESSAGES from './messages';
 import { useMarkerWithinBounds } from './hooks/useMarkerWithinBounds';
+import MarkerComponent from './markers/MarkerComponent';
+import MESSAGES from './messages';
+import { CustomZoomControl } from './tools/CustomZoomControl';
+import { Tile } from './tools/TilesSwitchControl';
 
 const useStyles = () => {
     const theme = useTheme();
@@ -31,7 +30,6 @@ const useStyles = () => {
                 string,
                 SxProps<Theme>
             >),
-            height: 400,
             minWidth: 200,
             marginBottom: 0,
             position: 'relative',
@@ -66,7 +64,6 @@ export const MarkerMap: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const styles: Record<string, SxProps<Theme>> = useStyles();
-
     const boundsOptions: Record<string, [number, number] | number> = {
         padding: [50, 50],
         maxZoom: maxZoom || currentTile.maxZoom,
@@ -90,7 +87,12 @@ export const MarkerMap: FunctionComponent<Props> = ({
     );
     if (latitude === undefined || longitude === undefined) return null;
     return (
-        <Box sx={styles.mapContainer} height={mapHeight}>
+        <Box
+            sx={{
+                ...styles.mapContainer,
+                height: mapHeight,
+            }}
+        >
             {!isMarkerInside && (
                 <Box sx={styles.alertContainer}>
                     <Alert severity="warning" sx={styles.alert}>

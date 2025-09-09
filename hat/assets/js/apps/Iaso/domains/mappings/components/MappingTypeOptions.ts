@@ -14,5 +14,3 @@ export const mappingTypeOptions = [
         label: MESSAGES.eventTracker,
     },
 ];
-
-

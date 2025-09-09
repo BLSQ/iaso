@@ -1,11 +1,11 @@
+import { IntlFormatMessage, IntlMessage } from 'bluesquare-components';
 import { FormikErrors, FormikHelpers, FormikTouched } from 'formik';
+import { isEqual } from 'lodash';
 import { useCallback, useMemo, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { TestConfig, TestContext } from 'yup';
-import { isEqual } from 'lodash';
-import { IntlFormatMessage, IntlMessage } from 'bluesquare-components';
-import { ApiError } from './Api';
 import { ValidationError } from '../types/utils';
+import { ApiError } from './Api';
 
 /**
  * The params passed to the hook
@@ -21,7 +21,6 @@ type Params = {
     onError?: any;
     onCatch?: any;
     convertError?: (
-        // eslint-disable-next-line no-unused-vars
         errorsDict: Record<string, string>,
     ) => Record<string, string>;
 };
@@ -58,7 +57,6 @@ type ApiValidationUtils<
 > = {
     payload: T;
     apiErrors: Record<string, string>;
-    // eslint-disable-next-line no-unused-vars
     mutation: (values: T, helpers: any) => Promise<void | K>;
 };
 
@@ -139,7 +137,6 @@ type TestContextExtended = TestContext<Record<string, any>> & {
 export const useAPIErrorValidator = <T,>(
     errors: ValidationError,
     payload: T,
-    // eslint-disable-next-line no-unused-vars
 ): ((fieldKey: string) => TestConfig<any, Record<string, any>>) => {
     return useMemo(
         () =>
@@ -185,8 +182,7 @@ export const useTranslatedErrors = ({
     touched,
     errors,
     messages,
-}: // eslint-disable-next-line no-unused-vars
-GetErrorParams): ((keyValue: string) => string[]) => {
+}: GetErrorParams): ((keyValue: string) => string[]) => {
     const getErrors = useCallback(
         keyValue => {
             if (!touched[keyValue]) return [];

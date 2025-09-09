@@ -1,19 +1,19 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import MESSAGES from '../../../../constants/messages';
-import { appId } from '../../../../constants/app';
+import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { appId } from '../../../../constants/app';
+import MESSAGES from '../../../../constants/messages';
+import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
+import { baseUrls } from '../../../../constants/urls';
+import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';
-import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { baseUrls } from '../../../../constants/urls';
-import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 
 const baseUrl = baseUrls.nopv2Auth;
 type Props = { params: VaccineAuthParams };
@@ -25,7 +25,7 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const { data: countryBlocksOptions, isFetching: isFetchingCountryBlocks } =
-        useGetGroupDropdown({ blockOfCountries: 'True', appId });
+        useGetGroupDropdown({ blockOfCountries: 'true', appId });
     const statusOptions = useStatusOptions();
     const currentUser = useCurrentUser();
 
@@ -65,9 +65,9 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     width="100%"
                 >
                     <Box mt={2}>
-                        <FilterButton
+                        <SearchButton
                             disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                         />
                     </Box>
                     {userHasPermission(VACCINE_AUTH_ADMIN, currentUser) && (

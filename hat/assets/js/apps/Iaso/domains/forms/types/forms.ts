@@ -1,6 +1,6 @@
+import { JSONValue } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
-/* eslint-disable camelcase */
 type FeatureFlag = {
     id: number;
     name: string;
@@ -31,6 +31,8 @@ export type FieldType =
     | 'select_multiple'
     | 'select_one_from_file'
     | 'select_multiple_from_file'
+    | 'select all that apply'
+    | 'select_all_that_apply'
     | 'rank'
     | 'note'
     | 'geopoint'
@@ -50,13 +52,15 @@ export type FieldType =
     | 'calculate'
     | 'acknowledge'
     | 'hidden'
-    | 'xml-external';
+    | 'xml-external'
+    | 'boolean';
 
 export type PossibleField = {
     label: string;
     name: string;
     type: FieldType;
     fieldKey: string;
+    is_latest?: boolean;
 };
 export type ChildrenDescriptor = {
     label: string;
@@ -80,7 +84,7 @@ export type Form = {
     periods_before_allowed: number;
     periods_after_allowed: number;
     latest_form_version: string;
-    instances_count: number;
+    instances_count?: number;
     instance_updated_at: string;
     created_at: string;
     updated_at: string;
@@ -112,11 +116,29 @@ export type FormAttachment = {
     updated_at: number;
 };
 export type FormParams = {
-    formId: string;
+    formId: number;
     tab?: string;
     attachmentsOrder?: string;
     attachmentsPageSize?: string;
     attachmentsPage?: string;
+    predefinedFiltersOrder?: string;
+    predefinedFiltersPageSize?: string;
+    predefinedFiltersPage?: string;
+};
+
+export type FormPredefinedFilter = {
+    id: number;
+    form_id: number;
+    name: string;
+    short_name: string;
+    json_logic: JSONValue;
+    created_at: number;
+    updated_at: number;
+};
+export type FormPredefinedFilterForm = {
+    name?: string;
+    short_name?: string;
+    json_logic?: JSONValue;
 };
 type Errors = string[];
 
@@ -129,8 +151,10 @@ type PeriodType =
     | 'NO_PERIOD'
     | 'MONTH'
     | 'QUARTER'
+    | 'QUARTER_NOV'
     | 'SIX_MONTH'
     | 'YEAR'
+    | 'FINANCIAL_NOV'
     | null;
 
 type ChangeRequestModeType = 'CR_MODE_NONE' | 'CR_MODE_IF_REFERENCE_FORM';

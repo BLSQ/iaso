@@ -1,6 +1,3 @@
-/* eslint-disable camelcase */
-/* eslint-disable react/require-default-props */
-/* eslint-disable react/no-unused-prop-types */
 import React, {
     FunctionComponent,
     useCallback,
@@ -29,7 +26,6 @@ import { OverrideStepForm } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useOverrideStepValidation } from '../hooks/validation';
-import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 import { OverrideStepButton } from './OverrideStepButton';
 import { useSaveOverrideStep } from '../hooks/api/useSaveOverrideStep';
@@ -41,7 +37,6 @@ type Props = {
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;
-    isMobileLayout?: boolean;
     requiredFields?: string[];
     params: Record<string, any>;
     recipients?: number[]; // team ids
@@ -132,10 +127,6 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue],
     );
 
-    const onCommentChange = useCallback(
-        newValue => onChange('comment', newValue),
-        [onChange],
-    );
     const getErrors = useTranslatedErrors({
         touched,
         errors,
@@ -201,13 +192,15 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                             required
                         />
                     </Box>
-                    <TextArea
+                    <InputComponent
+                        type="textarea"
+                        keyValue="comment"
                         value={values.comment}
                         errors={getErrors('comment')}
-                        label={formatMessage(MESSAGES.notes)}
-                        onChange={onCommentChange}
+                        label={MESSAGES.notes}
+                        onChange={onChange}
+                        withMarginTop={false}
                         required={requiredFields.includes('comment')}
-                        debounceTime={0}
                     />
                     <InputComponent
                         type="number"

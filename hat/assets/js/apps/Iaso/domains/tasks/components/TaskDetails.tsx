@@ -1,12 +1,13 @@
-/* eslint-disable camelcase */
 import { defineMessages } from 'react-intl';
 import React, { FunctionComponent } from 'react';
 import { useQuery } from 'react-query';
 import { Button, Container } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-
+// @ts-ignore
 import { Task } from 'Iaso/domains/tasks/types';
+// @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
+import { SxStyles } from '../../../types/general';
 
 const styles: SxStyles = {
     root: {
@@ -31,7 +32,11 @@ const TaskDetails: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
 
     const taskHasDownloadableFile =
-        task.result && task.result.data && task.result.data.startsWith('file:');
+        task.result &&
+        task.result.data &&
+        (typeof task.result.data === 'string' ||
+            task.result.data instanceof String) &&
+        task.result.data.startsWith('file:');
 
     const { data } = useQuery(
         ['taskDetails', task.id],

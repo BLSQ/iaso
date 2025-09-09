@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 import { User } from '../types';
 
 export type ChronogramTemplateTaskParams = {

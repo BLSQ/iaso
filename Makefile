@@ -6,16 +6,16 @@
 # make test
 # make test TARGET=iaso.tests.api.test_profiles.ProfileAPITestCase
 test:
-	docker-compose exec iaso ./manage.py test \
-	--noinput --keepdb --failfast --settings=hat.settings_test \
+	docker compose exec -e PLUGINS=polio,wfp,wfp_auth iaso ./manage.py test \
+	--noinput --keepdb --failfast --settings=hat.settings --verbosity 3 \
 	$(TARGET)
 
 # When the migration history is changed, we need to drop the DB before running the tests suite with `--keepdb`.
 drop-test-db:
-	docker-compose exec db psql -U postgres -c "drop database if exists test_iaso"
+	docker compose exec db psql -U postgres -c "drop database if exists test_iaso"
 
 dbshell:
-	docker-compose exec iaso ./manage.py dbshell
+	docker compose exec iaso ./manage.py dbshell
 
 # Django.
 # =============================================================================
@@ -26,4 +26,4 @@ dbshell:
 # make django_admin COMMAND=shell_plus
 # make django_admin COMMAND=createsuperuser
 django_admin:
-	docker-compose exec -ti iaso ./manage.py $(COMMAND)
+	docker compose exec -ti iaso ./manage.py $(COMMAND)

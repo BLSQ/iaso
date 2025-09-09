@@ -1,15 +1,17 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
-from iaso.api.common import ModelViewSet, HasPermission
+import iaso.permissions as core_permissions
+
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowFollowup
-from hat.menupermissions import models as permission
+
 
 workflow_version_id_param = openapi.Parameter(
     name="workflow_version_id",
@@ -50,7 +52,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
     Will delete the followup with id {followup_id}
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.WORKFLOW)]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["order"]
     serializer_class = ser.WorkflowVersionDetailSerializer
@@ -65,7 +67,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
         manual_parameters=[workflow_version_id_param], request_body=ser.WorkflowFollowupCreateSerializer
     )
     def create(self, request, *args, **kwargs):
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         utils.validate_version_id(version_id, request.user)
         serializer = ser.WorkflowFollowupCreateSerializer(
             data=request.data, context={"request": request, "version_id": version_id}
@@ -83,21 +85,18 @@ class WorkflowFollowupViewSet(ModelViewSet):
         for followup in request.data:
             if "id" not in followup:
                 return Response("id is required for bulk update", status=400)
-            else:
-                followup_orig = WorkflowFollowup.objects.get(id=followup["id"])
-                serializer = ser.WorkflowFollowupModifySerializer(
-                    data=followup, context={"request": request}, partial=True
-                )
-                serializer.is_valid(raise_exception=True)
-                res = serializer.update(followup_orig, serializer.validated_data)
-                modifs.append(res)
+            followup_orig = WorkflowFollowup.objects.get(id=followup["id"])
+            serializer = ser.WorkflowFollowupModifySerializer(data=followup, context={"request": request}, partial=True)
+            serializer.is_valid(raise_exception=True)
+            res = serializer.update(followup_orig, serializer.validated_data)
+            modifs.append(res)
 
         resp = ser.WorkflowFollowupSerializer(modifs, many=True).data
         return Response(resp)
 
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):
-        followup_id = request.query_params.get("followup_id", kwargs.get("followup_id", None))
+        followup_id = request.query_params.get("followup_id", kwargs.get("followup_id"))
         wf = WorkflowFollowup.objects.get(pk=followup_id)
         wf.delete()
         return Response(status=204)

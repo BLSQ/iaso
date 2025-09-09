@@ -19,7 +19,7 @@ variables:
   tag: '$(Build.BuildId)'
 
 pool:
-  vmImage: ubuntu-20.04
+  vmImage: ubuntu-24.04
 
 
 services:
@@ -32,7 +32,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    npm install -g npm@10.5.2
+    npm install -g npm@10.9.3
     node -v
     npm -v
     npm ci
@@ -74,8 +74,8 @@ steps:
   displayName: 'Environment info'
 
 - script: |
-    . ./venv/bin/activate && black --check .
-  displayName: 'Check formatting with black'
+    . ./venv/bin/activate && ruff check .
+  displayName: 'Check formatting with ruff'
 
 # Setting the details for the health page
 - task: Bash@3

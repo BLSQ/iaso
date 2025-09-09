@@ -1,9 +1,12 @@
 import math
 import xml.etree.ElementTree as ET
-from copy import deepcopy
+
+from copy import copy, deepcopy
+from logging import getLogger
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
+from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.http import JsonResponse
@@ -11,18 +14,24 @@ from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
-from rest_framework.request import Request
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
-from iaso.api.common import HasPermission, Paginator
+import iaso.permissions as core_permissions
+
+from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
-from hat.menupermissions import models as permission
+from iaso.utils.emoji import fix_emoji
+
+
+logger = getLogger(__name__)
 
 
 class EntityDuplicateNestedFormSerializer(serializers.ModelSerializer):
@@ -101,8 +110,7 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
     def get_ignored_reason(self, obj):
         if "ignored_reason" in obj.metadata:
             return obj.metadata["ignored_reason"]
-        else:
-            return ""
+        return ""
 
     def get_similarity(self, obj):
         return obj.similarity_score
@@ -160,14 +168,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 
     lookup = {e1.pk: att1, e2.pk: att2}
 
-    try:
-        tree = ET.parse(att1.file)
-    except Exception as e:
-        print(f"Error parsing xml file {att1.file}")
-        print(e)
-        return None
-
-    root = tree.getroot()
+    root = _xmlfile_to_element(att1.file)
 
     for field_name, e_id in merge_def.items():
         the_val = lookup[e_id].json[field_name]
@@ -176,8 +177,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
             if the_field is not None:
                 the_field.text = the_val
         except Exception as e:
-            print(f"Error updating xml field {field_name}")
-            print(e)
+            logger.exception("Error updating xml field %s: %s", field_name, e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -193,6 +193,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     new_file_name = f"{slugify(att1.form.name)}_{new_uuid}_merged_{e1.pk}-{e2.pk}.xml"  # type: ignore
     new_attributes = deepcopy(att1)
     new_attributes.uuid = new_uuid  # type: ignore
+    new_attributes.entity_id = None
     new_attributes.file_name = new_file_name
     new_attributes.pk = None
     new_attributes.json = None
@@ -209,14 +210,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
     if inst.form is None:
         raise Exception("Instance has no form")
 
-    try:
-        tree = ET.parse(inst.file)
-    except Exception as e:
-        print(f"Error parsing xml file {inst.file}")
-        print(e)
-        return None
-
-    root = tree.getroot()
+    root = _xmlfile_to_element(inst.file)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:
@@ -239,36 +233,57 @@ def copy_instance(inst: Instance, new_entity: Entity):
     return new_inst
 
 
-def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
+def _xmlfile_to_element(file):
+    """
+    Read XML file, sanitize content to support emoji, and return a parsed Element
+    (xml.etree.ElementTree.Element)
+    """
+    raw_content = file.read().decode("utf-8")
+    fixed_content = fix_emoji(raw_content).decode("utf-8")
+
+    return ET.fromstring(fixed_content)
+
+
+def merge_entities(e1: Entity, e2: Entity, merge_def: Dict, current_user: User):
     new_entity_uuid = uuid4()
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 
     new_entity = Entity.objects.create(
-        name=e1.name, entity_type=e1.entity_type, account=e1.account, attributes=new_attributes, uuid=new_entity_uuid
+        name=e1.name,
+        entity_type=e1.entity_type,
+        account=e1.account,
+        attributes=new_attributes,
+        uuid=new_entity_uuid,
     )
 
     new_entity.save()
+    new_attributes.entity = new_entity
+    new_attributes.save()
 
-    for inst in e1.instances.all():
+    for inst in e1.instances.exclude(id=e1.attributes_id):
         copy_instance(inst, new_entity)
 
-    for inst in e2.instances.all():
+    for inst in e2.instances.exclude(id=e2.attributes_id):
         copy_instance(inst, new_entity)
 
-    if e1.attributes is not None:
-        e1.attributes.soft_delete()
+    instances_to_soft_delete = [
+        e1.attributes,
+        e2.attributes,
+        *e1.instances.all(),
+        *e2.instances.all(),
+    ]
+    for inst in set(instances_to_soft_delete):  # use set() to remove duplicates
+        original = copy(inst)
+        inst.soft_delete()
+        log_modification(original, inst, ENTITY_DUPLICATE_MERGE, user=current_user)
 
-    if e2.attributes is not None:
-        e2.attributes.soft_delete()
+    e1.merged_to = new_entity
+    e1.save()
+    e2.merged_to = new_entity
+    e2.save()
 
     e1.delete()
     e2.delete()
-
-    for inst in e1.instances.all():
-        inst.soft_delete()
-
-    for inst in e2.instances.all():
-        inst.soft_delete()
 
     return new_entity
 
@@ -287,14 +302,17 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
         try:
             entity1 = Entity.objects.get(pk=data["entity1_id"])
         except Entity.DoesNotExist:
+            logger.exception(f"Entity merge failed: entity 1 does not exist: {data}")
             raise serializers.ValidationError("Entity 1 does not exist")
 
         try:
             entity2 = Entity.objects.get(pk=data["entity2_id"])
         except Entity.DoesNotExist:
+            logger.exception(f"Entity merge failed: entity 2 does not exist: {data}")
             raise serializers.ValidationError("Entity 2 does not exist")
 
         if entity1.entity_type != entity2.entity_type:
+            logger.exception(f"Entity merge failed: Entities must be of the same type: {data}")
             raise serializers.ValidationError("Entities must be of the same type")
 
         if data["ignore"] == False:  # merge the duplicates
@@ -335,23 +353,37 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
                 "entity1_id": validated_data["entity1"].pk,
                 "entity2_id": validated_data["entity2"].pk,
             }
-        else:
-            # Actualy merge the entities
-            e1 = validated_data["entity1"]
-            e2 = validated_data["entity2"]
+        # Actualy merge the entities
+        e1 = validated_data["entity1"]
+        e2 = validated_data["entity2"]
 
-            new_entity = merge_entities(e1, e2, validated_data["merge"])
+        current_user = self.context.get("request").user
+        new_entity = merge_entities(e1, e2, validated_data["merge"], current_user)
 
-            # needs to add the id of the new entity as metadata to the entity duplicate
-            ed.metadata["new_entity_id"] = new_entity.pk
-            ed.validation_status = ValidationStatus.VALIDATED
-            ed.save()
+        # Leave audit trail from both entity reference forms to the new merged one
+        log_modification(
+            e1.attributes,
+            new_entity.attributes,
+            ENTITY_DUPLICATE_MERGE,
+            user=current_user,
+        )
+        log_modification(
+            e2.attributes,
+            new_entity.attributes,
+            ENTITY_DUPLICATE_MERGE,
+            user=current_user,
+        )
 
-            return {
-                "new_entity_id": new_entity.pk,
-                "entity1_id": validated_data["entity1"].pk,
-                "entity2_id": validated_data["entity2"].pk,
-            }
+        # needs to add the id of the new entity as metadata to the entity duplicate
+        ed.metadata["new_entity_id"] = new_entity.pk
+        ed.validation_status = ValidationStatus.VALIDATED
+        ed.save()
+
+        return {
+            "new_entity_id": new_entity.pk,
+            "entity1_id": validated_data["entity1"].pk,
+            "entity2_id": validated_data["entity2"].pk,
+        }
 
 
 duplicate_detail_entities_param = openapi.Parameter(
@@ -363,11 +395,13 @@ duplicate_detail_entities_param = openapi.Parameter(
 )
 
 
-class EntityDuplicateViewSet(viewsets.GenericViewSet):
-    """Entity Duplicates API
-    GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
-    GET /api/entityduplicates/<pk>/ : Provides an API to retrieve details about a potential duplicate
-    POST /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
+class EntityDuplicateViewSet(ModelViewSet):
+    """
+    Entity Duplicates API.
+
+    - `GET /api/entityduplicates/` retrieve potentially duplicated entities
+    - `GET /api/entityduplicates/<pk>/` retrieve details about a potential duplicate
+    - `POST /api/entityduplicates/` merge duplicate entities or ignore the match
     """
 
     filter_backends = [
@@ -378,6 +412,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.EntityIdFilterBackend,
         dedup_filters.EntitySearchFilterBackend,
         dedup_filters.AlgorithmFilterBackend,
+        dedup_filters.AnalyzeFilterBackend,
         dedup_filters.EntityTypeFilterBackend,
         dedup_filters.SimilarityFilterBackend,
         dedup_filters.FormFilterBackend,
@@ -385,46 +420,25 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.StartEndDateFilterBackend,
         dedup_filters.CustomOrderingFilter,
         DjangoFilterBackend,
-        # filters.OrderingFilter,
     ]
 
-    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
-    remove_results_key_if_paginated = False
-    results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
-    serializer_class = EntityDuplicateSerializer
-    results_key = "results"
     model = EntityDuplicate
-    pagination_class = Paginator
-
-    def get_results_key(self):
-        return self.results_key
-
-    def list(self, request: Request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        page = self.paginate_queryset(queryset)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
-        else:
-            return Response(data=serializer.data, content_type="application/json")
+    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
+    serializer_class = EntityDuplicateSerializer
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        initial_queryset = EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
-        return initial_queryset
+        return EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
 
     @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
     def detail_view(self, request):
         """
-        GET /api/entityduplicates/detail/?entities=A,B
-        Provides an API to retrieve details about a potential duplicate
+        Retrieve details about a potential duplicate.
+
+        `GET /api/entityduplicates/detail/?entities=A,B`
+
         For all the 'fields' of the analyzis it will return
         {
         "the_field": {
@@ -447,31 +461,34 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         So basically it returns an array of those objects
         """
         try:
-            entities = request.GET.get("entities", None)
-            if entities is None:
-                raise ValueError("entities parameter is required")
-            entities = entities.split(",")
-            duplicate = (
-                self.get_queryset()
-                .filter(
-                    Q(entity1__pk=entities[0], entity2__pk=entities[1])
-                    | Q(entity1__pk=entities[1], entity2__pk=entities[0])
-                )
-                .first()
+            entities = request.GET.get("entities", "").split(",")
+            entity1_id = int(entities[0])
+            entity2_id = int(entities[1])
+        except ValueError:
+            raise ValidationError(
+                "Entities parameter is required and must be a comma separated list of 2 entities IDs."
             )
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
+
+        duplicate = (
+            self.get_queryset()
+            .filter(
+                Q(entity1__pk=entity1_id, entity2__pk=entity2_id) | Q(entity1__pk=entity2_id, entity2__pk=entity1_id)
+            )
+            .first()
+        )
+
+        if not duplicate:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "Entity duplicate not found."})
 
         # we need to create the expected answer from all the fields
         # we need to get the fields from the analyze
         analyze = duplicate.analyze
-        fields = analyze.metadata["fields"]
         entity_type_id = analyze.metadata["entity_type_id"]
 
         try:
             et = EntityType.objects.get(pk=int(entity_type_id))
         except EntityType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entitytype not found"})
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "EntityType not found."})
 
         fields_data = []
 
@@ -488,17 +505,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
                     continue
                 if is_UUID(e1_val):
                     continue
-                e1_type = type(e1_val).__name__
             except:
                 e1_val = "Not Found"
-                e1_type = "Not Found"
 
             try:
                 e2_val = e2_json[the_q["name"]]
-                e2_type = type(e2_val).__name__
             except:
                 e2_val = "Not Found"
-                e2_type = "Not Found"
 
             fields_data.append(
                 {
@@ -524,13 +537,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
 
-        if version1 is None:
+        if not version1:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
             )
 
-        if version2 is None:
+        if not version2:
             return Response(
                 status=status.HTTP_404_NOT_FOUND,
                 data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},

@@ -43,117 +43,115 @@ const MarkerInputs = ({
         [errorsCoordinates, setErrorsCoordinates],
     );
     return (
-        <>
-            <Box>
-                {!orgUnit.geo_json && !hasMarker && (
+        <Box>
+            {!orgUnit.geo_json && !hasMarker && (
+                <Box mb={2} mt={2}>
+                    <Button
+                        variant="outlined"
+                        disabled={actionBusy}
+                        onClick={() => toggleAddMarker()}
+                        className={classes.button}
+                        color="primary"
+                    >
+                        <AddLocation className={classes.buttonIcon} />
+                        {!isCreatingMarker && (
+                            <FormattedMessage {...MESSAGES.addLocation} />
+                        )}
+                        {isCreatingMarker && (
+                            <FormattedMessage {...MESSAGES.done} />
+                        )}
+                    </Button>
+                </Box>
+            )}
+            {hasMarker && (
+                <>
+                    <InputComponent
+                        errors={errorsCoordinates.latitude}
+                        setFieldError={handleSetError}
+                        disabled={actionBusy}
+                        keyValue="latitude"
+                        required
+                        onChange={(_, newlatitude) => {
+                            onChangeLocation({
+                                latitude: newlatitude,
+                                longitude,
+                                altitude,
+                            });
+                            handleSetError('latitude');
+                        }}
+                        value={latitude}
+                        type="number"
+                        label={MESSAGES.latitude}
+                        numberInputOptions={{
+                            min: -90,
+                            max: 90,
+                            decimalScale: 4,
+                        }}
+                    />
+                    <InputComponent
+                        setFieldError={handleSetError}
+                        errors={errorsCoordinates.longitude}
+                        disabled={actionBusy}
+                        keyValue="longitude"
+                        onChange={(_, newLongitude) => {
+                            onChangeLocation({
+                                latitude,
+                                longitude: newLongitude,
+                                altitude,
+                            });
+                            handleSetError('longitude');
+                        }}
+                        required
+                        value={longitude}
+                        type="number"
+                        label={MESSAGES.longitude}
+                        numberInputOptions={{
+                            min: -180,
+                            max: 180,
+                            decimalScale: 4,
+                        }}
+                    />
+                    <InputComponent
+                        disabled={actionBusy}
+                        keyValue="altitude"
+                        value={altitude}
+                        type="number"
+                        label={MESSAGES.altitude}
+                        numberInputOptions={{
+                            decimalScale: 4,
+                        }}
+                        onChange={(_, newAltitude) =>
+                            onChangeLocation({
+                                altitude:
+                                    newAltitude === undefined
+                                        ? null
+                                        : newAltitude,
+                                longitude,
+                                latitude,
+                            })
+                        }
+                    />
                     <Box mb={2} mt={2}>
                         <Button
+                            disabled={actionBusy}
                             variant="outlined"
-                            disabled={actionBusy}
-                            onClick={() => toggleAddMarker()}
-                            className={classes.button}
                             color="primary"
-                        >
-                            <AddLocation className={classes.buttonIcon} />
-                            {!isCreatingMarker && (
-                                <FormattedMessage {...MESSAGES.addLocation} />
-                            )}
-                            {isCreatingMarker && (
-                                <FormattedMessage {...MESSAGES.done} />
-                            )}
-                        </Button>
-                    </Box>
-                )}
-                {hasMarker && (
-                    <>
-                        <InputComponent
-                            errors={errorsCoordinates.latitude}
-                            setFieldError={handleSetError}
-                            disabled={actionBusy}
-                            keyValue="latitude"
-                            required
-                            onChange={(_, newlatitude) => {
+                            className={classes.button}
+                            onClick={() =>
                                 onChangeLocation({
-                                    latitude: newlatitude,
-                                    longitude,
-                                    altitude,
-                                });
-                                handleSetError('latitude');
-                            }}
-                            value={latitude}
-                            type="number"
-                            label={MESSAGES.latitude}
-                            numberInputOptions={{
-                                min: -90,
-                                max: 90,
-                                decimalScale: 4,
-                            }}
-                        />
-                        <InputComponent
-                            setFieldError={handleSetError}
-                            errors={errorsCoordinates.longitude}
-                            disabled={actionBusy}
-                            keyValue="longitude"
-                            onChange={(_, newLongitude) => {
-                                onChangeLocation({
-                                    latitude,
-                                    longitude: newLongitude,
-                                    altitude,
-                                });
-                                handleSetError('longitude');
-                            }}
-                            required
-                            value={longitude}
-                            type="number"
-                            label={MESSAGES.longitude}
-                            numberInputOptions={{
-                                min: -180,
-                                max: 180,
-                                decimalScale: 4,
-                            }}
-                        />
-                        <InputComponent
-                            disabled={actionBusy}
-                            keyValue="altitude"
-                            value={altitude}
-                            type="number"
-                            label={MESSAGES.altitude}
-                            numberInputOptions={{
-                                decimalScale: 4,
-                            }}
-                            onChange={(_, newAltitude) =>
-                                onChangeLocation({
-                                    altitude:
-                                        newAltitude === undefined
-                                            ? null
-                                            : newAltitude,
-                                    longitude,
-                                    latitude,
+                                    latitude: null,
+                                    longitude: null,
+                                    altitude: null,
                                 })
                             }
-                        />
-                        <Box mb={2} mt={2}>
-                            <Button
-                                disabled={actionBusy}
-                                variant="outlined"
-                                color="primary"
-                                className={classes.button}
-                                onClick={() =>
-                                    onChangeLocation({
-                                        latitude: null,
-                                        longitude: null,
-                                        altitude: null,
-                                    })
-                                }
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage {...MESSAGES.deleteMarker} />
-                            </Button>
-                        </Box>
-                    </>
-                )}
-            </Box>
-        </>
+                        >
+                            <DeleteIcon className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.deleteMarker} />
+                        </Button>
+                    </Box>
+                </>
+            )}
+        </Box>
     );
 };
 MarkerInputs.propTypes = {

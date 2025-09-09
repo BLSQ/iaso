@@ -1,12 +1,11 @@
-import { TableBody } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
+import { TableBody } from '@mui/material';
+import { HighlightFields } from '../../Components/HighlightFieldsChanges';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
     newFields: NewOrgUnitField[];
-    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     isFetchingChangeRequest: boolean;
     changeRequest?: OrgUnitChangeRequestDetails;
@@ -30,7 +29,6 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                     changeRequest && changeRequest[`new_${field.key}`];
                 const changedFieldWithOldValues =
                     changeRequest && changeRequest[`old_${field.key}`];
-
                 return (
                     <HighlightFields
                         key={key}

@@ -1,7 +1,6 @@
-/* eslint-disable camelcase */
 import { UseQueryResult, UseMutationResult } from 'react-query';
 import { useSnackQuery, useSnackMutation } from '../../../../../libs/apiHooks';
-import { Analysis } from '../../types';
+import { Analysis, Parameters } from '../../types';
 import { getRequest, postRequest } from '../../../../../libs/Api';
 
 export const useGetLatestAnalysis = (): UseQueryResult<Analysis, any> => {
@@ -22,7 +21,7 @@ export type Payload = {
     algorithm: string;
     entity_type_id: number;
     fields: string[];
-    parameters: Record<string, string>;
+    parameters: Parameters;
 };
 
 export const useStartAnalyse = (): UseMutationResult => {

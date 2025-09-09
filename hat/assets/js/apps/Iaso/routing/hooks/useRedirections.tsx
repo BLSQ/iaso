@@ -1,11 +1,11 @@
-import { getSort } from 'bluesquare-components';
 import React, { ReactElement } from 'react';
+import { getSort } from 'bluesquare-components';
 import { Route } from 'react-router-dom';
 import Page404 from '../../components/errors/Page404';
 import { baseUrls } from '../../constants/urls';
-import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
 import { defaultSorted as storageDefaultSort } from '../../domains/storages/config';
 import { defaultSorted as workflowDefaultSort } from '../../domains/workflows/config/index';
+import { useHomeOfflineComponent } from '../../plugins/hooks/routes';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../utils/featureFlags';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Redirect } from '../Redirect';
@@ -134,13 +134,12 @@ const baseRedirections = [
 
 type UseRedirectionsArgs = {
     hasNoAccount: boolean;
-    isFetchingCurrentUser: boolean;
     homeUrl?: string;
     pluginRedirections: any[];
     userHomePage?: string;
     allowAnonymous: boolean;
 };
-// eslint-disable-next-line no-unused-vars
+
 type RedirectionsMethod = (args: UseRedirectionsArgs) => ReactElement[];
 
 type Redirection = {
@@ -153,7 +152,6 @@ const defaultHomeUrl = `/${baseUrls.forms}`;
 
 export const useRedirections: RedirectionsMethod = ({
     hasNoAccount,
-    isFetchingCurrentUser,
     pluginRedirections,
     userHomePage,
     allowAnonymous,
@@ -164,31 +162,29 @@ export const useRedirections: RedirectionsMethod = ({
 
     const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
 
-    if (!isFetchingCurrentUser) {
-        if (hasNoAccount) {
-            redirections = setupRedirections;
-        } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
+    if (hasNoAccount) {
+        redirections = setupRedirections;
+    } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
+        redirections = [
+            {
+                path: '/home',
+                to: '/login',
+            },
+        ];
+    } else {
+        redirections = [...baseRedirections, ...pluginRedirections];
+        if (!canShowHome || userHomePage) {
             redirections = [
                 {
-                    path: '/home',
-                    to: '/login',
+                    path: '/',
+                    to: userHomePage || defaultHomeUrl,
                 },
+                {
+                    path: '/home',
+                    to: userHomePage || defaultHomeUrl,
+                },
+                ...redirections,
             ];
-        } else {
-            redirections = [...baseRedirections, ...pluginRedirections];
-            if (!canShowHome || userHomePage) {
-                redirections = [
-                    {
-                        path: '/',
-                        to: userHomePage || defaultHomeUrl,
-                    },
-                    {
-                        path: '/home',
-                        to: userHomePage || defaultHomeUrl,
-                    },
-                    ...redirections,
-                ];
-            }
         }
     }
     return redirections.map(redirection => {

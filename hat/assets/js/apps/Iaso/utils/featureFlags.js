@@ -8,6 +8,7 @@ export const SHOW_BENEFICIARY_TYPES_IN_LIST_MENU =
     'SHOW_BENEFICIARY_TYPES_IN_LIST_MENU';
 export const SHOW_DEV_FEATURES = 'SHOW_DEV_FEATURES';
 export const SHOW_HOME_ONLINE = 'SHOW_HOME_ONLINE';
+export const ENTITY_DUPLICATES_SOFT_DELETE = 'ENTITY_DUPLICATES_SOFT_DELETE';
 
 /**
  * Check if current user has a feature flag active

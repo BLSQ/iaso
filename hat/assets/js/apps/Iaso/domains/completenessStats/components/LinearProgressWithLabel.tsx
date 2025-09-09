@@ -5,35 +5,40 @@ type Props = {
     value: number;
     color?: string;
     extraLabel?: string;
-}
+};
 
 const styles = {
     root: {
-        display: "flex",
-        alignItems: "center",
-        flexDirection: "column",
+        display: 'flex',
+        alignItems: 'center',
+        flexDirection: 'column',
     },
     valueContainer: {
         minWidth: 35,
     },
     progressBarContainer: {
-        width: "100%",
+        width: '100%',
         marginRight: 1,
     },
     typography: (color?: string) => ({
-        color:  color || 'primary.main',
+        color: color || 'primary.main',
     }),
     progressBar: (color?: string) => ({
         backgroundColor: 'white',
         height: '8px',
-        boxShadow: theme => `0px 0px 0px 1px ${theme.palette.ligthGray.border} inset`,
+        boxShadow: theme =>
+            `0px 0px 0px 1px ${theme.palette.ligthGray.border} inset`,
         '& .MuiLinearProgress-bar': {
             backgroundColor: color || 'primary.main',
         },
     }),
 };
 
-export const LinearProgressWithLabel: FunctionComponent<Props> = ({ value, color, extraLabel }) => (
+export const LinearProgressWithLabel: FunctionComponent<Props> = ({
+    value,
+    color,
+    extraLabel,
+}) => (
     <Box sx={styles.root}>
         <Box sx={styles.valueContainer}>
             <Typography variant="body2" sx={styles.typography(color)}>

@@ -1,15 +1,16 @@
-/* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { QueryKey, UseQueryResult } from 'react-query';
+import { PaginatedResponse } from 'Iaso/domains/app/types';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { Campaign } from '../../../../constants/types';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
-export type CampaignCategory = 'all' | 'preventive' | 'test' | 'regular';
+export type CampaignCategory = 'all' | 'preventive' | 'on_hold' | 'regular';
 
 export type Options = {
     pageSize?: number;
@@ -25,11 +26,10 @@ export type Options = {
     campaignGroups?: number[];
     orgUnitGroups?: number[];
     show_test?: boolean;
+    on_hold?: boolean;
     enabled?: boolean;
-    last_budget_event__status?: string;
     fieldset?: string;
     filterLaunched?: boolean;
-    notShowTest?: boolean;
 };
 
 export type GetCampaignsParams = {
@@ -46,17 +46,15 @@ export type GetCampaignsParams = {
     campaign_groups?: number[];
     org_unit_groups?: number[];
     show_test?: boolean;
+    on_hold?: boolean;
     // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
     enabled?: boolean;
-    last_budget_event__status?: string;
     fieldset?: string;
     format?: string;
-    not_show_test?: boolean;
 };
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     const filteredParams: [string, any][] = Object.entries(urlParams).filter(
-        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         ([_key, value]) => value !== undefined,
     );
 
@@ -84,10 +82,10 @@ export const useGetCampaignsOptions = (
             campaign_groups: options.campaignGroups,
             org_unit_groups: options.orgUnitGroups,
             show_test: options.show_test ?? false,
+            on_hold: options.on_hold ?? false,
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
-            last_budget_event__status: options.last_budget_event__status,
-            fieldset: asCsv ? undefined : options.fieldset ?? undefined,
+            fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
         }),
         [
             asCsv,
@@ -105,8 +103,8 @@ export const useGetCampaignsOptions = (
             options.orgUnitGroups,
             options.show_test,
             options.enabled,
-            options.last_budget_event__status,
             options.fieldset,
+            options.on_hold,
         ],
     );
 };
@@ -118,7 +116,7 @@ export const useGetCampaigns = (
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
-): UseQueryResult<any, any> => {
+): UseQueryResult<PaginatedResponse<Campaign> | Campaign[], Error> => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {
@@ -133,7 +131,8 @@ export const useGetCampaigns = (
     }, [params, queryKey, queryOptions]);
     return useSnackQuery({
         queryKey: effectiveQueryKey,
-        queryFn: () => getRequest(getURL(params, url)),
+        queryFn: (): Promise<Campaign[] | PaginatedResponse<Campaign>> =>
+            getRequest(getURL(params, url)),
         options: {
             cacheTime: Infinity,
             staleTime: 1000 * 60 * 15,
@@ -169,11 +168,10 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test:
-                (params.campaignCategory === 'test' ||
-                    params.campaignCategory === 'all') &&
-                !params.notShowTest,
-            last_budget_event__status: params.last_budget_event__status,
+            show_test: params.show_test ?? true,
+            on_hold:
+                params.campaignCategory === 'on_hold' ||
+                params.campaignCategory === 'all',
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,
         };

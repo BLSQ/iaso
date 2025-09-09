@@ -1,5 +1,3 @@
-import { LangOptions } from 'bluesquare-components';
-import moment from 'moment';
 import React, {
     createContext,
     useContext,
@@ -7,20 +5,25 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { longDateFormats } from '../../../utils/dates';
+import { LangOptions } from 'bluesquare-components';
+import moment from 'moment';
+import { LANGUAGE_CONFIGS } from 'IasoModules/language/configs';
 
 const LocaleContext = createContext({
     locale: moment.locale(),
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    setLocale: (locale: LangOptions) => {
+    setLocale: (_locale: LangOptions) => {
         /* noop */
     },
 });
 
 const updateMomentLocale = (newLocale: LangOptions) => {
     moment.locale(newLocale);
+    // Use LANGUAGE_CONFIGS for date formats with fallback to English
+    const dateFormats =
+        LANGUAGE_CONFIGS[newLocale]?.dateFormats ||
+        LANGUAGE_CONFIGS.en?.dateFormats;
     moment.updateLocale(newLocale, {
-        longDateFormat: longDateFormats[newLocale],
+        longDateFormat: dateFormats,
         week: {
             dow: 1,
         },
@@ -37,7 +40,6 @@ export const LocaleProvider = ({ children }) => {
 
     const value: {
         locale: LangOptions;
-        // eslint-disable-next-line no-unused-vars
         setLocale: (newLocale: LangOptions) => void;
     } = useMemo(
         () => ({

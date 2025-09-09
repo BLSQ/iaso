@@ -1,16 +1,18 @@
-import React from 'react';
-import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
+import React from 'react';
 
 import {
-    IconButton,
     formatThousand,
+    HeaderRowIcon,
+    IconButton,
+    LinkWithLocation,
     textPlaceholder,
-    HeaderRowIcon,LinkWithLocation
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 
+import { INSTANCE_STATUSES } from '../instances/constants';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
@@ -18,7 +20,6 @@ import {
     PERIOD_TYPE_YEAR,
     PERIOD_TYPES,
 } from '../periods/constants';
-import { INSTANCE_STATUSES } from '../instances/constants';
 
 import MESSAGES from './messages';
 
@@ -131,7 +132,7 @@ export const getColumns = (
                             (sum, count) => count + sum,
                             0,
                         );
-                        return <>{total && formatThousand(total)}</>;
+                        return total && formatThousand(total);
                     },
                     width: STATUS_COLUMN_SIZES[activePeriodType],
                 })),

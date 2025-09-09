@@ -3,8 +3,9 @@ import typing
 from django.db.models import Q
 from rest_framework import serializers
 
-from iaso.models import Form, OrgUnitType, OrgUnit, Project
-from ..common import TimestampField, DynamicFieldsModelSerializer
+from iaso.models import Form, OrgUnit, OrgUnitType, Project
+
+from ..common import DynamicFieldsModelSerializer, TimestampField
 from ..forms import FormSerializer
 from ..projects.serializers import ProjectSerializer
 
@@ -79,18 +80,25 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
 
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
-        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
-            self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
-        orgunits_count = orgUnits.count()
-        return orgunits_count
+        # Show count if it's a detail view OR if with_units_count parameter is present
+        if self.context.get("view_action") == "retrieve" or self.context["request"].query_params.get(
+            "with_units_count"
+        ):
+            orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+                self.context["request"].user, self.context["request"].query_params.get("app_id")
+            ).filter(Q(org_unit_type__id=obj.id))
+            return orgUnits.count()
+        return None
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         # Filter sub unit types to show only visible items for the current app id
-        unit_types = obj.allow_creating_sub_unit_types.all()
-        app_id = self.context["request"].query_params.get("app_id")
-        if app_id is not None:
-            unit_types = unit_types.filter(projects__app_id=app_id)
+        if hasattr(obj, "filtered_allow_creating_sub_unit_types"):
+            unit_types = obj.filtered_allow_creating_sub_unit_types
+        else:
+            unit_types = obj.allow_creating_sub_unit_types.all()
+            app_id = self.context["request"].query_params.get("app_id")
+            if app_id is not None:
+                unit_types = unit_types.filter(projects__app_id=app_id)
 
         return OrgUnitTypeSerializerV1(
             unit_types,
@@ -120,6 +128,12 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
         return data
+
+    def to_representation(self, instance):
+        # Remove units_count from fields if not requested
+        if not self.context["request"].query_params.get("with_units_count"):
+            self.fields.pop("units_count", None)
+        return super().to_representation(instance)
 
 
 class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
@@ -179,11 +193,15 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
 
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
-        orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
-            self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
-        orgunits_count = orgUnits.count()
-        return orgunits_count
+        # Show count if it's a detail view OR if with_units_count parameter is present
+        if self.context.get("view_action") == "retrieve" or self.context["request"].query_params.get(
+            "with_units_count"
+        ):
+            orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
+                self.context["request"].user, self.context["request"].query_params.get("app_id")
+            ).filter(Q(org_unit_type__id=obj.id))
+            return orgUnits.count()
+        return None
 
     def get_reference_forms(self, obj: OrgUnitType):
         return FormSerializer(
@@ -243,3 +261,18 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
         validate_reference_forms(data)
         return data
+
+    def to_representation(self, instance):
+        # Remove units_count from fields if not requested
+        if not self.context.get("view_action") == "retrieve" and not self.context["request"].query_params.get(
+            "with_units_count"
+        ):
+            self.fields.pop("units_count", None)
+        return super().to_representation(instance)
+
+
+class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name", "depth"]
+        read_only_fields = ["id", "name", "depth"]

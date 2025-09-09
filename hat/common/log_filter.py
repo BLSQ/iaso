@@ -10,6 +10,6 @@ class StaticUrlFilter(logging.Filter):
     def filter(self, record):  # type: ignore
         if record.module == "basehttp":
             if len(record.args) > 0 and isinstance(record.args[0], str):
-                return record.args[0].find(" {}".format(settings.STATIC_URL)) < 0
+                return record.args[0].find(f" {settings.STATIC_URL}") < 0
 
         return True

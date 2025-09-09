@@ -9,18 +9,17 @@ import {
     useGoBack,
 } from 'bluesquare-components';
 
+import TopBar from '../../../../components/nav/TopBarComponent';
+import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
+import { baseUrls } from '../../../../constants/urls';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
-import InputComponent from '../../../../components/forms/InputComponent';
-import TopBar from '../../../../components/nav/TopBarComponent';
-import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
+import MESSAGES from '../messages';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
-import MESSAGES from '../messages';
-import { baseUrls } from '../../../../constants/urls';
-import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 type Params = {
     instanceIds: string;
@@ -57,12 +56,15 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             isFetching: isInstanceLogBFetching,
             isError: isInstanceLogBError,
         },
-    ] = useGetInstanceLogDetail([params.logA, params.logB]);
+    ] = useGetInstanceLogDetail(instanceId, [params.logA, params.logB]);
 
     const instanceLogContent = useMemo(
         () => ({
             logA: instanceLogA?.new_value[0]?.fields,
             logB: instanceLogB?.new_value[0]?.fields,
+            logAFiles: instanceLogA?.files,
+            logBFiles: instanceLogB?.files,
+            fields: instanceLogA?.possible_fields,
         }),
         [instanceLogA, instanceLogB],
     );
@@ -93,27 +95,29 @@ export const CompareInstanceLogs: FunctionComponent = () => {
             const newParams: Params = {
                 ...params,
             };
-            if (!params.logA && instanceLogsDropdown[0]?.value) {
-                newParams.logA = instanceLogsDropdown[0]?.value.toString();
+            const logADropDownValue = instanceLogsDropdown?.slice(-1)[0]?.value;
+            const logBDropDownValue = instanceLogsDropdown[0]?.value;
+            if (!params.logA && logADropDownValue) {
+                newParams.logA = logADropDownValue.toString();
             }
-            if (!params.logB && instanceLogsDropdown[1]?.value) {
-                newParams.logB = instanceLogsDropdown[1]?.value.toString();
+            if (!params.logB && logBDropDownValue) {
+                newParams.logB = logBDropDownValue.toString();
             }
             if (
-                (!params.logA && instanceLogsDropdown[0]?.value) ||
-                (!params.logB && instanceLogsDropdown[1]?.value)
+                (!params.logA && logADropDownValue) ||
+                (!params.logB && logBDropDownValue)
             ) {
                 redirectToReplace(baseUrls.compareInstanceLogs, newParams);
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [instanceLogsDropdown, params]);
+    }, [instanceLogsDropdown, params, redirectToReplace]);
+
     useEffect(() => {
         setLogAInitialValue(
-            instanceLogsDropdown && instanceLogsDropdown[0]?.value,
+            instanceLogsDropdown && instanceLogsDropdown?.slice(-1)[0]?.value,
         );
         setLogBInitialValue(
-            instanceLogsDropdown && instanceLogsDropdown[1]?.value,
+            instanceLogsDropdown && instanceLogsDropdown[0]?.value,
         );
     }, [instanceLogsDropdown, isFetchingInstanceLogs]);
 
@@ -131,35 +135,36 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                 goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={2}>
-                    <Grid xs={12} md={6} item>
-                        <InputComponent
-                            clearable={false}
-                            type="select"
-                            keyValue="logA"
-                            onChange={handleChange}
+                <Grid
+                    container
+                    spacing={3}
+                    display="flex"
+                    justifyContent="flex-end"
+                >
+                    <Grid xs={12} md={4.5} item>
+                        <InstanceLogInfos
+                            log="logA"
+                            logTitle="Version A"
+                            dropDownHandleChange={handleChange}
                             value={params.logA || logAInitialValue}
                             label={MESSAGES.instanceLogsVersionA}
+                            user={instanceLogA?.user}
+                            infos={instanceLogContent.logA}
+                            loading={isInstanceLogAFetching}
                             options={instanceLogsDropdown?.filter(
                                 instance =>
                                     instance.value !==
                                     (parseInt(params.logB, 10) ||
                                         logBInitialValue),
                             )}
-                            loading={isFetchingInstanceLogs}
-                        />
-                        <InstanceLogInfos
-                            user={instanceLogA?.user}
-                            infos={instanceLogContent.logA}
-                            loading={isInstanceLogAFetching}
+                            dropDownLoading={isFetchingInstanceLogs}
                         />
                     </Grid>
-                    <Grid xs={12} md={6} item>
-                        <InputComponent
-                            clearable={false}
-                            type="select"
-                            keyValue="logB"
-                            onChange={handleChange}
+                    <Grid xs={12} md={4.5} item>
+                        <InstanceLogInfos
+                            log="logB"
+                            logTitle="Version B"
+                            dropDownHandleChange={handleChange}
                             value={params.logB || logBInitialValue}
                             label={MESSAGES.instanceLogsVersionB}
                             options={instanceLogsDropdown?.filter(
@@ -169,12 +174,9 @@ export const CompareInstanceLogs: FunctionComponent = () => {
                                         logAInitialValue),
                             )}
                             loading={isFetchingInstanceLogs}
-                        />
-
-                        <InstanceLogInfos
                             user={instanceLogA?.user}
                             infos={instanceLogContent.logB}
-                            loading={isInstanceLogBFetching}
+                            dropDownLoading={isInstanceLogBFetching}
                         />
                     </Grid>
 

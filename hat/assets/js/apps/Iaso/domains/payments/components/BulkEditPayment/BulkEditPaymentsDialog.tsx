@@ -52,28 +52,23 @@ const BulkEditPaymentDialog: FunctionComponent<Props> = ({
         count,
     });
     return (
-        <>
-            <ConfirmCancelModal
-                open={isOpen}
-                onClose={() => {
-                    setStatus('pending');
-                }}
-                id="EditPaymentDialog"
-                dataTestId="EditPaymentDialog"
-                titleMessage={titleMessage}
-                closeDialog={closeDialog}
-                onConfirm={handleConfirm}
-                onCancel={() => null}
-                confirmMessage={MESSAGES.save}
-                cancelMessage={MESSAGES.cancel}
-                closeOnConfirm={false}
-            >
-                <StatusSelect
-                    value={status}
-                    onChange={value => setStatus(value)}
-                />
-            </ConfirmCancelModal>
-        </>
+        <ConfirmCancelModal
+            open={isOpen}
+            onClose={() => {
+                setStatus('pending');
+            }}
+            id="EditPaymentDialog"
+            dataTestId="EditPaymentDialog"
+            titleMessage={titleMessage}
+            closeDialog={closeDialog}
+            onConfirm={handleConfirm}
+            onCancel={() => null}
+            confirmMessage={MESSAGES.save}
+            cancelMessage={MESSAGES.cancel}
+            closeOnConfirm={false}
+        >
+            <StatusSelect value={status} onChange={value => setStatus(value)} />
+        </ConfirmCancelModal>
     );
 };
 

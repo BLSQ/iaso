@@ -1,8 +1,11 @@
 import json
+
+from django.utils.text import slugify
+
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
-from django.utils.text import slugify
+
 
 data_store_content1 = json.dumps({"hello": "world"})
 data_store_content2 = json.dumps({"wait": "what"})
@@ -130,7 +133,9 @@ class JsonDataStoreAPITestCase(APITestCase):
         new_slug = "new_slug"
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.put(
-            f"{api_url}{self.data_store1.slug}/", {"key": f"{new_slug}", "data": data_store_content2}
+            f"{api_url}{self.data_store1.slug}/",
+            {"key": f"{new_slug}", "data": data_store_content2},
+            format="multipart",
         )
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["key"], new_slug)

@@ -1,4 +1,10 @@
-/* eslint-disable camelcase */
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -8,36 +14,31 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import * as Permissions from '../../../utils/permissions';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
-import PermissionsSwitches from './PermissionsSwitches';
-import UsersInfos from './UsersInfos';
+import PermissionsAttribution from './PermissionsAttribution';
+import { useInitialUser } from './useInitialUser';
+import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
+import UsersDialogTabDisabled from './UsersDialogTabDisabled';
+import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
-import { useInitialUser } from './useInitialUser';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
         marginBottom: theme.spacing(3),
     },
-    tab: {
-        padding: 0,
-        width: '25%',
-        minWidth: 0,
-    },
     root: {
-        minHeight: 365,
         position: 'relative',
     },
     hiddenOpacity: {
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: -5000,
         zIndex: -10,
@@ -52,7 +53,9 @@ type Props = {
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
+    canBypassProjectRestrictions: boolean;
 };
+
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
 const UserDialogComponent: FunctionComponent<Props> = ({
@@ -62,17 +65,26 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     saveProfile,
     allowSendEmailInvitation = false,
     closeDialog,
+    canBypassProjectRestrictions,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
 
     const queryClient = useQueryClient();
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
-    const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
+    const {
+        user,
+        setFieldValue,
+        setFieldErrors,
+        setPhoneNumber,
+        hasErrors,
+        setEmail,
+    } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
+        useState<boolean>(false);
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -97,36 +109,99 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     }, [
         closeDialog,
         connectedUser.id,
-        dispatch,
+        queryClient,
         saveProfile,
         setFieldErrors,
         user,
     ]);
 
+    const userPermissions = user?.user_permissions.value ?? [];
+    const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+
+    const isPhoneNumberUpdated =
+        user.phone_number.value !== initialData.phone_number && user.id?.value;
+
+    const isUserWithoutPermissions =
+        userPermissions.length === 0 &&
+        userRolesPermissions.length === 0 &&
+        !initialData?.is_superuser;
+
     const onConfirm = useCallback(() => {
-        const userPermissions = user?.user_permissions.value ?? [];
-        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
         if (
-            userPermissions.length > 0 ||
-            userRolesPermissions.length > 0 ||
-            initialData?.is_superuser
+            // If user is not new user and phone number is changed
+            isPhoneNumberUpdated ||
+            isUserWithoutPermissions
         ) {
-            saveUser();
-        } else {
             setOpenWarning(true);
+        } else {
+            saveUser();
         }
-    }, [
-        initialData?.is_superuser,
-        saveUser,
-        user?.user_permissions.value,
-        user?.user_roles_permissions.value,
-    ]);
+    }, [isPhoneNumberUpdated, isUserWithoutPermissions, saveUser]);
+
+    const warningTitleMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.permAndPhoneWarningTitle);
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarning);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.createUserWithoutPerm);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const warningBodyMessage = useMemo(() => {
+        if (isPhoneNumberUpdated && isUserWithoutPermissions) {
+            return `1/ ${formatMessage(MESSAGES.phoneNumberWarningMessage)}
+            2/ ${formatMessage(MESSAGES.warningModalMessage)}`;
+        }
+        if (isPhoneNumberUpdated) {
+            return formatMessage(MESSAGES.phoneNumberWarningMessage);
+        }
+        if (isUserWithoutPermissions) {
+            return formatMessage(MESSAGES.warningModalMessage);
+        }
+        return '';
+    }, [formatMessage, isPhoneNumberUpdated, isUserWithoutPermissions]);
+
+    const allUserRolesPermissions = useMemo(
+        () =>
+            user.user_roles_permissions.value.flatMap(role => role.permissions),
+        [user.user_roles_permissions.value],
+    );
+
+    const allUserUserRolesPermissions = useMemo(() => {
+        const allUserPermissions = user.user_permissions.value;
+
+        return [
+            ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
+        ];
+    }, [allUserRolesPermissions, user.user_permissions.value]);
+    useEffect(() => {
+        setHasNoOrgUnitManagementWrite(
+            !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
+        );
+    }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
+    const isNewUser = !user.id?.value;
+    const allowConfirm =
+        !hasErrors &&
+        !(
+            user.user_name.value === '' ||
+            (isNewUser &&
+                (((!user.password.value || user.password.value === '') &&
+                    !user.send_email_invitation.value) ||
+                    (user.send_email_invitation.value &&
+                        user.email?.value === '')))
+        );
     return (
         <>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
                 onConfirm={saveUser}
+                titleMessage={warningTitleMessage}
+                bodyMessage={warningBodyMessage}
             />
 
             <ConfirmCancelModal
@@ -136,19 +211,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 maxWidth="md"
                 open={isOpen}
-                closeDialog={() => null}
-                allowConfirm={
-                    !(
-                        user.user_name.value === '' ||
-                        (!user.id?.value && user.password.value === '')
-                    )
-                }
+                closeDialog={closeDialog}
+                allowConfirm={allowConfirm}
                 onClose={() => null}
-                onCancel={() => {
-                    closeDialog();
-                }}
+                onCancel={closeDialog}
                 id="user-dialog"
                 dataTestId="user-dialog"
+                closeOnConfirm={false}
             >
                 <Tabs
                     id="user-dialog-tabs"
@@ -179,6 +248,24 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
+                    {hasNoOrgUnitManagementWrite ? (
+                        <UsersDialogTabDisabled
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                            disabled
+                            tooltipMessage={formatMessage(
+                                MESSAGES.OrgUnitTypeWriteDisableTooltip,
+                                { type: formatMessage(MESSAGES.user) },
+                            )}
+                        />
+                    ) : (
+                        <Tab
+                            classes={{
+                                root: classes.tab,
+                            }}
+                            value="orgUnitWriteTypes"
+                            label={formatMessage(MESSAGES.orgUnitWriteTypes)}
+                        />
+                    )}
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
                     <div
@@ -191,30 +278,42 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             initialData={initialData}
                             currentUser={user}
                             allowSendEmailInvitation={allowSendEmailInvitation}
+                            canBypassProjectRestrictions={
+                                canBypassProjectRestrictions
+                            }
+                            setPhoneNumber={setPhoneNumber}
+                            setEmail={setEmail}
                         />
                     </div>
-                    <div
-                        className={
-                            tab === 'permissions' ? '' : classes.hiddenOpacity
-                        }
-                    >
-                        <PermissionsSwitches
+                    {tab === 'permissions' && (
+                        <PermissionsAttribution
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
-                            handleChange={permissions =>
-                                setFieldValue('user_permissions', permissions)
-                            }
+                            handleChange={permissions => {
+                                setFieldValue('user_permissions', permissions);
+                            }}
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
                             }
                         />
-                    </div>
+                    )}
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
                                 setFieldValue('org_units', ouList)
                             }
                             currentUser={user}
+                        />
+                    )}
+                    {tab === 'orgUnitWriteTypes' && (
+                        <UserOrgUnitWriteTypes
+                            currentUser={user}
+                            handleChange={(ouTypesIds: number[]) =>
+                                setFieldValue(
+                                    'editable_org_unit_type_ids',
+                                    ouTypesIds,
+                                )
+                            }
                         />
                     )}
                 </div>

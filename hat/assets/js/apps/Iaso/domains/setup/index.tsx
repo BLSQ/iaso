@@ -1,9 +1,9 @@
+import React, { FunctionComponent, useState } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import React, { FunctionComponent, useState } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
@@ -16,7 +16,6 @@ import {
 } from '../../libs/validation';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
-import { LangSwitch } from '../home/components/LangSwitch';
 import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
 import { useSaveAccount } from './hooks/useSaveAccount';
 import { MESSAGES } from './messages';
@@ -42,7 +41,9 @@ const useStyles = makeStyles(theme => ({
     confirmMessageIcon: {
         fontSize: 120,
         display: 'block',
-        margin: '0 auto',
+        marginRight: theme.spacing(1),
+        position: 'relative',
+        top: 5,
     },
 }));
 
@@ -67,12 +68,15 @@ export const SetupAccount: FunctionComponent = () => {
     const schema = useAccountValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
-            account_name: '',
-            user_username: '',
-            user_first_name: '',
-            user_last_name: '',
-            password: '',
-            modules: [],
+            account_name: undefined,
+            user_username: undefined,
+            user_first_name: undefined,
+            user_last_name: undefined,
+            user_email: undefined,
+            password: undefined,
+            email_invitation: false,
+            language: 'en',
+            modules: ['DATA_COLLECTION_FORMS', 'DEFAULT'],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -95,7 +99,9 @@ export const SetupAccount: FunctionComponent = () => {
         if (keyValue === 'modules' && value) {
             setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
         } else {
-            setFieldValue(keyValue, value);
+            // Set empty strings to undefined to avoid backend validation issues
+            const processedValue = value === '' ? undefined : value;
+            setFieldValue(keyValue, processedValue);
         }
     };
 
@@ -105,23 +111,23 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
-
     const { data: modules, isFetching: isFetchingModules } =
         useGetModulesDropDown();
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
+    const hasAccount = Boolean(currentUser.account);
     return (
         <>
             <TopBar
                 displayBackButton={false}
-                displayMenuButton={false}
-                title={formatMessage(MESSAGES.welcome)}
+                displayMenuButton={hasAccount}
+                title={
+                    !hasAccount
+                        ? formatMessage(MESSAGES.welcome)
+                        : formatMessage(MESSAGES.accountSetup)
+                }
             />
             <Paper className={classes.paper}>
-                <Box display="flex" justifyContent="flex-end">
-                    <LangSwitch />
-                </Box>
-
                 {isAdmin && (
                     <>
                         {isSaved && (
@@ -188,7 +194,6 @@ export const SetupAccount: FunctionComponent = () => {
                                     />
                                     <InputComponent
                                         type="text"
-                                        required
                                         keyValue="user_first_name"
                                         labelString={formatMessage(
                                             MESSAGES.user_first_name,
@@ -198,7 +203,6 @@ export const SetupAccount: FunctionComponent = () => {
                                     />
                                     <InputComponent
                                         type="text"
-                                        required
                                         keyValue="user_last_name"
                                         labelString={formatMessage(
                                             MESSAGES.user_last_name,
@@ -207,8 +211,40 @@ export const SetupAccount: FunctionComponent = () => {
                                         onChange={onChange}
                                     />
                                     <InputComponent
+                                        type="select"
+                                        keyValue="language"
+                                        labelString={formatMessage(
+                                            MESSAGES.language,
+                                        )}
+                                        value={values.language}
+                                        onChange={onChange}
+                                        options={[
+                                            { value: 'en', label: 'English' },
+                                            { value: 'fr', label: 'Français' },
+                                        ]}
+                                    />
+                                    <InputComponent
+                                        type="email"
+                                        keyValue="user_email"
+                                        labelString={formatMessage(
+                                            MESSAGES.user_email,
+                                        )}
+                                        value={values.user_email}
+                                        onChange={onChange}
+                                        errors={getErrors('user_email')}
+                                    />
+                                    <InputComponent
+                                        type="checkbox"
+                                        keyValue="email_invitation"
+                                        labelString={formatMessage(
+                                            MESSAGES.email_invitation,
+                                        )}
+                                        value={values.email_invitation}
+                                        onChange={onChange}
+                                    />
+                                    <InputComponent
                                         type="password"
-                                        required
+                                        required={!values.email_invitation}
                                         keyValue="password"
                                         labelString={formatMessage(
                                             MESSAGES.password,
@@ -216,6 +252,7 @@ export const SetupAccount: FunctionComponent = () => {
                                         value={values.password}
                                         onChange={onChange}
                                         errors={getErrors('password')}
+                                        disabled={values.email_invitation}
                                     />
                                     <InputComponent
                                         type="select"

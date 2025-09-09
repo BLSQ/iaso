@@ -1,8 +1,7 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { FormikProps, FieldInputProps } from 'formik';
-import { Select } from 'bluesquare-components';
 import { Chip } from '@mui/material';
+import { Select } from 'bluesquare-components';
+import { FieldInputProps, FormikProps } from 'formik';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';

@@ -1,8 +1,9 @@
-/* eslint-disable camelcase */
 import { Box } from '@mui/material';
 import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { ColorsHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/ColorsHashedPattern';
 import {
+    HASHED_MAP_PATTERN_N_OPV2_B_OPV,
     OTHER_VACCINE_COLOR,
     PolioVaccine,
     polioVaccines,
@@ -25,15 +26,21 @@ import { ScopeMapLegend } from './ScopeMapLegend';
 import { Shape } from './types';
 import { findScopeWithOrgUnit } from './utils';
 
+const ScopeHashedPattern = () => (
+    <ColorsHashedPattern
+        id={HASHED_MAP_PATTERN_N_OPV2_B_OPV}
+        strokeColor="#00b0f0"
+        fillColor="#ffff00"
+    />
+);
+
 type Props = {
     field: FieldInputProps<Scope[]>;
     values: CampaignFormValues;
     regionShapes: OrgUnit[];
     districtShapes: OrgUnit[];
-    // eslint-disable-next-line no-unused-vars
     onSelectOrgUnit: (id: Shape) => void;
     selectedVaccine: string;
-    // eslint-disable-next-line no-unused-vars
     setSelectedVaccine: (selected: Vaccine) => void;
     isPolio?: boolean;
     availableVaccines?: PolioVaccine[];
@@ -68,10 +75,11 @@ export const MapScope: FunctionComponent<Props> = ({
                 const vaccine = availableVaccines.find(
                     v => v.value === scope.vaccine,
                 );
-                return {
+                const styles = {
                     ...selectedPathOptions,
                     color: vaccine?.color || OTHER_VACCINE_COLOR,
                 };
+                return styles;
             }
             if (values.org_unit?.id === shape.id) return initialDistrict;
             return unselectedPathOptions;
@@ -114,6 +122,8 @@ export const MapScope: FunctionComponent<Props> = ({
                     background: 'Region',
                 }}
                 height={540}
+                shapePatternIds={[HASHED_MAP_PATTERN_N_OPV2_B_OPV]}
+                shapePatterns={[ScopeHashedPattern]}
             />
             {isPolio && (
                 <ScopeMapLegend

@@ -1,19 +1,18 @@
-/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import {
-    WorkflowVersionsPaginated,
     WorkflowsParams,
     WorkflowVersionDetail,
+    WorkflowVersionsPaginated,
 } from '../../types';
 
 const getWorkflowVersions = async (
     options: WorkflowsParams,
 ): Promise<WorkflowVersionsPaginated> => {
     // taking accountId out in order not to pass it to API
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { pageSize, entityTypeId, accountId, ...params } = options as Record<
         string,
         any

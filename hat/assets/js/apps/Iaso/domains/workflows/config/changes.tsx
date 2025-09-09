@@ -1,32 +1,31 @@
-/* eslint-disable camelcase */
-import React from 'react';
 import {
-    useSafeIntl,
+    Column,
     IconButton,
     IntlFormatMessage,
-    Column,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React from 'react';
 
-import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 import { ChangesActionCell } from '../components/changes/ActionCell';
-import { TargetCell } from '../components/changes/TargetCell';
-import { SourceCell } from '../components/changes/SourceCell';
-import { MappingCell } from '../components/changes/MappingCell';
-import { HeadTargetCell } from '../components/changes/HeadTargetCell';
 import { HeadSourceCell } from '../components/changes/HeadSourceCell';
+import { HeadTargetCell } from '../components/changes/HeadTargetCell';
+import { MappingCell } from '../components/changes/MappingCell';
+import { SourceCell } from '../components/changes/SourceCell';
+import { TargetCell } from '../components/changes/TargetCell';
+import MESSAGES from '../messages';
 
+import { DropdownOptions } from '../../../types/utils';
+import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../../forms/types/forms';
 import {
-    WorkflowVersionDetail,
+    Change,
     ChangesOption,
     Mapping,
-    Change,
     ReferenceForm,
+    WorkflowVersionDetail,
 } from '../types';
-import { PossibleField } from '../../forms/types/forms';
-import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
-import { DropdownOptions } from '../../../types/utils';
 
 export const useGetChangesColumns = (
     versionId: string,
@@ -105,28 +104,17 @@ export const useGetChangesColumns = (
 type Params = {
     sourceOptions: ChangesOption[];
     targetOptions: ChangesOption[];
-    handleUpdate: (
-        // eslint-disable-next-line no-unused-vars
-        key: keyof Mapping,
-        // eslint-disable-next-line no-unused-vars
-        value: string,
-        // eslint-disable-next-line no-unused-vars
-        index: number,
-    ) => void;
-    // eslint-disable-next-line no-unused-vars
+    handleUpdate: (key: keyof Mapping, value: string, index: number) => void;
     handleDelete: (index: number) => void;
     mappingArray: Mapping[];
     isFetchingSourcePossibleFields: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleChangeForm: (_, value: string) => void;
     changes?: Change[];
     change?: Change;
     form?: number;
-    // eslint-disable-next-line no-unused-vars
     handleChangeSourceVersion: (_, value: string) => void;
     sourceVersion: string;
     sourceVersionsDropdownOptions: DropdownOptions<string>[];
-    // eslint-disable-next-line no-unused-vars
     handleChangeTargetVersion: (_, value: string) => void;
     targetVersion: string;
     targetVersionsDropdownOptions: DropdownOptions<string>[];

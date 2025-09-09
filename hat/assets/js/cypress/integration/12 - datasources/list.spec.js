@@ -14,7 +14,7 @@ import orgUnitTypes from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/list`;
+const baseUrl = `${siteBaseUrl}/dashboard/settings/sources/list`;
 
 const dataSourceSeeds = Array(11)
     .fill()

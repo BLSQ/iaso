@@ -8,4 +8,5 @@ export const useSaveCurrentUser = (
     useSnackMutation({
         mutationFn: body => patchRequest(`/api/profiles/me/`, body),
         showSucessSnackBar,
+        invalidateQueryKey: 'usersHistoryList',
     });

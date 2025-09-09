@@ -1,6 +1,6 @@
-/* eslint-disable camelcase */
+import { Pagination } from 'bluesquare-components';
 
-type Version = {
+export type Version = {
     number: number;
     description?: string;
     id: number;
@@ -8,20 +8,22 @@ type Version = {
     updated_at: number;
     org_units_count: number;
     is_default?: boolean;
+    data_source?: number;
+    data_source_name?: string;
 };
 
-type Project = {
+export type Project = {
     id: number;
     name: string;
     app_id: string;
 };
 
-type Credentials = {
+export type Credentials = {
     id: number;
     name: string;
     login: string;
     url: string;
-    isValid: boolean;
+    is_valid: boolean;
 };
 
 export type DataSource = {
@@ -38,8 +40,10 @@ export type DataSource = {
     credentials?: Credentials;
     color?: string;
 };
-
-type DataSources = DataSource[];
+export interface PaginatedDataSources extends Pagination {
+    sources: DataSources;
+}
+export type DataSources = DataSource[];
 
 export type DataSourcesApi = {
     sources: DataSources;

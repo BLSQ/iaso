@@ -1,31 +1,27 @@
 import React, { ReactElement, useMemo } from 'react';
 import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import {
-    IconButton as IconButtonComponent,
     Column,
+    IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { EntityTypesDialog } from './components/EntityTypesDialog';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import Workflow from '../../../components/svg/Workflow';
+import { baseUrls } from '../../../constants/urls';
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { EditEntityTypesDialog } from './components/EntityTypesDialog';
 
 import MESSAGES from './messages';
 
-import { baseUrls } from '../../../constants/urls';
-
 import { EntityType } from './types/entityType';
-import { userHasPermission } from '../../users/utils';
-
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 export const baseUrl = baseUrls.entityTypes;
 
 type Props = {
-    // eslint-disable-next-line no-unused-vars
     deleteEntityType: (e: EntityType) => void;
-    // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
 
@@ -72,17 +68,9 @@ export const useColumns = ({
                                 Permission.ENTITY_TYPE_WRITE,
                                 currentUser,
                             ) && (
-                                <EntityTypesDialog
-                                    renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
-                                            id={`edit-button-${type.id}`}
-                                            onClick={openDialog}
-                                            icon="edit"
-                                            dataTestId="edit-button"
-                                            tooltipMessage={MESSAGES.edit}
-                                        />
-                                    )}
+                                <EditEntityTypesDialog
                                     initialData={type}
+                                    iconProps={{}}
                                     titleMessage={MESSAGES.updateMessage}
                                     saveEntityType={saveEntityType}
                                 />
@@ -91,7 +79,7 @@ export const useColumns = ({
                                 id={`entities-link-${type.id}`}
                                 url={`/${baseUrls.entities}/entityTypeIds/${type.id}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`}
                                 icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.beneficiaries}
+                                tooltipMessage={MESSAGES.entities}
                                 disabled={type.entities_count === 0}
                             />
                             {settings.row.original?.reference_form && (

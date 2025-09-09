@@ -1,13 +1,13 @@
 import { Box, Divider, Paper } from '@mui/material';
+import { Column, Paginated, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, Column, Paginated } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-import { BudgetStep } from '../types';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { GraphTitle } from '../../LQAS-IM/shared/charts/GraphTitle';
-import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../constants/messages';
+import { baseUrls } from '../../../constants/urls';
+import { GraphTitle } from '../../LQAS-IM/shared/charts/GraphTitle';
+import { BudgetStep } from '../types';
+import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 
 type Props = {
     budgetDetails?: Paginated<BudgetStep>;
@@ -16,7 +16,6 @@ type Props = {
     columns: Column[];
     params: any;
     showHidden: boolean;
-    // eslint-disable-next-line no-unused-vars
     setShowHidden: (show: boolean) => void;
     stepsList?: DropdownOptions<string>[];
 };

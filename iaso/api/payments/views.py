@@ -1,28 +1,35 @@
 from typing import Dict, Tuple
 
 import django_filters
+
 from django.db import models, transaction
-from django.db.models import Count, OuterRef, Prefetch, Subquery, Q
+from django.db.models import Count, OuterRef, Prefetch, Q, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
-from django.utils.translation import gettext as _
+from django.utils import translation
+from django.utils.translation import get_language_from_request, gettext as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
-from rest_framework.exceptions import NotFound
-from rest_framework.response import Response
+from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
+
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
-from hat.menupermissions import models as permission
 from iaso.api.common import DropdownOptionsListViewSet, DropdownOptionsSerializer, HasPermission, ModelViewSet
-from iaso.api.payments.filters import payments_lots as payments_lots_filters
-from iaso.api.payments.filters import potential_payments as potential_payments_filters
-from iaso.api.tasks import TaskSerializer
+from iaso.api.payments.filters import (
+    payments_lots as payments_lots_filters,
+    potential_payments as potential_payments_filters,
+)
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
+from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
-from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
+from iaso.tasks.create_payment_lot import create_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
 from .serializers import (
@@ -73,7 +80,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -95,8 +102,19 @@ class PaymentLotsViewSet(ModelViewSet):
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
-        queryset = PaymentLot.objects.all()
+        payments = (
+            Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .values_list("payment_lot_id", flat=True)
+            .distinct()
+        )
+        queryset = PaymentLot.objects.filter(id__in=payments)
 
         change_requests_prefetch = Prefetch(
             "payments__change_requests",
@@ -199,6 +217,8 @@ class PaymentLotsViewSet(ModelViewSet):
             # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
                 task = mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
+                instance.task = task
+                instance.save()
                 return Response(
                     {"task": TaskSerializer(instance=task).data},
                     status=status.HTTP_201_CREATED,
@@ -209,42 +229,32 @@ class PaymentLotsViewSet(ModelViewSet):
         responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
     )
     def create(self, request):
-        with transaction.atomic():
-            # Extract user, name, comment, and potential_payments IDs from request data
-            user = self.request.user
-            name = request.data.get("name")
-            comment = request.data.get("comment")
-            potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+        user = self.request.user
+        name = request.data.get("name")
+        comment = request.data.get("comment")
+        potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
 
-            audit_logger = PaymentLotAuditLogger()
+        try:
+            potential_payment_ids = [int(pp_id) for pp_id in potential_payment_ids]
+        except ValueError:
+            raise ValidationError("Expecting `potential_payments` to be a list of IDs.")
 
-            # Link the potential Payments to the payment lot to enable front-end to filter them out while the task is creating the Payments
+        if not potential_payment_ids:
+            raise ValidationError("At least one potential payment required.")
 
-            # Create the PaymentLot instance but don't save it yet
-            payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
+        potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+        task = create_payment_lot(user=user, name=name, potential_payment_ids=potential_payment_ids, comment=comment)
+        # Assign task to potential payments to avoid racing condition when calling potential payments API
+        for potential_payment in potential_payments:
+            if potential_payment.task is None:
+                potential_payment.task = task
+                potential_payment.save()
 
-            # Save the PaymentLot instance to ensure it has a primary key
-            payment_lot.save()
-            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
-            payment_lot.potential_payments.add(*potential_payments)
-            payment_lot.save()
-            audit_logger.log_modification(old_data_dump=None, instance=payment_lot, request_user=user)
-
-            # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
-            # and log everything
-            task = create_payments_from_payment_lot(
-                payment_lot_id=payment_lot.pk,
-                potential_payment_ids=potential_payment_ids,
-                user=user,
-            )
-            payment_lot.task = task
-            # not logging the task assignment to avoid cluttering the audit logs
-            payment_lot.save()
-
-            # Return the created PaymentLot instance
-            # It will be incomplete as the task has to run for all the data to be correct
-            serializer = self.get_serializer(payment_lot)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Return the created Task
+        return Response(
+            {"task": TaskSerializer(instance=task).data},
+            status=status.HTTP_201_CREATED,
+        )
 
     def retrieve(self, request, *args, **kwargs):
         csv_format = bool(request.query_params.get("csv"))
@@ -273,9 +283,16 @@ class PaymentLotsViewSet(ModelViewSet):
 
             forms, forms_count_by_payment = self._get_dynamic_form_columns(payments)
 
+            # The frontend is using `ExternalLinkIconButton` which creates a direct browser link,
+            # thus bypassing the default API client that adds the `Accept-Language` header.
+            # So the Django backend defaults to the default "en" setting.
+            # We pass the language in the querystring as a quick solution.
+            language = self.request.GET.get("lang") or get_language_from_request(self.request)
+            translation.activate(language)
+
             if csv_format:
                 return self.retrieve_to_csv(payment_lot, payments, forms, forms_count_by_payment)
-            elif xlsx_format:
+            if xlsx_format:
                 return self.retrieve_to_xlsx(payment_lot, payments, forms, forms_count_by_payment)
 
         return super().retrieve(request, *args, **kwargs)
@@ -407,7 +424,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
 
-    This API allows to list potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
+    This API allows listing potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
     The Django model that stores "Potential payment" is `PotentialPayment`.
 
@@ -420,7 +437,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -436,9 +453,6 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         "user__last_name",
         "user__first_name",
         "user__iaso_profile__phone_number",
-        "created_at",
-        "updated_at",
-        "status",
         "created_by__username",
         "updated_by__username",
         "change_requests_count",
@@ -451,42 +465,44 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
+
     def get_queryset(self):
         queryset = (
-            PotentialPayment.objects.prefetch_related("change_requests")
+            PotentialPayment.objects.prefetch_related("change_requests__org_unit")
+            .select_related("user__iaso_profile", "payment_lot")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
-            # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
-            .filter(payment_lot__isnull=True)
+            # Filter out potential payments already linked to a task as this means there's a task running converting them into Payment
+            .filter(task__isnull=True)
+            .annotate(change_requests_count=Count("change_requests"))
             .distinct()
         )
-        queryset = queryset.annotate(change_requests_count=Count("change_requests"))
-
         return queryset
 
     def calculate_new_potential_payments(self):
-        users_with_change_requests = (
-            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
-            .values("created_by")
-            .annotate(num_requests=Count("created_by"))
-            .filter(num_requests__gt=0)
+        change_requests = OrgUnitChangeRequest.objects.filter(
+            created_by__iaso_profile__account=self.request.user.iaso_profile.account,
+            status=OrgUnitChangeRequest.Statuses.APPROVED,
+            payment__isnull=True,
+            # Filter out potential payments with task as they are being converted to payments
+            potential_payment__task__isnull=True,
         )
 
-        for user in users_with_change_requests:
-            change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
-                payment__isnull=True,
-                # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
-                potential_payment__payment_lot__isnull=True,
-            )
-            if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    change_request.potential_payment = potential_payment
-                    change_request.save()
-                potential_payment.save()
+        cache = {}
+        for change_request in change_requests:
+            user_id = change_request.created_by_id
+            try:
+                change_request.potential_payment_id = cache[user_id]
+            except KeyError:
+                potential_payment, _ = PotentialPayment.objects.get_or_create(user_id=user_id)
+                change_request.potential_payment_id = potential_payment.pk
+                cache[user_id] = potential_payment.pk
+
+        OrgUnitChangeRequest.objects.bulk_update(change_requests, ["potential_payment"])
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
@@ -557,7 +573,7 @@ class PaymentsViewSet(ModelViewSet):
     """
     # `Payment` API
 
-    This API allows to list and update Payments.
+    This API allows listing and updating Payments.
 
     When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
 
@@ -574,10 +590,24 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        # Pass expensive to compute and potentially large data to the serializer's context.
+        context["user_org_units"] = self.request.user.iaso_profile.get_hierarchy_for_user().values_list("id")
+        return context
 
     def get_queryset(self) -> models.QuerySet:
-        return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+        user = self.request.user
+        localisation = user.iaso_profile.org_units
+        queryset = Payment.objects.filter(
+            created_by__iaso_profile__account=self.request.user.iaso_profile.account
+        ).prefetch_related("change_requests__org_unit")
+        if localisation:
+            authorized_org_units = OrgUnit.objects.filter_for_user(user)
+            queryset = queryset.filter(change_requests__org_unit__in=authorized_org_units)
+        return queryset
 
     def update(self, request, *args, **kwargs):
         with transaction.atomic():

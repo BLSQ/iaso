@@ -36,11 +36,13 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         user.iaso_profile.org_units.set([org_unit])
 
         cls.account = account
+        cls.data_source = data_source
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
+        cls.version = version
 
     def test_filterchange_request_on_date_created_from_and_date_created_to(self):
         self.client.force_authenticate(self.user_with_review_perm)
@@ -231,13 +233,13 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn(change_request_without_location.id, [change["id"] for change in response.data["results"]])
 
     def test_filter_by_multiple_statuses(self):
-        change_request_new = m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit, new_name="New Request", status=m.OrgUnitChangeRequest.Statuses.NEW
         )
-        change_request_rejected = m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit, new_name="Rejected Request", status=m.OrgUnitChangeRequest.Statuses.REJECTED
         )
-        change_request_approved = m.OrgUnitChangeRequest.objects.create(
+        m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit, new_name="Approved Request", status=m.OrgUnitChangeRequest.Statuses.APPROVED
         )
 
@@ -305,3 +307,98 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertNotIn(change_request_with_potential_payment.id, result_ids)
         self.assertNotIn(change_request_approved.id, result_ids)
         self.assertNotIn(change_request_new.id, result_ids)
+
+    def test_filter_on_data_source_synchronization_id(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Change request 1")
+
+        version2 = m.SourceVersion.objects.create(number=2, data_source=self.data_source)
+        data_source_synchronization = m.DataSourceVersionsSynchronization.objects.create(
+            name="Synchronization",
+            source_version_to_update=self.version,
+            source_version_to_compare_with=version2,
+            account=self.account,
+            created_by=self.user,
+        )
+        change_request_with_sync = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Change request 2",
+            data_source_synchronization=data_source_synchronization,
+        )
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["id"], change_request.pk)
+        self.assertEqual(response.data["results"][1]["id"], change_request_with_sync.pk)
+
+        response = self.client.get(
+            f"/api/orgunits/changes/?data_source_synchronization_id={data_source_synchronization.pk}"
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["id"], change_request_with_sync.pk)
+
+        response = self.client.get(
+            f"/api/orgunits/changes/?data_source_synchronization_id={data_source_synchronization.pk + 1}"
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_filter_by_multiple_ids(self):
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/orgunits/changes/?ids={change_request_1.pk},{change_request_3.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertNotIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+
+        response = self.client.get(f"/api/orgunits/changes/?ids={change_request_2.pk}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertNotIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertNotIn(change_request_3.pk, result_ids)
+
+    def test_filter_by_is_soft_deleted(self):
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Baz")
+
+        change_request_2.delete()
+        change_request_3.delete()
+
+        self.client.force_authenticate(self.user)
+
+        # Show only non-soft-deleted.
+        response = self.client.get("/api/orgunits/changes/?is_soft_deleted=false")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+
+        # Show only soft-deleted.
+        response = self.client.get("/api/orgunits/changes/?is_soft_deleted=true")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+
+        # Show all, whether soft-deleted or not.
+        response = self.client.get("/api/orgunits/changes/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 3)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)

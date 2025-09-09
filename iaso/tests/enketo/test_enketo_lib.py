@@ -1,6 +1,7 @@
 from django.test import TestCase
 
 import iaso.models as m
+
 from iaso.enketo import to_xforms_xml
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 
@@ -20,6 +21,13 @@ class EnketoLibTests(TestCase):
         original_xml = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="1"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>'
         uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 977)
         expectedInjected = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601" iasoInstance="123"><meta><instanceID>uuid:demo</instanceID><editUserID>977</editUserID></meta></data>'
+        self.assertEqual(str(xml), str(expectedInjected))
+        self.assertEqual(uuid, "demo")
+
+    def test_inject_user_id_with_emoji_content(self):
+        original_xml = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="1"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta><prevous_muac_color>&#55357;&#57313;Yellow</prevous_muac_color></data>'
+        uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 977)
+        expectedInjected = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601" iasoInstance="123"><meta><instanceID>uuid:demo</instanceID><editUserID>977</editUserID></meta><prevous_muac_color>\xf0\x9f\x9f\xa1Yellow</prevous_muac_color></data>'
         self.assertEqual(str(xml), str(expectedInjected))
         self.assertEqual(uuid, "demo")
 

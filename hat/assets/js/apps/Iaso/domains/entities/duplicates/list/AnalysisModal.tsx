@@ -1,21 +1,21 @@
-import {
-    ConfirmCancelModal,
-    makeFullModal,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
-import Alert from '@mui/lab/Alert';
+import { Grid } from '@mui/material';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
+import { useGetEntityTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
 import { ALGORITHM_DROPDOWN } from '../../constants';
+import { formatLabel } from '../../../instances/utils';
+import { useGetFormForEntityType } from '../../entityTypes/hooks/requests/forms';
+import AnalysisModalParameters from './AnalysisModalParameters';
+import { Parameters } from '../types';
 
 type Props = {
     isOpen: boolean;
@@ -25,56 +25,73 @@ type Props = {
 const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [entityType, setEntityType] = useState(null);
     const [algorithm, setAlgorithm] = useState(null);
-    const [fields, setFields] = useState([]);
+    const [entityTypeFields, setEntityTypeFields] = useState([]);
+    const [referenceForm, setReferenceForm] = useState(undefined);
     const [confirm, setConfirm] = useState(false);
-    const [errorMissingFields, setErrorMissingFields] = useState('');
 
-    const { formatMessage } = useSafeIntl();
+    const [parameters, setParameters] = useState<Parameters>([]);
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
 
     const { mutateAsync: startAnalyse } = useStartAnalyse();
     const handleConfirm = useCallback(() => {
         startAnalyse({
             algorithm,
             entity_type_id: entityType,
-            fields,
-            parameters: {},
+            fields: entityTypeFields,
+            parameters,
         });
-    }, [startAnalyse, algorithm, entityType, fields]);
+    }, [startAnalyse, algorithm, entityType, entityTypeFields, parameters]);
+
+    const handleChangeEntityType = value => {
+        const filteredEntityType = entityTypesDropdown?.find(
+            entityTypeItem => entityTypeItem.value === value,
+        );
+
+        setReferenceForm(filteredEntityType?.original?.reference_form);
+
+        setEntityType(value);
+    };
 
     const handleChange = (keyValue, value) => {
-        if (keyValue === 'entity_type') {
-            const filteredEntityType = entityTypesDropdown?.find(
-                entityTypeItem => entityTypeItem.value === value,
-            );
-            const entityTypeFields =
-                filteredEntityType?.original?.fields_duplicate_search;
-            if (!entityTypeFields) {
-                setErrorMissingFields(
-                    formatMessage(MESSAGES.messageErrorMissingFields),
-                );
-            } else {
-                setErrorMissingFields('');
-                setFields(entityTypeFields || []);
-            }
+        switch (keyValue) {
+            case 'entity_type':
+                handleChangeEntityType(value);
+                break;
 
-            setEntityType(value);
-        }
-        if (keyValue === 'algorithm') {
-            setAlgorithm(value);
+            case 'entity_type_fields':
+                setEntityTypeFields(value || []);
+                break;
+
+            case 'algorithm':
+                setAlgorithm(value);
+                break;
+
+            default:
+                break;
         }
     };
 
     useEffect(() => {
-        if (algorithm && entityType && errorMissingFields === '') {
+        const allParamsFilled = parameters.every(param => param.value !== '');
+        if (
+            allParamsFilled &&
+            algorithm &&
+            entityType &&
+            entityTypeFields.length > 0
+        ) {
             setConfirm(true);
         } else {
             setConfirm(false);
         }
-    }, [algorithm, entityType, errorMissingFields]);
+    }, [algorithm, entityType, entityTypeFields, parameters]);
+    const { possibleFields, isFetchingForm } = useGetFormForEntityType({
+        formId: referenceForm,
+        enabled: isOpen,
+    });
 
+    const isConfirm = algorithm && entityType && entityTypeFields.length > 0;
     return (
         <ConfirmCancelModal
             allowConfirm={confirm}
@@ -83,7 +100,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="xs"
+            maxWidth="sm"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
@@ -92,27 +109,53 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onClose={() => null}
             dataTestId=""
         >
-            {errorMissingFields && (
-                <Alert severity="error">{errorMissingFields}</Alert>
-            )}
-
-            <InputComponent
-                type="select"
-                keyValue="entity_type"
-                value={entityType}
-                onChange={handleChange}
-                label={MESSAGES.entityTypes}
-                options={entityTypesDropdown}
-                loading={isFetchingEntityTypes}
-            />
-            <InputComponent
-                type="select"
-                keyValue="algorithm"
-                value={algorithm}
-                onChange={handleChange}
-                label={MESSAGES.algorithm}
-                options={ALGORITHM_DROPDOWN}
-            />
+            <Grid container>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="entity_type"
+                        value={entityType}
+                        onChange={handleChange}
+                        label={MESSAGES.entityTypes}
+                        options={entityTypesDropdown}
+                        loading={isFetchingEntityTypes}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        keyValue="algorithm"
+                        value={algorithm}
+                        onChange={handleChange}
+                        label={MESSAGES.algorithm}
+                        options={ALGORITHM_DROPDOWN}
+                    />
+                </Grid>
+                <Grid item xs={12} md={12}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        required
+                        disabled={isFetchingForm || !referenceForm}
+                        keyValue="entity_type_fields"
+                        onChange={(key, value) =>
+                            handleChange(key, value ? value.split(',') : null)
+                        }
+                        value={entityTypeFields}
+                        label={MESSAGES.fields}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: formatLabel(field),
+                        }))}
+                    />
+                </Grid>
+                <AnalysisModalParameters
+                    parameters={parameters}
+                    setParameters={setParameters}
+                    setConfirm={setConfirm}
+                    isConfirm={isConfirm}
+                />
+            </Grid>
         </ConfirmCancelModal>
     );
 };

@@ -1,18 +1,13 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import {
-    FormatForNFMArgs,
-    BarChartData,
-    LqasImCampaign,
-} from '../../../../constants/types';
+import { BarChartData, FormatForNFMArgs, LqasImCampaign } from '../../types';
 
 type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
-    // eslint-disable-next-line no-unused-vars
     formatter: (args: FormatForNFMArgs<string>) => BarChartData[];
     type: string;
-    selectedRounds: [number, number];
+    selectedRounds: [number | undefined, number | undefined];
 };
 
 export const useVerticalChartData = ({
@@ -21,7 +16,7 @@ export const useVerticalChartData = ({
     formatter,
     type,
     selectedRounds,
-}: Params): BarChartData[][] => {
+}: Params): [BarChartData[], BarChartData[]] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [

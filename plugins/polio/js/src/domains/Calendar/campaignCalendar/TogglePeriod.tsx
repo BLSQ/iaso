@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback } from 'react';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useRedirectToReplace } from 'bluesquare-components';

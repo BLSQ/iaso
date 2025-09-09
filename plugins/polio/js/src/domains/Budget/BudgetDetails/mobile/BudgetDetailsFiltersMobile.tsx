@@ -1,13 +1,12 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Collapse, Grid, Box } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
-import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
+import { Box, Collapse, Grid } from '@mui/material';
+import React, { FunctionComponent, useState } from 'react';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
 
 type Props = {
     params: any;
     showHidden: boolean;
-    // eslint-disable-next-line no-unused-vars
     setShowHidden: (show: boolean) => void;
     stepsList?: DropdownOptions<string>[];
 };

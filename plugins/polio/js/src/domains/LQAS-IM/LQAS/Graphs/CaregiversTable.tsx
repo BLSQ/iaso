@@ -1,32 +1,31 @@
-/* eslint-disable react/require-default-props */
 import React, {
     FunctionComponent,
-    useState,
     useCallback,
     useMemo,
+    useState,
 } from 'react';
 import { Box } from '@mui/material';
-import { useSafeIntl, Table } from 'bluesquare-components';
+import { Table, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
-import {
-    ConvertedLqasImData,
-    LqasImDistrictDataWithNameAndRegion,
-} from '../../../../constants/types';
-import { makeDataForTable } from '../utils';
+import { floatToPercentString } from '../../../../utils';
 import {
     sortbyDistrictNameAsc,
     sortbyDistrictNameDesc,
     sortbyRegionNameAsc,
     sortbyRegionNameDesc,
 } from '../../shared/tableUtils';
-import { CaregiversTableHeader } from './CaregiversTableHeader';
-import { floatToPercentString } from '../../../../utils';
+import {
+    ConvertedLqasImData,
+    LqasImDistrictDataWithNameAndRegion,
+} from '../../types';
+import { makeDataForTable } from '../utils';
 import { CaregiverInfoSource } from './CaregiverInfoSource';
+import { CaregiversTableHeader } from './CaregiversTableHeader';
 
 type Props = {
     marginTop?: boolean;
     campaign?: string;
-    round: number;
+    round: number | undefined;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
     paperElevation: number;
@@ -117,7 +116,6 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const formatDataForTable = useCallback(
         (
             tableData: LqasImDistrictDataWithNameAndRegion[],
-            // eslint-disable-next-line no-unused-vars
             sortFunc: (a: any, b: any) => number,
         ) =>
             tableData
@@ -148,7 +146,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const pages = useMemo(
         () =>
             dataForTable?.length
-                ? Math.ceil(dataForTable?.length / rowsPerPage)
+                ? Math.ceil(dataForTable?.length ?? 0 / rowsPerPage)
                 : 0,
         [dataForTable, rowsPerPage],
     );
@@ -159,33 +157,32 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         }),
         [rowsPerPage, page],
     );
-    return (
-        <>
-            {!isLoading && campaign && (
-                <>
-                    <CaregiversTableHeader
-                        campaign={campaign}
-                        round={round}
-                        data={data}
-                        paperElevation={paperElevation}
+    if (!isLoading && campaign) {
+        return (
+            <>
+                <CaregiversTableHeader
+                    campaign={campaign}
+                    round={round}
+                    data={data}
+                    paperElevation={paperElevation}
+                />
+                <Box mt={marginTop ? 4 : 0}>
+                    <Table
+                        countOnTop={false}
+                        data={sortedData}
+                        pages={pages}
+                        defaultSorted={defaultSorted}
+                        columns={columns(formatMessage)}
+                        marginTop={false}
+                        count={dataForTable?.length ?? 0}
+                        params={params}
+                        resetPageToOne={resetPageToOne}
+                        onTableParamsChange={handleTableParamsChange}
+                        elevation={paperElevation}
                     />
-                    <Box mt={marginTop ? 4 : 0}>
-                        <Table
-                            countOnTop={false}
-                            data={sortedData}
-                            pages={pages}
-                            defaultSorted={defaultSorted}
-                            columns={columns(formatMessage)}
-                            marginTop={false}
-                            count={dataForTable?.length ?? 0}
-                            params={params}
-                            resetPageToOne={resetPageToOne}
-                            onTableParamsChange={handleTableParamsChange}
-                            elevation={paperElevation}
-                        />
-                    </Box>
-                </>
-            )}
-        </>
-    );
+                </Box>
+            </>
+        );
+    }
+    return null;
 };

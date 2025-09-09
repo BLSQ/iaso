@@ -1,14 +1,14 @@
 /// <reference types="cypress" />
 
-import listFixture from '../../fixtures/duplicates/list-paginated.json';
 import emptyFixture from '../../fixtures/duplicates/empty.json';
-import superUser from '../../fixtures/profiles/me/superuser.json';
+import listFixture from '../../fixtures/duplicates/list-paginated.json';
 import entityTypes from '../../fixtures/entityTypes/list.json';
 import formsList from '../../fixtures/forms/list.json';
-import teamsList from '../../fixtures/teams/list.json';
 import profilesList from '../../fixtures/profiles/list.json';
-import { testTablerender } from '../../support/testTableRender';
+import superUser from '../../fixtures/profiles/me/superuser.json';
+import teamsList from '../../fixtures/teams/list.json';
 import { testPagination } from '../../support/testPagination';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -39,7 +39,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     );
     cy.intercept(
         'GET',
-        // eslint-disable-next-line max-len
+
         '/api/forms/?all=true&order=name&fields=name%2Cid%2Cpossible_fields',
         formsList,
     );
@@ -135,15 +135,10 @@ describe('Duplicate entities list', () => {
         });
         testPagination({
             baseUrl,
-            apiPath: '/api/entityduplicates/',
+            apiPath: '/api/entityduplicates/**',
             apiKey: 'results',
             withSearch: false,
             fixture: listFixture,
-            query: {
-                order: 'id',
-                page: '1',
-                limit: '20',
-            },
         });
         it('should display buttons on action column', () => {
             cy.visit(baseUrl);
@@ -218,7 +213,7 @@ describe('Duplicate entities list', () => {
                 cy.fillSingleSelect('#form', 0);
                 cy.fillMultiSelect('#fields', [0, 1], false);
                 cy.fillSingleSelect('#submitter', 1);
-                cy.fillSingleSelect('#algorithm', 1);
+                cy.fillSingleSelect('#algorithm', 0);
                 cy.fillSingleSelect('#similarity', 1);
                 cy.fillMultiSelect('#entity_type', [2, 3], false);
                 cy.get('[data-test="start-date"] input').type(20052010, {

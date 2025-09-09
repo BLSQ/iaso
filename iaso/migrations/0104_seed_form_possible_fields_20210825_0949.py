@@ -1,8 +1,8 @@
 from django.db import migrations
 
 from iaso.models.forms import _reformat_questions
-
 from iaso.odk import parsing
+
 
 ## CANNOT USE method function on model and that's fucking annoying
 
@@ -32,15 +32,12 @@ def update_possible_fields(self: "iaso.models.Form"):
         questions = parsing.to_questions_by_name(get_or_save_form_descriptor(form_version))
         if isinstance(questions, dict):
             all_questions.update(questions)
-        else:
-            print(f"Invalid questions on version {form_version}: {str(questions)[:50]}")
     self.possible_fields = _reformat_questions(all_questions)
 
 
 def seed_form_possible_fields(apps, schema_editor):
     Form = apps.get_model("iaso", "Form")
     for form in Form.objects.all():
-        print("updating form", form)
         update_possible_fields(form)
         form.save()
 

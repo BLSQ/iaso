@@ -1,8 +1,8 @@
 // @ts-ignore
+import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
 import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
-import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
 import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
@@ -30,6 +30,8 @@ const dispatchError = (message, error) => {
 const saveSubActivity = values => {
     if (!values) return null;
     const { id, ...body } = values;
+    delete body.round_start_date;
+    delete body.round_end_date;
     if (id) {
         return putRequest(`${subActivityUrl}${id}/`, body);
     }
@@ -65,7 +67,6 @@ const save = (body: CampaignFormValues) => {
                 dispatchError(MESSAGES.campaignSaveError, error);
             });
     }
-
     return saveCampaign()
         .then(campaign => {
             return saveSubActivity(subactivity)
@@ -78,7 +79,6 @@ const save = (body: CampaignFormValues) => {
                     dispatchError(MESSAGES.subActivitySaveError, error);
                 })
                 .finally(() => {
-                    dispatchSuccess(MESSAGES.campaignSaved);
                     return campaign;
                 });
         })
@@ -91,7 +91,11 @@ export const useSaveCampaign = (): UseMutationResult<any, any, any> => {
     const queryClient = useQueryClient();
     return useMutation('save-campaigns', save, {
         onSuccess: () => {
+            queryClient.invalidateQueries('campaigns');
             queryClient.invalidateQueries(['subActivities']);
+            queryClient.invalidateQueries(['calendar-campaigns']);
+            queryClient.invalidateQueries('lqasCountries');
+            queryClient.invalidateQueries('lqasCampaigns');
         },
     });
 };

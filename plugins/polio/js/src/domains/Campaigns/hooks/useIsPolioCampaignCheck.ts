@@ -33,7 +33,6 @@ export const useIsPolioCampaign = (
 };
 
 export const useIsPolioCampaignCheck = (): ((
-    // eslint-disable-next-line no-unused-vars
     campaign?: CampaignFormValues,
 ) => boolean) => {
     const { data: campaignTypes } = useGetCampaignTypes();

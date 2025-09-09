@@ -1,18 +1,22 @@
 import datetime
 import os
 import shutil
-import time_machine
+
 from unittest import mock
+from unittest.mock import MagicMock
+
+import time_machine
 
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
-from django.utils import timezone
+from rest_framework import status
 
 from hat import settings
-from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
-from plugins.polio.models import Notification, NotificationImport
-from iaso.test import APITestCase, TestCase
 from iaso import models as m
+from iaso.test import APITestCase, MockClamavScanResults, TestCase
+from iaso.utils.virus_scan.model import VirusScanStatus
+from plugins.polio.api.notifications.serializers import NotificationImportSerializer, NotificationSerializer
+from plugins.polio.models import Notification, NotificationImport
 
 
 DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -354,7 +358,7 @@ class NotificationViewSetTestCase(APITestCase):
         with open(XLSX_FILE_PATH, "rb") as xlsx_file:
             data = {"account": self.account.pk, "file": xlsx_file}
             response = self.client.post(
-                f"/api/polio/notifications/import_xlsx/",
+                "/api/polio/notifications/import_xlsx/",
                 data=data,
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -364,6 +368,99 @@ class NotificationViewSetTestCase(APITestCase):
         notification_import = NotificationImport.objects.get(pk=response.data["id"])
         self.assertEqual(notification_import.account, self.account)
         self.assertEqual(notification_import.created_by, self.user)
+        self.assertEqual(notification_import.file_scan_status, VirusScanStatus.PENDING)  # Scanning not enabled
+        self.assertEqual(notification_import.file_last_scan, None)
+
+    @time_machine.travel(DT, tick=False)
+    @override_settings(CLAMAV_ACTIVE=True)
+    @mock.patch("clamav_client.get_scanner")
+    @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
+    def test_action_import_xlsx_with_safe_file(self, mocked_create_polio_notifications_async, mock_get_scanner):
+        # Mocking ClamAV scanner
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = MockClamavScanResults(
+            state="OK",
+            details=None,
+            passed=True,
+        )
+        mock_get_scanner.return_value = mock_scanner
+
+        self.client.force_authenticate(self.user)
+        with open(XLSX_FILE_PATH, "rb") as xlsx_file:
+            data = {"account": self.account.pk, "file": xlsx_file}
+            response = self.client.post(
+                "/api/polio/notifications/import_xlsx/",
+                data=data,
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertTrue(mocked_create_polio_notifications_async.called)
+        notification_import = NotificationImport.objects.get(pk=response.data["id"])
+        self.assertEqual(notification_import.account, self.account)
+        self.assertEqual(notification_import.created_by, self.user)
+        self.assertEqual(notification_import.file_scan_status, VirusScanStatus.CLEAN)
+        self.assertEqual(notification_import.file_last_scan, DT)
+
+    @time_machine.travel(DT, tick=False)
+    @override_settings(CLAMAV_ACTIVE=True)
+    @mock.patch("clamav_client.get_scanner")
+    @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
+    def test_action_import_xlsx_with_infected_file(self, mocked_create_polio_notifications_async, mock_get_scanner):
+        # Mocking ClamAV scanner
+        mock_scanner = MagicMock()
+        mock_scanner.scan.return_value = MockClamavScanResults(
+            state="FOUND",
+            details="Virus found :(",
+            passed=False,
+        )
+        mock_get_scanner.return_value = mock_scanner
+
+        self.client.force_authenticate(self.user)
+        with open(XLSX_FILE_PATH, "rb") as xlsx_file:
+            data = {"account": self.account.pk, "file": xlsx_file}
+            response = self.client.post(
+                "/api/polio/notifications/import_xlsx/",
+                data=data,
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+        self.assertJSONResponse(
+            response, status.HTTP_201_CREATED
+        )  # Maybe later we'll want to block this and return a 400
+        self.assertTrue(mocked_create_polio_notifications_async.called)
+        notification_import = NotificationImport.objects.get(pk=response.data["id"])
+        self.assertEqual(notification_import.account, self.account)
+        self.assertEqual(notification_import.created_by, self.user)
+        self.assertEqual(notification_import.file_scan_status, VirusScanStatus.INFECTED)
+        self.assertEqual(notification_import.file_last_scan, DT)
+
+    @override_settings(
+        CLAMAV_ACTIVE=True,
+        CLAMAV_CONFIGURATION={
+            **settings.CLAMAV_CONFIGURATION,
+            "address": "hey.this-is-likely-not-a-valid-clamav-server.com:3310",
+            "timeout": 2,
+        },
+    )
+    @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
+    def test_action_import_xlsx_scan_connection_error(self, mocked_create_polio_notifications_async):
+        self.client.force_authenticate(self.user)
+        with open(XLSX_FILE_PATH, "rb") as xlsx_file:
+            data = {"account": self.account.pk, "file": xlsx_file}
+            response = self.client.post(
+                "/api/polio/notifications/import_xlsx/",
+                data=data,
+                format="multipart",
+                headers={"accept": "application/json"},
+            )
+        self.assertJSONResponse(response, status.HTTP_201_CREATED)
+        self.assertTrue(mocked_create_polio_notifications_async.called)
+        notification_import = NotificationImport.objects.get(pk=response.data["id"])
+        self.assertEqual(notification_import.account, self.account)
+        self.assertEqual(notification_import.created_by, self.user)
+        self.assertEqual(notification_import.file_scan_status, VirusScanStatus.ERROR)
+        self.assertIsNone(notification_import.file_last_scan)
 
     def test_action_get_import_details(self):
         self.client.force_authenticate(self.user)

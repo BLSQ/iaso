@@ -1,7 +1,6 @@
-/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../../libs/apiHooks';
 import { postRequest } from '../../../../../libs/Api';
+import { useSnackMutation } from '../../../../../libs/apiHooks';
 
 const apiUrl = '/api/entityduplicates/';
 
@@ -17,8 +16,7 @@ const mergeDuplicate = (query: UseMergeDuplicatesParams) => {
 
 export const useMergeDuplicate = (
     successSnackBar: any,
-    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
-    onSuccess: (data: any) => void = _data => {},
+    onSuccess: (data: any) => void = _data => null,
 ): UseMutationResult => {
     return useSnackMutation({
         mutationFn: query => mergeDuplicate(query),

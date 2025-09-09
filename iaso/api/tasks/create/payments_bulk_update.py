@@ -1,9 +1,10 @@
-from rest_framework import viewsets, permissions, status as http_status
+from rest_framework import permissions, status as http_status, viewsets
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from iaso.api.common import HasPermission
-from hat.menupermissions import models as permission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models.payments import PaymentLot
 from iaso.tasks.payments_bulk_update import payments_bulk_update
 
@@ -16,7 +17,7 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
     as they happen, instead of using update() or bulk_update() to modify the DB and log the changes separately.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
 
     def create(self, request):
         select_all = request.data.get("select_all", False)

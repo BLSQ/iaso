@@ -1,13 +1,11 @@
-import { Pagination, UrlParams } from 'bluesquare-components';
 import { ReactNode } from 'react';
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
-import { DataSource } from './dataSources';
 import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 
-/* eslint-disable camelcase */
 export type ShortOrgUnit = {
     name: string;
     id: number;
@@ -22,22 +20,6 @@ export type Group = {
     source_version: number;
 };
 
-export type GroupWithDataSource = {
-    created_at: number;
-    updated_at: number;
-    id: number;
-    name: string;
-    source_ref: Nullable<string>;
-    source_version: {
-        id: number;
-        number: number;
-        data_source: Partial<DataSource>;
-    };
-
-    block_of_countries: boolean;
-    org_unit_count: number;
-};
-
 export type OrgunitInititialState = {
     id: number;
     name: string;
@@ -49,6 +31,7 @@ export type OrgunitInititialState = {
     source_id?: number;
     parent?: ParentOrgUnit;
     source_ref?: string;
+    code?: string;
     reference_instance_id?: Nullable<number>;
     opening_date?: Date;
     closed_date?: Date;
@@ -72,6 +55,7 @@ export type OrgUnit = {
     name: string;
     short_name: string;
     id: number;
+    code?: string;
     sub_source: string;
     sub_source_id: string | undefined;
     source_ref: string;
@@ -95,6 +79,7 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
+    version_id: number;
     groups: Group[];
     org_unit_type: OrgunitType;
     org_unit_type_short_name?: string;
@@ -105,6 +90,7 @@ export type OrgUnit = {
     reference_instance_action?: string;
     opening_date?: Date;
     closed_date?: Date;
+    default_image_id?: number;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];
@@ -116,7 +102,6 @@ export type OrgUnitParams = UrlParams & {
     searchTabIndex: string;
     searchActive?: string;
     searches: string;
-    pageSize?: string;
 };
 
 export type OrgUnitsApi = {
@@ -130,7 +115,6 @@ type FormStateRequired<T> = {
     value: T;
     errors?: string[];
 };
-
 export type OrgUnitState = {
     id: FormStateRequired<number>;
     name: FormStateRequired<string>;
@@ -141,6 +125,7 @@ export type OrgUnitState = {
     aliases: FormState<string>;
     source_id: FormState<number>;
     source: FormState<string>;
+    code: FormState<string>;
     parent: FormState<OrgUnit>;
     source_ref: FormState<string>;
     creator: FormStateRequired<Record<string, any>>;

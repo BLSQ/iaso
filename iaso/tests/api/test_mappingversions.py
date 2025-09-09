@@ -1,4 +1,5 @@
 import tempfile
+
 from unittest import mock
 
 from django.core.files import File
@@ -65,14 +66,14 @@ class FormsVersionAPITestCase(APITestCase):
         """PUT /mappingversions/<mappingversion_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(f"/api/mappingversions/33/", data={})
+        response = self.client.put("/api/mappingversions/33/", data={})
         self.assertJSONResponse(response, 405)
 
     def test_mappingversions_destroy(self):
         """DELETE /mappingversions/<mappingversion_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.delete(f"/api/mappingversions/33/")
+        response = self.client.delete("/api/mappingversions/33/")
         self.assertJSONResponse(response, 405)
 
     def test_mappingversions_create_ok_first_version(self):
@@ -97,13 +98,13 @@ class FormsVersionAPITestCase(APITestCase):
             "code": "dataelement code",
         }
         self.client.patch(
-            f"/api/mappingversions/" + mappingversionid + "/",
+            "/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
             headers={"accept": "application/json"},
         )
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            "/api/mappingversions/" + mappingversionid + "/?fields=:all",
             format="json",
             headers={"accept": "application/json"},
         )
@@ -130,27 +131,27 @@ class FormsVersionAPITestCase(APITestCase):
             },
         }
         self.client.patch(
-            f"/api/mappingversions/" + mappingversionid + "/",
+            "/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": data_element_2}},
             format="json",
             headers={"accept": "application/json"},
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            "/api/mappingversions/" + mappingversionid + "/?fields=:all",
             format="json",
             headers={"accept": "application/json"},
         )
         self.assertEqual(mapping_version.json()["question_mappings"]["question_2"], data_element_2)
         self.client.patch(
-            f"/api/mappingversions/" + mappingversionid + "/",
+            "/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": {"action": "unmap"}}},
             format="json",
             headers={"accept": "application/json"},
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            "/api/mappingversions/" + mappingversionid + "/?fields=:all",
             format="json",
             headers={"accept": "application/json"},
         )
@@ -175,7 +176,7 @@ class FormsVersionAPITestCase(APITestCase):
         formversion = self.create_form_version()
 
         create_response = self.client.post(
-            f"/api/mappingversions/",
+            "/api/mappingversions/",
             data={
                 "form_version": {"id": formversion.id},
                 "mapping": {"type": "AGGREGATE", "datasource": {"id": self.dc_source.id}},
@@ -193,7 +194,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         create_response = self.client.post(
-            f"/api/mappingversions/",
+            "/api/mappingversions/",
             data={
                 "form_version": {"id": 10000},
                 "mapping": {"type": "AGGREGATE", "datasource": {"id": self.dc_source.id}},
@@ -219,7 +220,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         data_element_1 = {"valueType": "NUMBER", "categoryOptionCombo": "cocDHIS2Id"}
         resp = self.client.patch(
-            f"/api/mappingversions/" + mappingversionid + "/",
+            "/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
             headers={"accept": "application/json"},
@@ -242,7 +243,7 @@ class FormsVersionAPITestCase(APITestCase):
         data_element_1 = {"id": "dhis2ID"}
 
         resp = self.client.patch(
-            f"/api/mappingversions/" + mappingversionid + "/",
+            "/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
             headers={"accept": "application/json"},
@@ -256,14 +257,14 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.create_mapping_version(form_version, self.sw_source)
 
-        resp = self.client.get(f"/api/mappingversions/")
+        resp = self.client.get("/api/mappingversions/")
 
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
-        resp = self.client.get(f"/api/mappingversions/?mappingTypes=EVENT")
+        resp = self.client.get("/api/mappingversions/?mappingTypes=EVENT")
         self.assertEqual(len(resp.json()["mapping_versions"]), 0)
 
-        resp = self.client.get(f"/api/mappingversions/?mappingTypes=AGGREGATE")
+        resp = self.client.get("/api/mappingversions/?mappingTypes=AGGREGATE")
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
     def test_mappingversions_list_filters_form_id(self):
@@ -272,7 +273,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.create_mapping_version(form_version, self.sw_source)
 
-        resp = self.client.get(f"/api/mappingversions/")
+        resp = self.client.get("/api/mappingversions/")
 
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
@@ -290,7 +291,7 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.create_mapping_version(form_version, self.sw_source)
 
-        resp = self.client.get(f"/api/mappingversions/")
+        resp = self.client.get("/api/mappingversions/")
 
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
@@ -313,7 +314,7 @@ class FormsVersionAPITestCase(APITestCase):
             name="Fly me to the moon", app_id="stars.empire.flymetothemoon", account=self.dc
         )
 
-        resp = self.client.get(f"/api/mappingversions/")
+        resp = self.client.get("/api/mappingversions/")
 
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
@@ -327,9 +328,9 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(len(resp.json()["mapping_versions"]), 1)
 
     def create_form_version(self):
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xlsx", "rb") as xls_file:
             self.client.post(
-                f"/api/formversions/",
+                "/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 headers={"accept": "application/json"},
@@ -339,7 +340,7 @@ class FormsVersionAPITestCase(APITestCase):
 
     def create_mapping_version(self, form_version, source):
         resp = self.client.post(
-            f"/api/mappingversions/",
+            "/api/mappingversions/",
             data={
                 "form_version": {"id": form_version.id},
                 "mapping": {"type": "AGGREGATE", "datasource": {"id": source.id}},
@@ -349,7 +350,7 @@ class FormsVersionAPITestCase(APITestCase):
             headers={"accept": "application/json"},
         )
         return self.client.get(
-            f"/api/mappingversions/" + str(resp.json()["id"]) + "/?fields=:all",
+            "/api/mappingversions/" + str(resp.json()["id"]) + "/?fields=:all",
             format="json",
             headers={"accept": "application/json"},
         ).json()

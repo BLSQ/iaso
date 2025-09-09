@@ -1,51 +1,49 @@
 import React, {
-    useState,
     FunctionComponent,
     useCallback,
-    useMemo,
     useEffect,
+    useMemo,
+    useState,
 } from 'react';
 
-import { Grid, Button, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
+import { Box, Button, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
-    useSafeIntl,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
 // @ts-ignore
-import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
-// @ts-ignore
 import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
-import InputComponent from '../../../components/forms/InputComponent';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 
-import MESSAGES from '../messages';
-
-import { baseUrl } from '../config';
-
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { useGetGroups } from '../../orgUnits/hooks/requests/useGetGroups';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import {
-    useGetBeneficiariesApiParams,
-    useGetBeneficiaryTypesDropdown,
-    useGetUsersDropDown,
-} from '../hooks/requests';
-import { useFiltersParams } from '../hooks/useFiltersParams';
-
-import { Params, Filters as FilterType } from '../types/filters';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import InputComponent from '../../../components/forms/InputComponent';
 import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
+import { useCurrentUser } from '../../../utils/usersUtils';
+
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetGroupDropdown } from '../../orgUnits/hooks/requests/useGetGroups';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { baseUrl } from '../config';
+import {
+    useGetEntitiesApiParams,
+    useGetEntityTypesDropdown,
+    useGetUsersDropDown,
+} from '../hooks/requests';
+import { useFiltersParams } from '../hooks/useFiltersParams';
+import MESSAGES from '../messages';
+import { Filters as FilterType, Params } from '../types/filters';
+import { EntitiesQueryBuilder } from './EntitiesQuerybuilder';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -54,23 +52,6 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: Params;
     isFetching: boolean;
-};
-
-const createGroupsInputComponent = props => {
-    const { isFetchingGroups, handleChange, filters, groups } = props;
-    return (
-        <InputComponent
-            type="select"
-            multi
-            disabled={isFetchingGroups}
-            keyValue="groups"
-            onChange={handleChange}
-            value={!isFetchingGroups && filters?.groups}
-            label={MESSAGES.groups}
-            options={groups}
-            loading={isFetchingGroups}
-        />
-    );
 };
 
 const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
@@ -89,6 +70,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         entityTypeIds: params.entityTypeIds,
         locationLimit: params.locationLimit,
         groups: params.groups,
+        fieldsSearch: params.fieldsSearch,
     });
 
     useEffect(() => {
@@ -102,6 +84,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             entityTypeIds: params.entityTypeIds,
             locationLimit: params.locationLimit,
             groups: params.groups,
+            fieldsSearch: params.fieldsSearch,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -111,7 +94,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
 
     const { data: types, isFetching: isFetchingTypes } =
-        useGetBeneficiaryTypesDropdown();
+        useGetEntityTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
     const selectedTeam = useMemo(() => {
         return teamOptions?.find(
@@ -122,10 +105,14 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { data: usersOptions } = useGetUsersDropDown(selectedTeam);
     const dataSourceId = currentUser?.account?.default_version?.data_source?.id;
     const sourceVersionId = currentUser?.account?.default_version?.id;
-    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroupDropdown({
         dataSourceId,
         sourceVersionId,
     });
+
+    const fieldsSearchJson = filters.fieldsSearch
+        ? JSON.parse(filters.fieldsSearch)
+        : undefined;
 
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -160,16 +147,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         [filters],
     );
 
-    const groupsInputComponent = useMemo(() => {
-        return createGroupsInputComponent({
-            isFetchingGroups,
-            handleChange,
-            filters,
-            groups,
-        });
-    }, [filters, groups, handleChange, isFetchingGroups]);
-
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
+    const { url: apiUrl } = useGetEntitiesApiParams(params);
     return (
         <Box mb={1}>
             <UserOrgUnitRestriction />
@@ -205,7 +183,19 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                     {hasFeatureFlag(
                         currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
-                    ) && groupsInputComponent}
+                    ) && (
+                        <InputComponent
+                            type="select"
+                            multi
+                            disabled={isFetchingGroups}
+                            keyValue="groups"
+                            onChange={handleChange}
+                            value={!isFetchingGroups && filters?.groups}
+                            label={MESSAGES.groups}
+                            options={groups}
+                            loading={isFetchingGroups}
+                        />
+                    )}
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -219,7 +209,6 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
-
                     {params.tab === 'map' && (
                         <Box mt={2}>
                             <LocationLimit
@@ -245,7 +234,19 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                     {!hasFeatureFlag(
                         currentUser,
                         SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
-                    ) && groupsInputComponent}
+                    ) && (
+                        <InputComponent
+                            type="select"
+                            multi
+                            disabled={isFetchingGroups}
+                            keyValue="groups"
+                            onChange={handleChange}
+                            value={!isFetchingGroups && filters?.groups}
+                            label={MESSAGES.groups}
+                            options={groups}
+                            loading={isFetchingGroups}
+                        />
+                    )}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
@@ -265,35 +266,49 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         options={usersOptions}
                     />
                 </Grid>
-
-                <Grid item xs={12} sm={6} md={3}>
-                    <Box
-                        mt={2}
-                        display="flex"
-                        justifyContent="flex-end"
-                        alignItems="end"
-                        flexDirection="column"
-                    >
-                        <Box mb={2}>
-                            <Button
-                                data-test="search-button"
-                                disabled={textSearchError || !filtersUpdated}
-                                variant="contained"
-                                color="primary"
-                                onClick={() => handleSearch()}
-                            >
-                                <SearchIcon className={classes.buttonIcon} />
-                                {formatMessage(MESSAGES.search)}
-                            </Button>
-                        </Box>
-                        <DownloadButtonsComponent
-                            csvUrl={`${apiUrl}&csv=true`}
-                            xlsxUrl={`${apiUrl}&xlsx=true`}
-                            disabled={isFetching}
-                        />
-                    </Box>
-                </Grid>
             </Grid>
+
+            <Box mt={-2}>
+                <Grid container columnSpacing={2}>
+                    <Grid item xs={12} sm={6}>
+                        <EntitiesQueryBuilder
+                            fieldsSearchJson={fieldsSearchJson}
+                            handleChange={handleChange}
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <Box
+                            mt={2}
+                            display="flex"
+                            justifyContent="flex-end"
+                            alignItems="end"
+                            flexDirection="column"
+                        >
+                            <Box mb={2}>
+                                <Button
+                                    data-test="search-button"
+                                    disabled={
+                                        textSearchError || !filtersUpdated
+                                    }
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => handleSearch()}
+                                >
+                                    <SearchIcon
+                                        className={classes.buttonIcon}
+                                    />
+                                    {formatMessage(MESSAGES.search)}
+                                </Button>
+                            </Box>
+                            <DownloadButtonsComponent
+                                csvUrl={`${apiUrl}&csv=true`}
+                                xlsxUrl={`${apiUrl}&xlsx=true`}
+                                disabled={isFetching}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Box>
         </Box>
     );
 };

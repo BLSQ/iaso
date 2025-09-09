@@ -8,8 +8,8 @@ from rest_framework.response import Response
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
+import iaso.permissions as core_permissions
 
-from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowVersion
 
@@ -22,7 +22,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     Else returns a paginated list of all the workflow versions.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.WORKFLOW)]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = ser.WorkflowVersionDetailSerializer
@@ -40,7 +40,7 @@ class WorkflowVersionViewSet(ModelViewSet):
         Creates a new workflow version by copying the exiting version given by {version_id}
         """
 
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         wv_orig = WorkflowVersion.objects.get(pk=version_id)
         new_vw = utils.make_deep_copy_with_relations(wv_orig)
         serialized_data = ser.WorkflowVersionSerializer(new_vw).data
@@ -48,7 +48,7 @@ class WorkflowVersionViewSet(ModelViewSet):
 
     @swagger_auto_schema(request_body=ser.WorkflowPartialUpdateSerializer)
     def partial_update(self, request, *args, **kwargs):
-        version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
+        version_id = request.query_params.get("version_id", kwargs.get("version_id"))
         wv_orig = get_object_or_404(WorkflowVersion, pk=version_id)
 
         serializer = ser.WorkflowPartialUpdateSerializer(data=request.data, context={"request": request}, partial=True)

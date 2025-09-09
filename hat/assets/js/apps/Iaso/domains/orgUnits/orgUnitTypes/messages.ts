@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validatedOrgUnitCount',
         defaultMessage: 'Validated org units',
     },
+    orgUnitCount: {
+        id: 'iaso.label.orgUnitCount',
+        defaultMessage: 'Org units count',
+    },
     actions: {
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
@@ -110,6 +114,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnitsTypes.subTypesErrors',
         defaultMessage:
             'A sub org unit type cannot be a parent too ({typeName})',
+    },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
+    eraseReferenceFormsWarning: {
+        id: 'iaso.orgUnitsTypes.dialog.eraseReferenceFormsWarning',
+        defaultMessage:
+            'Watch out! Adding an extra project to this list will erase all the currently selected reference forms ' +
+            'for the project(s), and you will need to select them again in the list (to avoid inconsistencies, ' +
+            'as reference forms must be included in all selected projects). Are you sure you want to proceed?',
     },
 });
 

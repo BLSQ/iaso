@@ -1,15 +1,15 @@
 import datetime
+import uuid
+
 from decimal import Decimal
 
 import time_machine
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
-from django.utils import timezone
 
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models.deduplication import ValidationStatus
 from iaso.test import TestCase
 
 
@@ -22,46 +22,77 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        parent = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
-        org_unit = m.OrgUnit.objects.create(
-            org_unit_type=org_unit_type,
+        cls.account = m.Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=cls.account)
+        cls.project_2 = m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=cls.account)
+
+        cls.data_source = m.DataSource.objects.create(name="Data source")
+        cls.data_source.projects.set([cls.project_1])
+
+        cls.version = m.SourceVersion.objects.create(number=1, data_source=cls.data_source)
+
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        cls.parent = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        cls.org_unit = m.OrgUnit.objects.create(
+            version=cls.version,
+            org_unit_type=cls.org_unit_type,
             name="Hôpital Général",
-            parent=parent,
+            parent=cls.parent,
             location=Point(-1.1111111, 1.1111111, 1.1111111),
             opening_date=datetime.date(2020, 1, 1),
             closed_date=datetime.date(2055, 1, 1),
         )
 
-        form = m.Form.objects.create(name="Vaccine form")
+        cls.form = m.Form.objects.create(name="Vaccine form")
+        cls.form_version = m.FormVersion.objects.create(form=cls.form, version_id=1)
 
-        account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        cls.other_form = m.Form.objects.create(name="Other form")
+        cls.other_form_version = m.FormVersion.objects.create(form=cls.other_form, version_id=1)
 
-        new_parent = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
-        new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
+        cls.new_parent = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        cls.new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
+        cls.new_group1 = m.Group.objects.create(name="Group 1")
+        cls.new_group2 = m.Group.objects.create(name="Group 2")
+        cls.org_unit.groups.set([cls.new_group1])
 
-        new_group1 = m.Group.objects.create(name="Group 1")
-        new_group2 = m.Group.objects.create(name="Group 2")
-        org_unit.groups.set([new_group1])
+        cls.new_instance1 = m.Instance.objects.create(
+            form=cls.form,
+            org_unit=cls.org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=cls.form_version,
+        )
+        cls.new_instance2 = m.Instance.objects.create(
+            form=cls.other_form,
+            org_unit=cls.org_unit,
+            uuid=uuid.uuid4(),
+            json={"key": "value"},
+            form_version=cls.other_form_version,
+        )
+        m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit, form=cls.form, instance=cls.new_instance1)
 
-        other_form = m.Form.objects.create(name="Other form")
-        new_instance1 = m.Instance.objects.create(form=form, org_unit=org_unit)
-        new_instance2 = m.Instance.objects.create(form=other_form, org_unit=org_unit)
-        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form, instance=new_instance1)
+    @time_machine.travel(DT, tick=False)
+    def test_delete_soft_and_hard(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            uuid=uuid.uuid4(),
+            org_unit=self.org_unit,
+            new_name="New name",
+            requested_fields=["new_name"],
+            created_by=self.user,
+        )
+        self.assertIsNone(change_request.deleted_at)
 
-        cls.form = form
-        cls.org_unit = org_unit
-        cls.org_unit_type = org_unit_type
-        cls.user = user
+        # Soft delete.
+        change_request.delete()
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.deleted_at, self.DT)
+        self.assertEqual(1, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
 
-        cls.new_group1 = new_group1
-        cls.new_group2 = new_group2
-        cls.new_instance1 = new_instance1
-        cls.new_instance2 = new_instance2
-        cls.new_org_unit_type = new_org_unit_type
-        cls.parent = parent
-        cls.new_parent = new_parent
+        # Hard delete.
+        change_request.delete_hard()
+        self.assertEqual(0, m.OrgUnitChangeRequest.objects.filter(id=change_request.pk).count())
 
     @time_machine.travel(DT, tick=False)
     def test_create(self):
@@ -192,6 +223,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertEqual(change_request.rejection_comment, "Foo Bar Baz.")
+        self.assertEqual(change_request.org_unit.validation_status, m.OrgUnit.VALIDATION_REJECTED)
 
     @time_machine.travel(DT, tick=False)
     def test_approve(self):
@@ -243,12 +275,13 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         # Logs.
         modification = Modification.objects.get(object_id=self.org_unit.pk)
+        self.assertEqual(modification.org_unit_change_request, change_request)
+
         diff = modification.field_diffs()
         self.assertIn("name", diff["modified"])
         self.assertIn("parent", diff["modified"])
         self.assertIn("org_unit_type", diff["modified"])
         self.assertIn("location", diff["modified"])
-        self.assertIn("validation_status", diff["modified"])
 
         self.assertEqual(diff["modified"]["name"]["before"], "Hôpital Général")
         self.assertEqual(diff["modified"]["name"]["after"], "New name given in a change request")
@@ -304,3 +337,153 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         self.assertEqual(diff["modified"]["closed_date"]["before"], "2055-01-01")
         self.assertIsNone(diff["modified"]["closed_date"]["after"])
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_for_new_reference_instances(self):
+        org_unit = self.org_unit
+        org_unit.reference_instances.clear()
+
+        form_1 = m.Form.objects.create(name="1")
+        form_2 = m.Form.objects.create(name="2")
+        form_3 = m.Form.objects.create(name="3")
+
+        form_v1 = m.FormVersion.objects.create(form=form_1, version_id=1)
+        form_v2 = m.FormVersion.objects.create(form=form_2, version_id=1)
+        form_v3 = m.FormVersion.objects.create(form=form_3, version_id=1)
+
+        instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit, json={"k": "v"}, form_version=form_v1)
+        instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit, json={"k": "v"}, form_version=form_v2)
+        instance_3 = m.Instance.objects.create(form=form_3, org_unit=org_unit, json={"k": "v"}, form_version=form_v3)
+
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_3, instance=instance_3)
+
+        expected_reference_instances = [instance_1, instance_2, instance_3]
+        self.assertCountEqual(org_unit.reference_instances.all(), expected_reference_instances)
+
+        # Change the reference instance of `form_1` from `instance_1` to `instance_1_bis`.
+
+        instance_1_bis = m.Instance.objects.create(
+            form=form_1, org_unit=org_unit, json={"k": "v"}, form_version=form_v1
+        )
+        self.assertEqual(form_1.instances.count(), 2)
+
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            requested_fields=["new_reference_instances"],
+        )
+        change_request.new_reference_instances.set([instance_1_bis])
+        change_request.approve(user=self.user, approved_fields=["new_reference_instances"])
+
+        org_unit.refresh_from_db()
+        expected_new_reference_instances = [instance_1_bis, instance_2, instance_3]
+        self.assertCountEqual(org_unit.reference_instances.all(), expected_new_reference_instances)
+
+        # Change the reference instance of `form_2` from `instance_2` to `instance_2_bis`.
+
+        instance_2_bis = m.Instance.objects.create(
+            form=form_2, org_unit=org_unit, json={"k": "v"}, form_version=form_v1
+        )
+        self.assertEqual(form_2.instances.count(), 2)
+
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            requested_fields=["new_reference_instances"],
+        )
+        change_request.new_reference_instances.set([instance_2_bis])
+        change_request.approve(user=self.user, approved_fields=["new_reference_instances"])
+
+        org_unit.refresh_from_db()
+        expected_new_reference_instances = [instance_1_bis, instance_2_bis, instance_3]
+        self.assertCountEqual(org_unit.reference_instances.all(), expected_new_reference_instances)
+
+    def test_exclude_soft_deleted_new_reference_instances(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, requested_fields=["new_reference_instances"]
+        )
+        change_request.new_reference_instances.set([self.new_instance1, self.new_instance2])
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 1)
+
+        # `deleted=True` should be excluded.
+        self.new_instance1.deleted = True
+        self.new_instance1.save()
+        self.new_instance2.deleted = True
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `json=null` should be excluded.
+        self.new_instance1.deleted = False
+        self.new_instance1.json = None
+        self.new_instance1.save()
+        self.new_instance2.deleted = False
+        self.new_instance2.json = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_version_id=null` should be excluded.
+        self.new_instance1.json = {"key": "value"}
+        self.new_instance1.form_version = None
+        self.new_instance1.save()
+        self.new_instance2.json = {"key": "value"}
+        self.new_instance2.form_version = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `uuid=null` should be excluded.
+        self.new_instance1.form_version = self.form_version
+        self.new_instance1.uuid = None
+        self.new_instance1.save()
+        self.new_instance2.form_version = self.other_form_version
+        self.new_instance2.uuid = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+        # `form_id=null` should be excluded.
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance1.form = None
+        self.new_instance1.save()
+        self.new_instance1.uuid = uuid.uuid4()
+        self.new_instance2.form = None
+        self.new_instance2.save()
+
+        change_requests = m.OrgUnitChangeRequest.objects.exclude_soft_deleted_new_reference_instances()
+        self.assertEqual(change_requests.count(), 0)
+
+    def test_filter_on_user_projects(self):
+        # The data source should be linked to `project_1`.
+        self.assertEqual(self.data_source.projects.count(), 1)
+        self.assertEqual(self.data_source.projects.first(), self.project_1)
+
+        # The org unit should be linked to `project_1` (via the data source).
+        self.assertEqual(self.org_unit.version.data_source, self.data_source)
+
+        # Create a change request for this org unit.
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+
+        # No project restriction: the user should be able to see all change requests.
+        self.assertEqual(self.user.iaso_profile.projects_ids, [])
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 1)
+
+        # Restriction on `project_2`: the user shouldn't be able to see change requests for `project_1`.
+        self.user.iaso_profile.projects.set([self.project_2])
+        del self.user.iaso_profile.projects_ids
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 0)
+
+        # Restriction on `project_1` and `project_2`: the user should be able to see change requests for `project_1`.
+        self.user.iaso_profile.projects.set([self.project_1, self.project_2])
+        del self.user.iaso_profile.projects_ids
+        filtered_change_requests = m.OrgUnitChangeRequest.objects.filter_on_user_projects(self.user)
+        self.assertEqual(filtered_change_requests.count(), 1)

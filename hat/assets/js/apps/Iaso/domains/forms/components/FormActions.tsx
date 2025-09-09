@@ -1,24 +1,24 @@
 import React, { FunctionComponent, useState } from 'react';
-import { IconButton } from 'bluesquare-components';
-import { Menu, MenuItem } from '@mui/material';
-import { Link } from 'react-router-dom';
-import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import { useDispatch } from 'react-redux';
 import { Download } from '@mui/icons-material';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
-import * as Permission from '../../../utils/permissions';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import { Menu, MenuItem } from '@mui/material';
+import { IconButton } from 'bluesquare-components';
+import { Link } from 'react-router-dom';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import MESSAGES from '../messages';
-import { useRestoreForm } from '../hooks/useRestoreForm';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import * as Permission from '../../../utils/permissions';
 import { createInstance } from '../../instances/actions';
 import { useDeleteForm } from '../hooks/useDeleteForm';
+import { useRestoreForm } from '../hooks/useRestoreForm';
+import MESSAGES from '../messages';
+import { CreateSubmissionModal } from './CreateSubmissionModal/CreateSubmissionModal';
 
 type Props = {
     settings: any;
     orgUnitId: number | string;
     baseUrls: any;
     showDeleted: boolean;
+    hasDhis2Module: boolean;
 };
 
 export const FormActions: FunctionComponent<Props> = ({
@@ -26,8 +26,8 @@ export const FormActions: FunctionComponent<Props> = ({
     orgUnitId,
     baseUrls,
     showDeleted,
+    hasDhis2Module,
 }) => {
-    const dispatch = useDispatch();
     // XLS and XML download states and functions
     const [anchorEl, setAnchorEl] = useState(null);
     const open = Boolean(anchorEl);
@@ -38,7 +38,7 @@ export const FormActions: FunctionComponent<Props> = ({
         setAnchorEl(null);
     };
     // Url to instances
-    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}`;
+    let urlToInstances = `/${baseUrls.instances}/formIds/${settings.row.original.id}/isSearchActive/true`;
     if (orgUnitId) {
         urlToInstances = `${urlToInstances}/levels/${orgUnitId}`;
     }
@@ -91,14 +91,7 @@ export const FormActions: FunctionComponent<Props> = ({
                                     onCreateOrReAssign={(
                                         currentForm,
                                         payload,
-                                    ) =>
-                                        dispatch(
-                                            createInstance(
-                                                currentForm,
-                                                payload,
-                                            ),
-                                        )
-                                    }
+                                    ) => createInstance(currentForm, payload)}
                                     orgUnitTypes={
                                         settings.row.original.org_unit_type_ids
                                     }
@@ -115,17 +108,23 @@ export const FormActions: FunctionComponent<Props> = ({
                                     tooltipMessage={MESSAGES.edit}
                                 />
                             </DisplayIfUserHasPerm>
-                            <DisplayIfUserHasPerm
-                                permissions={[Permission.FORMS]}
-                            >
-                                <IconButton
-                                    // eslint-disable-next-line max-len
-                                    url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                    icon="dhis"
-                                    tooltipMessage={MESSAGES.dhis2Mappings}
-                                    color={settings.row.original.has_mappings ? "primary": undefined}
-                                />                                
-                            </DisplayIfUserHasPerm>
+                            {hasDhis2Module && (
+                                <DisplayIfUserHasPerm
+                                    permissions={[Permission.FORMS]}
+                                >
+                                    <IconButton
+                                        // eslint-disable-next-line max-len
+                                        url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                        icon="dhis"
+                                        tooltipMessage={MESSAGES.dhis2Mappings}
+                                        color={
+                                            settings.row.original.has_mappings
+                                                ? 'primary'
+                                                : undefined
+                                        }
+                                    />
+                                </DisplayIfUserHasPerm>
+                            )}
                             <DisplayIfUserHasPerm
                                 permissions={[Permission.FORMS]}
                             >

@@ -1,8 +1,10 @@
 import datetime
+
 from collections import OrderedDict
 from unittest import mock
 
 import time_machine
+
 from django.db.models import F
 from rest_framework.test import APIRequestFactory
 
@@ -12,6 +14,7 @@ from plugins.polio.budget.models import BudgetProcess
 from plugins.polio.budget.serializers import BudgetProcessSerializer, BudgetProcessWriteSerializer
 from plugins.polio.models import Campaign, Round
 from plugins.polio.tests.utils.budget import get_mocked_workflow
+
 
 DT = datetime.datetime(2024, 2, 7, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
@@ -82,13 +85,13 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
             serializer.data,
             {
                 "id": self.budget_process.pk,
-                "created_by": OrderedDict(
-                    {
-                        "first_name": "",
-                        "last_name": "",
-                        "username": "username",
-                    }
-                ),
+                "created_by": {
+                    "first_name": "",
+                    "full_name": "",
+                    "id": self.user.pk,
+                    "last_name": "",
+                    "username": "username",
+                },
                 "created_at": "2024-02-07T11:00:00Z",
                 "rounds": [],
                 "ra_completed_at_WFEDITABLE": "2024-02-07",

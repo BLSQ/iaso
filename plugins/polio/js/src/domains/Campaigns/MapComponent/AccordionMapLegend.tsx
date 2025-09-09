@@ -1,17 +1,16 @@
 /* eslint-disable react/require-default-props */
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
     Grid,
     Typography,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Box,
 } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { IntlMessage } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
+import { FormattedMessage } from 'react-intl';
 import { useStyles } from '../../Calendar/campaignCalendar/Styles';
 
 import MESSAGES from '../../../constants/messages';

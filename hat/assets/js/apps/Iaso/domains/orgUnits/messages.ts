@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    images: {
+        defaultMessage: 'Images',
+        id: 'iaso.label.images',
+    },
+    files: {
+        defaultMessage: 'Files',
+        id: 'iaso.instance.files',
+    },
     create: {
         defaultMessage: 'Create',
         id: 'iaso.label.create',
@@ -141,6 +149,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.orgUnits.name',
     },
+    code: {
+        defaultMessage: 'Code',
+        id: 'iaso.orgUnits.code',
+    },
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
@@ -252,6 +264,14 @@ const MESSAGES = defineMessages({
     instances_count: {
         id: 'iaso.orgUnits.instances_count',
         defaultMessage: 'Number of submissions',
+    },
+    instances: {
+        id: 'iaso.instance.title',
+        defaultMessage: 'Submissions',
+    },
+    orgUnitInstances: {
+        id: 'iaso.forms.records',
+        defaultMessage: 'Submission(s)',
     },
     parent: {
         id: 'iaso.label.parent',
@@ -373,6 +393,10 @@ const MESSAGES = defineMessages({
     fetchGroupsError: {
         id: 'iaso.snackBar.fetchGroupsError',
         defaultMessage: 'An error occurred while fetching groups list',
+    },
+    fetchGroupSetsError: {
+        id: 'iaso.snackBar.fetchGroupSetsError',
+        defaultMessage: 'An error occurred while fetching group sets list',
     },
     fetchProfilesError: {
         id: 'iaso.snackBar.fetchProfilesError',
@@ -551,7 +575,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.searchParams',
         defaultMessage:
             // eslint-disable-next-line max-len
-            'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”',
+            'Use prefix “refs:” for external org unit ID search, “ids:” for internal org unit ID search or “codes:” for org unit code search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd” or “codes: OU420, OU69”',
     },
     textSearch: {
         id: 'iaso.forms.textSearch',
@@ -568,6 +592,26 @@ const MESSAGES = defineMessages({
     default: {
         id: 'iaso.datasources.options.label.default',
         defaultMessage: 'default',
+    },
+    noResult: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No result found',
+    },
+    fetchLinksError: {
+        id: 'iaso.snackBar.fetchLinksError',
+        defaultMessage: 'An error occurred while fetching links list',
+    },
+    fitToOutBounds: {
+        id: 'iaso.orgUnits.fitToOutBounds',
+        defaultMessage: 'Fit map to children bounds',
+    },
+    searchToSeeOrgUnits: {
+        id: 'iaso.forms.searchToSeeOrgUnits',
+        defaultMessage: 'Click "Search" button to see org units',
+    },
+    addChild: {
+        id: 'iaso.orgUnits.addChild',
+        defaultMessage: 'Add child',
     },
 });
 

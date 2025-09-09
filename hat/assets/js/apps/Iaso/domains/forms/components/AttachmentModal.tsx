@@ -1,10 +1,10 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
-    useSafeIntl,
     ConfirmCancelModal,
-    makeFullModal,
     FilesUpload,
+    makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 import { Box, Typography } from '@mui/material';
@@ -17,7 +17,6 @@ type Props = {
     id?: string;
     dataTestId?: string;
     closeDialog: () => void;
-    // eslint-disable-next-line no-unused-vars
     upload: (file: File[]) => void;
     isUploading: boolean;
 };

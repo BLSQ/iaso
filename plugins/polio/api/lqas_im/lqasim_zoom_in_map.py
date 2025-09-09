@@ -1,5 +1,6 @@
 import datetime as dt
 import json
+
 from datetime import timedelta
 
 from django.contrib.gis.geos import Polygon
@@ -15,11 +16,15 @@ from iaso.utils import geojson_queryset
 from plugins.polio.api.common import LQASStatus, RoundSelection, determine_status_for_district, make_safe_bbox
 from plugins.polio.api.lqas_im.base_viewset import LqasAfroViewset
 from plugins.polio.models import Campaign, Round
+from plugins.polio.models.base import CampaignType
 
 
 def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before):
     today = dt.date.today()
-    latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
+    polio_campaign_type = CampaignType.objects.get(name=CampaignType.POLIO)
+    latest_active_round_qs = Round.objects.filter(
+        campaign__country=org_unit, campaign__campaign_types=polio_campaign_type
+    )
     if start_date_after is not None:
         latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
     if end_date_before is not None:

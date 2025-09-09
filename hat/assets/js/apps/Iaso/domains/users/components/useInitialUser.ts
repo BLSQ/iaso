@@ -1,20 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import get from 'lodash/get';
-import { InitialUserData, UserDialogData } from '../types';
-import { UserRole } from '../../userRoles/types/userRoles';
+import { emailRegex } from '../../../libs/utils';
 import { useGetUserRolesDropDown } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { UserRole } from '../../userRoles/types/userRoles';
+import MESSAGES from '../messages';
+import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
-    // eslint-disable-next-line no-unused-vars
     setFieldErrors: (fieldName, fieldError) => void;
-    // eslint-disable-next-line no-unused-vars
     setFieldValue: (fieldName, fieldError) => void;
+    setPhoneNumber: (phoneNumber: string, countryCode: string) => void;
+    setEmail: (email: string) => void;
+    hasErrors: boolean;
 };
 
 export const useInitialUser = (
     initialData: InitialUserData,
 ): InitialUserUtils => {
+    const { formatMessage } = useSafeIntl();
     const initialUser: UserDialogData = useMemo(() => {
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
@@ -46,6 +51,10 @@ export const useInitialUser = (
             },
             home_page: {
                 value: get(initialData, 'home_page', ''),
+                errors: [],
+            },
+            organization: {
+                value: get(initialData, 'organization', undefined),
                 errors: [],
             },
             dhis2_id: {
@@ -82,6 +91,22 @@ export const useInitialUser = (
                 value: get(initialData, 'country_code', ''),
                 errors: [],
             },
+            editable_org_unit_type_ids: {
+                value: get(initialData, 'editable_org_unit_type_ids', []),
+                errors: [],
+            },
+            user_roles_editable_org_unit_type_ids: {
+                value: get(
+                    initialData,
+                    'user_roles_editable_org_unit_type_ids',
+                    [],
+                ),
+                errors: [],
+            },
+            has_multiple_accounts: {
+                value: get(initialData, 'other_accounts', []).length > 0,
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);
@@ -104,37 +129,40 @@ export const useInitialUser = (
             const newUser = {
                 ...user,
             };
-
-            if (fieldName === 'phone_number_obj') {
-                newUser.phone_number = {
-                    value: fieldValue.phone_number,
-                    errors: [],
-                };
-                newUser.country_code = {
-                    value: fieldValue.country_code?.countryCode,
-                    errors: [],
-                };
-            } else {
-                newUser[fieldName] = {
-                    value: fieldValue,
+            newUser[fieldName] = {
+                value: fieldValue,
+                errors: [],
+            };
+            if (fieldName === 'send_email_invitation' && fieldValue) {
+                newUser.password = {
+                    value: null,
                     errors: [],
                 };
             }
-
             if (fieldName === 'user_roles') {
+                let user_roles_editable_org_unit_type_ids: any = [];
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
                     .map(userRole => {
+                        user_roles_editable_org_unit_type_ids = [
+                            ...new Set([
+                                ...user_roles_editable_org_unit_type_ids,
+                                ...(userRole.original
+                                    ?.editable_org_unit_type_ids ?? []),
+                            ]),
+                        ];
                         const role = {
                             ...(userRole.original as UserRole),
-                            permissions: userRole.original?.permissions.map(
-                                perm => perm.codename,
-                            ),
+                            permissions: userRole.original?.permissions,
                         };
                         return role;
                     });
                 newUser.user_roles_permissions = {
                     value: userRolesPermissions,
+                    errors: [],
+                };
+                newUser.user_roles_editable_org_unit_type_ids = {
+                    value: user_roles_editable_org_unit_type_ids,
                     errors: [],
                 };
             }
@@ -144,11 +172,54 @@ export const useInitialUser = (
         [user, userRoles],
     );
 
+    const setPhoneNumber = useCallback(
+        (phoneNumber, countryCode) => {
+            setUser({
+                ...user,
+                phone_number: { value: phoneNumber, errors: [] },
+                country_code: { value: countryCode, errors: [] },
+            });
+        },
+        [user],
+    );
+    const setEmail = useCallback(
+        email => {
+            setUser({
+                ...user,
+                email: {
+                    value: email === '' ? undefined : email,
+                    errors:
+                        emailRegex.test(email) || email === ''
+                            ? []
+                            : [formatMessage(MESSAGES.invalidEmailFormat)],
+                },
+            });
+        },
+        [user, formatMessage],
+    );
+    const hasErrors = useMemo(() => {
+        return Object.values(user).some(field => field.errors.length > 0);
+    }, [user]);
+
     useEffect(() => {
         setUser(initialUser);
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, setFieldValue, setFieldErrors };
-    }, [setFieldErrors, setFieldValue, user]);
+        return {
+            user,
+            setFieldValue,
+            setFieldErrors,
+            setPhoneNumber,
+            setEmail,
+            hasErrors,
+        };
+    }, [
+        setFieldErrors,
+        setFieldValue,
+        user,
+        setPhoneNumber,
+        setEmail,
+        hasErrors,
+    ]);
 };

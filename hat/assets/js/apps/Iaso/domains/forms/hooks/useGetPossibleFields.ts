@@ -1,27 +1,37 @@
-/* eslint-disable camelcase */
 import { useMemo } from 'react';
-import { UseQueryResult } from 'react-query';
 import { cloneDeep } from 'lodash';
+import { UseQueryResult } from 'react-query';
+import { FormState } from 'Iaso/domains/entities/components/EntitiesQuerybuilder/utils';
+import { getRequest } from '../../../libs/Api';
+import { useSnackQueries, useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
 import { useGetForm } from '../../entities/entityTypes/hooks/requests/forms';
 
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { getRequest } from '../../../libs/Api';
-
+import MESSAGES from '../messages';
 import { Form, PossibleField } from '../types/forms';
 
 type Result = {
     possibleFields: PossibleField[];
     isFetchingForm: boolean;
 };
+export type PossibleFieldsForForm = {
+    form_id: string;
+    name: string;
+    possibleFields: PossibleField[];
+};
+type AllResults = {
+    allPossibleFields: PossibleFieldsForForm[];
+    isFetchingForms: boolean;
+};
 
 export const usePossibleFields = (
     isFetchingForm: boolean,
     form?: Form,
+    possible_fields_key = 'possible_fields',
 ): Result => {
     return useMemo(() => {
         const possibleFields =
-            form?.possible_fields?.map(field => ({
+            form?.[possible_fields_key]?.map(field => ({
                 ...field,
                 fieldKey: field.name.replace('.', ''),
             })) || [];
@@ -29,10 +39,13 @@ export const usePossibleFields = (
             possibleFields,
             isFetchingForm,
         };
-    }, [form?.possible_fields, isFetchingForm]);
+    }, [form, isFetchingForm, possible_fields_key]);
 };
 
-export const useGetPossibleFields = (formId?: number, appId?: string): Result => {
+export const useGetPossibleFields = (
+    formId?: number,
+    appId?: string,
+): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         Boolean(formId),
@@ -40,6 +53,106 @@ export const useGetPossibleFields = (formId?: number, appId?: string): Result =>
         appId,
     );
     return usePossibleFields(isFetchingForm, currentForm);
+};
+
+type DynamicPossibleFieldsResult = {
+    possibleFieldsMap: Map<number, PossibleField[]>;
+    isFetching: boolean;
+    isError: boolean;
+};
+
+export const useDynamicPossibleFields = (
+    formStates: FormState[],
+): DynamicPossibleFieldsResult => {
+    // Extract unique form IDs that need possible fields
+    const formIds = useMemo(() => {
+        const uniqueIds = new Set<number>();
+        formStates?.forEach(state => {
+            if (state.form?.id) {
+                uniqueIds.add(state.form.id);
+            }
+        });
+        return Array.from(uniqueIds);
+    }, [formStates]);
+
+    // Build dynamic queries array for possible fields
+    const queries = useMemo(() => {
+        return formIds.map(formId => ({
+            queryKey: ['form', formId, 'possible_fields'],
+            queryFn: () =>
+                getRequest(`/api/forms/${formId}/?fields=possible_fields`),
+            snackErrorMsg: MESSAGES.fetchPossibleFieldsError,
+            options: {
+                enabled: Boolean(formId),
+                select: (data: any) => {
+                    // Transform possible fields to match the expected format
+                    return (
+                        data?.possible_fields?.map((field: any) => ({
+                            ...field,
+                            fieldKey: field.name.replace('.', ''),
+                        })) || []
+                    );
+                },
+                staleTime: 60000,
+                cacheTime: 1000 * 60 * 5,
+            },
+        }));
+    }, [formIds]);
+
+    // Use useSnackQueries for batch execution
+    const results = useSnackQueries<PossibleField[]>(queries as any);
+
+    // Transform results into a map for easy access
+    const possibleFieldsMap = useMemo(() => {
+        const map = new Map<number, PossibleField[]>();
+        results.forEach((result, index) => {
+            if (result.data && formIds[index]) {
+                map.set(
+                    formIds[index],
+                    result.data as unknown as PossibleField[],
+                );
+            }
+        });
+        return map;
+    }, [results, formIds]);
+
+    const loadingStates = useMemo(
+        () => ({
+            isFetching: results.some(result => result.isFetching),
+            isError: results.some(result => result.isError),
+        }),
+        [results],
+    );
+
+    return {
+        possibleFieldsMap,
+        ...loadingStates,
+    };
+};
+export const useAllPossibleFields = (
+    isFetchingForms: boolean,
+    allForms: Form[] = [],
+): AllResults => {
+    return useMemo(() => {
+        const allPossibleFields: PossibleFieldsForForm[] = [];
+        allForms.forEach(form => {
+            const possibleFields =
+                form?.possible_fields?.map(field => ({
+                    ...field,
+                    fieldKey: field.name.replace('.', ''),
+                })) || [];
+            allPossibleFields.push({
+                form_id: form.form_id,
+                name: form.name,
+                possibleFields,
+            });
+        });
+
+        return {
+            allPossibleFields,
+            isFetchingForms,
+        };
+    }, [isFetchingForms, allForms]);
 };
 
 type PossibleFieldsDropdown = {

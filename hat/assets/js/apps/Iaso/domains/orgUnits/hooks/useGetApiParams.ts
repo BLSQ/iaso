@@ -1,7 +1,7 @@
 import { getTableUrl } from 'bluesquare-components';
+import { getFromDateString, getToDateString } from '../../../utils/dates';
 import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
-import { getFromDateString, getToDateString } from '../../../utils/dates';
 
 export type ApiParams = {
     order: string;
@@ -15,11 +15,8 @@ export type ApiParams = {
 type Result = {
     apiParams: ApiParams;
     getUrl: (
-        // eslint-disable-next-line no-unused-vars
         toExport: boolean,
-        // eslint-disable-next-line no-unused-vars
         exportType: string,
-        // eslint-disable-next-line no-unused-vars
         asLocation?: boolean,
     ) => string;
 };
@@ -28,13 +25,14 @@ export const useGetApiParams = (
     params: OrgUnitParams,
     asLocation = false,
 ): Result => {
-    const tempSearches = [...searches];
-    searches.forEach((s, i) => {
-        tempSearches[i].orgUnitParentId = searches[i].levels;
+    const activeSearches = searches.filter(s => !s.isAdded);
+    const tempSearches = [...activeSearches];
+    activeSearches.forEach((s, i) => {
+        tempSearches[i].orgUnitParentId = activeSearches[i].levels;
         tempSearches[i].dateFrom =
-            getFromDateString(searches[i].dateFrom) || undefined;
+            getFromDateString(activeSearches[i].dateFrom) || undefined;
         tempSearches[i].dateTo =
-            getToDateString(searches[i].dateTo) || undefined;
+            getToDateString(activeSearches[i].dateTo) || undefined;
     });
 
     const apiParams: ApiParams = {

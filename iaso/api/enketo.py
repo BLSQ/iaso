@@ -2,32 +2,34 @@ from logging import getLogger
 from uuid import uuid4
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRequest
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import permissions
-from rest_framework import status
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from hat.audit.models import log_modification, INSTANCE_API
+import iaso.permissions as core_permissions
+
+from hat.audit.models import INSTANCE_API, log_modification
 from iaso.api.common import HasPermission
+from iaso.api.query_params import APP_ID
 from iaso.dhis2.datavalue_exporter import InstanceExportError
-from iaso.enketo import calculate_file_md5
 from iaso.enketo import (
+    EnketoError,
     enketo_settings,
     enketo_url_for_edition,
-    enketo_url_for_creation,
-    to_xforms_xml,
+    extract_xml_instance_from_form_xml,
     inject_instance_id_in_form,
-    EnketoError,
+    to_xforms_xml,
 )
+from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
-from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
-from iaso.models import User
-from hat.menupermissions import models as permission
+from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+from iaso.utils.encryption import calculate_md5
+
 
 logger = getLogger(__name__)
 
@@ -38,11 +40,36 @@ def public_url_for_enketo(request: HttpRequest, path):
 
     resolved_path = request.build_absolute_uri(path)
 
-    # This hack allow it to work in the docker-compose environment, where the server name from outside the container
+    # This hack allow it to work in the docker compose environment, where the server name from outside the container
     # network are not the same that in the inside.
     if enketo_settings().get("ENKETO_DEV"):
         resolved_path = resolved_path.replace("localhost:8081", "iaso:8081")
     return resolved_path
+
+
+# it's now actually an edition, we extract a fresh "data" xml from the form definition
+# and inject special variables like current_ou_name as described in iaso_special_question_names doc in the xml
+# that will get edited by enketo and the enduser
+def _enketo_url_for_creation(form, instance, request, return_url):
+    user_id = None
+    profile = request.user.iaso_profile if request.user and not request.user.is_anonymous else None
+    if profile:
+        user_id = profile.user.id
+    instance_xml = extract_xml_instance_from_form_xml(form.latest_version.file.read(), instance.uuid)
+
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
+    )
+
+    edit_url = enketo_url_for_edition(
+        public_url_for_enketo(request, "/api/enketo"),
+        form_id_string=instance.uuid,
+        instance_xml=new_xml,
+        instance_id=instance_uuid,
+        return_url=return_url,
+    )
+    return edit_url
 
 
 # Used by Create submission in Iaso Dashboard
@@ -58,7 +85,7 @@ def enketo_create_url(request):
     now = timezone.now()
     form = get_object_or_404(Form, id=form_id)
 
-    i = Instance(
+    instance = Instance(
         form_id=form_id,
         name=form.name,
         period=period,
@@ -71,16 +98,13 @@ def enketo_create_url(request):
         source_created_at=now,
         source_updated_at=now,
     )  # warning for access rights here
-    i.save()
+    instance.save()
 
     try:
         if not return_url:
-            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id)
-        edit_url = enketo_url_for_creation(
-            server_url=public_url_for_enketo(request, "/api/enketo"),
-            uuid=uuid,
-            return_url=return_url,
-        )
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
+
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
 
         return JsonResponse({"edit_url": edit_url}, status=201)
     except EnketoError as error:
@@ -119,7 +143,7 @@ def enketo_public_create_url(request):
             {"error": "Not Found", "message": f"OrgUnit {source_ref} not found in project {project.name}"}, status=400
         )
 
-    if not form in project.forms.all():
+    if form not in project.forms.all():
         return JsonResponse({"error": _("Unauthorized")}, status=401)
 
     if external_user_id:
@@ -164,32 +188,31 @@ def enketo_public_create_url(request):
             user_id = profile.user.id
         url_for_edition = _build_url_for_edition(request, instance, user_id)
         return JsonResponse({"url": url_for_edition}, status=201)
-    else:  # creation
-        uuid = str(uuid4())
-        now = timezone.now()
-        instance = Instance.objects.create(
-            form_id=form.id,
-            name=form.name,
-            period=period,
-            uuid=uuid,
-            org_unit_id=org_unit.id,
-            project=project,
-            file_name=uuid + "xml",
-            to_export=(to_export == "true"),
-            source_created_at=now,
-            source_updated_at=now,
-        )
+    # creation
+    uuid = str(uuid4())
+    now = timezone.now()
+    instance = Instance.objects.create(
+        form_id=form.id,
+        name=form.name,
+        period=period,
+        uuid=uuid,
+        org_unit_id=org_unit.id,
+        project=project,
+        file_name=uuid + "xml",
+        to_export=(to_export == "true"),
+        source_created_at=now,
+        source_updated_at=now,
+    )
 
-        try:
-            if not return_url:
-                return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
-            edit_url = enketo_url_for_creation(
-                server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid, return_url=return_url
-            )
+    try:
+        if not return_url:
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % instance.id)
 
-            return JsonResponse({"url": edit_url}, status=201)
-        except EnketoError as error:
-            return JsonResponse({"error": str(error)}, status=409)
+        edit_url = _enketo_url_for_creation(form=form, instance=instance, request=request, return_url=return_url)
+
+        return JsonResponse({"url": edit_url}, status=201)
+    except EnketoError as error:
+        return JsonResponse({"error": str(error)}, status=409)
 
 
 # TODO : Check if this is used
@@ -213,7 +236,8 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     i.save()
 
     try:
-        edit_url = enketo_url_for_creation(server_url=public_url_for_enketo(request, "/api/enketo"), uuid=uuid)
+        # return_url with just tell enketo to show a thank you page
+        edit_url = _enketo_url_for_creation(form=form, instance=i, request=request, return_url="")
 
         return HttpResponseRedirect(edit_url)
     except EnketoError as error:
@@ -226,7 +250,7 @@ def _build_url_for_edition(request, instance, user_id=None):
     instance_xml = instance.file.read()
     version_id = instance.form.latest_version.version_id
     instance_uuid, new_xml = inject_xml_find_uuid(
-        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
     )
 
     edit_url = enketo_url_for_edition(
@@ -240,7 +264,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission(permission.SUBMISSIONS_UPDATE)])  # type: ignore
+@permission_classes([HasPermission(core_permissions.SUBMISSIONS_UPDATE)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.
@@ -283,7 +307,10 @@ def enketo_form_list(request):
         # pass the app_id so it can be accessed anonymously from Enketo
         project = i.form.projects.first()
         app_id = project.app_id if project else ""
-        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/?app_id={app_id}")
+        url = f"/api/forms/{i.form_id}/manifest_enketo/"
+        secret = enketo_settings("ENKETO_SIGNING_SECRET")
+        url_with_secret = generate_signed_url(path=url, secret=secret, extra_params={APP_ID: app_id})
+        manifest_url = public_url_for_enketo(request, url_with_secret)
     else:
         manifest_url = None
 
@@ -293,13 +320,12 @@ def enketo_form_list(request):
             download_url=downloadurl,
             version=latest_form_version.version_id,
             manifest_url=manifest_url,
-            md5checksum=calculate_file_md5(latest_form_version.file),
+            md5checksum=calculate_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )
 
         return HttpResponse(xforms, content_type="application/xml")
-    else:
-        return HttpResponse(content_type="application/xml")
+    return HttpResponse(content_type="application/xml")
 
 
 @api_view(["GET", "HEAD"])

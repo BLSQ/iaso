@@ -37,10 +37,9 @@ yup.addMethod(
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        campaign: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+        campaign: yup.string().nullable(),
+        alternative_campaign: yup.string().nullable(),
+        round: yup.number().nullable(),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -65,13 +64,6 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        missing_vials: yup
-            .number()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
-            .min(0, formatMessage(MESSAGES.positiveInteger))
-            .integer()
-            .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
             .nullable()
@@ -79,6 +71,7 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        file: yup.mixed().nullable(),
     });
 };
 
@@ -112,15 +105,17 @@ export const useDestructionValidation = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
+        file: yup.mixed().nullable(),
     });
 };
+
 export const useIncidentValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
         stock_correction: yup
             .string()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField)), // can be made more strict witha ccepted values from dropdown
+            .required(formatMessage(MESSAGES.requiredField)), // can be made more strict with accepted values from dropdown
         incident_report_received_by_rrt: yup
             .date()
             .required(formatMessage(MESSAGES.requiredField))
@@ -152,5 +147,27 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        file: yup.mixed().nullable(),
+    });
+};
+
+export const useEarmarkValidation = () => {
+    const { formatMessage } = useSafeIntl();
+    return yup.object().shape({
+        earmarked_stock_type: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)), // can be made more strict with accepted values from dropdown
+        campaign: yup.string().nullable(),
+        temporary_campaign_name: yup.string().nullable(),
+        round_number: yup.number().integer().positive().nullable(),
+        vials_earmarked: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        comment: yup.string().nullable(),
     });
 };

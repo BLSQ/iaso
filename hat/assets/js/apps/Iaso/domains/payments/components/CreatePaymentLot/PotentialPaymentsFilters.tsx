@@ -1,27 +1,38 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useMemo,
+} from 'react';
 import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../../components/FilterButton';
-import { useFilterState } from '../../../../hooks/useFilterState';
-import InputComponent from '../../../../components/forms/InputComponent';
-import { baseUrls } from '../../../../constants/urls';
-import MESSAGES from '../../messages';
-import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
+import { selectionInitialState, useSafeIntl } from 'bluesquare-components';
+import { SearchButton } from 'Iaso/components/SearchButton';
 
 import DatesRange from '../../../../components/filters/DatesRange';
-import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
-import { PotentialPaymentParams } from '../../types';
 import { AsyncSelect } from '../../../../components/forms/AsyncSelect';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
+import { useFilterState } from '../../../../hooks/useFilterState';
 import { getUsersDropDown } from '../../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../../instances/hooks/useGetProfilesDropdown';
+import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
+import { Selection } from '../../../orgUnits/types/selection';
 import { useGetUserRolesDropDown } from '../../../userRoles/hooks/requests/useGetUserRoles';
+import { useGetForms } from '../../../workflows/hooks/requests/useGetForms';
+import MESSAGES from '../../messages';
+import { PotentialPaymentParams, PotentialPayment } from '../../types';
 
 const baseUrl = baseUrls.potentialPayments;
-type Props = { params: PotentialPaymentParams };
+type Props = {
+    params: PotentialPaymentParams;
+    setSelection: Dispatch<SetStateAction<Selection<PotentialPayment>>>;
+};
 
 export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
     params,
+    setSelection,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
@@ -46,6 +57,10 @@ export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
+    const onSearch = useCallback(() => {
+        setSelection(selectionInitialState);
+        handleSearch();
+    }, [handleSearch, setSelection]);
 
     return (
         <Grid container spacing={2}>
@@ -112,9 +127,9 @@ export const PotentialPaymentsFilters: FunctionComponent<Props> = ({
             </Grid>
             <Grid item xs={12} md={4} lg={3}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={!filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={onSearch}
                     />
                 </Box>
             </Grid>

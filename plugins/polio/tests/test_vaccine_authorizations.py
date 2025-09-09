@@ -1,4 +1,5 @@
 import datetime
+
 from datetime import date
 
 from django.contrib.auth.models import User
@@ -6,20 +7,21 @@ from django.core import mail
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
+from rest_framework import status
 from rest_framework.test import APIClient
 
 from beanstalk_worker.services import TestTaskService
 from hat import settings
 from iaso import models as m
-from iaso.models import Account, Group, OrgUnitType, Team, Profile
+from iaso.models import Account, Group, OrgUnitType, Profile, Team
 from iaso.test import APITestCase
 from plugins.polio.models import VaccineAuthorization
 from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     expired_vaccine_authorizations_email_alert,
-    vaccine_authorization_update_expired_entries,
-    send_email_vaccine_authorizations_60_days_expiration_alert,
     send_email_expired_vaccine_authorizations_alert,
+    send_email_vaccine_authorizations_60_days_expiration_alert,
+    vaccine_authorization_update_expired_entries,
     vaccine_authorizations_60_days_expiration_email_alert,
 )
 
@@ -163,8 +165,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
-        self.assertEqual(response.data["expiration_date"], "2225-02-01"),
-        self.assertEqual(response.data["start_date"], "2224-02-01"),
+        (self.assertEqual(response.data["expiration_date"], "2225-02-01"),)
+        (self.assertEqual(response.data["start_date"], "2224-02-01"),)
         self.assertEqual(response.data["status"], "ONGOING")
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
@@ -613,7 +615,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         team = get_object_or_404(Team, name=NOPV2_VACCINE_TEAM_NAME)
 
-        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+        mailing_list = list(User.objects.filter(pk__in=team.users.all()).values_list("email", flat=True))
 
         for i, vacc_auth in enumerate(vaccine_auths):
             try:
@@ -660,16 +662,13 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
         domain = settings.DNS_DOMAIN
         page_url = f"{domain}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
-        url_is_correct = False
-        if page_url in mail.outbox[0].body:
-            url_is_correct = True
 
         self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
-        self.assertEqual(url_is_correct, True)
+        self.assertTrue(page_url in mail.outbox[0].body)
 
         # test the Task
 
@@ -776,7 +775,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         """
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=country/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=country")
 
         self.assertEqual(response.data[0]["country"]["name"], third.country.name)
         self.assertEqual(response.data[1]["country"]["name"], second.country.name)
@@ -784,7 +783,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Descendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-country/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-country")
 
         self.assertEqual(response.data[0]["country"]["name"], fourth.country.name)
         self.assertEqual(response.data[1]["country"]["name"], second.country.name)
@@ -797,12 +796,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # Ascendant
 
         response = self.client.get(
-            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=current_expiration_date/"
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=current_expiration_date"
         )
-
-        self.assertEqual(response.data[0]["current_expiration_date"], second.expiration_date)
-        self.assertEqual(response.data[1]["current_expiration_date"], third.expiration_date)
-        self.assertEqual(response.data[2]["current_expiration_date"], fourth.expiration_date)
+        response_json = self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_0 = response_json[0]
+        self.assertEqual(response_0["id"], second.id)
+        self.assertEqual(response_0["current_expiration_date"], second.expiration_date.strftime("%Y-%m-%d"))
+        response_1 = response_json[1]
+        self.assertEqual(response_1["id"], third.id)
+        self.assertEqual(response_1["current_expiration_date"], third.expiration_date.strftime("%Y-%m-%d"))
+        response_2 = response_json[2]
+        self.assertEqual(response_2["id"], fourth.id)
+        self.assertEqual(response_2["current_expiration_date"], fourth.expiration_date.strftime("%Y-%m-%d"))
 
         # Descendant
 
@@ -820,7 +825,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status")
 
         self.assertEqual(response.data[0]["status"], second.status)
         self.assertEqual(response.data[1]["status"], third.status)
@@ -840,7 +845,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         # Ascendant
 
-        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=quantity/")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=quantity")
 
         self.assertEqual(response.data[0]["status"], second.status)
         self.assertEqual(response.data[1]["status"], third.status)
@@ -885,7 +890,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         # Ascendant
 
         response = self.client.get(
-            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=next_expiration_date/"
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=next_expiration_date"
         )
 
         self.assertEqual(response.data[0]["next_expiration_date"], fifth.expiration_date)
@@ -1126,3 +1131,90 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")
+
+    # Mock send_mail to raise an exception when receiving invalid recipients
+    def mock_send_mail(self, subject, message, from_email, recipient_list, **kwargs):
+        if not all(isinstance(r, str) and "@" in r for r in recipient_list):
+            raise ValueError("Invalid email recipients")
+        return 1  # Django's send_mail returns the number of successfully sent messages
+
+    def test_failing_to_send_raises(self):
+        from unittest.mock import patch
+
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        # Create a user with invalid email using the helper
+        invalid_user = self.create_user_with_profile(
+            username="invalid_email_user",
+            email="123",  # Invalid email without @
+            password="password",
+            account=self.account,
+        )
+        self.team.users.set([self.user_1, invalid_user])
+
+        past_date = datetime.date.today() - datetime.timedelta(days=1)
+
+        # Create a vaccine auth that expired yesterday
+        past_vacc_auth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=past_date,
+        )
+
+        # Create an ongoing auth to test the "next auth" logic
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=datetime.date.today() + datetime.timedelta(days=100),
+        )
+
+        # Mock send_mail to validate recipients
+        with patch("plugins.polio.tasks.vaccine_authorizations_mail_alerts.send_mail", side_effect=self.mock_send_mail):
+            task_service = TestTaskService()
+            task = send_email_expired_vaccine_authorizations_alert(user=self.user_1)
+            task_service.run_all()  # Actually execute the task
+            task.refresh_from_db()
+            self.assertEqual(task.status, "ERRORED")
+            self.assertEqual(task.result["message"], "Invalid email recipients")
+
+    def test_failing_to_send_raises_60_days(self):
+        from unittest.mock import patch
+
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        # Create a user with invalid email using the helper
+        invalid_user = self.create_user_with_profile(
+            username="invalid_email_user_60",
+            email="notanemail60",  # Invalid email without @
+            password="password",
+            account=self.account,
+        )
+        self.team.users.set([self.user_1, invalid_user])
+
+        # Create a vaccine auth that expires in 60 days
+        future_date = datetime.date.today() + datetime.timedelta(days=60)
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=future_date,
+        )
+
+        # Mock send_mail to validate recipients
+        with patch("plugins.polio.tasks.vaccine_authorizations_mail_alerts.send_mail", side_effect=self.mock_send_mail):
+            task_service = TestTaskService()
+            task = send_email_vaccine_authorizations_60_days_expiration_alert(user=self.user_1)
+            task_service.run_all()  # Actually execute the task
+            task.refresh_from_db()
+            self.assertEqual(task.status, "ERRORED")
+            self.assertEqual(task.result["message"], "Invalid email recipients")

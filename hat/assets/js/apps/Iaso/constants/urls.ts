@@ -5,6 +5,7 @@ export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
 
 export const FORMS_PREFIX = 'formsParams';
+export const FILES_PREFIX = 'filesParams';
 export const LINKS_PREFIX = 'linksParams';
 export const LOGS_PREFIX = 'logsParams';
 export const OU_CHILDREN_PREFIX = 'childrenParams';
@@ -36,8 +37,12 @@ const orgUnitDetailsLogsParams = paginationPathParamsWithPrefix(LOGS_PREFIX);
 const orgUnitDetailsFormsParams = paginationPathParamsWithPrefix(FORMS_PREFIX);
 
 export const CHANGE_REQUEST = 'changeRequest';
-const ORG_UNITS = 'orgunits';
-const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
+export const CHANGE_REQUEST_CONFIG = 'changeRequestConfig';
+export const CONFIGURATION = 'configuration';
+const VALIDATION = 'validation';
+const VALIDATION_CHANGE_REQUEST = `${VALIDATION}/${CHANGE_REQUEST}`;
+const VALIDATION_CHANGE_REQUEST_CONFIG = `${VALIDATION}/${CHANGE_REQUEST_CONFIG}`;
+const VALIDATION_CONFIGURATION_CHANGE_REQUESTS = `${VALIDATION_CHANGE_REQUEST_CONFIG}`;
 
 // TODO export to blsq-comp
 export type RouteConfig = {
@@ -57,6 +62,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
+            'showInstancesCount',
+            'isSearchActive',
             ...paginationPathParams,
         ],
     },
@@ -68,9 +75,10 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'tab',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('attachments'),
+            ...paginationPathParamsWithPrefix('predefinedFilters'),
         ],
     },
-    formsStats: { url: 'forms/stats', params: ['accountId'] },
+    formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
     instances: {
         url: 'forms/submissions',
         params: [
@@ -103,6 +111,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'sentDateFrom',
             'sentDateTo',
             'projectIds',
+            'isSearchActive',
         ],
     },
     instanceDetail: {
@@ -120,13 +129,13 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
     mappings: {
         url: 'forms/mappings',
         params: [
-            'accountId', 
-            'formId', 
+            'accountId',
+            'formId',
             'mappingTypes',
             'orgUnitTypeIds',
             'projectsIds',
-            'search', 
-            ...paginationPathParams
+            'search',
+            ...paginationPathParams,
         ],
     },
     mappingDetail: {
@@ -156,6 +165,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
             'referenceFormId',
             'instanceId',
+            'parentOrgUnitId',
             ...paginationPathParams,
             ...orgUnitDetailsChildrenParams,
             ...orgUnitDetailsLinkParams,
@@ -164,28 +174,46 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     orgUnitsChangeRequest: {
-        url: ORG_UNITS_CHANGE_REQUEST,
+        url: VALIDATION_CHANGE_REQUEST,
         params: [
             'accountId',
-            'parent_id',
-            'groups',
-            'org_unit_type_id',
-            'status',
             'created_at_after',
             'created_at_before',
+            'data_source_synchronization_id',
             'forms',
+            'groups',
+            'ids',
+            'is_soft_deleted',
+            'org_unit_type_id',
+            'parent_id',
+            'paymentIds',
+            'paymentStatus',
+            'potentialPaymentIds',
+            'projectIds',
+            'source_version_id',
+            'status',
             'userIds',
             'userRoles',
             'withLocation',
-            'projectIds',
-            'paymentStatus',
             ...paginationPathParams,
-            'paymentIds',
-            'potentialPaymentIds',
+        ],
+    },
+    orgUnitsChangeRequestDetail: {
+        url: `${VALIDATION_CHANGE_REQUEST}/detail`,
+        params: ['accountId', 'changeRequestId'],
+    },
+    orgUnitsChangeRequestConfiguration: {
+        url: VALIDATION_CONFIGURATION_CHANGE_REQUESTS,
+        params: [
+            'accountId',
+            'org_unit_type_id',
+            'project_id',
+            'type',
+            ...paginationPathParams,
         ],
     },
     registry: {
-        url: 'orgunits/registry',
+        url: 'registry',
         params: [
             'accountId',
             'orgUnitId',
@@ -205,7 +233,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     links: {
-        url: 'orgunits/sources/links/list',
+        url: 'settings/sources/links/list',
         params: [
             'accountId',
             'search',
@@ -226,7 +254,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     algos: {
-        url: 'orgunits/sources/links/runs',
+        url: 'settings/sources/links/runs',
         params: [
             'accountId',
             'algorithmId',
@@ -239,9 +267,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'searchActive',
         ],
     },
-    completeness: { url: 'forms/completeness', params: ['accountId'] },
+    completeness: { url: 'forms/stats/completeness', params: ['accountId'] },
     completenessStats: {
-        url: 'forms/completenessStats',
+        url: 'forms/stats/completenessStats',
         params: [
             'accountId',
             ...paginationPathParams,
@@ -265,7 +293,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId', 'search', ...paginationPathParams],
     },
     users: {
-        url: 'settings/users',
+        url: 'settings/users/management',
         params: [
             'accountId',
             'search',
@@ -280,8 +308,20 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    usersHistory: {
+        url: 'settings/users/history',
+        params: [
+            'accountId',
+            'org_unit_id',
+            'modified_by',
+            'user_ids',
+            'created_at_before',
+            'created_at_after',
+            ...paginationPathParams,
+        ],
+    },
     userRoles: {
-        url: 'settings/userRoles',
+        url: 'settings/users/userRoles',
         params: ['accountId', 'search', ...paginationPathParams],
     },
     projects: {
@@ -289,27 +329,57 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: ['accountId', ...paginationPathParams],
     },
     sources: {
-        url: 'orgunits/sources/list',
-        params: ['accountId', 'projectIds', ...paginationPathParams],
+        url: 'settings/sources/list',
+        params: ['accountId', 'projectIds', 'name', ...paginationPathParams],
     },
     sourceDetails: {
-        url: 'orgunits/source/details',
+        url: 'settings/source/details',
         params: ['accountId', 'sourceId', ...paginationPathParams],
     },
     tasks: {
         url: 'settings/tasks',
-        params: ['accountId', ...paginationPathParams],
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'startDate',
+            'endDate',
+            'status',
+            'users',
+            'taskType',
+        ],
     },
     devices: {
         url: 'settings/devices',
         params: ['accountId', ...paginationPathParams],
     },
+    setupAccountSettings: { url: 'settings/setupAccount', params: [] },
     groups: {
-        url: 'orgunits/groups',
-        params: ['accountId', 'search', ...paginationPathParams],
+        url: 'orgunits/configuration/groups',
+        params: [
+            'accountId',
+            'search',
+            'project_ids',
+            'dataSource',
+            'version',
+            ...paginationPathParams,
+        ],
+    },
+    groupSets: {
+        url: 'orgunits/configuration/groupSets',
+        params: [
+            'accountId',
+            'search',
+            'sourceVersion',
+            'projectsIds',
+            ...paginationPathParams,
+        ],
+    },
+    groupSetDetail: {
+        url: 'orgunits/configuration/groupSet',
+        params: ['accountId', 'groupSetId'],
     },
     orgUnitTypes: {
-        url: 'orgunits/types',
+        url: 'orgunits/configuration/types',
         params: ['accountId', 'search', 'projectIds', ...paginationPathParams],
     },
     entities: {
@@ -326,6 +396,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'entityTypeIds',
             'locationLimit',
             'groups',
+            'fieldsSearch',
             ...paginationPathParams,
         ],
     },
@@ -362,7 +433,16 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/duplicates/details',
         params: ['accountId', 'entities', ...paginationPathParams],
     },
-    pages: { url: 'pages', params: ['accountId', ...paginationPathParams] },
+    pages: {
+        url: 'pages',
+        params: [
+            'accountId',
+            'search',
+            'needs_authentication',
+            'userId',
+            ...paginationPathParams,
+        ],
+    },
     planning: {
         url: 'planning/list',
         params: [
@@ -388,7 +468,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         ],
     },
     teams: {
-        url: 'settings/teams',
+        url: 'settings/users/teams',
         params: [
             'accountId',
             'search',
@@ -464,6 +544,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
     error404: { url: '404', params: [] },
@@ -508,6 +589,7 @@ export const extractParamsConfig = (
 // Not super necessary, but it will help the IDE when using baseUrls
 type IasoBaseUrls = {
     setupAccount: string;
+    setupAccountSettings: string;
     home: string;
     forms: string;
     formDetail: string;
@@ -521,6 +603,8 @@ type IasoBaseUrls = {
     orgUnits: string;
     orgUnitDetails: string;
     orgUnitsChangeRequest: string;
+    orgUnitsChangeRequestDetail: string;
+    orgUnitsChangeRequestConfiguration: string;
     registry: string;
     registryDetail: string;
     links: string;
@@ -529,6 +613,7 @@ type IasoBaseUrls = {
     completenessStats: string;
     modules: string;
     users: string;
+    usersHistory: string;
     userRoles: string;
     projects: string;
     sources: string;
@@ -536,6 +621,8 @@ type IasoBaseUrls = {
     tasks: string;
     devices: string;
     groups: string;
+    groupSets: string;
+    groupSetDetail: string;
     orgUnitTypes: string;
     entities: string;
     entityDetails: string;
@@ -552,6 +639,7 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    hidden: string;
     error401: string;
     error403: string;
     error404: string;

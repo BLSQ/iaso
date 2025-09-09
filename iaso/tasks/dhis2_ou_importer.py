@@ -1,24 +1,26 @@
-from datetime import datetime
 import json
 import logging
 import time
-from typing import Optional, Dict, Any, List
+
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 from dhis2 import Api
-from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.utils.timezone import now
 
 from beanstalk_worker import task_decorator
 from iaso.models import (
-    OrgUnit,
-    OrgUnitType,
     DataSource,
-    SourceVersion,
     Group,
     GroupSet,
+    OrgUnit,
+    OrgUnitType,
+    SourceVersion,
     Task,
 )
 from iaso.utils.gis import simplify_geom
+
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -54,6 +56,7 @@ class DhisOrgunit(TypedDict):
     level: int  # e.g 4
     openingDate: str
     closedDate: str
+    code: Optional[str]
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -70,13 +73,13 @@ def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
         "organisationUnits",
         page_size=500,
         params={
-            "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
+            "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate,code"
         },
     ):
         orgunits.extend(page["organisationUnits"])
         logger.info(
-            f'fetched {page["pager"]["page"]}/{page["pager"]["pageCount"]} '
-            f'({len(orgunits)}/{page["pager"]["total"]} records)'
+            f"fetched {page['pager']['page']}/{page['pager']['pageCount']} "
+            f"({len(orgunits)}/{page['pager']['total']} records)"
         )
 
     # sorting orgunit according to their path ensure the parent are before the children
@@ -103,7 +106,7 @@ def find_org_unit_type(
     for group in groups:
         if group["name"] in group_type_dict:
             return group_type_dict[group["name"]]
-    return level_to_type.get(level, None)
+    return level_to_type.get(level)
 
 
 def orgunit_from_row(
@@ -133,6 +136,8 @@ def orgunit_from_row(
         org_unit.opening_date = datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
     if "closedDate" in row_keys:
         org_unit.closed_date = datetime.strptime(row["closedDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+    if "code" in row_keys:
+        org_unit.code = row["code"].strip()
 
     if not org_unit.org_unit_type:
         org_unit.org_unit_type = unknown_unit_type
@@ -410,8 +415,7 @@ def import_orgunits_and_groups(
             if update_mode:
                 skip_count += 1
                 continue
-            else:
-                assert False, "not here"
+            assert False, "not here"
 
         try:
             org_unit = orgunit_from_row(
@@ -456,6 +460,6 @@ def import_orgunits_and_groups(
 
     load_groupsets(api, version, group_dict)
     # If there is nothing in the fallback type, delete it.
-    if unknown_unit_type.orgunit_set.count() == 0:
+    if unknown_unit_type.org_units.count() == 0:
         unknown_unit_type.delete()
     return error_count, unit_dict

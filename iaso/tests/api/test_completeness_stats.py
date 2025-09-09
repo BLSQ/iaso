@@ -3,11 +3,14 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+import csv
+
+from io import StringIO
 from typing import Any
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 
-from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
+from iaso.models import Account, Form, Instance, OrgUnit, OrgUnitType
 from iaso.models.base import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
@@ -43,8 +46,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
             for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__))
         ):
             return False
-        else:
-            composite_type_passed = True
+        composite_type_passed = True
 
     if hasattr(o1, "__dict__"):
         if len(o1.__dict__) != len(o2.__dict__):
@@ -56,8 +58,7 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
             if not k1.startswith("__")
         ):  # avoid infinite loops
             return False
-        else:
-            composite_type_passed = True
+        composite_type_passed = True
 
     if isinstance(o1, dict):
         if len(o1) != len(o2):
@@ -78,18 +79,17 @@ def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: 
     elif isinstance(o1, float):
         if o1 == o2:
             return True
-        else:
-            # FIXME we can probably replace this by math.isclose
-            if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
-                if o2 != 0:
-                    if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
-                        return False
-                else:  # if both == 0, we already returned True
-                    if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
-                        return False
-            if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
-                return False
-            return True
+        # FIXME we can probably replace this by math.isclose
+        if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
+            if o2 != 0:
+                if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
+                    return False
+            else:  # if both == 0, we already returned True
+                if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
+                    return False
+        if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
+            return False
+        return True
 
     else:
         if not composite_type_passed:
@@ -348,6 +348,11 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "has_children": False,
                 },
             ],
+            "forms": [
+                {"id": self.form_hs_1.id, "name": "Hydroponics study 1", "slug": f"form_{self.form_hs_1.id}"},
+                {"id": self.form_hs_2.id, "name": "Hydroponics study 2", "slug": f"form_{self.form_hs_2.id}"},
+                {"id": self.form_hs_4.id, "name": "Hydroponics study 4", "slug": f"form_{self.form_hs_4.id}"},
+            ],
         }
 
         self.assertAlmostEqualRecursive(
@@ -491,7 +496,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by form type"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = self.assertJSONResponse(response, 200)
         # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
         self.assertEqual(len(json["forms"]), 3)
@@ -622,7 +627,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """OUs with a non-valid status are excluded from the API"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = response.json()
         ou_ids = [result["org_unit"]["id"] for result in json["results"]]
         # Those two OUs have a non-valid status
@@ -659,7 +664,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids=100000")
+        response = self.client.get("/api/v2/completeness_stats/?org_unit_type_ids=100000")
         j = self.assertJSONResponse(response, 400)
         self.assertIn("org_unit_type_ids", j)
 
@@ -678,7 +683,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
         response_without_filter = self.client.get(
-            f"/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
+            "/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
@@ -687,7 +692,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+            "/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
         )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
@@ -730,7 +735,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "org_unit_validation_status": "VALID,NEW",
                 "limit": 10,
@@ -745,7 +750,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We request a form/OU combination that has no forms to fill.
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.id,
                 "form_id": self.form_hs_2.id,
@@ -767,7 +772,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We filter to get only the district A.A
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
+            "/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(len(j["results"]), 2)
@@ -780,7 +785,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_NEW
         self.as_abb_ou.save()
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "limit": 10,
@@ -816,7 +821,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.save()
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
@@ -853,7 +858,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         # Check number of result when it's false
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "limit": 10,
@@ -867,7 +872,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # should default to false so same number of result if par modiié leams is not present
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
@@ -880,7 +885,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # If we filter it should be two
         response = self.client.get(
-            f"/api/v2/completeness_stats/",
+            "/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
@@ -895,3 +900,82 @@ class CompletenessStatsAPITestCase(APITestCase):
             # check that the result have effectly zero submission
             ou = r["org_unit"]["id"]
             self.assertEqual(Instance.objects.filter(form=self.form_hs_4, org_unit_id=ou).count(), 0)
+
+    def test_completeness_stats_csv_export(self):
+        self.client.force_authenticate(self.user)
+        # Use multiple forms to check column generation
+        form_ids = f"{self.form_hs_1.id},{self.form_hs_2.id},{self.form_hs_4.id}"
+        response = self.client.get(f"/api/v2/completeness_stats.csv?form_id={form_ids}&limit=10")
+
+        self.assertEqual(response.status_code, 200)
+        content = response.content.decode("utf-8")
+        reader = csv.reader(StringIO(content))
+        csv_data = list(reader)
+
+        # Check that the header contains the expected columns in the correct order
+        header = csv_data[0]
+        expected_columns = [
+            "id",
+            "org_unit_name",
+            "org_unit_type_name",
+            "parent_org_unit_name",
+            f"{self.form_hs_1.name} - Direct",
+            f"{self.form_hs_1.name} - Descendants Numerator",
+            f"{self.form_hs_1.name} - Descendants Denominator",
+            f"{self.form_hs_1.name} - Descendants Percentage",
+            f"{self.form_hs_2.name} - Direct",
+            f"{self.form_hs_2.name} - Descendants Numerator",
+            f"{self.form_hs_2.name} - Descendants Denominator",
+            f"{self.form_hs_2.name} - Descendants Percentage",
+            f"{self.form_hs_4.name} - Direct",
+            f"{self.form_hs_4.name} - Descendants Numerator",
+            f"{self.form_hs_4.name} - Descendants Denominator",
+            f"{self.form_hs_4.name} - Descendants Percentage",
+        ]
+        self.assertEqual(header, expected_columns)
+
+        # Check the data rows for expected values
+        for row in csv_data[1:]:  # Skip header row
+            self.assertEqual(len(row), len(header))
+
+            org_unit_id = int(row[0])  # First column is id
+
+            # For "Not yet validated country" (id=9), form_hs_2 should show N/A
+            # because it has descendants=0 and itself_target=0 (form doesn't apply)
+            if org_unit_id == 9:
+                # Find the index of form_hs_2 columns
+                form_hs_2_direct_idx = header.index(f"{self.form_hs_2.name} - Direct")
+                form_hs_2_numerator_idx = header.index(f"{self.form_hs_2.name} - Descendants Numerator")
+                form_hs_2_denominator_idx = header.index(f"{self.form_hs_2.name} - Descendants Denominator")
+                form_hs_2_percentage_idx = header.index(f"{self.form_hs_2.name} - Descendants Percentage")
+
+                # Check that these columns show N/A for org unit 9 (form doesn't apply)
+                self.assertEqual(row[form_hs_2_direct_idx], "N/A")
+                self.assertEqual(row[form_hs_2_numerator_idx], "N/A")
+                self.assertEqual(row[form_hs_2_denominator_idx], "N/A")
+                self.assertEqual(row[form_hs_2_percentage_idx], "N/A")
+
+                # Check form_hs_4 for org unit 9 - it should show direct as "false"
+                # because form_hs_4 has itself_target=1 but itself_has_instances=0
+                form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
+                self.assertEqual(row[form_hs_4_direct_idx], "false")
+
+            # For "LaLaland" (id=1), form_hs_2 should show 0 values
+            # because it has descendants=1 and itself_target=0 (form applies but no submissions)
+            elif org_unit_id == 1:
+                # Find the index of form_hs_2 columns
+                form_hs_2_direct_idx = header.index(f"{self.form_hs_2.name} - Direct")
+                form_hs_2_numerator_idx = header.index(f"{self.form_hs_2.name} - Descendants Numerator")
+                form_hs_2_denominator_idx = header.index(f"{self.form_hs_2.name} - Descendants Denominator")
+                form_hs_2_percentage_idx = header.index(f"{self.form_hs_2.name} - Descendants Percentage")
+
+                # Check that these columns show 0 for org unit 1 (form applies but no submissions)
+                self.assertEqual(row[form_hs_2_direct_idx], "N/A")
+                self.assertEqual(row[form_hs_2_numerator_idx], "0")
+                self.assertEqual(row[form_hs_2_denominator_idx], "1")
+                self.assertEqual(row[form_hs_2_percentage_idx], "0")
+
+                # Check form_hs_4 for org unit 1 - it should show direct as "false"
+                # because form_hs_4 has itself_target=1 but itself_has_instances=0
+                form_hs_4_direct_idx = header.index(f"{self.form_hs_4.name} - Direct")
+                self.assertEqual(row[form_hs_4_direct_idx], "false")

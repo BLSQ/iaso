@@ -1,11 +1,11 @@
+import React, { ReactNode, useCallback } from 'react';
 import { Box, InputLabel, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { ReactNode, useCallback } from 'react';
 import { OrgUnit } from '../../types/orgUnit';
-import { TruncatedTrees } from './TruncatedTrees';
 import { MESSAGES } from './messages';
+import { TruncatedTrees } from './TruncatedTrees';
 
 const styles = theme => ({
     placeholder: {
@@ -57,14 +57,12 @@ type Props = {
     placeholder?: string | { id: string; defaultMessage: string };
     required: boolean;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     label: (orgUnit: OrgUnit) => ReactNode;
     clearable: boolean;
     errors: string[];
 };
 
 const formatPlaceholder = (
-    // eslint-disable-next-line no-unused-vars
     formatMessage: (message: { id: string; defaultMessage: string }) => string,
     placeholder?: string | { id: string; defaultMessage: string },
 ) => {
@@ -126,6 +124,7 @@ const OrgUnitTreeviewPicker: React.FC<Props> = ({
                         key="input-label"
                         shrink={selectedItems.size > 0}
                         required={required}
+                        disabled={disabled}
                         className={`${classnames(
                             classes.inputLabel,
                             selectedItems.size > 0 && classes.shrinkInputLabel,

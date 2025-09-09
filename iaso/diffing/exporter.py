@@ -1,12 +1,16 @@
 import json
-from pprint import pprint
+
+from typing import List
 
 import dhis2.exceptions
+
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
 
-from iaso.models import generate_id_for_dhis_2
-from .comparisons import as_field_types
+from iaso.diffing import Differ
+from iaso.utils.dhis2 import generate_id_for_dhis_2
+
+from .comparisons import Comparison, Diff, as_field_types
 
 
 def all_slices(iterables, size: int):
@@ -27,7 +31,7 @@ def assign_dhis2_ids(to_create_diffs):
     # ideally should run on diff
     # assign source_ref for orgunits to avoid double creation
     for to_create in to_create_diffs:
-        if to_create.org_unit.source_ref is None:
+        if not to_create.org_unit.source_ref:
             to_create.org_unit.source_ref = generate_id_for_dhis_2()
             to_create.org_unit.save()
 
@@ -55,7 +59,7 @@ def dhis2_group_contains(dhis2_group, org_unit):
 
 
 def format_error(action, exc, errors):
-    message = f"Error when {action}" f"\n" f"URL : {exc.url}\n" f"Received status code: {exc.code}\n"
+    message = f"Error when {action}\nURL : {exc.url}\nReceived status code: {exc.code}\n"
     if errors:
         message += "Errors:\r\n"
         for error in errors:
@@ -67,7 +71,7 @@ class Exporter:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def export_to_dhis2(self, api, diffs, fields, task=None):
+    def export_to_dhis2(self, api: Api, diffs: List[Diff], fields, task=None):
         if task:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating new Org Units", progress_value=0, end_value=3
@@ -83,9 +87,9 @@ class Exporter:
         if task:
             task.report_progress_and_stop_if_killed(progress_message="Updating groups", progress_value=3, end_value=3)
         self.iaso_logger.ok("   ------ Modified groups----")
-        self.update_groups(api, diffs, fields)
+        self.update_groups_without_groupsets(api, diffs, fields)
 
-    def create_missings(self, api, diffs, task=None):
+    def create_missings(self, api, diffs: List[Diff], task=None):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
         self.iaso_logger.info("orgunits to create : ", len(to_create_diffs))
 
@@ -95,10 +99,14 @@ class Exporter:
             task.report_progress_and_stop_if_killed(
                 progress_message="Creating Orgunits", progress_value=0, end_value=len(to_create_diffs)
             )
-        # build the "minimal" payloads for creation, groups only done at later stage
+        # build the "minimal" payloads for creation, groups only done at a later stage
         index = 0
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")
+
+            if name_comparison is None:
+                raise Exception("can't create missing orgunit " + to_create.org_unit.path)
+
             self.iaso_logger.info("----", name_comparison.after, to_create.org_unit.path)
 
             payload = {
@@ -107,8 +115,13 @@ class Exporter:
                 "shortName": name_comparison.after[:50],
                 "openingDate": "1960-08-03T00:00:00.000",
             }
+
+            if to_create.org_unit.opening_date:
+                payload["openingDate"] = to_create.org_unit.opening_date.strftime("%Y-%m-%d") + "T00:00:00.000"
+
             if to_create.org_unit.parent:
                 payload["parent"] = {"id": to_create.org_unit.parent.source_ref}
+
             self.fill_geometry_or_coordinates(to_create.comparison("geometry"), payload)
 
             self.iaso_logger.info("will post ", payload)
@@ -147,8 +160,8 @@ class Exporter:
             payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
-    def update_orgunits(self, api: Api, diffs, task=None):
-        support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date")
+    def update_orgunits(self, api: Api, diffs: List[Diff], task=None):
+        support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date", "code")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
@@ -178,7 +191,9 @@ class Exporter:
                     )
                 diff = diff[0]
                 for comparison in diff.comparisons:  # type: ignore
-                    if comparison.status != "same" and not comparison.field.startswith("groupset:"):
+                    if comparison.status != Differ.STATUS_SAME and not comparison.field.startswith(
+                        ("group:", "groupset:")
+                    ):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
             # pprint([{k: (v if k != "geometry" else "...") for k, v in payload.items()} for payload in dhis2_payloads])
@@ -219,12 +234,25 @@ class Exporter:
             if task and index % 10 == 0:
                 task.report_progress_and_stop_if_killed(progress_message="Updating Orgunits", progress_value=index)
 
-    def apply_comparison(self, payload, comparison):
+    def fill_in_date(self, field_name: str, dhis_field_name: str, comparison: Comparison, payload):
+        if comparison.field == field_name and comparison.after is None:
+            payload[dhis_field_name] = None
+            return
+
+        if comparison.field == field_name and comparison.after:
+            payload[dhis_field_name] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            return
+
+    def apply_comparison(self, payload, comparison: Comparison):
         # TODO ideally move to FieldTypes in comparisons.py
-        if comparison.field == "name":
+        if comparison.field in ["name", "code"]:
             payload[comparison.field] = comparison.after
             return
 
+        if comparison.field == "geometry" and comparison.after is None:
+            payload["geometry"] = None
+            payload["coordinates"] = None
+            return
         if comparison.field == "geometry":
             self.fill_geometry_or_coordinates(comparison, payload)
             return
@@ -234,24 +262,25 @@ class Exporter:
             return
 
         if comparison.field == "opening_date":
-            payload["openingDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            self.fill_in_date("opening_date", "openingDate", comparison, payload)
             return
 
         if comparison.field == "closed_date":
-            payload["closedDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            self.fill_in_date("closed_date", "closedDate", comparison, payload)
             return
 
         raise Exception("unsupported field", comparison.field)
 
-    def fill_parent_id(self, comparison, payload):
+    def fill_parent_id(self, comparison: Comparison, payload):
         if comparison.after:
             payload["parent"] = {"id": comparison.after}
 
-    def update_groups(self, api, diffs, fields):
+    def update_groups_with_groupsets(self, api, diffs: List[Diff], fields):
+        # IA-4106 - this is no longer used, groupsets are no longer supported by differ
         support_by_update_fields = [field for field in fields if field.startswith("groupset:")]
         to_update_diffs = list(
             filter(
-                lambda x: (x.status == "modified" or x.status == "new")
+                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
                 and x.are_fields_modified(support_by_update_fields),
                 diffs,
             )
@@ -279,7 +308,7 @@ class Exporter:
                 modified = False
                 for diff in to_update_diffs:
                     comparison = diff.comparison(groupset_field_type.field_name)
-                    if comparison.status == "new" or comparison.status == "modified":
+                    if comparison.status == Differ.STATUS_NEW or comparison.status == Differ.STATUS_MODIFIED:
                         tokeep = [group["id"] for group in comparison.after if group["id"] == dhis2_group["id"]]
                         if len(tokeep) > 0:
                             if not dhis2_group_contains(dhis2_group, diff.org_unit):
@@ -296,8 +325,81 @@ class Exporter:
                                 )
                                 modified = True
                                 self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+                    if comparison.status == Differ.STATUS_NOT_IN_ORIGIN:
+                        if dhis2_group_contains(dhis2_group, diff.org_unit):
+                            dhis2_group["organisationUnits"] = list(
+                                filter(
+                                    lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                    dhis2_group["organisationUnits"],
+                                )
+                            )
+                            modified = True
+                            self.iaso_logger.info("\t removed : ", diff.org_unit.name, diff.org_unit.id)
+
                 if modified:
                     self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
                     resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
                     self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())
         return
+
+    def update_groups_without_groupsets(self, api, diffs: List[Diff], fields):
+        support_by_update_fields = [field for field in fields if field.startswith("group:")]
+        to_update_diffs = list(
+            filter(
+                lambda x: (x.status == Differ.STATUS_MODIFIED or x.status == Differ.STATUS_NEW)
+                and x.are_fields_modified(support_by_update_fields),
+                diffs,
+            )
+        )
+
+        self.iaso_logger.info("orgunits with groups to change ", len(to_update_diffs))
+        if len(to_update_diffs) == 0:
+            self.iaso_logger.ok("nothing to update in the groups")
+            return
+
+        group_field_types = as_field_types(support_by_update_fields)
+
+        for group_field_type in group_field_types:
+            self.iaso_logger.info("---", group_field_type.group_ref, group_field_type.group_name)
+            dhis2_groups = api.get(
+                "organisationUnitGroups",
+                params={
+                    "fields": ":all",
+                    "filter": "id:eq:" + group_field_type.group_ref,
+                    "paging": "false",
+                },
+            ).json()["organisationUnitGroups"]
+
+            for dhis2_group in dhis2_groups:
+                modified = False
+                for diff in to_update_diffs:
+                    comparison = diff.comparison(group_field_type.field_name)
+                    if comparison.status == Differ.STATUS_NEW or comparison.status == Differ.STATUS_MODIFIED:
+                        tokeep = [group["id"] for group in comparison.after if group["id"] == dhis2_group["id"]]
+                        if len(tokeep) > 0:
+                            if not dhis2_group_contains(dhis2_group, diff.org_unit):
+                                dhis2_group["organisationUnits"].append({"id": diff.org_unit.source_ref})
+                                modified = True
+                        else:
+                            if dhis2_group_contains(dhis2_group, diff.org_unit):
+                                dhis2_group["organisationUnits"] = list(
+                                    filter(
+                                        lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                        dhis2_group["organisationUnits"],
+                                    )
+                                )
+                                modified = True
+                    if comparison.status == Differ.STATUS_NOT_IN_ORIGIN:
+                        if dhis2_group_contains(dhis2_group, diff.org_unit):
+                            dhis2_group["organisationUnits"] = list(
+                                filter(
+                                    lambda ou: ou["id"] != diff.org_unit.source_ref,
+                                    dhis2_group["organisationUnits"],
+                                )
+                            )
+                            modified = True
+
+                if modified:
+                    self.iaso_logger.info("updating ", dhis2_group["id"], dhis2_group["name"])
+                    resp = api.put("organisationUnitGroups/" + dhis2_group["id"], dhis2_group)
+                    self.iaso_logger.info("updated  ", dhis2_group["id"], dhis2_group["name"], resp, resp.json())

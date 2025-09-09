@@ -1,19 +1,25 @@
-import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { Box, Grid } from '@mui/material';
 import {
     AddButton,
-    useSafeIntl,
     IconButton,
     IntlFormatMessage,
+    useSafeIntl,
 } from 'bluesquare-components';
-import FileCopyIcon from '@mui/icons-material/FileCopy';
-import { useFormik, FormikProvider, Field } from 'formik';
+import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Grid, Box } from '@mui/material';
-import InputComponent from '../../../components/forms/InputComponent';
+
+import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-
-import MESSAGES from '../messages';
-
+import DatesRange from '../../../components/filters/DatesRange';
+import InputComponent from '../../../components/forms/InputComponent';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../../libs/validation';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
@@ -21,15 +27,8 @@ import {
     SavePlanningQuery,
     useSavePlanning,
 } from '../hooks/requests/useSavePlanning';
-import DatesRange from '../../../components/filters/DatesRange';
-import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import { usePlanningValidation } from '../hooks/validation';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
-import {
-    useApiErrorValidation,
-    useTranslatedErrors,
-} from '../../../libs/validation';
+import MESSAGES from '../messages';
 
 type ModalMode = 'create' | 'edit' | 'copy';
 
@@ -68,9 +67,7 @@ export const makeResetTouched =
     (
         formValues: Record<string, any>,
         setTouched: (
-            // eslint-disable-next-line no-unused-vars
             fields: { [field: string]: boolean },
-            // eslint-disable-next-line no-unused-vars
             shouldValidate?: boolean,
         ) => void,
     ) =>
@@ -157,6 +154,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
         isValid,
         handleSubmit,
         resetForm,
+        validateField,
     } = formik;
 
     const { data: formsDropdown, isFetching: isFetchingForms } = useGetForms(
@@ -174,6 +172,9 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
+        // Reset validation from server to not block the user.
+        // If this is not called, even changing a field won't mark the form as valid.
+        validateField(keyValue);
     };
     // converting undefined to null for the API
     const onChangeDate = (keyValue, value) => {

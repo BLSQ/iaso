@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.storageDetail,
-    ) as StorageDetailsParams;
+    ) as unknown as StorageDetailsParams;
     const goBack = useGoBack(baseUrls.storages);
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);

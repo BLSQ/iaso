@@ -1,6 +1,9 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import isEqual from 'lodash/isEqual';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    useMemo,
+} from 'react';
 
 import {
     Box,
@@ -11,15 +14,16 @@ import {
     DialogTitle,
     Grid,
 } from '@mui/material';
-import { FormikProvider, useFormik } from 'formik';
-import { merge } from 'lodash';
-
 import {
     BackdropClickModal,
     IconButton,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
+import { FormikProvider, useFormik } from 'formik';
+import { merge } from 'lodash';
+
+import isEqual from 'lodash/isEqual';
 import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
@@ -33,6 +37,7 @@ import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
+import { WarningModal } from './WarningModal';
 
 type Props = {
     isOpen: boolean;
@@ -59,39 +64,47 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         isOpen,
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
+    const [isScopeWarningOpen, setIsScopeWarningOpen] = useState(false);
     const [isUpdated, setIsUpdated] = useState(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const validate = useValidateCampaign();
 
-    const initialValues: CampaignFormValues = {
-        subactivity: undefined, // we save subactivities one by one, so no array here
-        rounds: [],
-        scopes: [],
-        group: {
-            name: 'hidden group',
-            org_units: [],
-        },
-        campaign_types: [],
-        is_preventive: false,
-        is_test: false,
-        enable_send_weekly_email: true,
-        // Those are Polio default values to be set if the types changes to Polio
-        has_data_in_budget_tool: false,
-        budget_current_state_key: '-',
-        detection_status: 'PENDING',
-        risk_assessment_status: 'TO_SUBMIT',
-        separate_scopes_per_round: false,
-        org_unit: undefined,
-        non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
-    };
-    // Merge inplace default values with the one we get from the campaign.
-    merge(initialValues, {
-        ...selectedCampaign,
-        rounds: selectedCampaign?.rounds
-            ? [...selectedCampaign.rounds].sort((a, b) => a.number - b.number)
-            : [],
-    });
+    const initialValues: CampaignFormValues = useMemo(() => {
+        const baseValues: CampaignFormValues = {
+            subactivity: undefined, // we save subactivities one by one, so no array here
+            rounds: [],
+            scopes: [],
+            group: {
+                name: 'hidden group',
+                org_units: [],
+            },
+            campaign_types: [],
+            is_preventive: false,
+            is_test: false,
+            on_hold: false,
+            enable_send_weekly_email: true,
+            // Those are Polio default values to be set if the types changes to Polio
+            has_data_in_budget_tool: false,
+            budget_current_state_key: '-',
+            detection_status: 'PENDING',
+            risk_assessment_status: 'TO_SUBMIT',
+            separate_scopes_per_round: false,
+            org_unit: undefined,
+            non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
+        };
+
+        // Merge default values with the campaign data
+        return merge({}, baseValues, {
+            ...selectedCampaign,
+            rounds: selectedCampaign?.rounds
+                ? [...selectedCampaign.rounds].sort(
+                      (a, b) => a.number - b.number,
+                  )
+                : [],
+        });
+    }, [selectedCampaign]);
+
     const formik = useFormik({
         initialValues,
         enableReinitialize: true,
@@ -133,17 +146,42 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         }
         onClose();
     };
+
+    const handleConfirm = useCallback(() => {
+        // If scope type has changed
+        if (
+            formik.values.separate_scopes_per_round !==
+                formik.initialValues.separate_scopes_per_round &&
+            formik.values.id
+        ) {
+            // Open warning modal
+            setIsScopeWarningOpen(true);
+        } else {
+            formik.handleSubmit();
+        }
+        // All hooks deps present, but ES-lint wants to add formik object, which is too much
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [
+        formik.handleSubmit,
+        formik.values.id,
+        formik.values.separate_scopes_per_round,
+        formik.initialValues.separate_scopes_per_round,
+    ]);
+
+    const scopeWarningTitle = formatMessage(MESSAGES.scopeWarningTitle);
+    const scopeWarningBody = formatMessage(MESSAGES.scopesWillBeDeleted);
     const tabs = usePolioDialogTabs(formik, selectedCampaign);
     const [selectedTab, setSelectedTab] = useState(0);
 
     const CurrentForm = tabs[selectedTab].form;
-
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
+
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         isSaving ||
         isFetching;
+
     return (
         <Dialog
             maxWidth="xl"
@@ -163,6 +201,14 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 open={isBackdropOpen}
                 closeDialog={() => setIsBackdropOpen(false)}
                 onConfirm={() => handleClose()}
+            />
+            <WarningModal
+                title={scopeWarningTitle}
+                body={scopeWarningBody}
+                open={isScopeWarningOpen}
+                closeDialog={() => setIsScopeWarningOpen(false)}
+                onConfirm={() => formik.handleSubmit()}
+                dataTestId="scopewarning-modal"
             />
             <Box pt={1}>
                 <Grid container spacing={0}>
@@ -225,7 +271,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.close)}
                 </Button>
                 <Button
-                    onClick={() => formik.handleSubmit()}
+                    onClick={handleConfirm}
                     color="primary"
                     variant="contained"
                     autoFocus

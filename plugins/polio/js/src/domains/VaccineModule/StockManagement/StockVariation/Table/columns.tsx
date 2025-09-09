@@ -1,32 +1,40 @@
-/* eslint-disable camelcase */
+import React, { useMemo } from 'react';
 import EditIcon from '@mui/icons-material/Edit';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import React, { useMemo } from 'react';
+import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
-import { Vaccine } from '../../../../../constants/types';
-import MESSAGES from '../../messages';
-import { EditDestruction } from '../Modals/CreateEditDestruction';
-import { EditFormA } from '../Modals/CreateEditFormA';
-import { EditIncident } from '../Modals/CreateEditIncident';
-
-import { BreakWordCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/BreakWordCell';
+import { DisplayIfUserHasPerm } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { PdfPreview } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/PdfPreview';
+import {
+    STOCK_MANAGEMENT_WRITE,
+    STOCK_MANAGEMENT_READ,
+    STOCK_EARMARKS_NONADMIN,
+    STOCK_EARMARKS_ADMIN,
+} from '../../../../../constants/permissions';
+import { VaccineForStock } from '../../../../../constants/types';
+import { REGULAR, USED } from '../../constants';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {
     useDeleteDestruction,
+    useDeleteEarmarked,
     useDeleteFormA,
     useDeleteIncident,
 } from '../../hooks/api';
+import MESSAGES from '../../messages';
+import { EditDestruction } from '../Modals/CreateEditDestruction';
+import { EditEarmarked } from '../Modals/CreateEditEarmarked';
+import { EditFormA } from '../Modals/CreateEditFormA';
+import { EditIncident } from '../Modals/CreateEditIncident';
+import { Box, Tooltip } from '@mui/material';
+import { CampaignNameWithWarning } from './CampaignNameWithWarning';
 
 export const useFormATableColumns = (
     countryName: string,
-    vaccine: Vaccine,
+    vaccine: VaccineForStock,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteFormA } = useDeleteFormA();
 
     return useMemo(() => {
@@ -36,6 +44,32 @@ export const useFormATableColumns = (
                 accessor: 'campaign',
                 id: 'campaign',
                 sortable: true,
+                Cell: settings => {
+                    const campaign = settings.row.original.campaign;
+                    const altCampaign =
+                        settings.row.original.alternative_campaign;
+                    const text = campaign ?? altCampaign ?? textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.round),
+                accessor: 'round_number',
+                id: 'round__number',
+                sortable: true,
+                Cell: settings => {
+                    const value = settings.row.original.round_number;
+                    if (Number.isSafeInteger(value)) {
+                        return value;
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.form_a_reception_date),
@@ -51,15 +85,6 @@ export const useFormATableColumns = (
                 sortable: true,
                 Cell: DateCell,
             },
-            // {
-            //     Header: formatMessage(MESSAGES.forma_unusable_vials),
-            //     accessor: 'unusable_vials',
-            //     id: 'unusable_vials',
-            //     sortable: true,
-            //     Cell: settings => (
-            //         <NumberCell value={settings.row.original.unusable_vials} />
-            //     ),
-            // },
             {
                 Header: formatMessage(MESSAGES.forma_vials_used),
                 accessor: 'usable_vials_used',
@@ -72,24 +97,6 @@ export const useFormATableColumns = (
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.forma_vials_missing),
-                accessor: 'missing_vials',
-                id: 'missing_vials',
-                sortable: true,
-                Cell: settings => {
-                    if (settings.row.original.missing_vials) {
-                        return (
-                            <NumberCell
-                                value={settings.row.original.missing_vials}
-                            />
-                        );
-                    }
-                    return textPlaceholder;
-                },
-            },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'account',
                 accessor: 'account',
@@ -97,37 +104,64 @@ export const useFormATableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditFormA
-                                id={settings.row.original.id}
-                                formA={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
+                            <PdfPreview
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
                                 }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteFormA}
-                                message={MESSAGES.deleteFormAWarning}
-                                onConfirm={() =>
-                                    deleteFormA(settings.row.original.id)
-                                }
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
+                            >
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditFormA
+                                            id={settings.row.original.id}
+                                            formA={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={MESSAGES.deleteFormA}
+                                            message={
+                                                MESSAGES.deleteFormAWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteFormA(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [formatMessage, currentUser, countryName, vaccine, deleteFormA]);
+    }, [formatMessage, countryName, vaccine, deleteFormA]);
 };
 export const useDestructionTableColumns = (
     countryName: string,
-    vaccine: Vaccine,
+    vaccine: VaccineForStock,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteDestruction } = useDeleteDestruction();
 
     return useMemo(() => {
@@ -165,9 +199,7 @@ export const useDestructionTableColumns = (
                     />
                 ),
             },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -175,37 +207,66 @@ export const useDestructionTableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditDestruction
-                                id={settings.row.original.id}
-                                destruction={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
+                            <PdfPreview
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
                                 }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteDestruction}
-                                message={MESSAGES.deleteDestructionWarning}
-                                onConfirm={() =>
-                                    deleteDestruction(settings.row.original.id)
-                                }
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
+                            >
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditDestruction
+                                            id={settings.row.original.id}
+                                            destruction={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={
+                                                MESSAGES.deleteDestruction
+                                            }
+                                            message={
+                                                MESSAGES.deleteDestructionWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteDestruction(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser, deleteDestruction]);
+    }, [countryName, formatMessage, vaccine, deleteDestruction]);
 };
 export const useIncidentTableColumns = (
     countryName: string,
-    vaccine: Vaccine,
+    vaccine: VaccineForStock,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const { mutateAsync: deleteIncident } = useDeleteIncident();
     return useMemo(() => {
         const columns = [
@@ -260,9 +321,7 @@ export const useIncidentTableColumns = (
                     <NumberCell value={settings.row.original.unusable_vials} />
                 ),
             },
-        ];
-        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
-            columns.push({
+            {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 id: 'account',
@@ -270,28 +329,190 @@ export const useIncidentTableColumns = (
                 Cell: settings => {
                     return (
                         <>
-                            <EditIncident
-                                id={settings.row.original.id}
-                                incident={settings.row.original}
-                                iconProps={{ overrideIcon: EditIcon }}
-                                countryName={countryName}
-                                vaccine={vaccine}
-                                vaccineStockId={
-                                    settings.row.original.vaccine_stock
+                            <PdfPreview
+                                pdfUrl={settings.row.original.file}
+                                scanResult={settings.row.original.scan_result}
+                                scanTimestamp={
+                                    settings.row.original.scan_timestamp
                                 }
+                                coloredScanResultIcon={Boolean(
+                                    settings.row.original.file,
+                                )}
                             />
-                            <DeleteDialog
-                                titleMessage={MESSAGES.deleteIncident}
-                                message={MESSAGES.deleteIncidentWarning}
-                                onConfirm={() =>
-                                    deleteIncident(settings.row.original.id)
-                                }
-                            />
+
+                            <DisplayIfUserHasPerm
+                                permissions={[
+                                    STOCK_MANAGEMENT_WRITE,
+                                    STOCK_MANAGEMENT_READ,
+                                ]}
+                            >
+                                {settings.row.original.can_edit && (
+                                    <>
+                                        <EditIncident
+                                            id={settings.row.original.id}
+                                            incident={settings.row.original}
+                                            iconProps={{
+                                                overrideIcon: EditIcon,
+                                            }}
+                                            countryName={countryName}
+                                            vaccine={vaccine}
+                                            vaccineStockId={
+                                                settings.row.original
+                                                    .vaccine_stock
+                                            }
+                                        />
+                                        <DeleteDialog
+                                            titleMessage={
+                                                MESSAGES.deleteIncident
+                                            }
+                                            message={
+                                                MESSAGES.deleteIncidentWarning
+                                            }
+                                            onConfirm={() =>
+                                                deleteIncident(
+                                                    settings.row.original.id,
+                                                )
+                                            }
+                                        />
+                                    </>
+                                )}
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
-            });
-        }
+            },
+        ];
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser, deleteIncident]);
+    }, [countryName, formatMessage, vaccine, deleteIncident]);
+};
+export const useEarmarkedTableColumns = (
+    countryName: string,
+    vaccine: VaccineForStock,
+): Column[] => {
+    const { formatMessage } = useSafeIntl();
+    const { mutateAsync: deleteEarmarked } = useDeleteEarmarked();
+    return useMemo(() => {
+        const columns = [
+            {
+                Header: formatMessage(MESSAGES.movement),
+                accessor: 'earmarked_stock_type',
+                id: 'earmarked_stock_type',
+                sortable: true,
+                Cell: settings => {
+                    if (settings.row.original.earmarked_stock_type) {
+                        if (
+                            MESSAGES[settings.row.original.earmarked_stock_type]
+                        ) {
+                            return formatMessage(
+                                MESSAGES[
+                                    settings.row.original.earmarked_stock_type
+                                ],
+                            );
+                        }
+                        return settings.row.original.earmarked_stock_type;
+                    }
+                    return textPlaceholder;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.campaign),
+                accessor: 'campaign',
+                id: 'campaign',
+                sortable: true,
+                Cell: settings => {
+                    const text =
+                        settings.row.original.campaign ??
+                        settings.row.original.temporary_campaign_name ??
+                        textPlaceholder;
+                    const category = settings.row.original.campaign_category;
+                    return (
+                        <CampaignNameWithWarning
+                            text={text}
+                            category={category}
+                        />
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.round),
+                accessor: 'round_number',
+                id: 'round_number',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.round_number} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.created),
+                accessor: 'created_at',
+                id: 'created_at',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.earmarked_vials),
+                accessor: 'vials_earmarked',
+                id: 'vials_earmarked',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_earmarked} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.earmarked_doses),
+                accessor: 'doses_earmarked',
+                id: 'doses_earmarked',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_earmarked} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                id: 'account',
+                sortable: false,
+                Cell: settings => {
+                    if (settings.row.original.earmarked_stock_type === USED) {
+                        return null;
+                    }
+                    return (
+                        <DisplayIfUserHasPerm
+                            permissions={[
+                                STOCK_EARMARKS_NONADMIN,
+                                STOCK_EARMARKS_ADMIN,
+                            ]}
+                        >
+                            {settings.row.original.can_edit && (
+                                <>
+                                    <EditEarmarked
+                                        id={settings.row.original.id}
+                                        earmark={settings.row.original}
+                                        iconProps={{ overrideIcon: EditIcon }}
+                                        countryName={countryName}
+                                        vaccine={vaccine}
+                                        vaccineStockId={
+                                            settings.row.original.vaccine_stock
+                                        }
+                                    />
+                                    <DeleteDialog
+                                        titleMessage={MESSAGES.deleteEarmarked}
+                                        message={
+                                            MESSAGES.deleteEarmarkedWarning
+                                        }
+                                        onConfirm={() =>
+                                            deleteEarmarked(
+                                                settings.row.original.id,
+                                            )
+                                        }
+                                    />
+                                </>
+                            )}
+                        </DisplayIfUserHasPerm>
+                    );
+                },
+            },
+        ];
+        return columns;
+    }, [formatMessage, countryName, vaccine, deleteEarmarked]);
 };

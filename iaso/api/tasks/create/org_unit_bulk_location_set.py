@@ -1,8 +1,8 @@
-from rest_framework import viewsets, permissions, status
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
 from iaso.api.org_units import HasOrgUnitPermission
-from iaso.api.tasks import TaskSerializer
+from iaso.api.tasks.serializers import TaskSerializer
 from iaso.tasks.org_units_bulk_location_set import org_units_bulk_location_set
 
 

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/browser';
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 
@@ -64,6 +65,16 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
         }
     }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
 
+    useEffect(() => {
+        if (currentUser && Sentry?.setUser) {
+            Sentry.setUser({
+                id: currentUser.id,
+                username: currentUser.user_name,
+                email: currentUser.email,
+                account: currentUser.account.name,
+            });
+        }
+    }, [currentUser]);
     // this should kick in if the above effect didn't redirect the user to a better page
     const hasNoPermWarning =
         isRootUrl &&
@@ -72,6 +83,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     if (!currentUser) {
         return null;
     }
+
     return (
         <>
             <SidebarMenu location={location} />

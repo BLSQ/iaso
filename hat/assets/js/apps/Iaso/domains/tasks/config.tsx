@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Chip } from '@mui/material';
+import ReplayIcon from '@mui/icons-material/Replay';
 import {
     IconButton,
     displayDateFromTimestamp,
@@ -12,6 +13,7 @@ import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { NotificationImportDetailModal } from './components/NotificationImportDetailModal';
 import { SxStyles } from '../../types/general';
+import { getDisplayName } from '../../utils/usersUtils';
 
 const getTranslatedStatusMessage = (formatMessage, status) => {
     // Return untranslated status if not translation available
@@ -51,6 +53,7 @@ type TaskColumn = Partial<Column> & { expander?: boolean; Expander?: any };
 
 export const useTasksTableColumns = (
     killTaskAction: UseMutateAsyncFunction<any, any, any, any>,
+    relaunchTaskAction: UseMutateAsyncFunction<any, any, any, any>,
     hasPolioNotificationsPerm: boolean,
 ): TaskColumn[] => {
     const { formatMessage } = useSafeIntl();
@@ -95,20 +98,49 @@ export const useTasksTableColumns = (
                 Header: formatMessage(MESSAGES.message),
                 sortable: false,
                 align: 'left',
-                width: 550,
+                width: 400,
                 accessor: 'progress_message',
                 Cell: settings => {
                     if (!settings.value) return null;
-                    return settings.value?.length < 40
+                    return settings.value?.length < 60
                         ? settings.value
-                        : `${settings.value.slice(0, 40)}...`;
+                        : `${settings.value.slice(0, 60)}...`;
                 },
             },
             {
-                Header: formatMessage(MESSAGES.launcher),
+                Header: formatMessage(MESSAGES.user),
                 sortable: true,
-                accessor: 'launcher',
-                Cell: settings => settings.value?.username ?? null,
+                accessor: 'created_by__username',
+                Cell: settings => {
+                    const created_by_id = settings.row.original?.created_by?.id;
+                    const launcher_id = settings.row.original?.launcher?.id;
+
+                    let created_by: string;
+                    if (created_by_id) {
+                        created_by = getDisplayName(
+                            settings.row.original.created_by,
+                        );
+                    } else {
+                        created_by = '--';
+                    }
+
+                    if (launcher_id && launcher_id !== created_by_id) {
+                        return (
+                            <span>
+                                {created_by}
+                                <br />
+                                <small>
+                                    {formatMessage(MESSAGES.last_launched_by)}{' '}
+                                    {getDisplayName(
+                                        settings.row.original.launcher,
+                                    )}
+                                </small>
+                            </span>
+                        );
+                    } else {
+                        return <span>{created_by}</span>;
+                    }
+                },
             },
             {
                 Header: formatMessage(MESSAGES.timeCreated),
@@ -171,6 +203,17 @@ export const useTasksTableColumns = (
                                     tooltipMessage={MESSAGES.killTask}
                                 />
                             )}
+                        {settings.row.original.status === 'ERRORED' && (
+                            <IconButton
+                                onClick={() =>
+                                    relaunchTaskAction({
+                                        id: settings.row.original.id,
+                                    })
+                                }
+                                overrideIcon={ReplayIcon}
+                                tooltipMessage={MESSAGES.relaunch}
+                            />
+                        )}
                         {settings.row.original.should_be_killed === true &&
                             settings.row.original.status === 'RUNNING' &&
                             formatMessage(MESSAGES.killSignalSent)}
@@ -195,6 +238,11 @@ export const useTasksTableColumns = (
                 Expander,
             },
         ],
-        [formatMessage, hasPolioNotificationsPerm, killTaskAction],
+        [
+            formatMessage,
+            hasPolioNotificationsPerm,
+            killTaskAction,
+            relaunchTaskAction,
+        ],
     );
 };

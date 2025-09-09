@@ -1,11 +1,12 @@
 import os
 import zipfile
 
-from django.test import TestCase
 from unittest import mock
 
 from django.contrib.auth.models import User
-from iaso.models import Account, Project, Task, ERRORED, SUCCESS
+from django.test import TestCase
+
+from iaso.models import SUCCESS, Account, Project, Task
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
 from iaso.utils.encryption import decrypt_file
 
@@ -20,14 +21,12 @@ def mocked_iaso_client_get(*args, **kwargs):
             "feature_flags": [{"name": "Mobile: Show entities screen)", "code": "ENTITY"}],
             "needs_authentication": True,
         }
-    elif url.startswith("/api/formversions/"):
+    if url.startswith("/api/formversions/"):
         return {"form_versions": []}
-    elif url.startswith("/api/formattachments/"):
+    if url.startswith("/api/formattachments/"):
         return {"results": []}
-    else:
-        print(args)
-        # for all other calls, return an empty array
-        return []
+    # for all other calls, return an empty array
+    return []
 
 
 def _get_files_in_zipfile(zip_path, zip_name):
@@ -76,7 +75,7 @@ class ExportMobileAppSetupForUserTest(TestCase):
 
         # check Task status and result
         self.task.refresh_from_db()
-        self.assertEquals(self.task.status, SUCCESS)
+        self.assertEqual(self.task.status, SUCCESS)
         self.assertIn("file:export-files/mobile-app-export-", self.task.result["data"])
 
         # check zip file contents

@@ -1,26 +1,30 @@
 import collections
 import datetime
-import time_machine
 import uuid
+
+from collections import OrderedDict
+
+import time_machine
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
-from collections import OrderedDict
 
+from iaso import models as m
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
     MobileOrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestBulkDeleteSerializer,
+    OrgUnitChangeRequestBulkReviewSerializer,
     OrgUnitChangeRequestListSerializer,
+    OrgUnitChangeRequestRetrieveSerializer,
+    OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestWriteSerializer,
     OrgUnitForChangeRequestSerializer,
-    OrgUnitChangeRequestReviewSerializer,
-    OrgUnitChangeRequestRetrieveSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 from iaso.test import TestCase
-from iaso import models as m
 
 
 class InstanceForChangeRequestSerializerTestCase(TestCase):
@@ -181,7 +185,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "groups": [
                     {"id": self.group.id, "name": "Group"},
                 ],
-                "projects": [{"id": self.project.id, "name": self.project.name}],
+                "projects": [{"id": self.project.id, "name": self.project.name, "color": self.project.color}],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
@@ -307,6 +311,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                             "created_at": 1697202000.0,
                             "updated_at": 1697202000.0,
                             "json": {"Foo": "Bar"},
+                            "instance_files": [],
                         }
                     )
                 ],
@@ -324,6 +329,9 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
+        org_unit_to_update = m.OrgUnit.objects.create(
+            validation_status=m.OrgUnit.VALIDATION_VALID, org_unit_type=org_unit_type
+        )
 
         form = m.Form.objects.create(name="Vaccine form")
         account = m.Account.objects.create(name="Account")
@@ -334,7 +342,88 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
         cls.form = form
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
+        cls.org_unit_to_update = org_unit_to_update
         cls.user = user
+
+    @classmethod
+    def change_request_dict(cls, org_unit, validation_status, change_request, kind, new_group):
+        return {
+            "id": change_request.pk,
+            "uuid": str(change_request.uuid),
+            "status": "new",
+            "kind": kind,
+            "created_by": OrderedDict(
+                [
+                    ("id", cls.user.pk),
+                    ("username", cls.user.username),
+                    ("first_name", cls.user.first_name),
+                    ("last_name", cls.user.last_name),
+                ]
+            ),
+            "created_at": 1697734800.0,
+            "updated_by": None,
+            "updated_at": 1697734800.0,
+            "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
+            "approved_fields": [],
+            "rejection_comment": "",
+            "org_unit": OrderedDict(
+                [
+                    ("id", org_unit.pk),
+                    ("parent", None),
+                    ("name", ""),
+                    (
+                        "org_unit_type",
+                        OrderedDict(
+                            [
+                                ("id", cls.org_unit_type.pk),
+                                ("name", cls.org_unit_type.name),
+                                ("short_name", cls.org_unit_type.short_name),
+                            ]
+                        ),
+                    ),
+                    ("groups", []),
+                    ("location", None),
+                    ("opening_date", None),
+                    ("closed_date", None),
+                    ("reference_instances", []),
+                    ("validation_status", validation_status),
+                ]
+            ),
+            "new_parent": None,
+            "new_name": "",
+            "new_org_unit_type": OrderedDict(
+                [
+                    ("id", cls.org_unit_type.pk),
+                    ("name", cls.org_unit_type.name),
+                    ("short_name", cls.org_unit_type.short_name),
+                ]
+            ),
+            "new_groups": [
+                {
+                    "id": new_group.pk,
+                    "name": "new group",
+                },
+            ],
+            "new_location": None,
+            "new_location_accuracy": None,
+            "new_opening_date": "2022-10-27",
+            "new_closed_date": "2024-10-27",
+            "new_reference_instances": [],
+            "old_parent": None,
+            "old_name": "",
+            "old_org_unit_type": OrderedDict(
+                [
+                    ("id", cls.org_unit_type.pk),
+                    ("name", cls.org_unit_type.name),
+                    ("short_name", cls.org_unit_type.short_name),
+                ]
+            ),
+            "old_groups": [],
+            "old_location": None,
+            "old_opening_date": None,
+            "old_closed_date": None,
+            "old_reference_instances": [],
+        }
 
     def test_serialize_ok(self):
         kwargs = {
@@ -350,86 +439,45 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
         change_request.new_groups.set([new_group])
 
         serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
+        kind_value = str(m.OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION.value)
 
         self.assertEqual(
             serializer.data,
-            {
-                "id": change_request.pk,
-                "uuid": str(change_request.uuid),
-                "status": "new",
-                "created_by": OrderedDict(
-                    [
-                        ("id", self.user.pk),
-                        ("username", self.user.username),
-                        ("first_name", self.user.first_name),
-                        ("last_name", self.user.last_name),
-                    ]
-                ),
-                "created_at": 1697734800.0,
-                "updated_by": None,
-                "updated_at": 1697734800.0,
-                "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
-                "approved_fields": [],
-                "rejection_comment": "",
-                "org_unit": OrderedDict(
-                    [
-                        ("id", self.org_unit.pk),
-                        ("parent", None),
-                        ("name", ""),
-                        (
-                            "org_unit_type",
-                            OrderedDict(
-                                [
-                                    ("id", self.org_unit_type.pk),
-                                    ("name", self.org_unit_type.name),
-                                    ("short_name", self.org_unit_type.short_name),
-                                ]
-                            ),
-                        ),
-                        ("groups", []),
-                        ("location", None),
-                        ("opening_date", None),
-                        ("closed_date", None),
-                        ("reference_instances", []),
-                        ("validation_status", "NEW"),
-                    ]
-                ),
-                "new_parent": None,
-                "new_name": "",
-                "new_org_unit_type": OrderedDict(
-                    [
-                        ("id", self.org_unit_type.pk),
-                        ("name", self.org_unit_type.name),
-                        ("short_name", self.org_unit_type.short_name),
-                    ]
-                ),
-                "new_groups": [
-                    {
-                        "id": new_group.pk,
-                        "name": "new group",
-                    },
-                ],
-                "new_location": None,
-                "new_location_accuracy": None,
-                "new_opening_date": "2022-10-27",
-                "new_closed_date": "2024-10-27",
-                "new_reference_instances": [],
-                "old_parent": None,
-                "old_name": "",
-                "old_org_unit_type": OrderedDict(
-                    [
-                        ("id", self.org_unit_type.pk),
-                        ("name", self.org_unit_type.name),
-                        ("short_name", self.org_unit_type.short_name),
-                    ]
-                ),
-                "old_groups": [],
-                "old_location": None,
-                "old_opening_date": None,
-                "old_closed_date": None,
-                "old_reference_instances": [],
-            },
+            self.change_request_dict(self.org_unit, m.OrgUnit.VALIDATION_NEW, change_request, kind_value, new_group),
         )
+
+    def test_serialize_ok_update_org_unit(self):
+        kwargs = {
+            "org_unit": self.org_unit_to_update,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+            "new_opening_date": datetime.date(2022, 10, 27),
+            "new_closed_date": datetime.date(2024, 10, 27),
+            "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        new_group = m.Group.objects.create(name="new group")
+        change_request.new_groups.set([new_group])
+
+        serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
+        kind_value = m.OrgUnitChangeRequest.Kind.ORG_UNIT_CHANGE.value
+        self.assertEqual(
+            serializer.data,
+            self.change_request_dict(
+                self.org_unit_to_update, m.OrgUnit.VALIDATION_VALID, change_request, kind_value, new_group
+            ),
+        )
+
+    def test_serializer_rejects_invalid_kind(self):
+        data = {
+            "org_unit": self.org_unit,
+            "kind": "invalid_kind",
+            "status": "new",
+        }
+
+        serializer = OrgUnitChangeRequestRetrieveSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("kind", serializer.errors)
 
 
 class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
@@ -698,6 +746,15 @@ class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
         self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
 
         data = {
+            "status": OrgUnitChangeRequest.Statuses.REJECTED,
+            "rejection_comment": "       ",
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
+
+        data = {
             "status": OrgUnitChangeRequest.Statuses.APPROVED,
             "approved_fields": [],
         }
@@ -706,4 +763,132 @@ class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
             serializer.is_valid(raise_exception=True)
         self.assertEqual(
             error.exception.detail["non_field_errors"][0], "At least one `approved_fields` must be provided."
+        )
+
+
+class OrgUnitChangeRequestBulkReviewSerializerTestCase(TestCase):
+    """
+    Test bulk review serializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit = m.OrgUnit.objects.create()
+        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+
+    def test_serialize_ok(self):
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 315646465465465465464],
+            "unselected_ids": [],
+            "status": self.change_request.Statuses.APPROVED,
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["select_all"], False)
+        self.assertEqual(serializer.validated_data["selected_ids"], [1, 2, 315646465465465465464])
+        self.assertEqual(serializer.validated_data["unselected_ids"], [])
+        self.assertEqual(serializer.validated_data["status"], self.change_request.Statuses.APPROVED)
+        self.assertEqual(serializer.validated_data["rejection_comment"], "")
+
+    def test_validate_status(self):
+        data = {
+            "select_all": 0,
+            "status": OrgUnitChangeRequest.Statuses.NEW,
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["status"][0], "Must be `approved` or `rejected`.")
+
+    def test_validate_selection(self):
+        data = {
+            "select_all": 1,
+            "selected_ids": [1, 2],
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set both `select_all` and `selected_ids`."
+        )
+
+        data = {
+            "select_all": 0,
+            "unselected_ids": [1, 2],
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set `unselected_ids` without `select_all`."
+        )
+
+    def test_validate_reject(self):
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.REJECTED,
+            "rejection_comment": "      ",
+        }
+        serializer = OrgUnitChangeRequestBulkReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
+
+
+class OrgUnitChangeRequestBulkDeleteSerializerTestCase(TestCase):
+    """
+    Test bulk delete/restore serializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit = m.OrgUnit.objects.create()
+        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+
+    def test_serialize_ok(self):
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 3],
+            "unselected_ids": [],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["select_all"], False)
+        self.assertEqual(serializer.validated_data["selected_ids"], [1, 2, 3])
+        self.assertEqual(serializer.validated_data["unselected_ids"], [])
+        self.assertEqual(serializer.validated_data["restore"], False)
+
+        data = {
+            "select_all": 0,
+            "selected_ids": [1, 2, 3],
+            "unselected_ids": [],
+            "restore": "true",
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["restore"], True)
+
+    def test_validate_selection(self):
+        data = {
+            "select_all": 1,
+            "selected_ids": [1, 2, 3],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set both `select_all` and `selected_ids`."
+        )
+
+        data = {
+            "select_all": 0,
+            "unselected_ids": [1, 2, 3],
+        }
+        serializer = OrgUnitChangeRequestBulkDeleteSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "You cannot set `unselected_ids` without `select_all`."
         )

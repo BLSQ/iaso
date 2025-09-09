@@ -1,13 +1,13 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
-    beneficiaries: {
-        id: 'iaso.label.beneficiaries',
-        defaultMessage: 'Beneficiaries',
+    entities: {
+        id: 'iaso.label.entities',
+        defaultMessage: 'Entities',
     },
-    beneficiary: {
-        id: 'iaso.label.beneficiary',
-        defaultMessage: 'Beneficiary',
+    entity: {
+        id: 'iaso.label.entity',
+        defaultMessage: 'Entity',
     },
     lastVisit: {
         id: 'iaso.entities.lastVisit',
@@ -125,9 +125,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Details',
         id: 'iaso.entities.label.details',
     },
-    beneficiaryInfo: {
-        defaultMessage: 'Beneficiary information',
-        id: 'iaso.entities.label.beneficiaryInfo',
+    entityInfo: {
+        defaultMessage: 'Entity information',
+        id: 'iaso.entities.label.entityInfo',
     },
     uuid: {
         defaultMessage: 'Uuid',
@@ -252,6 +252,30 @@ const MESSAGES = defineMessages({
     groups: {
         defaultMessage: 'Group',
         id: 'iaso.label.group',
+    },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
+    },
+    confirm: {
+        id: 'blsq.queryBuilder.confirm',
+        defaultMessage: 'Confirm',
+    },
+    queryTab: {
+        id: 'blsq.queryBuilder.queryTab',
+        defaultMessage: 'Query',
+    },
+    jsonTab: {
+        id: 'blsq.queryBuilder.jsonTab',
+        defaultMessage: 'Json',
+    },
+    selectForm: {
+        id: 'iaso.entities.selectForm',
+        defaultMessage: 'Select a form',
+    },
+    addForm: {
+        id: 'iaso.entities.addForm',
+        defaultMessage: 'Add a form',
     },
 });
 

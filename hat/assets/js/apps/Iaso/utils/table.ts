@@ -1,8 +1,8 @@
-import React, { useCallback, useMemo, useState } from 'react';
 import {
     selectionInitialState,
     setTableSelection,
 } from 'bluesquare-components';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Selection } from '../domains/orgUnits/types/selection';
 import { useObjectState } from '../hooks/useObjectState';
 import { PaginationParams } from '../types/general';
@@ -11,19 +11,11 @@ type UseTableSelection<T> = {
     selection: Selection<T>;
     setSelection: React.Dispatch<React.SetStateAction<Selection<T>>>;
     handleTableSelection: (
-        // eslint-disable-next-line no-unused-vars
         selectionType: any,
-        // eslint-disable-next-line no-unused-vars
         items?: Array<any>,
-        // eslint-disable-next-line no-unused-vars
         totalCount?: number,
     ) => void;
-    handleSelectAll: (
-        // eslint-disable-next-line no-unused-vars
-        items?: Array<any>,
-        // eslint-disable-next-line no-unused-vars
-        totalCount?: number,
-    ) => void;
+    handleSelectAll: (items?: Array<any>, totalCount?: number) => void;
     handleUnselectAll: () => void;
 };
 
@@ -85,7 +77,6 @@ const defaultInitialState: PaginationParams = {
 
 type TableState = {
     params: PaginationParams;
-    // eslint-disable-next-line no-unused-vars
     onTableParamsChange: (newParams: PaginationParams) => void;
 };
 export const useTableState = (initialState?: PaginationParams): TableState => {

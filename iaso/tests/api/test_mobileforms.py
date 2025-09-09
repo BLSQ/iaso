@@ -89,6 +89,32 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 1)
 
+    def test_forms_list_ok_with_custom_fields(self):
+        """
+        Ensure we don't trigger N+1 queries when using the `fields` query param.
+        """
+        # Ensure that `form_1` has a version so that we'll have two forms in the response.
+        self.form_1.form_versions.create(file=self.create_file_mock(name="data.xml"), version_id="20250813")
+
+        self.client.force_authenticate(self.yoda)
+        custom_fields = [
+            "id",
+            "name",
+            "periods_before_allowed",
+            "periods_after_allowed",
+            "predefined_filters",
+            "has_attachments",
+            "created_at",
+            "updated_at",
+            "reference_form_of_org_unit_types",
+        ]
+        with self.assertNumQueries(14):
+            response = self.client.get(
+                f"/api/mobile/forms/?fields={','.join(custom_fields)}", headers={"Content-Type": "application/json"}
+            )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
 
@@ -171,7 +197,7 @@ class MobileFormsAPITestCase(APITestCase):
         """GET /mobile/forms/<form_id>: id does not exist"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/mobile/forms/292003030/")
+        response = self.client.get("/api/mobile/forms/292003030/")
         self.assertJSONResponse(response, 404)
 
     def test_forms_retrieve_ok_1(self):
@@ -191,17 +217,18 @@ class MobileFormsAPITestCase(APITestCase):
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
-        self.assertEqual(1, form_data["instances_count"])
 
     def test_forms_create_ok(self):
         """POST /mobile/forms/ happy path"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 1",
                 "period_type": "MONTH",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "project_ids": [self.project_1.id],
                 "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id],
             },
@@ -220,7 +247,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 2",
                 "period_type": "QUARTER",
@@ -246,14 +273,14 @@ class MobileFormsAPITestCase(APITestCase):
     def test_forms_create_without_auth(self):
         """POST /mobile/forms/ without auth: 401"""
 
-        response = self.client.post(f"/api/mobile/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 401)
 
     def test_forms_create_wrong_permission(self):
         """POST /mobile/forms/ with auth but not the proper permission: 403"""
 
         self.client.force_authenticate(self.iron_man)
-        response = self.client.post(f"/api/mobile/forms/", data={"name": "test form"}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"name": "test form"}, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_forms_create_invalid_1(self):
@@ -261,7 +288,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
+            "/api/mobile/forms/", data={"period_type": "LOL", "single_per_period": "Oui"}, format="json"
         )
         self.assertJSONResponse(response, 400)
 
@@ -276,7 +303,7 @@ class MobileFormsAPITestCase(APITestCase):
         """POST /mobile/forms/ specific check for allow_empty"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/mobile/forms/", data={"project_ids": []}, format="json")
+        response = self.client.post("/api/mobile/forms/", data={"project_ids": []}, format="json")
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
@@ -287,7 +314,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form 2",
                 "period_type": None,
@@ -310,7 +337,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "test form",
                 "form_id": "test_001",
@@ -329,7 +356,7 @@ class MobileFormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/mobile/forms/",
+            "/api/mobile/forms/",
             data={
                 "name": "another test form",
                 "form_id": "test_002",
@@ -354,6 +381,8 @@ class MobileFormsAPITestCase(APITestCase):
             data={
                 "name": "test form 2 (updated)",
                 "period_type": "QUARTER",
+                "periods_before_allowed": 0,
+                "periods_after_allowed": 1,
                 "single_per_period": True,
                 "device_field": "deviceid",
                 "location_field": "location",
@@ -452,14 +481,19 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertValidFormData(form_data)
 
         self.assertHasField(form_data, "device_field", str)
-        self.assertHasField(form_data, "location_field", str)
         self.assertHasField(form_data, "form_id", str)
-        self.assertHasField(form_data, "period_type", str)
-        self.assertHasField(form_data, "single_per_period", bool)
-        self.assertHasField(form_data, "org_unit_types", list)
-        self.assertHasField(form_data, "projects", list)
-        self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "latest_form_version", dict)
+        self.assertHasField(form_data, "location_field", str)
+        self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "period_type", str)
+        self.assertHasField(form_data, "projects", list)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data["latest_form_version"], "created_at", float)
+        self.assertHasField(form_data["latest_form_version"], "file", str)
+        self.assertHasField(form_data["latest_form_version"], "id", int)
+        self.assertHasField(form_data["latest_form_version"], "updated_at", float)
+        self.assertHasField(form_data["latest_form_version"], "version_id", str)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
@@ -472,12 +506,3 @@ class MobileFormsAPITestCase(APITestCase):
         for project_data in form_data["projects"]:
             self.assertIsInstance(project_data, dict)
             self.assertHasField(project_data, "id", int)
-
-        self.assertHasField(form_data, "instance_updated_at", float)
-        self.assertHasField(form_data, "instances_count", int)
-        self.assertHasField(form_data, "latest_form_version", dict)
-        self.assertHasField(form_data["latest_form_version"], "id", int)
-        self.assertHasField(form_data["latest_form_version"], "version_id", str)
-        self.assertHasField(form_data["latest_form_version"], "file", str)
-        self.assertHasField(form_data["latest_form_version"], "created_at", float)
-        self.assertHasField(form_data["latest_form_version"], "updated_at", float)

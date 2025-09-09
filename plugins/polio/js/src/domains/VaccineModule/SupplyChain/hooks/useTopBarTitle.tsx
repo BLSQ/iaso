@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { VRF } from '../types';

@@ -3,17 +3,18 @@ from time import gmtime, strftime
 
 from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import StreamingHttpResponse, HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
+import iaso.permissions as core_permissions
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from hat.audit.models import log_modification, ORG_UNIT_API
-from iaso.api.common import CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
-from iaso.models import Link, OrgUnit, DataSource
+from hat.audit.models import ORG_UNIT_API, log_modification
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
+from iaso.models import DataSource, Link, OrgUnit
 from iaso.utils import geojson_queryset
-from hat.menupermissions import models as permission
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -42,7 +43,7 @@ class LinkSerializer(serializers.ModelSerializer):
 class LinkViewSet(viewsets.ViewSet):
     f"""Links API
 
-    This API is restricted to authenticated users having the "{permission.LINKS}" permission
+    This API is restricted to authenticated users having the "{core_permissions.LINKS}" permission
 
     GET /api/links/
     POST /api/links/
@@ -148,51 +149,49 @@ class LinkViewSet(viewsets.ViewSet):
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
                 return Response(res)
-            else:
-                queryset = queryset
-                return Response({"links": [link.as_dict() for link in queryset]})
-        else:
-            columns = [
-                {"title": "ID", "width": 20},
-                {"title": "Run", "width": 20},
-                {"title": "Destination", "width": 20},
-                {"title": "Source", "width": 20},
-                {"title": "Validated", "width": 40},
-                {"title": "Validator", "width": 20},
-                {"title": "Validation Date", "width": 20},
-                {"title": "Creation Date", "width": 20},
-                {"title": "Score", "width": 20},
+            queryset = queryset
+            return Response({"links": [link.as_dict() for link in queryset]})
+        columns = [
+            {"title": "ID", "width": 20},
+            {"title": "Run", "width": 20},
+            {"title": "Destination", "width": 20},
+            {"title": "Source", "width": 20},
+            {"title": "Validated", "width": 40},
+            {"title": "Validator", "width": 20},
+            {"title": "Validation Date", "width": 20},
+            {"title": "Creation Date", "width": 20},
+            {"title": "Score", "width": 20},
+        ]
+
+        filename = "links"
+        filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+
+        def get_row(link, **kwargs):
+            return [
+                link.id,
+                link.algorithm_run_id,
+                link.destination_id,
+                link.source_id,
+                link.validated,
+                link.validator_id,
+                link.validation_date,
+                link.created_at,
+                link.similarity_score,
             ]
 
-            filename = "links"
-            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
-
-            def get_row(link, **kwargs):
-                return [
-                    link.id,
-                    link.algorithm_run_id,
-                    link.destination_id,
-                    link.source_id,
-                    link.validated,
-                    link.validator_id,
-                    link.validation_date,
-                    link.created_at,
-                    link.similarity_score,
-                ]
-
-            if xlsx_format:
-                filename = filename + ".xlsx"
-                response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type=CONTENT_TYPE_XLSX,
-                )
-            if csv_format:
-                response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-                )
-                filename = filename + ".csv"
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
+        if xlsx_format:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Forms", columns, queryset, get_row),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        if csv_format:
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+            filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
 
     def partial_update(self, request, pk=None):
         link = get_object_or_404(Link, id=pk)

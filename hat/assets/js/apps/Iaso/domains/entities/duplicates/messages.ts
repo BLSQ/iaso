@@ -51,7 +51,7 @@ const MESSAGES = defineMessages({
     },
     entityTypes: {
         id: 'iaso.entityTypes.title',
-        defaultMessage: 'Beneficiary types',
+        defaultMessage: 'Entity types',
     },
     startDatefrom: {
         id: 'iaso.label.startDatefrom',
@@ -129,6 +129,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.entities.takeValuesFromB',
         defaultMessage: 'Take all values from B',
     },
+    softDeleteA: {
+        id: 'iaso.label.entities.deleteA',
+        defaultMessage: 'Delete entity A',
+    },
+    softDeleteB: {
+        id: 'iaso.label.entities.deleteB',
+        defaultMessage: 'Delete entity B',
+    },
     ignore: {
         id: 'iaso.label.ignore',
         defaultMessage: 'Ignore',
@@ -150,7 +158,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entity.label.noSubmissionFound',
     },
     submissionsForEntity: {
-        defaultMessage: 'Submissions for Beneficiary {entity}',
+        defaultMessage: 'Submissions for entity {entity}',
         id: 'iaso.entity.label.submissionsForEntity',
     },
     created_at: {
@@ -165,9 +173,21 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parameters',
         defaultMessage: 'Parameters',
     },
+    addParameters: {
+        id: 'iaso.label.addParameters',
+        defaultMessage: 'Add parameters',
+    },
+    removeParameter: {
+        id: 'iaso.label.removeParameter',
+        defaultMessage: 'Remove parameter',
+    },
+    parameterValue: {
+        id: 'iaso.label.parameterValue',
+        defaultMessage: 'Parameter Value',
+    },
     entityType: {
         id: 'iaso.entityTypes.label',
-        defaultMessage: 'Beneficiary type',
+        defaultMessage: 'Entity type',
     },
     latestAnalysis: {
         defaultMessage: 'Latest analysis completed: {finishedAt}',
@@ -199,7 +219,7 @@ const MESSAGES = defineMessages({
     },
     messageErrorMissingFields: {
         defaultMessage:
-            'No fields to analyse. You can set them up in the beneficiaries types page',
+            'No fields to analyse. You can set them up in the entities types page',
         id: 'iaso.duplicate.messageErrorMissingFields',
     },
 });

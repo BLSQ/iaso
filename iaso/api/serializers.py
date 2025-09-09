@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
-from iaso.models import OrgUnit, OrgUnitType, Group
+from iaso.models import Group, OrgUnit, OrgUnitType
 
 
 class TimestampSerializerMixin:
@@ -104,13 +104,19 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
     def get_creator(self, org_unit):
-        creator = None
-        if org_unit.creator is not None:
-            if org_unit.creator.first_name is not None and org_unit.creator.last_name is not None:
-                creator = f"{org_unit.creator.username} ({org_unit.creator.first_name} {org_unit.creator.last_name})"
-            else:
-                creator = org_unit.creator.username
-        return creator
+        if not org_unit.creator:
+            return None
+
+        username = org_unit.creator.username
+        first_name = org_unit.creator.first_name
+        last_name = org_unit.creator.last_name
+        if first_name and last_name:
+            return f"{username} ({first_name} {last_name})"
+        if first_name:
+            return f"{username} ({first_name})"
+        if last_name:
+            return f"{username} ({last_name})"
+        return username
 
     def get_projects(self, org_unit):
         return [project.as_dict() for project in org_unit.org_unit_type.projects.all()]
@@ -191,8 +197,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
         # in some case instances_count is prefilled by an annotation
         if hasattr(org_unit, "instances_count"):
             return org_unit.instances_count
-        else:
-            return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
+        return org_unit.instance_set.filter(~Q(file="") & ~Q(device__test_device=True) & ~Q(deleted=True)).count()
 
     class Meta:
         model = OrgUnit
@@ -223,6 +228,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "groups",
             "creator",
             "projects",
+            "default_image",
         ]
 
 

@@ -1,7 +1,8 @@
 import typing
+
 from uuid import uuid4
 
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.db import models
 
 
@@ -37,8 +38,18 @@ class ProjectQuerySet(models.QuerySet):
 
         raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
 
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(id__in=user_projects_ids)
+
 
 ProjectManager = models.Manager.from_queryset(ProjectQuerySet)
+
+DEFAULT_PROJECT_COLOR = "#1976D2"
 
 
 class Project(models.Model):
@@ -47,14 +58,23 @@ class Project(models.Model):
     name = models.TextField(null=False, blank=False)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
-    app_id = models.TextField(null=True, blank=True)
+    app_id = models.TextField(
+        blank=True,
+        # Empty values are stored as NULL if both `null=True` and `unique=True` are set.
+        # This avoids unique constraint violations when saving multiple objects with blank values.
+        null=True,
+        unique=True,
+    )
+    # The `needs_authentication` boolean field existed before the feature flags.
+    # Use feature flags instead.
     needs_authentication = models.BooleanField(default=False)
-    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
+    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True, through="ProjectFeatureFlags")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     external_token = models.UUIDField(default=uuid4, null=True)
     min_version = models.IntegerField(null=True, blank=False)
     redirection_url = models.URLField(null=True, blank=True)
+    color = models.CharField(max_length=7, null=True, blank=True, default=DEFAULT_PROJECT_COLOR)
 
     objects = ProjectManager()
 
@@ -62,7 +82,7 @@ class Project(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {"id": self.id, "name": self.name, "app_id": self.app_id}
+        return {"id": self.id, "name": self.name, "app_id": self.app_id, "color": self.color}
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

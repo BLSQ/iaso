@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -11,14 +18,8 @@ import {
 import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
 import { useQueryClient } from 'react-query';
+import { FormPredefinedFilters } from 'Iaso/domains/forms/components/FormPredefinedFilters';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -26,7 +27,6 @@ import { baseUrls } from '../../constants/urls';
 import { useFormState } from '../../hooks/form.js';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
-import { createForm, updateForm } from '../../utils/requests';
 import { NO_PERIOD } from '../periods/constants';
 import { FormAttachments } from './components/FormAttachments';
 import FormForm from './components/FormFormComponent';
@@ -34,7 +34,7 @@ import FormVersions from './components/FormVersionsComponent';
 import { requiredFields } from './config/index';
 import { CR_MODE_NONE } from './constants';
 import MESSAGES from './messages';
-import { useGetForm } from './requests';
+import { createForm, updateForm, useGetForm } from './requests';
 import { FormParams } from './types/forms';
 
 const useStyles = makeStyles(theme => ({
@@ -109,7 +109,6 @@ const FormDetail: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
-
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -206,6 +205,12 @@ const FormDetail: FunctionComponent = () => {
             formatMessage,
         ],
     );
+
+    const handleCancel = useCallback(
+        () => (isNew ? goBack() : handleReset()),
+        [goBack, handleReset, isNew],
+    );
+
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
         const newParams = {
@@ -251,9 +256,9 @@ const FormDetail: FunctionComponent = () => {
                         <Button
                             data-id="form-detail-cancel"
                             className={classes.marginLeft}
-                            disabled={!isFormModified}
+                            disabled={!isNew && !isFormModified}
                             variant="contained"
-                            onClick={() => handleReset()}
+                            onClick={handleCancel}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>
@@ -292,6 +297,12 @@ const FormDetail: FunctionComponent = () => {
                                     value="attachments"
                                     label={formatMessage(MESSAGES.attachments)}
                                 />
+                                <Tab
+                                    value="filters"
+                                    label={formatMessage(
+                                        MESSAGES.predefinedFilters,
+                                    )}
+                                />
                             </Tabs>
                         </Box>
                         {tab === 'versions' && (
@@ -305,6 +316,9 @@ const FormDetail: FunctionComponent = () => {
                         )}
                         {tab === 'attachments' && (
                             <FormAttachments params={params} />
+                        )}
+                        {tab === 'filters' && (
+                            <FormPredefinedFilters params={params} />
                         )}
                     </>
                 )}

@@ -1,15 +1,14 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { InputWithInfos } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
-import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { useSafeIntl, InputWithInfos } from 'bluesquare-components';
 import DatesRange from '../../../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
-import { FilterButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { usePeriodOptions } from '../utils';
-import { AfroMapParams } from '../types';
+import { SearchButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../../../../constants/messages';
 import { baseUrls } from '../../../../../constants/urls';
+import { AfroMapParams } from '../types';
+import { usePeriodOptions } from '../utils';
 
 type Props = {
     params: AfroMapParams;
@@ -68,62 +67,60 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
 
     const infos = formatMessage(MESSAGES.afroMapfilterInfo);
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={6} md={6}>
-                    {chooseDates && (
-                        <InputWithInfos infos={infos}>
-                            <DatesRange
-                                onChangeDate={handleDateChange}
-                                dateFrom={filters.startDate}
-                                dateTo={filters.endDate}
-                                labelFrom={MESSAGES.latestCampaignFrom}
-                                labelTo={MESSAGES.latestCampaignUntil}
-                                keyDateFrom="startDate"
-                                keyDateTo="endDate"
-                            />
-                        </InputWithInfos>
-                    )}
-                    {!chooseDates && (
-                        <InputWithInfos infos={infos}>
-                            <InputComponent
-                                type="select"
-                                multi={false}
-                                keyValue="period"
-                                clearable={false}
-                                value={filters.period ?? '6months'}
-                                onChange={handlePeriodChange}
-                                options={periodOptions}
-                                labelString={formatMessage(
-                                    MESSAGES.latestCampaignForPeriod,
-                                )}
-                            />
-                        </InputWithInfos>
-                    )}
-                    <FormGroup>
-                        <FormControlLabel
-                            label={formatMessage(MESSAGES.chooseDates)}
-                            style={{ width: 'max-content' }}
-                            control={
-                                <Switch
-                                    size="medium"
-                                    checked={chooseDates}
-                                    onChange={onSwitchChange}
-                                    color="primary"
-                                />
-                            }
+        <Grid container spacing={2}>
+            <Grid item xs={6} md={6}>
+                {chooseDates && (
+                    <InputWithInfos infos={infos}>
+                        <DatesRange
+                            onChangeDate={handleDateChange}
+                            dateFrom={filters.startDate}
+                            dateTo={filters.endDate}
+                            labelFrom={MESSAGES.latestCampaignFrom}
+                            labelTo={MESSAGES.latestCampaignUntil}
+                            keyDateFrom="startDate"
+                            keyDateTo="endDate"
                         />
-                    </FormGroup>
-                </Grid>
-                <Grid container item xs={12} sm={6} justifyContent="flex-end">
-                    <Box mt={2}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
+                    </InputWithInfos>
+                )}
+                {!chooseDates && (
+                    <InputWithInfos infos={infos}>
+                        <InputComponent
+                            type="select"
+                            multi={false}
+                            keyValue="period"
+                            clearable={false}
+                            value={filters.period ?? '6months'}
+                            onChange={handlePeriodChange}
+                            options={periodOptions}
+                            labelString={formatMessage(
+                                MESSAGES.latestCampaignForPeriod,
+                            )}
                         />
-                    </Box>
-                </Grid>
+                    </InputWithInfos>
+                )}
+                <FormGroup>
+                    <FormControlLabel
+                        label={formatMessage(MESSAGES.chooseDates)}
+                        style={{ width: 'max-content' }}
+                        control={
+                            <Switch
+                                size="medium"
+                                checked={chooseDates}
+                                onChange={onSwitchChange}
+                                color="primary"
+                            />
+                        }
+                    />
+                </FormGroup>
             </Grid>
-        </>
+            <Grid container item xs={12} sm={6} justifyContent="flex-end">
+                <Box mt={2}>
+                    <SearchButton
+                        disabled={!filtersUpdated}
+                        onSearch={handleSearch}
+                    />
+                </Box>
+            </Grid>
+        </Grid>
     );
 };

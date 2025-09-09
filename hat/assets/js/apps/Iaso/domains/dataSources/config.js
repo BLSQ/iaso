@@ -1,21 +1,17 @@
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { Tooltip } from '@mui/material';
 import React, { useMemo } from 'react';
-import {
-    IconButton,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
-// eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import PublishIcon from '@mui/icons-material/Publish';
+import { Tooltip } from '@mui/material';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
-import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import { baseUrls } from '../../constants/urls.ts';
 import * as Permission from '../../utils/permissions.ts';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
+import { ProjectChips } from '../projects/components/ProjectChips';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
+import { SyncDialog } from './components/sync/SyncDialog';
 import { VersionsDialog } from './components/VersionsDialog';
 import MESSAGES from './messages';
 
@@ -54,14 +50,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                 sortable: false,
                 Cell: settings => {
                     const projects = settings.row.original.projects.flat();
-                    if (!projects) {
-                        return textPlaceholder;
-                    }
-                    const projectNames = [];
-                    projects.forEach(project => {
-                        projectNames.push(project.name);
-                    });
-                    return projectNames.join(', ');
+                    return <ProjectChips projects={projects} />;
                 },
             },
             {
@@ -123,27 +112,10 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                                             tooltipMessage={MESSAGES.versions}
                                         />
                                     )}
-                                    defaultSourceVersion={defaultSourceVersion}
                                     source={settings.row.original}
                                 />
-                                <ExportToDHIS2Dialog
-                                    renderTrigger={({ openDialog }) => (
-                                        <IconButton
-                                            dataTestId={`export-dhis2-dialog-button-${settings.row.original.id}`}
-                                            onClick={openDialog}
-                                            overrideIcon={PublishIcon}
-                                            tooltipMessage={
-                                                MESSAGES.compareAndExport
-                                            }
-                                        />
-                                    )}
-                                    dataSourceName={settings.row.original.name}
-                                    dataSourceId={settings.row.original.id}
-                                    versions={settings.row.original.versions}
-                                    defaultVersionId={
-                                        settings.row.original?.default_version
-                                            ?.id
-                                    }
+                                <SyncDialog
+                                    dataSource={settings.row.original}
                                 />
                             </DisplayIfUserHasPerm>
                         </section>

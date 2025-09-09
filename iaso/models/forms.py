@@ -1,28 +1,63 @@
+import os
 import pathlib
 import typing
+
 from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.postgres.fields import ArrayField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
+from django.db.models import OuterRef, Prefetch, Subquery
 from django.utils.html import strip_tags
 from django.utils.translation import gettext_lazy as _
 
-from .project import Project
+from iaso.utils.encryption import calculate_md5
+from iaso.utils.models.upload_to import get_account_name_based_on_user
+
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
-    SoftDeletableModel,
     IncludeDeletedSoftDeletableManager,
     OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
 )
+from ..utils.virus_scan.model import VirusScanStatus
+from .project import Project
+
 
 CR_MODE_NONE = "CR_MODE_NONE"
 CR_MODE_IF_REFERENCE_FORM = "CR_MODE_IF_REFERENCE_FORM"
+
+
+def form_version_upload_to(form_version: "FormVersion", filename: str):
+    # Updating the previous upload_to to include the account name
+    account_name = get_account_name_based_on_user(form_version.created_by)
+    underscored_form_name = slugify_underscore(form_version.form.name)
+    path = pathlib.Path(filename)
+    new_file_name = f"{underscored_form_name}_{form_version.version_id}{path.suffix}"
+
+    return os.path.join(
+        account_name,
+        "form_versions",
+        new_file_name,
+    )
+
+
+def form_attachment_upload_to(form_attachment: "FormAttachment", filename: str):
+    account_name = "unknown_account"  # some uploads can be anonymous
+
+    form_projects = form_attachment.form.projects
+    if form_projects.exists():
+        account = form_projects.first().account
+        account_name = f"{account.short_sanitized_name}_{account.id}"
+
+    underscored_form_name = slugify_underscore(form_attachment.form.name)
+
+    return os.path.join(account_name, "form_attachments", underscored_form_name, filename)
 
 
 class FormQuerySet(models.QuerySet):
@@ -59,6 +94,29 @@ class FormQuerySet(models.QuerySet):
 
         return queryset
 
+    def with_latest_version(self):
+        queryset = self
+        queryset = queryset.annotate(
+            latest_version_id=Subquery(
+                FormVersion.objects.filter(form=OuterRef("pk")).order_by("-created_at").values("id")[:1]
+            )
+        )
+
+        latest_versions = FormVersion.objects.filter(id__in=queryset.values_list("latest_version_id", flat=True))
+
+        queryset = queryset.prefetch_related(
+            Prefetch("form_versions", queryset=latest_versions, to_attr="latest_versions")
+        )
+        return queryset
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(projects__in=user_projects_ids)
+
 
 class Form(SoftDeletableModel):
     """Metadata about a form
@@ -70,8 +128,10 @@ class Form(SoftDeletableModel):
         (periods.PERIOD_TYPE_DAY, _("Day")),
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
+        (periods.PERIOD_TYPE_QUARTER_NOV, _("Quarter Nov")),
         (periods.PERIOD_TYPE_SIX_MONTH, _("Six-month")),
         (periods.PERIOD_TYPE_YEAR, _("Year")),
+        (periods.PERIOD_TYPE_FINANCIAL_NOV, _("Financial Nov")),
     )
 
     CHANGE_REQUEST_MODE = (
@@ -120,7 +180,14 @@ class Form(SoftDeletableModel):
 
     @property
     def latest_version(self):
-        return self.form_versions.order_by("-created_at").first()
+        # attribute filled by queryset.with_latest_version() on FormQuerySet
+        try:
+            if len(self.latest_versions) > 0:
+                return self.latest_versions[0]
+            return None
+        except AttributeError as e:
+            # WARN form loaded without approtiate queryset.with_latest_version(), might trigger n+1 select
+            return self.form_versions.order_by("-created_at").first()
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -171,13 +238,6 @@ class Form(SoftDeletableModel):
         self.possible_fields = _reformat_questions(all_questions)
 
 
-def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
-    path = pathlib.Path(filename)
-    underscored_form_name = slugify_underscore(instance.form.name)
-
-    return f"forms/{underscored_form_name}_{instance.version_id}{path.suffix}"
-
-
 class FormVersionQuerySet(models.QuerySet):
     def latest_version(self, form: Form) -> "typing.Optional[FormVersion]":
         try:
@@ -214,11 +274,12 @@ class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)  # type: ignore
-
+            file = SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml")
             form_version = super().create(
                 **kwargs,
                 form=form,
-                file=SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml"),
+                file=file,
+                md5=calculate_md5(file),
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
@@ -240,12 +301,19 @@ class FormVersion(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
-    file = models.FileField(upload_to=_form_version_upload_to)
-    xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
+    file = models.FileField(upload_to=form_version_upload_to)
+    md5 = models.CharField(blank=True, max_length=32)
+    xls_file = models.FileField(upload_to=form_version_upload_to, null=True, blank=True)
     form_descriptor = models.JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_created_set"
+    )
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="form_version_updated_set"
+    )
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
     possible_fields = models.JSONField(
@@ -283,16 +351,6 @@ class FormVersion(models.Model):
 
     def questions_by_path(self):
         return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "version_id": self.version_id,
-            "file": self.file.url,
-            "xls_file": self.xls_file.url if self.xls_file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
@@ -333,12 +391,11 @@ class FormAttachment(models.Model):
     class Meta:
         unique_together = [["form", "name"]]
 
-    def form_folder(self, filename):
-        return "/".join(["form_attachments", str(self.form.id), filename])
-
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_folder)
+    file = models.FileField(upload_to=form_attachment_upload_to)
+    file_last_scan = models.DateTimeField(blank=True, null=True)
+    file_scan_status = models.CharField(max_length=10, choices=VirusScanStatus.choices, default=VirusScanStatus.PENDING)
     md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

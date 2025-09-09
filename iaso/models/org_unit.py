@@ -1,20 +1,21 @@
-import json
+import logging
 import operator
 import typing
 import uuid
+
 from copy import deepcopy
 from functools import reduce
 
 import django_cte
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
@@ -24,12 +25,14 @@ from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
+from ..utils.models.soft_deletable import SoftDeletableModel
 from .project import Project
 
-try:  # for typing
-    from .base import Account, Instance
-except:
-    pass
+
+if typing.TYPE_CHECKING:
+    from iaso.models import Account
+
+logger = logging.getLogger(__name__)
 
 
 def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
@@ -85,7 +88,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         queryset = self.prefetch_related(
             "projects",
             "projects__account",
-            "projects__feature_flags",
+            "projects__projectfeatureflags_set",
             "allow_creating_sub_unit_types",
             "reference_forms",
             "sub_unit_types",
@@ -125,7 +128,7 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
-    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_forms = models.ManyToManyField("Form", related_name="reference_of_org_unit_types", blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
@@ -134,7 +137,7 @@ class OrgUnitType(models.Model):
     objects = OrgUnitTypeManager()
 
     def __str__(self):
-        return "%s" % self.name
+        return f"#{self.pk} {self.name}"
 
     def as_dict(self, sub_units=True, app_id=None):
         res = {
@@ -198,6 +201,13 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
 
+    def filter_for_account(self, account):
+        queryset: OrgUnitQuerySet = self.defer("geom")
+        version_ids = (
+            SourceVersion.objects.filter(data_source__projects__account=account).values_list("id", flat=True).distinct()
+        )
+        return queryset.filter(version_id__in=version_ids)
+
     def filter_for_user(self, user):
         return self.filter_for_user_and_app_id(user, None)
 
@@ -212,14 +222,9 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
+            queryset = self.filter_for_account(account)
 
             # Filter on version ids (linked to the account)
-            version_ids = (
-                SourceVersion.objects.filter(data_source__projects__account=account)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-            queryset = queryset.filter(version_id__in=version_ids)
 
             # If applicable, filter on the org units associated to the user but only when the user is not a super user
             if user.iaso_profile.org_units.exists() and not user.is_superuser:
@@ -280,7 +285,9 @@ class OrgUnit(TreeModel):
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
     )
 
-    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True, related_name="org_units"
+    )
 
     sub_source = models.TextField(null=True, blank=True)  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
@@ -296,10 +303,25 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    extra_fields = models.JSONField(default=dict)
+
+    # By default, the `extra_fields` JSONField won't save in admin with an empty dict as default value.
+    # https://stackoverflow.com/q/55147169
+    # The easiest fix would be to add a `blank=True` attribute to the field, but this triggers an error
+    # if you don't specify any value:
+    # https://code.djangoproject.com/ticket/27697
+    # The solution is to add `blank=True`, `null=False` and to implement `clean()` to programmatically
+    # supply any missing value:
+    # https://code.djangoproject.com/ticket/27697
+    # https://github.com/django/django/commit/515d3c
+    extra_fields = models.JSONField(default=dict, blank=True, null=False)
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
+    default_image = models.ForeignKey(
+        "iaso.InstanceFile", on_delete=models.SET_NULL, null=True, blank=True, related_name="default_for_org_units"
+    )
+    code = models.TextField(blank=True, db_index=True)  # DHIS2 code
+
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
@@ -309,7 +331,18 @@ class OrgUnit(TreeModel):
             models.Index(fields=["created_at"]),
             models.Index(fields=["updated_at"]),
             models.Index(fields=["source_created_at"]),
+            models.Index(fields=["org_unit_type", "version"]),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["code", "version"],
+                condition=Q(~Q(code=""), Q(validation_status="VALID")),
+                name="unique_code_per_source_version_if_not_blank_and_valid_status",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"#{self.pk} {self.name}"
 
     @property
     def source_created_at_with_fallback(self):
@@ -323,6 +356,10 @@ class OrgUnit(TreeModel):
         if self.path is not None:
             return self.ancestors().filter(org_unit_type__category="COUNTRY")
 
+    def clean(self, *args, **kwargs) -> None:
+        if self.extra_fields is None:
+            self.extra_fields = {}
+
     def save(self, *args, skip_calculate_path: bool = False, force_recalculate: bool = False, **kwargs):
         """Override default save() to make sure that the path property is calculated and saved,
         for this org unit and its children.
@@ -331,6 +368,8 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        self.clean()
+
         # work around https://code.djangoproject.com/ticket/33787
         # where we had empty Z point in the database but couldn't save the OrgUnit back.
         # because it was missing a dimension
@@ -382,9 +421,6 @@ class OrgUnit(TreeModel):
                 updated_records += child.calculate_paths(force_recalculate)
 
         return updated_records
-
-    def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
     def as_dict_for_mobile_lite(self):
         return {
@@ -448,6 +484,7 @@ class OrgUnit(TreeModel):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
+            "code": self.code,
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
@@ -458,12 +495,12 @@ class OrgUnit(TreeModel):
             ),
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
-            "parent_name": self.parent.name if self.parent else None,
-            "parent": (
-                self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-                if self.parent
-                else None
+            "parent_name": (
+                self._prefetched_ancestors[self.parent_id].name
+                if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors
+                else (self.parent.name if self.parent_id else None)
             ),
+            "parent": (self._get_parent_dict(light_parents, light_parents) if self.parent_id else None),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.source_created_at_with_fallback.timestamp(),
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
@@ -475,14 +512,19 @@ class OrgUnit(TreeModel):
             "creator": get_creator_name(self.creator),
             "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
             "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
+            "default_image_id": self.default_image.id if self.default_image else None,
         }
         if not light:  # avoiding joins here
-            res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
+            res["groups"] = sorted(
+                [group.as_dict(with_counts=False) for group in self.groups.all()], key=lambda x: x["id"]
+            )
             res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
             res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
             res["source"] = self.version.data_source.name if self.version else None
             res["source_id"] = self.version.data_source.id if self.version else None
             res["version"] = self.version.number if self.version else None
+            res["version_id"] = self.version.id if self.version else None
+
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
 
@@ -490,6 +532,13 @@ class OrgUnit(TreeModel):
             res["instances_count"] = self.instances_count
 
         return res
+
+    def _get_parent_dict(self, light=False, light_parents=True):
+        if hasattr(self, "_prefetched_ancestors") and self.parent_id in self._prefetched_ancestors:
+            parent = self._prefetched_ancestors[self.parent_id]
+            parent._prefetched_ancestors = self._prefetched_ancestors
+            return parent.as_dict_with_parents(light=light, light_parents=light_parents)
+        return self.parent.as_dict_with_parents(light=light, light_parents=light_parents)
 
     def as_small_dict(self):
         res = {
@@ -508,6 +557,16 @@ class OrgUnit(TreeModel):
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res
+
+    def as_very_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
+            "parent": self.parent.as_very_small_dict() if self.parent else None,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+        }
 
     def as_dict_for_csv(self):
         return {
@@ -607,7 +666,40 @@ class OrgUnitReferenceInstance(models.Model):
         unique_together = ("org_unit", "form")
 
 
-class OrgUnitChangeRequest(models.Model):
+class OrgUnitChangeRequestQuerySet(models.QuerySet):
+    def exclude_soft_deleted_new_reference_instances(self):
+        """
+        Exclude change requests when `new_reference_instances` is the only
+        requested change but instances have all been soft-deleted.
+
+        We consider instances with `form_version_id`, `json`, `uuid` or
+        `form_id` set to NULL as unusable for the mobile. See IA-4124.
+        """
+        return self.annotate(
+            annotated_non_deleted_new_reference_instances_count=Count(
+                "new_reference_instances", filter=Q(new_reference_instances__deleted=False)
+            )
+        ).exclude(
+            Q(requested_fields=["new_reference_instances"])
+            & (
+                Q(annotated_non_deleted_new_reference_instances_count=0)
+                | Q(new_reference_instances__json__isnull=True)
+                | Q(new_reference_instances__form_version_id__isnull=True)
+                | Q(new_reference_instances__uuid__isnull=True)
+                | Q(new_reference_instances__form_id__isnull=True)
+            )
+        )
+
+    def filter_on_user_projects(self, user: User) -> models.QuerySet:
+        if not hasattr(user, "iaso_profile"):
+            return self
+        user_projects_ids = user.iaso_profile.projects_ids
+        if not user_projects_ids:
+            return self
+        return self.filter(org_unit__version__data_source__projects__in=user_projects_ids)
+
+
+class OrgUnitChangeRequest(SoftDeletableModel):
     """
     A request to change an OrgUnit.
 
@@ -692,6 +784,17 @@ class OrgUnitChangeRequest(models.Model):
         "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
     )
 
+    data_source_synchronization = models.ForeignKey(
+        "DataSourceVersionsSynchronization",
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="change_requests",
+        help_text="The data source synchronization that generated this change request.",
+    )
+
+    objects = models.Manager.from_queryset(OrgUnitChangeRequestQuerySet)()
+
     class Meta:
         verbose_name = _("Org unit change request")
         indexes = [
@@ -742,6 +845,10 @@ class OrgUnitChangeRequest(models.Model):
         self.updated_by = user
         self.status = self.Statuses.REJECTED
         self.rejection_comment = rejection_comment
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            rejected_org_unit = self.org_unit
+            rejected_org_unit.validation_status = OrgUnit.VALIDATION_REJECTED
+            rejected_org_unit.save()
         self.save()
 
     def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
@@ -750,6 +857,10 @@ class OrgUnitChangeRequest(models.Model):
         self.status = self.Statuses.APPROVED
         self.rejection_comment = rejection_comment
         self.approved_fields = approved_fields
+        if self.kind == OrgUnitChangeRequest.Kind.ORG_UNIT_CREATION:
+            approved_org_unit = self.org_unit
+            approved_org_unit.validation_status = OrgUnit.VALIDATION_VALID
+            approved_org_unit.save()
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
@@ -758,28 +869,42 @@ class OrgUnitChangeRequest(models.Model):
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":
                 continue
-            elif field_name == "new_groups":
+            if field_name == "new_groups":
                 self.org_unit.groups.clear()
                 self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
+                current_reference_instances = list(self.org_unit.reference_instances.all())
+
                 self.org_unit.reference_instances.clear()
-                new_reference_instances = [
+
+                new_reference_instances = list(self.new_reference_instances.all())
+                new_reference_forms_ids = self.new_reference_instances.values_list("form_id", flat=True)
+
+                for instance in current_reference_instances:
+                    if instance.form_id not in new_reference_forms_ids:
+                        new_reference_instances.append(instance)
+
+                new_ou_reference_instances = [
                     OrgUnitReferenceInstance(org_unit_id=self.org_unit.pk, form_id=instance.form_id, instance=instance)
-                    for instance in self.new_reference_instances.all()
+                    for instance in new_reference_instances
                 ]
-                OrgUnitReferenceInstance.objects.bulk_create(new_reference_instances)
+
+                OrgUnitReferenceInstance.objects.bulk_create(new_ou_reference_instances)
             # Handle non m2m fields.
             else:
                 new_value = getattr(self, field_name)
                 org_unit_field_name = field_name.replace("new_", "")
                 setattr(self.org_unit, org_unit_field_name, new_value)
 
-        if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
-            self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
-
         self.org_unit.save()
 
-        log_modification(initial_org_unit, self.org_unit, source=ORG_UNIT_CHANGE_REQUEST, user=user)
+        log_modification(
+            initial_org_unit,
+            self.org_unit,
+            source=ORG_UNIT_CHANGE_REQUEST,
+            user=user,
+            org_unit_change_request_id=self.pk,
+        )
 
     @classmethod
     def get_new_fields(cls) -> typing.List[str]:

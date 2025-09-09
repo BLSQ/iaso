@@ -7,6 +7,7 @@ function StarSvg(props) {
         <svg
             style={{
                 width: starWidth,
+                height: starWidth,
             }}
         >
             <g data-name="bg-star" className="bg-star">

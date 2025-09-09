@@ -1,24 +1,25 @@
 import React, { FunctionComponent, useState } from 'react';
-import {
-    ConfirmCancelModal,
-    useSafeIntl,
-    AddButton,
-    makeFullModal,
-} from 'bluesquare-components';
 import UpdateIcon from '@mui/icons-material/Update';
-import { Period } from '../../periods/models';
-import { isValidPeriod } from '../../periods/utils';
-import MESSAGES from '../messages';
+import {
+    AddButton,
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { UseMutateAsyncFunction } from 'react-query';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import PeriodPicker from '../../periods/components/PeriodPicker';
-import { Instance } from '../types/instance';
+import { Period } from '../../periods/models';
+import { isValidPeriod } from '../../periods/utils';
+import { ReassignInstancePayload } from '../hooks/useReassignInstance';
+import MESSAGES from '../messages';
 
 type Props = {
     titleMessage: any;
     confirmMessage: any;
     cancelMessage: any;
     formType: {
-        id: number;
+        id: number | string;
         periodType: string;
     };
     currentInstance?: {
@@ -27,12 +28,12 @@ type Props = {
         // eslint-disable-next-line camelcase
         org_unit?: any;
     };
-    onCreateOrReAssign: (
-        // eslint-disable-next-line no-unused-vars
-        instanceOrForm: Instance | { id: number },
-        // eslint-disable-next-line no-unused-vars,camelcase
-        payload: { period: any; org_unit: any },
-    ) => void;
+    onCreateOrReAssign: UseMutateAsyncFunction<
+        unknown,
+        unknown,
+        ReassignInstancePayload,
+        unknown
+    >;
     orgUnitTypes: number[];
     isOpen: boolean;
     closeDialog: () => void;
@@ -89,7 +90,8 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
 
     const onConfirm = () => {
         const currentFormOrInstanceProp = currentInstance || formType;
-        onCreateOrReAssign(currentFormOrInstanceProp, {
+        onCreateOrReAssign({
+            currentInstance: currentFormOrInstanceProp,
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value?.id,
         });
@@ -108,6 +110,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
             maxWidth="xs"
             allowConfirm={allowConfirm}
             closeDialog={closeDialog}
+            onClose={closeDialog}
             onCancel={closeDialog}
         >
             {isPeriodRequired && (

@@ -144,7 +144,7 @@ Testing the production build
 
    .. code:: shell
 
-      TEST_PROD=true docker-compose up
+      TEST_PROD=true docker compose up
 
 When the setup is run with ``TEST_PROD=true``, it will exit the unneeded containers
 ``webpack`` and ``jupyter``. It will also run the webpack build during startup, so
@@ -155,7 +155,7 @@ JS Unit Testing
 
 .. code:: shell
 
-    docker-compose run hat test_js
+    docker compose run hat test_js
 
 
 Adding new assets in package.json
@@ -166,13 +166,13 @@ upgrading packages in ``package.json``.
 
 .. code:: shell
 
-    docker-compose build
+    docker compose build
 
 or
 
 .. code:: shell
 
-    docker-compose up --build
+    docker compose up --build
 
 
 Translations
@@ -215,4 +215,4 @@ When depending on a local version of the library:
 
 - Your local folder should be on the same level as the iaso folder, so that the path to the tgz file in your package.json is : ../bluesquare-components/bluesquare-components-0.1.0.tgz
 
-- Run ``docker-compose build --build-arg LIBRARY=<name-of-the-library-image>``
+- Run ``docker compose build --build-arg LIBRARY=<name-of-the-library-image>``

@@ -50,6 +50,18 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Last name',
         id: 'iaso.label.lastName',
     },
+    user_email: {
+        defaultMessage: 'Email',
+        id: 'iaso.label.email',
+    },
+    email_invitation: {
+        defaultMessage: 'Send email invitation to set password',
+        id: 'iaso.label.emailInvitation',
+    },
+    language: {
+        defaultMessage: 'Language',
+        id: 'iaso.users.dialog.locale',
+    },
     password: {
         defaultMessage: 'Password',
         id: 'iaso.users.password',

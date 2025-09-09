@@ -1,15 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import MESSAGES from '../messages';
-import { polioVaccines } from '../../../../constants/virus';
-import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
-import { StockManagementListParams } from '../types';
+import { SearchButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
+import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import { baseUrls } from '../../../../constants/urls';
+import { singleVaccinesList } from '../../SupplyChain/constants';
+import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
+import MESSAGES from '../messages';
+import { StockManagementListParams } from '../types';
 
 const baseUrl = baseUrls.stockManagement;
 type Props = { params: StockManagementListParams };
@@ -23,7 +23,7 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
     // TODO refactor and move this hook
     const { data: countries, isFetching } = useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True' });
+        useGetGroupDropdown({ blockOfCountries: 'true' });
     return (
         <>
             <Grid container spacing={2}>
@@ -46,10 +46,7 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         keyValue="vaccine_type"
                         value={filters.vaccine_type}
                         onChange={handleChange}
-                        options={polioVaccines.map(vaccine => ({
-                            label: vaccine.label,
-                            value: vaccine.value,
-                        }))}
+                        options={singleVaccinesList}
                         labelString={formatMessage(MESSAGES.vaccine)}
                     />
                 </Grid>
@@ -62,9 +59,9 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                         width="100%"
                     >
                         <Box mt={2}>
-                            <FilterButton
+                            <SearchButton
                                 disabled={!filtersUpdated}
-                                onFilter={handleSearch}
+                                onSearch={handleSearch}
                             />
                         </Box>
                     </Box>

@@ -1,5 +1,3 @@
-/* eslint-disable react/function-component-definition */
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';
@@ -10,26 +8,33 @@ import {
     FormControl as FormControlComponent,
     useSafeIntl,
 } from 'bluesquare-components';
+
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import MESSAGES from '../messages';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-
-import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
-
-import DatesRange from '../../../components/filters/DatesRange';
+import { ORG_UNITS } from '../../../utils/permissions';
+import { useCheckUserHasWritePermissionOnOrgunit } from '../../../utils/usersUtils';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { Instance } from '../../instances/types/instance';
-import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
-import { OrgunitType } from '../types/orgunitTypes';
+import {
+    GroupDropdownOption,
+    OrgUnitTypeDropdownOption,
+} from '../configuration/types';
+import MESSAGES from '../messages';
+import { OrgUnit, OrgUnitState } from '../types/orgUnit';
+import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from './TreeView/requests';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import { ORG_UNITS } from '../../../utils/permissions';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
+    '@global': {
+        body: {
+            overflowX: 'hidden !important',
+            overflowY: 'auto !important',
+        },
+    },
     speedDialTop: {
         top: theme.spacing(12.5),
     },
@@ -52,13 +57,11 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     orgUnitState: OrgUnitState;
     onChangeInfo: (
-        // eslint-disable-next-line no-unused-vars
         key: string,
-        // eslint-disable-next-line no-unused-vars
         value: string | number | string[] | number[],
     ) => void;
-    orgUnitTypes: OrgunitType[];
-    groups: Group[];
+    orgUnitTypes: OrgUnitTypeDropdownOption[];
+    groups: GroupDropdownOption[];
     resetTrigger: boolean;
     params: Record<string, string>;
     handleSave: () => void;
@@ -67,7 +70,7 @@ type Props = {
     isFetchingOrgUnitTypes: boolean;
     isFetchingGroups: boolean;
     referenceInstances: Instance[];
-    orgUnit: OrgUnit;
+    orgUnit: Partial<OrgUnit>;
 };
 
 export const OrgUnitInfos: FunctionComponent<Props> = ({
@@ -87,7 +90,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-
+    const { parentOrgUnitId } = params;
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
@@ -98,13 +101,18 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
+    const parentId = isNewOrgunit
+        ? parentOrgUnitId
+        : orgUnitState.parent.value?.id;
     const { data: parentOrgunit } = useGetOrgUnit(
-        orgUnitState.parent.value
-            ? `${orgUnitState.parent.value.id}`
-            : undefined,
+        parentId ? `${parentId}` : undefined,
     );
-    const currentUser = useCurrentUser();
-    const hasManagementPermission = userHasPermission(ORG_UNITS, currentUser);
+
+    const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
+        orgUnit?.org_unit_type_id,
+    );
+
+    const disabled = !hasManagementPermission && !isNewOrgunit;
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
@@ -116,7 +124,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.name.value}
                     errors={orgUnitState.name.errors}
                     label={MESSAGES.name}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
 
                 <InputComponent
@@ -136,13 +144,13 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value: t.id,
                     }))}
                     label={MESSAGES.org_unit_type_id}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <InputComponent
                     keyValue="groups"
-                    onChange={(name, value) =>
-                        onChangeInfo(name, commaSeparatedIdsToArray(value))
-                    }
+                    onChange={(name, value) => {
+                        onChangeInfo(name, commaSeparatedIdsToArray(value));
+                    }}
                     multi
                     value={
                         isFetchingGroups ? undefined : orgUnitState.groups.value
@@ -150,12 +158,18 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     loading={isFetchingGroups}
                     errors={orgUnitState.groups.errors}
                     type="select"
-                    options={groups.map(g => ({
-                        label: g.name,
-                        value: g.id,
-                    }))}
+                    options={groups}
                     label={MESSAGES.groups}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
+                />
+                <InputComponent
+                    keyValue="code"
+                    type="text"
+                    onChange={onChangeInfo}
+                    value={orgUnitState.code.value}
+                    errors={orgUnitState.code.errors}
+                    label={MESSAGES.code}
+                    disabled={disabled}
                 />
                 <div className={classes.divAliasWrapper}>
                     <InputComponent
@@ -164,9 +178,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         value={orgUnitState.aliases.value}
                         type="arrayInput"
                     />
-                    {!hasManagementPermission && (
-                        <div className={classes.divAliasOverlay} />
-                    )}
+                    {disabled && <div className={classes.divAliasOverlay} />}
                 </div>
             </Grid>
 
@@ -181,7 +193,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     label={MESSAGES.status}
                     loading={isLoadingValidationStatusOptions}
                     options={validationStatusOptions || []}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <InputComponent
                     keyValue="source_ref"
@@ -189,7 +201,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}
                     errors={orgUnitState.source_ref.errors}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
 
                 <FormControlComponent
@@ -208,10 +220,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                                 onChangeInfo('parent', treeviewOrgUnit);
                             }
                         }}
-                        source={orgUnit.source_id}
+                        source={orgUnit?.source_id}
+                        version={orgUnit?.version_id}
                         initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
-                        disabled={!hasManagementPermission}
+                        disabled={disabled}
                     />
                 </FormControlComponent>
                 <DatesRange
@@ -227,7 +240,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     labelFrom={MESSAGES.openingDate}
                     labelTo={MESSAGES.closingDate}
                     marginTop={0}
-                    disabled={!hasManagementPermission}
+                    disabled={disabled}
                 />
                 <DisplayIfUserHasPerm permissions={[ORG_UNITS]}>
                     <Grid

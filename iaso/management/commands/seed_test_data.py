@@ -1,18 +1,19 @@
 import csv
 import json
+
 from io import BytesIO
 from random import randint, random, sample
 from uuid import uuid4
 
 import requests
+
 from dhis2 import Api
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
 from django.contrib.sites.models import Site
 from django.core import management
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.core.files.uploadedfile import UploadedFile
+from django.core.files.uploadedfile import InMemoryUploadedFile, UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -22,19 +23,19 @@ from lxml import etree
 from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
-    User,
-    Instance,
-    OrgUnitType,
+    Account,
+    DataSource,
+    ExternalCredentials,
     Form,
-    Project,
     FormVersion,
+    Instance,
     Mapping,
     MappingVersion,
-    DataSource,
-    SourceVersion,
-    ExternalCredentials,
-    Account,
+    OrgUnitType,
     Profile,
+    Project,
+    SourceVersion,
+    User,
 )
 from iaso.models.base import AccountFeatureFlag
 from iaso.models.comment import CommentIaso
@@ -42,6 +43,7 @@ from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning, Team
 from iaso.models.pages import Page
+
 
 """
 seed_test_data --mode=seed
@@ -61,11 +63,12 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
         dhis2_version = "stable-" + dhis2_version.replace(".", "-")
-
-        response = requests.get(f"http://play.im.dhis2.org/{dhis2_version}")
+        dhis2_url = f"https://play.im.dhis2.org/{dhis2_version}"
+        print(dhis2_url)
+        response = requests.get(dhis2_url)
+        print(response.url)
         dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
-        dhis2_version = dhis2_url.split("/")[-1]
-        print("dhis2_version resolved to ", dhis2_version)
+        print("dhis2_version resolved to ", dhis2_version, dhis2_url)
 
         mode = options.get("mode")
 
@@ -112,7 +115,7 @@ class Command(BaseCommand):
 
         project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
-        project.app_id = "org.bluesquare.play"
+        project.app_id = f"org.bluesquare.play{dhis2_version}"
         project.save()
 
         datasource, _ds_created = DataSource.objects.get_or_create(
@@ -405,8 +408,6 @@ class Command(BaseCommand):
         print("For Iaso mobile")
         print("  now you need to start ngrok")
         print("     with : ngrok http 8081")
-        print("     adapt .env and set the FILE_SERVER_URL to the ngrok https url in Forwarding section")
-        print("     restart iaso (so .env is reloaded) : docker-compose up")
         print("  install the generic iaso mobile app and launch the app")
         print("        https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso")
         print("     in the menu ")
@@ -533,8 +534,9 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
-        out = OrgUnitType.objects.filter(orgunit__version=source_version).distinct()
+        out = OrgUnitType.objects.filter(org_units__version=source_version).distinct()
         form.org_unit_types.set(out)
+
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
@@ -552,7 +554,7 @@ class Command(BaseCommand):
 
                 with_location = randint(1, 3) == 2
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)
-                for instance_count in range(0, instance_by_ou_periods):
+                for instance_count in range(instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.source_created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit

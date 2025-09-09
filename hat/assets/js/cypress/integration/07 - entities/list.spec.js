@@ -1,20 +1,21 @@
 /// <reference types="cypress" />
-import { testTablerender } from '../../support/testTableRender';
-import { testPagination } from '../../support/testPagination';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 import page2 from '../../fixtures/entities/list-page-2.json';
 import listFixture from '../../fixtures/entities/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testPagination } from '../../support/testPagination';
 import { testSearchField } from '../../support/testSearchField';
-import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/entities/list`;
 
 let interceptFlag = false;
 const defaultQuery = {
-    limit: '20',
     order_columns: 'last_saved_instance',
+    limit: '20',
     page: '1',
+    tab: 'list',
 };
 const mockPage = (
     fakeUser = superUser,
@@ -221,7 +222,7 @@ describe('Entities', () => {
             mockPage();
             cy.intercept(
                 'GET',
-                '/api/entities/?order_columns=last_saved_instance&limit=20&page=1',
+                '/api/entities/?order_columns=last_saved_instance&limit=20&page=1&tab=list',
                 {
                     fixture: 'entities/list.json',
                 },
@@ -240,6 +241,7 @@ describe('Entities', () => {
                         page: '2',
                         limit: '20',
                         order_columns: 'last_saved_instance',
+                        tab: 'list',
                     },
                 },
                 page2,

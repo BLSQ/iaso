@@ -1,12 +1,13 @@
 import React, { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { Chip } from '@mui/material';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@mui/icons-material';
-import MESSAGES from './messages';
+import { Chip } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { userHasAccessToModule } from '../users/utils.js';
+import MESSAGES from './messages';
 
 /**
  * get the first defaultSource and defaultVersion of an user account
@@ -43,6 +44,7 @@ export const useDefaultSourceVersion = () => {
 
 export const FIELDS_TO_EXPORT = {
     name: 'name',
+    code: 'code',
     parent: 'parent',
     geometry: 'geometry',
     groups: 'groups',
@@ -70,6 +72,7 @@ export const useFieldsToExport = () => {
             value: FIELDS_TO_EXPORT.closedDate,
         },
         { label: formatMessage(MESSAGES.name), value: FIELDS_TO_EXPORT.name },
+        { label: formatMessage(MESSAGES.code), value: FIELDS_TO_EXPORT.code },
         {
             label: formatMessage(MESSAGES.parent),
             value: FIELDS_TO_EXPORT.parent,
@@ -263,7 +266,13 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     };
 
     const fields = [];
-
+    const hasDhis2Module = userHasAccessToModule(
+        'DHIS2_MAPPING',
+        useCurrentUser(),
+    );
+    if (!hasDhis2Module) {
+        delete dataSource?.url;
+    }
     Object.entries(dataSource).forEach(([key, source]) => {
         const label = formatMessage(MESSAGES[translations[key]]);
         if (keys.includes(key)) {

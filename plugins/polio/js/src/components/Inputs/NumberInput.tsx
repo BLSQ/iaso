@@ -1,5 +1,10 @@
 import { get } from 'lodash';
-import React, { FunctionComponent } from 'react';
+import React, {
+    FocusEventHandler,
+    FunctionComponent,
+    useCallback,
+    useEffect,
+} from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 
 type Props = {
@@ -20,6 +25,11 @@ type Props = {
         decimalSeparator?: '.' | ',';
         thousandSeparator?: '.' | ',';
     };
+    onChange?: (value: number) => void;
+    onFocus?:
+        | FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
+        | undefined;
+    onBlur?: FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -28,6 +38,9 @@ export const NumberInput: FunctionComponent<Props> = ({
     form,
     min,
     max,
+    onChange,
+    onBlur,
+    onFocus,
     numberInputOptions = {},
     withMarginTop = false,
     disabled = false,
@@ -36,6 +49,25 @@ export const NumberInput: FunctionComponent<Props> = ({
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+
+    const handleChange = useCallback(
+        (_keyValue, value) => {
+            if (onChange) {
+                onChange(value);
+            } else {
+                form.setFieldTouched(field.name, true);
+                form.setFieldValue(field.name, value);
+            }
+        },
+        [field.name, form, onChange],
+    );
+    // Ugly hack top prevent form validation error when initialValues is null and value is undefined
+    useEffect(() => {
+        if (field.value === undefined) {
+            form.setFieldValue(field.name, null);
+        }
+    }, [form.setFieldValue, field.value]);
+
     return (
         <InputComponent
             withMarginTop={withMarginTop}
@@ -43,12 +75,11 @@ export const NumberInput: FunctionComponent<Props> = ({
             type="number"
             value={field.value}
             labelString={label}
-            onChange={(_keyValue, value) => {
-                form.setFieldTouched(field.name, true);
-                form.setFieldValue(field.name, value);
-            }}
+            onChange={handleChange}
             min={min}
             max={max}
+            onBlur={onBlur}
+            onFocus={onFocus}
             errors={hasError ? [get(form.errors, field.name)] : []}
             disabled={disabled}
             required={required}

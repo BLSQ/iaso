@@ -33,6 +33,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Feature flags',
         id: 'iaso.label.featureFlags',
     },
+    featureFlag_DCO: {
+        defaultMessage: 'Data collection options',
+        id: 'iaso.projets.featureflag.category.DCO',
+    },
+    featureFlag_REO: {
+        defaultMessage: 'Refresh options',
+        id: 'iaso.projets.featureflag.category.REO',
+    },
+    featureFlag_GEO: {
+        defaultMessage: 'Geographic options',
+        id: 'iaso.projets.featureflag.category.GEO',
+    },
+    featureFlag_DAV: {
+        defaultMessage: 'Data validation',
+        id: 'iaso.projets.featureflag.category.DAV',
+    },
+    featureFlag_ENT: {
+        defaultMessage: 'Entities',
+        id: 'iaso.projets.featureflag.category.ENT',
+    },
+    featureFlag_PLA: {
+        defaultMessage: 'Planning',
+        id: 'iaso.projets.featureflag.category.PLA',
+    },
+    featureFlag_SPO: {
+        defaultMessage: 'Specific options',
+        id: 'iaso.projets.featureflag.category.SPO',
+    },
+    featureFlag_NA: {
+        defaultMessage: 'Generics',
+        id: 'iaso.projets.featureflag.category.NA',
+    },
     updateProject: {
         defaultMessage: 'Update project',
         id: 'iaso.projects.update',
@@ -291,6 +323,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Enables the possibility to save entities data on an NFC card',
     },
+    mobile_change_requests_tab_tooltip: {
+        id: 'iaso.projets.featureflag.tooltip.mobile_change_requests_tab',
+        defaultMessage: 'Tab enabling display of change requests (read only)',
+    },
     mobile_org_unit_registry_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_org_unit_registry',
         defaultMessage:
@@ -299,6 +335,23 @@ const MESSAGES = defineMessages({
     project_featureFlags: {
         defaultMessage: 'Project feature flags',
         id: 'iaso.label.project.featureFlags',
+    },
+    close: {
+        defaultMessage: 'Close',
+        id: 'iaso.label.close',
+    },
+    qrCodeError: {
+        defaultMessage: "Can't load project QR code",
+        id: 'iaso.label.project.qrCodeError',
+    },
+    qrCodeTitle: {
+        defaultMessage:
+            'This is the QR code to scan from the mobile application for this Project. Click on the sharing button to copy and paste it',
+        id: 'iaso.label.project.qrCodeTitle',
+    },
+    copyToClipboard: {
+        defaultMessage: 'Copy to clipboard',
+        id: 'iaso.label.copyToClipboard',
     },
 });
 

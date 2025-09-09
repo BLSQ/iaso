@@ -1,7 +1,7 @@
+import React, { useMemo } from 'react';
 import { Tooltip } from '@mui/material';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import React, { useMemo } from 'react';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import MESSAGES from '../../../constants/messages';
@@ -10,9 +10,7 @@ import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
 
 type Args = {
     showOnlyDeleted: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleClickRestoreRow: (value: number) => void;
-    // eslint-disable-next-line no-unused-vars
     handleClickDeleteRow: (value: number) => void;
     params: any;
 };
@@ -88,7 +86,11 @@ export const useCampaignsTableColumns = ({
                     row: { original: CampaignListItem };
                 }): string => {
                     let campaignCategory;
-                    if (original.is_test) {
+                    if (original.on_hold) {
+                        campaignCategory = original.is_preventive
+                            ? `${formatMessage(MESSAGES.campaignOnHold)} - ${formatMessage(MESSAGES.preventiveShort)}`
+                            : formatMessage(MESSAGES.campaignOnHold);
+                    } else if (original.is_test) {
                         campaignCategory = original.is_preventive
                             ? `${formatMessage(MESSAGES.testCampaign)} - ${formatMessage(MESSAGES.preventiveShort)}`
                             : formatMessage(MESSAGES.testCampaign);

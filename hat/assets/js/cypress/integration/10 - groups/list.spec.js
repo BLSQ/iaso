@@ -15,7 +15,7 @@ import { testSearchField } from '../../support/testSearchField';
 import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/groups`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/configuration/groups`;
 
 let interceptFlagGroups = false;
 
@@ -71,7 +71,11 @@ const testDialogContent = group => {
     cy.testInputValue('#input-text-source_ref', group.source_ref);
 };
 
-const testRowContent = (index, group = listFixture.groups[index]) => {
+const testRowContent = (
+    index,
+    group = listFixture.groups[index],
+    newGroup = true,
+) => {
     const updatedAt = moment.unix(group.updated_at).format('DD/MM/YYYY HH:mm');
 
     cy.get('table').as('table');
@@ -79,13 +83,18 @@ const testRowContent = (index, group = listFixture.groups[index]) => {
     cy.get('@row').find('td').eq(0).should('contain', group.id);
     cy.get('@row').find('td').eq(1).should('contain', group.name);
     cy.get('@row').find('td').eq(2).should('contain', updatedAt);
-
     cy.get('@row')
         .find('td')
         .eq(3)
         .should('contain', group.source_version.data_source.name);
     cy.get('@row').find('td').eq(4).should('contain', group.source_ref);
-    cy.get('@row').find('td').eq(5).should('contain', group.org_unit_count);
+    if (!newGroup) {
+        cy.get('@row')
+            .find('td')
+            .eq(5)
+            .should('contain', group?.group_sets[0]?.name);
+    }
+    cy.get('@row').find('td').eq(6).should('contain', group.org_unit_count);
 };
 
 const mockListCall = (keyName, body) => {
@@ -202,7 +211,7 @@ describe('Groups', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.groups.length,
-            columns: 7,
+            columns: 8,
             apiKey: 'groups',
         });
         testPagination({
@@ -239,7 +248,7 @@ describe('Groups', () => {
                     '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"f4511e", "group":"1", "source": null}]';
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const orgUnitLinkCol = row.find('td').eq(5);
+                const orgUnitLinkCol = row.find('td').eq(6);
                 orgUnitLinkCol.find('a').should('have.attr', 'href', href);
             });
         });
@@ -311,7 +320,7 @@ describe('Groups', () => {
                     cy.wrap(interceptFlag).should('eq', true);
                     cy.wait('@getGroupsAfterSave').then(() => {
                         cy.wrap(interceptFlagGroups).should('eq', true);
-                        testRowContent(0, newList.groups[index]);
+                        testRowContent(0, newList.groups[index], true);
                     });
                 });
             });

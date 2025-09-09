@@ -7,7 +7,7 @@ import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages.ts';
 
-export const fetchLatestOrgUnitLevelId = levels => {
+export const getLatestOrgUnitLevelId = levels => {
     if (levels) {
         const levelsIds = levels.split(',');
         const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
@@ -102,6 +102,7 @@ export const decodeSearch = search => {
     try {
         return JSON.parse(search);
     } catch (e) {
+        console.warn(e);
         return [];
     }
 };
@@ -150,14 +151,6 @@ export const getOrgUnitGroups = orgUnit => (
     </span>
 );
 
-export const getOrgUnitProjects = orgUnit => (
-    <span>
-        {orgUnit.projects?.length > 0
-            ? orgUnit.projects.map(project => project.name).join(', ')
-            : textPlaceholder}
-    </span>
-);
-
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];
     links?.forEach(l => {
@@ -180,22 +173,6 @@ export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
         }
     });
     return sources;
-};
-
-export const compareGroupVersions = (a, b) => {
-    const comparison = a.name.localeCompare(b.name, undefined, {
-        sensitivity: 'accent',
-    });
-    if (comparison === 0) {
-        if (a.source_version.number < b.source_version.number) {
-            return -1;
-        }
-        if (a.source_version.number > b.source_version.number) {
-            return 1;
-        }
-        return 0;
-    }
-    return comparison;
 };
 
 export const filterOrgUnitsByGroupUrl = groupId => {

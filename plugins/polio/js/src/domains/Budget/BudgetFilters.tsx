@@ -1,16 +1,14 @@
-/* eslint-disable camelcase */
-/* eslint-disable react/require-default-props */
-import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
+import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { UrlParams } from 'bluesquare-components';
-import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
-import MESSAGES from '../../constants/messages';
-import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { useGetCountries } from '../../hooks/useGetCountries';
+import { SearchButton } from '../../../../../../hat/assets/js/apps/Iaso/components/SearchButton';
 import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../constants/messages';
 import { baseUrls } from '../../constants/urls';
+import { useGetCountries } from '../../hooks/useGetCountries';
 
 type Props = {
     params: Partial<UrlParams> & {
@@ -20,7 +18,7 @@ type Props = {
         country__id__in?: any;
         orgUnitGroups?: any;
         campaign?: string;
-        // eslint-disable-next-line camelcase
+
         budget_current_state_key__in?: string;
     };
     statesList?: DropdownOptions<string>[];
@@ -40,7 +38,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroupDropdown({ blockOfCountries: 'True' });
+        useGetGroupDropdown({ blockOfCountries: 'true' });
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={isXSLayout ? 4 : 2}>
@@ -97,9 +95,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid container item xs={12} md={3} justifyContent="flex-end">
                     <Box mt={2}>
-                        <FilterButton
+                        <SearchButton
                             disabled={textSearchError || !filtersUpdated}
-                            onFilter={handleSearch}
+                            onSearch={handleSearch}
                             size={buttonSize}
                         />
                     </Box>

@@ -1,27 +1,17 @@
-import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { Tab, Tooltip } from '@mui/material';
+import React, { FunctionComponent, useCallback } from 'react';
 import InfoIcon from '@mui/icons-material/Info';
+import { Tab, Tooltip } from '@mui/material';
 
 import classnames from 'classnames';
-import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
-
-type Tab = {
-    title: string;
-    form: ReactNode;
-    hasTabError: boolean;
-    key: string;
-    disabled?: boolean;
-};
 
 type Props = {
     value: number;
     title: string;
     hasTabError: boolean;
     disabled: boolean;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (_event: any, newValue: number) => void;
+    disabledMessage?: string;
 };
 
 export const PolioDialogTab: FunctionComponent<Props> = ({
@@ -30,22 +20,15 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
     hasTabError,
     disabled,
     handleChange,
+    disabledMessage,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const onChange = useCallback(() => {
         if (!disabled) {
             handleChange(undefined, value);
         }
     }, [disabled, handleChange, value]);
-    const isScopeOrSubactivitiesTab =
-        title === formatMessage(MESSAGES.scope) ||
-        title === formatMessage(MESSAGES.subActivities);
 
-    const tooltipMessage =
-        title === formatMessage(MESSAGES.scope)
-            ? formatMessage(MESSAGES.scopeUnlockConditions)
-            : formatMessage(MESSAGES.subActivitiesUnlockConditions);
     return (
         <Tab
             label={title}
@@ -59,8 +42,8 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
             disableRipple={disabled}
             iconPosition="end"
             icon={
-                (disabled && isScopeOrSubactivitiesTab && (
-                    <Tooltip title={tooltipMessage}>
+                (disabled && disabledMessage && (
+                    <Tooltip title={disabledMessage}>
                         <InfoIcon
                             fontSize="small"
                             className={classes.tabIcon}

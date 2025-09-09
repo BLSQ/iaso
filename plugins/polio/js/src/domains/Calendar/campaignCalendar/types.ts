@@ -1,7 +1,11 @@
-/* eslint-disable camelcase */
 import { Moment } from 'moment';
 import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
+import {
+    CalendarCampaign,
+    MergedShape,
+    Scope,
+    Shape,
+} from '../../../constants/types';
 import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
@@ -17,7 +21,7 @@ export type CalendarRound = {
     end?: Moment;
     number: number;
     start?: Moment;
-    id?: number;
+    id: number;
     started_at?: string;
     ended_at?: string;
     daysCount?: number;
@@ -25,10 +29,21 @@ export type CalendarRound = {
     vaccine_names: string;
     scopes: Scope[];
     target_population: number;
+    hasSubActivities: boolean;
+    subActivities: SubActivity[];
 };
 
+export type SubActivity = {
+    id: number;
+    name: string;
+    scopes: Scope[];
+    start_date: Moment;
+    end_date: Moment;
+    vaccine_names: string;
+    round_number: number;
+};
 export type MappedCampaign = {
-    original: Campaign;
+    original: CalendarCampaign;
     name: string;
     rounds: CalendarRound[];
     scopes: Scope[];
@@ -40,6 +55,9 @@ export type MappedCampaign = {
     id: string;
     isPreventive: boolean;
     isTest: boolean;
+    onHold: boolean;
+    subActivities: SubActivity[];
+    hasSubActivities: boolean;
 };
 
 export type ShapeForCalendarMap = {
@@ -56,7 +74,8 @@ export type CalendarParams = {
     roundStartTo?: string;
     showOnlyDeleted?: string;
     // eslint-disable-next-line camelcase
-    show_test?: string;
+    show_test?: string; // boolean in string form
+    on_hold?: string; // boolean in string form
     filterLaunched?: string;
     order?: string;
     countries?: string;
@@ -67,7 +86,6 @@ export type CalendarParams = {
     orgUnitGroups?: string;
     currentDate?: string;
     periodType?: PeriodType;
-    notShowTest?: string;
 };
 
 export type CalendarData = {
@@ -104,10 +122,6 @@ export type MonthHeader = {
 
 export type Users = {
     current: User;
-};
-
-export type ReduxState = {
-    users: Users;
 };
 
 export type PeriodType = 'quarter' | 'year' | 'semester';

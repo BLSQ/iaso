@@ -55,6 +55,10 @@ const goToPage = (
 
 const openDialogForIndex = index => {
     table = cy.get('table');
+    cy.intercept('GET', '/api/projects/1/qr_code/', {
+        statusCode: 200,
+        body: 'mock-qr-code-data',
+    }).as('getQRCode');
     row = table.find('tbody').find('tr').eq(index);
     const actionCol = row.find('td').last();
     const editButton = actionCol.find('button');
@@ -74,11 +78,14 @@ const testRowContent = (index, p = listFixture.projects[index]) => {
 };
 
 const testDialogContent = p => {
-    cy.get('#input-text-name').clear().type(p.name);
-    cy.testInputValue('#input-text-name', p.name);
-    cy.get('#input-text-app_id').clear().type(p.app_id);
-    cy.testInputValue('#input-text-name', p.name);
+    cy.get('#input-text-name').clear();
+    cy.get('#input-text-name').type(p.name);
+    cy.get('#input-text-app_id').clear();
+    cy.get('#input-text-app_id').type(p.app_id);
     cy.selectTab(1, '#project-dialog');
+    cy.get('[data-test="featureFlag-toggle"]').each($toggle => {
+        cy.wrap($toggle).click();
+    });
     cy.get('[data-test="featureFlag-checkbox"] input').each($el => {
         cy.wrap($el).then(el => {
             const { name } = el[0];
@@ -119,6 +126,8 @@ const mockSaveCall = (method, i, pathname, p) => {
         },
         req => {
             interceptFlag = true;
+            console.log('Request body:', JSON.stringify(req.body, null, 2));
+            console.log('Expected body:', JSON.stringify(p, null, 2));
             expect(req.body).to.deep.equal(p);
             req.reply({
                 statusCode: 200,
@@ -216,13 +225,14 @@ describe('Projects', () => {
                 openDialogForIndex(theIndex);
                 const newProject = {
                     id: listFixture.projects[theIndex].app_id,
-                    name: 'superman',
-                    app_id: 'pacman',
                     feature_flags: [
                         listfeatureFlags.featureflags[2],
                         listfeatureFlags.featureflags[3],
                     ],
+                    app_id: 'pacman',
+                    name: 'superman',
                     old_app_id: listFixture.projects[theIndex].app_id,
+                    color: '#1976D2',
                 };
                 const newProjects = [...listFixture.projects];
                 newProjects[theIndex] = {
@@ -238,14 +248,14 @@ describe('Projects', () => {
                 listFixture.projects[theIndex].feature_flags.forEach(
                     featureFlag => {
                         cy.get(
-                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                         ).uncheck();
                     },
                 );
 
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 
@@ -282,6 +292,7 @@ describe('Projects', () => {
                         listfeatureFlags.featureflags[0],
                         listfeatureFlags.featureflags[1],
                     ],
+                    color: '#1976D2',
                 };
                 const newList = {
                     ...listFixture,
@@ -291,7 +302,7 @@ describe('Projects', () => {
                 testDialogContent(newProject);
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 

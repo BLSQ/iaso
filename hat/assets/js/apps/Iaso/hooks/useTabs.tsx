@@ -18,7 +18,6 @@ type UseTabsParams<T> = {
 type UseTabsValue<T> = {
     tab: T;
     setTab: Dispatch<SetStateAction<T>>;
-    // eslint-disable-next-line no-unused-vars
     handleChangeTab: (_event: any, newTab: T) => void;
 };
 

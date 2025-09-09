@@ -3,11 +3,12 @@ from uuid import uuid4
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
-from django.db import connection
 
 import iaso.models.base as base
+
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
+from iaso.api.deduplication.entity_duplicate_analyzis import AnalyzePostBodySerializer
 from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
 
@@ -45,6 +46,8 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
         attributes=tmp_inst,
         account=cls.default_account,
     )
+    tmp_inst.entity = same_entity_2
+    tmp_inst.save()
 
     setattr(cls, entity_name, same_entity_2)
 
@@ -52,10 +55,6 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
 class EntitiesDuplicationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # this needs to be run as a new DB is created every time
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch ;")
-
         default_account = m.Account.objects.create(name="Default account")
 
         cls.default_account = default_account
@@ -149,46 +148,99 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         create_instance_and_entity(
-            cls, "same_entity_1", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+            cls,
+            "same_entity_1",
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "same_entity_2", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+            cls,
+            "same_entity_2",
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "close_entity", {"Prenom": "same_instancX", "Nom": "iasX", "Age": 20}, form_version_id
+            cls,
+            "close_entity",
+            {
+                "Prenom": "same_instancX",
+                "Nom": "iasX",
+                "age__int__": "21",
+                "height_cm__decimal__": "143.5",
+                "weight_kgs__double__": "61.0",
+                "transfer_from_tsfp__bool__": "false",
+                "something_else": "Something Else without type",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
-            cls, "far_entity", {"Prenom": "Far. Ent.", "Nom": "Yeeeeeaaaahhhhhhhhhhh", "Age": 99}, form_version_id
+            cls,
+            "far_entity",
+            {
+                "Prenom": "Far. Ent.",
+                "Nom": "Yeeeeeaaaahhhhhhhhhhh",
+                "age__int__": "99",
+                "height_cm__decimal__": "180.5",
+                "weight_kgs__double__": "80.0",
+                "transfer_from_tsfp__bool__": "false",
+                "something_else": "Blablabla",
+            },
+            form_version_id,
         )
         create_instance_and_entity(
             cls,
             "same_entity_in_other_ou",
-            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
             form_version_id,
             orgunit=cls.another_orgunit,
         )
         create_instance_and_entity(
             cls,
             "same_entity_other_entity_type",
-            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            {
+                "Prenom": "same_instance",
+                "Nom": "iaso",
+                "age__int__": "20",
+                "height_cm__decimal__": "142.5",
+                "weight_kgs__double__": "60.0",
+                "transfer_from_tsfp__bool__": "true",
+                "something_else": "Something Else without type",
+            },
             form_version_id,
             entity_type=cls.another_entity_type,
         )
 
     def test_analyze_user_without_orgunit(self):
         self.client.force_authenticate(self.user_without_ou)
+        response = self.client.post("/api/entityduplicates_analyzes/", format="json")
+        self.assertEqual(response.status_code, 403)
 
-        response = self.client.post(
-            "/api/entityduplicates_analyzes/",
-            {
-                "entity_type_id": self.default_entity_type.id,
-                "fields": ["name", "last_name"],
-                "algorithm": "inverse",
-                "parameters": {},
-            },
-            format="json",
-        )
-
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+        response = self.client.post("/api/entityduplicates_analyzes/", format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_analyze_with_wrong_algorithm_name(self):
@@ -200,7 +252,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "wrong",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -216,7 +268,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "wrong"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -230,7 +282,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -246,7 +298,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["name", "last_name"],
                 "algorithm": "inverse",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -260,9 +312,9 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -283,12 +335,12 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(response_data["status"], "SUCCESS")
         self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
-        self.assertEqual(response_data["fields"], ["Prenom", "Nom", "Age"])
+        self.assertEqual(response_data["fields"], ["Prenom", "Nom", "age__int__"])
         self.assertEqual(response_data["algorithm"], "levenshtein")
         self.assertEqual(response_data["parameters"], {})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
 
-        response_duplicate = self.client.get(f"/api/entityduplicates/")
+        response_duplicate = self.client.get("/api/entityduplicates/")
 
         self.assertEqual(response_duplicate.status_code, 200)
         assert len(response_duplicate.data["results"]) == 6
@@ -312,13 +364,19 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_detail_of_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
-        response = self.client.post(
+        resp = self.client.get("/api/entityduplicates/detail/?entities=foo,bar")
+        self.assertEqual(resp.status_code, 400)
+        self.assertEqual(
+            resp.json(), ["Entities parameter is required and must be a comma separated list of 2 entities IDs."]
+        )
+
+        self.client.post(
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -331,8 +389,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         duplicate = m.EntityDuplicate.objects.first()
 
         resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
-
-        self.assertEqual(resp.status_code, 200)  # check if response status is OK
+        self.assertEqual(resp.status_code, 200)
 
         resp_data = resp.json()
 
@@ -376,6 +433,24 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             self.assertIn("name", child)
             self.assertIn("type", child)
 
+    def test_delete_without_rights(self):
+        self.client.force_authenticate(self.user_without_ou)
+        response = self.client.delete("/api/entityduplicates_analyzes/1/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+        response = self.client.delete("/api/entityduplicates_analyzes/1/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_partial_update_analyze_without_rights(self):
+        self.client.force_authenticate(self.user_without_ou)
+        response = self.client.patch("/api/entityduplicates_analyzes/1/", format="json")
+        self.assertEqual(response.status_code, 403)
+
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+        response = self.client.patch("/api/entityduplicates_analyzes/1/", format="json")
+        self.assertEqual(response.status_code, 403)
+
     def test_partial_update_analyze(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
@@ -385,7 +460,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -428,13 +503,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_ignore_entity_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
-        response = self.client.post(
+        self.client.post(
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -447,7 +522,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={
                 "ignore": True,
                 "reason": "test",
@@ -475,7 +550,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         # we cant ignore it again
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"ignore": True, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
             format="json",
         )
@@ -485,7 +560,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # we can't merge it after it was ignored
         merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
         response = self.client.post(
-            f"/api/entityduplicates/",
+            "/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
             format="json",
         )
@@ -501,7 +576,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -513,11 +588,14 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
-        merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
 
         response = self.client.post(
-            f"/api/entityduplicates/",
-            data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
+            "/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
             format="json",
         )
 
@@ -529,12 +607,20 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertIn("ignored", response_data)
         self.assertIn("new_entity_id", response_data)
 
-        # entity1_id should be the same as duplicate.entity1.id
-        self.assertEqual(response_data["entity1_id"], duplicate.entity1.id)
-        # entity2_id should be the same as duplicate.entity2.id
-        self.assertEqual(response_data["entity2_id"], duplicate.entity2.id)
+        # entity1_id should be the same as entity1.id
+        self.assertEqual(response_data["entity1_id"], entity1.id)
+        # entity2_id should be the same as entity2.id
+        self.assertEqual(response_data["entity2_id"], entity2.id)
         # ignore should be True
         self.assertEqual(response_data["ignored"], False)
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
 
     def test_filter_search_term_ok(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -545,7 +631,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -553,7 +639,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         task_service = TestTaskService()
         task_service.run_all()
 
-        resp = self.client.get(f"/api/entityduplicates/?search=iaso")
+        resp = self.client.get("/api/entityduplicates/?search=iaso")
 
         resp_json = resp.json()
 
@@ -567,9 +653,9 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -606,9 +692,9 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom", "Age"],
+                "fields": ["Prenom", "Nom", "age__int__"],
                 "algorithm": "levenshtein",
-                "parameters": {},
+                "parameters": [],
             },
             format="json",
         )
@@ -625,7 +711,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         self.assertEqual(response_analyze.status_code, 200)
 
-        response = self.client.get(f"/api/entityduplicates/")
+        response = self.client.get("/api/entityduplicates/")
 
         self.assertNotEqual(response.data["results"], [])
 
@@ -640,6 +726,362 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # Authenticate as user2 and check if we see the duplicate
         self.client.force_authenticate(user2)
 
-        response = self.client.get(f"/api/entityduplicates/")
+        response = self.client.get("/api/entityduplicates/")
 
         self.assertEqual(response.data["results"], [])
+
+    # WC2-532 Merge entities with instance containing emoji
+    def test_merge_entity_duplicate_with_emoji(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
+
+        entity1 = duplicate.entity1
+        entity2 = duplicate.entity2
+
+        # Now add a form instance with an emoji to entity1
+        with open("iaso/tests/fixtures/submission_with_emoji.xml", "rb") as xml_file:
+            instance = m.Instance.objects.create(
+                entity=entity1,
+                form=self.default_form,
+                org_unit=self.default_orgunit,
+                file=UploadedFile(xml_file),
+            )
+        json_instance = instance.get_and_save_json_of_xml()
+        # make sure the emoji is there
+        self.assertEqual(json_instance["prevous_muac_color"], "🟡Yellow")
+
+        merged_data = {i: entity1.id for i in duplicate.analyze.metadata["fields"]}
+
+        response = self.client.post(
+            "/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": entity1.id, "entity2_id": entity2.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        # Verify DB updates were correctly done
+        entity1.refresh_from_db()
+        entity2.refresh_from_db()
+        self.assertIsNotNone(entity1.deleted_at)
+        self.assertIsNotNone(entity2.deleted_at)
+        self.assertEqual(entity1.merged_to_id, response_data["new_entity_id"])
+        self.assertEqual(entity2.merged_to_id, response_data["new_entity_id"])
+
+        merged = entity1.merged_to
+        self.assertEqual(merged.instances.count(), 2)  # reference form + emoji form
+        self.assertEqual(merged.instances.last().json["prevous_muac_color"], "🟡Yellow")
+
+    def test_analyzes_with_various_field_types(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        # Create two entities with various field types
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        orgunit = self.default_orgunit
+
+        # Instance 1
+        instance_json_1 = {
+            "age__int__": "25",
+            "height_cm__decimal__": "175.5",
+            "weight_kgs__double__": "70.0",
+            "transfer_from_tsfp__bool__": "true",
+            "birth_date__date__": "1990-01-01",
+            "appointment_time__time__": "14:30:00",
+            "last_update__datetime__": "2024-06-11T14:30:00",
+        }
+        create_instance_and_entity(
+            self, "entity_type_test_1", instance_json_1, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 2 (slightly different values)
+        instance_json_2 = {
+            "age__int__": "26",
+            "height_cm__decimal__": "175.0",
+            "weight_kgs__double__": "70.5",
+            "transfer_from_tsfp__bool__": "false",
+            "birth_date__date__": "1990-01-02",
+            "appointment_time__time__": "14:31:00",
+            "last_update__datetime__": "2024-06-11T14:31:00",
+        }
+        create_instance_and_entity(
+            self, "entity_type_test_2", instance_json_2, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": [
+                    "age__int__",
+                    "height_cm__decimal__",
+                    "weight_kgs__double__",
+                    "transfer_from_tsfp__bool__",
+                    "birth_date__date__",
+                    "appointment_time__time__",
+                    "last_update__datetime__",
+                ],
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        # Run the task service to process the analyze
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+        # Optionally: check that results exist
+        # (You can add more detailed assertions if needed)
+
+    def test_analyzes_smallint_overflow_prevention(self):
+        """Test that the deduplication algorithm handles edge cases that could cause smallint overflow."""
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        orgunit = self.default_orgunit
+
+        # Create entities with extreme values that could cause overflow
+        # Instance 1 - with very large numbers and edge cases
+        instance_json_1 = {
+            "Prenom": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+            "Nom": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+            "age__int__": "999999999",  # Very large integer
+            "height_cm__decimal__": "999999999.999999",  # Very large decimal
+            "weight_kgs__double__": "999999999.999999",  # Very large double
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "very_long_text_field_that_could_cause_issues_with_levenshtein_calculation",
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_1", instance_json_1, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 2 - with zero values that could cause division by zero
+        instance_json_2 = {
+            "Prenom": "different_text_field",
+            "Nom": "different_text_field",
+            "age__int__": "0",  # Zero value
+            "height_cm__decimal__": "0.0",  # Zero decimal
+            "weight_kgs__double__": "0.0",  # Zero double
+            "transfer_from_tsfp__bool__": "false",
+            "something_else": "different_text_field",
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_2", instance_json_2, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Instance 3 - with NULL-like values
+        instance_json_3 = {
+            "Prenom": "",  # Empty string
+            "Nom": "",  # Empty string
+            "age__int__": None,  # NULL value instead of empty string
+            "height_cm__decimal__": None,  # NULL value instead of empty string
+            "weight_kgs__double__": None,  # NULL value instead of empty string
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "",  # Empty text field
+        }
+        create_instance_and_entity(
+            self, "entity_overflow_test_3", instance_json_3, form_version_id, orgunit=orgunit, entity_type=entity_type
+        )
+
+        # Test with all available field types to ensure no smallint overflow
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": [
+                    "Prenom",
+                    "Nom",
+                    "age__int__",
+                    "height_cm__decimal__",
+                    "weight_kgs__double__",
+                    "transfer_from_tsfp__bool__",
+                    "something_else",
+                ],
+                "algorithm": "levenshtein",
+                "parameters": [
+                    {"name": "levenshtein_max_distance", "value": 10},  # Higher distance to test edge cases
+                    {"name": "above_score_display", "value": 0},  # Show all results
+                ],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        # Run the task service to process the analyze
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        # Check that the analyze completed successfully without smallint overflow
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+
+        # Get the duplicates and verify scores are within valid range
+        response_duplicates = self.client.get("/api/entityduplicates/")
+        self.assertEqual(response_duplicates.status_code, 200)
+
+        # Verify that all similarity scores are within valid smallint range (0-100)
+        for duplicate in response_duplicates.data["results"]:
+            similarity_score = duplicate["similarity"]
+            self.assertIsInstance(similarity_score, (int, float))
+            self.assertGreaterEqual(similarity_score, 0)
+            self.assertLessEqual(similarity_score, 100)
+
+        # Verify that the database stores valid smallint values
+        from iaso.models.deduplication import EntityDuplicate
+
+        db_duplicates = EntityDuplicate.objects.filter(analyze_id=analyze_id)
+        for duplicate in db_duplicates:
+            if duplicate.similarity_score is not None:
+                self.assertGreaterEqual(duplicate.similarity_score, -32768)
+                self.assertLessEqual(duplicate.similarity_score, 32767)
+
+    def test_analyzes_entities_with_empty_fields(self):
+        """
+        Test deduplication when entities have empty values in the comparison fields.
+        """
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        # Clean up the database.
+        m.Entity.objects.all().delete()
+        m.Instance.objects.all().delete()
+
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        org_unit = self.default_orgunit
+
+        # Entity 1 - has empty `Prenom` and `Nom`.
+        instance_json_1 = {
+            "Prenom": "",  # Empty field.
+            "Nom": "",  # Empty field.
+            "age__int__": "25",
+            "height_cm__decimal__": "175.5",
+            "weight_kgs__double__": "70.0",
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "Foo",
+        }
+        create_instance_and_entity(
+            self, "entity_empty_fields_1", instance_json_1, form_version_id, orgunit=org_unit, entity_type=entity_type
+        )
+
+        # Entity 2 - also has empty `Prenom` and `Nom`.
+        instance_json_2 = {
+            "Prenom": "",  # Empty field
+            "Nom": "",  # Empty field
+            "age__int__": "26",
+            "height_cm__decimal__": "175.0",
+            "weight_kgs__double__": "71.0",
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "Bar",
+        }
+        create_instance_and_entity(
+            self, "entity_empty_fields_2", instance_json_2, form_version_id, orgunit=org_unit, entity_type=entity_type
+        )
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": ["Prenom", "Nom"],  # Include the empty fields in analysis.
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+
+        # Get the duplicates.
+        response_duplicates = self.client.get("/api/entityduplicates/")
+        self.assertEqual(response_duplicates.status_code, 200)
+
+        duplicates = response_duplicates.data["results"]
+
+        self.assertEqual(len(duplicates), 0)
+
+    def test_analyze_post_body_serializer_validate_method(self):
+        """
+        Test the validation logic in `AnalyzePostBodySerializer.validate()`.
+        """
+
+        # Test valid data.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "Nom", "age__int__"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        validated_data = serializer.validated_data
+        self.assertEqual(validated_data["algorithm"], "levenshtein")
+        self.assertEqual(validated_data["fields"], ["Prenom", "Nom", "age__int__"])
+
+        # Test EntityType does not exist.
+        data = {"algorithm": "levenshtein", "entity_type_id": "99999", "fields": ["Prenom"], "parameters": []}
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Entity type does not exist.", str(serializer.errors))
+
+        # Test invalid field name.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "non_existent_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `non_existent_field` does not exist on reference form.", str(serializer.errors))
+
+        # Test unsupported field type.
+        self.default_form.possible_fields += [
+            {
+                "name": "unsupported_field",
+                "type": "select one",  # "select one" is not in the supported types list.
+                "label": "Unsupported Field",
+            }
+        ]
+        self.default_form.save()
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "unsupported_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `unsupported_field` has an unsupported type `select one`.", str(serializer.errors))

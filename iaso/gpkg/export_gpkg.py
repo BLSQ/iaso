@@ -1,13 +1,14 @@
-"""Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md
+"""Exporting to a gpkg a whole Data source version (OrgUnit hierarchy and Groups) see README.md"""
 
-"""
 import os
 import sqlite3
 import tempfile
 import uuid
+
 from typing import Optional
 
 import geopandas as gpd  # type: ignore
+
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
 from pandas import DataFrame
@@ -15,12 +16,13 @@ from shapely import wkt  # type: ignore
 from shapely.geometry.base import BaseGeometry  # type: ignore
 
 from iaso.gpkg.import_gpkg import get_ref
-from iaso.models import Group
-from iaso.models import SourceVersion, OrgUnit
+from iaso.models import Group, OrgUnit, SourceVersion
+
 
 OUT_COLUMNS = [
     "name",
     "ref",
+    "code",
     "geography",
     "parent",
     "parent_ref",
@@ -28,6 +30,8 @@ OUT_COLUMNS = [
     "group_names",
     # "id", # it's present as  an index, so it bug GeoPandas but it's exported
     "uuid",
+    "opening_date",
+    "closed_date",
 ]
 
 
@@ -43,6 +47,7 @@ ORG_UNIT_COLUMNS = [
     "id",
     "name",
     "source_ref",
+    "code",
     "parent__name",
     "parent__source_ref",
     "parent__id",
@@ -53,6 +58,8 @@ ORG_UNIT_COLUMNS = [
     "location",
     "geom",
     "simplified_geom",
+    "opening_date",
+    "closed_date",
 ]
 
 
@@ -76,15 +83,19 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     df["parent"] = df["parent__name"] + " (" + df["parent__org_unit_type__name"] + ")"
     # Calculate alternative parent ref if we have a parent
     df.loc[df["parent__id"].notnull(), "alt_parent_ref"] = df["parent__id"].apply(
-        lambda x: "iaso#{:.0f}".format(x) if x else None
+        lambda x: f"iaso:{x:.0f}" if x else None
     )
     # fill parent ref with alternative if we don't have one.
     df["parent_ref"] = df["parent__source_ref"].fillna(df["alt_parent_ref"])
-    df["ref"] = df["source_ref"].fillna("iaso#" + df["id"].astype(str))
+    df["ref"] = df["source_ref"].fillna("").mask(df["source_ref"].fillna("") == "", "iaso:" + df["id"].astype(str))
     df["geography"] = df["geom"].fillna(df["simplified_geom"].fillna(df["location"]))
     df["depth"] = df["depth"].fillna(999)
     df["depth"] = df["depth"].astype(int)
     df["type"] = df["type"].fillna("Unknown")
+
+    # Convert dates to string format
+    df["opening_date"] = df["opening_date"].astype(str).replace("None", None)
+    df["closed_date"] = df["closed_date"].astype(str).replace("None", None)
 
     # Convert django geometry values (GEOS) to shapely models
     df["geography"] = df["geography"].map(geos_to_shapely)
@@ -96,7 +107,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
     dg = dg.dropna(subset=["groups__id"])  # drop orgunit that have no groups
     dg = dg.set_index("id")
     # same as OrgUnit fill missing ref with artificial ref based on id
-    dg["ref"] = dg["groups__source_ref"].fillna(dg["groups__id"].apply("iaso#{:.0f}".format))
+    dg["ref"] = dg["groups__source_ref"].fillna(dg["groups__id"].apply("iaso:{:.0f}".format))
     # drop the other columns
     dg = dg[["ref", "groups__name"]]
     # Aggregate so there is one line per orgunit, and value are in a nice str
@@ -164,7 +175,7 @@ def source_to_gpkg(filepath: str, source: SourceVersion) -> None:
     """Export a whole source to a gpkg according to format in README.md"""
     org_units = source.orgunit_set.all()
     # Cannot use source.group_set because it's filtered by the default manager
-    groups = Group.all_objects.filter(source_version=source)
+    groups = Group.objects.filter(source_version=source)
     export_org_units_to_gpkg(filepath, org_units)
     add_group_in_gpkg(filepath, groups)
 
@@ -178,7 +189,7 @@ def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
     export_org_units_to_gpkg(filepath, queryset)
     # see comment on the tabular export code path, previous version wasn't working with multi search union
     org_ids = queryset.order_by("pk").values_list("pk", flat=True)
-    groups = Group.all_objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
+    groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
     add_group_in_gpkg(filepath, groups)
 
     f = open(filepath, "rb")

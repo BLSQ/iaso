@@ -1,0 +1,15 @@
+<?xml version='1.0'?>
+<data id="test_profile" version="2024052202" xmlns:h="http://www.w3.org/1999/xhtml"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa"
+    xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+    xmlns:odk="http://www.opendatakit.org/xforms">
+    <Form>
+        <last_name>test</last_name>
+        <first_name>teszt</first_name>
+        <gender>m</gender>
+    </Form>
+    <previous_value />
+    <meta>
+        <instanceID>uuid:38e7cfff-4489-46ba-87e5-e436c7e8d815</instanceID>
+    </meta>
+</data>

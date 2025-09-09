@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../../../constants/messages';

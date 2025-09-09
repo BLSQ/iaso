@@ -1,6 +1,6 @@
+import { Box, Checkbox, Tooltip } from '@mui/material';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { Box, Tooltip, Checkbox } from '@mui/material';
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { ChildrenOrgUnitsArrayItem } from '../types/orgUnit';
 import { SubTeam, User } from '../types/team';
@@ -10,7 +10,6 @@ type Props = {
     orgUnitsToUpdate: Array<number>;
     mode: 'UNASSIGN' | 'ASSIGN';
     selectedItem: SubTeam | User | undefined;
-    // eslint-disable-next-line no-unused-vars
     setOrgUnitsToUpdate: (orgUnitsToUpdate: Array<number>) => void;
 };
 

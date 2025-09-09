@@ -1,46 +1,39 @@
-import { TableCell, TableRow } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { TableCell, TableRow, Theme } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
-import classNames from 'classnames';
 import React, { FunctionComponent } from 'react';
+import { SxStyles } from '../../types/general';
 import { NumberCell } from '../Cells/NumberCell';
-
-const useStyles = makeStyles(theme => ({
-    withBorder: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-    },
-    boldTitle: {
-        fontWeight: 'bold',
-    },
-}));
 
 type RowProps = {
     label?: string;
-    value?: string | number;
+    value?: string | number | React.ReactNode;
     isLoading?: boolean;
-    withLeftCellBorder?: boolean;
-    boldLeftCellText?: boolean;
     className?: string;
+    withoutPadding?: boolean;
+};
+
+const styles: SxStyles = {
+    label: (theme: Theme) => ({
+        fontWeight: 'bold',
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+    }),
+    cellNoPadding: {
+        padding: 0,
+    },
 };
 
 export const PaperTableRow: FunctionComponent<RowProps> = ({
     label,
     value,
     isLoading = false,
-    withLeftCellBorder = true,
-    boldLeftCellText = true,
     className,
+    withoutPadding = false,
 }) => {
-    const classes = useStyles();
-    const borderClass = withLeftCellBorder ? classes.withBorder : '';
-    const boldTitle = boldLeftCellText ? classes.boldTitle : '';
     return (
         <TableRow className={className}>
-            <TableCell className={classNames(borderClass, boldTitle)}>
-                {label}
-            </TableCell>
-            <TableCell>
+            <TableCell sx={styles.label}>{label}</TableCell>
+            <TableCell sx={withoutPadding ? styles.cellNoPadding : {}}>
                 {isLoading && (
                     <LoadingSpinner
                         fixed={false}
@@ -49,7 +42,7 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
                         size={25}
                     />
                 )}
-                {!isLoading && typeof value === 'string' && value}
+                {!isLoading && typeof value !== 'number' && value}
                 {!isLoading && typeof value === 'number' && (
                     <NumberCell value={value as number | undefined} />
                 )}

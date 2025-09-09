@@ -1,15 +1,9 @@
 """This module provides various utils and helpers for IASO"""
 
-from datetime import datetime
-from typing import Dict, Any, TextIO, List, Optional, Iterable
+from typing import Any, Dict, Iterable, List, Optional
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.utils.text import slugify
-
-
-def timestamp_to_datetime(timestamp):
-    date = datetime.fromtimestamp(timestamp)
-    return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
 def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):
@@ -51,15 +45,6 @@ def get_children_tree(el):
     return xml_dict
 
 
-def parse_xml_file(file):
-    soup = Soup(file.read(), "xml")
-    return get_children_tree(soup)
-
-
-def as_soup(file: TextIO):
-    return Soup(file.read(), "xml")
-
-
 def extract_form_version_id(soup):
     children = [c for c in soup.children]
 
@@ -91,9 +76,26 @@ def slugify_underscore(filename):
     return slugify(filename).replace("-", "_")
 
 
+import json
 import re
 
+
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
+
+
+def parse_json_field(data, field_name, default_value=None):
+    """Parse a field that might be a JSON string into a Python object."""
+    if field_name not in data:
+        return data
+
+    value = data[field_name]
+    if isinstance(value, str):
+        try:
+            data[field_name] = json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            data[field_name] = default_value if default_value is not None else []
+
+    return data
 
 
 def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
@@ -134,3 +136,11 @@ def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
         "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
         "features": features,
     }
+
+
+# Check if the request comes from mobile. Useful when logging modifications (audit)
+def is_mobile_request(request):
+    # Get the User-Agent string from the request headers
+    user_agent = request.META.get("HTTP_USER_AGENT", "")
+    # Check if the User-Agent string contains keywords typical of mobile devices
+    return any(mobile in user_agent.lower() for mobile in ["mobile", "android", "iphone", "ipad", "windows phone"])

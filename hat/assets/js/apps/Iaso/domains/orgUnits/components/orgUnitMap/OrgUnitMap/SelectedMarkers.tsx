@@ -10,15 +10,11 @@ import { MappedOrgUnit } from './types';
 
 type Props = {
     data: MappedOrgUnit[];
-    // eslint-disable-next-line no-unused-vars
-    fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
 export const SelectedMarkers: FunctionComponent<Props> = ({
     data,
-    fetchSubOrgUnitDetail,
     updateOrgUnitLocation,
 }) => {
     return (
@@ -41,7 +37,9 @@ export const SelectedMarkers: FunctionComponent<Props> = ({
                     >
                         <MarkerList
                             locationsList={mappedOrgUnit.orgUnits.locations}
-                            fetchDetail={a => fetchSubOrgUnitDetail(a)}
+                            popupProps={o => ({
+                                orgUnitId: o.id,
+                            })}
                             color={mappedOrgUnit.color}
                             keyId={mappedOrgUnit.id}
                             updateOrgUnitLocation={updateOrgUnitLocation}

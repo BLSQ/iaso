@@ -1,35 +1,33 @@
 import React, {
     FunctionComponent,
-    useState,
-    useEffect,
     useCallback,
+    useEffect,
     useMemo,
+    useState,
 } from 'react';
-import get from 'lodash/get';
-import { Tabs, Tab } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
+    AddButton,
     ConfirmCancelModal,
     makeFullModal,
-    AddButton,
+    useSafeIntl,
 } from 'bluesquare-components';
+import { defaultProjectColor } from 'Iaso/components/LegendBuilder/colors';
+import get from 'lodash/get';
 
-import { ProjectInfos } from './ProjectInfos';
-import { Form, ProjectFeatureFlags } from './ProjectFeatureFlags';
-
-import { Project } from '../types/project';
-
-import MESSAGES from '../messages';
-import { useGetFeatureFlags } from '../hooks/requests';
-import { FeatureFlag } from '../types/featureFlag';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { useGetFeatureFlags } from '../hooks/requests';
+import MESSAGES from '../messages';
+import { FeatureFlag } from '../types/featureFlag';
+import { Project } from '../types/project';
+import { ProjectFeatureFlags } from './ProjectFeatureFlags';
+import { ProjectInfos, ProjectForm } from './ProjectInfos';
 
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
     initialData?: Project | null;
-    // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>;
     closeDialog: () => void;
     isOpen: boolean;
@@ -58,11 +56,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const emptyProject = {
+const emptyProject: ProjectForm = {
     id: { value: '', errors: [] },
     app_id: { value: '', errors: [] },
     name: { value: '', errors: [] },
-    feature_flags: { value: [], errors: [] } as Form,
+    feature_flags: { value: [], errors: [] },
+    qr_code: { value: '', errors: [] },
+    color: { value: '', errors: [] },
 };
 
 export const forbiddenCharacters = ['"', '?', '/', '%', '&', ' ', '-'];
@@ -101,16 +101,22 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                     errors: [],
                 },
                 feature_flags: {
-                    value: get(pr, 'feature_flags', [] as FeatureFlag[]).map(
-                        (v: FeatureFlag): number | string => v.id,
-                    ),
+                    value: get(pr, 'feature_flags', [] as FeatureFlag[]),
+                    errors: [],
+                },
+                qr_code: {
+                    value: get(pr, 'qr_code', ''),
+                    errors: [],
+                },
+                color: {
+                    value: get(pr, 'color', defaultProjectColor),
                     errors: [],
                 },
             };
         },
         [initialData],
     );
-    const [project, setProject] = useState(emptyProject);
+    const [project, setProject] = useState<ProjectForm>(emptyProject);
     const [tab, setTab] = useState<Tab>('infos');
     const appIdError = formatMessage(MESSAGES.appIdError);
 
@@ -172,12 +178,11 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
     const onConfirm = () => {
         const currentProject: Project = {
             id: initialData?.app_id,
-            feature_flags: (featureFlags ?? []).filter(fF =>
-                project.feature_flags.value.includes(fF.id),
-            ),
+            feature_flags: project.feature_flags.value ?? [],
             app_id: project.app_id.value || '',
             name: project.name.value || '',
             old_app_id: initialData?.app_id,
+            color: project.color.value || defaultProjectColor,
         };
         saveProject(currentProject)
             .then(() => {
@@ -196,6 +201,21 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
         setProject(initialProject(initialData));
     }, [initialData, initialProject]);
 
+    const validateFeatureFlagsConfiguration = useCallback(() => {
+        return (project.feature_flags.value ?? []).every(pff => {
+            const ff = featureFlags?.find(x => x.id === pff.id);
+            return (
+                ff == null ||
+                ff.configuration_schema == null ||
+                Object.entries(ff.configuration_schema).every(
+                    ([confKey]) =>
+                        pff.configuration?.[confKey] &&
+                        pff.configuration?.[confKey] !== '',
+                )
+            );
+        });
+    }, [project, featureFlags]);
+
     const allowConfirm = useMemo(
         () =>
             project &&
@@ -204,8 +224,9 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
             project.app_id &&
             project.app_id.value !== '' &&
             project.app_id.errors.length === 0 &&
-            !isFetchingFeatureFlags,
-        [project, isFetchingFeatureFlags],
+            !isFetchingFeatureFlags &&
+            validateFeatureFlagsConfiguration(),
+        [project, isFetchingFeatureFlags, validateFeatureFlagsConfiguration],
     );
     const titleMessage =
         dialogType === 'create'
@@ -262,11 +283,11 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 )}
                 {tab === 'feature_flags' && (
                     <ProjectFeatureFlags
-                        setFieldValue={(_key, value) =>
+                        onFeatureFlagsChanged={(value: FeatureFlag[]) =>
                             setFieldValue('feature_flags', value)
                         }
-                        projectFeatureFlagsValues={project.feature_flags.value}
-                        featureFlags={featureFlags?.map(featureFlag =>
+                        projectFeatureFlags={project.feature_flags.value ?? []}
+                        featureFlags={(featureFlags ?? [])?.map(featureFlag =>
                             translatedFeatureFlag(featureFlag),
                         )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}

@@ -1,23 +1,22 @@
 import { UseQueryResult } from 'react-query';
-import { makeUrlWithParams } from '../../../../../libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
+import { makeUrlWithParams } from '../../../../../libs/utils';
+import { useLocale } from '../../../../app/contexts/LocaleContext';
+import { apiUrl } from '../../constants';
 import {
     OrgUnitChangeRequestsPaginated,
     ApproveOrgUnitParams,
 } from '../../types';
-import { apiUrl } from '../../constants';
-import { useLocale } from '../../../../app/contexts/LocaleContext';
 
 const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
 };
 
-export const useGetApprovalProposals = (
+export const useGetApprovalProposalsParams = (
     params: ApproveOrgUnitParams,
-): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
-    const { locale } = useLocale();
-    const apiParams = {
+): Record<string, any> => {
+    return {
         parent_id: params.parent_id,
         groups: params.groups,
         org_unit_type_id: params.org_unit_type_id,
@@ -34,8 +33,19 @@ export const useGetApprovalProposals = (
         projects: params.projectIds,
         payment_status: params.paymentStatus,
         payment_ids: params.paymentIds,
+        source_version_id: params.source_version_id,
         potential_payment_ids: params.potentialPaymentIds,
+        data_source_synchronization_id: params.data_source_synchronization_id,
+        ids: params.ids,
+        is_soft_deleted: params.is_soft_deleted || false,
     };
+};
+
+export const useGetApprovalProposals = (
+    params: ApproveOrgUnitParams,
+): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
+    const { locale } = useLocale();
+    const apiParams = useGetApprovalProposalsParams(params);
 
     const url = makeUrlWithParams(apiUrl, apiParams);
     return useSnackQuery({

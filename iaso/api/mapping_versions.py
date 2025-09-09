@@ -1,12 +1,15 @@
 import typing
-from django.db.models import Q
+
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers, permissions
+from django.db.models import Q
+from rest_framework import permissions, serializers
 
 import iaso.models as m
+import iaso.permissions as core_permissions
+
 from iaso.models import FormVersion, MappingVersion
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
-from hat.menupermissions import models as permission
+
+from .common import DynamicFieldsModelSerializer, HasPermission, ModelViewSet, TimestampField
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
@@ -81,8 +84,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         data = self.context["request"].data
         if self.context["request"].method == "POST":
             return self.validate_create(data)
-        else:
-            return data
+        return data
 
     def validate_create(self, data):
         profile = self.context["request"].user.iaso_profile
@@ -132,10 +134,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         if existing_mapping_version:
             # be idempotent return existing
             return existing_mapping_version
-        else:
-            return m.MappingVersion.objects.create(
-                mapping=mapping, form_version=form_version, json=validated_data["json"]
-            )
+        return m.MappingVersion.objects.create(mapping=mapping, form_version=form_version, json=validated_data["json"])
 
     def update(self, instance, validated_data):
         # partial update only question mappings
@@ -173,7 +172,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 class MappingVersionsViewSet(ModelViewSet):
     f"""Mapping versions API
 
-    This API is restricted to authenticated users having the "{permission.MAPPINGS}" permission
+    This API is restricted to authenticated users having the "{core_permissions.MAPPINGS}" permission
 
     GET /api/mappingversions/
         order
@@ -185,7 +184,7 @@ class MappingVersionsViewSet(ModelViewSet):
     PATCH /api/mappingversions/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.MAPPINGS)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.MAPPINGS)]  # type: ignore
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()

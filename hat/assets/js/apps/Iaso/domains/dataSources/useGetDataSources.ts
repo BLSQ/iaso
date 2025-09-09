@@ -27,7 +27,7 @@ const getParams = (params: Record<string, string | undefined>) => {
 export const useGetDataSources = (
     params: Record<string, string | undefined>,
 ): UseQueryResult<any> => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { accountId, ...tableParams } = getParams(params);
     const apiParams = useApiParams(tableParams, tableDefaults);
     const queryString = new URLSearchParams(apiParams).toString();

@@ -1,6 +1,6 @@
 from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class ModuleAPITestCase(APITestCase):
@@ -56,7 +56,7 @@ class ModuleAPITestCase(APITestCase):
         default_return_module = list(filter(lambda module: module["codename"] == "DEFAULT", modules))[0]
         default_module_permissions = MODULE_PERMISSIONS["DEFAULT"]
 
-        self.assertEqual(len(modules), len(MODULE_PERMISSIONS))
+        self.assertEqual(len(modules), len(MODULES))
         self.assertEqual(len(default_return_module["permissions"]), len(default_module_permissions))
 
     def test_list_all_modules_with_search_on_module_name(self):
@@ -67,4 +67,4 @@ class ModuleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
 
-        self.assertEqual(len(r["results"]), 1)
+        self.assertEqual(len(r["results"]), 2)

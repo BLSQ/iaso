@@ -3,22 +3,17 @@ import { Box, Divider, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
-import MESSAGES from '../../../../constants/messages';
-import { LqasImDates } from './LqasImDates';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-
-export type LqasImRefDate = {
-    date: string;
-    isDefault: boolean;
-};
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../../constants/messages';
+import { LqasImRefDate } from '../../types';
+import { LqasImDates } from './LqasImDates';
 
 type Props = {
-    round: number;
+    round: number | undefined;
     startDate: LqasImRefDate;
     endDate: LqasImRefDate;
-    options: DropdownOptions<number>[];
-    // eslint-disable-next-line no-unused-vars
+    options: DropdownOptions<number | string>[];
     onRoundSelect: (round: number) => void;
     campaignObrName?: string;
     isFetching: boolean;

@@ -1,12 +1,11 @@
-import React, { FunctionComponent } from 'react';
 import { Grid } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     search: string;
-    // eslint-disable-next-line no-unused-vars
     setSearch: (newSearch: string) => void;
 };
 export const ScopeSearch: FunctionComponent<Props> = ({

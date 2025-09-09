@@ -1,4 +1,5 @@
 import pkgutil
+
 from typing import List, Union
 
 from django.conf import settings
@@ -12,8 +13,10 @@ from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
+from iaso.api.profiles.profile_logs import ProfileLogsViewset
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReferenceBulkLinkViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
@@ -25,11 +28,11 @@ from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
-from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
+from .api.data_source_versions_synchronization.views import DataSourceVersionsSynchronizationViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
 from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
@@ -52,23 +55,30 @@ from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
-from .api.form_versions import FormVersionsViewSet
+from .api.form_predefined_filters.views import FormPredefinedFiltersViewSet
+from .api.form_versions.views import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
-from .api.groups import GroupsViewSet
+from .api.group_sets.views import GroupSetsViewSet
+from .api.groups.views import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.instances import InstancesViewSet
+from .api.instances.instances import InstancesViewSet
+from .api.instances.views_mobile import InstancesMobileViewSet
 from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
+from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
 from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
+from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.groups import MobileGroupsViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
+from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
+from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_tree.views import OrgUnitTreeViewSet
@@ -79,17 +89,20 @@ from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.payments.views import PaymentLotsViewSet, PaymentOptionsViewSet, PaymentsViewSet, PotentialPaymentsViewSet
 from .api.periods import PeriodsViewSet
-from .api.permissions import PermissionsViewSet
-from .api.profiles import ProfilesViewSet
+from .api.permissions.permissions import PermissionsViewSet
+from .api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
+from .api.profiles.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
-from .api.tasks import TaskSourceViewSet
+from .api.superset import SupersetTokenViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
+from .api.tasks.views import TaskSourceViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -98,10 +111,19 @@ from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 
+
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
 router = routers.DefaultRouter()
+router.register(
+    r"mobile/orgunits/changes/configs",
+    MobileOrgUnitChangeRequestConfigurationViewSet,
+    basename="mobileorgunitschangesconfigs",
+)
+router.register(
+    r"orgunits/changes/configs", OrgUnitChangeRequestConfigurationViewSet, basename="orgunitschangesconfigs"
+)
 router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
 router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
 router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
@@ -115,15 +137,18 @@ router.register(r"payments/lots", PaymentLotsViewSet, basename="paymentslots")
 router.register(r"payments/options", PaymentOptionsViewSet, basename="paymentsoptions")
 router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
+router.register(r"mobile/instances", InstancesMobileViewSet, basename="mobile_instances")
 router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"formattachments", FormAttachmentsViewSet, basename="formattachments")
+router.register(r"formpredefinedfilters", FormPredefinedFiltersViewSet, basename="formpredefinedfilters")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
 router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
+router.register(r"datasources/sync", DataSourceVersionsSynchronizationViewSet, basename="datasources_synchronization")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"apitoken", APITokenViewSet, basename="apitoken")
@@ -134,7 +159,9 @@ router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
+router.register(r"group_sets", GroupSetsViewSet, basename="group_sets")
 router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
+router.register(r"mobile/group_sets", MobileGroupSetsViewSet, basename="groupsetsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
@@ -153,9 +180,14 @@ router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
+router.register(r"tasks/create/instancebulkgpspush", InstanceBulkGpsPushViewSet, basename="instancebulkgpspush")
+router.register(
+    r"tasks/create/instancereferencebulklink", InstanceReferenceBulkLinkViewSet, basename="instancebulkgpspush"
+)
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")
+router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
@@ -179,6 +211,7 @@ router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobilework
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
+router.register(r"userlogs", ProfileLogsViewset, basename="userlogs")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
@@ -186,9 +219,11 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
-
-
 router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
+router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken")
+router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
+router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
+router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

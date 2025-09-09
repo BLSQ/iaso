@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -14,7 +14,7 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../config';
 import { useGetFormsDropdownOptions } from '../hooks/requests/useGetFormsDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 const useStyles = makeStyles(theme => ({}));
 
@@ -39,7 +39,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params, withPagination: false });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
-        useGetOrgUnitTypes();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 
@@ -123,9 +123,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 <Box mt={isLargeLayout ? 3 : 0}>
                     <Button
                         data-test="search-button"
-                        disabled={
-                            (!filtersUpdated) || textSearchError
-                        }
+                        disabled={!filtersUpdated || textSearchError}
                         variant="contained"
                         className={classes.button}
                         color="primary"

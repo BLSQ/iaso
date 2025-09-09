@@ -1,5 +1,5 @@
+import { Tabs } from '@mui/material';
 import React, { FunctionComponent } from 'react';
-import { Tab, Tabs } from '@mui/material';
 import { useStyles } from '../../../styles/theme';
 import { PolioDialogTab } from './PolioDialogTab';
 
@@ -9,11 +9,11 @@ export type Tab = {
     hasTabError: boolean;
     key: string;
     disabled?: boolean;
+    disabledMessage?: string;
 };
 
 type Props = {
     selectedTab: number;
-    // eslint-disable-next-line no-unused-vars
     handleChange: (_event: any, newValue: number) => void;
     tabs: Tab[];
 };
@@ -36,7 +36,13 @@ export const PolioDialogTabs: FunctionComponent<Props> = ({
         >
             {tabs.map(
                 (
-                    { title, disabled = false, hasTabError = false, key },
+                    {
+                        title,
+                        disabled = false,
+                        hasTabError = false,
+                        key,
+                        disabledMessage,
+                    },
                     index,
                 ) => (
                     <PolioDialogTab
@@ -46,6 +52,7 @@ export const PolioDialogTabs: FunctionComponent<Props> = ({
                         hasTabError={hasTabError}
                         handleChange={handleChange}
                         value={index}
+                        disabledMessage={disabledMessage}
                     />
                 ),
             )}

@@ -1,5 +1,3 @@
-/* eslint-disable camelcase */
-
 export type NotificationsParams = {
     order?: string;
     page?: string;

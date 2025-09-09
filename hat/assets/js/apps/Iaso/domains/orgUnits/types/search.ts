@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 export type Search = {
     search?: string;
     source?: string;
@@ -15,4 +14,5 @@ export type Search = {
     dateFrom?: string;
     dateTo?: string;
     color?: string;
+    isAdded?: boolean;
 };

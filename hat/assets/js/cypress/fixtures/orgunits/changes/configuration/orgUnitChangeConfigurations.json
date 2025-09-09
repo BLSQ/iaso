@@ -1,0 +1,290 @@
+{
+  "count": 12,
+  "results": [
+    {
+      "id": 1,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 2,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": true,
+      "editable_fields": ["1", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 3,
+      "type": "creation",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": true,
+      "editable_fields": ["2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 4,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": [],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 5,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 6,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 7,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 8,
+      "type": "creation",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 9,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    },
+    {
+      "id": 10,
+      "type": "edition",
+      "project": {
+        "id": 1,
+        "name": "Project"
+      },
+      "org_unit_type": {
+        "id": 1,
+        "name": "Type"
+      },
+      "org_units_editable": false,
+      "editable_fields": ["1", "2", "3"],
+      "created_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "created_at": 1710752635.757136,
+      "updated_by": {
+        "id": 1,
+        "username": "Yoda",
+        "first_name": "Yoda",
+        "last_name": "Master"
+      },
+      "updated_at": 1710752635.75715
+    }
+  ],
+  "has_next": true,
+  "has_previous": false,
+  "page": 1,
+  "pages": 2,
+  "limit": 10
+}

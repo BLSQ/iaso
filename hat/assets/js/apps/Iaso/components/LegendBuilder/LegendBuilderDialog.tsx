@@ -1,27 +1,25 @@
-/* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { Box, Button } from '@mui/material';
 import {
+    ConfirmCancelModal,
     IntlMessage,
     makeFullModal,
-    ConfirmCancelModal,
     useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import * as Yup from 'yup';
-import { Box, Button } from '@mui/material';
 
-import { useFormik } from 'formik';
 import Add from '@mui/icons-material/Add';
+import { useFormik } from 'formik';
+import { EditIconButton } from '../Buttons/EditIconButton';
+import { LegendBuilder } from './index';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
-import { LegendBuilder } from './index';
 import { getRangeValues, getScaleThreshold } from './utils';
-import { EditIconButton } from '../Buttons/EditIconButton';
 
 type Props = {
     titleMessage: IntlMessage;
     isOpen: boolean;
     closeDialog: () => void;
-    // eslint-disable-next-line no-unused-vars
     onConfirm: (threshold?: ScaleThreshold) => void;
     threshold?: ScaleThreshold;
 };

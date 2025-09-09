@@ -20,12 +20,9 @@ type Props = {
     selectedChildrenId: string | undefined;
     activeChildren: OrgUnit[];
     handleSingleClick: (
-        // eslint-disable-next-line no-unused-vars
         ou: OrgUnit,
-        // eslint-disable-next-line no-unused-vars
         event: L.LeafletMouseEvent | undefined,
     ) => void;
-    // eslint-disable-next-line no-unused-vars
     handleDoubleClick: (event: L.LeafletMouseEvent, ou: OrgUnit) => void;
     showTooltip: boolean;
     clusterEnabled: boolean;

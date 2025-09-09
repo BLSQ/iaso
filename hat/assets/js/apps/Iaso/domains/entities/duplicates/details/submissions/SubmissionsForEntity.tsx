@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
+import { ExpandableItem } from 'bluesquare-components';
 import { Divider } from '@mui/material';
 import { InstanceDetailRaw } from '../../../../instances/compare/components/InstanceDetailRaw';
 import { useGetInstancesForEntity } from '../hooks/useGetInstancesForEntity';
-import MESSAGES from '../../messages';
 import WidgetPaperComponent from '../../../../../components/papers/WidgetPaperComponent';
 import { NoSubmission } from './NoSubmission';
+import ExpandableLabel from './ExpandableLabel';
 
 type Props = {
     entityId?: string;
@@ -16,7 +16,6 @@ export const SubmissionsForEntity: FunctionComponent<Props> = ({
     entityId,
     title = 'Entity',
 }) => {
-    const { formatMessage } = useSafeIntl();
     const {
         data = { instances: [] },
         isLoading,
@@ -37,9 +36,8 @@ export const SubmissionsForEntity: FunctionComponent<Props> = ({
                             )}
 
                             <ExpandableItem
-                                label={`${formatMessage(
-                                    MESSAGES.submissionTitle,
-                                )} - ${instance.id}`}
+                                // This warning message on label should be fixed in bluesquare-components
+                                label={<ExpandableLabel instance={instance} />}
                                 titleColor="primary"
                                 titleVariant="h5"
                             >

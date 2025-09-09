@@ -1,11 +1,14 @@
 /// <reference types="cypress" />
 import moment from 'moment';
+import dataSources from '../../../fixtures/datasources/details-ou.json';
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
 import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import orgUnits from '../../../fixtures/orgunits/list.json';
-import orgUnitTypes from '../../../fixtures/orgunittypes/list.json';
+import orgUnitTypes from '../../../fixtures/orgunittypes/dropdown-list.json';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
+import projects from '../../../fixtures/projects/list.json';
+import sourceversion from '../../../fixtures/sourceversions/sourceversion.json';
 import userRoles from '../../../fixtures/userRoles/list.json';
 import { testPageFilters } from '../../../support/testPageFilters';
 import { testPagination } from '../../../support/testPagination';
@@ -13,7 +16,7 @@ import { testTablerender } from '../../../support/testTableRender';
 import { testTableSort } from '../../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
+const baseUrl = `${siteBaseUrl}/dashboard/validation/changeRequest`;
 
 let interceptFlag = false;
 let table;
@@ -30,13 +33,13 @@ const newFilters = {
         type: 'multi',
         clear: false,
     },
-    groups: {
-        value: [0],
-        urlValue: '1',
-        selector: '#groups',
-        type: 'multi',
-        clear: false,
-    },
+    // groups: {
+    //     value: [0],
+    //     urlValue: '1',
+    //     selector: '#groups',
+    //     type: 'multi',
+    //     clear: false,
+    // },
     forms: {
         value: [0],
         urlValue: '1',
@@ -52,7 +55,7 @@ const newFilters = {
     },
     org_unit_type_id: {
         value: [0],
-        urlValue: orgUnitTypes.orgUnitTypes[0].id,
+        urlValue: orgUnitTypes[0].id,
         selector: '#org_unit_type_id',
         type: 'multi',
         clear: false,
@@ -99,7 +102,10 @@ const openDialogForChangeRequestIndex = index => {
     const actionCol = row.find('td').eq(11);
     const editButton = actionCol.find('button').first();
     editButton.click();
-    cy.get('#approve-orgunit-changes-dialog').should('be.visible');
+    cy.url().should(
+        'eq',
+        `${baseUrl}/detail/accountId/1/changeRequestId/${listFixture.results[index].id}`,
+    );
 };
 
 const goToPage = (
@@ -113,10 +119,18 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/groups/dropdown/**', {
+    cy.intercept('GET', '/api/sourceversions/3/', sourceversion);
+    cy.intercept('GET', '/api/groups/dropdown/?defaultVersion=3', {
         fixture: `groups/dropdownlist.json`,
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
+
+    cy.intercept(
+        'GET',
+        '/api/datasources/?filter_empty_versions=true/',
+        dataSources,
+    );
+    cy.intercept('GET', '/api/v2/orgunittypes/dropdown/', orgUnitTypes);
+    cy.intercept('GET', '/api/projects/', projects);
 
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',
@@ -215,8 +229,7 @@ describe('Organisations changes', () => {
                 permissions: [],
                 is_superuser: false,
             });
-            const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '403');
+            cy.get('#error-code').should('contain', '403');
         });
     });
     describe('Table', () => {
@@ -231,7 +244,7 @@ describe('Organisations changes', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 12,
+            columns: 13,
             withVisit: false,
             apiKey: 'orgunits/changes',
         });
@@ -270,14 +283,12 @@ describe('Organisations changes', () => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
 
-                    interceptFlag = false;
                     cy.intercept(
                         {
                             method: 'PATCH',
                             pathname: `/api/orgunits/changes/27`,
                         },
                         req => {
-                            interceptFlag = true;
                             req.reply({
                                 statusCode: 200,
                                 body: {
@@ -289,13 +300,67 @@ describe('Organisations changes', () => {
                     ).as('approveChanges');
 
                     cy.get('#check-box-name').click();
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(3)
-                        .click()
-                        .then(() => {});
-                    cy.wait('@approveChanges').then(() => {
-                        cy.wrap(interceptFlag).should('eq', true);
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('[data-test="cancel-comment-button"]').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('[data-test="confirm-comment-button"]').click();
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'approved');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields[0]')
+                            .should('eq', 'new_name');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields.length')
+                            .should('eq', 1);
+                    });
+                });
+            });
+            it('should display correct changes request infos and partially approve', () => {
+                goToPage();
+                cy.intercept('GET', '/api/orgunits/changes/23', {
+                    fixture: 'orgunits/changes/orgUnitChange-23.json',
+                });
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    const orgUnitChangeIndex = 1;
+                    openDialogForChangeRequestIndex(orgUnitChangeIndex);
+
+                    cy.intercept(
+                        {
+                            method: 'PATCH',
+                            pathname: `/api/orgunits/changes/23`,
+                        },
+                        req => {
+                            req.reply({
+                                statusCode: 200,
+                                body: {
+                                    status: 'approved',
+                                    approved_fields: ['new_name'],
+                                },
+                            });
+                        },
+                    ).as('approveChanges');
+
+                    cy.get('#check-box-name').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('[data-test="cancel-comment-button"]').click();
+                    cy.get('[data-test="confirm-button"]').click();
+                    cy.get('textarea').type('test comment');
+                    cy.get('[data-test="confirm-comment-button"]').click();
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'approved');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields[0]')
+                            .should('eq', 'new_name');
+                        cy.wrap(interception)
+                            .its('request.body.approved_fields.length')
+                            .should('eq', 1);
+                        cy.wrap(interception)
+                            .its('request.body.rejection_comment')
+                            .should('eq', 'test comment');
                     });
                 });
             });
@@ -308,11 +373,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(2)
-                        .click()
-                        .then(() => {});
+                    cy.get('[data-test="reject-button"]').click();
                     const textArea = cy.get('textarea');
                     textArea.type('test comment');
                     const comment = textArea.value;
@@ -322,7 +383,6 @@ describe('Organisations changes', () => {
                             pathname: `/api/orgunits/changes/27`,
                         },
                         req => {
-                            interceptFlag = true;
                             req.reply({
                                 statusCode: 200,
                                 body: {
@@ -333,10 +393,14 @@ describe('Organisations changes', () => {
                         },
                     ).as('approveChanges');
                     cy.get('[data-test="confirm-comment-button"]').click();
-                    interceptFlag = false;
 
-                    cy.wait('@approveChanges').then(() => {
-                        cy.wrap(interceptFlag).should('eq', true);
+                    cy.wait('@approveChanges').then(interception => {
+                        cy.wrap(interception)
+                            .its('request.body.status')
+                            .should('eq', 'rejected');
+                        cy.wrap(interception)
+                            .its('request.body.rejection_comment')
+                            .should('eq', 'test comment');
                     });
                 });
             });
@@ -349,9 +413,7 @@ describe('Organisations changes', () => {
                 cy.wait('@getOrgUnitChanges').then(() => {
                     const orgUnitChangeIndex = 0;
                     openDialogForChangeRequestIndex(orgUnitChangeIndex);
-                    cy.get('#approve-orgunit-changes-dialog')
-                        .find('button')
-                        .eq(1)
+                    cy.get('#top-bar-back-button')
                         .click()
                         .then(() => {});
                 });
@@ -429,7 +491,7 @@ describe('Organisations changes', () => {
                     {
                         ...defaultQuery,
                         projects: newFilters.projectIds.urlValue,
-                        groups: newFilters.groups.urlValue,
+                        // groups: newFilters.groups.urlValue,
                         forms: newFilters.forms.urlValue,
                         parent_id: newFilters.parent_id.urlValue,
                         org_unit_type_id: newFilters.org_unit_type_id.urlValue,
@@ -532,7 +594,7 @@ describe('Organisations changes', () => {
         it('should download orgUnit change request csv file via an anchor click', () => {
             goToPage();
             cy.wait('@getOrgUnitChanges').then(() => {
-                cy.fillMultiSelect('#groups', [1, 2], false);
+                // cy.fillMultiSelect('#groups', [1, 2], false);
                 cy.fillMultiSelect('#status', [0], false);
                 cy.get('[data-test="search-button"]').click();
                 cy.get('[data-test="download-buttons"]')
@@ -543,7 +605,8 @@ describe('Organisations changes', () => {
                 cy.get('@csvExportButton').should(
                     'have.attr',
                     'href',
-                    `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    // `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                    `/api/orgunits/changes/export_to_csv/?&status=new&source_version_id=3`,
                 );
             });
         });

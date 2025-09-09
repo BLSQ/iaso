@@ -105,11 +105,9 @@ type Props = {
     closeLightbox: () => void;
     imageList: ShortFile[];
     currentIndex: number;
-    // eslint-disable-next-line no-unused-vars
     setCurrentIndex?: (index: number) => void;
-    url: string | null;
-    urlLabel: { id: string; defaultMessage: string } | undefined;
-    // eslint-disable-next-line no-unused-vars
+    url?: string | null;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
 
@@ -157,7 +155,6 @@ const ImageGallery: FunctionComponent<Props> = ({
                     </IconButton>
                 )}
                 <IconButton
-                    color="primary"
                     sx={styles.closeButton}
                     onClick={() => closeLightbox()}
                 >

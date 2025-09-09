@@ -1,12 +1,10 @@
-from datetime import date
 from iaso.models.base import Account
-from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
+from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import SpreadSheetImport
-from hat.menupermissions import models as permission
 
 
-class SupplyChainDashboardsAPITestCase(APITestCase):
+class PreparednessDashboardsAPITestCase(APITestCase):
     @classmethod
     def setUp(cls):
         cls.url = "/api/polio/dashboards/preparedness_sheets/"
@@ -16,14 +14,14 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             username="authorized",
             account=cls.account,
             permissions=[
-                permission._POLIO,
+                polio_permissions._POLIO,
             ],
         )
         cls.authorized_user_admin = cls.create_user_with_profile(
             username="authorized_admin",
             account=cls.account,
             permissions=[
-                permission._POLIO_CONFIG,
+                polio_permissions._POLIO_CONFIG,
             ],
         )
         cls.unauthorized_user = cls.create_user_with_profile(

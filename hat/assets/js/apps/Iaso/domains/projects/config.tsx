@@ -1,79 +1,83 @@
 import React, { ReactElement, useMemo } from 'react';
-import {
-    textPlaceholder,
-    IntlMessage,
-    Column,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { Box, Switch, Tooltip } from '@mui/material';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Box, Switch } from '@mui/material';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from '../../constants/urls';
 import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
-import { baseUrls } from '../../constants/urls';
-
+import { FeatureFlagToggleCell } from './components/FeatureFlagsToggleCell';
+import { FeatureFlagTooltipCell } from './components/FeatureFlagTooltipCell';
+import { ProjectChip } from './components/ProjectChip';
+import { QrCode } from './components/QrCode';
 import MESSAGES from './messages';
+import { FeatureFlag, ProjectFeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
-import { FeatureFlag } from './types/featureFlag';
-
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
-    search?: string;
-};
 
 export const baseUrl = baseUrls.projects;
-export const columns = (
-    // eslint-disable-next-line no-unused-vars
-    formatMessage: (msg: IntlMessage) => string,
-    // eslint-disable-next-line no-unused-vars
-    params: Params,
-    // eslint-disable-next-line no-unused-vars
+export const useColumns = (
     saveProject: (s: Project) => Promise<any>,
-): Array<Column> => [
-    {
-        Header: formatMessage(MESSAGES.projectName),
-        accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.appId),
-        accessor: 'app_id',
-    },
-    {
-        Header: formatMessage(MESSAGES.featureFlags),
-        accessor: 'feature_flags',
-        sortable: false,
-        Cell: settings =>
-            settings.value
-                .map(fF =>
-                    MESSAGES[fF.code.toLowerCase()]
-                        ? formatMessage(MESSAGES[fF.code.toLowerCase()])
-                        : fF.name || fF.id,
-                )
-                .join(', ') || textPlaceholder,
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        Cell: (settings): ReactElement => (
-            <section>
-                <EditProjectDialog
-                    initialData={settings.row.original}
-                    saveProject={saveProject}
-                    dialogType="edit"
-                    iconProps={{}}
-                />
-            </section>
-        ),
-    },
-];
+): Array<Column> => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        return [
+            {
+                Header: formatMessage(MESSAGES.projectName),
+                accessor: 'name',
+                Cell: settings => {
+                    return <ProjectChip project={settings.row.original} />;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.appId),
+                accessor: 'app_id',
+                Cell: settings => {
+                    return settings.row.original.app_id;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.featureFlags),
+                accessor: 'feature_flags',
+                sortable: false,
+                Cell: settings =>
+                    settings.value
+                        .map(fF =>
+                            MESSAGES[fF.code.toLowerCase()]
+                                ? formatMessage(MESSAGES[fF.code.toLowerCase()])
+                                : fF.name || fF.id,
+                        )
+                        .join(', ') || textPlaceholder,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                Cell: (settings): ReactElement => (
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        gap={1}
+                        justifyContent="center"
+                    >
+                        <EditProjectDialog
+                            initialData={settings.row.original}
+                            saveProject={saveProject}
+                            dialogType="edit"
+                            iconProps={{}}
+                        />
+                        {settings.row.original.qr_code && (
+                            <QrCode qrCode={settings.row.original.qr_code} />
+                        )}
+                    </Box>
+                ),
+            },
+        ];
+    }, [formatMessage, saveProject]);
+};
 
 export const useFeatureFlagColumns = (
-    // eslint-disable-next-line no-unused-vars
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
-    featureFlagsValues: (string | number)[],
+    toggleFeatureGroup: (group: string) => void,
+    featureFlagsValues: ProjectFeatureFlag[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -85,25 +89,31 @@ export const useFeatureFlagColumns = (
                 align: 'center',
                 width: 50,
                 Cell: settings => {
-                    const title = MESSAGES[
-                        `${settings.row.original.code.toLowerCase()}_tooltip`
-                    ]
-                        ? MESSAGES[
-                              `${settings.row.original.code.toLowerCase()}_tooltip`
-                          ]
-                        : settings.row.original.name;
-                    return (
-                        <Box style={{ cursor: 'pointer' }}>
-                            <Tooltip
-                                title={formatMessage(title)}
-                                disableInteractive={false}
-                                leaveDelay={500}
-                                placement="left-start"
-                                arrow
-                            >
-                                <HelpOutlineIcon color="primary" />
-                            </Tooltip>
-                        </Box>
+                    const title =
+                        settings.row.original?.code &&
+                        MESSAGES[
+                            `${settings.row.original.code.toLowerCase()}_tooltip`
+                        ]
+                            ? MESSAGES[
+                                  `${settings.row.original.code.toLowerCase()}_tooltip`
+                              ]
+                            : settings.row.original.name;
+                    return !settings.row.original.group ? (
+                        <FeatureFlagTooltipCell
+                            title={formatMessage(title)}
+                            iconVariant={
+                                settings.row.original.is_dangerous
+                                    ? 'warning'
+                                    : 'info'
+                            }
+                        />
+                    ) : (
+                        <FeatureFlagToggleCell
+                            collapsed={settings.row.original.collapsed}
+                            onToggle={() =>
+                                toggleFeatureGroup(settings.row.original.code)
+                            }
+                        />
                     );
                 },
             },
@@ -115,6 +125,17 @@ export const useFeatureFlagColumns = (
                 width: 250,
                 align: 'left',
                 Cell: settings => {
+                    if (settings.row.original.group) {
+                        return (
+                            <strong>
+                                {formatMessage(
+                                    MESSAGES[
+                                        `featureFlag_${settings.row.original.code}`
+                                    ],
+                                )}
+                            </strong>
+                        );
+                    }
                     return settings.row.original.name;
                 },
             },
@@ -124,13 +145,13 @@ export const useFeatureFlagColumns = (
                 accessor: 'code',
                 sortable: false,
                 Cell: settings => {
-                    return (
+                    return !settings.row.original.group ? (
                         <Switch
                             data-test="featureFlag-checkbox"
-                            id={`featureFlag-checkbox-${settings.row.original.id}`}
+                            id={`featureFlag-checkbox-${settings.row.original.code}`}
                             checked={Boolean(
-                                featureFlagsValues.includes(
-                                    settings.row.original.id,
+                                featureFlagsValues.find(
+                                    ff => ff.id === settings.row.original.id,
                                 ),
                             )}
                             onChange={e => {
@@ -139,12 +160,14 @@ export const useFeatureFlagColumns = (
                                     e.target.checked,
                                 );
                             }}
-                            name={settings.row.original.id}
+                            name={settings.row.original.code}
                             color="primary"
                         />
+                    ) : (
+                        ''
                     );
                 },
             },
         ];
-    }, [featureFlagsValues, formatMessage, setFeatureFlag]);
+    }, [featureFlagsValues, formatMessage, setFeatureFlag, toggleFeatureGroup]);
 };

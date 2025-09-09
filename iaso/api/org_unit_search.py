@@ -1,4 +1,5 @@
 import re
+
 from datetime import datetime
 
 from django.contrib.gis.db.models import MultiPolygonField, PointField
@@ -62,11 +63,31 @@ def build_org_units_queryset(queryset, params, profile):
         elif search.startswith("refs:"):
             s = search.replace("refs:", "")
             try:
+                # First, checking if there are any "fake"/"internal" external refs (e.g. 'iaso:123')
+                internal_refs = re.findall(r"iaso:\d+", s)
+                internal_refs_filter = Q()
+                if internal_refs:
+                    iaso_ids = [int(i.split(":")[1]) for i in internal_refs]  # Split and parse ID
+                    internal_refs_filter = Q(id__in=iaso_ids)
+                    s = re.sub(
+                        r"iaso:\d+", "", s
+                    )  # Remove internal refs to prevent them from breaking the other search
+
+                # Then we can check real external refs
                 refs = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(source_ref__in=refs)
+                external_refs_filter = Q(source_ref__in=refs)
+                queryset = queryset.filter(external_refs_filter | internal_refs_filter)
             except:
                 queryset = queryset.filter(source_ref__in=[])
                 print("Failed parsing refs in search", search)
+        elif search.startswith("codes:"):
+            s = search.replace("codes:", "")
+            try:
+                codes = re.findall("[A-Za-z0-9_-]+", s)
+                queryset = queryset.filter(code__in=codes)
+            except:
+                queryset = queryset.filter(code__in=[])
+                print("Failed parsing codes in search", search)
         else:
             queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
 
@@ -77,7 +98,7 @@ def build_org_units_queryset(queryset, params, profile):
             group_ids = [group]
         else:
             group_ids = group
-        queryset = queryset.filter(groups__in=group_ids)
+        queryset = queryset.filter(groups__in=group_ids).distinct()
 
     if source:
         source = DataSource.objects.get(id=source)
@@ -102,7 +123,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(instance__created_at__lte=date_to)
 
     if date_from is not None and date_to is not None:
-        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct("id")
+        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct()
 
     if has_instances is not None:
         if has_instances == "true":

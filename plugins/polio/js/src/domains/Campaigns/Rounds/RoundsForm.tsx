@@ -1,10 +1,10 @@
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Clear';
 import { Box, Button, IconButton, Tab, Tabs, Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormikContext } from 'formik';
 import isEqual from 'lodash/isEqual';
-import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues, Round } from '../../../constants/types';
@@ -24,6 +24,7 @@ export const roundFormFields = (rounds: Round[]): string[] => {
                     `rounds[${i}].started_at`,
                     `rounds[${i}].percentage_covered_target_population`,
                     `rounds[${i}].target_population`,
+                    `rounds[${i}].on_hold`,
                 ];
             })
             .flat(),
@@ -58,7 +59,7 @@ export const RoundsForm: FunctionComponent = () => {
             number: roundIndex,
             started_at: null,
             ended_at: null,
-        } as Round);
+        } as unknown as Round);
         const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
         setFieldValue('rounds', sortedRounds);
         setLastRound(newRounds[sortedRounds.length - 1]);

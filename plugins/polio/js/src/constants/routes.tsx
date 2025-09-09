@@ -1,44 +1,53 @@
 import React from 'react';
-import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
-import { CampaignHistory } from '../domains/Campaigns/campaignHistory/CampaignHistory';
-import { GroupedCampaigns } from '../domains/GroupedCampaigns/GroupedCampaigns';
-import { Calendar } from '../domains/Calendar/Calendar';
-import { Lqas } from '../domains/LQAS-IM/LQAS';
-import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
-import { ImStats } from '../domains/LQAS-IM/IM';
-import { BudgetProcessList } from '../domains/Budget';
-import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
-import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
-import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
-import { VaccineSupplyChain } from '../domains/VaccineModule/SupplyChain/VaccineSupplyChain';
-import { VaccineStockManagement } from '../domains/VaccineModule/StockManagement/VaccineStockManagement';
-import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
-import { VaccineStockVariation } from '../domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
-import { VaccineSupplyChainDetails } from '../domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
-import { CountryNotificationsConfig } from '../domains/Config/CountryNotification/CountryNotificationsConfig';
-import { ReasonsForDelay } from '../domains/Config/ReasonsForDelay/ReasonsForDelay';
-import { EMBEDDED_CALENDAR_URL, baseUrls } from './urls';
-import {
-    BUDGET,
-    BUDGET_ADMIN,
-    NOTIFICATION,
-    POLIO,
-    POLIO_ADMIN,
-    STOCK_MANAGEMENT_WRITE,
-    STOCK_MANAGEMENT_READ,
-    SUPPLYCHAIN_READ,
-    SUPPLYCHAIN_WRITE,
-    CHRONOGRAM,
-    CHRONOGRAM_RESTRICTED_WRITE,
-} from './permissions';
 import {
     AnonymousRoutePath,
     RoutePath,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
-import { Notifications } from '../domains/Notifications';
+import { BudgetProcessList } from '../domains/Budget';
+import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
+import { Calendar } from '../domains/Calendar/Calendar';
+import { CampaignHistory } from '../domains/Campaigns/campaignHistory/CampaignHistory';
+import { Dashboard } from '../domains/Campaigns/CampaignsList/Dashboard';
 import { Chronogram } from '../domains/Chronogram/Chronogram';
-import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
 import { ChronogramDetails } from '../domains/Chronogram/ChronogramDetails';
+import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
+import { CountryNotificationsConfig } from '../domains/Config/CountryNotification/CountryNotificationsConfig';
+import { ReasonsForDelay } from '../domains/Config/ReasonsForDelay/ReasonsForDelay';
+import { GroupedCampaigns } from '../domains/GroupedCampaigns/GroupedCampaigns';
+import { ImStats } from '../domains/LQAS-IM/IM';
+import { Lqas } from '../domains/LQAS-IM/LQAS';
+import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
+import { Notifications } from '../domains/Notifications';
+import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
+import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
+import { VaccineRepository } from '../domains/VaccineModule/Repository/VaccineRepository';
+import { VaccineStockManagementDetails } from '../domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
+import { PublicVaccineStock } from '../domains/VaccineModule/StockManagement/PublicPage/PublicVaccineStock';
+import { VaccineStockVariation } from '../domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
+import { VaccineStockManagement } from '../domains/VaccineModule/StockManagement/VaccineStockManagement';
+import { VaccineSupplyChainDetails } from '../domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
+import { VaccineSupplyChain } from '../domains/VaccineModule/SupplyChain/VaccineSupplyChain';
+import {
+    BUDGET,
+    BUDGET_ADMIN,
+    CHRONOGRAM,
+    CHRONOGRAM_RESTRICTED_WRITE,
+    NOTIFICATION,
+    POLIO,
+    POLIO_ADMIN,
+    STOCK_MANAGEMENT_READ,
+    STOCK_MANAGEMENT_READ_ONLY,
+    STOCK_MANAGEMENT_WRITE,
+    SUPPLYCHAIN_READ,
+    SUPPLYCHAIN_READ_ONLY,
+    SUPPLYCHAIN_WRITE,
+} from './permissions';
+import {
+    EMBEDDED_CALENDAR_URL,
+    EMBEDDED_VACCINE_REPOSITORY_URL,
+    EMBEDDED_VACCINE_STOCK_URL,
+    baseUrls,
+} from './urls';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -70,12 +79,32 @@ export const calendarPath: RoutePath = {
     element: <Calendar />,
     permissions: [POLIO, POLIO_ADMIN],
 };
+export const vaccineRepositoryPath: RoutePath = {
+    baseUrl: baseUrls.vaccineRepository,
+    routerUrl: `${baseUrls.vaccineRepository}/*`,
+    element: <VaccineRepository />,
+    permissions: [POLIO, POLIO_ADMIN],
+};
 
 export const embeddedCalendarPath: AnonymousRoutePath = {
     allowAnonymous: true,
     baseUrl: EMBEDDED_CALENDAR_URL,
     routerUrl: `${EMBEDDED_CALENDAR_URL}/*`,
     element: <Calendar />,
+    isRootUrl: false,
+};
+export const embeddedVaccineRepositoryPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: EMBEDDED_VACCINE_REPOSITORY_URL,
+    routerUrl: `${EMBEDDED_VACCINE_REPOSITORY_URL}/*`,
+    element: <VaccineRepository />,
+    isRootUrl: false,
+};
+export const embeddedVaccineStockPath: AnonymousRoutePath = {
+    allowAnonymous: true,
+    baseUrl: EMBEDDED_VACCINE_STOCK_URL,
+    routerUrl: `${EMBEDDED_VACCINE_STOCK_URL}/*`,
+    element: <PublicVaccineStock />,
     isRootUrl: false,
 };
 
@@ -144,35 +173,47 @@ export const supplychainPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChain,
     routerUrl: `${baseUrls.vaccineSupplyChain}/*`,
     element: <VaccineSupplyChain />,
-    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const supplychainDetailsPath: RoutePath = {
     baseUrl: baseUrls.vaccineSupplyChainDetails,
     routerUrl: `${baseUrls.vaccineSupplyChainDetails}/*`,
     element: <VaccineSupplyChainDetails />,
-    permissions: [SUPPLYCHAIN_WRITE],
+    permissions: [SUPPLYCHAIN_READ, SUPPLYCHAIN_WRITE, SUPPLYCHAIN_READ_ONLY],
 };
 
 export const stockManagementPath: RoutePath = {
     baseUrl: baseUrls.stockManagement,
     routerUrl: `${baseUrls.stockManagement}/*`,
     element: <VaccineStockManagement />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockManagementDetailsPath: RoutePath = {
     baseUrl: baseUrls.stockManagementDetails,
     routerUrl: `${baseUrls.stockManagementDetails}/*`,
     element: <VaccineStockManagementDetails />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const stockVariationPath: RoutePath = {
     baseUrl: baseUrls.stockVariation,
     routerUrl: `${baseUrls.stockVariation}/*`,
     element: <VaccineStockVariation />,
-    permissions: [STOCK_MANAGEMENT_READ, STOCK_MANAGEMENT_WRITE],
+    permissions: [
+        STOCK_MANAGEMENT_READ,
+        STOCK_MANAGEMENT_WRITE,
+        STOCK_MANAGEMENT_READ_ONLY,
+    ],
 };
 
 export const notificationPath: RoutePath = {
@@ -223,6 +264,9 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     groupedCampaignsPath,
     calendarPath,
     embeddedCalendarPath,
+    vaccineRepositoryPath,
+    embeddedVaccineRepositoryPath,
+    embeddedVaccineStockPath,
     lqasCountryPath,
     lqasAfroPath,
     imGlobalPath,

@@ -1,11 +1,20 @@
-from django.db.models import Q
-from rest_framework import status, permissions
+from django.db.models import Prefetch, Q
+from rest_framework import permissions, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 
+from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, PROJECT_IDS, SEARCH
 from iaso.models import OrgUnitType
-from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
+
 from ..common import ModelViewSet
+from .filters import OrgUnitTypeDropdownFilter
+from .serializers import (
+    OrgUnitTypesDropdownSerializer,
+    OrgUnitTypeSerializerV1,
+    OrgUnitTypeSerializerV2,
+)
+
 
 DEFAULT_ORDER = "name"
 
@@ -22,15 +31,15 @@ class OrgUnitTypeViewSet(ModelViewSet):
     GET /api/orgunittypes/
     """
 
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired]
     serializer_class = OrgUnitTypeSerializerV1
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
-        if t.orgunit_set.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+        if t.org_units.count() > 0:
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSet, self).destroy(request, pk)
 
     def get_queryset(self):
@@ -41,9 +50,26 @@ class OrgUnitTypeViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
 
+        queryset = queryset.prefetch_related("allow_creating_sub_unit_types")
+
+        app_id = self.request.query_params.get(APP_ID)
+        if app_id:
+            queryset = queryset.prefetch_related(
+                Prefetch(
+                    "allow_creating_sub_unit_types",
+                    queryset=OrgUnitType.objects.filter(projects__app_id=app_id),
+                    to_attr="filtered_allow_creating_sub_unit_types",
+                )
+            )
+
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["view_action"] = self.action
+        return context
 
 
 class OrgUnitTypeViewSetV2(ModelViewSet):
@@ -61,8 +87,8 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     def destroy(self, request, pk):
         t = OrgUnitType.objects.get(pk=pk)
-        if t.orgunit_set.count() > 0:
-            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+        if t.org_units.count() > 0:
+            return Response("You can't delete a type that still has org units", status=status.HTTP_400_BAD_REQUEST)
         return super(OrgUnitTypeViewSetV2, self).destroy(request, pk)
 
     def get_queryset(self):
@@ -85,3 +111,30 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
         orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
+
+    @action(
+        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
+        detail=False,
+        methods=["GET"],
+        serializer_class=OrgUnitTypesDropdownSerializer,
+    )
+    def dropdown(self, request, *args):
+        queryset = self.get_queryset()
+
+        filterset = OrgUnitTypeDropdownFilter(request.GET, queryset=queryset)
+        if not filterset.is_valid():
+            return Response(filterset.errors, status=status.HTTP_400_BAD_REQUEST)
+        queryset = filterset.qs
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["view_action"] = self.action
+        return context

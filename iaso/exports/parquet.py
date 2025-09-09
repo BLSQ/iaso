@@ -1,6 +1,7 @@
 import os
 import time
 
+from logging import getLogger
 from typing import Sequence
 
 import duckdb
@@ -14,6 +15,8 @@ from django.db.models.functions import Cast
 
 import iaso.models as m
 
+
+logger = getLogger(__name__)
 
 ALL_OPTIONAL_ORG_UNIT_FIELDS = [
     "geom_geojson",
@@ -59,7 +62,7 @@ def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     """
     con.execute(attach_sql)
 
-    print(f"exporting parquet : {output_file_path} \n\n {full_sql}")
+    logger.info(f"exporting parquet : {output_file_path} \n\n {full_sql}")
     parquet_export_sql = f"""
         COPY (
             SELECT * FROM postgres_query('pg', $$ {full_sql} $$)
@@ -73,7 +76,7 @@ def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     con.close()
     duration = time.perf_counter() - start
     size_mb = os.path.getsize(output_file_path) / (1024 * 1024)
-    print(
+    logger.warn(
         f"dumped to {output_file_path} took {duration:.3f} seconds for {row_count} records and {col_count} columns, final file size {size_mb:.2f} Mb"
     )
 

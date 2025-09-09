@@ -51,7 +51,6 @@ class SetupAccountSerializer(serializers.Serializer):
         help_text="Language for the user interface and email invitations",
     )
     modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
-    analytics_script = serializers.CharField(required=False)
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
     )
@@ -153,7 +152,6 @@ class SetupAccountSerializer(serializers.Serializer):
             default_version=source_version,
             user_manual_path=validated_data.get("user_manual_path"),
             modules=account_modules,
-            analytics_script=validated_data.get("analytics_script", ""),
         )
         account.feature_flags.set(validated_data.get("feature_flags"))
 

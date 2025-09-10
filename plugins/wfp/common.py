@@ -6,7 +6,7 @@ from operator import itemgetter
 
 from dateutil.relativedelta import *
 from django.core.paginator import Paginator
-from django.db.models import CharField, Value, F
+from django.db.models import CharField, F, Value
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *

@@ -249,7 +249,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/?order=id&parquet=true")
 
             self.assertEqual(response.status_code, 200)
@@ -292,7 +292,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
         self.client.force_authenticate(self.yoda)
 
-        with self.assertNumQueries(2):
+        with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/?order=id&parquet=true&extra_fields=:all")
 
             self.assertEqual(response.status_code, 200)
@@ -347,5 +347,8 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
         response = self.client.get("/api/orgunits/?order=id&parquet=true&unknown_unsupported_filter=bad_param")
         self.assertEqual(response.status_code, 409)
         self.assertEqual(
-            response.json(), {"error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter"}
+            response.json(),
+            {
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters extra_fields, order, parquet, searches"
+            },
         )

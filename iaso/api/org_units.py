@@ -446,7 +446,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         unknown = received_params - allowed_params
         if unknown:
             return JsonResponse(
-                {"error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}"},
+                {
+                    "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
+                },
                 status=409,
             )
 

@@ -50,7 +50,10 @@ def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     start = time.perf_counter()
 
     sql, params = qs.query.sql_with_params()
-    full_sql = sql % tuple(map(repr, params))
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT 1")  # ensure cursor is open
+        full_sql = cursor.mogrify(sql, params).decode()
+    # initially was full_sql = sql % tuple(map(adapt_param, params)) but supporting all types is complicated
     dsn = connection.get_connection_params()
 
     con = duckdb.connect()

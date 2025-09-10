@@ -519,13 +519,35 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def anwser_with_parquet_file(self, request, filters, queryset):
         # validate no unsupported/extra params is passed
-        allowed_params = {"form_ids", "parquet", "showDeleted", "startPeriod", "endPeriod", "orgUnitParentId"}
+        allowed_params = {
+            "form_ids",
+            "parquet",
+            "project_ids",  # comma seperatated project ids
+            "showDeleted",
+            "status",  # READY, ERROR, EXPORTED
+            "startPeriod",  # dhis2 iso period in correct type
+            "endPeriod",
+            "orgUnitParentId",
+            "orgUnitTypeId",  # allow comma seperated ids
+            "dateFrom",  # filter on source creation date or creation date (COALESCE(V0."source_created_at", V0."created_at"))
+            "dateTo",
+            "modificationDateFrom",  # filter on updated_at
+            "modificationDateTo",
+            "sentDateFrom",  # filter on created_at
+            "sentDateTo",
+            "withLocation",  # true => only submissions with location, false only the one without location
+            "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
+            "planningIds",
+            "userIds",
+        }
         received_params = set(request.GET.keys())
 
         unknown = received_params - allowed_params
         if unknown:
             return JsonResponse(
-                {"error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}"},
+                {
+                    "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
+                },
                 status=409,
             )
 

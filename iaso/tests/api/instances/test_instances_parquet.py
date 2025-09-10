@@ -31,6 +31,7 @@ class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
 class InstancesAPITestCase(BaseAPITransactionTestCase):
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def setUp(cls):
+        cls.maxDiff = None
         cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
@@ -234,7 +235,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         OrgUnitReferenceInstance.objects.create(
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(8):
             response = self.client.get(
                 f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true", headers={"Content-Type": "text/csv"}
             )
@@ -253,3 +254,16 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                     rows = [dict(zip(colnames, row)) for row in result.fetchall()]
 
                     self.assertEqual(len(rows), 4)
+
+    def test_bad_request_parquet_validates_unknown_query_param(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&unknown_unsupported_filter=bad_param"
+        )
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(
+            response.json(),
+            {
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, orgUnitParentId, orgUnitTypeId, parquet, planningIds, project_ids, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
+            },
+        )

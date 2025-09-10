@@ -118,7 +118,7 @@ class ET_Under5:
             filter(
                 lambda instance: (
                     instance.get("visits")
-                    and len(instance.get("visits")) > 1
+                    # and len(instance.get("visits")) > 1
                     and instance.get("gender") is not None
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
@@ -133,52 +133,55 @@ class ET_Under5:
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
-        entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
-        existing_beneficiaries = ETL().existing_beneficiaries()
-        instances = self.group_visit_by_entity(entities)
+        pages = beneficiaries.page_range
 
-        # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.filter(account=account, programme_type="U5").delete()
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
 
-        for index, instance in enumerate(instances):
-            logger.info(
-                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
-            )
-            instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
-            beneficiary = Beneficiary()
-            if (
-                instance["entity_id"] not in existing_beneficiaries
-                and len(instance["journey"][0]["visits"]) > 0
-                and instance["journey"][0].get("nutrition_programme") is not None
-            ):
-                beneficiary.gender = instance["gender"]
-                beneficiary.birth_date = instance["birth_date"]
-                beneficiary.entity_id = instance["entity_id"]
-                beneficiary.account = account
-                beneficiary.save()
-                logger.info("Created new beneficiary")
-            else:
-                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+        for page in pages:
+            entities = sorted(list(beneficiaries.page(page).object_list), key=itemgetter("entity_id"))
+            existing_beneficiaries = ETL().existing_beneficiaries()
+            instances = self.group_visit_by_entity(entities)
 
-            logger.info("Retrieving journey linked to beneficiary")
-            if beneficiary is not None:
-                for journey_instance in instance["journey"]:
-                    if len(journey_instance["visits"]) > 0:
-                        journey = self.save_journey(beneficiary, journey_instance)
-                        visits = ETL().save_visit(journey_instance["visits"], journey)
-                        logger.info(f"Inserted {len(visits)} Visits")
-                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                        admission_step = grouped_steps[0]
-
-                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-                        steps = ETL().save_steps(visits, followUpVisits)
-                        logger.info(f"Inserted {len(steps)} Steps")
-                    else:
-                        logger.info("No new journey")
+            for index, instance in enumerate(instances):
                 logger.info(
-                    "---------------------------------------------------------------------------------------------\n\n"
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
                 )
+                instance["journey"] = self.journeyMapper(instance["visits"], ADMISSION_ANTHROPOMETRIC_FORMS)
+                beneficiary = Beneficiary()
+                if (
+                    instance["entity_id"] not in existing_beneficiaries
+                    and len(instance["journey"][0]["visits"]) > 0
+                    and instance["journey"][0].get("nutrition_programme") is not None
+                ):
+                    beneficiary.gender = instance["gender"]
+                    beneficiary.birth_date = instance["birth_date"]
+                    beneficiary.entity_id = instance["entity_id"]
+                    beneficiary.account = account
+                    beneficiary.save()
+                    logger.info("Created new beneficiary")
+                else:
+                    beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+
+                logger.info("Retrieving journey linked to beneficiary")
+                if beneficiary is not None:
+                    for journey_instance in instance["journey"]:
+                        if len(journey_instance["visits"]) > 0:
+                            journey = self.save_journey(beneficiary, journey_instance)
+                            visits = ETL().save_visit(journey_instance["visits"], journey)
+                            logger.info(f"Inserted {len(visits)} Visits")
+                            grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                            admission_step = grouped_steps[0]
+
+                            followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                            steps = ETL().save_steps(visits, followUpVisits)
+
+                            logger.info(f"Inserted {len(steps)} Steps")
+                            # exit()
+                        else:
+                            logger.info("No new journey")
+                    logger.info(
+                        "---------------------------------------------------------------------------------------------\n\n"
+                    )
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}

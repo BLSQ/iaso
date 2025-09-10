@@ -6,7 +6,7 @@ from operator import itemgetter
 
 from dateutil.relativedelta import *
 from django.core.paginator import Paginator
-from django.db.models import CharField, Count, Value
+from django.db.models import CharField, Value, F
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -33,7 +33,7 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.filter(code__in=self.types).first()
+        entity_type = EntityType.objects.prefetch_related("account").filter(code__in=self.types).first()
         account = entity_type.account
         return account
 
@@ -68,7 +68,6 @@ class ETL:
                 "source_created_at",
             )
         )
-
         return Paginator(beneficiaries, 200)
 
     def existing_beneficiaries(self):
@@ -575,12 +574,13 @@ class ETL:
                             visit,
                             sub_step["instance_id"],
                         )
-                        current_step.save()
                         all_steps.append(current_step)
-        return all_steps
+        save_steps = Step.objects.bulk_create(all_steps)
+        return save_steps
 
     def save_visit(self, visits, journey):
         saved_visits = []
+        created_visits = None
         visit_number = 0
         for current_visit in visits:
             visit = Visit()
@@ -591,9 +591,9 @@ class ETL:
             visit.org_unit = orgUnit
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
-            visit.save()
             visit_number += 1
-        return saved_visits
+        created_visits = Visit.objects.bulk_create(saved_visits)
+        return created_visits
 
     def followup_visits_at_next_visit_date(self, visits, formIds, next_visit__date__, secondNextVisitDate):
         followup_visits_in_period = []
@@ -742,7 +742,7 @@ class ETL:
         monthly_Statistic.exit_type = monthly_journey.get("exit_type")
         monthly_Statistic.account = account
 
-        monthly_Statistic.save()
+        return monthly_Statistic
 
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
@@ -763,7 +763,6 @@ class ETL:
                 "visit__id",
                 "visit__date",
                 "visit__journey",
-                "visit__org_unit_id",
                 "visit__journey__admission_criteria",
                 "visit__journey__nutrition_programme",
                 "visit__journey__programme_type",
@@ -780,9 +779,11 @@ class ETL:
                     output_field=CharField(),
                 ),
             )
+            .annotate(org_unit=F("visit__org_unit_id"))
             .order_by("visit__id")
         )
-        data_by_journey = groupby(list(journeys), key=itemgetter("visit__org_unit_id"))
+
+        data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
 
         for org_unit, journeys in data_by_journey:
             visits_by_period = groupby(journeys, key=itemgetter("period"))
@@ -796,11 +797,16 @@ class ETL:
                 visits_by_period, org_unit, aggregated_journeys, assistance
             )
 
-        for index, journey in enumerate(aggregated_journeys):
-            logger.info(
-                f"---------------------------------------- Journey N° {(index + 1)} -----------------------------------"
+        monthly_journeys = list(
+            map(
+                lambda journey: self.save_monthly_journey(journey, account),
+                aggregated_journeys,
             )
-            self.save_monthly_journey(journey, account)
+        )
+        saved_monthlyStatistics = MonthlyStatistics.objects.bulk_create(monthly_journeys)
+        logger.info(
+            f"----------------------------------------  Aggregated {len(saved_monthlyStatistics)} Monthly Journeys for {account} {programme}  -----------------------------------"
+        )
 
     def admission_forms(self, visits, admission_forms):
         admission_visits = [visit for visit in visits if visit["form_id"] in admission_forms]

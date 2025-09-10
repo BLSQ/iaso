@@ -33,8 +33,8 @@ class ETL:
         print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
 
     def account_related_to_entity_type(self):
-        entity_type = EntityType.objects.filter(code__in=self.types)
-        account = Account.objects.get(id=entity_type[0].account_id)
+        entity_type = EntityType.objects.filter(code__in=self.types).first()
+        account = entity_type.account
         return account
 
     def retrieve_entities(self):
@@ -69,7 +69,7 @@ class ETL:
             )
         )
 
-        return Paginator(beneficiaries, 150)
+        return Paginator(beneficiaries, 200)
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")

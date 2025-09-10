@@ -1871,6 +1871,16 @@ class NotificationImport(ModelWithFile):
         "DATE_RESULTS_RECEIVED",
     ]
 
+    XLSX_COL_VARIANTS = {
+        "VDPV_CATEGORY": ["VIRUS"],
+        "SOURCE(AFP/ENV/CONTACT/HC)": ["SOURCE"],
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2": ["VDPV_NTD_D/CE_SABIN_1/2"],
+        "SITE_NAME/GEOCODE": ["ES_SITE_NAME"],
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)": ["ONSET/COLLECTION"],
+        "LINEAGE": ["EMERGENCE"],
+        "CLOSEST_MATCH_VDPV2": ["CLOSEST_MATCH_VDPV1/2"],
+    }
+
     class Status(models.TextChoices):
         NEW = "new", _("New")
         PENDING = "pending", _("Pending")
@@ -1909,6 +1919,18 @@ class NotificationImport(ModelWithFile):
 
         # Normalize xlsx header's names.
         df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+
+        column_mapping = {}
+        for expected_col, variants in cls.XLSX_COL_VARIANTS.items():
+            for variant in variants:
+                if variant in df.columns:
+                    column_mapping[variant] = expected_col
+                    break  # Use the first matching variant.
+
+        # Apply the mapping to rename columns.
+        if column_mapping:
+            df.rename(columns=column_mapping, inplace=True)
+
         for name in cls.EXPECTED_XLSX_COL_NAMES:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")

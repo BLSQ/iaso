@@ -628,7 +628,45 @@ class SetupAccountApiTestCase(APITestCase):
     def test_setup_account_serializer_default_modules(self):
         """Test that the serializer has the correct default modules"""
         serializer = self.get_serializer_instance()
-        self.assertEqual(serializer.fields["modules"].initial, ["DEFAULT", "DATA_COLLECTION_FORMS"])
+        self.assertEqual(serializer.fields["modules"].initial, ["DATA_COLLECTION_FORMS"])
+
+    def test_setup_account_auto_adds_default_module(self):
+        """Test that DEFAULT module is automatically added even when not provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": ["DATA_COLLECTION_FORMS"],  # Only provide DATA_COLLECTION_FORMS
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that DEFAULT module was automatically added
+        account = m.Account.objects.get(name="unittest_account")
+        expected_modules = ["DEFAULT", "DATA_COLLECTION_FORMS"]
+        self.assertEqual(sorted(account.modules), sorted(expected_modules))
+
+    def test_setup_account_does_not_duplicate_default_module(self):
+        """Test that DEFAULT module is not duplicated when already provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": ["DEFAULT", "DATA_COLLECTION_FORMS"],  # Explicitly include DEFAULT
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that DEFAULT module is not duplicated
+        account = m.Account.objects.get(name="unittest_account")
+        expected_modules = ["DEFAULT", "DATA_COLLECTION_FORMS"]
+        self.assertEqual(sorted(account.modules), sorted(expected_modules))
+        # Verify no duplicates by checking length
+        self.assertEqual(len(account.modules), 2)
 
     def get_serializer_instance(self):
         """Helper method to get a serializer instance for testing"""

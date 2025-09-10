@@ -52,7 +52,7 @@ class SetupAccountSerializer(serializers.Serializer):
         default="en",
         help_text="Language for the user interface and email invitations",
     )
-    modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
+    modules = serializers.JSONField(required=True, initial=["DATA_COLLECTION_FORMS"])  # type: ignore
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
     )
@@ -148,6 +148,9 @@ class SetupAccountSerializer(serializers.Serializer):
         for module in validated_data.get("modules"):
             if module in module_codenames and module not in account_modules:
                 account_modules.append(module)
+
+        if "DEFAULT" not in account_modules:
+            account_modules.append("DEFAULT")
 
         account = Account.objects.create(
             name=validated_data["account_name"],

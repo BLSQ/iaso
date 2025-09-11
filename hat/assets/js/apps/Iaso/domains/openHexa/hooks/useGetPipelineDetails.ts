@@ -14,7 +14,9 @@ export const useGetPipelineDetails = (pipelineId: string) => {
                     currentVersion: {
                         ...data.currentVersion,
                         parameters: data.currentVersion?.parameters.filter(
-                            parameter => parameter.type !== 'task_id',
+                            parameter =>
+                                parameter.code !== 'task_id' &&
+                                parameter.code !== 'pipeline_id',
                         ),
                     },
                 };

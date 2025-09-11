@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { Box, Paper, Typography, Button } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -6,6 +11,7 @@ import { baseUrls } from 'Iaso/constants/urls';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineDetails } from './hooks/useGetPipelineDetails';
+import { useLaunchTask } from './hooks/useLaunchTask';
 
 type PipelineDetailsParams = {
     pipelineId: string;
@@ -61,20 +67,39 @@ export const PipelineDetails: FunctionComponent = () => {
     }, [pipeline]);
 
     // Handle parameter value changes
-    const handleParameterChange = (parameterName: string, value: any) => {
-        setParameterValues(prev => ({
-            ...prev,
-            [parameterName]: value,
-        }));
-    };
+    const handleParameterChange = useCallback(
+        (parameterName: string, value: any) => {
+            setParameterValues(prev => ({
+                ...prev,
+                [parameterName]: value,
+            }));
+        },
+        [],
+    );
+    const { mutate: launchTask } = useLaunchTask(
+        pipelineId,
+        pipeline?.currentVersion?.id,
+    );
 
     // Handle form submission
     const handleSubmit = () => {
-        console.log('Submitting parameters:', parameterValues);
+        launchTask(parameterValues);
         // TODO: Implement API call to submit parameters
         // This is where you'll send the parameterValues to your API
     };
-
+    const handleChange = useCallback(
+        (value: any, parameter: any) => {
+            try {
+                // Try to parse JSON input
+                const parsedValue = value ? JSON.parse(value) : {};
+                handleParameterChange(parameter.code, parsedValue);
+            } catch (error) {
+                // If JSON is invalid, store as string for now
+                handleParameterChange(parameter.code, value);
+            }
+        },
+        [handleParameterChange],
+    );
     const renderParameterInput = (parameter: any) => {
         const currentValue = parameterValues[parameter.code];
 
@@ -166,21 +191,9 @@ export const PipelineDetails: FunctionComponent = () => {
                         required={parameter.required}
                         multiline={true}
                         placeholder={`Enter JSON for ${parameter.name}`}
-                        onChange={(key, value) => {
-                            try {
-                                // Try to parse JSON input
-                                const parsedValue = value
-                                    ? JSON.parse(value)
-                                    : {};
-                                handleParameterChange(
-                                    parameter.code,
-                                    parsedValue,
-                                );
-                            } catch (error) {
-                                // If JSON is invalid, store as string for now
-                                handleParameterChange(parameter.code, value);
-                            }
-                        }}
+                        onChange={(_key, value) =>
+                            handleChange(value, parameter)
+                        }
                     />
                 );
             default:

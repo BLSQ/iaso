@@ -30,7 +30,7 @@ const initialFormState = (
         : undefined,
     groups: orgUnit?.groups?.map(g => g.id) ?? [],
     sub_source: orgUnit?.sub_source,
-    validation_status: orgUnit?.validation_status,
+    validation_status: orgUnit?.id ? orgUnit?.validation_status : 'VALID',
     aliases: orgUnit?.aliases ?? ([] as string[]),
     source_id: orgUnit?.source_id,
     parent: orgUnit?.parent,

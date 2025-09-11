@@ -93,8 +93,8 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     country = iaso_client.get(
         "/api/orgunits/",
         params={
-            "limit": 3000,
-            "order": "id",
+            "limit": 2,
+            "order": "-id",
             "searches": json.dumps(
                 [
                     {

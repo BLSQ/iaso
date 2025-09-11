@@ -225,6 +225,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation',
         id: 'iaso.label.validation',
     },
+    accountSetup: {
+        defaultMessage: 'Setup a new account',
+        id: 'iaso.setup.accountSetup',
+    },
 });
 
 export default MESSAGES;

@@ -1,14 +1,14 @@
 import logging
 
-from datetime import datetime
-
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
-from rest_framework import serializers, status
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from iaso.api.openhexa.serializers import PipelineLaunchSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
@@ -17,15 +17,6 @@ from iaso.models.json_config import Config
 logger = logging.getLogger(__name__)
 
 OPENHEXA_CONFIG_SLUG = "openhexa-config"
-
-
-class PipelineLaunchSerializer(serializers.Serializer):
-    """Serializer for launching a pipeline task."""
-
-    pipeline_id = serializers.UUIDField(required=True)
-    version = serializers.IntegerField(required=True)
-    config = serializers.JSONField(required=True)
-    id_field = serializers.JSONField(required=False, default=dict)
 
 
 class PipelineListView(APIView):
@@ -127,6 +118,7 @@ class PipelineDetailView(APIView):
                         name
                         currentVersion {
                             versionNumber
+                            id
                             parameters {
                                 type
                                 name
@@ -160,7 +152,7 @@ class PipelineDetailView(APIView):
 
         Args:
             pipeline_id: The OpenHexa pipeline ID
-            request.data: Contains version, config, and optional id_field
+            request.data: Contains version, config
 
         Returns:
             Response: Created task information
@@ -172,7 +164,6 @@ class PipelineDetailView(APIView):
         validated_data = serializer.validated_data
         version = validated_data["version"]
         config = validated_data["config"]
-        id_field = validated_data.get("id_field", {})
 
         try:
             # Retrieve OpenHexa configuration from Config object
@@ -186,24 +177,25 @@ class PipelineDetailView(APIView):
 
         try:
             # Construct pipeline_config object for launch_task
-            pipeline_config = {
-                "content": {
-                    "pipeline_version": version,
+            # We need to create a mock Config object that has a .content attribute
+            class MockConfig:
+                def __init__(self, content_dict):
+                    self.content = content_dict
+
+            pipeline_config = MockConfig(
+                {
+                    "pipeline_version": str(version),  # Convert UUID to string
                     "pipeline": str(pipeline_id),
-                    "oh_pipeline_target": str(pipeline_id),
+                    "oh_pipeline_target": None,
                     "openhexa_url": openhexa_url,
                     "openhexa_token": openhexa_token,
                     "workspace_slug": workspace_slug,
                 }
-            }
+            )
 
             # Create external task following the same pattern as powerbi.py
             user = request.user
             task_name = f"pipeline-{pipeline_id}-v{version}"
-            if id_field:
-                id_field_value = list(id_field.values())[0] if id_field else None
-                if id_field_value:
-                    task_name += f"-{id_field_value}"
 
             task = Task.objects.create(
                 created_by=user,
@@ -212,15 +204,18 @@ class PipelineDetailView(APIView):
                 name=task_name,
                 status=RUNNING,
                 external=True,
-                started_at=datetime.now(),
+                started_at=timezone.now(),
                 should_be_killed=False,
+                params={
+                    "args": [],
+                    "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
+                },
             )
 
             # Launch the task using the existing launch_task function
             task_status = ExternalTaskModelViewSet.launch_task(
                 slug=None,  # Not needed since we're passing pipeline_config
                 config=config,
-                id_field=id_field,
                 task_id=task.pk,
                 pipeline_config=pipeline_config,
             )
@@ -239,7 +234,7 @@ class PipelineDetailView(APIView):
                         "status": task.status,
                         "created_at": task.created_at.isoformat(),
                         "pipeline_id": str(pipeline_id),
-                        "version": version,
+                        "version": str(version),
                     }
                 },
                 status=status.HTTP_201_CREATED,
@@ -248,3 +243,66 @@ class PipelineDetailView(APIView):
         except Exception as e:
             logger.exception(f"Could not launch pipeline {pipeline_id}: {str(e)}")
             return Response({"error": "Failed to launch pipeline"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def patch(self, request, pipeline_id):
+        """
+        Update task status for a pipeline task.
+
+        Args:
+            pipeline_id: The OpenHexa pipeline ID (not used but required for URL pattern)
+            request.data: Contains task_id, status, progress_message, progress_value, end_value
+
+        Returns:
+            Response: Updated task information
+        """
+        # Get task_id from request data
+        task_id = request.data.get("task_id")
+        if not task_id:
+            return Response({"error": "task_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # Get the task
+            task = get_object_or_404(Task, pk=task_id)
+
+            # Check if task is external (should be for pipeline tasks)
+            if not task.external:
+                return Response({"error": "Task is not external"}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Update task fields
+            if "status" in request.data:
+                task.status = request.data["status"]
+                # Set ended_at if task is completed
+                if task.status in ["SUCCESS", "ERRORED", "KILLED"]:
+                    task.ended_at = timezone.now()
+
+            if "progress_message" in request.data:
+                task.progress_message = request.data["progress_message"]
+
+            if "progress_value" in request.data:
+                task.progress_value = request.data["progress_value"]
+
+            if "end_value" in request.data:
+                task.end_value = request.data["end_value"]
+
+            task.save()
+
+            logger.info(f"Successfully updated task {task_id} status to {task.status}")
+
+            return Response(
+                {
+                    "task": {
+                        "id": task.pk,
+                        "name": task.name,
+                        "status": task.status,
+                        "progress_message": task.progress_message,
+                        "progress_value": task.progress_value,
+                        "end_value": task.end_value,
+                        "updated_at": task.ended_at.isoformat() if task.ended_at else None,
+                    }
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        except Exception as e:
+            logger.exception(f"Could not update task {task_id}: {str(e)}")
+            return Response({"error": "Failed to update task"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

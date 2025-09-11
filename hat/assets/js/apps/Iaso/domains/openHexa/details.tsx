@@ -32,27 +32,27 @@ export const PipelineDetails: FunctionComponent = () => {
                 // Set default values or empty values based on parameter type
                 switch (parameter.type) {
                     case 'str':
-                        initialValues[parameter.name] = parameter.default || '';
+                        initialValues[parameter.code] = parameter.default || '';
                         break;
                     case 'bool':
-                        initialValues[parameter.name] =
+                        initialValues[parameter.code] =
                             parameter.default || false;
                         break;
                     case 'int':
-                        initialValues[parameter.name] = parameter.default || 0;
+                        initialValues[parameter.code] = parameter.default || 0;
                         break;
                     case 'float':
-                        initialValues[parameter.name] =
+                        initialValues[parameter.code] =
                             parameter.default || 0.0;
                         break;
                     case 'list':
-                        initialValues[parameter.name] = parameter.default || [];
+                        initialValues[parameter.code] = parameter.default || [];
                         break;
                     case 'dict':
-                        initialValues[parameter.name] = parameter.default || {};
+                        initialValues[parameter.code] = parameter.default || {};
                         break;
                     default:
-                        initialValues[parameter.name] =
+                        initialValues[parameter.code] =
                             parameter.default || null;
                 }
             });
@@ -76,20 +76,20 @@ export const PipelineDetails: FunctionComponent = () => {
     };
 
     const renderParameterInput = (parameter: any) => {
-        const currentValue = parameterValues[parameter.name];
+        const currentValue = parameterValues[parameter.code];
 
         switch (parameter.type) {
             case 'str':
                 return (
                     <InputComponent
                         type="text"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={currentValue || ''}
                         required={parameter.required}
                         placeholder={`Enter ${parameter.name}`}
                         onChange={(key, value) =>
-                            handleParameterChange(parameter.name, value)
+                            handleParameterChange(parameter.code, value)
                         }
                     />
                 );
@@ -97,12 +97,12 @@ export const PipelineDetails: FunctionComponent = () => {
                 return (
                     <InputComponent
                         type="checkbox"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={currentValue || false}
                         required={parameter.required}
                         onChange={(key, value) =>
-                            handleParameterChange(parameter.name, value)
+                            handleParameterChange(parameter.code, value)
                         }
                     />
                 );
@@ -110,14 +110,14 @@ export const PipelineDetails: FunctionComponent = () => {
                 return (
                     <InputComponent
                         type="number"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={currentValue || 0}
                         required={parameter.required}
                         min={0}
                         placeholder={`Enter ${parameter.name}`}
                         onChange={(key, value) =>
-                            handleParameterChange(parameter.name, value)
+                            handleParameterChange(parameter.code, value)
                         }
                     />
                 );
@@ -125,14 +125,14 @@ export const PipelineDetails: FunctionComponent = () => {
                 return (
                     <InputComponent
                         type="number"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={currentValue || 0.0}
                         required={parameter.required}
                         min={0}
                         placeholder={`Enter ${parameter.name}`}
                         onChange={(key, value) =>
-                            handleParameterChange(parameter.name, value)
+                            handleParameterChange(parameter.code, value)
                         }
                     />
                 );
@@ -140,7 +140,7 @@ export const PipelineDetails: FunctionComponent = () => {
                 return (
                     <InputComponent
                         type="select"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={currentValue || []}
                         required={parameter.required}
@@ -156,7 +156,7 @@ export const PipelineDetails: FunctionComponent = () => {
                 return (
                     <InputComponent
                         type="textarea"
-                        keyValue={parameter.name}
+                        keyValue={parameter.code}
                         labelString={parameter.name}
                         value={
                             currentValue
@@ -173,12 +173,12 @@ export const PipelineDetails: FunctionComponent = () => {
                                     ? JSON.parse(value)
                                     : {};
                                 handleParameterChange(
-                                    parameter.name,
+                                    parameter.code,
                                     parsedValue,
                                 );
                             } catch (error) {
                                 // If JSON is invalid, store as string for now
-                                handleParameterChange(parameter.name, value);
+                                handleParameterChange(parameter.code, value);
                             }
                         }}
                     />
@@ -186,7 +186,7 @@ export const PipelineDetails: FunctionComponent = () => {
             default:
                 return (
                     <Typography
-                        key={parameter.name}
+                        key={parameter.code}
                         variant="body2"
                         color="text.secondary"
                     >

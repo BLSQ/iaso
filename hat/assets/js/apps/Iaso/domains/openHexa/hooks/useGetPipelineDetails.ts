@@ -7,6 +7,18 @@ export const useGetPipelineDetails = (pipelineId: string) => {
         queryFn: () => getRequest(`/api/openhexa/pipelines/${pipelineId}/`),
         options: {
             enabled: Boolean(pipelineId),
+            select: data => {
+                if (!data) return undefined;
+                return {
+                    ...data,
+                    currentVersion: {
+                        ...data.currentVersion,
+                        parameters: data.currentVersion?.parameters.filter(
+                            parameter => parameter.type !== 'task_id',
+                        ),
+                    },
+                };
+            },
         },
     });
 };

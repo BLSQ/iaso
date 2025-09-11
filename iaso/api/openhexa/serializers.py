@@ -45,3 +45,10 @@ class PipelineParametersSerializer(serializers.Serializer):
             raise serializers.ValidationError("Pipeline ID must be a valid UUID format")
 
         return value.strip()
+
+
+class PipelineLaunchSerializer(serializers.Serializer):
+    """Serializer for launching a pipeline task."""
+
+    version = serializers.UUIDField(required=True)
+    config = serializers.JSONField(required=True)

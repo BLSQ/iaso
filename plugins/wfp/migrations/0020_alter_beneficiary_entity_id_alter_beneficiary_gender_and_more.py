@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wfp", "0019_alter_monthlystatistics_given_ration_cbt"),
     ]

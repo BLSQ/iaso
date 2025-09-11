@@ -1,3 +1,4 @@
+import { UseQueryResult } from 'react-query';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../constants/snackBars';
 import {
@@ -7,21 +8,38 @@ import {
     putRequest,
 } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
+import { Form } from './types/forms';
 
-export const useGetForm = formId =>
-    useSnackQuery(
-        ['forms', formId],
-        () =>
-            getRequest(
-                // eslint-disable-next-line max-len
-                `/api/forms/${formId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode`,
-            ),
-        undefined,
-        {
-            enabled: formId && formId !== '0',
-            keepPreviousData: true,
+export const useGetForm = (
+    formId: number | string | undefined,
+    enabled = Boolean(formId) && formId !== '0',
+    fields?: string | undefined,
+    appId?: string,
+): UseQueryResult<Form, Error> => {
+    const queryKey: any[] = ['form', formId];
+    if (fields) {
+        queryKey.push(fields);
+    }
+    let url = `/api/forms/${formId}`;
+    if (fields) {
+        url += `/?fields=${fields}`;
+        if (appId) {
+            url += `&app_id=${appId}`;
+        }
+    } else if (appId) {
+        url += `/?app_id=${appId}`;
+    }
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getRequest(url),
+        options: {
+            retry: false,
+            enabled,
+            staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
         },
-    );
+    });
+};
 
 export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {

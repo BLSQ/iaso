@@ -116,7 +116,7 @@ export type FormAttachment = {
     updated_at: number;
 };
 export type FormParams = {
-    formId: number;
+    formId: string;
     tab?: string;
     attachmentsOrder?: string;
     attachmentsPageSize?: string;

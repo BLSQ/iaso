@@ -150,7 +150,10 @@ class ExternalTaskModelViewSet(ModelViewSet):
         config = data.get("config", None)
         slug = data.get("slug", None)
         id_field = data.get("id_field", None)
-        status = self.launch_task(slug=slug, config=config, id_field=id_field, task_id=task.pk)
+        pipeline_config = data.get("pipeline_config", None)
+        status = self.launch_task(
+            slug=slug, config=config, id_field=id_field, task_id=task.pk, pipeline_config=pipeline_config
+        )
         task.status = status
         task.save()
         return Response({"task": TaskSerializer(instance=task).data})
@@ -161,10 +164,13 @@ class ExternalTaskModelViewSet(ModelViewSet):
     # task_id will be passed by the task decorator
     # id_field is a field to filter from to find the relevant active run, eg: a country id for lqas refresh
     @staticmethod
-    def launch_task(slug, config={}, task_id=None, id_field=None):
+    def launch_task(slug, config={}, task_id=None, id_field=None, pipeline_config=None):
         try:
-            # The config Model should be moved to Iaso as well
-            pipeline_config = get_object_or_404(Config, slug=slug)
+            # Use provided pipeline_config if available, otherwise fetch from database
+            if pipeline_config is None:
+                # The config Model should be moved to Iaso as well
+                pipeline_config = get_object_or_404(Config, slug=slug)
+
             pipeline_version = pipeline_config.content["pipeline_version"]
             pipeline = pipeline_config.content["pipeline"]
             pipeline_target = pipeline_config.content["oh_pipeline_target"]

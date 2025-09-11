@@ -1,18 +1,31 @@
 import logging
 
+from datetime import datetime
+
 from django.shortcuts import get_object_or_404
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from iaso.api.tasks.views import ExternalTaskModelViewSet
+from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
 
 
 logger = logging.getLogger(__name__)
 
 OPENHEXA_CONFIG_SLUG = "openhexa-config"
+
+
+class PipelineLaunchSerializer(serializers.Serializer):
+    """Serializer for launching a pipeline task."""
+
+    pipeline_id = serializers.UUIDField(required=True)
+    version = serializers.IntegerField(required=True)
+    config = serializers.JSONField(required=True)
+    id_field = serializers.JSONField(required=False, default=dict)
 
 
 class PipelineListView(APIView):
@@ -140,3 +153,98 @@ class PipelineDetailView(APIView):
             return Response(
                 {"error": "Failed to retrieve pipeline details"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    def post(self, request, pipeline_id):
+        """
+        Launch a pipeline task with the provided configuration.
+
+        Args:
+            pipeline_id: The OpenHexa pipeline ID
+            request.data: Contains version, config, and optional id_field
+
+        Returns:
+            Response: Created task information
+        """
+        # Validate request data
+        serializer = PipelineLaunchSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        version = validated_data["version"]
+        config = validated_data["config"]
+        id_field = validated_data.get("id_field", {})
+
+        try:
+            # Retrieve OpenHexa configuration from Config object
+            openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
+            openhexa_url = openhexa_config.content["openhexa_url"]
+            openhexa_token = openhexa_config.content["openhexa_token"]
+            workspace_slug = openhexa_config.content["workspace_slug"]
+        except Exception as e:
+            logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
+            return Response({"error": "OpenHexa configuration not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        try:
+            # Construct pipeline_config object for launch_task
+            pipeline_config = {
+                "content": {
+                    "pipeline_version": version,
+                    "pipeline": str(pipeline_id),
+                    "oh_pipeline_target": str(pipeline_id),
+                    "openhexa_url": openhexa_url,
+                    "openhexa_token": openhexa_token,
+                    "workspace_slug": workspace_slug,
+                }
+            }
+
+            # Create external task following the same pattern as powerbi.py
+            user = request.user
+            task_name = f"pipeline-{pipeline_id}-v{version}"
+            if id_field:
+                id_field_value = list(id_field.values())[0] if id_field else None
+                if id_field_value:
+                    task_name += f"-{id_field_value}"
+
+            task = Task.objects.create(
+                created_by=user,
+                launcher=user,
+                account=user.iaso_profile.account,
+                name=task_name,
+                status=RUNNING,
+                external=True,
+                started_at=datetime.now(),
+                should_be_killed=False,
+            )
+
+            # Launch the task using the existing launch_task function
+            task_status = ExternalTaskModelViewSet.launch_task(
+                slug=None,  # Not needed since we're passing pipeline_config
+                config=config,
+                id_field=id_field,
+                task_id=task.pk,
+                pipeline_config=pipeline_config,
+            )
+
+            # Update task status
+            task.status = task_status
+            task.save()
+
+            logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
+
+            return Response(
+                {
+                    "task": {
+                        "id": task.pk,
+                        "name": task.name,
+                        "status": task.status,
+                        "created_at": task.created_at.isoformat(),
+                        "pipeline_id": str(pipeline_id),
+                        "version": version,
+                    }
+                },
+                status=status.HTTP_201_CREATED,
+            )
+
+        except Exception as e:
+            logger.exception(f"Could not launch pipeline {pipeline_id}: {str(e)}")
+            return Response({"error": "Failed to launch pipeline"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

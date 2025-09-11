@@ -235,6 +235,7 @@ class PipelineDetailView(APIView):
                         "created_at": task.created_at.isoformat(),
                         "pipeline_id": str(pipeline_id),
                         "version": str(version),
+                        "result": task.result,
                     }
                 },
                 status=status.HTTP_201_CREATED,
@@ -284,6 +285,10 @@ class PipelineDetailView(APIView):
             if "end_value" in request.data:
                 task.end_value = request.data["end_value"]
 
+            if "result_data" in request.data:
+                # Store the pipeline result in the task's result field
+                task.result = {"result": task.status, "data": request.data["result_data"]}
+
             task.save()
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
@@ -297,6 +302,7 @@ class PipelineDetailView(APIView):
                         "progress_message": task.progress_message,
                         "progress_value": task.progress_value,
                         "end_value": task.end_value,
+                        "result": task.result,
                         "updated_at": task.ended_at.isoformat() if task.ended_at else None,
                     }
                 },

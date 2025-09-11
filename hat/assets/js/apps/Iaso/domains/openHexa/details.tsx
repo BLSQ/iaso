@@ -84,8 +84,6 @@ export const PipelineDetails: FunctionComponent = () => {
     // Handle form submission
     const handleSubmit = () => {
         launchTask(parameterValues);
-        // TODO: Implement API call to submit parameters
-        // This is where you'll send the parameterValues to your API
     };
     const handleChange = useCallback(
         (value: any, parameter: any) => {

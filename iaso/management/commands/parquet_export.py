@@ -41,14 +41,12 @@ class Command(BaseCommand):
 
         if mode == "pyramid":
             version_id = options["version_id"]
-            parquet.export_django_query_to_parquet_via_duckdb(
-                parquet.build_pyramid_queryset(m.OrgUnit.objects.filter(version_id=version_id), extra_fields=[":all"]),
-                "./media/pyramid.parquet",
+            qs_to_export = parquet.build_pyramid_queryset(
+                m.OrgUnit.objects.filter(version_id=version_id), extra_fields=[":all"]
             )
+            parquet.export_django_query_to_parquet_via_duckdb(qs_to_export, "./media/pyramid.parquet")
 
         if mode == "submissions":
             form_id = options["form_id"]
-
-            parquet.export_django_query_to_parquet_via_duckdb(
-                parquet.build_submissions_queryset(m.Instance.objects, form_id), "./media/submissions.parquet"
-            )
+            qs_to_export = parquet.build_submissions_queryset(m.Instance.objects, form_id)
+            parquet.export_django_query_to_parquet_via_duckdb(qs_to_export, "./media/submissions.parquet")

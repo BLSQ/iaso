@@ -224,8 +224,7 @@ class SetupAccountSerializer(serializers.Serializer):
         profile = Profile.objects.create(account=account, user=user, language=language)
 
         # Get all permissions linked to the modules
-        # modules_permissions = account_module_permissions(account_modules)
-        modules_permissions = account.permissions_from_active_modules
+        modules_permissions = [perm.name for perm in account.permissions_from_active_modules]
 
         user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
 

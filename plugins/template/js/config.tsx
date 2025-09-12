@@ -18,7 +18,6 @@ const config: Plugin = {
     baseUrls,
     paramsConfig,
     redirections: [],
-    homeUrl: '/***/',
     theme,
 };
 

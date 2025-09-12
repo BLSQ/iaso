@@ -34,9 +34,6 @@ class IasoPermission(ABC):
         if self.module:
             self.module.add_permission(self)
 
-    def __eq__(self, other):
-        return isinstance(other, IasoPermission) and self.name == other.name
-
     def __str__(self):
         return self.name
 

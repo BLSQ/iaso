@@ -449,7 +449,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {
                     "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
                 },
-                status=409,
+                status=status.HTTP_409_CONFLICT,
             )
 
         extra_fields_raw = request.GET.get("extra_fields", "")
@@ -470,7 +470,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {
                     "error": f"Unknown extra_fields for parquet exports: {', '.join(unknown_extra_fields)}, only supported {', '.join(possible_extra_fields)}."
                 },
-                status=409,
+                status=status.HTTP_409_CONFLICT,
             )
 
         export_queryset = parquet.build_pyramid_queryset(queryset, extra_fields)

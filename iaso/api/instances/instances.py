@@ -549,7 +549,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 {
                     "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
                 },
-                status=409,
+                status=status.HTTP_409_CONFLICT,
             )
 
         # actually return parquet file

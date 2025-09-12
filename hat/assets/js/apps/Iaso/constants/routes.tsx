@@ -73,6 +73,12 @@ export const setupAccountPath = {
     permissions: [],
     element: <SetupAccount />,
 };
+export const setupAccountSettingsPath = {
+    baseUrl: baseUrls.setupAccountSettings,
+    routerUrl: `${baseUrls.setupAccountSettings}/*`,
+    permissions: [],
+    element: <SetupAccount />,
+};
 
 export const formsPath = {
     baseUrl: baseUrls.forms,

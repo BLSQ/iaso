@@ -4,11 +4,13 @@ import typing
 from unittest import mock
 
 from django.core.files import File
+from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
+from iaso.models.forms import form_version_upload_to
 from iaso.test import APITestCase
 
 
@@ -68,6 +70,11 @@ class FormsVersionAPITestCase(APITestCase):
             )
         cls.project.forms.set([cls.form_1, cls.form_2])
         cls.project2.forms.set([cls.form_1, cls.form_2])
+
+    def setUp(self):
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUp()
 
     def test_form_version_to_questions_by_path(self):
         self.client.force_authenticate(self.yoda)
@@ -264,12 +271,14 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(created_version.version_id, "2020022401")
         self.assertIsInstance(created_version.file, File)
         self.assertGreater(created_version.file.size, 100)
-        # the file can be with a suffix in case of collision
-        # another test create a version with the same file, the db is resetted but not the filesystem
-        self.assertRegex(created_version.file.name, r"forms/new_land_speeder_concept_2020022401(.*).xml")
+        # We don't care about the filename parameter because its name is replaced in the upload_to function
+        expected_xml_file_name = form_version_upload_to(created_version, "file.xml")
+        self.assertEqual(created_version.file.name, expected_xml_file_name)
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
-        self.assertRegex(created_version.xls_file.name, r"forms/new_land_speeder_concept_2020022401(.*).xlsx")
+        # We don't care about the filename parameter because its name is replaced in the upload_to function
+        expected_xls_file_name = form_version_upload_to(created_version, "file.xlsx")
+        self.assertEqual(created_version.xls_file.name, expected_xls_file_name)
         self.assertEqual(created_version.created_by, self.yoda)
         self.assertEqual(created_version.updated_by, self.yoda)
 

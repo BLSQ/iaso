@@ -89,7 +89,7 @@ class AccountViewSet(ModelViewSet):
         )
 
         if user_to_login:
-            user_to_login.backend = "django.contrib.auth.backends.ModelBackend"
+            user_to_login.backend = "iaso.auth.backends.MultiTenantAuthBackend"
             login(request, user_to_login)
             # Return an empty response since no data is needed by the frontend
             return Response({}, status=status.HTTP_200_OK)

@@ -76,10 +76,26 @@ def slugify_underscore(filename):
     return slugify(filename).replace("-", "_")
 
 
+import json
 import re
 
 
 sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
+
+
+def parse_json_field(data, field_name, default_value=None):
+    """Parse a field that might be a JSON string into a Python object."""
+    if field_name not in data:
+        return data
+
+    value = data[field_name]
+    if isinstance(value, str):
+        try:
+            data[field_name] = json.loads(value)
+        except (json.JSONDecodeError, TypeError):
+            data[field_name] = default_value if default_value is not None else []
+
+    return data
 
 
 def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):

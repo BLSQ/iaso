@@ -7,7 +7,7 @@ from iaso.test import TestCase
 from .parquet_helper import get_columns_from_parquet
 
 
-class PyramidExportTest(TestCase):
+class SubmissionsExportTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.form_to_export = Form.objects.create(

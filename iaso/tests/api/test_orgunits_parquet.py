@@ -62,6 +62,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
+            opening_date="2025-12-12",
             code="code1",
         )
 
@@ -90,6 +91,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             catchment=mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             code="code2",
+            opening_date="2025-01-01",
         )
 
         # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
@@ -113,6 +115,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
             code="code3",
+            opening_date="2025-03-03",
         )
         self.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=jedi_council_endor,
@@ -124,6 +127,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             catchment=mock_multipolygon,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             code="code4",
+            opening_date="2025-04-04",
         )
 
         self.jedi_council_brussels = m.OrgUnit.objects.create(
@@ -136,6 +140,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             location=mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             code="code5",
+            opening_date="2025-05-05",
         )
 
         self.yoda = self.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])

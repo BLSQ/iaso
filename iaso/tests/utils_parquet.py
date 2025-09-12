@@ -18,10 +18,17 @@ class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
 
 def parquet_to_df(path):
     with duckdb.connect() as con:
-        return con.execute(f"SELECT * FROM read_parquet('{path}')").fetchdf()
+        df = con.execute(f"SELECT * FROM read_parquet('{path}')").fetchdf()
+
+    buffer = StringIO()
+    df.to_csv(buffer, index=False)
+    buffer.seek(0)
+    return pd.read_csv(buffer, dtype=str)
 
 
 def normalize_df(df, stable_columns=None):
+    df = df.copy()
+
     df = df.fillna(pd.NA).astype(str).replace({None: "", np.nan: ""}).fillna("").reset_index(drop=True)
     if stable_columns:
         return df[stable_columns]
@@ -36,7 +43,6 @@ def render_with_jinja(path: Path, context: dict) -> str:
 
 def load_snapshot(snapshot_file: Path, context: dict) -> pd.DataFrame:
     rendered = render_with_jinja(snapshot_file, context)
-    print(rendered)
     if snapshot_file.suffix == ".csv":
         return pd.read_csv(StringIO(rendered), dtype=str)
     if snapshot_file.suffix == ".json":

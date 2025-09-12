@@ -399,7 +399,7 @@ docker compose exec iaso coverage report --format=total
 # serve the htmlcov volume (probably owned by root, so need sudo)
 sudo python3 -m http.server 8000 --directory htmlcov
 ```
-then browse the report via : http://127.0.0.1:800
+then browse the report via : http://127.0.0.1:8000
 
 you might want to check first the modified files between your branch and develop : `git diff --name-only origin/develop...HEAD | grep '\.py$'`
 

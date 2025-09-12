@@ -76,19 +76,6 @@ def build_submission_annotations():
     ]
     model_prefix = "iaso_subm_"
 
-    # TODO is ref submission
-
-    # accuracy, attributes,
-    # device, device_id, entity,
-    # form_version, form_version_id,
-    # last_export_success_at,
-    # name,
-    # orgunitchangerequest, orgunitreferenceinstance,
-    # planning, planning_id, project, project_id,
-    # storage_log_entries, to_export
-    # Status,
-    # Entité,
-
     prefixed_fields = {f"{model_prefix}{normalize_field_name(f)}": F(f) for f in model_fields}
 
     # less standard fields that needs some functions or more complex calculation

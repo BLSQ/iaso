@@ -495,7 +495,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.groups.all().first(), new_user_1_user_role.first().group)
         self.assertEqual(len(new_user_2_user_roles), 2)
         self.assertEqual(len(new_user_2.groups.all()), 2)
-        self.assertEqual(
+        self.assertCountEqual(
             [user_role.group for user_role in new_user_2_user_roles],
             [group for group in new_user_2.groups.all()],
         )

@@ -7,6 +7,7 @@ from iaso.test import TestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Node
 from plugins.polio.models import Campaign, Round
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 from plugins.polio.tests.utils.budget import get_mocked_workflow
 
 
@@ -54,7 +55,7 @@ class MailTemplateTestCase(TestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
 
         # Campaign.

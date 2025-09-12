@@ -20,8 +20,11 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import OrgUnit
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import Group, VaccineAuthorization
+from plugins.polio.permissions import (
+    POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+    POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+)
 from plugins.polio.settings import COUNTRY
 
 
@@ -111,8 +114,8 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
 
 class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
-    read_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-    write_perm = polio_permissions.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+    read_perm = POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION
+    write_perm = POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])

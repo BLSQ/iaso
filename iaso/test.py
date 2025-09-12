@@ -118,7 +118,7 @@ class IasoTestCaseMixin:
         clear_url_caches()
 
     @staticmethod
-    def create_base_users(account, permissions, user_name="user"):
+    def create_base_users(account, permissions: list[IasoPermission], user_name="user"):
         # anonymous user and user without needed permissions
         anon = AnonymousUser()
         user_no_perms = IasoTestCaseMixin.create_user_with_profile(

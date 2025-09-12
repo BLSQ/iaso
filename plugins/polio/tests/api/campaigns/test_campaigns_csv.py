@@ -6,6 +6,7 @@ from time import gmtime, strftime
 
 from iaso import models as m
 from iaso.models import Account
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.models import CampaignScope
@@ -21,7 +22,9 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         cls.star_wars = m.Account.objects.create(name="Star Wars")
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         cls.account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.campaign_csv_columns = [x["title"] for x in CampaignViewSet.campaign_csv_columns()]
 

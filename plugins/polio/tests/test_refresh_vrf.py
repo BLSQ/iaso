@@ -5,6 +5,7 @@ from iaso import models as m
 from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.test import APITestCase
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_vrf_dashboard_data import VRF_CONFIG_SLUG, VRF_TASK_NAME, RefreshVrfDataViewset
 
 
@@ -13,7 +14,7 @@ class RefreshVrfDataTestCase(APITestCase):
     def setUp(cls):
         cls.url = "/api/polio/tasks/refreshvrf/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True

@@ -55,12 +55,12 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
 
     # Now checking models that are part of plugins
     if is_polio_plugin_active():
-        from plugins.polio import permissions as polio_permissions
         from plugins.polio.models import Campaign
+        from plugins.polio.permissions import POLIO_PERMISSION
 
         if isinstance(obj, Campaign):
             return (
-                user.has_perm(polio_permissions.POLIO)
+                user.has_perm(POLIO_PERMISSION.full_name())
                 and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
             )
     return False

@@ -5,8 +5,8 @@ from rest_framework.response import Response
 
 from hat.audit.audit_mixin import AuditMixin
 from iaso.api.common import HasPermission, ModelViewSet
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import ReasonForDelay
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 class AuditReasonForDelaySerializer(serializers.ModelSerializer):
@@ -67,7 +67,7 @@ class ReasonForDelaySerializer(serializers.ModelSerializer):
 
 class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
     http_method_names = ["get", "post", "patch"]
-    permission_classes = [HasPermission(polio_permissions.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [HasPermission(POLIO_CONFIG_PERMISSION)]
     serializer_class = ReasonForDelaySerializer
     ordering_fields = ["updated_at", "created_at", "name_en", "name_fr", "key_name", "id"]
     filter_backends = [
@@ -86,7 +86,7 @@ class ReasonForDelayViewSet(AuditMixin, ModelViewSet):
     @action(
         methods=["GET"],
         detail=False,
-        permission_classes=[HasPermission(polio_permissions.POLIO, polio_permissions.POLIO_CONFIG)],
+        permission_classes=[HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)],
     )  # type: ignore
     def forcampaign(self, request):
         queryset = self.get_queryset()

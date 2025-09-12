@@ -5,7 +5,11 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
+from plugins.polio.permissions import (
+    POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+    POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
+)
 
 
 class BaseVaccineSupplyChainAPITestCase(APITestCase):
@@ -43,12 +47,12 @@ class BaseVaccineSupplyChainAPITestCase(APITestCase):
             username="user_1",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ,
-                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_WRITE,
+                POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION,
+                POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION,
             ],
         )
         cls.user_ro_perm = cls.create_user_with_profile(
-            username="user_2", account=cls.account, permissions=[polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ]
+            username="user_2", account=cls.account, permissions=[POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION]
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=[])
 

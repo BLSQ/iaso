@@ -270,16 +270,6 @@ def build_org_unit_annotations(model_prefix):
         "org_unit_type_id",
         "org_unit_type__name",
     ]
-    # aliases, assignment, campaigns, campaigns_country, catchment,
-    # countryusersgroup,
-    # custom, default_image, default_image_id, destination_set, extra_fields,
-    # geom, geom_ref, gps_source, groups, iaso_profile, id, instance, instance_lock,
-    # jsondatastore, name,  org_unit_change_parents_set,
-    # orgunit, orgunitchangerequest,
-    # orgunitreferenceinstance, parent, parent_id, path, planning, polio_notifications,
-    # record, reference_instances, simplified_geom,
-    # source_set, storagedevice, storagelogentry, sub_source,  uuid, vaccine_stocks,
-    # vaccineauthorization, validated, version
 
     # sad to not be aligned with submission : created_by__username, created_by_id
     # so adding aliases

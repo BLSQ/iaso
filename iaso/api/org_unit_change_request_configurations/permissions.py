@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-import iaso.permissions as core_permissions
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION
 
 
 class HasOrgUnitsChangeRequestConfigurationReadPermission(permissions.BasePermission):
@@ -13,5 +13,5 @@ class HasOrgUnitsChangeRequestConfigurationFullPermission(permissions.BasePermis
         if request.user.is_superuser:
             return True
         return request.user.is_authenticated and request.user.has_perm(
-            core_permissions.ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS
+            CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION.full_name()
         )

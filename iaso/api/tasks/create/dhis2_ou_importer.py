@@ -3,11 +3,10 @@ import logging
 from rest_framework import permissions, serializers, viewsets
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import DataSource
+from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 
 
@@ -54,7 +53,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.SOURCES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_SOURCE_PERMISSION)]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):

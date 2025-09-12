@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from iaso import models as m
 from iaso.api.org_unit_types.serializers import validate_reference_forms
 from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -56,7 +57,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=cls.version_2)
         cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
         cls.reference_form = reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
@@ -502,7 +503,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         new_account, new_datasource, new_source_version, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user = self.create_user_with_profile(username="new user", account=new_account, permissions=["iaso_forms"])
+        new_user = self.create_user_with_profile(
+            username="new user", account=new_account, permissions=[CORE_FORMS_PERMISSION]
+        )
         new_out_1 = m.OrgUnitType.objects.create(name="new out 1", short_name="new out 1")
         new_out_2 = m.OrgUnitType.objects.create(name="new out 2", short_name="new out 2")
         new_project.unit_types.set([new_out_1, new_out_2])

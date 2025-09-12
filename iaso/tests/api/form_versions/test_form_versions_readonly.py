@@ -11,6 +11,7 @@ from django.test import override_settings
 from iaso import models as m
 from iaso.models.org_unit import OrgUnitType
 from iaso.models.project import Project
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -54,10 +55,10 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         cls.anon = AnonymousUser()
 
         cls.blue_with_perms = cls.create_user_with_profile(
-            username="blue_with_perms", account=blue_account, permissions=["iaso_forms"]
+            username="blue_with_perms", account=blue_account, permissions=[CORE_FORMS_PERMISSION]
         )
         cls.red_with_perms = cls.create_user_with_profile(
-            username="red_with_perms", account=red_account, permissions=["iaso_forms"]
+            username="red_with_perms", account=red_account, permissions=[CORE_FORMS_PERMISSION]
         )
         cls.red_no_perms = cls.create_user_with_profile(username="red_no_perms", account=red_account)
 

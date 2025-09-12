@@ -5,9 +5,12 @@ import time_machine
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
-import iaso.permissions as core_permissions
-
 from iaso import models as m
+from iaso.permissions.core_permissions import (
+    CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_SOURCE_WRITE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -29,9 +32,9 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
             last_name="Bar",
             account=cls.account,
             permissions=[
-                core_permissions._SOURCE_WRITE,
-                core_permissions._ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS,
-                core_permissions._ORG_UNITS,
+                CORE_SOURCE_WRITE_PERMISSION,
+                CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION,
+                CORE_ORG_UNITS_PERMISSION,
             ],
         )
 
@@ -79,7 +82,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 403)
 
         # Not enough perms.
-        self.user.user_permissions.add(Permission.objects.get(codename=core_permissions._SOURCE_WRITE))
+        self.user.user_permissions.add(Permission.objects.get(codename=CORE_SOURCE_WRITE_PERMISSION.name))
         response = self.client.get("/api/datasources/sync/")
         self.assertJSONResponse(response, 403)
 

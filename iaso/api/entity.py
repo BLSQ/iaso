@@ -20,8 +20,6 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import ENTITY_API
 from iaso.api.common import (
@@ -35,6 +33,7 @@ from iaso.api.common import (
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
 
@@ -130,7 +129,7 @@ class EntityViewSet(ModelViewSet):
         DjangoFilterBackend,
         DeletionFilterBackend,
     ]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]  # type: ignore
 
     def get_serializer_class(self):
         return EntitySerializer

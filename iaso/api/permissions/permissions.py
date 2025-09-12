@@ -1,24 +1,26 @@
+from collections import OrderedDict
 from operator import itemgetter
 
-from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
-from hat.menupermissions.constants import PERMISSIONS_PRESENTATION, READ_EDIT_PERMISSIONS
-from hat.menupermissions.models import CustomPermissionSupport
-from iaso.utils.module_permissions import account_module_permissions
+from iaso.permissions.base import ALL_PERMISSIONS
+from iaso.permissions.core_permissions import (
+    CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
+    PERMISSION_GROUPS_DISPLAY_ORDER,
+)
+from iaso.permissions.utils import fetch_django_permissions_from_iaso_permissions
 
 
 class PermissionsViewSet(viewsets.ViewSet):
     f"""Permissions API
 
-    This API is restricted to authenticated users. Note that only users with the "{core_permissions.USERS_ADMIN}" or
-    "{core_permissions.USERS_MANAGED}" permission will be able to list all permissions - other users can only list their permissions.
+    This API is restricted to authenticated users. Note that only users with the "{CORE_USERS_ADMIN_PERMISSION}" or
+    "{CORE_USERS_MANAGED_PERMISSION}" permission will be able to list all permissions - other users can only list their permissions.
 
     GET /api/permissions/
     """
@@ -36,74 +38,79 @@ class PermissionsViewSet(viewsets.ViewSet):
 
     @action(methods=["GET"], detail=False)
     def grouped_permissions(self, request):
+        """
+        Groups permissions by their group and category.
+        The result is an ordered dict where the keys are the group names and the values are lists of permissions.
+        Each permission is represented as a dict with the following keys:
+        - id: the id of the permission (from django's auth_permission table)
+        - name: the translated name of the permission
+        - codename: the general codename of the permission
+        - read_edit (optional): a dict with the read/edit/admin/... permissions if the permission is part of a category
+        """
         permissions_queryset = self.queryset(request)
-        grouped_permissions = self.get_grouped_permissions(permissions_queryset)
 
-        return Response({"permissions": grouped_permissions})
-
-    def get_grouped_permissions(self, permissions_queryset):
         grouped_permissions = {}
-        for group_name, permission_codenames in PERMISSIONS_PRESENTATION.items():
-            group_permissions = self.get_permissions_for_group(permissions_queryset, permission_codenames)
-            if group_permissions:
-                grouped_permissions[group_name] = group_permissions
+        categories_dict = {}
+        for django_perm in permissions_queryset:
+            perm_codename = django_perm.codename
+            iaso_perm = ALL_PERMISSIONS[perm_codename]
 
-        return grouped_permissions
+            group = iaso_perm.group
+            if not group:
+                continue  # Some permissions are filtered out and can't be exposed to the frontend
+            if group not in grouped_permissions:
+                grouped_permissions[group] = []
 
-    def get_permissions_for_group(self, permissions_queryset, permission_codenames):
-        filtered_permissions = permissions_queryset.filter(codename__in=permission_codenames)
-
-        if not filtered_permissions:
-            return []
-
-        permissions = []
-        read_edit_permissions_map = READ_EDIT_PERMISSIONS.keys()
-
-        processed_codenames = set()
-
-        for permission in filtered_permissions:
-            matching_key = next(
-                (
-                    key
-                    for key in read_edit_permissions_map
-                    if permission.codename in READ_EDIT_PERMISSIONS[key].values()
-                ),
-                None,
-            )
-
-            if matching_key:
-                if permission.codename not in processed_codenames:
-                    read_edit_data = READ_EDIT_PERMISSIONS[matching_key]
-                    combined_permissions = {
-                        "id": permission.id,
-                        "name": _(matching_key),
-                        "codename": matching_key,
-                        "read_edit": read_edit_data,
-                    }
-                    permissions.append(combined_permissions)
-                    processed_codenames.update(read_edit_data.values())
-
-            else:
-                permissions.append(
+            category = iaso_perm.category
+            if not category:  # This is a simple permission
+                current_group = grouped_permissions[group]
+                current_group.append(
                     {
-                        "id": permission.id,
-                        "name": _(permission.name),
-                        "codename": permission.codename,
+                        "id": django_perm.id,
+                        "name": iaso_perm.label,
+                        "codename": iaso_perm.name,
                     }
                 )
+                continue
 
-        return permissions
+            if category not in categories_dict:  # This is the first time we see this category
+                categories_dict[category] = {
+                    "id": django_perm.id,  # We don't really care about which ID we put here, but it has to be provided
+                    "name": category,
+                    "codename": category,
+                    "read_edit": {iaso_perm.type_in_category: iaso_perm.name},
+                    "group": group,
+                }
+                continue
+
+            # This category already exists, we need to add this permission to it
+            categories_dict[category]["read_edit"][iaso_perm.type_in_category] = iaso_perm.name
+
+        # Now that all permissions have been processed, we add back all the categories to their groups
+        for category, perm in categories_dict.items():
+            group = perm.pop("group")
+            group_list = grouped_permissions[group]
+            group_list.append(perm)
+            group_list.sort(key=lambda x: x["id"])
+
+        # Now we sort the result based on a specific order
+        ordered_grouped_permissions = OrderedDict()
+        for group in PERMISSION_GROUPS_DISPLAY_ORDER:
+            if group in grouped_permissions:
+                ordered_grouped_permissions[group] = grouped_permissions[group]
+
+        return Response({"permissions": ordered_grouped_permissions})
 
     def queryset(self, request):
-        if request.user.has_perm(core_permissions.USERS_ADMIN) or request.user.has_perm(core_permissions.USERS_MANAGED):
+        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()) or request.user.has_perm(
+            CORE_USERS_MANAGED_PERMISSION.full_name()
+        ):
             perms = Permission.objects
         else:
             perms = request.user.user_permissions
 
+        # Checking which modules are active in the user's account & fetching their permissions
         account = request.user.iaso_profile.account
-        account_modules = account.modules if account.modules else []
-
-        # Get all permissions linked to the modules
-        modules_permissions = account_module_permissions(account_modules)
-
-        return CustomPermissionSupport.filter_permissions(perms, modules_permissions, settings)
+        modules_permissions = account.permissions_from_active_modules
+        queryset = fetch_django_permissions_from_iaso_permissions(perms, modules_permissions)
+        return queryset

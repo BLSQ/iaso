@@ -8,6 +8,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.permissions.core_permissions import CORE_ENTITY_TYPE_WRITE_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -25,10 +26,12 @@ class EntityTypeAPITestCase(APITestCase):
         cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=cls.star_wars, permissions=["iaso_submissions", "iaso_entity_type_write"]
+            username="yoda",
+            account=cls.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ENTITY_TYPE_WRITE_PERMISSION],
         )
         cls.chewie = cls.create_user_with_profile(
-            username="chewie", account=cls.star_wars, permissions=["iaso_submissions"]
+            username="chewie", account=cls.star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")

@@ -8,6 +8,7 @@ from hat.audit.models import Modification
 from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, IasoTestCaseMixin
 
 
@@ -312,7 +313,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -349,7 +350,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_patch(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -408,7 +409,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_soft_delete(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         team = self.team1
@@ -460,7 +461,7 @@ class TeamAPITestCase(APITestCase):
     def test_list_filter_by_manager(self):
         # Set up new team and new user who'll be the new manager
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_fire_pokemons = Team.objects.create(project=self.project1, name="team_fire_pokemons", manager=ash_ketchum)
         team_electric_pokemons = Team.objects.create(
@@ -468,7 +469,7 @@ class TeamAPITestCase(APITestCase):
         )
 
         misty = self.create_user_with_profile(
-            username="misty", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="misty", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_water_pokemons = Team.objects.create(project=self.project1, name="team_water_pokemons", manager=misty)
 
@@ -489,7 +490,7 @@ class TeamAPITestCase(APITestCase):
     def test_list_filter_by_type(self):
         # Set up teams of various types
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_fire_pokemons = Team.objects.create(
             project=self.project1, name="team_fire_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
@@ -532,7 +533,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_list_filter_by_project(self):
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_electric_pokemons = Team.objects.create(
             project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
@@ -694,7 +695,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -726,7 +727,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -751,7 +752,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -770,7 +771,7 @@ class PlanningTestCase(APITestCase):
 
     def test_create_api(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -892,7 +893,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -913,7 +914,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_bulk_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         assignments = Assignment.objects.filter(planning=self.planning)
         self.assertEqual(assignments.count(), 1)
@@ -950,7 +951,7 @@ class AssignmentAPITestCase(APITestCase):
         other_account = Account.objects.create(name="other_account")
 
         user = self.create_user_with_profile(
-            username="user_with_perms", account=other_account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=other_account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user)
         data = {
@@ -967,7 +968,7 @@ class AssignmentAPITestCase(APITestCase):
         """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
 
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {

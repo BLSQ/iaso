@@ -115,7 +115,7 @@ class HasPermission:
     def __init__(self, *perms):
         class PermissionClass(permissions.BasePermission):
             def has_permission(self, request, view):
-                return request.user and any(request.user.has_perm(perm) for perm in perms)
+                return request.user and any(request.user.has_perm(perm.full_name()) for perm in perms)
 
         self._permission_class = PermissionClass
 
@@ -142,7 +142,7 @@ class ReadOnlyOrHasPermission:
                 if request.method in permissions.SAFE_METHODS:
                     return True
 
-                return request.user and any(request.user.has_perm(perm) for perm in perms)
+                return request.user and any(request.user.has_perm(perm.full_name()) for perm in perms)
 
         self._permission_class = PermissionClass
 

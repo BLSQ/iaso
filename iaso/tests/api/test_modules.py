@@ -1,5 +1,8 @@
-from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
+# from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
+
 from iaso import models as m
+from iaso.modules import MODULE_DEFAULT, MODULES
+from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -13,7 +16,7 @@ class ModuleAPITestCase(APITestCase):
         ]
 
         account_with_modules = m.Account.objects.create(name="account with modules")
-        account_with_modules.modules = [module["codename"] for module in MODULES]
+        account_with_modules.modules = [module.codename for module in MODULES]
         account_with_modules.save()
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
@@ -26,11 +29,13 @@ class ModuleAPITestCase(APITestCase):
         account_with_modules.default_version = sw_version
         account_with_modules.save()
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_modules"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_MODULES_PERMISSION]
+        )
         cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=star_wars)
 
         cls.user_with_account_with_modules = cls.create_user_with_profile(
-            username="user with modules", account=account_with_modules, permissions=["iaso_modules"]
+            username="user with modules", account=account_with_modules, permissions=[CORE_MODULES_PERMISSION]
         )
 
     def test_list_all_modules_without_authentication(self):
@@ -41,7 +46,7 @@ class ModuleAPITestCase(APITestCase):
 
     def test_list_all_modules_user_without_iaso_modules(self):
         self.client.force_authenticate(self.user_with_no_permissions)
-        response = self.client.get("/api/modules/")
+        response = self.client.get("/api/modules/")  # GET is allowed without iaso_modules permission
 
         r = self.assertJSONResponse(response, 200)
 
@@ -54,7 +59,7 @@ class ModuleAPITestCase(APITestCase):
 
         modules = r["results"]
         default_return_module = list(filter(lambda module: module["codename"] == "DEFAULT", modules))[0]
-        default_module_permissions = MODULE_PERMISSIONS["DEFAULT"]
+        default_module_permissions = MODULE_DEFAULT.permissions
 
         self.assertEqual(len(modules), len(MODULES))
         self.assertEqual(len(default_return_module["permissions"]), len(default_module_permissions))

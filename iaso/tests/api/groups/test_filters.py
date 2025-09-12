@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -82,8 +83,12 @@ class GroupListFilterTestCase(APITestCase):
         cls.group_8 = _create_new_group("group_8", cls.source_version_4)
 
         # Preparing users
-        cls.user_1, cls.anon_1, cls.user_no_perms_1 = cls.create_base_users(cls.account_1, ["iaso_org_units"], "user_1")
-        cls.user_2, cls.anon_2, cls.user_no_perms_2 = cls.create_base_users(cls.account_2, ["iaso_org_units"], "user_2")
+        cls.user_1, cls.anon_1, cls.user_no_perms_1 = cls.create_base_users(
+            cls.account_1, [CORE_ORG_UNITS_PERMISSION], "user_1"
+        )
+        cls.user_2, cls.anon_2, cls.user_no_perms_2 = cls.create_base_users(
+            cls.account_2, [CORE_ORG_UNITS_PERMISSION], "user_2"
+        )
 
     def test_filter_by_source_version(self):
         # Checking without any filters

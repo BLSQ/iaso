@@ -10,7 +10,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
-from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
+from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.models import (
     Account,
@@ -26,9 +26,9 @@ from iaso.models import (
     ProjectFeatureFlags,
     SourceVersion,
 )
+from iaso.modules import MODULES
 from iaso.odk import parsing
 from iaso.utils import parse_json_field
-from iaso.utils.module_permissions import account_module_permissions
 
 
 logger = logging.getLogger(__name__)
@@ -97,7 +97,7 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_modules(self, modules):
         if len(modules) == 0:
             raise serializers.ValidationError("modules_empty")
-        module_codenames = [module["codename"] for module in MODULES]
+        module_codenames = [module.codename for module in MODULES]
         for module_codename in modules:
             if module_codename not in module_codenames:
                 raise serializers.ValidationError("module_not_exist")
@@ -142,7 +142,7 @@ class SetupAccountSerializer(serializers.Serializer):
                 email=validated_data.get("user_email", ""),
             )
 
-        module_codenames = [module["codename"] for module in MODULES]
+        module_codenames = [module.codename for module in MODULES]
 
         account_modules = []
         for module in validated_data.get("modules"):
@@ -224,7 +224,8 @@ class SetupAccountSerializer(serializers.Serializer):
         profile = Profile.objects.create(account=account, user=user, language=language)
 
         # Get all permissions linked to the modules
-        modules_permissions = account_module_permissions(account_modules)
+        # modules_permissions = account_module_permissions(account_modules)
+        modules_permissions = account.permissions_from_active_modules
 
         user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
 

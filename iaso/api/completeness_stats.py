@@ -52,9 +52,12 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
-import iaso.permissions as core_permissions
-
 from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType, Project
+from iaso.permissions.core_permissions import (
+    CORE_COMPLETENESS_STATS_PERMISSION,
+    CORE_REGISTRY_READ_PERMISSION,
+    CORE_REGISTRY_WRITE_PERMISSION,
+)
 from iaso.utils import geojson_queryset
 
 from ..models.microplanning import Planning, Team
@@ -346,7 +349,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(
-            core_permissions.COMPLETENESS_STATS, core_permissions.REGISTRY_WRITE, core_permissions.REGISTRY_READ
+            CORE_COMPLETENESS_STATS_PERMISSION, CORE_REGISTRY_WRITE_PERMISSION, CORE_REGISTRY_READ_PERMISSION
         ),  # type: ignore
     ]  # type: ignore
 

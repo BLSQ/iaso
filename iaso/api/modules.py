@@ -1,17 +1,16 @@
 from django.contrib.auth.models import Permission
 from rest_framework import permissions, serializers
 
-import iaso.permissions as core_permissions
-
-from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
 from iaso.models import Account, Profile
+from iaso.modules import MODULES
+from iaso.permissions.core_permissions import CORE_MODULES_PERMISSION
 
 from .common import ModelViewSet
 
 
 class HasModulesPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (not request.user.has_perm(core_permissions.MODULES)) and request.method != "GET":
+        if (not request.user.has_perm(CORE_MODULES_PERMISSION.full_name())) and request.method != "GET":
             return False
         return True
 
@@ -38,7 +37,8 @@ class ModuleSerializer(serializers.Serializer):
         fields = ["name", "codename", "permissions", "account"]
 
     def get_permissions(self, obj):
-        return PermissionSerializer(Permission.objects.filter(codename__in=obj["permissions"]), many=True).data
+        codenames = [p.name for p in obj.permissions]
+        return PermissionSerializer(Permission.objects.filter(codename__in=codenames), many=True).data
 
     def get_account(self, obj):
         user = self.context["request"].user
@@ -47,10 +47,8 @@ class ModuleSerializer(serializers.Serializer):
             account = profile.first().account
             account_modules = account.modules if account.modules else []
             account_serializer = []
-            if obj["codename"] in account_modules:
+            if obj.codename in account_modules:
                 account_serializer = [account]
-            else:
-                account_serializer = []
 
             return AccountSerializer(account_serializer, many=True).data
         return []
@@ -59,7 +57,7 @@ class ModuleSerializer(serializers.Serializer):
 class ModulesViewSet(ModelViewSet):
     f"""Modules API
 
-    This API is restricted to authenticated users having the "{core_permissions.MODULES}" permission for reading only
+    This API is restricted to authenticated users having the "{CORE_MODULES_PERMISSION}" permission for reading only
 
     GET /api/modules/
     """
@@ -69,13 +67,7 @@ class ModulesViewSet(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self):
-        queryset = []
-        for module in MODULES:
-            permissions = MODULE_PERMISSIONS.get(module["codename"], [])
-            name = module["name"]
-            codename = module["codename"]
-            fr_name = module["fr_name"]
-            queryset.append({"name": name, "codename": codename, "permissions": permissions, "fr_name": fr_name})
+        queryset = MODULES
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "name").split(",")
 
@@ -83,12 +75,14 @@ class ModulesViewSet(ModelViewSet):
             queryset = [
                 module
                 for module in queryset
-                if search.lower() in module["name"].lower() or search.lower() in module["fr_name"].lower()
+                if search.lower() in module.name.lower() or search.lower() in module.fr_name.lower()
             ]
         if orders:
             order_key = ("").join(orders)
             if "-" in order_key:
-                queryset = sorted(queryset, key=lambda module: module[order_key.replace("-", "")].lower(), reverse=True)
+                queryset = sorted(
+                    queryset, key=lambda module: getattr(module, order_key.replace("-", "")).lower(), reverse=True
+                )
             else:
-                queryset = sorted(queryset, key=lambda module: module[order_key].lower())
+                queryset = sorted(queryset, key=lambda module: getattr(module, order_key).lower())
         return queryset

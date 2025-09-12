@@ -2,6 +2,7 @@ from django.core.files import File
 
 from iaso import models as m
 from iaso.models import Report, ReportVersion
+from iaso.permissions.core_permissions import CORE_REPORTS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -11,10 +12,12 @@ class ReportsAPITestCase(APITestCase):
         kame_house = m.Account.objects.create(name="Kame House")
         rr_army = m.Account.objects.create(name="Red Ribbon Army")
         cls.sayanj = m.Project.objects.create(account=kame_house, name="sayanJ")
-        cls.kefla = cls.create_user_with_profile(username="Kefla", account=kame_house, permissions=["iaso_reports"])
+        cls.kefla = cls.create_user_with_profile(
+            username="Kefla", account=kame_house, permissions=[CORE_REPORTS_PERMISSION]
+        )
         cls.beerus = cls.create_user_with_profile(username="Beerus", account=kame_house)
 
-        cls.tao = cls.create_user_with_profile(username="Tao", account=rr_army, permissions=["iaso_reports"])
+        cls.tao = cls.create_user_with_profile(username="Tao", account=rr_army, permissions=[CORE_REPORTS_PERMISSION])
 
     def test_get_reports_web(self):
         self.client.force_authenticate(self.kefla)

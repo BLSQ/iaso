@@ -520,6 +520,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def anwser_with_parquet_file(self, request, filters, queryset):
         # validate no unsupported/extra params is passed
         allowed_params = {
+            "order",
             "form_ids",
             "parquet",
             "project_ids",  # comma seperatated project ids

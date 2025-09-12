@@ -5,9 +5,9 @@ from unittest import mock
 from unittest.mock import patch
 from uuid import uuid4
 
-import duckdb
 import pytz
 
+from django.contrib.gis.geos import Point
 from django.core.files import File
 
 from iaso import models as m
@@ -16,14 +16,7 @@ from iaso.models import OrgUnitReferenceInstance
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
-from django.test import TransactionTestCase
-from rest_framework.test import APIClient
-
-from iaso.test import IasoTestCaseMixin
-
-
-class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
-    client_class = APIClient
+from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
 
 # This test doesn't use the classic base test
@@ -113,9 +106,15 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.yoda,
-                export_id="Vzhn0nceudr",
+                last_modified_by=cls.guest,
+                export_id="Vzhn0nceud1",
                 source_created_at=date1,
+                uuid="uuid1",
+                accuracy=21.00,
+                location=Point(1.51, 7.31, 13),
+                json={"_version": "2032156231-test_version"},
             )
+
         with patch("django.utils.timezone.now", lambda: date1):
             cls.instance_2 = cls.create_form_instance(
                 form=cls.form_1,
@@ -123,7 +122,13 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.guest,
+                last_modified_by=cls.guest,
+                export_id="oBWh7t0saJ2",
                 source_created_at=date1,
+                uuid="uuid2",
+                accuracy=22.00,
+                location=Point(1.52, 7.32, 13),
+                json={"_version": "2032156231-test_version"},
             )
         with patch("django.utils.timezone.now", lambda: date2):
             cls.instance_3 = cls.create_form_instance(
@@ -132,7 +137,13 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.supervisor,
+                last_modified_by=cls.guest,
+                export_id="ZYpZroOLbz3",
                 source_created_at=date2,
+                uuid="uuid3",
+                accuracy=23.00,
+                location=Point(1.53, 7.33, 13),
+                json={"_version": "2032156231-test_version"},
             )
         with patch("django.utils.timezone.now", lambda: date3):
             cls.instance_4 = cls.create_form_instance(
@@ -141,7 +152,13 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.yoda,
+                export_id="oBWh7t0saJ4",
+                last_modified_by=cls.guest,
                 source_created_at=date3,
+                uuid="uuid4",
+                accuracy=24.00,
+                location=Point(1.54, 7.34, 13),
+                json={"_version": "2032156231-test_version"},
             )
 
         cls.form_2 = m.Form.objects.create(
@@ -182,6 +199,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             org_unit=cls.jedi_council_corruscant,
             project=cls.project,
             created_by=cls.yoda,
+            uuid="uuid5",
         )
         cls.form_2.save()
 
@@ -189,7 +207,11 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_3.org_unit_types.add(cls.jedi_council)
         cls.instance_6 = cls.create_form_instance(
-            form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project, created_by=cls.supervisor
+            form=cls.form_3,
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.supervisor,
+            uuid="uuid6",
         )
         cls.form_3.save()
 
@@ -203,6 +225,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             project=cls.project,
             deleted=True,
             created_by=cls.yoda,
+            uuid="uuid7",
         )
         cls.form_4.save()
 
@@ -235,25 +258,27 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         OrgUnitReferenceInstance.objects.create(
             org_unit=self.jedi_council_corruscant, instance=self.instance_1, form=self.form_1
         )
+        instances = [self.instance_1, self.instance_2, self.instance_3, self.instance_4]
+
         with self.assertNumQueries(8):
             response = self.client.get(
-                f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true", headers={"Content-Type": "text/csv"}
+                f"/api/instances/?form_ids={self.instance_1.form.id}&parquet=true&order=id",
+                headers={"Content-Type": "text/csv"},
             )
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response["Content-Type"], "application/octet-stream")
             with tempfile.NamedTemporaryFile(suffix=".parquet") as f:
-                for chunk in response.streaming_content:
-                    f.write(chunk)
-                f.flush()
-                f.seek(0)
+                write_response_to_file(response, f)
 
-                with duckdb.connect() as connection:
-                    con = duckdb.connect()
-                    result = con.execute(f"SELECT * FROM read_parquet('{f.name}')")
-                    colnames = [d[0] for d in result.description]  # column names
-                    rows = [dict(zip(colnames, row)) for row in result.fetchall()]
-
-                    self.assertEqual(len(rows), 4)
+                compare_or_create_snapshot(
+                    parquet_path=f.name,
+                    snapshot_path="./iaso/fixtures/snapshots/test_can_retrieve_instances_in_parquet_format.csv",
+                    context={
+                        "instances": instances,
+                        "form_id": self.instance_1.form.id,
+                        "org_unit_id": self.instance_1.org_unit_id,
+                    },
+                )
 
     def test_bad_request_parquet_validates_unknown_query_param(self):
         self.client.force_authenticate(self.yoda)
@@ -264,6 +289,6 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
         self.assertEqual(
             response.json(),
             {
-                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, orgUnitParentId, orgUnitTypeId, parquet, planningIds, project_ids, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
+                "error": "Unsupported query parameters for parquet exports: unknown_unsupported_filter. Allowed parameters dateFrom, dateTo, endPeriod, form_ids, jsonContent, modificationDateFrom, modificationDateTo, order, orgUnitParentId, orgUnitTypeId, parquet, planningIds, project_ids, sentDateFrom, sentDateTo, showDeleted, startPeriod, status, userIds, withLocation"
             },
         )

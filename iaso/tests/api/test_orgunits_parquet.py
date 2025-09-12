@@ -1,72 +1,13 @@
 import tempfile
 
-from pathlib import Path
-
-import duckdb
-import pandas as pd
-
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
-from django.test import TransactionTestCase
-from rest_framework.test import APIClient
 
 from iaso import models as m
-from iaso.test import IasoTestCaseMixin
+from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
 
-class BaseAPITransactionTestCase(TransactionTestCase, IasoTestCaseMixin):
-    client_class = APIClient
-
-
-def parquet_to_df(path):
-    con = duckdb.connect()
-    return con.execute(f"SELECT * FROM read_parquet('{path}')").fetchdf()
-
-
-def compare_or_create_snapshot(parquet_path, snapshot_path, stable_columns):
-    snapshot_file = Path(snapshot_path)
-    df_parquet = parquet_to_df(parquet_path)[stable_columns]
-
-    if not snapshot_file.exists():
-        # write snapshot
-        if snapshot_file.suffix == ".csv":
-            df_parquet.to_csv(snapshot_file, index=False)
-        elif snapshot_file.suffix == ".json":
-            df_parquet.to_json(snapshot_file, orient="records", lines=True)
-        else:
-            raise ValueError("Unsupported snapshot format")
-        print(f"Snapshot created at {snapshot_file}")
-    else:
-        # compare
-        if snapshot_file.suffix == ".csv":
-            df_snapshot = pd.read_csv(snapshot_file)[stable_columns]
-        elif snapshot_file.suffix == ".json":
-            df_snapshot = pd.read_json(snapshot_file, orient="records", lines=True)[stable_columns]
-        else:
-            raise ValueError("Unsupported snapshot format")
-
-        # sort rows for deterministic comparison
-        df_parquet_sorted = df_parquet.sort_values(stable_columns).reset_index(drop=True)
-        df_snapshot_sorted = df_snapshot.sort_values(stable_columns).reset_index(drop=True)
-
-        pd.testing.assert_frame_equal(df_parquet_sorted, df_snapshot_sorted, check_dtype=False)
-
-
-# used to debug if the test fails
-def read_parquet(f):
-    result = con.execute(f"SELECT * FROM read_parquet('{f.name}')")
-    colnames = [d[0] for d in result.description]  # column names
-    tuples = result.fetchall()
-    rows = [dict(zip(colnames, row)) for row in tuples]
-
-    return rows
-
-
-def write_response_to_file(response, f):
-    for chunk in response.streaming_content:
-        f.write(chunk)
-    f.flush()
-    f.seek(0)
+# use BaseAPITransactionTestCase to make records are visible to duckdb (committed)
 
 
 class OrgUnitAPITestCase(BaseAPITransactionTestCase):

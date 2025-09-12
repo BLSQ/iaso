@@ -60,7 +60,7 @@ def export_django_query_to_parquet_via_duckdb(qs, output_file_path):
     attach_sql = f"""
         INSTALL postgres;
         LOAD postgres;
-        ATTACH 'dbname={dsn["dbname"]} host={dsn["host"]} user={dsn["user"]} password={dsn["password"]}' AS pg (TYPE postgres, READ_ONLY);
+        ATTACH 'dbname={dsn["dbname"]} host={dsn["host"]} user={dsn["user"]} password={dsn["password"]} port={dsn["port"]}' AS pg (TYPE postgres, READ_ONLY);
 
     """
     con.execute(attach_sql)

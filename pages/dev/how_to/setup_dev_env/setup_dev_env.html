@@ -434,6 +434,11 @@
     22. Customization
   </a>
 </li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#23-create-a-new-iaso-plugin">
+    23. Create a new IASO plugin
+  </a>
+</li>
 </ul>
 </nav>
 </li>
@@ -648,6 +653,11 @@
 <li class="md-nav__item">
 <a class="md-nav__link" href="#22-customization">
     22. Customization
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#23-create-a-new-iaso-plugin">
+    23. Create a new IASO plugin
   </a>
 </li>
 </ul>
@@ -933,6 +943,11 @@ SHOW_NAME_WITH_LOGO="&lt;'yes' or 'no'&gt;"
 HIDE_BASIC_NAV_ITEMS="&lt;'yes' or 'no'&gt;"
 </code></pre>
 <p>Those settings are optional and are using a default value if nothing is provided</p>
+<h3 id="23-create-a-new-iaso-plugin">23. Create a new IASO plugin<a class="headerlink" href="#23-create-a-new-iaso-plugin" title="Permanent link">#</a></h3>
+<p>You can create a new plugin using the command:</p>
+<pre class="bash"><code class="language-sourceCode">docker compose exec iaso ./manage.py startplugin &lt;plugin_name&gt;
+</code></pre>
+<p>It will create the skeleton of a new plugin in the <code>plugins/&lt;plugin_name&gt;</code> folder.</p>
 </article>
 </div>
 </div>

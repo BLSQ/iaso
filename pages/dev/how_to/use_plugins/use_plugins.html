@@ -1121,24 +1121,17 @@ export default {
 <h2 id="creating-a-new-plugin">Creating a New Plugin<a class="headerlink" href="#creating-a-new-plugin" title="Permanent link">#</a></h2>
 <p>Quick start guide:</p>
 <ol>
-<li>
-<p>Create a new directory in the plugins folder:
+<li>Create a new plugin using the custom Django command:
    <code>bash
-   mkdir -p plugins/my-plugin/js</code></p>
-</li>
-<li>
-<p>Create the basic file structure:
-   <code>bash
-   cd plugins/my-plugin
-   touch js/config.tsx js/index.tsx README.md</code></p>
-</li>
-<li>
-<p>Initialize the plugin configuration:
+   python manage.py startplugin &lt;your_plugin_name&gt;</code></li>
+</ol>
+<p>It will automatically create all the required files in <code>plugins/&lt;your_plugin_name&gt;</code>.</p>
+<ol>
+<li>Initialize the plugin configuration:
    ```typescript
    // js/config.tsx
    import React from 'react';
-   import MyPluginComponent from './components/MyPluginComponent';</p>
-</li>
+   import MyPluginComponent from './components/MyPluginComponent';</li>
 </ol>
 <p>export default {
        routes: [
@@ -1221,9 +1214,7 @@ export default {
 </code></pre>
 <h4 id="adding-translations-to-a-plugin">Adding Translations to a Plugin<a class="headerlink" href="#adding-translations-to-a-plugin" title="Permanent link">#</a></h4>
 <p>To add translations to your plugin:
-1. Create a <code>js/src/constants/translations</code> directory in your plugin
-2. Add language files (e.g., <code>en.json</code>, <code>fr.json</code>)
-3. Structure your translations as a flat object with dot-notation keys:</p>
+1. In <code>js/src/constants/translations/</code> structure your translation files as a flat object with dot-notation keys:</p>
 <pre><code class="language-json">{
     &quot;myPlugin.title&quot;: &quot;My Plugin Title&quot;,
     &quot;myPlugin.description&quot;: &quot;Plugin description&quot;

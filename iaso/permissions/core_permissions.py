@@ -280,7 +280,7 @@ CORE_USERS_ADMIN_PERMISSION = CorePermission(
 )
 CORE_USERS_MANAGED_PERMISSION = CorePermission(
     name="iaso_users_managed",
-    label=_("Managed users"),
+    label=_("Users managed"),
     module=MODULE_DEFAULT,
     group=PERMISSION_GROUP_ADMIN,
     category="iaso_user_permissions",

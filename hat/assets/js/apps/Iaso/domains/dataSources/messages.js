@@ -157,6 +157,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.gpkg.title',
         defaultMessage: 'Import from GeoPackage',
     },
+    gpkgValidByDefault: {
+        id: 'iaso.datasources.gpkg.validByDefault',
+        defaultMessage: 'Make org units status as "Valid"',
+    },
+    gpkgValidByDefaultTooltip: {
+        id: 'iaso.datasources.gpkg.validByDefaultTooltip',
+        defaultMessage:
+            'Org units status will be set to "Valid" instead of "New". Untick this box should you prefer keeping the status as "New".',
+    },
     gpkgTooltip: {
         id: 'iaso.datasources.gpkg.tooltip',
         defaultMessage: 'Import from a GeoPackage file',

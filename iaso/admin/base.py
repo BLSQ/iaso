@@ -69,6 +69,7 @@ from ..models import (
     PotentialPayment,
     Profile,
     Project,
+    ProjectFeatureFlags,
     Report,
     ReportVersion,
     SourceVersion,
@@ -415,10 +416,19 @@ class ProjectAdmin(admin.ModelAdmin):
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
 
+@admin.register(ProjectFeatureFlags)
+@admin_attr_decorator
+class ProjectFeatureFlagsAdmin(admin.ModelAdmin):
+    list_display = ("featureflag", "project", "configuration")
+    list_filter = ("project",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 @admin.register(FeatureFlag)
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name", "requires_authentication")
+    list_display = ("code", "name", "requires_authentication", "configuration_schema")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin.register(Link)
@@ -984,6 +994,7 @@ class PotentialPaymentAdmin(admin.ModelAdmin):
 class PaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "change_request_ids")
+    autocomplete_fields = ("user", "created_by", "updated_by", "payment_lot")
 
     def change_request_ids(self, obj):
         change_requests = obj.change_requests.all()
@@ -1003,6 +1014,7 @@ class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("id", "status", "created_at", "updated_at", "payment_ids")
     search_fields = ("id",)
+    autocomplete_fields = ("created_by", "updated_by", "task")
 
     def payment_ids(self, obj):
         payments = obj.payments.all()

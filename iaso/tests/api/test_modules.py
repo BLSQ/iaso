@@ -56,7 +56,7 @@ class ModuleAPITestCase(APITestCase):
         default_return_module = list(filter(lambda module: module["codename"] == "DEFAULT", modules))[0]
         default_module_permissions = MODULE_PERMISSIONS["DEFAULT"]
 
-        self.assertEqual(len(modules), len(MODULE_PERMISSIONS))
+        self.assertEqual(len(modules), len(MODULES))
         self.assertEqual(len(default_return_module["permissions"]), len(default_module_permissions))
 
     def test_list_all_modules_with_search_on_module_name(self):

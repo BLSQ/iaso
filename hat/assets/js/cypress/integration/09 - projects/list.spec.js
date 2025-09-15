@@ -78,11 +78,14 @@ const testRowContent = (index, p = listFixture.projects[index]) => {
 };
 
 const testDialogContent = p => {
-    cy.get('#input-text-name').clear().type(p.name);
-    cy.testInputValue('#input-text-name', p.name);
-    cy.get('#input-text-app_id').clear().type(p.app_id);
-    cy.testInputValue('#input-text-name', p.name);
+    cy.get('#input-text-name').clear();
+    cy.get('#input-text-name').type(p.name);
+    cy.get('#input-text-app_id').clear();
+    cy.get('#input-text-app_id').type(p.app_id);
     cy.selectTab(1, '#project-dialog');
+    cy.get('[data-test="featureFlag-toggle"]').each($toggle => {
+        cy.wrap($toggle).click();
+    });
     cy.get('[data-test="featureFlag-checkbox"] input').each($el => {
         cy.wrap($el).then(el => {
             const { name } = el[0];
@@ -243,14 +246,14 @@ describe('Projects', () => {
                 listFixture.projects[theIndex].feature_flags.forEach(
                     featureFlag => {
                         cy.get(
-                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                         ).uncheck();
                     },
                 );
 
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 
@@ -297,7 +300,7 @@ describe('Projects', () => {
                 testDialogContent(newProject);
                 newProject.feature_flags.forEach(featureFlag => {
                     cy.get(
-                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.code}"]`,
                     ).check();
                 });
 

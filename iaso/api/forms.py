@@ -17,13 +17,14 @@ import iaso.permissions as core_permissions
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
-from iaso.models import Form, FormAttachment, FormPredefinedFilter, OrgUnit, OrgUnitType, Project
+from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
 from ..enketo.enketo_url import verify_signed_url
 from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, DynamicFieldsModelSerializer, ModelViewSet, TimestampField
 from .enketo import public_url_for_enketo
+from .form_predefined_filters.serializers import FormPredefinedFilterSerializer
 from .projects import ProjectSerializer
 from .serializers import AppIdSerializer
 
@@ -45,13 +46,13 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         )
 
 
-class FormPredefinedFilterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = FormPredefinedFilter
-        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
-
+class FormVersionNestedSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    class Meta:
+        model = FormVersion
+        fields = ["id", "version_id", "file", "xls_file", "created_at", "updated_at"]
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -140,7 +141,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     project_ids = serializers.PrimaryKeyRelatedField(
         source="projects", many=True, allow_empty=False, queryset=Project.objects.all()
     )
-    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
+    latest_form_version = FormVersionNestedSerializer(source="latest_version", required=False)
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     predefined_filters = FormPredefinedFilterSerializer(many=True)
@@ -151,10 +152,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
     reference_form_of_org_unit_types = serializers.SerializerMethodField()
     has_mappings = serializers.BooleanField(read_only=True)
     possible_fields_with_latest_version = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_latest_form_version(obj: Form):
-        return obj.latest_version.as_dict() if obj.latest_version else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):
@@ -170,15 +167,19 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):
+        possible_fields = [
+            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
+        ]
+
         latest_version = obj.latest_version
         if not latest_version:
-            return obj.possible_fields
+            return possible_fields
 
         # Get the field names from the latest version
         latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
 
         # Add a flag to each possible field indicating if it's part of the latest version
-        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
@@ -540,4 +541,9 @@ def generate_manifest_structure(content: list[str]) -> str:
 class MobileFormViewSet(FormsViewSet):
     # Filtering out forms without form versions to prevent mobile app from crashing
     def get_queryset(self):
-        return super().get_queryset(mobile=True).exclude(form_versions=None)
+        return (
+            super()
+            .get_queryset(mobile=True)
+            .exclude(form_versions=None)
+            .prefetch_related("predefined_filters", "attachments", "reference_of_org_unit_types__sub_unit_types")
+        )

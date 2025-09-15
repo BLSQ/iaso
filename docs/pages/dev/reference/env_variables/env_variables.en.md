@@ -19,7 +19,11 @@ DB_READONLY_USERNAME
 DB_READONLY_PASSWORD
 ```
 
-## AWS related
+## Storage related
+
+Iaso supports multiple storage providers for static assets and user-uploaded files:
+
+### AWS S3 (Default production storage)
 
 Storing the various files like
 
@@ -27,12 +31,33 @@ Storing the various files like
 - raw forms (xlsform), submissions (xml and media),... is done in s3 (or an s3 compatible api like minio)
 
 ```
+USE_S3=true
 AWS_ACCESS_KEY_ID:
 AWS_SECRET_ACCESS_KEY:
 AWS_S3_REGION_NAME
 AWS_STORAGE_BUCKET_NAME:
 AWS_S3_ENDPOINT_URL: (used to for ex to point to minio)
 ```
+
+### Azure Blob Storage
+
+Alternative cloud storage option using Azure Blob Storage with a single container and folder structure:
+
+```
+USE_AZURE_STORAGE=true
+AZURE_STORAGE_ACCOUNT_NAME: Your Azure Storage account name
+AZURE_STORAGE_ACCOUNT_KEY: Your Azure Storage account key
+AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
+AZURE_CONTAINER_NAME: Container name (default: "iaso")
+AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
+```
+
+**Container Structure:**
+- Single container: `iaso` (or `AZURE_CONTAINER_NAME`)
+- Static files: stored in `static/` folder
+- Media files: stored in `media/` folder
+
+For detailed Azure Storage configuration, see [Azure Storage Configuration](../azure-storage-configuration.md).
 
 for async task
 
@@ -54,6 +79,9 @@ If you don't set the required variables, ClamAV will not be configured and Iaso 
 | CLAMAV_PORT   | true     | `3310`             | port that Iaso can use to reach ClamAV                                                       |
 
 
+# Compression
+You can enable compression of responses using the django middleware `GZipMiddleware` by setting the environment variable `ENABLE_GZIP` to `"true"`.
+Default is `"false"` since it is generally better to do compression at the web server level (e.g., Nginx or Apache).
 
 # Security Settings
 
@@ -121,6 +149,26 @@ PRODUCT_FRUITS_WORKSPACE_CODE=YOUR_CODE
 ```
 
 When this variable is set, Product Fruits will be enabled and only the account name and ID will be sent to the service. This allows for user onboarding and feature discovery.
+
+## Analytics Integration
+
+### Plausible Analytics
+
+To enable Plausible analytics tracking, set the following environment variable:
+
+```
+ENABLE_ANALYTICS=true
+```
+
+When enabled, Iaso will automatically generate and include Plausible analytics scripts on all pages for authenticated users. The system tracks:
+
+- **Page views**: All page visits
+- **Custom events**: User login events with account details
+- **User information**: Username, user ID, account name, and account ID
+
+**Note**: Analytics is disabled by default and only works when explicitly enabled via the environment variable.
+
+For detailed setup instructions, see [Plausible Analytics Setup](../analytics/plausible-setup.md).
 
 ## Frontend Configuration
 

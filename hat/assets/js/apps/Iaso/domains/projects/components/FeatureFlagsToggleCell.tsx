@@ -12,7 +12,11 @@ export const FeatureFlagToggleCell: React.FunctionComponent<Props> = ({
     onToggle,
 }) => {
     return (
-        <Button variant="text" onClick={onToggle}>
+        <Button
+            variant="text"
+            onClick={onToggle}
+            data-test="featureFlag-toggle"
+        >
             {collapsed ? <ExpandMore /> : <ExpandLess />}
         </Button>
     );

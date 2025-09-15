@@ -5,11 +5,10 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 const ProductFruitsComponent = () => {
     const currentUser = useCurrentUser();
 
-    if (!window.PRODUCT_FRUITS_WORKSPACE_CODE || !currentUser) {
-        return null;
-    }
-
     const userInfo = useMemo(() => {
+        if (!currentUser || !currentUser.account) {
+            return null;
+        }
         return {
             username: `${currentUser.account.name}-${currentUser.id}`,
             props: {
@@ -18,6 +17,10 @@ const ProductFruitsComponent = () => {
             },
         };
     }, [currentUser]);
+
+    if (!window.PRODUCT_FRUITS_WORKSPACE_CODE || !currentUser || !userInfo) {
+        return null;
+    }
 
     return (
         <ProductFruits

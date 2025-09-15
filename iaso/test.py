@@ -11,9 +11,10 @@ import pandas as pd
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import AnonymousUser, Permission
+from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
+from django.core.files.storage import default_storage
 from django.http import HttpResponse, StreamingHttpResponse
 from django.test import TestCase as BaseTestCase
 from django.urls import clear_url_caches
@@ -21,10 +22,11 @@ from django.utils import timezone
 from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
+import iaso.permissions as core_permissions
+
 from hat.api_import.models import APIImport
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
-from iaso.permissions import CorePermissionSupport
 
 
 class IasoTestCaseMixin:
@@ -47,12 +49,15 @@ class IasoTestCaseMixin:
 
         if permissions is not None:
             content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
-            content_types.append(ContentType.objects.get_for_model(CorePermissionSupport))
+            core_permission_models = core_permissions.permission_models
+            for model in core_permission_models:
+                content_types.append(ContentType.objects.get_for_model(model))
 
             for plugin in settings.PLUGINS:
                 try:
-                    permission_model = import_module(f"plugins.{plugin}.permissions").permission_model
-                    content_types.append(ContentType.objects.get_for_model(permission_model))
+                    plugin_permission_models = import_module(f"plugins.{plugin}.permissions").permission_models
+                    for model in plugin_permission_models:
+                        content_types.append(ContentType.objects.get_for_model(model))
                 except ImportError:
                     pass
 
@@ -128,14 +133,14 @@ class IasoTestCaseMixin:
         clear_url_caches()
 
     @staticmethod
-    def create_base_users(account, permissions):
+    def create_base_users(account, permissions, user_name="user"):
         # anonymous user and user without needed permissions
         anon = AnonymousUser()
         user_no_perms = IasoTestCaseMixin.create_user_with_profile(
-            username="user_no_perm", account=account, permissions=[]
+            username=f"{user_name}_no_perm", account=account, permissions=[]
         )
 
-        user = IasoTestCaseMixin.create_user_with_profile(username="user", account=account, permissions=permissions)
+        user = IasoTestCaseMixin.create_user_with_profile(username=user_name, account=account, permissions=permissions)
         return [user, anon, user_no_perms]
 
     @staticmethod
@@ -365,6 +370,32 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
                 self.assertTrue(any(isinstance(data[field], t) for t in expected_type))
             else:
                 self.assertIsInstance(data[field], expected_type)
+
+
+class FileUploadToTestCase(TestCase, IasoTestCaseMixin):
+    """
+    Common setup for testing file upload_to functions that rely on account and user information.
+    On every test, the default_storage is cleared to avoid name conflicts.
+    """
+
+    def setUp(self):
+        # Preparing test data
+        account_1_name = "test account 1"
+        self.account_1, self.data_source_1, self.version_1, self.project_1 = (
+            self.create_account_datasource_version_project("source 1", account_1_name, "project 1")
+        )
+        account_2_name = "***///"
+        self.account_2, self.data_source_2, self.version_2, self.project_2 = (
+            self.create_account_datasource_version_project("source 2", account_2_name, "project 2")
+        )
+
+        self.user_1 = self.create_user_with_profile(account=self.account_1, username="user 1")
+        self.user_2 = self.create_user_with_profile(account=self.account_2, username="user 2")
+        self.user_no_profile = User.objects.create(username="user no profile", first_name="User", last_name="NoProfile")
+
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUp()
 
 
 class MockClamavScanResults:

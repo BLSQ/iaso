@@ -368,7 +368,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             for (let i = 0; i < selectedSources.length; i += 1) {
                 const ss = selectedSources[i];
                 setLoadingSelectedSources(true);
-                // eslint-disable-next-line no-await-in-loop
+
                 const fetch = async () => {
                     const ous = await fetchAssociatedOrgUnits(
                         ss,

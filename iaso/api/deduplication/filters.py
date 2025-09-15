@@ -6,6 +6,7 @@ from itertools import combinations
 from django.db.models import Q, TextField
 from django.db.models.functions import Cast
 from rest_framework import filters
+from rest_framework.exceptions import ValidationError
 
 from iaso.models import OrgUnit
 from iaso.models.deduplication import ValidationStatus
@@ -218,6 +219,21 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
             queryset = queryset.filter(qs[0])
 
         return queryset
+
+
+class AnalyzeFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        analyze_id = request.query_params.get("analyze_id")
+
+        if not analyze_id:
+            return queryset
+
+        try:
+            analyze_id = int(analyze_id)
+        except (ValueError, TypeError):
+            raise ValidationError("The `analyze_id` parameter must be an integer.")
+
+        return queryset.filter(analyze_id=analyze_id)
 
 
 class CustomOrderingFilter(filters.OrderingFilter):

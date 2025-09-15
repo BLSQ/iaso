@@ -1,14 +1,14 @@
-import { UseQueryResult } from 'react-query';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { DropdownOptions } from '../../../types/utils';
-import { Module } from '../types/account';
-import { MESSAGES } from '../messages';
 import { MESSAGES as MODULE_MESSAGES } from '../../modules/messages';
+import { MESSAGES } from '../messages';
+import { Module } from '../types/account';
 
 export const useGetModulesDropDown = (): UseQueryResult<
-    DropdownOptions<number>[],
+    DropdownOptions<string>[],
     Error
 > => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =

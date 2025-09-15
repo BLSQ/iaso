@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-05 09:57+0000\n"
+"POT-Creation-Date: 2025-08-12 16:12+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -58,6 +58,46 @@ msgstr "Limiter à la version source par défaut"
 #: iaso/api/group_sets/filters.py
 msgid "Limit search to coma seperated project ids"
 msgstr "Limiter la recherche aux IDs de projets séparés par des virgules"
+
+#: iaso/api/groups/filters.py
+msgid "Search by name"
+msgstr "Recherche par nom"
+
+#: iaso/api/groups/filters.py
+msgid "Version ID"
+msgstr "ID de la version"
+
+#: iaso/api/groups/filters.py
+msgid "Data Source ID"
+msgstr "ID de la source de données"
+
+#: iaso/api/groups/filters.py
+msgid "Project IDs (comma-separated)"
+msgstr "ID des projets (séparés par des virgules)"
+
+#: iaso/api/groups/views.py iaso/api/payments/views.py
+msgid "ID"
+msgstr "ID"
+
+#: iaso/api/groups/views.py
+msgid "Source ref"
+msgstr "Réf. source"
+
+#: iaso/api/groups/views.py
+msgid "Name"
+msgstr "Nom"
+
+#: iaso/api/groups/views.py
+msgid "Data source"
+msgstr "Source de données"
+
+#: iaso/api/groups/views.py
+msgid "Version"
+msgstr "Version"
+
+#: iaso/api/groups/views.py
+msgid "Groups"
+msgstr "Groupes"
 
 #: iaso/api/logs.py
 msgid ""
@@ -225,10 +265,6 @@ msgstr "Limiter selon si l'authentification est requise ou non"
 #: iaso/api/pages.py iaso/api/payments/views.py
 msgid "User ID"
 msgstr "ID utilisateur"
-
-#: iaso/api/payments/views.py
-msgid "ID"
-msgstr "ID"
 
 #: iaso/api/payments/views.py
 msgid "Status"
@@ -886,6 +922,14 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#: iaso/api/setup_account.py
+msgid "Email is required when email_invitation is True"
+msgstr "L'email est requis lorsque l'invitation par email est activée"
+
+#: iaso/api/setup_account.py
+msgid "Password is required when email_invitation is False"
+msgstr "Le mot de passe est requis lorsque l'invitation par email est désactivée"
 
 #~ msgid "Polio"
 #~ msgstr "Polio"

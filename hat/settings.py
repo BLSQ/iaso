@@ -60,6 +60,15 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
+USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
+
+# Storage provider configuration
+STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
+if USE_S3:
+    STORAGE_PROVIDER = "s3"
+elif USE_AZURE_STORAGE:
+    STORAGE_PROVIDER = "azure"
+
 # Specifying the `STATIC_URL` means that the assets are available at that URL
 #
 # Currently WFP is deploying this way, where the assets are put on a
@@ -94,6 +103,7 @@ DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() 
 CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
 CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
+ENABLE_ANALYTICS = os.environ.get("ENABLE_ANALYTICS", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["*"]
 
@@ -214,8 +224,16 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
+ENABLE_GZIP = os.environ.get("ENABLE_GZIP", "false").lower() == "true"
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+]
+if ENABLE_GZIP:
+    MIDDLEWARE += [
+        "django.middleware.gzip.GZipMiddleware",
+    ]
+MIDDLEWARE += [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
 ]
@@ -429,6 +447,7 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         "rest_framework_csv.renderers.CSVRenderer",
     ),
+    "TEST_REQUEST_DEFAULT_FORMAT": "json",  # The default format that should be used when making test requests.
 }
 
 SIMPLE_JWT = {
@@ -479,6 +498,55 @@ if USE_S3:
         print(" MEDIA_URL", MEDIA_URL)
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+elif USE_AZURE_STORAGE:
+    # Azure Blob Storage Configuration
+    #
+    # Environment variables needed for Azure Storage:
+    # - AZURE_STORAGE_ACCOUNT_NAME: Your Azure Storage account name
+    # - AZURE_STORAGE_ACCOUNT_KEY: Your Azure Storage account key
+    # - AZURE_CONNECTION_STRING: Alternative to account name/key (optional)
+    # - AZURE_CONTAINER_NAME: Container name for general storage (default: "iaso")
+    # - AZURE_CUSTOM_DOMAIN: Custom domain for CDN (optional)
+    # - STATIC_URL: CDN URL for static files (optional, overrides Azure URLs)
+    #
+    # Storage container and folder structure:
+    # - Single container: "iaso" (or AZURE_CONTAINER_NAME)
+    # - Static files: stored in "static/" folder within the container
+    # - Media files: stored in "media/" folder within the container
+    #
+    # URL patterns:
+    # - With custom domain: https://yourdomain.com/static/ and https://yourdomain.com/media/
+    # - Without custom domain: https://account.blob.core.windows.net/iaso/static/ and https://account.blob.core.windows.net/iaso/media/
+    # - With CDN: Uses STATIC_URL environment variable
+
+    AZURE_STORAGE_ACCOUNT_NAME = os.environ.get("AZURE_STORAGE_ACCOUNT_NAME")
+    AZURE_STORAGE_ACCOUNT_KEY = os.environ.get("AZURE_STORAGE_ACCOUNT_KEY")
+    AZURE_CONTAINER_NAME = os.environ.get("AZURE_CONTAINER_NAME", "iaso")
+    AZURE_CONNECTION_STRING = os.environ.get("AZURE_CONNECTION_STRING")
+    AZURE_CUSTOM_DOMAIN = os.environ.get("AZURE_CUSTOM_DOMAIN")
+
+    # Azure storage settings
+    AZURE_ACCOUNT_NAME = AZURE_STORAGE_ACCOUNT_NAME
+    AZURE_ACCOUNT_KEY = AZURE_STORAGE_ACCOUNT_KEY
+    AZURE_CONNECTION_STRING = AZURE_CONNECTION_STRING
+    AZURE_CUSTOM_DOMAIN = AZURE_CUSTOM_DOMAIN
+
+    # Static files configuration
+    if CDN_URL:
+        # Use CDN URL if provided
+        STATIC_URL = "//%s/static/" % (CDN_URL)
+    elif AZURE_CUSTOM_DOMAIN:
+        # Use custom domain if provided
+        STATIC_URL = f"https://{AZURE_CUSTOM_DOMAIN}/static/"
+        MEDIA_URL = f"https://{AZURE_CUSTOM_DOMAIN}/media/"
+    else:
+        # Use Azure Blob Storage URLs (single container with folders)
+        STATIC_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/static/"
+        MEDIA_URL = f"https://{AZURE_STORAGE_ACCOUNT_NAME}.blob.core.windows.net/{AZURE_CONTAINER_NAME}/media/"
+
+    # Storage backends
+    STATICFILES_STORAGE = "iaso.storage.AzureStaticStorage"
+    DEFAULT_FILE_STORAGE = "iaso.storage.AzureMediaStorage"
 else:
     SERVER_URL = os.environ.get("SERVER_URL", "")
     MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX
@@ -635,9 +703,15 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#ff7961")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 
+# https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/#specifying-authentication-backends
+# When somebody calls `django.contrib.auth.authenticate()`, Django tries authenticating
+# across all of its authentication backends. If the first authentication method fails,
+# Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "iaso.auth.backends.MultiTenantAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -734,3 +808,15 @@ for plugin_name in PLUGINS:
             f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
+
+# Making sure that files are not stored on disk while running tests
+# This allows faster tests and easier clean up of test files
+if IN_TESTS:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.InMemoryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
+        },
+    }

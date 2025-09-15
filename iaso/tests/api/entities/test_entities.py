@@ -212,7 +212,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
 
     def test_list_entities_annotate_duplicates(self):
         """
-        Test that the list of entities at /api/entities includes duplicate ids annotations
+        Test that the list of entities at /api/entities includes duplicate annotations.
 
         This shouldn't result in n+1 queries.
         """
@@ -231,13 +231,13 @@ class WebEntityAPITestCase(EntityAPITestCase):
         m.EntityDuplicate.objects.create(
             entity1=entities[0], entity2=entities[1], validation_status=ValidationStatus.PENDING
         )
-        with self.assertNumQueries(9):
+        with self.assertNumQueries(7):
             response = self.client.get("/api/entities/", format="json")
         self.assertEqual(response.status_code, 200)
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["id"], entities[0].id)
-        self.assertEqual(result[0]["duplicates"], [entities[1].id])
+        self.assertTrue(result[0]["has_duplicates"])
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):

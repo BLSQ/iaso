@@ -147,6 +147,7 @@ class LqasDataManager:
                     total_failed += 1
                     total_parsed += 1
                     continue
+
         self.logger.info(f"Success: {total_created}/{total_parsed}- {obr_name}")
         self.logger.info(f"Failures: {total_failed}/{total_parsed}- {obr_name}")
         if len(districts_not_found):
@@ -193,6 +194,7 @@ class LqasDataManager:
                     total_failed += 1
                     total_parsed += 1
                     continue
+
         self.logger.info(f"Success: {total_updated}/{total_parsed} - {obr_name}")
         self.logger.info(f"Failures: {total_failed}/{total_parsed} - {obr_name}")
         if len(districts_not_found) > 0:

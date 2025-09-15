@@ -28,7 +28,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class ProjectNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ["id", "name"]
+        fields = ["id", "name", "color"]
         ref_name = "ProjectNestedSerializerForChangeRequestConfiguration"
 
 

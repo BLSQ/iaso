@@ -1,9 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
+import Add from '@mui/icons-material/Add';
+import { Box, Button } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
 import DownloadButtonsComponent from '../../../../components/DownloadButtonsComponent';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';
 import { GroupDropdownOption } from '../../configuration/types';
 import { useGetOrgUnitChildren } from '../../hooks/requests/useGetOrgUnitChildren';
+import MESSAGES from '../../messages';
 import { OrgUnitChildrenFilters } from './OrgUnitChildrenFilters';
 import { OrgUnitChildrenTable } from './OrgUnitChildrenTable';
 import { useOrgUnitChildrenQueryString } from './useOrgUnitChildrenQueryString';
@@ -21,6 +25,7 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
     baseUrl,
     groups,
 }) => {
+    const { formatMessage } = useSafeIntl();
     // Add deafult value "all" for validation status
     const paramsWithDefaultValue = useMemo(() => {
         const copy = { ...params };
@@ -35,6 +40,7 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
     const csvUrl = `${apiUrl}/?${queryString}&csv=true`;
     const xlsxUrl = `${apiUrl}/?${queryString}&xlsx=true`;
     const gpkgUrl = `${apiUrl}/?${queryString}&gpkg=true`;
+
     return (
         <>
             <OrgUnitChildrenFilters
@@ -42,21 +48,31 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
                 params={paramsWithDefaultValue}
                 groups={groups}
             />
-            {Boolean(data?.orgunits?.length) && (
-                <Box
-                    mt={2}
-                    display="inline-flex"
-                    justifyContent="flex-end"
-                    style={{ width: '100%' }}
-                >
+            <Box
+                mt={2}
+                display="inline-flex"
+                justifyContent="flex-end"
+                style={{ width: '100%' }}
+            >
+                {Boolean(data?.orgunits?.length) && (
                     <DownloadButtonsComponent
                         csvUrl={csvUrl}
                         xlsxUrl={xlsxUrl}
                         gpkgUrl={gpkgUrl}
                         disabled={loading}
                     />
-                </Box>
-            )}
+                )}
+                <Button
+                    variant="contained"
+                    color="primary"
+                    target="_blank"
+                    sx={{ ml: theme => theme.spacing(1) }}
+                    href={`/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/0/parentOrgUnitId/${params.orgUnitId}`}
+                >
+                    <Add fontSize="small" />
+                    {formatMessage(MESSAGES.addChild)}
+                </Button>
+            </Box>
             <OrgUnitChildrenTable
                 baseUrl={baseUrl}
                 params={paramsWithDefaultValue}

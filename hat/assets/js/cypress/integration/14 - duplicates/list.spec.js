@@ -39,7 +39,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     );
     cy.intercept(
         'GET',
-        // eslint-disable-next-line max-len
+
         '/api/forms/?all=true&order=name&fields=name%2Cid%2Cpossible_fields',
         formsList,
     );
@@ -135,15 +135,10 @@ describe('Duplicate entities list', () => {
         });
         testPagination({
             baseUrl,
-            apiPath: '/api/entityduplicates/',
+            apiPath: '/api/entityduplicates/**',
             apiKey: 'results',
             withSearch: false,
             fixture: listFixture,
-            query: {
-                order: 'id',
-                page: '1',
-                limit: '20',
-            },
         });
         it('should display buttons on action column', () => {
             cy.visit(baseUrl);

@@ -167,6 +167,7 @@ class LqasDistrictData(models.Model):
                 condition=models.Q(subactivity__isnull=True),
             ),
         ]
+
         indexes = [
             models.Index(fields=["subactivity", "round"]),
             models.Index(fields=["district", "round", "subactivity"]),

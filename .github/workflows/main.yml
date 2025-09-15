@@ -4,10 +4,10 @@ on:
     pull_request:
         types: [opened, synchronize, ready_for_review]
     push:
-        # Run On push (or merge) on main.  This populates the cache and avoid the issue where we have undetected migrations
+        # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
         # conflict following subsequent merge
         branches:
-            - main
+            - develop
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
@@ -20,14 +20,14 @@ jobs:
         runs-on: ubuntu-24.04
         steps:
             - uses: actions/checkout@v4
-            - name: Use node.js 20
+            - name: Use node.js 22.18.0
               uses: actions/setup-node@v4
               with:
-                  node-version: '20.13.1'
+                  node-version: '22.18.0'
                   cache: npm
             - name: upgrade npm
               run: |
-                  npm install --global npm@10.5.2
+                  npm install --global npm@10.9.3
             - name: Environment info
               run: |
                   node --version

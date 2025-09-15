@@ -5,6 +5,7 @@ import {
     routeConfigs as appRoutes,
     page404,
     setupAccountPath,
+    setupAccountSettingsPath,
 } from '../../../constants/routes';
 
 import { baseUrls } from '../../../constants/urls';
@@ -121,7 +122,11 @@ export const useGetRoutesConfigs = ({
         return setupRoutes;
     }
     if (currentUser) {
-        return [...homeOnlineRoute, ...appRoutes, ...pluginRoutes];
+        let routes = [...appRoutes];
+        if (currentUser.is_staff || currentUser.is_superuser) {
+            routes = [...routes, ...[setupAccountSettingsPath]];
+        }
+        return [...homeOnlineRoute, ...routes, ...pluginRoutes];
     }
     return [
         ...homeOfflineRoute,

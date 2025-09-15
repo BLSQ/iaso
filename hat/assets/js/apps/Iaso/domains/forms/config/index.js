@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls.ts';
 import * as Permission from '../../../utils/permissions.ts';
@@ -12,6 +13,7 @@ import {
 import { FormActions } from '../components/FormActions.tsx';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 import MESSAGES from '../messages';
+import { UserCell } from 'Iaso/components/Cells/UserCell';
 
 export const baseUrl = baseUrls.forms;
 
@@ -30,6 +32,30 @@ export const useFormVersionsTableColumns = (formId, periodType) => {
             {
                 Header: formatMessage(MESSAGES.endPeriod),
                 accessor: 'end_period',
+            },
+            {
+                Header: formatMessage(MESSAGES.created_by),
+                id: 'created_by__username',
+                accessor: 'created_by',
+                Cell: UserCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                id: 'created_at',
+                accessor: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_by),
+                id: 'updated_by__username',
+                accessor: 'updated_by',
+                Cell: UserCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_at),
+                id: 'updated_at',
+                accessor: 'updated_at',
+                Cell: DateTimeCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -109,7 +135,7 @@ export const useFormsTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.projects),
                 accessor: 'projects',
-                Cell: settings => settings.value.map(p => p.name).join(', '),
+                Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {
                 Header: formatMessage(MESSAGES.name),

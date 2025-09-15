@@ -46,6 +46,8 @@ services:
             DISABLE_PASSWORD_LOGINS:
             DNS_DOMAIN:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
+            ENABLE_ANALYTICS:
+            ENABLE_GZIP: ${ENABLE_GZIP:-false}
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
             ENKETO_SIGNING_SECRET: supersecret
@@ -76,6 +78,7 @@ services:
             AVAILABLE_LANGUAGES:
             SERVER_URL:
             SHOW_NAME_WITH_LOGO:
+            HIDE_BASIC_NAV_ITEMS:
             SUPERSET_ADMIN_PASSWORD:
             SUPERSET_ADMIN_USERNAME:
             SUPERSET_URL:

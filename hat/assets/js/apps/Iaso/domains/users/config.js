@@ -4,6 +4,7 @@ import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 import * as Permission from '../../utils/permissions.ts';
+import { ProjectChips } from '../projects/components/ProjectChips';
 import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import PermissionCheckBoxes from './components/PermissionCheckBoxes.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
@@ -29,9 +30,7 @@ export const useUsersTableColumns = ({
                 id: 'projects',
                 accessor: 'projects',
                 sortable: false,
-                Cell: settings =>
-                    settings.value?.map(project => project.name).join(', ') ||
-                    textPlaceholder,
+                Cell: settings => <ProjectChips projects={settings.value} />,
             },
             {
                 Header: formatMessage(MESSAGES.userName),
@@ -74,9 +73,8 @@ export const useUsersTableColumns = ({
             },
             {
                 Header: formatMessage(MESSAGES.userRoles),
-                id: 'user_roles',
+                id: 'annotated_first_user_role',
                 accessor: 'user_roles_permissions',
-                sortable: false,
                 Cell: settings =>
                     settings.value
                         ?.map(user_role => user_role.name)

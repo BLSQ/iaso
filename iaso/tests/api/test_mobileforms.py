@@ -89,6 +89,32 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 1)
 
+    def test_forms_list_ok_with_custom_fields(self):
+        """
+        Ensure we don't trigger N+1 queries when using the `fields` query param.
+        """
+        # Ensure that `form_1` has a version so that we'll have two forms in the response.
+        self.form_1.form_versions.create(file=self.create_file_mock(name="data.xml"), version_id="20250813")
+
+        self.client.force_authenticate(self.yoda)
+        custom_fields = [
+            "id",
+            "name",
+            "periods_before_allowed",
+            "periods_after_allowed",
+            "predefined_filters",
+            "has_attachments",
+            "created_at",
+            "updated_at",
+            "reference_form_of_org_unit_types",
+        ]
+        with self.assertNumQueries(14):
+            response = self.client.get(
+                f"/api/mobile/forms/?fields={','.join(custom_fields)}", headers={"Content-Type": "application/json"}
+            )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
     def test_forms_list_ok_hide_derived_forms(self):
         """GET /mobile/forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
 

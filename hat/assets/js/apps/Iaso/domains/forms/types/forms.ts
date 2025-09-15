@@ -1,3 +1,4 @@
+import { JSONValue } from 'Iaso/domains/instances/utils/jsonLogicParse';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
 type FeatureFlag = {
@@ -120,6 +121,24 @@ export type FormParams = {
     attachmentsOrder?: string;
     attachmentsPageSize?: string;
     attachmentsPage?: string;
+    predefinedFiltersOrder?: string;
+    predefinedFiltersPageSize?: string;
+    predefinedFiltersPage?: string;
+};
+
+export type FormPredefinedFilter = {
+    id: number;
+    form_id: number;
+    name: string;
+    short_name: string;
+    json_logic: JSONValue;
+    created_at: number;
+    updated_at: number;
+};
+export type FormPredefinedFilterForm = {
+    name?: string;
+    short_name?: string;
+    json_logic?: JSONValue;
 };
 type Errors = string[];
 

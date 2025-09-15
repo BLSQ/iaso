@@ -75,6 +75,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'tab',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('attachments'),
+            ...paginationPathParamsWithPrefix('predefinedFilters'),
         ],
     },
     formsStats: { url: 'forms/stats', params: ['accountId', 'projectIds'] },
@@ -164,6 +165,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
             'referenceFormId',
             'instanceId',
+            'parentOrgUnitId',
             ...paginationPathParams,
             ...orgUnitDetailsChildrenParams,
             ...orgUnitDetailsLinkParams,
@@ -350,6 +352,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'settings/devices',
         params: ['accountId', ...paginationPathParams],
     },
+    setupAccountSettings: { url: 'settings/setupAccount', params: [] },
     groups: {
         url: 'orgunits/configuration/groups',
         params: [
@@ -586,6 +589,7 @@ export const extractParamsConfig = (
 // Not super necessary, but it will help the IDE when using baseUrls
 type IasoBaseUrls = {
     setupAccount: string;
+    setupAccountSettings: string;
     home: string;
     forms: string;
     formDetail: string;

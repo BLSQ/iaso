@@ -1,14 +1,17 @@
 from .base import *
+from .bulk_create_user_csv_file import BulkCreateUserCsvFile
 from .comment import CommentIaso
 from .data_source import DataSource, DataSourceVersionsSynchronization, SourceVersion
 from .deduplication import EntityDuplicate, EntityDuplicateAnalyzis
 from .device import Device, DeviceOwnership, DevicePosition
 from .entity import Entity, EntityType
+from .feature_flags import FeatureFlag, ProjectFeatureFlags
 from .forms import Form, FormAttachment, FormPredefinedFilter, FormVersion
 from .import_gpkg import ImportGPKG
+from .instances import Instance, InstanceFile, InstanceLock, InstanceQuerySet
 from .metric import MetricType, MetricValue
 from .microplanning import Planning, Team
-from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitType
+from .org_unit import OrgUnit, OrgUnitChangeRequest, OrgUnitReferenceInstance, OrgUnitType
 from .org_unit_change_request_configuration import OrgUnitChangeRequestConfiguration
 from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
@@ -37,12 +40,15 @@ __all__ = [
     "EntityDuplicate",
     "EntityDuplicateAnalyzis",
     "EntityType",
+    "FeatureFlag",
+    "ProjectFeatureFlags",
     "Form",
     "FormAttachment",
     "FormPredefinedFilter",
     "FormVersion",
     "ImportGPKG",
     "Instance",
+    "InstanceLock",
     "InstanceFile",
     "InstanceQuerySet",
     "MetricType",
@@ -50,6 +56,7 @@ __all__ = [
     "OrgUnit",
     "OrgUnitChangeRequest",
     "OrgUnitChangeRequestConfiguration",
+    "OrgUnitReferenceInstance",
     "OrgUnitType",
     "Page",
     "Payment",

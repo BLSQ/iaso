@@ -3,12 +3,12 @@ from uuid import uuid4
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
-from django.db import connection
 
 import iaso.models.base as base
 
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
+from iaso.api.deduplication.entity_duplicate_analyzis import AnalyzePostBodySerializer
 from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
 
@@ -55,10 +55,6 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
 class EntitiesDuplicationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        # this needs to be run as a new DB is created every time
-        with connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch ;")
-
         default_account = m.Account.objects.create(name="Default account")
 
         cls.default_account = default_account
@@ -507,7 +503,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
     def test_ignore_entity_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
 
-        response = self.client.post(
+        self.client.post(
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
@@ -964,3 +960,128 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             if duplicate.similarity_score is not None:
                 self.assertGreaterEqual(duplicate.similarity_score, -32768)
                 self.assertLessEqual(duplicate.similarity_score, 32767)
+
+    def test_analyzes_entities_with_empty_fields(self):
+        """
+        Test deduplication when entities have empty values in the comparison fields.
+        """
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        # Clean up the database.
+        m.Entity.objects.all().delete()
+        m.Instance.objects.all().delete()
+
+        form_version_id = self.default_form.form_versions.first().version_id
+        entity_type = self.default_entity_type
+        org_unit = self.default_orgunit
+
+        # Entity 1 - has empty `Prenom` and `Nom`.
+        instance_json_1 = {
+            "Prenom": "",  # Empty field.
+            "Nom": "",  # Empty field.
+            "age__int__": "25",
+            "height_cm__decimal__": "175.5",
+            "weight_kgs__double__": "70.0",
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "Foo",
+        }
+        create_instance_and_entity(
+            self, "entity_empty_fields_1", instance_json_1, form_version_id, orgunit=org_unit, entity_type=entity_type
+        )
+
+        # Entity 2 - also has empty `Prenom` and `Nom`.
+        instance_json_2 = {
+            "Prenom": "",  # Empty field
+            "Nom": "",  # Empty field
+            "age__int__": "26",
+            "height_cm__decimal__": "175.0",
+            "weight_kgs__double__": "71.0",
+            "transfer_from_tsfp__bool__": "true",
+            "something_else": "Bar",
+        }
+        create_instance_and_entity(
+            self, "entity_empty_fields_2", instance_json_2, form_version_id, orgunit=org_unit, entity_type=entity_type
+        )
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": entity_type.id,
+                "fields": ["Prenom", "Nom"],  # Include the empty fields in analysis.
+                "algorithm": "levenshtein",
+                "parameters": [],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        analyze_id = response.data["analyze_id"]
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+        self.assertEqual(response_analyze.status_code, 200)
+        self.assertEqual(response_analyze.data["status"], "SUCCESS")
+
+        # Get the duplicates.
+        response_duplicates = self.client.get("/api/entityduplicates/")
+        self.assertEqual(response_duplicates.status_code, 200)
+
+        duplicates = response_duplicates.data["results"]
+
+        self.assertEqual(len(duplicates), 0)
+
+    def test_analyze_post_body_serializer_validate_method(self):
+        """
+        Test the validation logic in `AnalyzePostBodySerializer.validate()`.
+        """
+
+        # Test valid data.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "Nom", "age__int__"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        validated_data = serializer.validated_data
+        self.assertEqual(validated_data["algorithm"], "levenshtein")
+        self.assertEqual(validated_data["fields"], ["Prenom", "Nom", "age__int__"])
+
+        # Test EntityType does not exist.
+        data = {"algorithm": "levenshtein", "entity_type_id": "99999", "fields": ["Prenom"], "parameters": []}
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Entity type does not exist.", str(serializer.errors))
+
+        # Test invalid field name.
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "non_existent_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `non_existent_field` does not exist on reference form.", str(serializer.errors))
+
+        # Test unsupported field type.
+        self.default_form.possible_fields += [
+            {
+                "name": "unsupported_field",
+                "type": "select one",  # "select one" is not in the supported types list.
+                "label": "Unsupported Field",
+            }
+        ]
+        self.default_form.save()
+        data = {
+            "algorithm": "levenshtein",
+            "entity_type_id": str(self.default_entity_type.id),
+            "fields": ["Prenom", "unsupported_field"],
+            "parameters": [],
+        }
+        serializer = AnalyzePostBodySerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Field `unsupported_field` has an unsupported type `select one`.", str(serializer.errors))

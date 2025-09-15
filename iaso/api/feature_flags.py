@@ -22,6 +22,7 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
             "category",
             "is_dangerous",
             "description",
+            "configuration_schema",
             "created_at",
             "updated_at",
         ]

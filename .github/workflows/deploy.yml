@@ -12,9 +12,9 @@ on:
         required: false
         default: iasops
   push:
-    # On push to main deploy to staging
+    # On push to develop deploy to staging
     branches:
-      - main
+      - develop
 
 
 
@@ -26,7 +26,7 @@ jobs:
       - name: Set configs
         id: config
         env:
-            DEFAULT_GIT_REFERENCE: main
+            DEFAULT_GIT_REFERENCE: develop
             DEFAULT_ENVIRONMENT: staging
             DEFAULT_SLACK_CHANNEL: iasops
         run: |
@@ -55,13 +55,13 @@ jobs:
           SLACK_TITLE: Started deployement of  ${{ steps.version.outputs.VERSION_NAME }} on ${{ steps.config.outputs.ENVIRONMENT }} ...
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
-      - name: Use node.js 20
+      - name: Use node.js 22.18.0
         uses: actions/setup-node@v4
         with:
-          node-version: '20.13.1'
+          node-version: '22.18.0'
       - name: upgrade npm
         run: |
-          npm install --global npm@10.5.2
+          npm install --global npm@10.9.3
       - name: Set up Python 3.9
         uses: actions/setup-python@v5
         with:

@@ -26,7 +26,7 @@ import PermissionsAttribution from './PermissionsAttribution';
 import { useInitialUser } from './useInitialUser';
 import { UserOrgUnitWriteTypes } from './UserOrgUnitWriteTypes';
 import UsersDialogTabDisabled from './UsersDialogTabDisabled';
-import UsersInfos from './UsersInfos';
+import { UsersInfos } from './UsersInfos';
 import UsersLocations from './UsersLocations';
 import { WarningModal } from './WarningModal/WarningModal';
 
@@ -73,7 +73,14 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const queryClient = useQueryClient();
     const classes: Record<string, string> = useStyles();
 
-    const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
+    const {
+        user,
+        setFieldValue,
+        setFieldErrors,
+        setPhoneNumber,
+        hasErrors,
+        setEmail,
+    } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
     const [hasNoOrgUnitManagementWrite, setHasNoOrgUnitManagementWrite] =
@@ -171,12 +178,22 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             ...new Set([...allUserPermissions, ...allUserRolesPermissions]),
         ];
     }, [allUserRolesPermissions, user.user_permissions.value]);
-
     useEffect(() => {
         setHasNoOrgUnitManagementWrite(
             !allUserUserRolesPermissions.includes(Permissions.ORG_UNITS),
         );
     }, [allUserRolesPermissions.length, allUserUserRolesPermissions]);
+    const isNewUser = !user.id?.value;
+    const allowConfirm =
+        !hasErrors &&
+        !(
+            user.user_name.value === '' ||
+            (isNewUser &&
+                (((!user.password.value || user.password.value === '') &&
+                    !user.send_email_invitation.value) ||
+                    (user.send_email_invitation.value &&
+                        user.email?.value === '')))
+        );
     return (
         <>
             <WarningModal
@@ -194,19 +211,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 maxWidth="md"
                 open={isOpen}
-                closeDialog={() => null}
-                allowConfirm={
-                    !(
-                        user.user_name.value === '' ||
-                        (!user.id?.value && user.password.value === '')
-                    )
-                }
+                closeDialog={closeDialog}
+                allowConfirm={allowConfirm}
                 onClose={() => null}
-                onCancel={() => {
-                    closeDialog();
-                }}
+                onCancel={closeDialog}
                 id="user-dialog"
                 dataTestId="user-dialog"
+                closeOnConfirm={false}
             >
                 <Tabs
                     id="user-dialog-tabs"
@@ -270,6 +281,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             canBypassProjectRestrictions={
                                 canBypassProjectRestrictions
                             }
+                            setPhoneNumber={setPhoneNumber}
+                            setEmail={setEmail}
                         />
                     </div>
                     {tab === 'permissions' && (

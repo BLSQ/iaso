@@ -412,6 +412,7 @@ class EntityDuplicateViewSet(ModelViewSet):
         dedup_filters.EntityIdFilterBackend,
         dedup_filters.EntitySearchFilterBackend,
         dedup_filters.AlgorithmFilterBackend,
+        dedup_filters.AnalyzeFilterBackend,
         dedup_filters.EntityTypeFilterBackend,
         dedup_filters.SimilarityFilterBackend,
         dedup_filters.FormFilterBackend,

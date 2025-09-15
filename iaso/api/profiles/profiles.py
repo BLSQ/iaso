@@ -94,7 +94,6 @@ def get_filtered_profiles(
     managed_users_only: Optional[bool] = False,
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
-    original_queryset = queryset
     if search:
         queryset = queryset.filter(
             Q(user__username__icontains=search)
@@ -118,19 +117,16 @@ def get_filtered_profiles(
             parent = ou.parent
 
         if parent_ou and not children_ou:
-            queryset = queryset if search else original_queryset
             org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
             if parent:
                 org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.id)
             queryset = queryset.filter(org_unit_filter).distinct()
 
         if children_ou and not parent_ou:
-            queryset = queryset if search else original_queryset
             descendant_ous = OrgUnit.objects.hierarchy(ou)
             queryset = queryset.filter(user__iaso_profile__org_units__in=descendant_ous)
 
         if parent_ou and children_ou:
-            queryset = queryset if search else original_queryset
             descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
             org_unit_filter = Q(user__iaso_profile__org_units__pk=location) | Q(
                 user__iaso_profile__org_units__in=descendant_ous

@@ -14,7 +14,6 @@ export const useGetPipelineDetails = (
             enabled: Boolean(pipelineId),
             select: data => {
                 if (!data) return undefined;
-                setError(null);
                 return {
                     ...data,
                     currentVersion: {

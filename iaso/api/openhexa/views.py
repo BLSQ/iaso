@@ -1,5 +1,6 @@
 import logging
 
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -326,6 +327,8 @@ class PipelineDetailView(APIView):
                 status=status.HTTP_200_OK,
             )
 
+        except Http404:
+            return Response({"error": _("Task not found")}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             logger.exception(f"Could not update task {task_id}: {str(e)}")
             return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

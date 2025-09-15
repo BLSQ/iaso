@@ -28,6 +28,7 @@ class PipelineParametersSerializer(serializers.Serializer):
 
     pipeline_id = serializers.CharField(
         max_length=100,
+        allow_blank=False,
         help_text="The OpenHexa pipeline ID (UUID format) to retrieve parameters for",
         style={"input_type": "text", "placeholder": "Enter OpenHexa pipeline ID"},
     )

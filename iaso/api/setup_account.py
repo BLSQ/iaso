@@ -166,24 +166,21 @@ class SetupAccountSerializer(serializers.Serializer):
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
 
         # Add project feature flags
-        try:
-            # Get the feature flags that should be added to the project
-            require_auth_flag = FeatureFlag.objects.get(code=FeatureFlag.REQUIRE_AUTHENTICATION)
-            forms_auto_upload_flag = FeatureFlag.objects.get(code=FeatureFlag.FORMS_AUTO_UPLOAD)
+        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD]
+        feature_flags = FeatureFlag.objects.filter(code__in=codes)
 
-            # Create ProjectFeatureFlags entries
-            ProjectFeatureFlags.objects.create(
-                project=initial_project, featureflag=require_auth_flag, configuration=None
-            )
-            ProjectFeatureFlags.objects.create(
-                project=initial_project, featureflag=forms_auto_upload_flag, configuration=None
-            )
+        found_codes = [ff.code for ff in feature_flags]
+        missing_codes = [code for code in codes if code not in found_codes]
+        if missing_codes:
+            logger.warning(f"Could not find the following feature flags: {missing_codes}")
 
-            logger.info(f"Added project feature flags to project {initial_project.name}")
-        except FeatureFlag.DoesNotExist as e:
-            logger.warning(f"Could not find required feature flags: {e}")
-        except Exception as e:
-            logger.error(f"Error adding project feature flags: {e}")
+        project_feature_flags = [
+            ProjectFeatureFlags(project=initial_project, featureflag=feature_flag, configuration=None)
+            for feature_flag in feature_flags
+        ]
+        ProjectFeatureFlags.objects.bulk_create(project_feature_flags)
+
+        logger.info(f"Added project feature flags to project {initial_project.name}")
 
         # Link data source to projects and source version
         data_source.projects.set([initial_project])

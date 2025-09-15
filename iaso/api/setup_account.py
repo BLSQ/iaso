@@ -166,7 +166,7 @@ class SetupAccountSerializer(serializers.Serializer):
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
 
         # Add project feature flags
-        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD]
+        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD, FeatureFlag.TAKE_GPS_ON_FORM]
         feature_flags = FeatureFlag.objects.filter(code__in=codes)
 
         found_codes = [ff.code for ff in feature_flags]

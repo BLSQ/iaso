@@ -1107,7 +1107,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(created_account.modules, data["modules"])
 
     def test_setup_account_creates_project_feature_flags(self):
-        """Test that setup account creates project feature flags for REQUIRE_AUTHENTICATION and FORMS_AUTO_UPLOAD"""
+        """Test that setup account creates project feature flags for REQUIRE_AUTHENTICATION and FORMS_AUTO_UPLOAD and TAKE_GPS_ON_FORM"""
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",
@@ -1126,6 +1126,7 @@ class SetupAccountApiTestCase(APITestCase):
         # Check that the project has the required feature flags
         self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
         self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+        self.assertTrue(project.has_feature(m.FeatureFlag.TAKE_GPS_ON_FORM))
 
         # Verify ProjectFeatureFlags entries exist
         require_auth_pff = m.ProjectFeatureFlags.objects.filter(
@@ -1203,13 +1204,16 @@ class SetupAccountApiTestCase(APITestCase):
 
         # Check ProjectFeatureFlags configuration
         project_feature_flags = m.ProjectFeatureFlags.objects.filter(project=project)
-        self.assertEqual(project_feature_flags.count(), 2)
+        self.assertEqual(project_feature_flags.count(), 3)
 
         for pff in project_feature_flags:
             # Configuration should be None for these feature flags
             self.assertIsNone(pff.configuration)
             # Feature flag should be one of the expected ones
-            self.assertIn(pff.featureflag.code, [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD])
+            self.assertIn(
+                pff.featureflag.code,
+                [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD, m.FeatureFlag.TAKE_GPS_ON_FORM],
+            )
 
     def test_setup_account_project_feature_flags_multiple_accounts(self):
         """Test that multiple accounts get the same project feature flags"""
@@ -1251,7 +1255,7 @@ class SetupAccountApiTestCase(APITestCase):
 
             # Check ProjectFeatureFlags entries
             pff_count = m.ProjectFeatureFlags.objects.filter(project=project).count()
-            self.assertEqual(pff_count, 2)
+            self.assertEqual(pff_count, 3)
 
     def test_setup_account_project_feature_flags_integration(self):
         """Test that project feature flags work with the complete setup account flow"""

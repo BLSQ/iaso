@@ -48,7 +48,7 @@ class ETL:
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
-            .select_related("entity__deleted_at")
+            .select_related("entity")
             .prefetch_related("entity", "form", "org_unit")
             .values(
                 "id",
@@ -682,7 +682,7 @@ class ETL:
         weight_loss = 0
 
         weight_difference = 0
-        if initial_weight is not None and initial_weight != "" and current_weight is not None and current_weight != "":
+        if initial_weight and current_weight:
             initial_weight = float(initial_weight)
             current_weight = float(current_weight)
             weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
@@ -747,8 +747,7 @@ class ETL:
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
-            Step.objects.select_related("visit", "visit__journey", "visit__org_unit")
-            .prefetch_related("beneficiary", "visit", "journey", "org_unit")
+            Step.objects.select_related("visit", "visit__journey", "visit__org_unit", "visit__journey__beneficiary")
             .filter(
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,

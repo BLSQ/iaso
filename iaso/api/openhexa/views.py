@@ -2,6 +2,7 @@ import logging
 
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from rest_framework import status
@@ -49,7 +50,9 @@ class PipelineListView(APIView):
             workspace_slug = openhexa_config.content["workspace_slug"]
         except Exception as e:
             logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response({"error": "OpenHexa configuration not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
         try:
             transport = RequestsHTTPTransport(
@@ -85,7 +88,7 @@ class PipelineListView(APIView):
 
         except Exception as e:
             logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}: {str(e)}")
-            return Response({"error": "Failed to retrieve pipelines"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": _("Failed to retrieve pipelines")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class PipelineDetailView(APIView):
@@ -110,7 +113,9 @@ class PipelineDetailView(APIView):
             openhexa_token = openhexa_config.content["openhexa_token"]
         except Exception as e:
             logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response({"error": "OpenHexa configuration not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
         try:
             transport = RequestsHTTPTransport(
@@ -153,7 +158,7 @@ class PipelineDetailView(APIView):
         except Exception as e:
             logger.exception(f"Could not retrieve pipeline details for {pipeline_id}: {str(e)}")
             return Response(
-                {"error": "Failed to retrieve pipeline details"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                {"error": _("Failed to retrieve pipeline details")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def post(self, request, pipeline_id):
@@ -183,7 +188,9 @@ class PipelineDetailView(APIView):
             workspace_slug = openhexa_config.content["workspace_slug"]
         except Exception as e:
             logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response({"error": "OpenHexa configuration not found"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(
+                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
         try:
             # Construct pipeline_config object for launch_task
@@ -253,7 +260,7 @@ class PipelineDetailView(APIView):
 
         except Exception as e:
             logger.exception(f"Could not launch pipeline {pipeline_id}: {str(e)}")
-            return Response({"error": "Failed to launch pipeline"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": _("Failed to launch pipeline")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def patch(self, request, pipeline_id):
         """
@@ -269,7 +276,7 @@ class PipelineDetailView(APIView):
         # Get task_id from request data
         task_id = request.data.get("task_id")
         if not task_id:
-            return Response({"error": "task_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": _("task_id is required")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             # Get the task
@@ -277,7 +284,7 @@ class PipelineDetailView(APIView):
 
             # Check if task is external (should be for pipeline tasks)
             if not task.external:
-                return Response({"error": "Task is not external"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"error": _("Task is not external")}, status=status.HTTP_400_BAD_REQUEST)
 
             # Update task fields
             if "status" in request.data:
@@ -321,4 +328,4 @@ class PipelineDetailView(APIView):
 
         except Exception as e:
             logger.exception(f"Could not update task {task_id}: {str(e)}")
-            return Response({"error": "Failed to update task"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

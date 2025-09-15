@@ -6,8 +6,10 @@ import React, {
 } from 'react';
 import { Box, Paper, Typography, Button } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
+import PageError from 'Iaso/components/errors/PageError';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { baseUrls } from 'Iaso/constants/urls';
+import { DjangoError } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineDetails } from './hooks/useGetPipelineDetails';
@@ -25,8 +27,11 @@ export const PipelineDetails: FunctionComponent = () => {
     const { pipelineId } = useParamsObject(
         baseUrls.pipelinedetails,
     ) as unknown as PipelineDetailsParams;
-    const { data: pipeline, isFetching } = useGetPipelineDetails(pipelineId);
-
+    const [error, setError] = useState<DjangoError | null>(null);
+    const { data: pipeline, isFetching } = useGetPipelineDetails(
+        pipelineId,
+        setError,
+    );
     // State to store parameter values
     const [parameterValues, setParameterValues] = useState<ParameterValues>({});
 
@@ -91,7 +96,7 @@ export const PipelineDetails: FunctionComponent = () => {
                 // Try to parse JSON input
                 const parsedValue = value ? JSON.parse(value) : {};
                 handleParameterChange(parameter.code, parsedValue);
-            } catch (error) {
+            } catch {
                 // If JSON is invalid, store as string for now
                 handleParameterChange(parameter.code, value);
             }
@@ -206,11 +211,19 @@ export const PipelineDetails: FunctionComponent = () => {
                 );
         }
     };
-
     return (
         <>
-            <TopBar title={pipeline?.name ?? ''} />
             {isFetching && <LoadingSpinner absolute />}
+            {error && (
+                <Box>
+                    <PageError
+                        errorCode={`${error.status}`}
+                        displayMenuButton
+                        customMessage={error.details.error}
+                    />
+                </Box>
+            )}
+            {!error && <TopBar title={pipeline?.name ?? ''} />}
             {pipeline && (
                 <Box
                     sx={{
@@ -255,8 +268,6 @@ export const PipelineDetails: FunctionComponent = () => {
                                 Submit Parameters
                             </Button>
                         </Box>
-
-                        {/* Debug section - remove in production */}
                         <Box
                             sx={{
                                 marginTop: 2,

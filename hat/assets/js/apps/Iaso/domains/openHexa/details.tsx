@@ -52,7 +52,7 @@ const styles: SxStyles = {
 
 export const PipelineDetails: FunctionComponent = () => {
     const { pipelineId } = useParamsObject(
-        baseUrls.pipelinedetails,
+        baseUrls.pipelineDetails,
     ) as unknown as PipelineDetailsParams;
     const { formatMessage } = useSafeIntl();
     const [error, setError] = useState<DjangoError | null>(null);
@@ -91,7 +91,13 @@ export const PipelineDetails: FunctionComponent = () => {
                         <Typography variant="h6" sx={styles.title}>
                             {formatMessage(MESSAGES.title)}
                         </Typography>
-                        {pipeline.currentVersion?.parameters.map(parameter => (
+
+                        {!pipeline.currentVersion?.parameters && (
+                            <Typography variant="body2" sx={styles.title}>
+                                {formatMessage(MESSAGES.noParameters)}
+                            </Typography>
+                        )}
+                        {pipeline.currentVersion?.parameters?.map(parameter => (
                             <Box key={parameter.name} sx={{ marginBottom: 2 }}>
                                 {renderParameterInput(parameter)}
                             </Box>

@@ -5,7 +5,7 @@ export type Pipeline = {
     name: string;
     currentVersion?: {
         versionNumber: string;
-        parameters: {
+        parameters?: {
             type: ParameterType;
             name: string;
             code: string;

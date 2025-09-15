@@ -26,7 +26,7 @@ OPENHEXA_CONFIG_SLUG = "openhexa-config"
     - openhexa_token
     - workspace_slug
 - a working pipeline
-- a custom connection to IASO in openhexa
+- a custom /Iaso connection to IASO in openhexa
 
 """
 
@@ -70,6 +70,7 @@ class PipelineListView(APIView):
                         items {
                             id
                             name
+                            createdAt
                             currentVersion {
                                 versionNumber
                             }

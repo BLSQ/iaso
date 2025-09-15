@@ -26,6 +26,9 @@ export const useGetPipelineDetails = (
                     },
                 };
             },
+            keepPreviousData: true,
+            cacheTime: 60000,
+            staleTime: 60000,
             retry: false,
             onError: error => {
                 setError(error);

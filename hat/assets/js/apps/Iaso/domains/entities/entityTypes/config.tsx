@@ -77,7 +77,7 @@ export const useColumns = ({
                             )}
                             <IconButtonComponent
                                 id={`entities-link-${type.id}`}
-                                url={`/${baseUrls.entities}/entityTypeIds/${type.id}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`}
+                                url={`/${baseUrls.entities}/entityTypeIds/${type.id}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1/isSearchActive/true`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.entities}
                                 disabled={type.entities_count === 0}

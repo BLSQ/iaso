@@ -88,13 +88,14 @@ export const useGetEntitiesApiParams = (
 
 export const useGetEntitiesPaginated = (
     params: Params,
+    isSearchActive: boolean,
 ): UseQueryResult<PaginatedEntities, Error> => {
     const { url, apiParams } = useGetEntitiesApiParams(params);
     return useSnackQuery({
         queryKey: ['entities', apiParams],
         queryFn: () => getRequest(url),
         options: {
-            enabled: apiParams.tab === 'list',
+            enabled: apiParams.tab === 'list' && isSearchActive,
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,

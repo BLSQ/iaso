@@ -398,6 +398,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'groups',
             'fieldsSearch',
             ...paginationPathParams,
+            'isSearchActive',
         ],
     },
     entityDetails: {

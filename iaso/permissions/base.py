@@ -29,6 +29,9 @@ class IasoPermission(ABC):
         None  # Represents a category whenever there are read/write/admin/non-admin/... permissions
     )
     type_in_category: Optional[str] = None  # Represents a type in the category, e.g. "read", "write", "admin"...
+    order_in_category: Optional[int] = (
+        None  # Represents the order of the permission in its category (1 = lowest permissions)
+    )
 
     def __post_init__(self):
         if self.module:

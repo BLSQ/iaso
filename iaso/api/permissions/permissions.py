@@ -78,16 +78,26 @@ class PermissionsViewSet(viewsets.ViewSet):
                     "id": django_perm.id,  # We don't really care about which ID we put here, but it has to be provided
                     "name": category,
                     "codename": category,
-                    "read_edit": {iaso_perm.type_in_category: iaso_perm.name},
+                    "category": [{iaso_perm.type_in_category: iaso_perm.name, "order": iaso_perm.order_in_category}],
                     "group": group,
                 }
                 continue
 
             # This category already exists, we need to add this permission to it
-            categories_dict[category]["read_edit"][iaso_perm.type_in_category] = iaso_perm.name
+            categories_dict[category]["category"].append(
+                {iaso_perm.type_in_category: iaso_perm.name, "order": iaso_perm.order_in_category}
+            )
 
-        # Now that all permissions have been processed, we add back all the categories to their groups
+        # Now that all permissions have been processed, we add all the categories back to their groups
         for category, perm in categories_dict.items():
+            # First we order perms inside their category
+            perm["category"].sort(key=lambda x: x["order"])
+            ordered_category = OrderedDict()
+            for entry in perm["category"]:
+                entry.pop("order")  # We don't need to expose the order to the frontend
+                ordered_category.update(entry)
+            perm["read_edit"] = ordered_category
+
             group = perm.pop("group")
             group_list = grouped_permissions[group]
             group_list.append(perm)
@@ -98,6 +108,11 @@ class PermissionsViewSet(viewsets.ViewSet):
         for group in PERMISSION_GROUPS_DISPLAY_ORDER:
             if group in grouped_permissions:
                 ordered_grouped_permissions[group] = grouped_permissions[group]
+
+        # Plugin permission groups are not part of the predefined order, we add them at the end
+        for group, perms in grouped_permissions.items():
+            if group not in ordered_grouped_permissions:
+                ordered_grouped_permissions[group] = perms
 
         return Response({"permissions": ordered_grouped_permissions})
 

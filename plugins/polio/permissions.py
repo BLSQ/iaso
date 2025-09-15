@@ -31,6 +31,7 @@ POLIO_BUDGET_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_budget_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 POLIO_BUDGET_ADMIN_PERMISSION = PolioPermission(
     name="iaso_polio_budget_admin",
@@ -39,6 +40,7 @@ POLIO_BUDGET_ADMIN_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_budget_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 POLIO_CONFIG_PERMISSION = PolioPermission(
     name="iaso_polio_config", label=_("Polio config"), module=MODULE_POLIO_PROJECT, group=PERMISSION_GROUP_POLIO
@@ -50,6 +52,7 @@ POLIO_CHRONOGRAM_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_chronogram_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION = PolioPermission(
     name="iaso_polio_chronogram_restricted_write",
@@ -58,6 +61,7 @@ POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_chronogram_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 POLIO_NOTIFICATIONS_PERMISSION = PolioPermission(
     name="iaso_polio_notifications",
@@ -72,6 +76,7 @@ POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_authorization_permissions",
     type_in_category="admin",
+    order_in_category=2,
 )
 POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_authorizations_read_only",
@@ -80,6 +85,7 @@ POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_authorization_permissions",
     type_in_category="no_admin",
+    order_in_category=1,
 )
 POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_earmarks_admin",
@@ -88,6 +94,7 @@ POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_earmarks_permissions",
     type_in_category="admin",
+    order_in_category=3,
 )
 POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_earmarks_nonadmin",
@@ -96,6 +103,7 @@ POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_earmarks_permissions",
     type_in_category="no_admin",
+    order_in_category=2,
 )
 POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_earmarks_read_only",
@@ -104,6 +112,7 @@ POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_earmarks_permissions",
     type_in_category="read_only",
+    order_in_category=1,
 )
 POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_management_read",
@@ -112,6 +121,7 @@ POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_management_permissions",
     type_in_category="no_admin",
+    order_in_category=2,
 )
 POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_management_read_only",
@@ -120,6 +130,7 @@ POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_management_permissions",
     type_in_category="read_only",
+    order_in_category=1,
 )
 POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_stock_management_write",
@@ -128,6 +139,7 @@ POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_stock_management_permissions",
     type_in_category="admin",
+    order_in_category=3,
 )
 POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_supply_chain_read",
@@ -136,6 +148,7 @@ POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_supply_chain_permissions",
     type_in_category="no_admin",
+    order_in_category=2,
 )
 POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_supply_chain_read_only",
@@ -144,6 +157,7 @@ POLIO_VACCINE_SUPPLY_CHAIN_READ_ONLY_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_supply_chain_permissions",
     type_in_category="read_only",
+    order_in_category=1,
 )
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION = PolioPermission(
     name="iaso_polio_vaccine_supply_chain_write",
@@ -152,6 +166,7 @@ POLIO_VACCINE_SUPPLY_CHAIN_WRITE_PERMISSION = PolioPermission(
     group=PERMISSION_GROUP_POLIO,
     category="iaso_polio_vaccine_supply_chain_permissions",
     type_in_category="admin",
+    order_in_category=3,
 )
 
 

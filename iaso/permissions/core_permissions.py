@@ -72,10 +72,18 @@ CORE_COMPLETENESS_STATS_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_FORMS,
 )
 CORE_DATASTORE_READ_PERMISSION = CorePermission(
-    name="iaso_datastore_read", label=_("Read data store"), category="datastore", type_in_category="read"
+    name="iaso_datastore_read",
+    label=_("Read data store"),
+    category="datastore",
+    type_in_category="read",
+    order_in_category=1,
 )
 CORE_DATASTORE_WRITE_PERMISSION = CorePermission(
-    name="iaso_datastore_write", label=_("Write data store"), category="datastore", type_in_category="write"
+    name="iaso_datastore_write",
+    label=_("Write data store"),
+    category="datastore",
+    type_in_category="write",
+    order_in_category=2,
 )
 CORE_DATA_TASKS_PERMISSION = CorePermission(
     name="iaso_data_tasks", label=_("Tâches"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ADMIN
@@ -93,6 +101,7 @@ CORE_ENTITIES_DUPLICATES_READ_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ENTITIES,
     category="iaso_entity_duplicate_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION = CorePermission(
     name="iaso_entity_duplicates_write",
@@ -101,6 +110,7 @@ CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ENTITIES,
     category="iaso_entity_duplicate_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_FORMS_PERMISSION = CorePermission(
     name="iaso_forms", label=_("Formulaires"), module=MODULE_DATA_COLLECTION, group=PERMISSION_GROUP_FORMS
@@ -136,6 +146,7 @@ CORE_ORG_UNITS_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ORG_UNITS,
     category="iaso_org_unit_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_ORG_UNITS_HISTORY_PERMISSION = CorePermission(
     name="iaso_org_units_history",
@@ -150,6 +161,7 @@ CORE_ORG_UNITS_READ_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ORG_UNITS,
     category="iaso_org_unit_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_ORG_UNITS_TYPES_PERMISSION = CorePermission(
     name="iaso_org_unit_types", label=_("Org unit types"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ORG_UNITS
@@ -176,6 +188,7 @@ CORE_PAGES_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_EMBEDDED_LINKS,
     category="iaso_page_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_PAGE_WRITE_PERMISSION = CorePermission(
     name="iaso_page_write",
@@ -184,6 +197,7 @@ CORE_PAGE_WRITE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_EMBEDDED_LINKS,
     category="iaso_page_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_PAYMENTS_PERMISSION = CorePermission(
     name="iaso_payments", label=_("Payments page"), module=MODULE_PAYMENTS, group=PERMISSION_GROUP_PAYMENTS
@@ -195,6 +209,7 @@ CORE_PLANNING_WRITE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_PLANNING,
     category="iaso_planning_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_PLANNING_READ_PERMISSION = CorePermission(
     name="iaso_planning_read",
@@ -203,6 +218,7 @@ CORE_PLANNING_READ_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_PLANNING,
     category="iaso_planning_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_PROJECTS_PERMISSION = CorePermission(
     name="iaso_projects", label=_("Projets"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ADMIN
@@ -214,6 +230,7 @@ CORE_REGISTRY_WRITE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_REGISTRY,
     category="iaso_registry_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_REGISTRY_READ_PERMISSION = CorePermission(
     name="iaso_registry_read",
@@ -222,6 +239,7 @@ CORE_REGISTRY_READ_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_REGISTRY,
     category="iaso_registry_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_REPORTS_PERMISSION = CorePermission(
     name="iaso_reports", label=_("Reports"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ADMIN
@@ -233,6 +251,7 @@ CORE_SOURCE_WRITE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ADMIN,
     category="iaso_source_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_SOURCE_PERMISSION = CorePermission(
     name="iaso_sources",
@@ -241,6 +260,7 @@ CORE_SOURCE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ADMIN,
     category="iaso_source_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION = CorePermission(
     name="iaso_sources_can_change_default_version",
@@ -258,6 +278,7 @@ CORE_SUBMISSIONS_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_FORMS,
     category="iaso_submission_permissions",
     type_in_category="read",
+    order_in_category=1,
 )
 CORE_SUBMISSIONS_UPDATE_PERMISSION = CorePermission(
     name="iaso_update_submission",
@@ -266,6 +287,7 @@ CORE_SUBMISSIONS_UPDATE_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_FORMS,
     category="iaso_submission_permissions",
     type_in_category="write",
+    order_in_category=2,
 )
 CORE_TEAMS_PERMISSION = CorePermission(
     name="iaso_teams", label=_("Equipes"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ADMIN
@@ -277,6 +299,7 @@ CORE_USERS_ADMIN_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ADMIN,
     category="iaso_user_permissions",
     type_in_category="all",
+    order_in_category=2,
 )
 CORE_USERS_MANAGED_PERMISSION = CorePermission(
     name="iaso_users_managed",
@@ -285,6 +308,7 @@ CORE_USERS_MANAGED_PERMISSION = CorePermission(
     group=PERMISSION_GROUP_ADMIN,
     category="iaso_user_permissions",
     type_in_category="geo_limited",
+    order_in_category=1,
 )
 CORE_USERS_ROLES_PERMISSION = CorePermission(
     name="iaso_user_roles", label=_("Manage user roles"), module=MODULE_DEFAULT, group=PERMISSION_GROUP_ADMIN

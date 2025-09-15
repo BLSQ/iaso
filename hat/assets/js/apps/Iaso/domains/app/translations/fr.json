@@ -945,6 +945,7 @@
     "iaso.modules.trypelim_project": "Projet Trypelim",
     "iaso.openHexa.label.pipelineDetails": "Détails de la pipeline",
     "iaso.openHexa.label.pipelines": "Pipelines",
+    "iaso.openHexalabel.unknownParameterType": "Type de paramètre inconnu",
     "iaso.orgUnitChangeRequestConfigs.title.confirmSuppression": "Supprimer la configuration pour {project} - {orgUnitType} ?",
     "iaso.orgUnitChangeRequestConfigs.warningMessageOrgUnitChangeConfig": "Attention, les types d'unités d'organisation n'ayant pas de configuration en place peuvent être édités par les utilisateurs sans restriction.",
     "iaso.orgUnits.add": "Rechercher une unité d'org. à ajouter",

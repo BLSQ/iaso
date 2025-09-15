@@ -272,7 +272,7 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
 
                 compare_or_create_snapshot(
                     parquet_path=f.name,
-                    snapshot_path="./iaso/fixtures/snapshots/test_can_retrieve_instances_in_parquet_format.csv",
+                    snapshot_path="./iaso/tests/fixtures/snapshots/test_can_retrieve_instances_in_parquet_format.csv",
                     context={
                         "instances": instances,
                         "form_id": self.instance_1.form.id,

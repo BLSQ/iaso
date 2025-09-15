@@ -64,7 +64,6 @@ def compare_or_create_snapshot(parquet_path, snapshot_path, stable_columns=None,
         else:
             raise ValueError(f"Unsupported snapshot format: {snapshot_file.suffix} from {snapshot_path}")
         print(f"Snapshot created at {snapshot_file}")
-        return
 
     df_snapshot = load_snapshot(snapshot_file, context)
 

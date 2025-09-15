@@ -229,7 +229,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
                 compare_or_create_snapshot(
                     f.name,
-                    "./iaso/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format.csv",
+                    "./iaso/tests/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format.csv",
                     stable_columns,
                 )
 
@@ -275,7 +275,7 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
 
                 compare_or_create_snapshot(
                     f.name,
-                    "./iaso/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
+                    "./iaso/tests/fixtures/snapshots/test_can_retrieve_org_units_list_in_parquet_format_extra_fields.csv",
                     stable_columns,
                 )
 

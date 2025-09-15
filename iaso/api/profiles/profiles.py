@@ -123,12 +123,12 @@ def get_filtered_profiles(
                 org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
             queryset = queryset.filter(org_unit_filter).distinct()
 
-        if children_ou and not parent_ou:
+        elif children_ou and not parent_ou:
             descendant_ous = OrgUnit.objects.hierarchy(ou)
             org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
             queryset = queryset.filter(org_unit_filter).distinct()
 
-        if parent_ou and children_ou:
+        elif parent_ou and children_ou:
             descendant_ous = OrgUnit.objects.hierarchy(ou)
             org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
             if parent:

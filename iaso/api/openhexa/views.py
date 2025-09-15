@@ -18,6 +18,16 @@ logger = logging.getLogger(__name__)
 
 OPENHEXA_CONFIG_SLUG = "openhexa-config"
 
+"""TO MAKE IT WORK
+- openhexa-config  with the following fields:
+    - openhexa_url
+    - openhexa_token
+    - workspace_slug
+- a working pipeline
+- a custom connection to IASO in openhexa
+
+"""
+
 
 class PipelineListView(APIView):
     """

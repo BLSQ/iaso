@@ -10,6 +10,12 @@ from plugins.wfp.models import *
 
 logger = logging.getLogger(__name__)
 
+ADMISSION_ANTHROPOMETRIC_FORMS = [
+    "anthropometric_admission",
+    "Anthropometric visit child",
+    "anthropometric_admission_otp",
+]
+
 
 class NG_Under5:
     def group_visit_by_entity(self, entities):
@@ -62,19 +68,20 @@ class NG_Under5:
                     current_date = visit.get(
                         "source_created_at",
                         visit.get(
-                            "_visit_date", visit.get("visit_date", visit.get("_new_discharged_today", current_date))
+                            "_visit_date",
+                            visit.get(
+                                "visit_date",
+                                visit.get("_new_discharged_today", current_date),
+                            ),
                         ),
                     )
 
-                    if form_id in [
-                        "anthropometric_admission",
-                        "Anthropometric visit child",
-                        "anthropometric_admission_otp",
-                    ]:
+                    if form_id in ADMISSION_ANTHROPOMETRIC_FORMS:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get(
-                            "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                            "source_created_at",
+                            visit.get("_visit_date", visit.get("visit_date", current_date)),
                         )
                         initial_date = visit_date
 
@@ -92,7 +99,8 @@ class NG_Under5:
                     current_record["duration"] = duration
 
                     visit_date = visit.get(
-                        "source_created_at", visit.get("_visit_date", visit.get("visit_date", current_date))
+                        "source_created_at",
+                        visit.get("_visit_date", visit.get("visit_date", current_date)),
                     )
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
@@ -110,6 +118,7 @@ class NG_Under5:
                     and instance.get("gender") != ""
                     and instance.get("birth_date") is not None
                     and instance.get("birth_date") != ""
+                    and len(ETL().admission_forms(instance.get("visits"), ADMISSION_ANTHROPOMETRIC_FORMS)) > 0
                 ),
                 instances,
             )
@@ -119,53 +128,53 @@ class NG_Under5:
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         beneficiaries = entity_type.retrieve_entities()
+        pages = beneficiaries.page_range
 
-        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()} for {account}")
-        entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
-        existing_beneficiaries = ETL().existing_beneficiaries()
-        instances = self.group_visit_by_entity(entities)
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")
 
-        # Cleaning monthly statistics then update the table with fresh data
-        MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
+        for page in pages:
+            entities = sorted(list(beneficiaries.page(page).object_list), key=itemgetter("entity_id"))
+            existing_beneficiaries = ETL().existing_beneficiaries()
+            instances = self.group_visit_by_entity(entities)
 
-        for index, instance in enumerate(instances):
-            logger.info(
-                f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
-            )
-            instance["journey"] = self.journeyMapper(
-                instance["visits"],
-                ["Anthropometric visit child", "anthropometric_admission", "anthropometric_admission_otp"],
-            )
-            beneficiary = Beneficiary()
-            if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
-                beneficiary.gender = instance["gender"]
-                beneficiary.birth_date = instance["birth_date"]
-                beneficiary.entity_id = instance["entity_id"]
-                beneficiary.account = account
-                beneficiary.save()
-                logger.info("Created new beneficiary")
-            else:
-                beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
-
-            logger.info("Retrieving journey linked to beneficiary")
-
-            for journey_instance in instance["journey"]:
-                if journey_instance.get("nutrition_programme") is not None and len(journey_instance["visits"]) > 0:
-                    journey = self.save_journey(beneficiary, journey_instance)
-                    visits = ETL().save_visit(journey_instance["visits"], journey)
-                    logger.info(f"Inserted {len(visits)} Visits")
-                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                    admission_step = grouped_steps[0]
-
-                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
-
-                    steps = ETL().save_steps(visits, followUpVisits)
-                    logger.info(f"Inserted {len(steps)} Steps")
+            for index, instance in enumerate(instances):
+                logger.info(
+                    f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
+                )
+                instance["journey"] = self.journeyMapper(
+                    instance["visits"],
+                    ADMISSION_ANTHROPOMETRIC_FORMS,
+                )
+                beneficiary = Beneficiary()
+                if instance["entity_id"] not in existing_beneficiaries and len(instance["journey"][0]["visits"]) > 0:
+                    beneficiary.gender = instance["gender"]
+                    beneficiary.birth_date = instance["birth_date"]
+                    beneficiary.entity_id = instance["entity_id"]
+                    beneficiary.account = account
+                    beneficiary.save()
+                    logger.info("Created new beneficiary")
                 else:
-                    logger.info("No new journey")
-            logger.info(
-                "---------------------------------------------------------------------------------------------\n\n"
-            )
+                    beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
+
+                logger.info("Retrieving journey linked to beneficiary")
+
+                for journey_instance in instance["journey"]:
+                    if journey_instance.get("nutrition_programme") is not None and len(journey_instance["visits"]) > 0:
+                        journey = self.save_journey(beneficiary, journey_instance)
+                        visits = ETL().save_visit(journey_instance["visits"], journey)
+                        logger.info(f"Inserted {len(visits)} Visits")
+                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                        admission_step = grouped_steps[0]
+
+                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+
+                        steps = ETL().save_steps(visits, followUpVisits)
+                        logger.info(f"Inserted {len(steps)} Steps")
+                    else:
+                        logger.info("No new journey")
+                logger.info(
+                    "---------------------------------------------------------------------------------------------\n\n"
+                )
 
     def journeyMapper(self, visits, admission_form):
         current_journey = {"visits": [], "steps": []}

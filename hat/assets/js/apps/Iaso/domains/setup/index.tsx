@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
@@ -14,6 +14,7 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
+import { DropdownOptions } from '../../types/utils';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
@@ -76,7 +77,7 @@ export const SetupAccount: FunctionComponent = () => {
             password: undefined,
             email_invitation: false,
             language: 'en',
-            modules: ['DATA_COLLECTION_FORMS', 'DEFAULT'],
+            modules: ['DATA_COLLECTION_FORMS'],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -114,13 +115,25 @@ export const SetupAccount: FunctionComponent = () => {
     const { data: modules, isFetching: isFetchingModules } =
         useGetModulesDropDown();
 
+    const filteredModules: DropdownOptions<string>[] = useMemo(
+        () =>
+            modules?.filter(
+                (module: DropdownOptions<string>) => module.value !== 'DEFAULT',
+            ) ?? [],
+        [modules],
+    );
     const allowConfirm = isValid && !isEqual(values, initialValues);
+    const hasAccount = Boolean(currentUser.account);
     return (
         <>
             <TopBar
                 displayBackButton={false}
-                displayMenuButton={false}
-                title={formatMessage(MESSAGES.welcome)}
+                displayMenuButton={hasAccount}
+                title={
+                    !hasAccount
+                        ? formatMessage(MESSAGES.welcome)
+                        : formatMessage(MESSAGES.accountSetup)
+                }
             />
             <Paper className={classes.paper}>
                 {isAdmin && (
@@ -261,7 +274,7 @@ export const SetupAccount: FunctionComponent = () => {
                                         onChange={onChange}
                                         errors={getErrors('modules')}
                                         loading={isFetchingModules}
-                                        options={modules ?? []}
+                                        options={filteredModules}
                                     />
                                     <Box
                                         mt={2}

@@ -22,8 +22,8 @@ def etl_ng():
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
     account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    Beneficiary.objects.all().filter(account=account).delete()
-    MonthlyStatistics.objects.all().filter(account=account, programme_type="U5").delete()
+    Beneficiary.objects.filter(account=account).delete()
+    MonthlyStatistics.objects.filter(account=account, programme_type="U5").delete()
     NG_Under5().run(entity_type_U5_code)
     logger.info(
         f"----------------------------- Aggregating journey for {account} per org unit, admission and period(month and year) -----------------------------"
@@ -35,7 +35,7 @@ def etl_ng():
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.all().filter(account=pbwg_account, programme_type="PLW").delete()
+    MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
 
 
@@ -44,13 +44,13 @@ def etl_ssd():
     logger.info("Starting ETL for South Sudan")
     entity_type_U5_code = "ssd_under5"
     child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    Beneficiary.objects.all().filter(account=child_account).delete()
+    Beneficiary.objects.filter(account=child_account).delete()
     Under5().run(entity_type_U5_code)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.all().filter(account=child_account, programme_type="U5").delete()
+    MonthlyStatistics.objects.filter(account=child_account, programme_type="U5").delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
     entity_type_pbwg_code = "ssd_pbwg"
     pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
@@ -58,7 +58,7 @@ def etl_ssd():
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.all().filter(account=pbwg_account, programme_type="PLW").delete()
+    MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
 
 
@@ -67,13 +67,13 @@ def etl_ethiopia():
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"
     child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
-    Beneficiary.objects.all().filter(account=child_account).delete()
+    Beneficiary.objects.filter(account=child_account).delete()
     ET_Under5().run(entity_type_U5_code)
 
     logger.info(
         f"----------------------------- Aggregating Children under 5 journey for {child_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.all().filter(account=child_account, programme_type="U5").delete()
+    MonthlyStatistics.objects.filter(account=child_account, programme_type="U5").delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
 
     entity_type_pbwg_code = "ethiopia_pbwg"
@@ -82,5 +82,5 @@ def etl_ethiopia():
     logger.info(
         f"----------------------------- Aggregating PBWG journey for {pbwg_account} per org unit, admission and period(month and year) -----------------------------"
     )
-    MonthlyStatistics.objects.all().filter(account=pbwg_account, programme_type="PLW").delete()
+    MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")

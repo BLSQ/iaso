@@ -733,6 +733,7 @@ class Profile(models.Model):
             "email": user_infos.email,
             "permissions": permissions,
             "user_permissions": user_permissions,
+            "is_staff": self.user.is_staff,
             "is_superuser": self.user.is_superuser,
             "user_roles": list(role.id for role in user_roles),
             "user_roles_permissions": list(role.as_dict() for role in user_roles),

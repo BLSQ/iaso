@@ -4,10 +4,10 @@ on:
     pull_request:
         types: [opened, synchronize, ready_for_review]
     push:
-        # Run On push (or merge) on main.  This populates the cache and avoid the issue where we have undetected migrations
+        # Run On push (or merge) on develop.  This populates the cache and avoid the issue where we have undetected migrations
         # conflict following subsequent merge
         branches:
-            - main
+            - develop
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true

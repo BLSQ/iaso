@@ -1,0 +1,22 @@
+from django.db import models
+from django.utils.translation import gettext_lazy as _
+
+
+# When you need to define custom permissions in your plugin
+# Rename this file to remove ".example" from the filename
+
+_PREFIX = "{{ app_name }}."
+
+read_edit_permissions = {}
+
+permissions_presentation = {}
+
+module_permissions = {}
+
+class {{ camel_case_app_name }}PermissionSupport(models.Model):
+    class Meta:
+        managed = False
+        default_permissions = []
+        permissions = ()
+
+permission_models = [{{ camel_case_app_name }}PermissionSupport]

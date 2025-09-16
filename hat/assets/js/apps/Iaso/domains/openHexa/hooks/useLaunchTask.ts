@@ -6,9 +6,14 @@ const launchTask = async (body, pipelineId, version) => {
         version,
     });
 };
-export const useLaunchTask = (pipelineId: string, version: string) => {
+export const useLaunchTask = (pipelineId?: string, version?: string) => {
     return useSnackMutation({
-        mutationFn: body => launchTask(body, pipelineId, version),
+        mutationFn: body => {
+            if (!pipelineId || !version) {
+                throw new Error('Pipeline ID and version are required');
+            }
+            return launchTask(body, pipelineId, version);
+        },
         invalidateQueryKey: 'pipeline',
     });
 };

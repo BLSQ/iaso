@@ -46,15 +46,19 @@ def iaso(request: HttpRequest) -> HttpResponse:
     analytics_data = None
 
     if _should_enable_analytics(request):
-        domain = _get_domain_from_request(request)
-        user_account = request.user.iaso_profile.account
-        analytics_data = {
-            "domain": domain,
-            "username": request.user.username,
-            "user_id": request.user.id,
-            "account_name": user_account.name,
-            "account_id": user_account.id,
-        }
+        try:
+            domain = _get_domain_from_request(request)
+            user_account = request.user.iaso_profile.account
+            analytics_data = {
+                "domain": domain,
+                "username": request.user.username,
+                "user_id": request.user.id,
+                "account_name": user_account.name,
+                "account_id": user_account.id,
+            }
+        except (ObjectDoesNotExist, AttributeError):
+            # User doesn't have an iaso_profile or account, skip analytics
+            analytics_data = None
 
     return _base_iaso(request, analytics_data=analytics_data)
 

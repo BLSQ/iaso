@@ -68,12 +68,15 @@ export const SetupAccount: FunctionComponent = () => {
     const schema = useAccountValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
-            account_name: '',
-            user_username: '',
-            user_first_name: '',
-            user_last_name: '',
-            password: '',
-            modules: [],
+            account_name: undefined,
+            user_username: undefined,
+            user_first_name: undefined,
+            user_last_name: undefined,
+            user_email: undefined,
+            password: undefined,
+            email_invitation: false,
+            language: 'en',
+            modules: ['DATA_COLLECTION_FORMS', 'DEFAULT'],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -96,7 +99,9 @@ export const SetupAccount: FunctionComponent = () => {
         if (keyValue === 'modules' && value) {
             setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
         } else {
-            setFieldValue(keyValue, value);
+            // Set empty strings to undefined to avoid backend validation issues
+            const processedValue = value === '' ? undefined : value;
+            setFieldValue(keyValue, processedValue);
         }
     };
 
@@ -106,17 +111,21 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
-
     const { data: modules, isFetching: isFetchingModules } =
         useGetModulesDropDown();
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
+    const hasAccount = Boolean(currentUser.account);
     return (
         <>
             <TopBar
                 displayBackButton={false}
-                displayMenuButton={false}
-                title={formatMessage(MESSAGES.welcome)}
+                displayMenuButton={hasAccount}
+                title={
+                    !hasAccount
+                        ? formatMessage(MESSAGES.welcome)
+                        : formatMessage(MESSAGES.accountSetup)
+                }
             />
             <Paper className={classes.paper}>
                 {isAdmin && (
@@ -185,7 +194,6 @@ export const SetupAccount: FunctionComponent = () => {
                                     />
                                     <InputComponent
                                         type="text"
-                                        required
                                         keyValue="user_first_name"
                                         labelString={formatMessage(
                                             MESSAGES.user_first_name,
@@ -195,7 +203,6 @@ export const SetupAccount: FunctionComponent = () => {
                                     />
                                     <InputComponent
                                         type="text"
-                                        required
                                         keyValue="user_last_name"
                                         labelString={formatMessage(
                                             MESSAGES.user_last_name,
@@ -204,8 +211,40 @@ export const SetupAccount: FunctionComponent = () => {
                                         onChange={onChange}
                                     />
                                     <InputComponent
+                                        type="select"
+                                        keyValue="language"
+                                        labelString={formatMessage(
+                                            MESSAGES.language,
+                                        )}
+                                        value={values.language}
+                                        onChange={onChange}
+                                        options={[
+                                            { value: 'en', label: 'English' },
+                                            { value: 'fr', label: 'Français' },
+                                        ]}
+                                    />
+                                    <InputComponent
+                                        type="email"
+                                        keyValue="user_email"
+                                        labelString={formatMessage(
+                                            MESSAGES.user_email,
+                                        )}
+                                        value={values.user_email}
+                                        onChange={onChange}
+                                        errors={getErrors('user_email')}
+                                    />
+                                    <InputComponent
+                                        type="checkbox"
+                                        keyValue="email_invitation"
+                                        labelString={formatMessage(
+                                            MESSAGES.email_invitation,
+                                        )}
+                                        value={values.email_invitation}
+                                        onChange={onChange}
+                                    />
+                                    <InputComponent
                                         type="password"
-                                        required
+                                        required={!values.email_invitation}
                                         keyValue="password"
                                         labelString={formatMessage(
                                             MESSAGES.password,
@@ -213,6 +252,7 @@ export const SetupAccount: FunctionComponent = () => {
                                         value={values.password}
                                         onChange={onChange}
                                         errors={getErrors('password')}
+                                        disabled={values.email_invitation}
                                     />
                                     <InputComponent
                                         type="select"

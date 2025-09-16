@@ -705,8 +705,13 @@ THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR"
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
 HIDE_BASIC_NAV_ITEMS = os.environ.get("HIDE_BASIC_NAV_ITEMS", "no")
 
+# https://docs.djangoproject.com/fr/4.2/topics/auth/customizing/#specifying-authentication-backends
+# When somebody calls `django.contrib.auth.authenticate()`, Django tries authenticating
+# across all of its authentication backends. If the first authentication method fails,
+# Django tries the second one, and so on…
 AUTHENTICATION_BACKENDS = [
-    "django.contrib.auth.backends.ModelBackend",
+    "iaso.auth.backends.MultiTenantAuthBackend",
+    "django.contrib.auth.backends.ModelBackend",  # ModelBackend is explicitly required in DHIS2 and token authentication.
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
@@ -803,3 +808,15 @@ for plugin_name in PLUGINS:
             f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
         )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")
+
+# Making sure that files are not stored on disk while running tests
+# This allows faster tests and easier clean up of test files
+if IN_TESTS:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.InMemoryStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
+        },
+    }

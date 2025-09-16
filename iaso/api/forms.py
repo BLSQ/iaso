@@ -17,7 +17,7 @@ import iaso.permissions as core_permissions
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
-from iaso.models import Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
+from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
@@ -167,15 +167,19 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_possible_fields_with_latest_version(obj: Form):
+        possible_fields = [
+            field for field in obj.possible_fields if field["type"] in EntityDuplicateAnalyzis.SUPPORTED_FIELD_TYPES
+        ]
+
         latest_version = obj.latest_version
         if not latest_version:
-            return obj.possible_fields
+            return possible_fields
 
         # Get the field names from the latest version
         latest_version_fields = set(question["name"] for question in latest_version.questions_by_name().values())
 
         # Add a flag to each possible field indicating if it's part of the latest version
-        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in obj.possible_fields]
+        return [{**field, "is_latest": field["name"] in latest_version_fields} for field in possible_fields]
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)

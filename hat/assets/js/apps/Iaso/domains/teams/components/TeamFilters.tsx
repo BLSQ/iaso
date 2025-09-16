@@ -1,17 +1,17 @@
-import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { FilterButton } from '../../../components/FilterButton';
-import InputComponent from '../../../components/forms/InputComponent';
-import { useFilterState } from '../../../hooks/useFilterState';
-import { TeamParams } from '../types/team';
-import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect';
+import InputComponent from '../../../components/forms/InputComponent';
+import { baseUrls } from '../../../constants/urls';
+import { useFilterState } from '../../../hooks/useFilterState';
 import { getUsersDropDown } from '../../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../../instances/hooks/useGetProfilesDropdown';
-import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { TEAM_OF_TEAMS, TEAM_OF_USERS } from '../constants';
+import MESSAGES from '../messages';
+import { TeamParams } from '../types/team';
 
 type Props = {
     params: TeamParams;
@@ -93,9 +93,9 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             <Grid item xs={12} md={6} lg={6}>
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <FilterButton
+                    <SearchButton
                         disabled={textSearchError || !filtersUpdated}
-                        onFilter={handleSearch}
+                        onSearch={handleSearch}
                     />
                 </Box>
             </Grid>

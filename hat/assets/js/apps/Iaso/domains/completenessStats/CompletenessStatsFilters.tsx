@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import {
     InputWithInfos,
@@ -9,15 +16,8 @@ import {
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
 import uniq from 'lodash/uniq';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
-import { FilterButton } from '../../components/FilterButton';
 import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
@@ -288,9 +288,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             <Box display="flex" justifyContent="flex-end" mb={1} mt={2}>
-                <FilterButton
+                <SearchButton
                     disabled={!filtersUpdated}
-                    onFilter={handleSearch}
+                    onSearch={handleSearch}
                 />
             </Box>
         </>

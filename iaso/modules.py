@@ -15,15 +15,6 @@ class IasoModule:
     def add_permission(self, permission):
         self.permissions.append(permission)
 
-    # TODO: replace by serializers
-    def as_dict(self):
-        return {
-            "name": self.name,
-            "codename": self.codename,
-            "fr_name": self.fr_name,
-            "permissions": self.permissions,
-        }
-
     def __str__(self):
         return self.codename
 

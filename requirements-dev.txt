@@ -17,6 +17,7 @@ types-jwt==0.1.3  # https://pypi.org/project/types-jwt/
 # ------------------------------------------------------------------------------
 django-debug-toolbar==4.4.2  # https://github.com/jazzband/django-debug-toolbar/tags
 django-sslserver==0.22  # https://pypi.org/project/django-sslserver/
+coverage==7.10.6 # https://coverage.readthedocs.io
 
 # Quality and performance.
 # ------------------------------------------------------------------------------

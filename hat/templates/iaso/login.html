@@ -5,17 +5,19 @@
 {% block body %}
 <div class="auth__container iasologin">
   <div class="auth__content">
-    <header class="auth__header">
-      <h1 class="auth__heading">
-        {% if LEARN_MORE_URL %}
-          <a href="{{ LEARN_MORE_URL }}" target="_blank">
+    {% if logo_path %}
+      <header class="auth__header">
+        <h1 class="auth__heading">
+          {% if LEARN_MORE_URL %}
+            <a href="{{ LEARN_MORE_URL }}" target="_blank">
+              <img alt="logo" src="{% static logo_path %}" />
+            </a>
+          {% else %}
             <img alt="logo" src="{% static logo_path %}" />
-          </a>
-        {% else %}
-          <img alt="logo" src="{% static logo_path %}" />
-        {% endif %}
-      </h1>
-    </header>
+          {% endif %}
+        </h1>
+      </header>
+    {% endif %}
     <div>
       {% get_providers as socialaccount_providers %}
       {% for provider in socialaccount_providers %}

@@ -383,6 +383,27 @@ to run the django manage.py you will need to use `run iaso manage` but `exec ias
 Also take care that `run` unless evoked with the `--rm` will leave you with a lot of left over containers that take up
 disk space and need to be cleaned occasionally with `docker compose rm` to reclaim disk space.
 
+### Python code coverage
+
+```bash
+# just what you really want
+docker compose exec iaso coverage run ./manage.py test iaso.tests.api.test_orgunits_parquet --keepdb
+# or launch all the tests
+docker compose exec iaso coverage run ./manage.py test
+
+
+# then generate the html report
+docker compose exec iaso coverage html
+docker compose exec iaso coverage report --format=total
+
+# serve the htmlcov volume (probably owned by root, so need sudo)
+sudo python3 -m http.server 8000 --directory htmlcov
+```
+then browse the report via : http://127.0.0.1:8000
+
+you might want to check first the modified files between your branch and develop : `git diff --name-only origin/develop...HEAD | grep '\.py$'`
+
+
 Enketo
 ------
 

@@ -1830,6 +1830,40 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(len(profiles), 1)
         self.assertEqual(profiles[0]["user_name"], "janedoe")
 
+    def test_profile_list_search_with_children_ou_preserves_search_results(self):
+        """
+        Test that search results are preserved with `ouChildren`.
+        """
+        # Clear existing org units first.
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # This user matches "jim" search.
+        self.jim.iaso_profile.org_units.set([self.child_org_unit])
+
+        # Create a user that matches "jim" search but is NOT in the hierarchy.
+        self.create_user_with_profile(
+            username="jim_outside", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+        )
+
+        self.client.force_authenticate(self.jim)
+
+        # Search for "jim" without ouChildren - should return both `jim` and `jim_outside`.
+        response = self.client.get("/api/profiles/?search=jim")
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        self.assertEqual(len(profiles), 2)
+
+        # Search for "jim" with `ouChildren=true` - should only return jim (who is in hierarchy).
+        response = self.client.get(
+            f"/api/profiles/?search=jim&location={self.org_unit_from_parent_type.pk}&ouChildren=true"
+        )
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        # Should only return `jim` (who is in the hierarchy) and NOT `jim_outside`.
+        self.assertEqual(len(profiles), 1)
+        self.assertEqual(profiles[0]["user_name"], "jim")
+
     def test_update_password_for_single_user(self):
         single_user = self.jim
         single_user.set_password("p4ssword")

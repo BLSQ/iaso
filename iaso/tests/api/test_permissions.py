@@ -11,7 +11,7 @@ from iaso.permissions.utils import fetch_django_permissions_from_iaso_permission
 from iaso.test import APITestCase
 
 
-class OrgUnitAPITestCase(APITestCase):
+class PermissionsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = account = m.Account.objects.create(name="Account")

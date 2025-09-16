@@ -101,7 +101,9 @@ class PermissionsViewSet(viewsets.ViewSet):
             group = perm.pop("group")
             group_list = grouped_permissions[group]
             group_list.append(perm)
-            group_list.sort(key=lambda x: x["id"])
+            group_list.sort(
+                key=lambda x: x["id"]
+            )  # Adding perms with categories at the end messes up the order inside the group, so we sort again
 
         # Now we sort the result based on a specific order
         ordered_grouped_permissions = OrderedDict()

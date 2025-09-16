@@ -37,6 +37,8 @@ class Under5:
                 current_record = visit.get("json", None)
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
+                    if current_record.get("guidelines"):
+                        instances[i]["guidelines"] = current_record.get("guidelines")
                     if (
                         current_record.get("actual_birthday__date__") is not None
                         and current_record.get("actual_birthday__date__", None) != ""
@@ -187,6 +189,8 @@ class Under5:
                     beneficiary.birth_date = instance["birth_date"]
                     beneficiary.entity_id = instance["entity_id"]
                     beneficiary.account = account
+                    beneficiary.guidelines = instance.get("guidelines", "OLD")
+
                     beneficiary.save()
                     logger.info("Created new beneficiary")
                 else:

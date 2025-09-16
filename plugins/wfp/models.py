@@ -63,6 +63,7 @@ class Beneficiary(models.Model):
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True, db_index=True)
     entity_id = models.IntegerField(null=True, blank=True, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    guidelines = models.CharField(max_length=8, null=True, blank=True)
 
 
 class Journey(models.Model):

@@ -49,9 +49,7 @@ export const UsersInfos: FunctionComponent<Props> = ({
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
     const isMultiAccountUser = currentUser.has_multiple_accounts.value;
-    const passwordDisabled =
-        currentUser.send_email_invitation.value ||
-        (isMultiAccountUser && loggedUser.id !== currentUser.id?.value);
+    const passwordDisabled = currentUser.send_email_invitation.value;
 
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions(true, canBypassProjectRestrictions);

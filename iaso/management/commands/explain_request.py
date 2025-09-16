@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db import connection, reset_queries
 from django.db.backends.utils import CursorDebugWrapper
-from django.http import StreamingHttpResponse
+from django.http import FileResponse, StreamingHttpResponse
 from django.urls import resolve
 from rest_framework.test import APIRequestFactory
 
@@ -90,16 +90,38 @@ def is_content_type_textual(content_type: str) -> bool:
     return content_type.startswith("text/") or content_type in textual_types
 
 
-def consume_response(response):
+def get_filename(response, default="download.bin"):
+    disp = response.get("Content-Disposition", "")
+    if "filename=" in disp:
+        return disp.split("filename=")[1].strip('"; ')
+    return default
+
+
+def consume_response(response, output_dir):
     content_type = response.get("Content-Type", "")
     is_textual = is_content_type_textual(content_type)
     size_mb = -1
     # ensure we use the response or stream all the response to get the correct sql, duration and content
-    if isinstance(response, StreamingHttpResponse):
+    if isinstance(response, FileResponse):
+        filename = get_filename(response)
+        fullpath_name = output_dir + "/" + filename
+        print(f"saving response in {fullpath_name}")
+        with open(fullpath_name, "wb") as f:
+            for chunk in response.streaming_content:
+                f.write(chunk)
+            f.flush()
+            f.seek(0)
+            body = f"binary in {filename}"
+        if fullpath_name.endswith(".parquet"):
+            print("to visualize the content :")
+            print(f"    duckdb -c 'select * from \"{fullpath_name}\"'")
+        size_mb = float(response.get("Content-Length")) / 1024 / 1024
+    elif isinstance(response, StreamingHttpResponse):
         body = "".join(
             chunk.decode() if isinstance(chunk, bytes) else str(chunk) for chunk in response.streaming_content
         )
         size_mb = len(body) / 1024 / 1024
+
     else:
         size_mb = len(response.content) / 1024 / 1024
         if is_textual:
@@ -116,35 +138,47 @@ adapt the entity_type_ids below
 
     docker compose exec iaso ./manage.py explain_request \
         --url-path="/api/entities/?order_columns=-last_saved_instance&search=a&entity_type_ids=2&limit=20&page=1&tab=list" \
-        --username="testemailstable-2-40-8-2" --threshold-duration=0 --explain=true
+        --username="testemailstable-2-41-5" --threshold-duration=0 --explain=true
 
 adapt the form ids below
 
     simple json
         docker compose exec iaso ./manage.py explain_request  \
             --url-path="/api/forms/12/" \    
-            --username="testemailstable-2-40-8-2" 
+            --username="testemailstable-2-41-5" 
             --threshold-duration=0 --explain=true --print-response=true    
 
     streaming csv 
 
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/instances/?form_ids=12&csv=true" \
-            --username="testemailstable-2-40-8-2" \
+            --username="testemailstable-2-41-5" \
             --threshold-duration=0 --explain=true --print-response=true
     
     xslx binary content
 
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/instances/?form_ids=12&xlsx=true" \
-            --username="testemailstable-2-40-8-2" --threshold-duration=0 --explain=true
+            --username="testemailstable-2-41-5" --threshold-duration=0 --explain=true
 
     xml output
     
         docker compose exec iaso ./manage.py explain_request \
             --url-path="/api/forms/12/manifest/" \
-            --username="testemailstable-2-40-8-2" \
+            --username="testemailstable-2-41-5" \
             --threshold-duration=0 --explain=true --print-response=true
+
+    parquet output
+
+        docker compose exec iaso ./manage.py explain_request \
+            --url-path="/api/orgunits/?parquet=true&order=id" \
+            --username="testemailstable-2-41-5"    
+
+
+        docker compose exec iaso ./manage.py explain_request \
+            --url-path="/api/instances/?form_ids=8&parquet=true&order=id" \
+            --username="testemailstable-2-41-5"    
+
 
 """
 
@@ -165,6 +199,7 @@ class Command(BaseCommand):
         parser.add_argument("--explain", type=bool, help="launch explain plan if sql is logged", default=True)
         parser.add_argument("--print-response", type=bool, help="print the response json/text", default=False)
         parser.add_argument("--full-stack", type=bool, help="print the full stack of originating sql", default=False)
+        parser.add_argument("--output-dir", type=str, help="file storage directory", default="./media")
 
     def log(self, *args):
         print(*args)
@@ -177,6 +212,7 @@ class Command(BaseCommand):
         print_response = options.get("print_response")
 
         full_stack = options.get("full_stack")
+        output_dir = options.get("output_dir")
 
         executed_queries = enable_capture_queries(executed_queries=[])
 
@@ -201,7 +237,7 @@ class Command(BaseCommand):
 
         self.log(response)
 
-        size_mb, body, is_textual = consume_response(response)
+        size_mb, body, is_textual = consume_response(response, output_dir)
 
         duration = time.perf_counter() - start
 

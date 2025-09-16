@@ -76,6 +76,14 @@ class PBWG:
             Visit.objects.bulk_create(all_visits)
             Step.objects.bulk_create(all_steps)
 
+                        steps = ETL().save_steps(visits, followUpVisits)
+                        logger.info(f"Inserted {len(steps)} Steps")
+                    else:
+                        logger.info("No new journey")
+                logger.info(
+                    "---------------------------------------------------------------------------------------------\n\n"
+                )
+
     def save_journey(self, beneficiary, record):
         journey = Journey()
 

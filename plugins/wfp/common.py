@@ -575,10 +575,12 @@ class ETL:
                             sub_step["instance_id"],
                         )
                         all_steps.append(current_step)
-        return all_steps
+        save_steps = Step.objects.bulk_create(all_steps)
+        return save_steps
 
     def save_visit(self, visits, journey):
         saved_visits = []
+        created_visits = None
         visit_number = 0
         for current_visit in visits:
             visit = Visit()
@@ -589,7 +591,8 @@ class ETL:
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
             visit_number += 1
-        return saved_visits
+        created_visits = Visit.objects.bulk_create(saved_visits)
+        return created_visits
 
     def followup_visits_at_next_visit_date(self, visits, formIds, next_visit__date__, secondNextVisitDate):
         followup_visits_in_period = []

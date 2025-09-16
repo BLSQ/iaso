@@ -60,42 +60,55 @@ RATION_SIZE = [
 
 class Beneficiary(models.Model):
     birth_date = models.DateField()
-    gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
-    entity_id = models.IntegerField(null=True, blank=True)
+    gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True, db_index=True)
+    entity_id = models.IntegerField(null=True, blank=True, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+    guidelines = models.CharField(max_length=8, null=True, blank=True)
 
 
 class Journey(models.Model):
     beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
-    admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
-    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
-    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
-    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
+    admission_criteria = models.CharField(
+        max_length=255,
+        choices=ADMISSION_CRITERIAS,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+    admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True, db_index=True)
+    nutrition_programme = models.CharField(
+        max_length=255,
+        choices=NUTRITION_PROGRAMMES,
+        null=True,
+        blank=True,
+        db_index=True,
+    )
+    programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True, db_index=True)
     initial_weight = models.FloatField(default=0)
     discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
     weight_loss = models.FloatField(default=0)
-    start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True, db_index=True)
+    end_date = models.DateField(null=True, blank=True, db_index=True)
     duration = models.FloatField(null=True, blank=True)
-    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
+    exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True, db_index=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
 
 class Visit(models.Model):
-    date = models.DateTimeField(null=True, blank=True)
+    date = models.DateTimeField(null=True, blank=True, db_index=True)
     number = models.IntegerField(default=1)
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True, db_index=True)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
-    instance_id = models.IntegerField(null=True, blank=True)
+    instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
 class Step(models.Model):
-    assistance_type = models.CharField(max_length=255)
+    assistance_type = models.CharField(max_length=255, db_index=True)
     quantity_given = models.FloatField()
     ration_size = models.CharField(max_length=50, choices=RATION_SIZE, null=True, blank=True)
     visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
-    instance_id = models.IntegerField(null=True, blank=True)
+    instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
 class MonthlyStatistics(models.Model):

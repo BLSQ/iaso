@@ -5,8 +5,8 @@ from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
 
 @admin.register(Beneficiary)
 class BeneficiaryAdmin(admin.ModelAdmin):
-    list_filter = ("birth_date", "gender", "account")
-    list_display = ("id", "birth_date", "gender", "account")
+    list_filter = ("birth_date", "gender", "account", "guidelines")
+    list_display = ("id", "birth_date", "gender", "account", "guidelines")
 
 
 @admin.register(Journey)
@@ -39,6 +39,7 @@ class JourneyAdmin(admin.ModelAdmin):
         "end_date",
         "exit_type",
         "beneficiary__account",
+        "beneficiary__guidelines",
     )
 
 

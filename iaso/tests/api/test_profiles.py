@@ -1847,7 +1847,7 @@ class ProfileAPITestCase(APITestCase):
 
         # Create a user that matches "jim" search but is NOT in the hierarchy.
         self.create_user_with_profile(
-            username="jim_outside", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+            username="jim_outside", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
 
         self.client.force_authenticate(self.jim)

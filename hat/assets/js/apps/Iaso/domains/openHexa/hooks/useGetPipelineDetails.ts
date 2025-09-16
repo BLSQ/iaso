@@ -3,8 +3,8 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { DjangoError } from 'Iaso/types/general';
 
 export const useGetPipelineDetails = (
-    pipelineId: string,
-    setError: (error: DjangoError | null) => void,
+    pipelineId?: string,
+    setError?: (error: DjangoError | null) => void,
 ) => {
     return useSnackQuery({
         queryKey: ['pipeline', pipelineId],
@@ -31,7 +31,9 @@ export const useGetPipelineDetails = (
             staleTime: 60000,
             retry: false,
             onError: error => {
-                setError(error);
+                if (setError) {
+                    setError(error);
+                }
             },
         },
     });

@@ -15,7 +15,7 @@ type Parameter = {
 
 type ParameterValues = Record<string, any>;
 
-export const usePipelineParameters = (pipeline: any) => {
+export const usePipelineParameters = (pipeline?: any) => {
     const [parameterValues, setParameterValues] = useState<ParameterValues>({});
     const { formatMessage } = useSafeIntl();
 

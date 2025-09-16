@@ -198,6 +198,7 @@ plugins/trypelim
 plugins/snt_malaria
 plugins/snt-malaria
 plugins/saas
+plugins/ginger
 
 # some local env config to be ignored
 .direnv

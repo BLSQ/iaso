@@ -1,7 +1,12 @@
 from django.db import models
 
 from iaso.utils.models.encrypted_text_field import EncryptedTextField
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
 
 
 class OpenHEXAInstance(models.Model):
@@ -38,6 +43,11 @@ class OpenHEXAWorkspace(SoftDeletableModel):
     config = models.JSONField(blank=True, default=dict)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Managers
+    objects = DefaultSoftDeletableManager()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager()
 
     def __str__(self):
         return "%s %s %s" % (self.openhexa_instance_id, self.account_id, self.slug)

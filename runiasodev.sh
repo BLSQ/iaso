@@ -7,6 +7,7 @@
 # You will need to create a venv locally by running: venv . && pip install -r requirements.txt && pip install -r requirements-dev.txt
 
 #source bin/activate
+export ENCRYPTED_TEXT_FIELD_KEY="bNqPWD4KdouaH-yxfl7PPdJLbbNt31mnJDwg9IHoGDM="
 export SECRET_KEY="secret"
 export RDS_PORT="5433"
 export RDS_HOSTNAME="localhost"

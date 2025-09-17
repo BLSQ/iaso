@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 
 from .base import IasoJSONEditorWidget  # noqa: F401
 from .metric_admin import *
+from .openhexa_admin import *
 from .user_admin import UserAdmin
 
 

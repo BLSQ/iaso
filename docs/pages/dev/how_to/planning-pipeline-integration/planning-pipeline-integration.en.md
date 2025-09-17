@@ -21,7 +21,7 @@ Planning Configuration → Pipeline Parameters → OpenHexa Execution → Assign
 
 ## Data Models
 
-### Planning Model
+### Planning **Model**
 
 ```python
 class Planning(SoftDeletableModel):

@@ -40,9 +40,6 @@ export const createExportRequest = (filterParams, selection) => {
     }
     return postRequest('/api/exportrequests/', filters)
         .then(exportRequest => {
-            putRequest(`/api/exportrequests/${exportRequest.id}/`);
-            // fire and forget to run the export
-
             openSnackBar(succesfullSnackBar('createExportRequestSuccess'));
         })
         .catch(err => {

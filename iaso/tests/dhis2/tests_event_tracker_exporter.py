@@ -16,6 +16,7 @@ from django.core.files import File
 from django.test import TestCase
 
 from iaso.dhis2.datavalue_exporter import DataValueExporter, EventTrackerHandler
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     ERRORED,
     EVENT_TRACKER,
@@ -38,8 +39,6 @@ from iaso.models import (
     User,
 )
 from iaso.odk import parsing
-
-from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):

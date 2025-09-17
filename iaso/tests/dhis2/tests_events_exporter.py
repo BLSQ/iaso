@@ -15,6 +15,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.test import TestCase
 
 from iaso.dhis2.datavalue_exporter import DataValueExporter, EventHandler, InstanceExportError
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     ERRORED,
     EVENT,
@@ -36,8 +37,6 @@ from iaso.models import (
     SourceVersion,
     User,
 )
-
-from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):

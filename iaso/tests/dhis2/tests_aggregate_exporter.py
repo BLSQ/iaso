@@ -37,8 +37,7 @@ import os
 from datetime import datetime
 
 from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter, InstanceExportError
-
-from ..dhis2.export_request_builder import ExportRequestBuilder
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):

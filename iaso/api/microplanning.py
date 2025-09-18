@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -282,12 +284,28 @@ class PlanningSerializer(serializers.ModelSerializer):
             "published_at",
             "started_at",
             "ended_at",
+            "pipeline_uuids",
         ]
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
+
+    def validate_pipeline_uuids(self, value):
+        """Validate that pipeline_uuids contains valid UUIDs."""
+        if not isinstance(value, list):
+            raise serializers.ValidationError("pipeline_uuids must be a list")
+
+        for uuid_str in value:
+            if not isinstance(uuid_str, str):
+                raise serializers.ValidationError("Each pipeline UUID must be a string")
+            try:
+                uuid.UUID(uuid_str)
+            except ValueError:
+                raise serializers.ValidationError(f"Invalid UUID format: {uuid_str}")
+
+        return value
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -314,10 +332,11 @@ class PlanningSerializer(serializers.ModelSerializer):
         if team.project != project:
             validation_errors["team"] = "planningAndTeams"
 
-        forms = validated_data.get("forms", self.instance.forms if self.instance else None)
-        for form in forms:
-            if form not in project.forms.all():
-                validation_errors["forms"] = "planningAndForms"
+        forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
+        if forms:
+            for form in forms:
+                if form not in project.forms.all():
+                    validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:

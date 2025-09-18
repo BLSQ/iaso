@@ -6,7 +6,7 @@ from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
 from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
-from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
+from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.test import APITestCase, IasoTestCaseMixin
 
@@ -633,6 +633,7 @@ class PlanningTestCase(APITestCase):
                 "published_at": None,
                 "started_at": "2025-01-01",
                 "ended_at": "2025-01-10",
+                "pipeline_uuids": [],
             },
             r,
         )
@@ -788,6 +789,140 @@ class PlanningTestCase(APITestCase):
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))
         self.assertEqual(Modification.objects.all().count(), 1)
+
+    def test_planning_serializer_with_pipeline_uuids(self):
+        """Test PlanningSerializer with pipeline_uuids field."""
+        from iaso.api.microplanning import PlanningSerializer
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        valid_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        # Test valid pipeline_uuids
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Pipelines",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": valid_uuids,
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        planning = serializer.save()
+        self.assertEqual(planning.pipeline_uuids, valid_uuids)
+
+    def test_planning_serializer_invalid_pipeline_uuids(self):
+        """Test PlanningSerializer validation with invalid pipeline_uuids."""
+        from iaso.api.microplanning import PlanningSerializer
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        # Test invalid UUID format
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Invalid UUIDs",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": ["invalid-uuid", "not-a-uuid"],
+            },
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pipeline_uuids", serializer.errors)
+
+    def test_planning_serializer_pipeline_uuids_not_list(self):
+        """Test PlanningSerializer validation when pipeline_uuids is not a list."""
+        from iaso.api.microplanning import PlanningSerializer
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        # Test non-list value
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Non-List UUIDs",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": "not-a-list",
+            },
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pipeline_uuids", serializer.errors)
+
+    def test_planning_api_response_includes_pipeline_uuids(self):
+        """Test that API response includes pipeline_uuids field."""
+        # Add some pipeline UUIDs to the planning
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+        self.planning.pipeline_uuids = test_uuids
+        self.planning.save()
+
+        # Authenticate user and test GET request
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+    def test_planning_api_create_with_pipeline_uuids(self):
+        """Test creating planning via API with pipeline_uuids."""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        data = {
+            "name": "New Planning with Pipelines",
+            "org_unit": self.org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id, self.form2.id],
+            "pipeline_uuids": test_uuids,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+        # Verify in database
+        planning = Planning.objects.get(id=r["id"])
+        self.assertEqual(planning.pipeline_uuids, test_uuids)
+
+    def test_planning_api_patch_with_pipeline_uuids(self):
+        """Test updating planning via API with pipeline_uuids."""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        data = {
+            "pipeline_uuids": test_uuids,
+        }
+
+        response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+        # Verify in database
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.pipeline_uuids, test_uuids)
 
 
 class AssignmentAPITestCase(APITestCase):
@@ -1121,3 +1256,132 @@ class AssignmentAPITestCase(APITestCase):
 
         response = self.client.post("/api/mobile/plannings/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
+
+
+class PlanningPipelineIntegrationTestCase(APITestCase):
+    """Test Planning model pipeline UUID integration."""
+
+    def setUp(self):
+        """Set up test data."""
+        # Create test account
+        self.account = Account.objects.create(name="test_account")
+
+        # Create test user with profile
+        self.user = self.create_user_with_profile(username="testuser", account=self.account)
+
+        # Create test project
+        self.project = Project.objects.create(name="Test Project", app_id="test.app")
+        self.project.account = self.account
+        self.project.save()
+
+        # Create test org unit type
+        self.org_unit_type = OrgUnitType.objects.create(name="Test Country Type")
+        self.org_unit_type.projects.add(self.project)
+
+        # Create test data source and version
+        self.data_source = DataSource.objects.create(name="Test Source")
+        self.data_source.projects.add(self.project)
+        self.version = SourceVersion.objects.create(data_source=self.data_source, number=1)
+
+        # Create test org unit
+        self.org_unit = OrgUnit.objects.create(
+            name="Test Country", org_unit_type=self.org_unit_type, version=self.version
+        )
+
+        # Create test team
+        self.team = Team.objects.create(name="Test Team", project=self.project, manager=self.user, path="1")
+
+        # Create test planning
+        self.planning = Planning.objects.create(
+            name="Test Planning",
+            description="Test planning for pipeline integration",
+            project=self.project,
+            team=self.team,
+            org_unit=self.org_unit,
+            created_by=self.user,
+        )
+
+    def test_pipeline_uuids_default_empty(self):
+        """Test that pipeline_uuids field defaults to empty list."""
+        self.assertEqual(self.planning.pipeline_uuids, [])
+        self.assertEqual(self.planning.get_pipeline_uuids(), [])
+
+    def test_add_pipeline_uuid(self):
+        """Test adding a pipeline UUID to planning."""
+        pipeline_uuid = "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"
+
+        self.planning.add_pipeline_uuid(pipeline_uuid)
+
+        self.assertIn(pipeline_uuid, self.planning.pipeline_uuids)
+        self.assertTrue(self.planning.has_pipeline_uuid(pipeline_uuid))
+        self.assertEqual(self.planning.get_pipeline_uuids(), [pipeline_uuid])
+
+    def test_add_duplicate_pipeline_uuid(self):
+        """Test that adding duplicate pipeline UUID doesn't create duplicates."""
+        pipeline_uuid = "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"
+
+        # Add the same UUID twice
+        self.planning.add_pipeline_uuid(pipeline_uuid)
+        self.planning.add_pipeline_uuid(pipeline_uuid)
+
+        # Should only appear once
+        self.assertEqual(self.planning.pipeline_uuids.count(pipeline_uuid), 1)
+
+    def test_remove_pipeline_uuid(self):
+        """Test removing a pipeline UUID from planning."""
+        pipeline_uuid = "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"
+
+        # Add then remove
+        self.planning.add_pipeline_uuid(pipeline_uuid)
+        self.planning.remove_pipeline_uuid(pipeline_uuid)
+
+        self.assertNotIn(pipeline_uuid, self.planning.pipeline_uuids)
+        self.assertFalse(self.planning.has_pipeline_uuid(pipeline_uuid))
+        self.assertEqual(self.planning.get_pipeline_uuids(), [])
+
+    def test_remove_nonexistent_pipeline_uuid(self):
+        """Test removing a pipeline UUID that doesn't exist."""
+        pipeline_uuid = "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"
+
+        # Try to remove non-existent UUID
+        self.planning.remove_pipeline_uuid(pipeline_uuid)
+
+        # Should not cause error and list should remain empty
+        self.assertEqual(self.planning.pipeline_uuids, [])
+
+    def test_multiple_pipeline_uuids(self):
+        """Test managing multiple pipeline UUIDs."""
+        uuid1 = "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"
+        uuid2 = "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"
+        uuid3 = "80fcb048-a5f6-4a79-9529-1ccfa55e75d3"
+
+        # Add multiple UUIDs
+        self.planning.add_pipeline_uuid(uuid1)
+        self.planning.add_pipeline_uuid(uuid2)
+        self.planning.add_pipeline_uuid(uuid3)
+
+        # Check all are present
+        self.assertEqual(len(self.planning.get_pipeline_uuids()), 3)
+        self.assertTrue(self.planning.has_pipeline_uuid(uuid1))
+        self.assertTrue(self.planning.has_pipeline_uuid(uuid2))
+        self.assertTrue(self.planning.has_pipeline_uuid(uuid3))
+
+        # Remove one
+        self.planning.remove_pipeline_uuid(uuid2)
+
+        # Check remaining
+        self.assertEqual(len(self.planning.get_pipeline_uuids()), 2)
+        self.assertTrue(self.planning.has_pipeline_uuid(uuid1))
+        self.assertFalse(self.planning.has_pipeline_uuid(uuid2))
+        self.assertTrue(self.planning.has_pipeline_uuid(uuid3))
+
+    def test_pipeline_uuids_field_type(self):
+        """Test that pipeline_uuids field is properly typed as JSONField."""
+        # Test that we can store a list
+        test_uuids = ["uuid1", "uuid2", "uuid3"]
+        self.planning.pipeline_uuids = test_uuids
+        self.planning.save()
+
+        # Reload from database
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.pipeline_uuids, test_uuids)

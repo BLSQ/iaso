@@ -8,6 +8,7 @@ import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { rootStyles } from 'Iaso/styles/utils';
 import InputComponent from '../../components/forms/InputComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -22,7 +23,6 @@ import { useSaveAccount } from './hooks/useSaveAccount';
 import { MESSAGES } from './messages';
 import { SaveAccountQuery } from './types/account';
 import { useAccountValidation } from './validation';
-import { useGetRootStyles } from 'Iaso/styles/utils';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -50,7 +50,6 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const SetupAccount: FunctionComponent = () => {
-    const rootStyles = useGetRootStyles();
     const currentUser = useCurrentUser();
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();

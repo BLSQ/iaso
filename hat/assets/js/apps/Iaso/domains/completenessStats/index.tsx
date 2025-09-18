@@ -14,7 +14,7 @@ import {
 } from 'bluesquare-components';
 import Color from 'color';
 import { closeSnackbar } from 'notistack';
-import { useGetRootStyles } from 'Iaso/styles/utils';
+import { rootStyles } from 'Iaso/styles/utils';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
@@ -52,8 +52,6 @@ export const CompletenessStats: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.completenessStats,
     ) as CompletenessRouterParams;
-
-    const rootStyles = useGetRootStyles();
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
     const redirectTo = useRedirectTo();

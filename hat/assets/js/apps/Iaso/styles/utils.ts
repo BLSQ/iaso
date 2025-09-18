@@ -12,8 +12,12 @@ export const getStickyTableHeadStyles = (maxHeight: string): SxStyles => ({
     },
 });
 
-export const useGetRootStyles = (embedded = false): SxProps<Theme> => ({
+export const rootStyles: SxProps<Theme> = {
     overflow: 'auto',
     paddingBottom: 4,
-    height: embedded ? '100vh' : `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-});
+    height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
+};
+
+export const embeddedRootStyles: SxProps<Theme> = {
+    height: '100vh',
+};

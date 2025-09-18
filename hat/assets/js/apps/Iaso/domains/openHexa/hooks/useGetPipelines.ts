@@ -5,7 +5,7 @@ import { DjangoError } from 'Iaso/types/general';
 import { Pipeline } from '../types/pipeline';
 
 export const useGetPipelines = (
-    setError: (error: DjangoError | null) => void,
+    setError?: (error: DjangoError | null) => void,
 ): UseQueryResult<Pipeline[], Error> => {
     return useSnackQuery({
         queryKey: ['pipelines'],
@@ -18,7 +18,9 @@ export const useGetPipelines = (
             staleTime: 60000,
             retry: false,
             onError: error => {
-                setError(error);
+                if (setError) {
+                    setError(error);
+                }
             },
         },
     });

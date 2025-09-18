@@ -10,6 +10,7 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
+import { useGetPipelines } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -105,6 +106,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     project,
     description,
     publishingStatus,
+    pipelineUuids,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [closeModal, setCloseModal] = useState<any>();
@@ -124,7 +126,16 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation(apiErrors, payload);
-
+    const { data: pipelines, isFetching: isFetchingPipelineUuids } =
+        useGetPipelines();
+    const pipelineUuidsOptions = useMemo(
+        () =>
+            pipelines?.map(pipeline => ({
+                label: pipeline.name,
+                value: pipeline.id,
+            })),
+        [pipelines],
+    );
     const formik = useFormik({
         initialValues: {
             id,
@@ -137,6 +148,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             project,
             description,
             publishingStatus: publishingStatus ?? 'draft',
+            pipelineUuids,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -357,26 +369,49 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         blockInvalidDates={false}
                         marginTop={0}
                     />
-                    <Grid item>
-                        <InputComponent
-                            type="radio"
-                            keyValue="publishingStatus"
-                            onChange={onChange}
-                            value={values.publishingStatus}
-                            errors={getErrors('publishingStatus')}
-                            label={MESSAGES.publishingStatus}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.published),
-                                    value: 'published',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.draft),
-                                    value: 'draft',
-                                },
-                            ]}
-                            required
-                        />
+
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                type="select"
+                                multi
+                                keyValue="pipelineUuids"
+                                onChange={(keyValue, value) => {
+                                    onChange(
+                                        keyValue,
+                                        value ? value.split(',') : [],
+                                    );
+                                }}
+                                loading={isFetchingPipelineUuids}
+                                options={pipelineUuidsOptions}
+                                value={values.pipelineUuids}
+                                errors={getErrors('pipelineUuids')}
+                                label={MESSAGES.pipelines}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <InputComponent
+                                type="radio"
+                                keyValue="publishingStatus"
+                                onChange={onChange}
+                                value={values.publishingStatus}
+                                errors={getErrors('publishingStatus')}
+                                label={MESSAGES.publishingStatus}
+                                options={[
+                                    {
+                                        label: formatMessage(
+                                            MESSAGES.published,
+                                        ),
+                                        value: 'published',
+                                    },
+                                    {
+                                        label: formatMessage(MESSAGES.draft),
+                                        value: 'draft',
+                                    },
+                                ]}
+                                required
+                            />
+                        </Grid>
                     </Grid>
                 </>
             </ConfirmCancelDialogComponent>

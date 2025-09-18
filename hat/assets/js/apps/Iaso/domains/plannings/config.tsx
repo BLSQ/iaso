@@ -112,6 +112,10 @@ export const usePlanningColumns = (
                                     description={
                                         settings.row.original?.description
                                     }
+                                    pipelineUuids={
+                                        settings.row.original?.pipeline_uuids ??
+                                        []
+                                    }
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
@@ -135,6 +139,10 @@ export const usePlanningColumns = (
                                     project={settings.row.original?.project}
                                     description={
                                         settings.row.original?.description
+                                    }
+                                    pipelineUuids={
+                                        settings.row.original?.pipeline_uuids ??
+                                        []
                                     }
                                 />
                             </DisplayIfUserHasPerm>

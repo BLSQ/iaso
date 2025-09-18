@@ -19,17 +19,18 @@ logger = logging.getLogger(__name__)
 class IasoPermission(ABC):
     """
     Represents a permission in IASO.
+    This model should not be instantiated, but rather inherited by other dataclasses.
     """
 
-    name: str
+    codename: str
     label: StrOrPromise  # For translation purposes
     module: Optional[IasoModule] = None
-    group: Optional[str] = None  # Represents a permission group in the web interface
-    category: Optional[str] = (
+    ui_group: Optional[str] = None  # Represents a permission group in the web interface
+    ui_category: Optional[str] = (
         None  # Represents a category whenever there are read/write/admin/non-admin/... permissions
     )
-    type_in_category: Optional[str] = None  # Represents a type in the category, e.g. "read", "write", "admin"...
-    order_in_category: Optional[int] = (
+    ui_type_in_category: Optional[str] = None  # Represents a type in the category, e.g. "read", "write", "admin"...
+    ui_order_in_category: Optional[int] = (
         None  # Represents the order of the permission in its category (1 = lowest permissions)
     )
 
@@ -38,15 +39,16 @@ class IasoPermission(ABC):
             self.module.add_permission(self)
 
     def __str__(self):
-        return self.name
+        return self.codename
 
     @abstractmethod
-    def full_name(self) -> str:
+    def full_name(self):
         """
-        Returns the full name of the permission, which is the name prefixed with its application name.
+        Returns the full name of the permission, which is the codename prefixed with its application name ("<app_label>.<permission_codename>").
         This method should be called whenever you use any function that checks for permissions
         (e.g. HasPermission() in the API).
         """
+        NotImplementedError("Subclasses must implement full_name method")
 
     def model_permission(self) -> tuple[str, StrOrPromise]:
         """
@@ -54,10 +56,10 @@ class IasoPermission(ABC):
         This method should be used when you define the list of permissions inside
         the `Meta.permissions` attribute of a class.
         """
-        return self.name, self.label
+        return self.codename, self.label
 
 
-ALL_PERMISSIONS = {}
+ALL_PERMISSIONS: dict[str, IasoPermission] = {}
 PERMISSION_CLASSES = []
 
 # Loading core permissions

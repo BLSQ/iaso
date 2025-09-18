@@ -47,7 +47,7 @@ class IasoTestCaseMixin:
             content_types = []
             for ct in PERMISSION_CLASSES:
                 content_types.append(ContentType.objects.get_for_model(ct))
-            codenames = [perm.name for perm in permissions]
+            codenames = [perm.codename for perm in permissions]
             user.user_permissions.set(Permission.objects.filter(codename__in=codenames, content_type__in=content_types))
 
         if org_units is not None:

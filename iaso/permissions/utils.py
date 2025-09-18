@@ -30,7 +30,7 @@ def fetch_django_permissions_from_iaso_permissions(queryset: QuerySet, iaso_perm
     """
     from iaso.permissions.base import PERMISSION_CLASSES  # Imported here to avoid circular import
 
-    perm_names = [perm.name for perm in iaso_permissions]
+    codenames = [perm.codename for perm in iaso_permissions]
 
     content_types = []
     for model in PERMISSION_CLASSES:
@@ -40,7 +40,7 @@ def fetch_django_permissions_from_iaso_permissions(queryset: QuerySet, iaso_perm
     permissions = (
         queryset.filter(content_type__in=content_types)
         .filter(codename__startswith="iaso_")
-        .filter(codename__in=perm_names)
+        .filter(codename__in=codenames)
         .order_by("id")
     )
 
@@ -69,4 +69,4 @@ def get_permissions_of_group(group_name: str) -> list["IasoPermission"]:
     """
     from iaso.permissions.base import ALL_PERMISSIONS  # Imported here to avoid circular import
 
-    return [perm for perm in ALL_PERMISSIONS.values() if perm.group == group_name]
+    return [perm for perm in ALL_PERMISSIONS.values() if perm.ui_group == group_name]

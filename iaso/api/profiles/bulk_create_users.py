@@ -365,7 +365,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             perm.strip() for perm in row[csv_indexes.index("permissions")].split(value_splitter) if perm
                         ]
                         current_account = request.user.iaso_profile.account
-                        module_permissions = [perm.name for perm in current_account.permissions_from_active_modules]
+                        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
                         for perm in user_permissions:
                             if perm in module_permissions:
                                 try:

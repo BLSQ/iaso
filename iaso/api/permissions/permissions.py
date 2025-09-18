@@ -55,20 +55,20 @@ class PermissionsViewSet(viewsets.ViewSet):
             perm_codename = django_perm.codename
             iaso_perm = ALL_PERMISSIONS[perm_codename]
 
-            group = iaso_perm.group
+            group = iaso_perm.ui_group
             if not group:
                 continue  # Some permissions are filtered out and can't be exposed to the frontend
             if group not in grouped_permissions:
                 grouped_permissions[group] = []
 
-            category = iaso_perm.category
+            category = iaso_perm.ui_category
             if not category:  # This is a simple permission
                 current_group = grouped_permissions[group]
                 current_group.append(
                     {
                         "id": django_perm.id,
                         "name": iaso_perm.label,
-                        "codename": iaso_perm.name,
+                        "codename": iaso_perm.codename,
                     }
                 )
                 continue
@@ -78,14 +78,16 @@ class PermissionsViewSet(viewsets.ViewSet):
                     "id": django_perm.id,  # We don't really care about which ID we put here, but it has to be provided
                     "name": category,
                     "codename": category,
-                    "category": [{iaso_perm.type_in_category: iaso_perm.name, "order": iaso_perm.order_in_category}],
+                    "category": [
+                        {iaso_perm.ui_type_in_category: iaso_perm.codename, "order": iaso_perm.ui_order_in_category}
+                    ],
                     "group": group,
                 }
                 continue
 
             # This category already exists, we need to add this permission to it
             categories_dict[category]["category"].append(
-                {iaso_perm.type_in_category: iaso_perm.name, "order": iaso_perm.order_in_category}
+                {iaso_perm.ui_type_in_category: iaso_perm.codename, "order": iaso_perm.ui_order_in_category}
             )
 
         # Now that all permissions have been processed, we add all the categories back to their groups

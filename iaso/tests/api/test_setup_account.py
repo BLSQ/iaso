@@ -339,7 +339,7 @@ class SetupAccountApiTestCase(APITestCase):
 
         account = m.Account.objects.filter(name="unittest_account")
         modules_permissions = account.first().permissions_from_active_modules
-        codenames = [perm.name for perm in modules_permissions]
+        codenames = [perm.codename for perm in modules_permissions]
 
         for perm in Permission.objects.filter(codename__in=codenames):
             if perm not in user.user_permissions.all():

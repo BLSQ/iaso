@@ -595,7 +595,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_user_permissions(self, request, current_account):
         user_permissions = []
-        module_permissions = [perm.name for perm in current_account.permissions_from_active_modules]
+        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
         valid_permissions = []
         for permission_codename in request.data.get("user_permissions", []):
             if permission_codename in module_permissions:

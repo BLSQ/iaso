@@ -3,14 +3,16 @@ import json
 import logging
 
 from timeit import default_timer as timer
+from typing import Optional
 
 from dhis2 import Api, RequestException
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.utils import timezone
 
 import iaso.models as models
 
-from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, MappingVersion, OrgUnit
+from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, MappingVersion, OrgUnit, Task
 
 from ..periods import Period
 from .api_logger import ApiLogger  # type: ignore
@@ -802,7 +804,7 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, page_size=25, continue_on_error=False):
+    def export_instances(self, export_request, page_size=25, continue_on_error=False, task: Optional[Task] = None):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.continue_on_error = continue_on_error
@@ -819,6 +821,12 @@ class DataValueExporter:
         )
         if paginator.count == 0:
             logger.warning(f"Not linked error status for {export_request}")
+
+        if task:
+            with transaction.atomic(savepoint=False):
+                task.report_progress_and_stop_if_killed(
+                    progress_message=f"Instances to export : {paginator.count}, via export request #{export_request.id}"
+                )
 
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
@@ -853,11 +861,17 @@ class DataValueExporter:
 
                 page_end = timer()
                 page_time = page_end - page_start
-                logger.debug(
-                    prefix
-                    + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
-                    % (page_time, stats["batched_time"], len(skipped))
+                message = prefix + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped" % (
+                    page_time,
+                    stats["batched_time"],
+                    len(skipped),
                 )
+                logger.debug(message)
+
+                if task:
+                    with transaction.atomic(savepoint=False):
+                        task.refresh_from_db()
+                        task.report_progress_and_stop_if_killed(progress_message=message + "\n" + task.progress_message)
 
             except InstanceExportError as exception:
                 self.flag_as_errored(export_request, export_statuses, exception.message, stats)
@@ -877,3 +891,8 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.ended_at = timezone.now()
         export_request.save()
+
+        if task:
+            with transaction.atomic(savepoint=False):
+                task.report_success_with_result(message + "\n" + task.progress_message)
+        return message

@@ -129,7 +129,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             Response: Pipeline details including parameters
         """
         try:
-            openhexa_url, openhexa_token, _ = get_openhexa_config()
+            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
         except Response as e:
             return e
 
@@ -203,7 +203,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         config = validated_data["config"]
 
         try:
-            openhexa_url, openhexa_token, _ = get_openhexa_config()
+            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
         except Response as e:
             return e
 

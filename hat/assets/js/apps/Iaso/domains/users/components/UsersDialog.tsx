@@ -241,9 +241,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                         value="locations"
                         label={formatMessage(MESSAGES.location)}
                     />
-                    {/* TODO: add permissions check */}
-                    {/* check how i18n is handled for trypelim things */}
-                    {/* Add a trypelim-specific tab to the update user modal */}
+                    {/* Trypelim-specific tab */}
                     <Tab
                         classes={{
                             root: classes.tab,

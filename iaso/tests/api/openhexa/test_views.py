@@ -145,7 +145,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_client_class.return_value = mock_client
             mock_client.execute.return_value = mock_pipeline_data
 
-            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             data = response.json()
@@ -158,7 +158,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         """Test pipeline detail when OpenHexa config is not found."""
         self.openhexa_config.delete()
 
-        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
 
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("error", response.json())
@@ -171,7 +171,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_client_class.return_value = mock_client
             mock_client.execute.side_effect = Exception("GraphQL error")
 
-            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
 
             self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
             self.assertIn("error", response.json())
@@ -186,7 +186,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_launch_task.return_value = RUNNING
 
             response = self.client.post(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
                 data={
                     "version": version_uuid,
                     "config": config,
@@ -198,8 +198,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             data = response.json()
             self.assertIn("task", data)
             self.assertEqual(data["task"]["status"], RUNNING)
-            self.assertEqual(data["task"]["pipeline_id"], self.pipeline_id)
-            self.assertEqual(data["task"]["version"], version_uuid)
+            # pipeline_id and version are no longer in the response, they're in task.params
 
             # Verify task was created
             task = m.Task.objects.get(pk=data["task"]["id"])
@@ -210,7 +209,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
     def test_post_launch_pipeline_invalid_data(self):
         """Test pipeline launch with invalid data."""
         response = self.client.post(
-            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
             data={
                 "version": "not-a-uuid",
                 "config": {"country_name": "Burkina Faso"},
@@ -225,7 +224,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         self.openhexa_config.delete()
 
         response = self.client.post(
-            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
             data={
                 "version": str(uuid.uuid4()),
                 "config": {"country_name": "Burkina Faso"},
@@ -246,7 +245,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_launch_task.side_effect = Exception("Launch failed")
 
             response = self.client.post(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
                 data={
                     "version": version_uuid,
                     "config": config,
@@ -309,8 +308,8 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("error", response.json())
-        self.assertIn("task_id is required", response.json()["error"])
+        # With serializer validation, we get a different error format
+        self.assertIn("task_id", response.json())
 
     def test_patch_update_task_not_found(self):
         """Test task update with non-existent task."""
@@ -365,7 +364,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
 
         with patch.object(m.Task, "save", side_effect=Exception("Save failed")):
             response = self.client.patch(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
                 data={
                     "task_id": task.pk,
                     "status": SUCCESS,

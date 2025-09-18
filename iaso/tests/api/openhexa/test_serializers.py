@@ -3,116 +3,97 @@ import uuid
 from django.test import TestCase
 
 from iaso.api.openhexa.serializers import (
-    PipelineDetailSerializer,
     PipelineLaunchSerializer,
-    PipelineListSerializer,
-    PipelineParametersSerializer,
+    TaskResponseSerializer,
+    TaskUpdateSerializer,
 )
 
 
-class PipelineListSerializerTestCase(TestCase):
-    """Test PipelineListSerializer."""
+class TaskUpdateSerializerTestCase(TestCase):
+    """Test TaskUpdateSerializer."""
 
     def test_valid_data(self):
-        """Test serializer with valid pipeline list data."""
+        """Test serializer with valid task update data."""
         data = {
-            "id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1",
-            "name": "test_pipeline",
-            "currentVersion": {"versionNumber": 1},
+            "task_id": 123,
+            "status": "SUCCESS",
+            "progress_message": "Task completed",
+            "progress_value": 100,
+            "end_value": 100,
+            "result_data": {"result": "success"},
         }
-        serializer = PipelineListSerializer(data=data)
+        serializer = TaskUpdateSerializer(data=data)
         self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["id"], data["id"])
-        self.assertEqual(serializer.validated_data["name"], data["name"])
-        self.assertEqual(serializer.validated_data["currentVersion"], data["currentVersion"])
+        self.assertEqual(serializer.validated_data["task_id"], 123)
+        self.assertEqual(serializer.validated_data["status"], "SUCCESS")
+
+    def test_missing_task_id(self):
+        """Test serializer with missing task_id."""
+        data = {"status": "SUCCESS"}
+        serializer = TaskUpdateSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("task_id", serializer.errors)
+
+    def test_invalid_status(self):
+        """Test serializer with invalid status."""
+        data = {"task_id": 123, "status": "INVALID_STATUS"}
+        serializer = TaskUpdateSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("status", serializer.errors)
+        self.assertIn("Status must be one of: RUNNING, SUCCESS, ERRORED, KILLED", str(serializer.errors["status"]))
+
+    def test_valid_statuses(self):
+        """Test serializer with all valid status values."""
+        valid_statuses = ["RUNNING", "SUCCESS", "ERRORED", "KILLED"]
+        for status_value in valid_statuses:
+            data = {"task_id": 123, "status": status_value}
+            serializer = TaskUpdateSerializer(data=data)
+            self.assertTrue(serializer.is_valid(), f"Status {status_value} should be valid")
+
+    def test_optional_fields(self):
+        """Test serializer with only required fields."""
+        data = {"task_id": 123}
+        serializer = TaskUpdateSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+
+class TaskResponseSerializerTestCase(TestCase):
+    """Test TaskResponseSerializer."""
+
+    def test_valid_data(self):
+        """Test serializer with valid task response data."""
+        data = {
+            "id": 123,
+            "name": "test-task",
+            "status": "SUCCESS",
+            "progress_message": "Task completed",
+            "progress_value": 100,
+            "end_value": 100,
+            "result": {"result": "success"},
+            "updated_at": "2023-01-01T12:00:00Z",
+        }
+        serializer = TaskResponseSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["id"], 123)
+        self.assertEqual(serializer.validated_data["name"], "test-task")
 
     def test_missing_required_fields(self):
         """Test serializer with missing required fields."""
-        data = {"id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"}
-        serializer = PipelineListSerializer(data=data)
+        data = {"id": 123}
+        serializer = TaskResponseSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertIn("name", serializer.errors)
-        self.assertIn("currentVersion", serializer.errors)
+        self.assertIn("status", serializer.errors)
 
-
-class PipelineDetailSerializerTestCase(TestCase):
-    """Test PipelineDetailSerializer."""
-
-    def test_valid_data(self):
-        """Test serializer with valid pipeline detail data."""
+    def test_optional_fields(self):
+        """Test serializer with only required fields."""
         data = {
-            "id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1",
-            "name": "test_pipeline",
-            "currentVersion": {
-                "versionNumber": 1,
-                "id": str(uuid.uuid4()),
-                "parameters": [
-                    {
-                        "type": "str",
-                        "name": "country_name",
-                        "code": "country_name",
-                        "default": "Burkina Faso",
-                        "choices": None,
-                        "required": True,
-                        "multiple": False,
-                    }
-                ],
-            },
+            "id": 123,
+            "name": "test-task",
+            "status": "SUCCESS",
         }
-        serializer = PipelineDetailSerializer(data=data)
+        serializer = TaskResponseSerializer(data=data)
         self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["id"], data["id"])
-        self.assertEqual(serializer.validated_data["name"], data["name"])
-        self.assertEqual(serializer.validated_data["currentVersion"], data["currentVersion"])
-
-
-class PipelineParametersSerializerTestCase(TestCase):
-    """Test PipelineParametersSerializer."""
-
-    def test_valid_uuid(self):
-        """Test serializer with valid UUID."""
-        data = {"pipeline_id": "60fcb048-a5f6-4a79-9529-1ccfa55e75d1"}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["pipeline_id"], data["pipeline_id"])
-
-    def test_empty_pipeline_id(self):
-        """Test serializer with empty pipeline_id."""
-        data = {"pipeline_id": ""}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("pipeline_id", serializer.errors)
-        # Django's field validation runs first and returns the default message
-        self.assertIn("This field may not be blank", str(serializer.errors["pipeline_id"]))
-
-    def test_whitespace_only_pipeline_id(self):
-        """Test serializer with whitespace-only pipeline_id."""
-        data = {"pipeline_id": "   "}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("pipeline_id", serializer.errors)
-
-    def test_invalid_uuid_format(self):
-        """Test serializer with invalid UUID format."""
-        data = {"pipeline_id": "not-a-uuid"}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("pipeline_id", serializer.errors)
-        self.assertIn("Pipeline ID must be a valid UUID format", str(serializer.errors["pipeline_id"]))
-
-    def test_uuid_with_whitespace(self):
-        """Test serializer with UUID that has whitespace (should be trimmed)."""
-        data = {"pipeline_id": "  60fcb048-a5f6-4a79-9529-1ccfa55e75d1  "}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["pipeline_id"], "60fcb048-a5f6-4a79-9529-1ccfa55e75d1")
-
-    def test_case_insensitive_uuid(self):
-        """Test serializer with uppercase UUID (should be valid)."""
-        data = {"pipeline_id": "60FCB048-A5F6-4A79-9529-1CCFA55E75D1"}
-        serializer = PipelineParametersSerializer(data=data)
-        self.assertTrue(serializer.is_valid())
-        self.assertEqual(serializer.validated_data["pipeline_id"], data["pipeline_id"])
 
 
 class PipelineLaunchSerializerTestCase(TestCase):

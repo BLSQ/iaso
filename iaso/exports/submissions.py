@@ -21,10 +21,15 @@ def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QueryS
 
     possible_fields = form.possible_fields
 
+    def fix_field_name(name):
+        if name == "id":
+            return "answer_id"
+        return name
+
     json_annotations = {}
     for field in possible_fields:
         field_name = field["name"]
-        json_annotations[field_name] = KeyTextTransform(field_name, "json")
+        json_annotations[fix_field_name(field_name)] = KeyTextTransform(field_name, "json")
     prefixed_fields = build_submission_annotations()
 
     qs = (

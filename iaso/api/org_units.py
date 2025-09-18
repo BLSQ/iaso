@@ -13,7 +13,7 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.db.models import Count, IntegerField, Q, Value
-from django.http import FileResponse, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import permissions, status, viewsets
@@ -27,7 +27,7 @@ from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
-from iaso.exports import parquet
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
@@ -479,7 +479,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
-        response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename=filename + ".parquet")
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename=filename + ".parquet")
 
         return response
 

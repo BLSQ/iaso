@@ -14,7 +14,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, Prefetch, Q, QuerySet
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -43,7 +43,7 @@ from iaso.api.instances.instance_filters import get_form_from_instance_filters, 
 from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
-from iaso.exports import parquet
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
     Entity,
     Form,
@@ -561,7 +561,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
         parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
 
-        response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="submissions.parquet")
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
 
         return response
 

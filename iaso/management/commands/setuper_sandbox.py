@@ -1,0 +1,93 @@
+from datetime import datetime
+from logging import getLogger
+
+from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
+from iaso.models import Account, DataSource, Profile, Project
+
+
+logger = getLogger(__name__)
+
+
+class Command(BaseCommand):
+    help = "Custom command to reset admin sandbox account."
+
+    def add_arguments(self, parser):
+        parser.add_argument("account", type=str, help="Account name")
+
+    def change_user_name(self, profile, new_account_name):
+        user_name = profile.user.username.split(".")
+        new_user_name = new_account_name
+        if len(user_name) > 1:
+            new_user_name = f"{new_account_name}.{user_name[1]}"
+        profile.user.username = new_user_name
+        profile.user.is_active = False
+        return profile.user
+
+    def disable_users(self, profiles, new_account_name):
+        return list(
+            map(
+                lambda profile: self.change_user_name(profile, new_account_name),
+                profiles,
+            )
+        )
+
+    def map_project(self, projects, new_account_name):
+        return list(
+            map(
+                lambda project: self.change_project_app_id(project, new_account_name),
+                projects,
+            )
+        )
+
+    def change_project_app_id(self, project, new_account_name):
+        current_project = Project.objects.filter(app_id=project.app_id).first()
+        app_id = project.app_id.split(".")
+        current_project.app_id = new_account_name
+        if len(app_id) > 1:
+            current_project.app_id = f"{new_account_name}.{app_id[1]}"
+        return current_project
+
+    def map_data_source(self, data_sources, new_name):
+        return list(
+            map(
+                lambda data_source: self.change_data_source_name(data_source, new_name),
+                data_sources,
+            )
+        )
+
+    def change_data_source_name(self, data_source, new_account_name):
+        name = data_source.name.replace("admin", new_account_name)
+        data_source.name = name
+        return data_source
+
+    def handle(self, *args, **options):
+        name = options["account"]
+        self.stdout.write(self.style.SUCCESS(f" .... Resetting {name} account and its data! ..."))
+
+        current_datetime = int(datetime.now().timestamp())
+        new_name = f"{name}{current_datetime}"
+        logger.info(f"Renaming current account {name} to {new_name}")
+        account = Account.objects.filter(name=name).first()
+        Account.objects.filter(name=name).update(name=new_name)
+
+        profiles = Profile.objects.filter(account=account)
+        logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {name}")
+        new_profiles = self.disable_users(profiles, new_name)
+        updated_profiles = User.objects.bulk_update(new_profiles, ["username", "is_active"])
+        logger.info(f"Disabled {updated_profiles} users")
+
+        projects = Project.objects.filter(account=account).all()
+        logger.info(f"Renaming app id for all {len(projects)} projects belong to account {name}")
+        projects_to_updated = self.map_project(projects, new_name)
+        updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
+        logger.info(f"Renamed app id for all {updated_projects} projects")
+
+        data_sources = DataSource.objects.filter(projects__account=account)
+        logger.info(f"Renaming all {len(projects)} data_sources belong to account {name}")
+        rename_data_sources = self.map_data_source(data_sources, new_name)
+        new_data_sources = DataSource.objects.bulk_update(rename_data_sources, ["name"])
+        logger.info(f"Renamed all {new_data_sources} data_sources")
+
+        self.stdout.write(self.style.SUCCESS(f"Reset {name} account!"))

@@ -54,9 +54,11 @@ def get_openhexa_config():
 
     except Exception as e:
         logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
-        from rest_framework.exceptions import ValidationError
+        # Return a simple error response instead of raising an exception
+        from rest_framework import status
+        from rest_framework.response import Response
 
-        raise ValidationError(_("OpenHexa configuration not found"))
+        return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class OpenHexaPipelinesViewSet(ViewSet):
@@ -78,14 +80,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
-        try:
-            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Exception as e:
-            from rest_framework.exceptions import ValidationError
-
-            if isinstance(e, ValidationError):
-                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            raise
+        config_result = get_openhexa_config()
+        if isinstance(config_result, Response):
+            return config_result
+        openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
             transport = RequestsHTTPTransport(
@@ -134,14 +132,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
-        try:
-            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Exception as e:
-            from rest_framework.exceptions import ValidationError
-
-            if isinstance(e, ValidationError):
-                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            raise
+        config_result = get_openhexa_config()
+        if isinstance(config_result, Response):
+            return config_result
+        openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
             transport = RequestsHTTPTransport(
@@ -212,14 +206,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
         version = validated_data["version"]
         config = validated_data["config"]
 
-        try:
-            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Exception as e:
-            from rest_framework.exceptions import ValidationError
-
-            if isinstance(e, ValidationError):
-                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
-            raise
+        config_result = get_openhexa_config()
+        if isinstance(config_result, Response):
+            return config_result
+        openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
             # Construct pipeline_config object for launch_task

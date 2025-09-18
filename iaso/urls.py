@@ -77,6 +77,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
+from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
@@ -224,6 +225,7 @@ router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken
 router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
 router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
 router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
+router.register(r"openhexa/pipelines", OpenHexaPipelinesViewSet, basename="openhexa-pipelines")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [
@@ -269,7 +271,6 @@ urlpatterns = urlpatterns + [
     path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
-    path("openhexa/", include("iaso.api.openhexa.urls")),
     path("", include(router.urls)),
 ]
 # External Auth

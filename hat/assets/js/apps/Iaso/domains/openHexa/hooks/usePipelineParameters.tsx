@@ -126,7 +126,6 @@ export const usePipelineParameters = (pipeline?: any) => {
                             labelString={parameter.name}
                             value={currentValue || 0}
                             required={parameter.required}
-                            min={0}
                             placeholder={parameter.name}
                             onChange={(_, value) =>
                                 handleParameterChange(parameter.code, value)
@@ -141,7 +140,6 @@ export const usePipelineParameters = (pipeline?: any) => {
                             labelString={parameter.name}
                             value={currentValue || 0.0}
                             required={parameter.required}
-                            min={0}
                             placeholder={parameter.name}
                             onChange={(_, value) =>
                                 handleParameterChange(parameter.code, value)

@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
-import {
-    MENU_HEIGHT_WITHOUT_TABS,
-    useRedirectTo,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
+import { useGetRootStyles } from 'Iaso/styles/utils';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
@@ -27,7 +24,6 @@ const styles: SxStyles = {
             md: 4,
         },
         margin: 0,
-        overflow: 'auto',
         backgroundColor: 'white',
         // '& td': { padding: 0 },
     },
@@ -42,6 +38,10 @@ const styles: SxStyles = {
 export const VaccineRepository: FunctionComponent = () => {
     const location = useLocation();
     const isEmbedded = location.pathname.includes(embeddedVaccineRepositoryUrl);
+    const rootStyles = {
+        ...useGetRootStyles(isEmbedded),
+        ...styles.container,
+    };
     const redirectUrl = isEmbedded ? embeddedVaccineRepositoryUrl : baseUrl;
     const params = useParamsObject(
         redirectUrl,
@@ -66,14 +66,7 @@ export const VaccineRepository: FunctionComponent = () => {
                     displayBackButton={false}
                 />
             )}
-            <Box
-                sx={styles.container}
-                height={
-                    isEmbedded
-                        ? '100vh'
-                        : `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`
-                }
-            >
+            <Box sx={rootStyles}>
                 {isEmbedded && (
                     <Box
                         sx={{

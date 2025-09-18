@@ -5,7 +5,7 @@ import ExitIcon from '@mui/icons-material/ExitToApp';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import InputComponent from '../../components/forms/InputComponent';
@@ -22,12 +22,9 @@ import { useSaveAccount } from './hooks/useSaveAccount';
 import { MESSAGES } from './messages';
 import { SaveAccountQuery } from './types/account';
 import { useAccountValidation } from './validation';
+import { useGetRootStyles } from 'Iaso/styles/utils';
 
 const useStyles = makeStyles(theme => ({
-    root: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        overflow: 'auto',
-    },
     paper: {
         margin: `auto`,
         width: 500,
@@ -53,6 +50,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const SetupAccount: FunctionComponent = () => {
+    const rootStyles = useGetRootStyles();
     const currentUser = useCurrentUser();
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
@@ -139,7 +137,7 @@ export const SetupAccount: FunctionComponent = () => {
                         : formatMessage(MESSAGES.accountSetup)
                 }
             />
-            <Box className={classes.root}>
+            <Box sx={rootStyles} p={4}>
                 <Paper className={classes.paper}>
                     {isAdmin && (
                         <>

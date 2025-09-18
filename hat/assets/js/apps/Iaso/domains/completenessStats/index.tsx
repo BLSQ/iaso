@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid, Paper, Tab, Tabs, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,19 +14,12 @@ import {
 } from 'bluesquare-components';
 import Color from 'color';
 import { closeSnackbar } from 'notistack';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import { useGetRootStyles } from 'Iaso/styles/utils';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { warningSnackBar } from '../../constants/snackBars';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
@@ -37,10 +37,6 @@ import { CompletenessRouterParams } from './types';
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    container: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        overflow: 'auto',
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -56,6 +52,8 @@ export const CompletenessStats: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.completenessStats,
     ) as CompletenessRouterParams;
+
+    const rootStyles = useGetRootStyles();
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
     const redirectTo = useRedirectTo();
@@ -147,7 +145,7 @@ export const CompletenessStats: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.completenessStats)}
                 displayBackButton={false}
             />
-            <Box p={4} className={classes.container}>
+            <Box p={4} sx={rootStyles}>
                 <Box>
                     <CompletenessStatsFilters
                         params={params}

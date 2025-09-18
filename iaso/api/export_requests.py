@@ -40,7 +40,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data: typing.MutableMapping):
         # FIXME: Temporary fix till we reimplement this in the new task system, timeout old queued requests.
-        REQUEST_TIMEOUT_S = 15 * 60  # 15 minutes
+        REQUEST_TIMEOUT_S = 1  # 15 minutes
         export_requests = ExportRequest.objects.filter(status=QUEUED).filter(
             queued_at__lt=now() - timedelta(seconds=REQUEST_TIMEOUT_S)
         )

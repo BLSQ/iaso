@@ -338,31 +338,36 @@ class EventHandler(BaseHandler):
             stats["batched_time"] = 0
             return []
 
-        try:
-            payload = {"events": data}
-            self.logger.debug(json.dumps(payload, indent=2))
-            resp = api.post("events", payload).json()
-            self.logger.debug(str(resp))
+        export_logs = []
+        # from real life posting lots of "batch" of events
+        # can be really problematic, switching to one by one export
+        for event in data:
+            try:
+                payload = {"events": [event]}
+                self.logger.debug(json.dumps(payload, indent=2))
+                resp = api.post("events", payload).json()
+                self.logger.debug(str(resp))
 
-            exception = self.handle_exception({"response": resp}, "transient")
-            if exception:
-                # fake it to behave like a bad request
-                raise RequestException(409, api.base_url + "/dataValueSets", json.dumps(resp))
+                exception = self.handle_exception({"response": resp}, "transient")
+                if exception:
+                    # fake it to behave like a bad request
+                    raise RequestException(409, api.base_url + "/events", json.dumps(resp))
 
-            export_log = ExportLog()
-            export_log.sent = payload
-            export_log.received = resp
-            export_log.url = api.base_url + "/events"
-            export_log.http_status = 200
-            export_log.save()
+                export_log = ExportLog()
+                export_log.sent = payload
+                export_log.received = resp
+                export_log.url = api.base_url + "/events"
+                export_log.http_status = 200
+                export_log.save()
 
-            return [export_log]
-        except RequestException as dhis2_exception:
-            message = "ERROR while processing " + prefix
-            resp = json.loads(dhis2_exception.description)
-            exception = self.handle_exception(resp, message)
+            except RequestException as dhis2_exception:
+                message = "ERROR while processing " + prefix
+                resp = json.loads(dhis2_exception.description)
+                exception = self.handle_exception(resp, message)
 
-            raise exception
+                raise exception
+
+        return export_logs
 
     def handle_exception(self, resp, message):
         response = resp["response"]
@@ -773,7 +778,7 @@ class DataValueExporter:
             data[form_mapping.mapping.mapping_type].append(values)
         return data
 
-    def flag_as_errored(self, export_request, export_statuses, message, stats):
+    def flag_as_errored(self, export_request, export_statuses, message, stats, task):
         for export_status in export_statuses:
             stats["errored_count"] += len(export_statuses)
             export_status.status = ERRORED
@@ -788,6 +793,11 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.last_error_message = message
         export_request.save()
+
+        if task:
+            with transaction.atomic(savepoint=False):
+                task.refresh_from_db()
+                task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
     def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
         stats["exported_count"] += len(export_statuses)
@@ -804,11 +814,25 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, page_size=25, continue_on_error=False, task: Optional[Task] = None):
+    def export_instances(self, export_request, page_size=25, continue_on_error=True, task: Optional[Task] = None):
+        try:
+            self._export_instances(export_request, page_size, continue_on_error, task)
+        except BaseException as exception:
+            if task:
+                with transaction.atomic(savepoint=False):
+                    message = repr(exception) + " : " + type(exception).__name__
+                    logger.error(message, exception)
+                    task.refresh_from_db()
+                    task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
+                    task.terminate_with_error(message=message + "\n" + task.progress_message)
+
+    def _export_instances(self, export_request, page_size=25, continue_on_error=True, task: Optional[Task] = None):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.continue_on_error = continue_on_error
         export_request.save()
+
+        fatal_errors = 0
 
         paginator = Paginator(
             export_request.exportstatus_set.prefetch_related("mapping_version")
@@ -871,17 +895,21 @@ class DataValueExporter:
                 if task:
                     with transaction.atomic(savepoint=False):
                         task.refresh_from_db()
-                        task.report_progress_and_stop_if_killed(progress_message=message + "\n" + task.progress_message)
+                        task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
             except InstanceExportError as exception:
-                self.flag_as_errored(export_request, export_statuses, exception.message, stats)
+                self.flag_as_errored(export_request, export_statuses, exception.message, stats, task=task)
                 if not export_request.continue_on_error:
                     raise exception
 
             # it's ok to catch BaseException, we want to be able to mark it as errored if cancelled or worst
             except BaseException as exception:
                 self.flag_as_errored(
-                    export_request, export_statuses, repr(exception) + " : " + type(exception).__name__, stats
+                    export_request,
+                    export_statuses,
+                    repr(exception) + " : " + type(exception).__name__,
+                    stats,
+                    task=task,
                 )
                 raise exception
 
@@ -894,5 +922,8 @@ class DataValueExporter:
 
         if task:
             with transaction.atomic(savepoint=False):
-                task.report_success_with_result(message + "\n" + task.progress_message)
+                if stats["errored_count"] == 0:
+                    task.report_success_with_result(message + "\n" + task.progress_message)
+                else:
+                    task.terminate_with_error(message + "\n" + task.progress_message)
         return message

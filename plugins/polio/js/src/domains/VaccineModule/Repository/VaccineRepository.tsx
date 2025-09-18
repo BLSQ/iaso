@@ -15,6 +15,7 @@ import { Forms } from './forms';
 import MESSAGES from './messages';
 import { Reports } from './reports';
 import { VaccineRepositoryParams } from './types';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 
 const baseUrl = baseUrls.vaccineRepository;
 const embeddedVaccineRepositoryUrl = baseUrls.embeddedVaccineRepository;
@@ -27,7 +28,6 @@ const styles: SxStyles = {
             md: 4,
         },
         margin: 0,
-        overflow: 'auto',
         backgroundColor: 'white',
         // '& td': { padding: 0 },
     },
@@ -66,14 +66,7 @@ export const VaccineRepository: FunctionComponent = () => {
                     displayBackButton={false}
                 />
             )}
-            <Box
-                sx={styles.container}
-                height={
-                    isEmbedded
-                        ? '100vh'
-                        : `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`
-                }
-            >
+            <MainWrapper embedded={isEmbedded} sx={styles.container}>
                 {isEmbedded && (
                     <Box
                         sx={{
@@ -104,7 +97,7 @@ export const VaccineRepository: FunctionComponent = () => {
                 </Tabs>
                 {tab === 'forms' && <Forms params={params} />}
                 {tab === 'reports' && <Reports params={params} />}
-            </Box>
+            </MainWrapper>
         </>
     );
 };

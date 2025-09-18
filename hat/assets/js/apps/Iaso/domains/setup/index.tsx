@@ -8,6 +8,7 @@ import { makeStyles } from '@mui/styles';
 import { MENU_HEIGHT_WITHOUT_TABS, useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import InputComponent from '../../components/forms/InputComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
@@ -24,10 +25,6 @@ import { SaveAccountQuery } from './types/account';
 import { useAccountValidation } from './validation';
 
 const useStyles = makeStyles(theme => ({
-    root: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        overflow: 'auto',
-    },
     paper: {
         margin: `auto`,
         width: 500,
@@ -139,7 +136,7 @@ export const SetupAccount: FunctionComponent = () => {
                         : formatMessage(MESSAGES.accountSetup)
                 }
             />
-            <Box className={classes.root}>
+            <MainWrapper>
                 <Paper className={classes.paper}>
                     {isAdmin && (
                         <>
@@ -337,7 +334,7 @@ export const SetupAccount: FunctionComponent = () => {
                         </Box>
                     )}
                 </Paper>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

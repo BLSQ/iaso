@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-15 16:33+0000\n"
+"POT-Creation-Date: 2025-09-18 09:37+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -120,12 +120,12 @@ msgid "Failed to retrieve pipeline details"
 msgstr "Échec de la récupération des détails du pipeline"
 
 #: iaso/api/openhexa/views.py
-msgid "Failed to launch pipeline"
-msgstr "Échec du lancement du pipeline"
+msgid "Pipeline ID is required"
+msgstr "L'ID de la pipeline est requis"
 
 #: iaso/api/openhexa/views.py
-msgid "task_id is required"
-msgstr "L'ID de tâche est requis"
+msgid "Failed to launch pipeline"
+msgstr "Échec du lancement du pipeline"
 
 #: iaso/api/openhexa/views.py
 msgid "Task is not external"
@@ -958,6 +958,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "task_id is required"
+#~ msgstr "L'ID de tâche est requis"
 
 #, python-brace-format
 #~ msgid "Invalid validation status : {validation_status}"

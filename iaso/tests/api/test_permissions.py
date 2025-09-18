@@ -59,11 +59,11 @@ class PermissionsAPITestCase(APITestCase):
         self.assertEqual(list(response.json()["permissions"].keys()), ["org_units", "admin"])
 
         org_unit_perms = get_permissions_of_group(PERMISSION_GROUP_ORG_UNITS)
-        org_unit_perms_categories = set(perm.category for perm in org_unit_perms if perm.category)
+        org_unit_perms_categories = set(perm.ui_category for perm in org_unit_perms if perm.ui_category)
         # Categories are regrouped by the endpoint, so size will be different if there are any categories
         expected_org_unit_len = len(org_unit_perms) - len(org_unit_perms_categories)
         admin_perms = get_permissions_of_group(PERMISSION_GROUP_ADMIN)
-        admin_perms_categories = set(perm.category for perm in admin_perms if perm.category)
+        admin_perms_categories = set(perm.ui_category for perm in admin_perms if perm.ui_category)
         # Categories are regrouped by the endpoint, so size will be different if there are any categories
         expected_admin_len = len(admin_perms) - len(admin_perms_categories)
 

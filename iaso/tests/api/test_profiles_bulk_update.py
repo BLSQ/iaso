@@ -39,7 +39,9 @@ class ProfileBulkUpdateAPITestCase(APITestCase):
         cls.group_2 = auth.models.Group.objects.create(name="group_2")
         cls.group_3 = auth.models.Group.objects.create(name="group_3")
         cls.group_admin = auth.models.Group.objects.create(name="group_admin")
-        cls.group_admin.permissions.set([auth.models.Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.name)])
+        cls.group_admin.permissions.set(
+            [auth.models.Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)]
+        )
         cls.group_4 = auth.models.Group.objects.create(name="group_4")
         cls.user_role = m.UserRole.objects.create(group=cls.group_1, account=cls.account1)
         cls.user_role_2 = m.UserRole.objects.create(group=cls.group_2, account=cls.account1)

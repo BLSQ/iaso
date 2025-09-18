@@ -94,7 +94,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         """POST /api/tasks/create/instancereferencebulklink/ without instances permissions"""
         # Adding org unit permission to user
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename=CORE_ORG_UNITS_PERMISSION.name).first().id
+            Permission.objects.filter(codename=CORE_ORG_UNITS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)
@@ -109,7 +109,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         """POST /api/tasks/create/instancereferencebulklink/ without orgunit permissions"""
         # Adding instances permission to user
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename=CORE_SUBMISSIONS_PERMISSION.name).first().id
+            Permission.objects.filter(codename=CORE_SUBMISSIONS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)

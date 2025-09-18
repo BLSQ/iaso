@@ -371,11 +371,13 @@ class ProfileAPITestCase(APITestCase):
 
         expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
         expected_csv += f'johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += f'jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.name},{CORE_USERS_ADMIN_PERMISSION.name}",,,,\r\n'
-        expected_csv += f"jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.name},,,,\r\n"
+        expected_csv += (
+            f'jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
+        )
+        expected_csv += f"jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
         expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.name},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -438,13 +440,13 @@ class ProfileAPITestCase(APITestCase):
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
-                    0: CORE_FORMS_PERMISSION.name,
+                    0: CORE_FORMS_PERMISSION.codename,
                     1: None,
-                    2: f"{CORE_FORMS_PERMISSION.name},{CORE_USERS_ADMIN_PERMISSION.name}",
-                    3: CORE_USERS_MANAGED_PERMISSION.name,
+                    2: f"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",
+                    3: CORE_USERS_MANAGED_PERMISSION.codename,
                     4: None,
                     5: None,
-                    6: CORE_USERS_MANAGED_PERMISSION.name,
+                    6: CORE_USERS_MANAGED_PERMISSION.codename,
                 },
                 "user_roles": {
                     0: None,
@@ -558,7 +560,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": [CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "user_roles": [self.user_role.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -582,7 +584,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": [CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "user_roles": [self.user_role.id, self.user_role_another_account.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -660,7 +662,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": [CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -740,7 +742,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.child_org_unit.id}],
-            "user_permissions": [CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
 
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -777,7 +779,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": [CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
 
@@ -965,7 +967,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "unittest_password",
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
-            "user_permissions": [CORE_FORMS_PERMISSION.name, CORE_USERS_MANAGED_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename, CORE_USERS_MANAGED_PERMISSION.codename],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -980,7 +982,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": [CORE_FORMS_PERMISSION.name, CORE_USERS_MANAGED_PERMISSION.name],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename, CORE_USERS_MANAGED_PERMISSION.codename],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         jum.refresh_from_db()
@@ -995,9 +997,9 @@ class ProfileAPITestCase(APITestCase):
         data = {
             "user_name": "jum",
             "user_permissions": [
-                CORE_FORMS_PERMISSION.name,
-                CORE_USERS_MANAGED_PERMISSION.name,
-                CORE_USERS_ADMIN_PERMISSION.name,
+                CORE_FORMS_PERMISSION.codename,
+                CORE_USERS_MANAGED_PERMISSION.codename,
+                CORE_USERS_ADMIN_PERMISSION.codename,
             ],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
@@ -1005,7 +1007,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.name)])
+        group.permissions.set([Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1020,7 +1022,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=CORE_FORMS_PERMISSION.name)])
+        group.permissions.set([Permission.objects.get(codename=CORE_FORMS_PERMISSION.codename)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1384,7 +1386,7 @@ class ProfileAPITestCase(APITestCase):
         )
 
         # An "admin" user with `projects` restrictions can assign projects outside his range.
-        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.name))
+        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename))
         del user._perm_cache
         del user._user_perm_cache
         self.assertTrue(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
@@ -1461,7 +1463,7 @@ class ProfileAPITestCase(APITestCase):
                 "updated_at": self.user_role.updated_at,
             }
         ]
-        user_permissions = [CORE_ORG_UNITS_READ_PERMISSION.name]
+        user_permissions = [CORE_ORG_UNITS_READ_PERMISSION.codename]
         send_email_invitation = False
         projects = [self.project.id]
         phone_number = "32475888888"
@@ -1640,7 +1642,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "yolo",
             "home_page": "/orgunits/list",
             "organization": "Bluesquare",
-            "user_permissions": [CORE_ORG_UNITS_READ_PERMISSION.name, CORE_FORMS_PERMISSION.name],
+            "user_permissions": [CORE_ORG_UNITS_READ_PERMISSION.codename, CORE_FORMS_PERMISSION.codename],
             "user_roles": [],
             "user_roles_permissions": [],
         }

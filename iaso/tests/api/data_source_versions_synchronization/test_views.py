@@ -82,7 +82,7 @@ class DataSourceVersionsSynchronizationViewSetTestCase(TaskAPITestCase):
         self.assertJSONResponse(response, 403)
 
         # Not enough perms.
-        self.user.user_permissions.add(Permission.objects.get(codename=CORE_SOURCE_WRITE_PERMISSION.name))
+        self.user.user_permissions.add(Permission.objects.get(codename=CORE_SOURCE_WRITE_PERMISSION.codename))
         response = self.client.get("/api/datasources/sync/")
         self.assertJSONResponse(response, 403)
 

@@ -56,10 +56,10 @@ def raise_error_if_user_lacks_admin_permission(user: User, requested_permission_
     """
     from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION  # Imported here to avoid circular import
 
-    if CORE_USERS_ADMIN_PERMISSION.name in requested_permission_names:
+    if CORE_USERS_ADMIN_PERMISSION.codename in requested_permission_names:
         if not user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             raise PermissionDenied(
-                f"Only users with {CORE_USERS_ADMIN_PERMISSION.name} permission can grant {CORE_USERS_ADMIN_PERMISSION.name} permission"
+                f"Only users with {CORE_USERS_ADMIN_PERMISSION.codename} permission can grant {CORE_USERS_ADMIN_PERMISSION.codename} permission"
             )
 
 

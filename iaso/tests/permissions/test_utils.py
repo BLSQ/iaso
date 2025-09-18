@@ -102,7 +102,7 @@ class TestRaiseErrorOnAdminPermission(TestCase, IasoTestCaseMixin):
 
     def test_no_error_if_not_requesting_admin_permission(self):
         permissions = ALL_PERMISSIONS
-        permissions.pop(CORE_USERS_ADMIN_PERMISSION.name)
+        permissions.pop(CORE_USERS_ADMIN_PERMISSION.codename)
         requested_permission_names = list(permissions.keys())
 
         # Should not raise any error
@@ -127,7 +127,7 @@ class TestRaiseErrorOnAdminPermission(TestCase, IasoTestCaseMixin):
         permissions = ALL_PERMISSIONS
         requested_permission_names = list(permissions.keys())
 
-        django_perm = Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.name)
+        django_perm = Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)
         self.user.user_permissions.set([django_perm])
 
         # Should not raise any error

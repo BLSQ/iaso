@@ -240,7 +240,7 @@ class DataSourcesAPITestCase(APITestCase):
             ["User doesn't have the permission to change the default version of a data source."], json_response
         )
 
-        perm = Permission.objects.get(codename=CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.name)
+        perm = Permission.objects.get(codename=CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.codename)
         self.joe.user_permissions.add(perm)
         del self.joe._perm_cache
         del self.joe._user_perm_cache

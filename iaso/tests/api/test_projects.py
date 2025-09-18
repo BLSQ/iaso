@@ -120,7 +120,7 @@ class ProjectsAPITestCase(APITestCase):
         )
 
         # You should be able to bypass restrictions if you're admin.
-        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.name))
+        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename))
         del user._perm_cache
         del user._user_perm_cache
         self.assertTrue(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))

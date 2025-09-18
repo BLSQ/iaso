@@ -37,7 +37,7 @@ class ModuleSerializer(serializers.Serializer):
         fields = ["name", "codename", "permissions", "account"]
 
     def get_permissions(self, obj):
-        codenames = [p.name for p in obj.permissions]
+        codenames = [p.codename for p in obj.permissions]
         return PermissionSerializer(Permission.objects.filter(codename__in=codenames), many=True).data
 
     def get_account(self, obj):

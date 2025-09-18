@@ -60,7 +60,7 @@ class SourceVersionAPITestCase(APITestCase):
     def test_list_ok_with_right_perms(self):
         self.client.force_authenticate(self.user)
 
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_MAPPINGS_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_MAPPINGS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_MAPPINGS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
@@ -68,7 +68,7 @@ class SourceVersionAPITestCase(APITestCase):
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
@@ -76,7 +76,7 @@ class SourceVersionAPITestCase(APITestCase):
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_READ_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_READ_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
@@ -84,7 +84,7 @@ class SourceVersionAPITestCase(APITestCase):
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_LINKS_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_LINKS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_LINKS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
@@ -92,14 +92,14 @@ class SourceVersionAPITestCase(APITestCase):
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
         self.assertTrue(self.user.has_perm(CORE_SOURCE_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
     def test_list(self):
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
 
         response = self.client.get(self.BASE_URL)
@@ -119,7 +119,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(version["tree_config_status_fields"], [])
 
     def test_dropdown_sourceversions(self):
-        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.name)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
         data = self.assertJSONResponse(response, 200)
@@ -140,7 +140,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_dropdown_sourceversions_with_user_from_another_account(self):
-        self.user2.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.name)])
+        self.user2.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user2)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
         data = self.assertJSONResponse(response, 200)

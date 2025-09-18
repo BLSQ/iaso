@@ -23,3 +23,16 @@ class TaskUpdateSerializer(serializers.Serializer):
         if value and value not in ["RUNNING", "SUCCESS", "ERRORED", "KILLED"]:
             raise serializers.ValidationError("Status must be one of: RUNNING, SUCCESS, ERRORED, KILLED")
         return value
+
+
+class TaskResponseSerializer(serializers.Serializer):
+    """Serializer for task response data."""
+
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    status = serializers.CharField()
+    progress_message = serializers.CharField(allow_blank=True, required=False)
+    progress_value = serializers.IntegerField(allow_null=True, required=False)
+    end_value = serializers.IntegerField(allow_null=True, required=False)
+    result = serializers.JSONField(allow_null=True, required=False)
+    updated_at = serializers.DateTimeField(allow_null=True, required=False)

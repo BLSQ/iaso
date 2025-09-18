@@ -11,7 +11,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.openhexa.serializers import PipelineLaunchSerializer, TaskUpdateSerializer
+from iaso.api.openhexa.serializers import PipelineLaunchSerializer, TaskResponseSerializer, TaskUpdateSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
@@ -20,6 +20,13 @@ from iaso.models.json_config import Config
 logger = logging.getLogger(__name__)
 
 OPENHEXA_CONFIG_SLUG = "openhexa-config"
+
+
+class MockConfig:
+    """Mock Config object for pipeline configuration."""
+
+    def __init__(self, content_dict):
+        self.content = content_dict
 
 
 def get_openhexa_config():
@@ -46,7 +53,7 @@ def get_openhexa_config():
         return openhexa_url, openhexa_token, workspace_slug
 
     except Exception as e:
-        logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
+        logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
         raise Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
@@ -108,7 +115,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             return Response({"results": items})
 
         except Exception as e:
-            logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}: {str(e)}")
+            logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}")
             return Response({"error": _("Failed to retrieve pipelines")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def retrieve(self, request, pk=None):
@@ -202,11 +209,6 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
         try:
             # Construct pipeline_config object for launch_task
-            # We need to create a mock Config object that has a .content attribute
-            class MockConfig:
-                def __init__(self, content_dict):
-                    self.content = content_dict
-
             pipeline_config = MockConfig(
                 {
                     "pipeline_version": str(version),  # Convert UUID to string
@@ -250,23 +252,23 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
-            return Response(
-                {
-                    "task": {
-                        "id": task.pk,
-                        "name": task.name,
-                        "status": task.status,
-                        "created_at": task.created_at.isoformat(),
-                        "pipeline_id": str(pipeline_id),
-                        "version": str(version),
-                        "result": task.result,
-                    }
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            # Use serializer for response
+            task_data = {
+                "id": task.pk,
+                "name": task.name,
+                "status": task.status,
+                "progress_message": task.progress_message,
+                "progress_value": task.progress_value,
+                "end_value": task.end_value,
+                "result": task.result,
+                "updated_at": task.created_at,  # Use created_at for launch response
+            }
+
+            serializer = TaskResponseSerializer(task_data)
+            return Response({"task": serializer.data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            logger.exception(f"Could not launch pipeline {pipeline_id}: {str(e)}")
+            logger.exception(f"Could not launch pipeline {pipeline_id}")
             return Response({"error": _("Failed to launch pipeline")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def partial_update(self, request, pk=None):
@@ -319,24 +321,23 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 
-            return Response(
-                {
-                    "task": {
-                        "id": task.pk,
-                        "name": task.name,
-                        "status": task.status,
-                        "progress_message": task.progress_message,
-                        "progress_value": task.progress_value,
-                        "end_value": task.end_value,
-                        "result": task.result,
-                        "updated_at": task.ended_at.isoformat() if task.ended_at else None,
-                    }
-                },
-                status=status.HTTP_200_OK,
-            )
+            # Use serializer for response
+            task_data = {
+                "id": task.pk,
+                "name": task.name,
+                "status": task.status,
+                "progress_message": task.progress_message,
+                "progress_value": task.progress_value,
+                "end_value": task.end_value,
+                "result": task.result,
+                "updated_at": task.ended_at if task.ended_at else None,
+            }
+
+            serializer = TaskResponseSerializer(task_data)
+            return Response({"task": serializer.data}, status=status.HTTP_200_OK)
 
         except Http404:
             return Response({"error": _("Task not found")}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.exception(f"Could not update task {task_id}: {str(e)}")
+            logger.exception(f"Could not update task {task_id}")
             return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

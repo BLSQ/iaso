@@ -35,7 +35,7 @@ Create a configuration object in Iaso with the following structure:
 **Configuration Content**:
 ```json
 {
-    "openhexa_url": "https://your-openhexa-instance.com",
+    "openhexa_url": "https://your-openhexa-instance.com/graphql/",
     "openhexa_token": "your-openhexa-api-token",
     "workspace_slug": "your-workspace-slug"
 }
@@ -441,7 +441,7 @@ config, created = Config.objects.get_or_create(
     slug="openhexa-config",
     defaults={
         "content": {
-            "openhexa_url": "https://your-openhexa-instance.com",
+            "openhexa_url": "https://your-openhexa-instance.com/graphql/",
             "openhexa_token": "your-token",
             "workspace_slug": "your-workspace"
         }

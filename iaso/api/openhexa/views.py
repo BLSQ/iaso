@@ -7,10 +7,11 @@ from django.utils.translation import gettext_lazy as _
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.viewsets import ViewSet
 
-from iaso.api.openhexa.serializers import PipelineLaunchSerializer
+from iaso.api.openhexa.serializers import PipelineLaunchSerializer, TaskResponseSerializer, TaskUpdateSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
@@ -20,23 +21,57 @@ logger = logging.getLogger(__name__)
 
 OPENHEXA_CONFIG_SLUG = "openhexa-config"
 
-"""TO MAKE IT WORK
-- openhexa-config  with the following fields:
-    - openhexa_url
-    - openhexa_token
-    - workspace_slug
-- a working pipeline
-- a custom /Iaso connection to IASO in openhexa
 
-"""
+class MockConfig:
+    """Mock Config object for pipeline configuration."""
+
+    def __init__(self, content_dict):
+        self.content = content_dict
 
 
-class PipelineListView(APIView):
+def get_openhexa_config():
     """
-    List all OpenHexa pipelines for a workspace.
+    Retrieve OpenHexa configuration and validate URL.
+
+    Returns:
+        tuple: (openhexa_url, openhexa_token, workspace_slug)
+
+    Raises:
+        Response: HTTP 422 if configuration not found or invalid
+    """
+    try:
+        openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
+        openhexa_url = openhexa_config.content["openhexa_url"]
+        openhexa_token = openhexa_config.content["openhexa_token"]
+        workspace_slug = openhexa_config.content["workspace_slug"]
+
+        # Validate that the URL contains 'graphql'
+        if "graphql" not in openhexa_url.lower():
+            logger.error(f"OpenHexa URL does not contain 'graphql': {openhexa_url}")
+            raise ValueError("OpenHexa URL must contain 'graphql'")
+
+        return openhexa_url, openhexa_token, workspace_slug
+
+    except Exception as e:
+        logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
+        from rest_framework.exceptions import ValidationError
+
+        raise ValidationError(_("OpenHexa configuration not found"))
+
+
+class OpenHexaPipelinesViewSet(ViewSet):
+    """
+    OpenHexa Pipelines API
+
+    This API provides access to OpenHexa pipelines for listing, retrieving details, and launching tasks.
+
+    GET /api/openhexa/pipelines/                    - List all pipelines
+    GET /api/openhexa/pipelines/{id}/               - Get pipeline details
+    POST /api/openhexa/pipelines/{id}/launch/       - Launch pipeline
+    PATCH /api/openhexa/pipelines/{id}/             - Update task status
     """
 
-    def get(self, request):
+    def list(self, request):
         """
         Retrieve list of pipelines from OpenHexa workspace.
 
@@ -44,16 +79,13 @@ class PipelineListView(APIView):
             Response: List of pipelines with id, name, and currentVersion
         """
         try:
-            # Retrieve OpenHexa configuration from Config object
-            openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
-            openhexa_url = openhexa_config.content["openhexa_url"]
-            openhexa_token = openhexa_config.content["openhexa_token"]
-            workspace_slug = openhexa_config.content["workspace_slug"]
+            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
         except Exception as e:
-            logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response(
-                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             transport = RequestsHTTPTransport(
@@ -89,35 +121,27 @@ class PipelineListView(APIView):
             return Response({"results": items})
 
         except Exception as e:
-            logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}: {str(e)}")
+            logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}")
             return Response({"error": _("Failed to retrieve pipelines")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
-class PipelineDetailView(APIView):
-    """
-    Get details of a specific OpenHexa pipeline.
-    """
-
-    def get(self, request, pipeline_id):
+    def retrieve(self, request, pk=None):
         """
         Retrieve detailed information about a specific pipeline.
 
         Args:
-            pipeline_id: The OpenHexa pipeline ID
+            pk: The OpenHexa pipeline ID
 
         Returns:
             Response: Pipeline details including parameters
         """
         try:
-            # Retrieve OpenHexa configuration from Config object
-            openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
-            openhexa_url = openhexa_config.content["openhexa_url"]
-            openhexa_token = openhexa_config.content["openhexa_token"]
+            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
         except Exception as e:
-            logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response(
-                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             transport = RequestsHTTPTransport(
@@ -151,56 +175,54 @@ class PipelineDetailView(APIView):
                 """
             )
 
-            result = client.execute(get_pipeline_detail, variable_values={"pipelineId": pipeline_id})
+            result = client.execute(get_pipeline_detail, variable_values={"pipelineId": pk})
 
-            logger.info(f"Successfully retrieved details for pipeline {pipeline_id}")
+            logger.info(f"Successfully retrieved details for pipeline {pk}")
             # Return the pipeline data directly without the wrapper
             return Response(result.get("pipeline", {}))
 
         except Exception as e:
-            logger.exception(f"Could not retrieve pipeline details for {pipeline_id}: {str(e)}")
+            logger.exception(f"Could not retrieve pipeline details for {pk}: {str(e)}")
             return Response(
                 {"error": _("Failed to retrieve pipeline details")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def post(self, request, pipeline_id):
+    @action(detail=True, methods=["post"])
+    def launch(self, request, pk=None):
         """
         Launch a pipeline task with the provided configuration.
 
         Args:
-            pipeline_id: The OpenHexa pipeline ID
+            pk: The OpenHexa pipeline ID from URL
             request.data: Contains version, config
 
         Returns:
             Response: Created task information
         """
-        # Validate request data
+        # Get pipeline_id from URL parameter
+        if not pk:
+            return Response({"error": _("Pipeline ID is required")}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Validate request data (pipeline_id comes from URL, not request body)
         serializer = PipelineLaunchSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
+        pipeline_id = pk  # Use pipeline ID from URL
         version = validated_data["version"]
         config = validated_data["config"]
 
         try:
-            # Retrieve OpenHexa configuration from Config object
-            openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
-            openhexa_url = openhexa_config.content["openhexa_url"]
-            openhexa_token = openhexa_config.content["openhexa_token"]
-            workspace_slug = openhexa_config.content["workspace_slug"]
+            openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
         except Exception as e:
-            logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}: {str(e)}")
-            return Response(
-                {"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
-            )
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             # Construct pipeline_config object for launch_task
-            # We need to create a mock Config object that has a .content attribute
-            class MockConfig:
-                def __init__(self, content_dict):
-                    self.content = content_dict
-
             pipeline_config = MockConfig(
                 {
                     "pipeline_version": str(version),  # Convert UUID to string
@@ -208,7 +230,6 @@ class PipelineDetailView(APIView):
                     "oh_pipeline_target": None,
                     "openhexa_url": openhexa_url,
                     "openhexa_token": openhexa_token,
-                    "workspace_slug": workspace_slug,
                 }
             )
 
@@ -245,40 +266,42 @@ class PipelineDetailView(APIView):
 
             logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
-            return Response(
-                {
-                    "task": {
-                        "id": task.pk,
-                        "name": task.name,
-                        "status": task.status,
-                        "created_at": task.created_at.isoformat(),
-                        "pipeline_id": str(pipeline_id),
-                        "version": str(version),
-                        "result": task.result,
-                    }
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            # Use serializer for response
+            task_data = {
+                "id": task.pk,
+                "name": task.name,
+                "status": task.status,
+                "progress_message": task.progress_message,
+                "progress_value": task.progress_value,
+                "end_value": task.end_value,
+                "result": task.result,
+                "updated_at": task.created_at,  # Use created_at for launch response
+            }
+
+            serializer = TaskResponseSerializer(task_data)
+            return Response({"task": serializer.data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            logger.exception(f"Could not launch pipeline {pipeline_id}: {str(e)}")
+            logger.exception(f"Could not launch pipeline {pipeline_id}")
             return Response({"error": _("Failed to launch pipeline")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def patch(self, request, pipeline_id):
+    def partial_update(self, request, pk=None):
         """
         Update task status for a pipeline task.
 
         Args:
-            pipeline_id: The OpenHexa pipeline ID (not used but required for URL pattern)
+            pk: The OpenHexa pipeline ID (not used but required for URL pattern)
             request.data: Contains task_id, status, progress_message, progress_value, end_value
 
         Returns:
             Response: Updated task information
         """
-        # Get task_id from request data
-        task_id = request.data.get("task_id")
-        if not task_id:
-            return Response({"error": _("task_id is required")}, status=status.HTTP_400_BAD_REQUEST)
+        # Validate request data
+        serializer = TaskUpdateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        validated_data = serializer.validated_data
+        task_id = validated_data["task_id"]
 
         try:
             # Get the task
@@ -289,47 +312,46 @@ class PipelineDetailView(APIView):
                 return Response({"error": _("Task is not external")}, status=status.HTTP_400_BAD_REQUEST)
 
             # Update task fields
-            if "status" in request.data:
-                task.status = request.data["status"]
+            if "status" in validated_data:
+                task.status = validated_data["status"]
                 # Set ended_at if task is completed
                 if task.status in ["SUCCESS", "ERRORED", "KILLED"]:
                     task.ended_at = timezone.now()
 
-            if "progress_message" in request.data:
-                task.progress_message = request.data["progress_message"]
+            if "progress_message" in validated_data:
+                task.progress_message = validated_data["progress_message"]
 
-            if "progress_value" in request.data:
-                task.progress_value = request.data["progress_value"]
+            if "progress_value" in validated_data:
+                task.progress_value = validated_data["progress_value"]
 
-            if "end_value" in request.data:
-                task.end_value = request.data["end_value"]
+            if "end_value" in validated_data:
+                task.end_value = validated_data["end_value"]
 
-            if "result_data" in request.data:
+            if "result_data" in validated_data:
                 # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": request.data["result_data"]}
+                task.result = {"result": task.status, "data": validated_data["result_data"]}
 
             task.save()
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 
-            return Response(
-                {
-                    "task": {
-                        "id": task.pk,
-                        "name": task.name,
-                        "status": task.status,
-                        "progress_message": task.progress_message,
-                        "progress_value": task.progress_value,
-                        "end_value": task.end_value,
-                        "result": task.result,
-                        "updated_at": task.ended_at.isoformat() if task.ended_at else None,
-                    }
-                },
-                status=status.HTTP_200_OK,
-            )
+            # Use serializer for response
+            task_data = {
+                "id": task.pk,
+                "name": task.name,
+                "status": task.status,
+                "progress_message": task.progress_message,
+                "progress_value": task.progress_value,
+                "end_value": task.end_value,
+                "result": task.result,
+                "updated_at": task.ended_at if task.ended_at else None,
+            }
+
+            serializer = TaskResponseSerializer(task_data)
+            return Response({"task": serializer.data}, status=status.HTTP_200_OK)
 
         except Http404:
             return Response({"error": _("Task not found")}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            logger.exception(f"Could not update task {task_id}: {str(e)}")
+            logger.exception(f"Could not update task {task_id}")
             return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

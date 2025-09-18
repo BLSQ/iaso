@@ -1,7 +1,7 @@
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';
 const launchTask = async (body, pipelineId, version) => {
-    return postRequest(`/api/openhexa/pipelines/${pipelineId}/`, {
+    return postRequest(`/api/openhexa/pipelines/${pipelineId}/launch/`, {
         config: body,
         version,
     });

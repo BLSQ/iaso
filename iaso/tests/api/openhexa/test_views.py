@@ -30,7 +30,7 @@ class OpenHexaAPITestCase(APITestCase):
         cls.openhexa_config = Config.objects.create(
             slug="openhexa-config",
             content={
-                "openhexa_url": "https://test.openhexa.org",
+                "openhexa_url": "https://test.openhexa.org/graphql/",
                 "openhexa_token": "test-token",
                 "workspace_slug": "test-workspace",
             },
@@ -186,7 +186,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_launch_task.return_value = RUNNING
 
             response = self.client.post(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
                 data={
                     "version": version_uuid,
                     "config": config,
@@ -198,8 +198,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             data = response.json()
             self.assertIn("task", data)
             self.assertEqual(data["task"]["status"], RUNNING)
-            self.assertEqual(data["task"]["pipeline_id"], self.pipeline_id)
-            self.assertEqual(data["task"]["version"], version_uuid)
+            # pipeline_id and version are no longer in the response, they're in task.params
 
             # Verify task was created
             task = m.Task.objects.get(pk=data["task"]["id"])
@@ -210,7 +209,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
     def test_post_launch_pipeline_invalid_data(self):
         """Test pipeline launch with invalid data."""
         response = self.client.post(
-            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
             data={
                 "version": "not-a-uuid",
                 "config": {"country_name": "Burkina Faso"},
@@ -225,7 +224,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         self.openhexa_config.delete()
 
         response = self.client.post(
-            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
             data={
                 "version": str(uuid.uuid4()),
                 "config": {"country_name": "Burkina Faso"},
@@ -246,7 +245,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_launch_task.side_effect = Exception("Launch failed")
 
             response = self.client.post(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
                 data={
                     "version": version_uuid,
                     "config": config,
@@ -309,8 +308,8 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("error", response.json())
-        self.assertIn("task_id is required", response.json()["error"])
+        # With serializer validation, we get a different error format
+        self.assertIn("task_id", response.json())
 
     def test_patch_update_task_not_found(self):
         """Test task update with non-existent task."""

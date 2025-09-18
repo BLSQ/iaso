@@ -35,7 +35,7 @@ Create a configuration object in Iaso with the following structure:
 **Configuration Content**:
 ```json
 {
-    "openhexa_url": "https://your-openhexa-instance.com",
+    "openhexa_url": "https://your-openhexa-instance.com/graphql/",
     "openhexa_token": "your-openhexa-api-token",
     "workspace_slug": "your-workspace-slug"
 }
@@ -363,7 +363,7 @@ Pipelines can update task status through the API:
 
 ### 3. Launch Pipeline API
 
-**Endpoint**: `POST /api/openhexa/pipelines/{pipeline_id}/`
+**Endpoint**: `POST /api/openhexa/pipelines/{pipeline_id}/launch/`
 
 **Request Body**:
 ```json
@@ -380,10 +380,16 @@ Pipelines can update task status through the API:
 **Response**:
 ```json
 {
-    "id": "task-uuid",
-    "name": "OpenHexa Pipeline: My Pipeline",
-    "status": "QUEUED",
-    "created_at": "2025-01-11T10:00:00Z"
+    "task": {
+        "id": 123,
+        "name": "pipeline-uuid-vversion-uuid",
+        "status": "RUNNING",
+        "progress_message": null,
+        "progress_value": null,
+        "end_value": null,
+        "result": null,
+        "updated_at": "2025-01-11T10:00:00Z"
+    }
 }
 ```
 
@@ -441,7 +447,7 @@ config, created = Config.objects.get_or_create(
     slug="openhexa-config",
     defaults={
         "content": {
-            "openhexa_url": "https://your-openhexa-instance.com",
+            "openhexa_url": "https://your-openhexa-instance.com/graphql/",
             "openhexa_token": "your-token",
             "workspace_slug": "your-workspace"
         }

@@ -169,6 +169,11 @@ export const Entities: FunctionComponent = () => {
                                 baseUrl={baseUrl}
                                 params={params}
                                 extraProps={{ loading: isFetching }}
+                                noDataMessage={
+                                    !isSearchActive
+                                        ? MESSAGES.searchToSeeEntities
+                                        : undefined
+                                }
                             />
                         </Box>
                     )}

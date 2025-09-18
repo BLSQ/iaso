@@ -234,6 +234,7 @@
     "iaso.entities.typeNotSupported": "Type non supporté: {type}",
     "iaso.entities.types": "Types",
     "iaso.entities.update": "Mettre l'entité à jour",
+    "iaso.entities.searchToSeeEntities": "Cliquez sur  \"Rechercher\" pour voir les entités",
     "iaso.entities.vaccinationNumber": "Numéro de vaccination",
     "iaso.entity.label.noSubmissionFound": "Aucune soumission trouvée",
     "iaso.entity.label.submissionsForEntity": "Soumissions Entité {entity}",

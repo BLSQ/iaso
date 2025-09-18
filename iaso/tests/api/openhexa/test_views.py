@@ -30,7 +30,7 @@ class OpenHexaAPITestCase(APITestCase):
         cls.openhexa_config = Config.objects.create(
             slug="openhexa-config",
             content={
-                "openhexa_url": "https://test.openhexa.org",
+                "openhexa_url": "https://test.openhexa.org/graphql/",
                 "openhexa_token": "test-token",
                 "workspace_slug": "test-workspace",
             },
@@ -145,7 +145,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_client_class.return_value = mock_client
             mock_client.execute.return_value = mock_pipeline_data
 
-            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
+            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             data = response.json()
@@ -158,7 +158,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         """Test pipeline detail when OpenHexa config is not found."""
         self.openhexa_config.delete()
 
-        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
+        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("error", response.json())
@@ -171,7 +171,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             mock_client_class.return_value = mock_client
             mock_client.execute.side_effect = Exception("GraphQL error")
 
-            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/launch/")
+            response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
             self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
             self.assertIn("error", response.json())
@@ -364,7 +364,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
 
         with patch.object(m.Task, "save", side_effect=Exception("Save failed")):
             response = self.client.patch(
-                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+                f"/api/openhexa/pipelines/{self.pipeline_id}/",
                 data={
                     "task_id": task.pk,
                     "status": SUCCESS,

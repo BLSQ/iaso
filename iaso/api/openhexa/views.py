@@ -54,7 +54,9 @@ def get_openhexa_config():
 
     except Exception as e:
         logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
-        raise Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+        from rest_framework.exceptions import ValidationError
+
+        raise ValidationError(_("OpenHexa configuration not found"))
 
 
 class OpenHexaPipelinesViewSet(ViewSet):
@@ -78,8 +80,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
         """
         try:
             openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Response as e:
-            return e
+        except Exception as e:
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             transport = RequestsHTTPTransport(
@@ -130,8 +136,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
         """
         try:
             openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Response as e:
-            return e
+        except Exception as e:
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             transport = RequestsHTTPTransport(
@@ -204,8 +214,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
         try:
             openhexa_url, openhexa_token, workspace_slug = get_openhexa_config()
-        except Response as e:
-            return e
+        except Exception as e:
+            from rest_framework.exceptions import ValidationError
+
+            if isinstance(e, ValidationError):
+                return Response({"error": str(e.detail)}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+            raise
 
         try:
             # Construct pipeline_config object for launch_task

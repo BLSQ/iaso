@@ -55,9 +55,6 @@ def get_openhexa_config():
     except Exception as e:
         logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
         # Return a simple error response instead of raising an exception
-        from rest_framework import status
-        from rest_framework.response import Response
-
         return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 

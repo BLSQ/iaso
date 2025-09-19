@@ -12,6 +12,7 @@ import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelines } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
@@ -104,11 +105,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation(apiErrors, payload);
-    const {
-        data: pipelines,
-        isFetching: isFetchingPipelineUuids,
-        error: errorPipelineUuids,
-    } = useGetPipelines(isOpen);
+    const { data: hasPipelineConfig } = useGetPipelineConfig();
+    console.log('hasPipelineConfig', hasPipelineConfig);
+    const { data: pipelines, isFetching: isFetchingPipelineUuids } =
+        useGetPipelines(Boolean(hasPipelineConfig));
     const pipelineUuidsOptions = useMemo(
         () =>
             pipelines?.map(pipeline => ({
@@ -353,7 +353,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     />
 
                     <Grid container spacing={2}>
-                        {!errorPipelineUuids && (
+                        {hasPipelineConfig && (
                             <Grid item xs={6}>
                                 <InputComponent
                                     type="select"

@@ -126,8 +126,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation(apiErrors, payload);
-    const { data: pipelines, isFetching: isFetchingPipelineUuids } =
-        useGetPipelines();
+    const {
+        data: pipelines,
+        isFetching: isFetchingPipelineUuids,
+        error: errorPipelineUuids,
+    } = useGetPipelines();
+    console.log('errorPipelineUuids', errorPipelineUuids);
     const pipelineUuidsOptions = useMemo(
         () =>
             pipelines?.map(pipeline => ({

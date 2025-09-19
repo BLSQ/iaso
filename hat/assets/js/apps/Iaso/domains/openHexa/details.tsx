@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Paper, Typography, Button } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PageError from 'Iaso/components/errors/PageError';
 import { baseUrls } from 'Iaso/constants/urls';
-import { DjangoError, SxStyles } from 'Iaso/types/general';
+import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineDetails } from './hooks/useGetPipelineDetails';
@@ -55,11 +55,11 @@ export const PipelineDetails: FunctionComponent = () => {
         baseUrls.pipelineDetails,
     ) as unknown as PipelineDetailsParams;
     const { formatMessage } = useSafeIntl();
-    const [error, setError] = useState<DjangoError | null>(null);
-    const { data: pipeline, isFetching } = useGetPipelineDetails(
-        pipelineId,
-        setError,
-    );
+    const {
+        data: pipeline,
+        isFetching,
+        error,
+    } = useGetPipelineDetails(pipelineId);
     // Use custom hook for parameter handling
     const { parameterValues, renderParameterInput } =
         usePipelineParameters(pipeline);

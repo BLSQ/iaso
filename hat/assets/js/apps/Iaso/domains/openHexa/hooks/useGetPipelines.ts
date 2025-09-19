@@ -5,8 +5,8 @@ import { DjangoError } from 'Iaso/types/general';
 import { Pipeline } from '../types/pipeline';
 
 export const useGetPipelines = (
-    setError?: (error: DjangoError | null) => void,
-): UseQueryResult<Pipeline[], Error> => {
+    enabled = true,
+): UseQueryResult<Pipeline[], DjangoError> => {
     return useSnackQuery({
         queryKey: ['pipelines'],
         queryFn: () => getRequest('/api/openhexa/pipelines/'),
@@ -17,11 +17,7 @@ export const useGetPipelines = (
             cacheTime: 60000,
             staleTime: 60000,
             retry: false,
-            onError: error => {
-                if (setError) {
-                    setError(error);
-                }
-            },
+            enabled,
         },
     });
 };

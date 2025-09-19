@@ -150,7 +150,10 @@ class ExternalTaskModelViewSet(ModelViewSet):
         config = data.get("config", None)
         slug = data.get("slug", None)
         id_field = data.get("id_field", None)
-        status = self.launch_task(slug=slug, config=config, id_field=id_field, task_id=task.pk)
+        pipeline_config = data.get("pipeline_config", None)
+        status = self.launch_task(
+            slug=slug, config=config, id_field=id_field, task_id=task.pk, pipeline_config=pipeline_config
+        )
         task.status = status
         task.save()
         return Response({"task": TaskSerializer(instance=task).data})
@@ -161,10 +164,13 @@ class ExternalTaskModelViewSet(ModelViewSet):
     # task_id will be passed by the task decorator
     # id_field is a field to filter from to find the relevant active run, eg: a country id for lqas refresh
     @staticmethod
-    def launch_task(slug, config={}, task_id=None, id_field=None):
+    def launch_task(slug, config={}, task_id=None, id_field=None, pipeline_config=None):
         try:
-            # The config Model should be moved to Iaso as well
-            pipeline_config = get_object_or_404(Config, slug=slug)
+            # Use provided pipeline_config if available, otherwise fetch from database
+            if pipeline_config is None:
+                # The config Model should be moved to Iaso as well
+                pipeline_config = get_object_or_404(Config, slug=slug)
+
             pipeline_version = pipeline_config.content["pipeline_version"]
             pipeline = pipeline_config.content["pipeline"]
             pipeline_target = pipeline_config.content["oh_pipeline_target"]
@@ -229,9 +235,11 @@ class ExternalTaskModelViewSet(ModelViewSet):
         oh_config = {**config}
         # Target is a pipeline param on the lqas pipeline. We get it from the config i.o from the front-end to reduce risk of tarhgeting prod
         # We need a way to enforce that OpenHexa pipelines have a "target" argument and that iaso config have one as well (Serializer?)
-        oh_config["target"] = pipeline_target if pipeline_target else "staging"
+        # Only add target if pipeline_target is not None (some pipelines don't need it)
+        if pipeline_target is not None:
+            oh_config["target"] = pipeline_target
 
-        if task_id:
+        if task_id is not None and task_id != 0:
             # task_id will be added by the task decorator
             oh_config["task_id"] = task_id
         # We can specify a version in case the latest version gets bugged

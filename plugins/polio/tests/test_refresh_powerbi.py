@@ -84,13 +84,13 @@ class RefreshPowerBITestCase(APITestCase):
         cls.openhexa_config = Config.objects.create(slug="powerbi_dataset_configs", content=cls.dataset_json)
         cls.powerbi_config = Config.objects.create(slug="powerbi_sp", content=cls.powerbi_config_json)
 
-    def mock_openhexa_call_success(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_success(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SUCCESS
 
-    def mock_openhexa_call_skipped(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_skipped(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SKIPPED
 
-    def mock_openhexa_call_running(slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_running(slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return RUNNING
 
     def mock_get_powerbi_service_principal_token(self, tenant_id=None, client_id=None, secret_value=None):

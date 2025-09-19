@@ -254,18 +254,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
             # Use serializer for response
-            task_data = {
-                "id": task.pk,
-                "name": task.name,
-                "status": task.status,
-                "progress_message": task.progress_message,
-                "progress_value": task.progress_value,
-                "end_value": task.end_value,
-                "result": task.result,
-                "updated_at": task.created_at,  # Use created_at for launch response
-            }
-
-            serializer = TaskResponseSerializer(task_data)
+            serializer = TaskResponseSerializer(task)
             return Response({"task": serializer.data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from iaso.models import Task
+
 
 class PipelineLaunchSerializer(serializers.Serializer):
     """Serializer for launching a pipeline task."""
@@ -8,20 +10,28 @@ class PipelineLaunchSerializer(serializers.Serializer):
     config = serializers.JSONField(required=True)
 
 
-class TaskUpdateSerializer(serializers.Serializer):
+class TaskUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating task status from pipeline."""
 
-    task_id = serializers.IntegerField(required=True)
-    status = serializers.CharField(required=False, allow_blank=True)
-    progress_message = serializers.CharField(required=False, allow_blank=True)
-    progress_value = serializers.IntegerField(required=False, allow_null=True)
-    end_value = serializers.IntegerField(required=False, allow_null=True)
-    result_data = serializers.JSONField(required=False, allow_null=True)
+    task_id = serializers.IntegerField(source="id", required=True)
+    result_data = serializers.JSONField(source="result", required=False, allow_null=True)
 
-    def validate_status(self, value):
-        """Validate status values."""
-        if value and value not in ["RUNNING", "SUCCESS", "ERRORED", "KILLED"]:
-            raise serializers.ValidationError("Status must be one of: RUNNING, SUCCESS, ERRORED, KILLED")
+    class Meta:
+        model = Task
+        fields = ["task_id", "status", "progress_message", "progress_value", "end_value", "result_data"]
+        extra_kwargs = {
+            "status": {"required": False, "allow_blank": True},
+            "progress_message": {"required": False, "allow_blank": True},
+            "progress_value": {"required": False, "allow_null": True},
+            "end_value": {"required": False, "allow_null": True},
+        }
+
+    def validate_task_id(self, value):
+        """Validate that the task exists."""
+        try:
+            Task.objects.get(pk=value)
+        except Task.DoesNotExist:
+            raise serializers.ValidationError("Task with this ID does not exist.")
         return value
 
 

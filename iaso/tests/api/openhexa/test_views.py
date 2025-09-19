@@ -17,9 +17,9 @@ class OpenHexaAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         """Set up test data."""
-        cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.account = m.Account.objects.create(name="Test Account", default_version=cls.source_version)
+        cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
+            "Default source", "Test Account", "Test Project"
+        )
 
         # Create user with permissions
         cls.user = cls.create_user_with_profile(
@@ -106,6 +106,35 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
         response = self.client.get("/api/openhexa/pipelines/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_pipelines_anonymous_user(self):
+        """Test pipeline list with anonymous user."""
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get("/api/openhexa/pipelines/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_pipelines_invalid_url_format(self):
+        """Test pipeline list when OpenHexa URL format is invalid."""
+        # Update the config with an invalid URL
+        self.openhexa_config.content = {
+            "openhexa_url": "not-a-valid-url",
+            "openhexa_token": "test-token",
+            "workspace_slug": "test-workspace",
+        }
+        self.openhexa_config.save()
+
+        with patch("iaso.api.openhexa.views.Client") as mock_client_class:
+            mock_client = Mock()
+            mock_client_class.return_value = mock_client
+            mock_client.execute.side_effect = Exception("Invalid URL format")
+
+            response = self.client.get("/api/openhexa/pipelines/")
+
+            self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+            self.assertIn("error", response.json())
+            self.assertIn("OpenHexa configuration not found", response.json()["error"])
 
 
 class PipelineDetailViewTestCase(OpenHexaAPITestCase):
@@ -322,7 +351,8 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("task_id", response.json())
 
     def test_patch_update_task_not_external(self):
         """Test task update with non-external task."""
@@ -375,3 +405,41 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
             self.assertIn("error", response.json())
             self.assertIn("Failed to update task", response.json()["error"])
+
+    def test_get_pipeline_detail_anonymous_user(self):
+        """Test pipeline detail retrieval with anonymous user."""
+        self.client.force_authenticate(user=None)
+
+        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_post_launch_pipeline_anonymous_user(self):
+        """Test pipeline launch with anonymous user."""
+        self.client.force_authenticate(user=None)
+
+        response = self.client.post(
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+            data={
+                "version": str(uuid.uuid4()),
+                "config": {"country_name": "Burkina Faso"},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_update_task_anonymous_user(self):
+        """Test task update with anonymous user."""
+        self.client.force_authenticate(user=None)
+
+        response = self.client.patch(
+            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            data={
+                "task_id": 123,
+                "status": SUCCESS,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

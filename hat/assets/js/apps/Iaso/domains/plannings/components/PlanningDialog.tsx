@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useMemo } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { Box, Grid } from '@mui/material';
 import {
@@ -13,7 +13,7 @@ import { isEqual } from 'lodash';
 
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
-import { useGetPipelines } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
+import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 
 import DatesRange from '../../../components/filters/DatesRange';
@@ -97,7 +97,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SavePlanningQuery>, any>({
         mutationFn: savePlanning,
         onSuccess: () => {
-            closeDialog();
             formik.resetForm();
         },
 
@@ -106,17 +105,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
 
     const schema = usePlanningValidation(apiErrors, payload);
     const { data: hasPipelineConfig } = useGetPipelineConfig();
-    console.log('hasPipelineConfig', hasPipelineConfig);
-    const { data: pipelines, isFetching: isFetchingPipelineUuids } =
-        useGetPipelines(Boolean(hasPipelineConfig));
-    const pipelineUuidsOptions = useMemo(
-        () =>
-            pipelines?.map(pipeline => ({
-                label: pipeline.name,
-                value: pipeline.id,
-            })),
-        [pipelines],
-    );
+    const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
+        useGetPipelinesDropdown(Boolean(hasPipelineConfig));
     const formik = useFormik({
         initialValues: {
             id,
@@ -221,13 +211,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
                 onConfirm={() => {
-                    // setCloseModal({ closeDialog });
                     handleSubmit();
                 }}
                 open={isOpen}
                 onCancel={() => {
-                    closeDialog();
                     resetForm();
+                    closeDialog();
                 }}
                 closeDialog={closeDialog}
                 maxWidth="md"

@@ -114,6 +114,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search an org unit',
         id: 'iaso.assignment.searchOrgUnit',
     },
+    openHexaIntegration: {
+        defaultMessage: 'Auto assign',
+        id: 'iaso.assignment.openHexaIntegration',
+    },
+    pipeline: {
+        defaultMessage: 'Pipeline',
+        id: 'iaso.openHexa.label.pipeline',
+    },
+    noParameters: {
+        defaultMessage: 'No parameters',
+        id: 'iaso.label.noParameters',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
 });
 
 export default MESSAGES;

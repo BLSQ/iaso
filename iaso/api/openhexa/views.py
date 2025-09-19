@@ -304,9 +304,9 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if "end_value" in validated_data:
                 task.end_value = validated_data["end_value"]
 
-            if "result_data" in validated_data:
+            if "result" in validated_data:
                 # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": validated_data["result_data"]}
+                task.result = {"result": task.status, "data": validated_data["result"]}
 
             task.save()
 

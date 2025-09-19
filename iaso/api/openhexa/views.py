@@ -55,9 +55,6 @@ def get_openhexa_config():
     except Exception as e:
         logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
         # Return a simple error response instead of raising an exception
-        from rest_framework import status
-        from rest_framework.response import Response
-
         return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
@@ -258,18 +255,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
             logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
             # Use serializer for response
-            task_data = {
-                "id": task.pk,
-                "name": task.name,
-                "status": task.status,
-                "progress_message": task.progress_message,
-                "progress_value": task.progress_value,
-                "end_value": task.end_value,
-                "result": task.result,
-                "updated_at": task.created_at,  # Use created_at for launch response
-            }
-
-            serializer = TaskResponseSerializer(task_data)
+            serializer = TaskResponseSerializer(task)
             return Response({"task": serializer.data}, status=status.HTTP_201_CREATED)
 
         except Exception as e:
@@ -292,7 +278,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         serializer.is_valid(raise_exception=True)
 
         validated_data = serializer.validated_data
-        task_id = validated_data["task_id"]
+        task_id = validated_data["id"]
 
         try:
             # Get the task
@@ -326,19 +312,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 
-            # Use serializer for response
-            task_data = {
-                "id": task.pk,
-                "name": task.name,
-                "status": task.status,
-                "progress_message": task.progress_message,
-                "progress_value": task.progress_value,
-                "end_value": task.end_value,
-                "result": task.result,
-                "updated_at": task.ended_at if task.ended_at else None,
-            }
-
-            serializer = TaskResponseSerializer(task_data)
+            serializer = TaskResponseSerializer(task)
             return Response({"task": serializer.data}, status=status.HTTP_200_OK)
 
         except Http404:

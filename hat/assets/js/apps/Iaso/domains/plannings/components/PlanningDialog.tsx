@@ -353,7 +353,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                     />
 
                     <Grid container spacing={2}>
-                        {!errorPipelineUuids && !isFetchingPipelineUuids && (
+                        {!errorPipelineUuids && (
                             <Grid item xs={6}>
                                 <InputComponent
                                     type="select"
@@ -365,6 +365,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                             value ? value.split(',') : [],
                                         );
                                     }}
+                                    loading={isFetchingPipelineUuids}
                                     options={pipelineUuidsOptions}
                                     value={values.pipelineUuids}
                                     errors={getErrors('pipelineUuids')}

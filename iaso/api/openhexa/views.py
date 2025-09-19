@@ -71,6 +71,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
     GET /api/openhexa/pipelines/{id}/               - Get pipeline details
     POST /api/openhexa/pipelines/{id}/launch/       - Launch pipeline
     PATCH /api/openhexa/pipelines/{id}/             - Update task status
+    GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
 
     def list(self, request):
@@ -345,3 +346,30 @@ class OpenHexaPipelinesViewSet(ViewSet):
         except Exception as e:
             logger.exception(f"Could not update task {task_id}")
             return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=["get"])
+    def config(self, request):
+        """
+        Check if OpenHexa configuration exists.
+
+        Returns:
+            Response: {"configured": true/false}
+        """
+        try:
+            # Try to get the config
+            openhexa_config = Config.objects.get(slug=OPENHEXA_CONFIG_SLUG)
+
+            # Check if required fields exist and are not empty
+            content = openhexa_config.content
+            required_fields = ["openhexa_url", "openhexa_token", "workspace_slug"]
+
+            configured = all(field in content and content[field] for field in required_fields)
+
+            return Response({"configured": configured})
+
+        except Config.DoesNotExist:
+            # Config doesn't exist
+            return Response({"configured": False})
+        except Exception as e:
+            logger.exception(f"Error checking OpenHexa config: {str(e)}")
+            return Response({"configured": False})

@@ -375,3 +375,105 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
             self.assertIn("error", response.json())
             self.assertIn("Failed to update task", response.json()["error"])
+
+
+class ConfigCheckViewTestCase(OpenHexaAPITestCase):
+    """Test ConfigCheckView."""
+
+    def test_get_config_configured(self):
+        """Test config check when OpenHexa is properly configured."""
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])
+
+    def test_get_config_not_configured_missing_config(self):
+        """Test config check when OpenHexa config doesn't exist."""
+        # Delete the config
+        self.openhexa_config.delete()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])
+
+    def test_get_config_not_configured_missing_fields(self):
+        """Test config check when OpenHexa config exists but is incomplete."""
+        # Update config to be incomplete
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            # Missing openhexa_token and workspace_slug
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])
+
+    def test_get_config_not_configured_empty_fields(self):
+        """Test config check when OpenHexa config has empty required fields."""
+        # Update config with empty fields
+        self.openhexa_config.content = {
+            "openhexa_url": "",
+            "openhexa_token": "",
+            "workspace_slug": "",
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])
+
+    def test_get_config_not_configured_partial_fields(self):
+        """Test config check when OpenHexa config has some fields missing."""
+        # Update config with only some fields
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            "openhexa_token": "test-token",
+            # Missing workspace_slug
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])
+
+    def test_get_config_unauthorized(self):
+        """Test config check without authentication."""
+        self.client.logout()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_config_with_extra_fields(self):
+        """Test config check when OpenHexa config has extra fields (should still work)."""
+        # Update config with extra fields
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            "openhexa_token": "test-token",
+            "workspace_slug": "test-workspace",
+            "extra_field": "extra_value",  # Extra field
+            "another_field": "another_value",  # Another extra field
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])

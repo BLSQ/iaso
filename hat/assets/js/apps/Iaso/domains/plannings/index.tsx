@@ -9,8 +9,8 @@ import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { PLANNING_WRITE } from '../../utils/permissions';
+import { CreatePlanning } from './components/PlanningDialog';
 import { usePlanningColumns } from './config';
-import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
@@ -42,7 +42,7 @@ export const Planning: FunctionComponent = () => {
                 <PlanningFilters params={apiParams} />
                 <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
                     <Grid container item justifyContent="flex-end">
-                        <CreateEditPlanning type="create" />
+                        <CreatePlanning type="create" iconProps={{}} />
                     </Grid>
                 </DisplayIfUserHasPerm>
 

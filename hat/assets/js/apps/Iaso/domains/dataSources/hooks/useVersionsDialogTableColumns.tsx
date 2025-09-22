@@ -79,7 +79,7 @@ export const useVersionsDialogTableColumns = (
                     );
 
                     const gpkgUrl = `/api/orgunits/?searches=${encodedSearches}&gpkg=true`;
-                    console.log(gpkgUrl);
+
                     return (
                         <>
                             <EditSourceVersion

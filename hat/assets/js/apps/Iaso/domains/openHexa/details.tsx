@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Paper, Typography, Button } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PageError from 'Iaso/components/errors/PageError';
@@ -8,7 +8,10 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetPipelineDetails } from './hooks/useGetPipelineDetails';
 import { useLaunchTask } from './hooks/useLaunchTask';
-import { usePipelineParameters } from './hooks/usePipelineParameters';
+import {
+    ParameterValues,
+    usePipelineParameters,
+} from './hooks/usePipelineParameters';
 import { MESSAGES } from './messages';
 
 type PipelineDetailsParams = {
@@ -54,6 +57,10 @@ export const PipelineDetails: FunctionComponent = () => {
     const { pipelineId } = useParamsObject(
         baseUrls.pipelineDetails,
     ) as unknown as PipelineDetailsParams;
+
+    const [parameterValues, setParameterValues] = useState<
+        ParameterValues | undefined
+    >(undefined);
     const { formatMessage } = useSafeIntl();
     const {
         data: pipeline,
@@ -61,8 +68,11 @@ export const PipelineDetails: FunctionComponent = () => {
         error,
     } = useGetPipelineDetails(pipelineId);
     // Use custom hook for parameter handling
-    const { parameterValues, renderParameterInput } =
-        usePipelineParameters(pipeline);
+    const { renderParameterInput } = usePipelineParameters(
+        pipeline,
+        parameterValues,
+        setParameterValues,
+    );
     const { mutate: launchTask } = useLaunchTask(
         pipelineId,
         pipeline?.currentVersion?.id,

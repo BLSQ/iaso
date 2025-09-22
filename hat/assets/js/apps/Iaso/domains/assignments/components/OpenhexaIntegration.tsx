@@ -15,10 +15,14 @@ import {
 } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
+import { LQASForm } from 'Iaso/domains/openHexa/customForms/LQASForm';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
-import { usePipelineParameters } from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
+import {
+    ParameterValues,
+    usePipelineParameters,
+} from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
 import { styles } from 'Iaso/styles/mapCustomControl';
 import { usePollTask } from '../hooks/requests/usePollTask';
 import MESSAGES from '../messages';
@@ -53,12 +57,17 @@ const IconButtonComponent: FunctionComponent<ButtonProps> = ({
     );
 };
 
+const CUSTOM_FORM_CODES = 'iaso-test-pipeline';
 export const OpenhexaIntegration: FunctionComponent<Props> = ({
     planning,
     isOpen,
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const [parameterValues, setParameterValues] = useState<
+        ParameterValues | undefined
+    >(undefined);
     const [isPipelineRunning, setIsPipelineRunning] = useState(false);
     const { data, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown();
@@ -85,8 +94,8 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
         error,
         isSuccess,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
-    const { parameterValues, renderParameterInput } =
-        usePipelineParameters(pipeline);
+    const { renderParameterInput, handleParameterChange } =
+        usePipelineParameters(pipeline, parameterValues, setParameterValues);
 
     const handleSubmit = useCallback(() => {
         setIsPipelineRunning(true);
@@ -169,16 +178,28 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                         {formatMessage(MESSAGES.noParameters)}
                                     </Typography>
                                 )}
-                                {pipeline.currentVersion?.parameters?.map(
-                                    parameter => (
-                                        <Box
-                                            key={parameter.name}
-                                            sx={{ marginBottom: 2 }}
-                                        >
-                                            {renderParameterInput(parameter)}
-                                        </Box>
-                                    ),
+                                {pipeline.code === CUSTOM_FORM_CODES && (
+                                    <LQASForm
+                                        parameterValues={parameterValues}
+                                        handleParameterChange={
+                                            handleParameterChange
+                                        }
+                                        planning={planning}
+                                    />
                                 )}
+                                {pipeline.code !== CUSTOM_FORM_CODES &&
+                                    pipeline.currentVersion?.parameters?.map(
+                                        parameter => (
+                                            <Box
+                                                key={parameter.name}
+                                                sx={{ marginBottom: 2 }}
+                                            >
+                                                {renderParameterInput(
+                                                    parameter,
+                                                )}
+                                            </Box>
+                                        ),
+                                    )}
                             </>
                         )}
                     </>
@@ -273,16 +294,6 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                 >
                                     Status: {task.status}
                                 </Typography>
-                                {/* {task.progress_message && (
-                                    <Typography variant="body2" sx={{ mt: 1 }}>
-                                        {task.progress_message}
-                                    </Typography>
-                                )}
-                                {task.progress_value && (
-                                    <Typography variant="body2" sx={{ mt: 1 }}>
-                                        Progress: {task.progress_value}%
-                                    </Typography>
-                                )} */}
                             </Box>
                         )}
                     </Box>

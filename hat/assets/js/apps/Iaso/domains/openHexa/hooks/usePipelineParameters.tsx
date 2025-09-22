@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -15,10 +15,15 @@ type Parameter = {
     multiple?: boolean;
 };
 
-type ParameterValues = Record<string, any>;
+export type ParameterValues = Record<string, any>;
 
-export const usePipelineParameters = (pipeline?: any) => {
-    const [parameterValues, setParameterValues] = useState<ParameterValues>({});
+export const usePipelineParameters = (
+    pipeline?: any,
+    parameterValues?: ParameterValues,
+    setParameterValues?: React.Dispatch<
+        React.SetStateAction<ParameterValues | undefined>
+    >,
+) => {
     const { formatMessage } = useSafeIntl();
 
     // Initialize parameter values when pipeline data is loaded
@@ -59,19 +64,19 @@ export const usePipelineParameters = (pipeline?: any) => {
                     }
                 },
             );
-            setParameterValues(initialValues);
+            setParameterValues?.(initialValues);
         }
-    }, [pipeline]);
+    }, [pipeline, setParameterValues]);
 
     // Handle parameter value changes
     const handleParameterChange = useCallback(
         (parameterName: string, value: any) => {
-            setParameterValues(prev => ({
+            setParameterValues?.(prev => ({
                 ...prev,
                 [parameterName]: value,
             }));
         },
-        [],
+        [setParameterValues],
     );
 
     // Handle JSON parsing for dict parameters
@@ -114,7 +119,7 @@ export const usePipelineParameters = (pipeline?: any) => {
     // Render parameter input based on type
     const renderParameterInput = useCallback(
         (parameter: Parameter) => {
-            const currentValue = parameterValues[parameter.code];
+            const currentValue = parameterValues?.[parameter.code];
 
             // Handle multiple parameters (arrays)
             if (parameter.multiple) {

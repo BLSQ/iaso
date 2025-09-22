@@ -274,5 +274,5 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
 class OrgUnitTypesDropdownSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitType
-        fields = ["id", "name", "depth"]
-        read_only_fields = ["id", "name", "depth"]
+        fields = ["id", "name", "depth", "sub_unit_types"]
+        read_only_fields = ["id", "name", "depth", "sub_unit_types"]

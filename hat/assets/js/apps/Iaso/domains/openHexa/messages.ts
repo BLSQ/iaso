@@ -37,4 +37,20 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'No parameters',
         id: 'iaso.label.noParameters',
     },
+    level: {
+        defaultMessage: 'Level',
+        id: 'iaso.forms.level',
+    },
+    addLevel: {
+        defaultMessage: 'Add level',
+        id: 'iaso.openHexalabel.addLevel',
+    },
+    quantity: {
+        defaultMessage: 'Qty',
+        id: 'iaso.label.quantityShort',
+    },
+    removeLevel: {
+        defaultMessage: 'Remove level',
+        id: 'iaso.openHexalabel.removeLevel',
+    },
 });

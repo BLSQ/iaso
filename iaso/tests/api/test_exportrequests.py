@@ -173,17 +173,3 @@ class ExportRequestsAPITestCase(APITestCase):
                 + " {'demo': 'noversion'}",
             },
         )
-
-    def assertPartial(self, expected, actual, path=""):
-        if isinstance(expected, dict):
-            self.assertTrue(isinstance(actual, dict), f"{path} should be a dict")
-            for k, v in expected.items():
-                self.assertTrue(k in actual, f"Missing key at {path}{k}")
-                self.assertPartial(v, actual[k], f"{path}{k}.")
-        elif isinstance(expected, list):
-            self.assertTrue(isinstance(actual, list), f"{path} should be a list")
-            self.assertTrue(len(expected) <= len(actual), f"{path} list too short")
-            for i, v in enumerate(expected):
-                self.assertPartial(v, actual[i], f"{path}[{i}].")
-        else:
-            self.assertEqual(expected, actual, f"{path} expected {expected}, got {actual}")

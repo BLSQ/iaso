@@ -3,11 +3,9 @@ import json
 import logging
 
 from timeit import default_timer as timer
-from typing import Optional
 
 from dhis2 import Api, RequestException
 from django.core.paginator import Paginator
-from django.db import transaction
 from django.utils import timezone
 
 import iaso.models as models
@@ -243,7 +241,7 @@ class AggregateHandler(BaseHandler):
             for export_status in export_statuses:
                 self.export_log_on(ERRORED, export_status, [export_log])
 
-            raise exception
+            raise exception or dhis2_exception
 
 
 class EventHandler(BaseHandler):
@@ -794,10 +792,8 @@ class DataValueExporter:
         export_request.last_error_message = message
         export_request.save()
 
-        if task:
-            with transaction.atomic(savepoint=False):
-                task.refresh_from_db()
-                task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
+        task.refresh_from_db()
+        task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
     def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
         stats["exported_count"] += len(export_statuses)
@@ -814,19 +810,23 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, page_size=25, continue_on_error=True, task: Optional[Task] = None):
+    def export_instances(self, export_request, task: Task, page_size=25, continue_on_error=True):
         try:
-            self._export_instances(export_request, page_size, continue_on_error, task)
+            self._export_instances(export_request, task, page_size=page_size, continue_on_error=continue_on_error)
         except BaseException as exception:
-            if task:
-                with transaction.atomic(savepoint=False):
-                    message = repr(exception) + " : " + type(exception).__name__
-                    logger.error(message, exception)
-                    task.refresh_from_db()
-                    task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
-                    task.terminate_with_error(message=message + "\n" + task.progress_message)
+            message = repr(exception) + " : " + type(exception).__name__
+            logger.error(message, exception)
+            task.refresh_from_db()
+            task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
+            task.terminate_with_error(message=message + "\n" + task.progress_message, exception=exception)
 
-    def _export_instances(self, export_request, page_size=25, continue_on_error=True, task: Optional[Task] = None):
+    def _export_instances(
+        self,
+        export_request,
+        task: Task,
+        page_size=25,
+        continue_on_error=True,
+    ):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.continue_on_error = continue_on_error
@@ -846,11 +846,9 @@ class DataValueExporter:
         if paginator.count == 0:
             logger.warning(f"Not linked error status for {export_request}")
 
-        if task:
-            with transaction.atomic(savepoint=False):
-                task.report_progress_and_stop_if_killed(
-                    progress_message=f"Instances to export : {paginator.count}, via export request #{export_request.id}"
-                )
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"Instances to export : {paginator.count}, via export request #{export_request.id}"
+        )
 
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
@@ -892,10 +890,8 @@ class DataValueExporter:
                 )
                 logger.debug(message)
 
-                if task:
-                    with transaction.atomic(savepoint=False):
-                        task.refresh_from_db()
-                        task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
+                task.refresh_from_db()
+                task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
 
             except InstanceExportError as exception:
                 self.flag_as_errored(export_request, export_statuses, exception.message, stats, task=task)
@@ -920,10 +916,8 @@ class DataValueExporter:
         export_request.ended_at = timezone.now()
         export_request.save()
 
-        if task:
-            with transaction.atomic(savepoint=False):
-                if stats["errored_count"] == 0:
-                    task.report_success_with_result(message + "\n" + task.progress_message)
-                else:
-                    task.terminate_with_error(message + "\n" + task.progress_message)
+        if stats["errored_count"] == 0:
+            task.report_success_with_result(message + "\n" + task.progress_message)
+        else:
+            task.terminate_with_error(message + "\n" + task.progress_message)
         return message

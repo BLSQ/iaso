@@ -36,6 +36,7 @@ from iaso.models import (
     Profile,
     Project,
     SourceVersion,
+    Task,
     User,
 )
 from iaso.odk import parsing
@@ -327,6 +328,8 @@ class DataValueExporterTests(TestCase):
         self.mapping = mapping
         self.maxDiff = None
 
+        self.task = Task.objects.create(name="dhis2_submission_exporter_task", account=account)
+
     def test_event_mapping_works(self):
         instance = self.build_instance(
             self.form,
@@ -604,7 +607,7 @@ class DataValueExporterTests(TestCase):
             responses.PUT, "https://dhis2.com/api/trackedEntityInstances/WfMWd9YYL4d", callback=request_callback
         )
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(EXPORTED)
 
@@ -724,7 +727,7 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/relationships", callback=request_relation_ship_callback
         )
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(EXPORTED)
 
@@ -925,7 +928,7 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/trackedEntityInstances", callback=request_callback
         )
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(ERRORED)
 

@@ -27,6 +27,7 @@ from iaso.models import (
     Profile,
     Project,
     SourceVersion,
+    Task,
     User,
 )
 
@@ -36,7 +37,7 @@ import os
 
 from datetime import datetime
 
-from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter, InstanceExportError
+from iaso.dhis2.datavalue_exporter import AggregateHandler, DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 
 
@@ -154,6 +155,8 @@ class DataValueExporterTests(TestCase):
         mapping = Mapping(form=form, data_source=datasource, mapping_type=AGGREGATE)
         mapping.save()
         self.mapping = mapping
+
+        self.task = Task.objects.create(name="dhis2_submission_exporter_task", account=account)
 
     def setUpFormQuality(self):
         form_quality, created = Form.objects.get_or_create(
@@ -344,7 +347,7 @@ class DataValueExporterTests(TestCase):
 
         responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
         self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
@@ -394,7 +397,7 @@ class DataValueExporterTests(TestCase):
 
         # excercice
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(EXPORTED)
 
@@ -408,34 +411,34 @@ class DataValueExporterTests(TestCase):
     def test_aggregate_export_handle_dhis2_errors(self):
         instance = self.build_instance(self.form)
 
-        with self.assertRaises(InstanceExportError) as context:
-            mapping_version = MappingVersion(
-                name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
-            )
-            mapping_version.save()
+        mapping_version = MappingVersion(
+            name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
 
-            responses.add(
-                responses.POST,
-                "https://dhis2.com/api/dataValueSets",
-                json=load_dhis2_fixture("datavalues-error-assigned.json")["response"],
-                status=200,
-            )
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            json=load_dhis2_fixture("datavalues-error-assigned.json")["response"],
+            status=200,
+        )
 
-            export_request = ExportRequestBuilder().build_export_request(
-                filters={
-                    "period_ids": ",".join(["201801"]),
-                    "form_id": self.form.id,
-                    "org_unit_id": instance.org_unit.id,
-                },
-                launcher=self.user,
-            )
-            DataValueExporter().export_instances(export_request)
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": ",".join(["201801"]),
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(ERRORED)
 
+        export_request.refresh_from_db()
         self.assertEqual(
             "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
-            context.exception.message,
+            export_request.last_error_message,
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
@@ -444,36 +447,35 @@ class DataValueExporterTests(TestCase):
     def test_aggregate_export_handle_dhis2_errors_238_and_higher(self):
         instance = self.build_instance(self.form)
 
-        with self.assertRaises(InstanceExportError) as context:
-            mapping_version = MappingVersion(
-                name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
-            )
-            mapping_version.save()
+        mapping_version = MappingVersion(
+            name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
 
-            # dhis2 2.38 now return a bad request (vs 200 previously)
-            # the payload is wrapped in "response" field
-            responses.add(
-                responses.POST,
-                "https://dhis2.com/api/dataValueSets",
-                json=load_dhis2_fixture("datavalues-error-bad-type.json"),
-                status=409,
-            )
+        # dhis2 2.38 now return a bad request (vs 200 previously)
+        # the payload is wrapped in "response" field
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            json=load_dhis2_fixture("datavalues-error-bad-type.json"),
+            status=409,
+        )
 
-            export_request = ExportRequestBuilder().build_export_request(
-                filters={
-                    "period_ids": ",".join(["201801"]),
-                    "form_id": self.form.id,
-                    "org_unit_id": instance.org_unit.id,
-                },
-                launcher=self.user,
-            )
-            DataValueExporter().export_instances(export_request)
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": ",".join(["201801"]),
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(ERRORED)
-
+        export_request.refresh_from_db()
         self.assertEqual(
             "ERROR while processing page 1/1 : Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
-            context.exception.message,
+            export_request.last_error_message,
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
@@ -526,7 +528,7 @@ class DataValueExporterTests(TestCase):
             status=200,
         )
 
-        DataValueExporter().export_instances(export_request, continue_on_error=True, page_size=1)
+        DataValueExporter().export_instances(export_request, task=self.task, continue_on_error=True, page_size=1)
 
         self.assertTrue(responses.assert_call_count("https://dhis2.com/api/dataValueSets", 2))
 
@@ -551,17 +553,17 @@ class DataValueExporterTests(TestCase):
 
         # exercice
 
-        with self.assertRaises(InstanceExportError) as context:
-            export_request = ExportRequestBuilder().build_export_request(
-                filters={
-                    "period_ids": ",".join(["201801"]),
-                    "form_id": self.form.id,
-                    "org_unit_id": instance.org_unit.id,
-                },
-                launcher=self.user,
-            )
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": ",".join(["201801"]),
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
 
-            DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
+        export_request.refresh_from_db()
 
         self.expect_logs(ERRORED)
 
@@ -569,40 +571,39 @@ class DataValueExporterTests(TestCase):
             "ERROR while processing page 1/1, instance_id "
             + str(instance.id)
             + " : question1 (\"Bad value for int 'badvalue'\", {'id': 'DE_DHIS2_ID', 'valueType': 'INTEGER', 'question_key': 'question1'})",
-            context.exception.message,
+            export_request.last_error_message,
         )
 
     @responses.activate
     def test_aggregate_export_handle_dhis2_nginx_errors(self):
         instance = self.build_instance(self.form)
 
-        with self.assertRaises(InstanceExportError) as context:
-            mapping_version = MappingVersion(
-                name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
-            )
-            mapping_version.save()
+        mapping_version = MappingVersion(
+            name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
 
-            responses.add(
-                responses.POST,
-                "https://dhis2.com/api/dataValueSets",
-                body="<html><body>nginx timeout</body></html>",
-                status=509,
-            )
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            body="<html><body>nginx timeout</body></html>",
+            status=509,
+        )
 
-            export_request = ExportRequestBuilder().build_export_request(
-                filters={
-                    "period_ids": ",".join(["201801"]),
-                    "form_id": self.form.id,
-                    "org_unit_id": instance.org_unit.id,
-                },
-                launcher=self.user,
-            )
-            DataValueExporter().export_instances(export_request)
-
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": ",".join(["201801"]),
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
+        DataValueExporter().export_instances(export_request, self.task)
+        export_request.refresh_from_db()
         self.expect_logs(ERRORED)
 
         self.assertEqual(
-            "ERROR while processing page 1/1 : non json response return by server", context.exception.message
+            "ERROR while processing page 1/1 : non json response return by server", export_request.last_error_message
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)

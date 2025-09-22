@@ -402,3 +402,45 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertIn(change_request_1.pk, result_ids)
         self.assertIn(change_request_2.pk, result_ids)
         self.assertIn(change_request_3.pk, result_ids)
+
+    def test_filter_by_requested_fields(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        # Create change requests with different requested fields.
+        change_request_1 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Test 1", requested_fields=["name"]
+        )
+        change_request_2 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_parent=self.org_unit, requested_fields=["parent"]
+        )
+        change_request_3 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Test 3", new_parent=self.org_unit, requested_fields=["name", "parent"]
+        )
+
+        # Filter by single field.
+        response = self.client.get("/api/orgunits/changes/?requested_fields=name")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+        self.assertNotIn(change_request_2.pk, result_ids)
+
+        # Filter by multiple fields.
+        response = self.client.get("/api/orgunits/changes/?requested_fields=name,parent")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 3)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_1.pk, result_ids)
+        self.assertIn(change_request_2.pk, result_ids)
+        self.assertIn(change_request_3.pk, result_ids)
+
+        # Filter by non-used field.
+        response = self.client.get("/api/orgunits/changes/?requested_fields=location")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 0)
+
+        # Filter by non-existent fields.
+        response = self.client.get("/api/orgunits/changes/?requested_fields=foo,bar,1")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 0)

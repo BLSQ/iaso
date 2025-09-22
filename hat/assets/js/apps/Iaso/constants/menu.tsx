@@ -84,8 +84,7 @@ const menuItems = (
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
             extraPath:
-                `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-id/pageSize/20/page/1` +
-                `/isSearchActive/true`,
+                `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-id/pageSize/20/page/1`
         }));
     }
     const settingsSubMenu = [

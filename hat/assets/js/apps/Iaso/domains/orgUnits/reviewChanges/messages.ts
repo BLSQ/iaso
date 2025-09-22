@@ -334,6 +334,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.showValuesAtCreation',
         defaultMessage: 'Show values at creation',
     },
+    requestedFields: {
+        id: 'iaso.changeRequest.requestedFields',
+        defaultMessage: 'Search configuration fields',
+    },
 });
 
 export default MESSAGES;

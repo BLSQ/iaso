@@ -71,6 +71,7 @@
     "iaso.changeRequest.oldValue": "Version originale",
     "iaso.changeRequest.openingDate": "Date d'ouverture",
     "iaso.changeRequest.reject": "Rejeter tout",
+    "iaso.changeRequest.requestedFields": "Champs avec modifications demandées",
     "iaso.changeRequest.restoreOrgUnitChangesCount": "Restaurer {count} demande(s) de changement",
     "iaso.changeRequest.seeApprovedChanges": "Voir le(s) changement(s) approuvé(s)",
     "iaso.changeRequest.seeRejectedChanges": "Voir le(s) changement(s) rejeté(s)",

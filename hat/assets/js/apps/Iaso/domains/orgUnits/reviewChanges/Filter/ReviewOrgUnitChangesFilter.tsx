@@ -192,6 +192,67 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         ],
         [formatMessage],
     );
+
+    const requestedFieldsOptions = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.name),
+                value: 'name',
+            },
+            {
+                label: formatMessage(MESSAGES.parent),
+                value: 'parent',
+            },
+            {
+                label: formatMessage(MESSAGES.orgUnitType),
+                value: 'org_unit_type',
+            },
+            {
+                label: formatMessage(MESSAGES.openingDate),
+                value: 'opening_date',
+            },
+            {
+                label: formatMessage(MESSAGES.closingDate),
+                value: 'closed_date',
+            },
+            {
+                label: formatMessage(MESSAGES.location),
+                value: 'location',
+            },
+            {
+                label: formatMessage(MESSAGES.groups),
+                value: 'groups',
+            },
+            {
+                label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
+                value: 'reference_instances',
+            },
+        ],
+        [formatMessage],
+    );
+
+    // Convert comma-separated string to array for multi-select component.
+    const requestedFieldsValue = useMemo(() => {
+        if (!filters.requested_fields) return [];
+        return filters.requested_fields
+            .split(',')
+            .filter(field => field.trim() !== '');
+    }, [filters.requested_fields]);
+
+    const handleChangeRequestedFields = useCallback(
+        (keyValue, newValue) => {
+            if (!newValue || newValue.length === 0) {
+                handleChange(keyValue, null);
+                return;
+            }
+            const joined = Array.isArray(newValue)
+                ? newValue.join(',')
+                : newValue;
+            handleChange(keyValue, joined);
+        },
+        [handleChange],
+    );
+
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
             const joined = newValue?.map(r => r.value)?.join(',');
@@ -419,6 +480,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     loading={isLoadingTypes}
                     options={orgUnitTypeOptions}
                     labelString={formatMessage(MESSAGES.orgUnitType)}
+                />
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="requested_fields"
+                    value={requestedFieldsValue}
+                    onChange={handleChangeRequestedFields}
+                    options={requestedFieldsOptions}
+                    labelString={formatMessage(MESSAGES.requestedFields)}
                 />
                 <InputComponent
                     type="select"

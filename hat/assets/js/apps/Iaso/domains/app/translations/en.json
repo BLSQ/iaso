@@ -71,6 +71,7 @@
     "iaso.changeRequest.oldValue": "Initial version",
     "iaso.changeRequest.openingDate": "Opening date",
     "iaso.changeRequest.reject": "Reject all",
+    "iaso.changeRequest.requestedFields": "Fields with requested changes",
     "iaso.changeRequest.restoreOrgUnitChangesCount": "Restore {count} change request(s)",
     "iaso.changeRequest.seeApprovedChanges": "See approved change(s)",
     "iaso.changeRequest.seeRejectedChanges": "See rejected change(s)",

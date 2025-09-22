@@ -24,6 +24,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     data_source_synchronization_id?: string;
     ids?: string; // comma separated ids
     is_soft_deleted?: string;
+    requested_fields?: string; // comma separated field names
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

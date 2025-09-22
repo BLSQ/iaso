@@ -126,8 +126,6 @@ const mockSaveCall = (method, i, pathname, p) => {
         },
         req => {
             interceptFlag = true;
-            console.log('Request body:', JSON.stringify(req.body, null, 2));
-            console.log('Expected body:', JSON.stringify(p, null, 2));
             expect(req.body).to.deep.equal(p);
             req.reply({
                 statusCode: 200,

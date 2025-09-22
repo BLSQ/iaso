@@ -24,6 +24,7 @@ services:
             - ./babel-register.js:/opt/app/babel-register.js
             - ./mypy.ini:/opt/app/mypy.ini
             - ./pyproject.toml:/opt/app/pyproject.toml
+            - ./htmlcov:/opt/app/htmlcov
             # test data
             - ./testdata:/opt/app/testdata
             # jupyter notebooks

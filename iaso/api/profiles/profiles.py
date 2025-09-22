@@ -94,7 +94,6 @@ def get_filtered_profiles(
     managed_users_only: Optional[bool] = False,
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
-    original_queryset = queryset
     if search:
         queryset = queryset.filter(
             Q(user__username__icontains=search)
@@ -106,7 +105,7 @@ def get_filtered_profiles(
     if perms:
         queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
 
-    if location:
+    if location and not (parent_ou or children_ou):
         queryset = queryset.filter(
             user__iaso_profile__org_units__pk=location,
         ).distinct()
@@ -117,41 +116,24 @@ def get_filtered_profiles(
         if parent_ou and ou.parent is not None:
             parent = ou.parent
 
+        org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
+
         if parent_ou and not children_ou:
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
-            if not parent:
-                queryset = queryset_current
-            else:
-                queryset = (
-                    original_queryset.filter(
-                        user__iaso_profile__org_units__pk=parent.id,
-                    )
-                ) | queryset_current
+        elif children_ou and not parent_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
-                queryset = queryset.distinct()
-
-        if children_ou and not parent_ou:
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            # Get all descendants in hierarchy instead of just direct children
-            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
-            queryset = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous) | queryset_current
-
-        if parent_ou and children_ou:
-            if not parent:
-                queryset_parent = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            else:
-                queryset_parent = original_queryset.filter(
-                    user__iaso_profile__org_units__pk=parent.pk,
-                )
-
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-
-            # Get all descendants in hierarchy instead of just direct children
-            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
-            queryset_children = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous)
-
-            queryset = queryset_current | queryset_parent | queryset_children
+        elif parent_ou and children_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
     if org_unit_type:
         if org_unit_type == "unassigned":

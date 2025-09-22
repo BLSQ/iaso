@@ -529,6 +529,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'This user is a multi-account user. For this user, you can only edit settings specific to this account, such as their permissions.',
     },
+    invalidEmailFormat: {
+        id: 'iaso.users.invalidEmailFormat',
+        defaultMessage: 'Invalid email format',
+    },
 });
 
 export default MESSAGES;

@@ -67,6 +67,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    pipelineList: {
+        url: 'pipelines/',
+        params: ['accountId'],
+    },
+    pipelineDetails: {
+        url: 'pipelines/details',
+        params: ['accountId', 'pipelineId'],
+    },
     formDetail: {
         url: 'forms/detail',
         params: [
@@ -352,6 +360,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'settings/devices',
         params: ['accountId', ...paginationPathParams],
     },
+    setupAccountSettings: { url: 'settings/setupAccount', params: [] },
     groups: {
         url: 'orgunits/configuration/groups',
         params: [
@@ -397,6 +406,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'groups',
             'fieldsSearch',
             ...paginationPathParams,
+            'isSearchActive',
         ],
     },
     entityDetails: {
@@ -588,9 +598,12 @@ export const extractParamsConfig = (
 // Not super necessary, but it will help the IDE when using baseUrls
 type IasoBaseUrls = {
     setupAccount: string;
+    setupAccountSettings: string;
     home: string;
     forms: string;
     formDetail: string;
+    pipelineDetails: string;
+    pipelineList: string;
     formsStats: string;
     instances: string;
     instanceDetail: string;

@@ -85,13 +85,21 @@ const Filters = ({ baseUrl, params, canBypassProjectRestrictions }) => {
     const handleChange = useCallback(
         (key, value) => {
             setFiltersUpdated(true);
-            if (key === 'location') {
-                setInitialOrgUnitId(value);
-            }
-            setFilters({
+            let updatedFilters = {
                 ...filters,
                 [key]: value,
-            });
+            };
+            if (key === 'location') {
+                setInitialOrgUnitId(value);
+                // Reset checkboxes when the `location` field is cleared.
+                if (!value) {
+                    setOuParent(false);
+                    setOuChildren(false);
+                    updatedFilters.ouParent = false;
+                    updatedFilters.ouChildren = false;
+                }
+            }
+            setFilters(updatedFilters);
         },
         [filters],
     );
@@ -203,7 +211,7 @@ const Filters = ({ baseUrl, params, canBypassProjectRestrictions }) => {
                         handleChange('ouChildren', !ouChildren);
                         setOuChildren(value);
                     }}
-                    disabled={!initialOrgUnit}
+                    disabled={!initialOrgUnitId || !initialOrgUnit}
                     value={ouChildren}
                     label={MESSAGES.ouChildrenCheckbox}
                 />
@@ -230,7 +238,7 @@ const Filters = ({ baseUrl, params, canBypassProjectRestrictions }) => {
                         handleChange('ouParent', value);
                         setOuParent(value);
                     }}
-                    disabled={!initialOrgUnit}
+                    disabled={!initialOrgUnitId || !initialOrgUnit}
                     value={ouParent}
                     label={MESSAGES.ouParentCheckbox}
                 />

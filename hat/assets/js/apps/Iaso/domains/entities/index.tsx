@@ -49,6 +49,7 @@ type Params = {
     locationLimit?: string;
     groups?: string;
     fieldsSearch?: string;
+    isSearchActive?: string;
 };
 
 export const Entities: FunctionComponent = () => {
@@ -58,8 +59,12 @@ export const Entities: FunctionComponent = () => {
         useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
+    const isSearchActive = params?.isSearchActive === 'true';
 
-    const { data, isFetching } = useGetEntitiesPaginated(params);
+    const { data, isFetching } = useGetEntitiesPaginated(
+        params,
+        isSearchActive,
+    );
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const isLoading = isFetching;
@@ -132,7 +137,11 @@ export const Entities: FunctionComponent = () => {
                 </Tabs>
             </TopBar>
             <Box p={4} className={classes.container}>
-                <Filters params={params} isFetching={isFetching} />
+                <Filters
+                    params={params}
+                    isFetching={isFetching}
+                    isSearchActive={isSearchActive}
+                />
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"
@@ -160,6 +169,11 @@ export const Entities: FunctionComponent = () => {
                                 baseUrl={baseUrl}
                                 params={params}
                                 extraProps={{ loading: isFetching }}
+                                noDataMessage={
+                                    !isSearchActive
+                                        ? MESSAGES.searchToSeeEntities
+                                        : undefined
+                                }
                             />
                         </Box>
                     )}

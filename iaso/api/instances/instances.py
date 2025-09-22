@@ -1,6 +1,7 @@
 import json
 import logging
 import ntpath
+import tempfile
 
 from copy import copy
 from time import gmtime, strftime
@@ -13,7 +14,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, Prefetch, Q, QuerySet
-from django.http import Http404, HttpResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -42,8 +43,10 @@ from iaso.api.instances.instance_filters import get_form_from_instance_filters, 
 from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
     Entity,
+    Form,
     Instance,
     InstanceFile,
     InstanceLock,
@@ -428,6 +431,7 @@ class InstancesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        parquet_format = request.GET.get("parquet", None)
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
         with_descriptor = request.GET.get("with_descriptor", "false")
@@ -458,6 +462,9 @@ class InstancesViewSet(viewsets.ViewSet):
         #       one, both or None and get predictable results)
         if org_unit_status:
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
+        if parquet_format:
+            return self.anwser_with_parquet_file(request, filters, queryset)
 
         if not file_export:
             if limit:
@@ -506,8 +513,57 @@ class InstancesViewSet(viewsets.ViewSet):
                     ]
                 }
             )
+
         # This is a CSV/XLSX file export
         return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
+
+    def anwser_with_parquet_file(self, request, filters, queryset):
+        # validate no unsupported/extra params is passed
+        allowed_params = {
+            "order",
+            "form_ids",
+            "parquet",
+            "project_ids",  # comma seperatated project ids
+            "showDeleted",
+            "status",  # READY, ERROR, EXPORTED
+            "startPeriod",  # dhis2 iso period in correct type
+            "endPeriod",
+            "orgUnitParentId",
+            "orgUnitTypeId",  # allow comma seperated ids
+            "dateFrom",  # filter on source creation date or creation date (COALESCE(V0."source_created_at", V0."created_at"))
+            "dateTo",
+            "modificationDateFrom",  # filter on updated_at
+            "modificationDateTo",
+            "sentDateFrom",  # filter on created_at
+            "sentDateTo",
+            "withLocation",  # true => only submissions with location, false only the one without location
+            "jsonContent",  # unsure if fully supported by export_django_query_to_parquet_via_duckdb function question names with __ doesn't seem to be supported but the problem seem the jsonlogic
+            "planningIds",
+            "userIds",
+        }
+        received_params = set(request.GET.keys())
+
+        unknown = received_params - allowed_params
+        if unknown:
+            return JsonResponse(
+                {
+                    "error": f"Unsupported query parameters for parquet exports: {', '.join(unknown)}. Allowed parameters {', '.join(sorted(allowed_params))}"
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+
+        # actually return parquet file
+        form_ids = filters["form_ids"]
+        form = Form.objects.get(pk=form_ids)
+        export_queryset = parquet.build_submissions_queryset(queryset, form.id)
+
+        tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
+
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
+
+        return response
 
     @action(detail=True, methods=["POST"])
     def add_lock(self, request, pk):

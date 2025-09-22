@@ -50,13 +50,13 @@ class RefreshVrfDataTestCase(APITestCase):
         }
         cls.vrf_config = Config.objects.create(slug=VRF_CONFIG_SLUG, content=cls.json_config)
 
-    def mock_openhexa_call_success(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_success(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SUCCESS
 
-    def mock_openhexa_call_skipped(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_skipped(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SKIPPED
 
-    def mock_openhexa_call_running(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_running(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return RUNNING
 
     def test_no_auth_needed(self):

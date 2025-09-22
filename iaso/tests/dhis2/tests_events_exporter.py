@@ -414,3 +414,38 @@ class DataValueExporterTests(TestCase):
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_handle_errors_non_json_response(self):
+        mapping_version = MappingVersion(
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+        # mock expected calls
+
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/events",
+            body="<html><body><h1>504 Gateway Timeout</h1></body></html>",
+            status=504,
+            content_type="text/html",
+        )
+
+        DataValueExporter().export_instances(export_request, self.task)
+        instance.refresh_from_db()
+        self.expect_logs(ERRORED)
+
+        self.assertEqual(
+            "ERROR while processing page 1/1 : non json response return by server: <html><body><h1>504 Gateway Timeout</h1></body></html>",
+            export_request.last_error_message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)

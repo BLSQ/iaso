@@ -20,6 +20,27 @@ from .value_formatter import format_value
 logger = logging.getLogger(__name__)
 
 
+def parse_description(dhis2_exception):
+    try:
+        resp = json.loads(dhis2_exception.description)
+    except:
+        resp = {
+            "status": "ERROR",
+            "description": "non json response return by server: " + dhis2_exception.description,
+            "response": {
+                "status": "ERROR",
+                "response": {
+                    "importSummaries": [
+                        {
+                            "description": "non json response return by server: " + dhis2_exception.description,
+                        }
+                    ]
+                },
+            },
+        }
+    return resp
+
+
 class InstanceExportError(BaseException):
     def __init__(self, *args):
         self.counts = args[1]
@@ -225,10 +246,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            try:
-                resp = json.loads(dhis2_exception.description)
-            except:
-                resp = {"status": "ERROR", "description": "non json response return by server"}
+
+            resp = parse_description(dhis2_exception)
 
             exception = self.handle_exception({"response": resp}, message)
 
@@ -337,7 +356,7 @@ class EventHandler(BaseHandler):
             return []
 
         export_logs = []
-        # from real life posting lots of "batch" of events
+        # from real life posting lots of "batch" of large events
         # can be really problematic, switching to one by one export
         for event in data:
             try:
@@ -360,7 +379,9 @@ class EventHandler(BaseHandler):
 
             except RequestException as dhis2_exception:
                 message = "ERROR while processing " + prefix
-                resp = json.loads(dhis2_exception.description)
+
+                resp = parse_description(dhis2_exception)
+
                 exception = self.handle_exception(resp, message)
 
                 raise exception
@@ -620,7 +641,7 @@ class EventTrackerHandler(BaseHandler):
 
                 message = "ERROR while processing " + prefix
 
-                resp = json.loads(dhis2_exception.description)
+                resp = parse_description(dhis2_exception)
 
                 exception = self.handle_exception(resp, message)
                 self.flag_as_errored(export_status, exception.message, stats)

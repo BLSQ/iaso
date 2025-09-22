@@ -603,7 +603,8 @@ class DataValueExporterTests(TestCase):
         self.expect_logs(ERRORED)
 
         self.assertEqual(
-            "ERROR while processing page 1/1 : non json response return by server", export_request.last_error_message
+            "ERROR while processing page 1/1 : non json response return by server: <html><body>nginx timeout</body></html>",
+            export_request.last_error_message,
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)

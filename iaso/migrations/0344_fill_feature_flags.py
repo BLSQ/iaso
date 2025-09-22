@@ -324,8 +324,7 @@ def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
 
     for ff in feature_flags:
-        flag = FeatureFlag()
-        flag.code = ff["code"]
+        flag, created = FeatureFlag.objects.get_or_create(code=ff["code"])
         flag.name = ff["name"]
         flag.requires_authentication = ff["requires_authentication"]
         flag.description = ff["description"]

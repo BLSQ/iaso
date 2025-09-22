@@ -8,10 +8,14 @@ from django.conf import settings
 from django.db import migrations, models
 
 
-# Functions from the following migrations need manual copying.
-# Move them and any dependencies into this file, then update the
-# RunPython operations to refer to the local versions:
-# plugins.polio.migrations.0020_fix_statuses FIXED
+def create_initial_campaign_types(apps, schema_editor):
+    CampaignType = apps.get_model("polio", "CampaignType")
+    CampaignType.objects.get_or_create(name="Polio", slug="polio")
+    CampaignType.objects.get_or_create(name="Measles", slug="measles")
+    CampaignType.objects.get_or_create(name="PIRI", slug="piri")
+    CampaignType.objects.get_or_create(name="Vitamin A", slug="vitamin-a")
+    CampaignType.objects.get_or_create(name="Rubella", slug="rubella")
+    CampaignType.objects.get_or_create(name="Deworming", slug="deworming")
 
 
 class Migration(migrations.Migration):
@@ -433,4 +437,5 @@ class Migration(migrations.Migration):
                 ("spread_id", models.CharField(db_index=True, max_length=60)),
             ],
         ),
+        migrations.RunPython(create_initial_campaign_types),
     ]

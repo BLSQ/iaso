@@ -3113,4 +3113,15 @@ class Migration(migrations.Migration):
             sql="\n            CREATE CONSTRAINT TRIGGER iaso_org_units_same_source_version_constraint\n            AFTER INSERT OR UPDATE\n            ON iaso_orgunit\n            DEFERRABLE INITIALLY DEFERRED\n            FOR EACH ROW\n            EXECUTE PROCEDURE iaso_group_org_units_same_source_version_orgunit();\n            ",
             reverse_sql="\n            DROP TRIGGER iaso_org_units_same_source_version_constraint ON iaso_orgunit;",
         ),
+        migrations.RunSQL(
+            sql=[
+                # Index for filtering entities by type and deletion status.
+                # This is tightly related to the `LevenshteinAlgorithm` SQL queries.
+                "CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_entity_type_not_deleted "
+                "ON iaso_entity(entity_type_id) WHERE deleted_at IS NULL;",
+            ],
+            reverse_sql=[
+                "DROP INDEX CONCURRENTLY IF EXISTS idx_entity_type_not_deleted;",
+            ],
+        ),
     ]

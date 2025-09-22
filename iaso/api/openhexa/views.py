@@ -149,6 +149,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                     pipeline(id: $pipelineId) {
                         id
                         name
+                        code
                         currentVersion {
                             versionNumber
                             id

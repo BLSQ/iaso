@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { MESSAGES } from '../messages';
 
 type Parameter = {
@@ -11,6 +12,7 @@ type Parameter = {
     default?: any;
     required?: boolean;
     choices?: any[];
+    multiple?: boolean;
 };
 
 type ParameterValues = Record<string, any>;
@@ -25,34 +27,35 @@ export const usePipelineParameters = (pipeline?: any) => {
             const initialValues: ParameterValues = {};
             pipeline.currentVersion.parameters.forEach(
                 (parameter: Parameter) => {
-                    switch (parameter.type) {
-                        case 'str':
-                            initialValues[parameter.code] =
-                                parameter.default || '';
-                            break;
-                        case 'bool':
-                            initialValues[parameter.code] =
-                                parameter.default || false;
-                            break;
-                        case 'int':
-                            initialValues[parameter.code] =
-                                parameter.default || 0;
-                            break;
-                        case 'float':
-                            initialValues[parameter.code] =
-                                parameter.default || 0.0;
-                            break;
-                        case 'list':
-                            initialValues[parameter.code] =
-                                parameter.default || [];
-                            break;
-                        case 'dict':
-                            initialValues[parameter.code] =
-                                parameter.default || {};
-                            break;
-                        default:
-                            initialValues[parameter.code] =
-                                parameter.default || null;
+                    // Handle multiple parameters (arrays)
+                    if (parameter.multiple) {
+                        initialValues[parameter.code] = parameter.default || [];
+                    } else {
+                        switch (parameter.type) {
+                            case 'str':
+                                initialValues[parameter.code] =
+                                    parameter.default || '';
+                                break;
+                            case 'bool':
+                                initialValues[parameter.code] =
+                                    parameter.default || false;
+                                break;
+                            case 'int':
+                                initialValues[parameter.code] =
+                                    parameter.default || 0;
+                                break;
+                            case 'float':
+                                initialValues[parameter.code] =
+                                    parameter.default || 0.0;
+                                break;
+                            case 'dict':
+                                initialValues[parameter.code] =
+                                    parameter.default || {};
+                                break;
+                            default:
+                                initialValues[parameter.code] =
+                                    parameter.default || null;
+                        }
                     }
                 },
             );
@@ -85,10 +88,57 @@ export const usePipelineParameters = (pipeline?: any) => {
         [handleParameterChange],
     );
 
+    // Handle multiple parameter value conversion
+    const handleMultipleParameterChange = useCallback(
+        (parameter: Parameter, value: any) => {
+            // Convert values to appropriate type based on base type
+            const convertValue = (val: any) => {
+                switch (parameter.type) {
+                    case 'int':
+                        return parseInt(val, 10);
+                    case 'float':
+                        return parseFloat(val);
+                    case 'str':
+                    default:
+                        return String(val);
+                }
+            };
+
+            const arrayValue = commaSeparatedIdsToArray(value);
+            const convertedValue = arrayValue.map(convertValue);
+            handleParameterChange(parameter.code, convertedValue);
+        },
+        [handleParameterChange],
+    );
+
     // Render parameter input based on type
     const renderParameterInput = useCallback(
         (parameter: Parameter) => {
             const currentValue = parameterValues[parameter.code];
+
+            // Handle multiple parameters (arrays)
+            if (parameter.multiple) {
+                return (
+                    <InputComponent
+                        type="select"
+                        keyValue={parameter.code}
+                        labelString={parameter.name}
+                        value={currentValue || []}
+                        required={parameter.required}
+                        options={
+                            parameter?.choices?.map(choice => ({
+                                label: `${choice}`,
+                                value: choice,
+                            })) || []
+                        }
+                        multi={true}
+                        placeholder={`Select ${parameter.name}`}
+                        onChange={(_, value) =>
+                            handleMultipleParameterChange(parameter, value)
+                        }
+                    />
+                );
+            }
 
             switch (parameter.type) {
                 case 'str':
@@ -146,22 +196,6 @@ export const usePipelineParameters = (pipeline?: any) => {
                             }
                         />
                     );
-                case 'list':
-                    return (
-                        <InputComponent
-                            type="select"
-                            keyValue={parameter.code}
-                            labelString={parameter.name}
-                            value={currentValue || []}
-                            required={parameter.required}
-                            options={parameter.choices || []}
-                            multi={true}
-                            placeholder={`Select ${parameter.name}`}
-                            onChange={(_, value) =>
-                                handleParameterChange(parameter.name, value)
-                            }
-                        />
-                    );
                 case 'dict':
                     return (
                         <InputComponent
@@ -199,6 +233,7 @@ export const usePipelineParameters = (pipeline?: any) => {
             handleParameterChange,
             handleJsonChange,
             formatMessage,
+            handleMultipleParameterChange,
         ],
     );
 
@@ -206,6 +241,7 @@ export const usePipelineParameters = (pipeline?: any) => {
         parameterValues,
         handleParameterChange,
         handleJsonChange,
+        handleMultipleParameterChange,
         renderParameterInput,
     };
 };

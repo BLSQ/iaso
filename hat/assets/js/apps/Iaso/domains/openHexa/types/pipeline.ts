@@ -13,6 +13,7 @@ export type Parameter = {
 export type Pipeline = {
     id: string;
     name: string;
+    code: string;
     currentVersion?: {
         id: string;
         versionNumber: string;

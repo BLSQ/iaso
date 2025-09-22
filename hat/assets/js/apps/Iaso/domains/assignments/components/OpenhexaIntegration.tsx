@@ -13,12 +13,12 @@ import {
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
-import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
-import { usePipelineParameters } from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
+import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
+import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
+import { usePipelineParameters } from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
 import { styles } from 'Iaso/styles/mapCustomControl';
 import { usePollTask } from '../hooks/requests/usePollTask';
 import MESSAGES from '../messages';
@@ -74,7 +74,11 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
     );
 
     const { data: pipeline, isFetching: isFetchingPipeline } =
-        useGetPipelineDetails(selectedPipelineId);
+        useGetPipelineDetails(selectedPipelineId, [
+            'task_id',
+            'pipeline_id',
+            'planning_id',
+        ]);
     const {
         mutate: launchTask,
         data: launchResult,
@@ -86,8 +90,13 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
 
     const handleSubmit = useCallback(() => {
         setIsPipelineRunning(true);
-        launchTask(parameterValues as any);
-    }, [launchTask, parameterValues]);
+        const parameters = {
+            ...parameterValues,
+            planning_id: planning.id,
+            pipeline_id: selectedPipelineId,
+        };
+        launchTask(parameters as any);
+    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
 
     const taskId = launchResult?.task?.id;
     const { data: task } = usePollTask(taskId);
@@ -285,9 +294,9 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                         sx={{ width: '100%', maxWidth: '500px' }}
                     >
                         <Typography variant="h6" gutterBottom>
-                            {task.progress_message}
+                            {task?.progress_message}
                         </Typography>
-                        {task.result && (
+                        {task?.result && (
                             <Box>
                                 <Typography variant="subtitle2" gutterBottom>
                                     Result:
@@ -306,7 +315,7 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                         wordBreak: 'break-word',
                                     }}
                                 >
-                                    {JSON.stringify(task.result, null, 2)}
+                                    {JSON.stringify(task?.result, null, 2)}
                                 </Box>
                             </Box>
                         )}

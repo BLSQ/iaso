@@ -360,7 +360,7 @@ class Task(models.Model):
 
     def terminate_with_error(self, message=None, exception=None):
         self.refresh_from_db()
-        logger.error(f"Task {self} ended in error", message, exception)
+        logger.error(f"Task {self} ended in error %s", message, exc_info=exception)
         self.status = ERRORED
         self.ended_at = timezone.now()
         self.result = {"result": ERRORED, "message": message if message else "Error"}

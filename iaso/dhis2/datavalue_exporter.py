@@ -10,7 +10,7 @@ from django.utils import timezone
 
 import iaso.models as models
 
-from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, MappingVersion, OrgUnit, Task
+from iaso.models import ERRORED, EXPORTED, RUNNING, ExportLog, ExportRequest, MappingVersion, OrgUnit, Task
 
 from ..periods import Period
 from .api_logger import ApiLogger  # type: ignore
@@ -356,6 +356,7 @@ class EventHandler(BaseHandler):
             return []
 
         export_logs = []
+        exception = None
         # from real life posting lots of "batch" of large events
         # can be really problematic, switching to one by one export
         for event in data:
@@ -384,7 +385,8 @@ class EventHandler(BaseHandler):
 
                 exception = self.handle_exception(resp, message)
 
-                raise exception
+        if exception:
+            raise exception
 
         return export_logs
 
@@ -831,23 +833,25 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, task: Task, page_size=25, continue_on_error=True):
+    def export_instances(self, export_request: ExportRequest, task: Task, page_size=25, continue_on_error=True):
         try:
+            logger.info("export_instances %s", export_request.params)
             self._export_instances(export_request, task, page_size=page_size, continue_on_error=continue_on_error)
         except BaseException as exception:
             message = repr(exception) + " : " + type(exception).__name__
-            logger.error(message, exception)
+            logger.error("%s %s", message, exception)
             task.refresh_from_db()
             task.report_progress_and_stop_if_killed(progress_message=message, prepend_progress=True)
             task.terminate_with_error(message=message + "\n" + task.progress_message, exception=exception)
 
     def _export_instances(
         self,
-        export_request,
+        export_request: ExportRequest,
         task: Task,
         page_size=25,
         continue_on_error=True,
     ):
+        message = ""
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.continue_on_error = continue_on_error
@@ -904,10 +908,11 @@ class DataValueExporter:
 
                 page_end = timer()
                 page_time = page_end - page_start
-                message = prefix + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped" % (
+                message = prefix + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped, %d error count" % (
                     page_time,
                     stats["batched_time"],
                     len(skipped),
+                    stats["errored_count"],
                 )
                 logger.debug(message)
 
@@ -916,11 +921,13 @@ class DataValueExporter:
 
             except InstanceExportError as exception:
                 self.flag_as_errored(export_request, export_statuses, exception.message, stats, task=task)
+                stats["errored_count"] += 1
                 if not export_request.continue_on_error:
                     raise exception
 
             # it's ok to catch BaseException, we want to be able to mark it as errored if cancelled or worst
             except BaseException as exception:
+                stats["errored_count"] += 1
                 self.flag_as_errored(
                     export_request,
                     export_statuses,

@@ -336,7 +336,7 @@ const MESSAGES = defineMessages({
     },
     requestedFields: {
         id: 'iaso.changeRequest.requestedFields',
-        defaultMessage: 'Search configuration fields',
+        defaultMessage: 'Fields with requested changes',
     },
 });
 

@@ -490,6 +490,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.pleaseSelectVersionFirst',
         defaultMessage: 'Please select a data source version first',
     },
+    downloadGpkg: {
+        id: 'iaso.datasources.downloadGpkg',
+        defaultMessage: 'Download GeoPackage',
+    },
 });
 
 export default MESSAGES;

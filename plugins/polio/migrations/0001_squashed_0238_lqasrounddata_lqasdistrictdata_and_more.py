@@ -16,6 +16,16 @@ import plugins.polio.budget.models
 import plugins.polio.models.base
 
 
+def create_initial_campaign_types(apps, schema_editor):
+    CampaignType = apps.get_model("polio", "CampaignType")
+    CampaignType.objects.get_or_create(name="Polio", slug="polio")
+    CampaignType.objects.get_or_create(name="Measles", slug="measles")
+    CampaignType.objects.get_or_create(name="PIRI", slug="piri")
+    CampaignType.objects.get_or_create(name="Vitamin A", slug="vitamin-a")
+    CampaignType.objects.get_or_create(name="Rubella", slug="rubella")
+    CampaignType.objects.get_or_create(name="Deworming", slug="deworming")
+
+
 class Migration(migrations.Migration):
     replaces = [
         ("polio", "0001_squashed_0036_auto_20211203_1025"),
@@ -3128,4 +3138,5 @@ class Migration(migrations.Migration):
             name="campaignscope",
             unique_together={("campaign", "vaccine")},
         ),
+        migrations.RunPython(create_initial_campaign_types),
     ]

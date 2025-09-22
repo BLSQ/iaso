@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-18 09:37+0000\n"
+"POT-Creation-Date: 2025-09-22 14:09+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -217,6 +217,10 @@ msgstr "IDs des paiements potentiels (séparés par des virgules)"
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Source version ID"
 msgstr "ID de version source"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Requested fields (comma-separated)"
+msgstr "Champs demandés (séparés par des virgules)"
 
 #: iaso/api/org_unit_tree/filters.py
 msgid "Ignore empty names"

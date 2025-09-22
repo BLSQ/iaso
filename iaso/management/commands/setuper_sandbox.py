@@ -1,3 +1,5 @@
+import subprocess
+
 from datetime import datetime
 from logging import getLogger
 
@@ -62,6 +64,23 @@ class Command(BaseCommand):
         data_source.name = name
         return data_source
 
+    def recreate_account(self, account_name):
+        try:
+            command = ["python3", "setuper/setuper.py", "--additional_projects", "-n", f"{account_name}"]
+            process = subprocess.run(command, check=True)
+            self.stdout.write(f"Stdout:\n{process.stdout}")
+            if process.stderr:
+                self.stderr.write(f"Stderr:\n{process.stderr}")
+
+        except subprocess.CalledProcessError as e:
+            self.stderr.write(self.style.ERROR(f"Error executing script '{e}':"))
+            self.stderr.write(self.style.ERROR(f"Command: {e.cmd}"))
+            self.stderr.write(self.style.ERROR(f"Return Code: {e.returncode}"))
+            self.stderr.write(self.style.ERROR(f"Stdout:\n{e.stdout}"))
+            self.stderr.write(self.style.ERROR(f"Stderr:\n{e.stderr}"))
+        except Exception as e:
+            self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {e}"))
+
     def handle(self, *args, **options):
         name = options["account"]
         self.stdout.write(self.style.SUCCESS(f" .... Resetting {name} account and its data! ..."))
@@ -91,3 +110,5 @@ class Command(BaseCommand):
         logger.info(f"Renamed all {new_data_sources} data_sources")
 
         self.stdout.write(self.style.SUCCESS(f"Reset {name} account!"))
+
+        self.recreate_account(name)

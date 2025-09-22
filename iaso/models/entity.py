@@ -25,7 +25,6 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Exists, OuterRef, Prefetch, Q
 
-from hat.audit.models import log_modification
 from iaso.models import Account, Instance, OrgUnit, Project
 from iaso.models.deduplication import EntityDuplicate, ValidationStatus
 from iaso.utils.jsonlogic import jsonlogic_to_q
@@ -254,6 +253,7 @@ class Entity(SoftDeletableModel):
         - soft delete its attached form instances
         - delete relevant pending EntityDuplicate pairs
         """
+        from hat.audit.models import log_modification
         from iaso.models.deduplication import ValidationStatus
 
         original = copy(self)

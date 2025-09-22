@@ -36,7 +36,7 @@ Shapely==2.0.2  # https://github.com/shapely/shapely/tags
 
 # Geo.
 # ------------------------------------------------------------------------------
-Fiona==1.9.5  # https://github.com/Toblerity/Fiona/tags
+Fiona==1.10.1  # https://github.com/Toblerity/Fiona/tags
 geopy==2.4.1  # https://github.com/geopy/geopy/tags
 
 # PostgreSQL and SQL.

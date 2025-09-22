@@ -395,2667 +395,2698 @@ class Migration(migrations.Migration):
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
-
-operations = [
-    CreateExtension("citext"),
-    CreateExtension("ltree"),
-    # Now create the collation
-    migrations.RunSQL(
-        """
-        -- This SQL creates a case-insensitive collation
-        CREATE COLLATION IF NOT EXISTS case_insensitive (
-            PROVIDER = 'icu',
-            LOCALE = 'en-US-u-ks-level2',
-            DETERMINISTIC = FALSE
-        );
-        """,
-        # You should also add a reverse SQL command for un-doing this
-        reverse_sql="""
-        DROP COLLATION IF EXISTS case_insensitive;
-        """,
-    ),
-    migrations.CreateModel(
-        name="CorePermissionSupport",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-        ],
-        options={
-            "permissions": (
-                ("iaso_forms", "Formulaires"),
-                ("iaso_forms_stats", "Statistiques pour les formulaires"),
-                ("iaso_mappings", "Correspondances avec DHIS2"),
-                ("iaso_modules", "modules"),
-                ("iaso_completeness", "Complétude des données"),
-                ("iaso_org_units", "Unités d'organisations"),
-                ("iaso_org_units_history", "Historique des unités d'organisation"),
-                ("iaso_org_units_read", "Lire les unités d'organisations"),
-                ("iaso_registry_write", "Editer le Registre"),
-                ("iaso_registry_read", "Lire le Registre"),
-                ("iaso_links", "Correspondances sources"),
-                ("iaso_users", "Users"),
-                ("iaso_users_managed", "Users managed"),
-                ("iaso_pages", "Pages"),
-                ("iaso_projects", "Projets"),
-                ("iaso_sources", "Sources"),
-                ("iaso_sources_can_change_default_version", "Can change the default version of a data source"),
-                ("iaso_data_tasks", "Tâches"),
-                ("iaso_submissions", "Soumissions"),
-                ("iaso_update_submission", "Editer soumissions"),
-                ("iaso_planning_write", "Editer le planning"),
-                ("iaso_planning_read", "Lire le planning"),
-                ("iaso_reports", "Reports"),
-                ("iaso_teams", "Equipes"),
-                ("iaso_assignments", "Attributions"),
-                ("iaso_entities", "Entities"),
-                ("iaso_entity_type_write", "Write entity type"),
-                ("iaso_storages", "Storages"),
-                ("iaso_completeness_stats", "Completeness stats"),
-                ("iaso_workflows", "Workflows"),
-                ("iaso_entity_duplicates_read", "Read Entity duplicates"),
-                ("iaso_entity_duplicates_write", "Write Entity duplicates"),
-                ("iaso_user_roles", "Manage user roles"),
-                ("iaso_datastore_read", "Read data store"),
-                ("iaso_datastore_write", "Write data store"),
-                ("iaso_org_unit_types", "Org unit types"),
-                ("iaso_org_unit_groups", "Org unit groups"),
-                ("iaso_org_unit_change_request_review", "Org unit change request review"),
-                ("iaso_org_unit_change_request_configurations", "Org unit change request configurations"),
-                ("iaso_write_sources", "Write data source"),
-                ("iaso_page_write", "Write page"),
-                ("iaso_payments", "Payments page"),
-                ("iaso_mobile_app_offline_setup", "Mobile app offline setup"),
-            ),
-            "managed": False,
-            "default_permissions": [],
-        },
-    ),
-    migrations.CreateModel(
-        name="Account",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField(unique=True, validators=[django.core.validators.MinLengthValidator(1)])),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("user_manual_path", models.TextField(blank=True, null=True)),
-            (
-                "modules",
-                iaso.models.base.ChoiceArrayField(
-                    base_field=models.CharField(
-                        choices=[
-                            ("DATA_COLLECTION_FORMS", "Data collection - Forms"),
-                            ("DEFAULT", "Default"),
-                            ("DHIS2_MAPPING", "DHIS2 mapping"),
-                            ("EMBEDDED_LINKS", "Embedded links"),
-                            ("ENTITIES", "Entities"),
-                            ("EXTERNAL_STORAGE", "External storage"),
-                            ("PLANNING", "Planning"),
-                            ("POLIO_PROJECT", "Polio project"),
-                            ("REGISTRY", "Registry"),
-                            ("PAYMENTS", "Payments"),
-                            ("COMPLETENESS_PER_PERIOD", "Completeness per Period"),
-                            ("TRYPELIM_PROJECT", "Trypelim project"),
-                            ("DATA_VALIDATION", "Data validation"),
-                        ],
-                        max_length=100,
-                    ),
-                    blank=True,
-                    default=list,
-                    null=True,
-                    size=None,
-                ),
-            ),
-            ("analytics_script", models.TextField(blank=True, null=True)),
-            ("custom_translations", models.JSONField(blank=True, null=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="AccountFeatureFlag",
-        fields=[
-            ("name", models.CharField(max_length=255)),
-            ("code", models.CharField(max_length=255, primary_key=True, serialize=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="AlgorithmRun",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("ended_at", models.DateTimeField(blank=True, null=True)),
-            ("result", models.JSONField(blank=True, null=True)),
-            ("finished", models.BooleanField(default=False)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="DataSource",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255, unique=True)),
-            ("read_only", models.BooleanField(default=False)),
-            ("description", models.TextField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "tree_config_status_fields",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, choices=[], max_length=30),
-                    blank=True,
-                    default=list,
-                    help_text="List of statuses used for display configuration of the OrgUnit tree.",
-                    size=None,
-                ),
-            ),
-            ("public", models.BooleanField(default=False)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="DataSourceVersionsSynchronization",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "name",
-                models.CharField(
-                    help_text="Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations.",
-                    max_length=255,
-                ),
-            ),
-            (
-                "json_diff",
-                models.JSONField(blank=True, help_text="The diff used to create change requests.", null=True),
-            ),
-            (
-                "diff_config",
-                models.TextField(blank=True, help_text="A string representation of the parameters used for the diff."),
-            ),
-            (
-                "count_create",
-                models.PositiveIntegerField(
-                    default=0,
-                    help_text="The number of change requests that will be generated to create an org unit.",
-                ),
-            ),
-            (
-                "count_update",
-                models.PositiveIntegerField(
-                    default=0,
-                    help_text="The number of change requests that will be generated to update an org unit.",
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
-            (
-                "created_by",
-                models.ForeignKey(
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="created_data_source_synchronizations",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "verbose_name": "Data source synchronization",
-        },
-    ),
-    migrations.CreateModel(
-        name="Device",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("imei", models.CharField(blank=True, max_length=250, null=True)),
-            ("test_device", models.BooleanField(default=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Entity",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("name", models.CharField(blank=True, max_length=255)),
-            ("uuid", models.UUIDField(default=uuid.uuid4, editable=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
-        ],
-        options={
-            "verbose_name_plural": "Entities",
-        },
-    ),
-    migrations.CreateModel(
-        name="EntityType",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255)),
-            ("code", models.CharField(blank=True, max_length=255, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("is_active", models.BooleanField(default=False)),
-            (
-                "fields_list_view",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
-                    blank=True,
-                    null=True,
-                    size=100,
-                ),
-            ),
-            (
-                "fields_detail_info_view",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
-                    blank=True,
-                    null=True,
-                    size=100,
-                ),
-            ),
-            (
-                "fields_duplicate_search",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
-                    blank=True,
-                    null=True,
-                    size=100,
-                ),
-            ),
-            ("prevent_add_if_duplicate_found", models.BooleanField(default=False)),
-            (
-                "account",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="ExportLog",
-        fields=[
-            ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("sent", models.JSONField(blank=True, null=True)),
-            ("received", models.JSONField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("http_status", models.IntegerField(blank=True, null=True)),
-            ("url", models.TextField(blank=True, null=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="ExportRequest",
-        fields=[
-            ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("params", models.JSONField(blank=True, null=True)),
-            ("result", models.JSONField(blank=True, null=True)),
-            ("finished", models.BooleanField(default=False)),
-            (
-                "status",
-                models.TextField(
-                    choices=[
-                        ("QUEUED", "Queued"),
-                        ("RUNNING", "Running"),
-                        ("EXPORTED", "Exported"),
-                        ("ERRORED", "Errored"),
-                        ("SKIPPED", "Skipped"),
-                        ("KILLED", "Killed"),
-                        ("SUCCESS", "Success"),
-                    ],
-                    default="QUEUED",
-                ),
-            ),
-            ("instance_count", models.IntegerField()),
-            ("exported_count", models.IntegerField()),
-            ("errored_count", models.IntegerField()),
-            ("last_error_message", models.TextField()),
-            ("continue_on_error", models.BooleanField(default=False)),
-            ("queued_at", models.DateTimeField(auto_now_add=True)),
-            ("started_at", models.DateTimeField(blank=True, null=True)),
-            ("ended_at", models.DateTimeField(blank=True, null=True)),
-            (
-                "launcher",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="FeatureFlag",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("code", models.CharField(max_length=100, unique=True)),
-            ("name", models.CharField(max_length=100)),
-            ("requires_authentication", models.BooleanField(default=False)),
-            ("description", models.TextField(blank=True)),
-            (
-                "category",
-                models.TextField(
-                    choices=[
-                        ("DCO", "Data collection options"),
-                        ("REO", "Refresh options"),
-                        ("GEO", "Geographic options"),
-                        ("DAV", "Data Validation"),
-                        ("ENT", "Entities"),
-                        ("PLA", "Planning"),
-                        ("SPO", "Specific options"),
-                        ("NA", "Not specified"),
-                    ],
-                    default="NA",
-                ),
-            ),
-            ("configuration_schema", models.JSONField(blank=True, default=None, null=True)),
-            ("order", models.PositiveSmallIntegerField(default=0)),
-            ("is_dangerous", models.BooleanField(default=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Form",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("form_id", models.TextField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("name", models.TextField()),
-            ("device_field", models.TextField(blank=True, null=True)),
-            ("location_field", models.TextField(blank=True, null=True)),
-            ("correlation_field", models.TextField(blank=True, null=True)),
-            ("correlatable", models.BooleanField(default=False)),
-            (
-                "possible_fields",
-                models.JSONField(
-                    blank=True,
-                    help_text="Questions present in all versions of the form, as a flat list.Automatically updated on new versions.",
-                    null=True,
-                ),
-            ),
-            (
-                "period_type",
-                models.TextField(
-                    blank=True,
-                    choices=[
-                        ("DAY", "Day"),
-                        ("MONTH", "Month"),
-                        ("QUARTER", "Quarter"),
-                        ("QUARTER_NOV", "Quarter Nov"),
-                        ("SIX_MONTH", "Six-month"),
-                        ("YEAR", "Year"),
-                        ("FINANCIAL_NOV", "Financial Nov"),
-                    ],
-                    null=True,
-                ),
-            ),
-            ("single_per_period", models.BooleanField(default=False)),
-            ("periods_before_allowed", models.IntegerField(default=0, null=True)),
-            ("periods_after_allowed", models.IntegerField(default=0, null=True)),
-            ("derived", models.BooleanField(default=False)),
-            ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
-            (
-                "label_keys",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
-                    blank=True,
-                    null=True,
-                    size=100,
-                ),
-            ),
-            ("legend_threshold", models.JSONField(blank=True, null=True)),
-            (
-                "change_request_mode",
-                models.TextField(
-                    choices=[
-                        ("CR_MODE_NONE", "No change request"),
-                        ("CR_MODE_IF_REFERENCE_FORM", "Create change request if form is reference form"),
-                    ],
-                    default="CR_MODE_NONE",
-                ),
-            ),
-        ],
-        options={
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="FormVersion",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("file", models.FileField(upload_to=iaso.models.forms.form_version_upload_to)),
-            ("md5", models.CharField(blank=True, max_length=32)),
-            (
-                "xls_file",
-                models.FileField(blank=True, null=True, upload_to=iaso.models.forms.form_version_upload_to),
-            ),
-            ("form_descriptor", models.JSONField(blank=True, null=True)),
-            ("version_id", models.TextField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("start_period", models.TextField(blank=True, null=True)),
-            ("end_period", models.TextField(blank=True, null=True)),
-            (
-                "possible_fields",
-                models.JSONField(
-                    blank=True,
-                    editable=False,
-                    help_text="Questions present in this form version, as a flat list.Update on save. See equivalent on Form for all version",
-                    null=True,
-                ),
-            ),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="form_version_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "form",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="form_versions", to="iaso.form"
-                ),
-            ),
-            (
-                "updated_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="form_version_updated_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Group",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("source_ref", models.TextField(blank=True, null=True)),
-            ("block_of_countries", models.BooleanField(default=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="GroupSet",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("source_ref", models.TextField(blank=True, null=True)),
-            (
-                "group_belonging",
-                models.TextField(
-                    choices=[("SINGLE", "Single"), ("MULTIPLE", "Multiple")], default="SINGLE", max_length=10
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("groups", models.ManyToManyField(blank=True, related_name="group_sets", to="iaso.group")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Instance",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            (
-                "source_created_at",
-                models.DateTimeField(blank=True, help_text="Creation time on the device", null=True),
-            ),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "source_updated_at",
-                models.DateTimeField(blank=True, help_text="Update time on the device", null=True),
-            ),
-            ("uuid", models.TextField(blank=True, null=True)),
-            ("export_id", models.TextField(blank=True, default=iaso.utils.dhis2.generate_id_for_dhis_2, null=True)),
-            ("correlation_id", models.BigIntegerField(blank=True, null=True)),
-            ("name", models.TextField(blank=True, null=True)),
-            ("file", models.FileField(blank=True, null=True, upload_to=iaso.models.instances.instance_upload_to)),
-            ("file_name", models.TextField(blank=True, null=True)),
-            ("location", django.contrib.gis.db.models.fields.PointField(blank=True, dim=3, null=True, srid=4326)),
-            ("json", models.JSONField(blank=True, null=True)),
-            ("accuracy", models.DecimalField(blank=True, decimal_places=2, max_digits=7, null=True)),
-            ("period", models.TextField(blank=True, db_index=True, null=True)),
-            ("last_export_success_at", models.DateTimeField(blank=True, null=True)),
-            ("deleted", models.BooleanField(default=False)),
-            ("to_export", models.BooleanField(default=False)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-            (
-                "device",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.device"
-                ),
-            ),
-            (
-                "entity",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.DO_NOTHING,
-                    related_name="instances",
-                    to="iaso.entity",
-                ),
-            ),
-            (
-                "form",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.PROTECT,
-                    related_name="instances",
-                    to="iaso.form",
-                ),
-            ),
-            (
-                "form_version",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.DO_NOTHING,
-                    related_name="form_version",
-                    to="iaso.formversion",
-                ),
-            ),
-            (
-                "last_modified_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.PROTECT,
-                    related_name="last_modified_by",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="InstanceFile",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("name", models.TextField(blank=True, null=True)),
-            (
-                "file",
-                models.FileField(blank=True, null=True, upload_to=iaso.models.instances.instance_file_upload_to),
-            ),
-            ("deleted", models.BooleanField(default=False)),
-            (
-                "instance",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.instance"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Mapping",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            (
-                "mapping_type",
-                models.TextField(
-                    choices=[
-                        ("AGGREGATE", "Aggregate"),
-                        ("EVENT", "Event"),
-                        ("EVENT_TRACKER", "Event Tracker"),
-                        ("DERIVED", "Derived"),
-                    ]
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "data_source",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="mappings", to="iaso.datasource"
-                ),
-            ),
-            (
-                "form",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.form"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="MetricType",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255)),
-            ("code", models.CharField(max_length=255)),
-            ("description", models.TextField(blank=True)),
-            ("source", models.CharField(blank=True, max_length=255)),
-            ("units", models.CharField(blank=True, max_length=255)),
-            ("unit_symbol", models.CharField(blank=True, max_length=255)),
-            ("category", models.CharField(blank=True, max_length=255)),
-            ("comments", models.TextField(blank=True)),
-            (
-                "legend_type",
-                models.CharField(
-                    choices=[("threshold", "Threshold"), ("linear", "Linear"), ("ordinal", "Ordinal")],
-                    default="threshold",
-                    max_length=40,
-                ),
-            ),
-            ("legend_config", models.JSONField(blank=True, default=dict)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
-        ],
-        options={
-            "ordering": ["id"],
-        },
-    ),
-    migrations.CreateModel(
-        name="OrgUnit",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255)),
-            ("uuid", models.TextField(blank=True, db_index=True, null=True)),
-            ("custom", models.BooleanField(default=False)),
-            ("validated", models.BooleanField(db_index=True, default=True)),
-            (
-                "validation_status",
-                models.CharField(
-                    choices=[("NEW", "new"), ("VALID", "valid"), ("REJECTED", "rejected")],
-                    default="NEW",
-                    max_length=25,
-                ),
-            ),
-            ("path", django_ltree.fields.PathField(blank=True, null=True, unique=True)),
-            (
-                "aliases",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
-                    blank=True,
-                    null=True,
-                    size=100,
-                ),
-            ),
-            ("sub_source", models.TextField(blank=True, null=True)),
-            ("source_ref", models.TextField(blank=True, db_index=True, null=True)),
-            (
-                "geom",
-                django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, geography=True, null=True, srid=4326),
-            ),
-            (
-                "simplified_geom",
-                django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, geography=True, null=True, srid=4326),
-            ),
-            (
-                "catchment",
-                django.contrib.gis.db.models.fields.MultiPolygonField(blank=True, geography=True, null=True, srid=4326),
-            ),
-            ("geom_ref", models.IntegerField(blank=True, null=True)),
-            ("gps_source", models.TextField(blank=True, null=True)),
-            (
-                "location",
-                django.contrib.gis.db.models.fields.PointField(blank=True, dim=3, geography=True, null=True, srid=4326),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "source_created_at",
-                models.DateTimeField(blank=True, help_text="Creation time on the client device", null=True),
-            ),
-            ("extra_fields", models.JSONField(blank=True, default=dict)),
-            ("opening_date", models.DateField(blank=True, null=True)),
-            ("closed_date", models.DateField(blank=True, null=True)),
-            ("code", models.TextField(blank=True, db_index=True)),
-            (
-                "creator",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-            (
-                "default_image",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="default_for_org_units",
-                    to="iaso.instancefile",
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="OrgUnitType",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255)),
-            ("short_name", models.CharField(max_length=255)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "category",
-                models.CharField(
-                    blank=True,
-                    choices=[
-                        ("COUNTRY", "Country"),
-                        ("REGION", "Region"),
-                        ("DISTRICT", "District"),
-                        ("HF", "Health Facility"),
-                    ],
-                    max_length=8,
-                    null=True,
-                ),
-            ),
-            ("depth", models.PositiveSmallIntegerField(blank=True, null=True)),
-            (
-                "allow_creating_sub_unit_types",
-                models.ManyToManyField(blank=True, related_name="create_types", to="iaso.orgunittype"),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="PaymentLot",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.CharField(max_length=255)),
-            ("comment", models.TextField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "status",
-                models.CharField(
-                    choices=[
-                        ("new", "New"),
-                        ("sent", "Sent"),
-                        ("paid", "Paid"),
-                        ("partially_paid", "Partially Paid"),
-                    ],
-                    default="new",
-                    max_length=40,
-                ),
-            ),
-            (
-                "created_by",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="payment_lot_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Project",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("app_id", models.TextField(blank=True, null=True, unique=True)),
-            ("needs_authentication", models.BooleanField(default=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("external_token", models.UUIDField(default=uuid.uuid4, null=True)),
-            ("min_version", models.IntegerField(null=True)),
-            ("redirection_url", models.URLField(blank=True, null=True)),
-            ("color", models.CharField(blank=True, default="#1976D2", max_length=7, null=True)),
-            (
-                "account",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.account"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="StorageDevice",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("customer_chosen_id", models.CharField(max_length=255)),
-            ("type", models.CharField(choices=[("NFC", "NFC"), ("USB", "USB"), ("SD", "SD")], max_length=8)),
-            (
-                "status",
-                models.CharField(choices=[("OK", "OK"), ("BLACKLISTED", "BLACKLISTED")], default="OK", max_length=64),
-            ),
-            (
-                "status_reason",
-                models.CharField(
-                    blank=True,
-                    choices=[
-                        ("STOLEN", "STOLEN"),
-                        ("LOST", "LOST"),
-                        ("DAMAGED", "DAMAGED"),
-                        ("ABUSE", "ABUSE"),
-                        ("OTHER", "OTHER"),
-                    ],
-                    max_length=64,
-                ),
-            ),
-            ("status_comment", models.TextField(blank=True)),
-            ("status_updated_at", models.DateTimeField(auto_now_add=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
-            (
-                "entity",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.entity"
-                ),
-            ),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.orgunit"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Workflow",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "entity_type",
-                models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="workflow", to="iaso.entitytype"
-                ),
-            ),
-        ],
-        options={
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="WorkflowVersion",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
-            ("name", models.CharField(default="No Name", max_length=50)),
-            (
-                "status",
-                models.CharField(
-                    choices=[("DRAFT", "Draft"), ("UNPUBLISHED", "Unpublished"), ("PUBLISHED", "Published")],
-                    default="DRAFT",
-                    max_length=12,
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "workflow",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="workflow_versions",
-                    to="iaso.workflow",
-                ),
-            ),
-        ],
-        options={
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="WorkflowFollowup",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("order", models.IntegerField(default=0)),
-            ("condition", models.JSONField(default=dict)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("forms", models.ManyToManyField(to="iaso.form")),
-            (
-                "workflow_version",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="follow_ups",
-                    to="iaso.workflowversion",
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="WorkflowChange",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("mapping", models.JSONField(default=dict)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.form")),
-            (
-                "workflow_version",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="changes", to="iaso.workflowversion"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="UserRole",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
-            (
-                "editable_org_unit_types",
-                models.ManyToManyField(blank=True, related_name="editable_by_user_role_set", to="iaso.orgunittype"),
-            ),
-            (
-                "group",
-                models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="iaso_user_role", to="auth.group"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Team",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("name", models.CharField(max_length=100)),
-            ("description", models.TextField(blank=True)),
-            ("path", django_ltree.fields.PathField(unique=True)),
-            (
-                "type",
-                models.CharField(
-                    blank=True,
-                    choices=[("TEAM_OF_TEAMS", "Team of teams"), ("TEAM_OF_USERS", "Team of users")],
-                    max_length=100,
-                    null=True,
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-            (
-                "manager",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.PROTECT,
-                    related_name="managed_teams",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "parent",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.PROTECT,
-                    related_name="sub_teams",
-                    to="iaso.team",
-                ),
-            ),
-            ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
-            ("users", models.ManyToManyField(blank=True, related_name="teams", to=settings.AUTH_USER_MODEL)),
-        ],
-        options={
-            "ordering": ("name",),
-        },
-    ),
-    migrations.CreateModel(
-        name="Task",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("started_at", models.DateTimeField(blank=True, null=True)),
-            ("ended_at", models.DateTimeField(blank=True, null=True)),
-            ("progress_value", models.IntegerField(default=0)),
-            ("end_value", models.IntegerField(default=0)),
-            ("result", models.JSONField(blank=True, null=True)),
-            (
-                "status",
-                models.CharField(
-                    choices=[
-                        ("QUEUED", "Queued"),
-                        ("RUNNING", "Running"),
-                        ("EXPORTED", "Exported"),
-                        ("ERRORED", "Errored"),
-                        ("SKIPPED", "Skipped"),
-                        ("KILLED", "Killed"),
-                        ("SUCCESS", "Success"),
-                    ],
-                    default="QUEUED",
-                    max_length=40,
-                ),
-            ),
-            ("name", models.TextField()),
-            ("params", models.JSONField(blank=True, null=True)),
-            ("queue_answer", models.JSONField(blank=True, null=True)),
-            ("progress_message", models.TextField(blank=True, null=True)),
-            ("should_be_killed", models.BooleanField(default=False)),
-            ("external", models.BooleanField(default=False)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="created_tasks",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "launcher",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-        ],
-        options={
-            "ordering": ["-created_at"],
-        },
-    ),
-    migrations.CreateModel(
-        name="StoragePassword",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("password", models.CharField(max_length=100)),
-            ("is_compromised", models.BooleanField(default=False)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "project",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="storage_passwords", to="iaso.project"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="StorageLogEntry",
-        fields=[
-            ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-            (
-                "operation_type",
-                models.CharField(
-                    choices=[
-                        ("WRITE_PROFILE", "WRITE_PROFILE"),
-                        ("RESET", "RESET"),
-                        ("READ", "READ"),
-                        ("WRITE_RECORD", "WRITE_RECORD"),
-                        ("CHANGE_STATUS", "CHANGE_STATUS"),
-                    ],
-                    max_length=32,
-                ),
-            ),
-            ("performed_at", models.DateTimeField()),
-            (
-                "status",
-                models.CharField(blank=True, choices=[("OK", "OK"), ("BLACKLISTED", "BLACKLISTED")], max_length=64),
-            ),
-            (
-                "status_reason",
-                models.CharField(
-                    blank=True,
-                    choices=[
-                        ("STOLEN", "STOLEN"),
-                        ("LOST", "LOST"),
-                        ("DAMAGED", "DAMAGED"),
-                        ("ABUSE", "ABUSE"),
-                        ("OTHER", "OTHER"),
-                    ],
-                    max_length=64,
-                ),
-            ),
-            ("status_comment", models.TextField(blank=True)),
-            (
-                "device",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="log_entries", to="iaso.storagedevice"
-                ),
-            ),
-            (
-                "entity",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.entity"
-                ),
-            ),
-            (
-                "instances",
-                models.ManyToManyField(blank=True, related_name="storage_log_entries", to="iaso.instance"),
-            ),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.orgunit"
-                ),
-            ),
-            (
-                "performed_by",
-                models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
-            ),
-        ],
-        options={
-            "verbose_name_plural": "storage log entries",
-            "ordering": ["-performed_at"],
-        },
-    ),
-    migrations.CreateModel(
-        name="SourceVersion",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("number", models.IntegerField()),
-            ("description", models.TextField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "data_source",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="versions", to="iaso.datasource"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="ReportVersion",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("file", models.FileField(upload_to=iaso.models.reports.report_version_upload_to)),
-            ("name", models.CharField(max_length=255)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "status",
-                models.CharField(
-                    choices=[("published", "Published"), ("unpublished", "Unpublished")],
-                    default="unpublished",
-                    max_length=255,
-                ),
-            ),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="report_version_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "updated_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="report_version_updated_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="Report",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("name", models.CharField(max_length=255)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
-            (
-                "published_version",
-                models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.reportversion"),
-            ),
-        ],
-        options={
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="RecordType",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("description", models.TextField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("projects", models.ManyToManyField(blank=True, related_name="record_types", to="iaso.project")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Record",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("value", models.DecimalField(decimal_places=10, max_digits=19)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"
-                ),
-            ),
-            (
-                "record_type",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.recordtype"
-                ),
-            ),
-            (
-                "version",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="ProjectFeatureFlags",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("configuration", models.JSONField(default=None, null=True)),
-            ("featureflag", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.featureflag")),
-            ("project", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.project")),
-        ],
-        options={
-            "db_table": "iaso_project_feature_flags",
-        },
-    ),
-    migrations.AddField(
-        model_name="project",
-        name="feature_flags",
-        field=models.ManyToManyField(
-            blank=True, related_name="+", through="iaso.ProjectFeatureFlags", to="iaso.featureflag"
+    operations = [
+        CreateExtension("citext"),
+        CreateExtension("ltree"),
+        # Now create the collation
+        migrations.RunSQL(
+            """
+            -- This SQL creates a case-insensitive collation
+            CREATE COLLATION IF NOT EXISTS case_insensitive (
+                PROVIDER = 'icu',
+                LOCALE = 'en-US-u-ks-level2',
+                DETERMINISTIC = FALSE
+            );
+            """,
+            # You should also add a reverse SQL command for un-doing this
+            reverse_sql="""
+            DROP COLLATION IF EXISTS case_insensitive;
+            """,
         ),
-    ),
-    migrations.AddField(
-        model_name="project",
-        name="forms",
-        field=models.ManyToManyField(blank=True, related_name="projects", to="iaso.form"),
-    ),
-    migrations.CreateModel(
-        name="Profile",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("external_user_id", models.CharField(blank=True, max_length=512, null=True)),
-            ("organization", models.CharField(blank=True, max_length=512, null=True)),
-            ("language", models.CharField(blank=True, max_length=512, null=True)),
-            (
-                "dhis2_id",
-                models.CharField(blank=True, help_text="Dhis2 user ID for SSO Auth", max_length=128, null=True),
-            ),
-            ("home_page", models.CharField(blank=True, max_length=512, null=True)),
-            (
-                "phone_number",
-                phonenumber_field.modelfields.PhoneNumberField(blank=True, max_length=128, region=None),
-            ),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
-            (
-                "editable_org_unit_types",
-                models.ManyToManyField(blank=True, related_name="editable_by_iaso_profile_set", to="iaso.orgunittype"),
-            ),
-            ("org_units", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.orgunit")),
-            ("projects", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.project")),
-            (
-                "user",
-                models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="iaso_profile",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            ("user_roles", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.userrole")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="PotentialPayment",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "payment_lot",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="potential_payments",
-                    to="iaso.paymentlot",
-                ),
-            ),
-            (
-                "task",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="potential_payments",
-                    to="iaso.task",
-                ),
-            ),
-            (
-                "user",
-                models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="potential_payment",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Planning",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("name", models.CharField(max_length=100)),
-            ("description", models.TextField(blank=True)),
-            ("started_at", models.DateField(blank=True, null=True)),
-            ("ended_at", models.DateField(blank=True, null=True)),
-            ("published_at", models.DateTimeField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-            ("forms", models.ManyToManyField(related_name="plannings", to="iaso.form")),
-            ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit")),
-            ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
-            ("team", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.team")),
-        ],
-        options={
-            "ordering": ("name",),
-        },
-    ),
-    migrations.AddField(
-        model_name="paymentlot",
-        name="task",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.SET_NULL,
-            related_name="payment_lots",
-            to="iaso.task",
-        ),
-    ),
-    migrations.AddField(
-        model_name="paymentlot",
-        name="updated_by",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.SET_NULL,
-            related_name="payment_lot_updated_set",
-            to=settings.AUTH_USER_MODEL,
-        ),
-    ),
-    migrations.CreateModel(
-        name="Payment",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "status",
-                models.CharField(
-                    choices=[("pending", "Pending"), ("sent", "Sent"), ("rejected", "Rejected"), ("paid", "Paid")],
-                    default="pending",
-                    max_length=40,
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="payment_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "payment_lot",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="payments",
-                    to="iaso.paymentlot",
-                ),
-            ),
-            (
-                "updated_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="payment_updated_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "user",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="payment", to=settings.AUTH_USER_MODEL
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Page",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("content", models.TextField(blank=True, null=True)),
-            ("needs_authentication", models.BooleanField(default=True)),
-            ("slug", models.SlugField(max_length=1000, unique=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "type",
-                models.CharField(
-                    choices=[
-                        ("RAW", "Raw html"),
-                        ("TEXT", "Text"),
-                        ("IFRAME", "Iframe"),
-                        ("POWERBI", "PowerBI report"),
-                        ("SUPERSET", "Superset dashboard"),
-                    ],
-                    default="RAW",
-                    max_length=40,
-                ),
-            ),
-            ("powerbi_group_id", models.TextField(blank=True, null=True)),
-            ("powerbi_report_id", models.TextField(blank=True, null=True)),
-            ("powerbi_dataset_id", models.TextField(blank=True, null=True)),
-            ("powerbi_filters", models.JSONField(blank=True, null=True)),
-            (
-                "powerbi_language",
-                models.CharField(
-                    blank=True,
-                    help_text="Language and locale for the PowerBI embedded report e.g en-us or fr-be",
-                    max_length=20,
-                    null=True,
-                ),
-            ),
-            ("superset_dashboard_id", models.TextField(blank=True, null=True)),
-            ("superset_dashboard_ui_config", models.JSONField(blank=True, null=True)),
-            (
-                "account",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
-                ),
-            ),
-            ("users", models.ManyToManyField(blank=True, related_name="pages", to=settings.AUTH_USER_MODEL)),
-        ],
-    ),
-    migrations.AddField(
-        model_name="orgunittype",
-        name="projects",
-        field=models.ManyToManyField(related_name="unit_types", to="iaso.project"),
-    ),
-    migrations.AddField(
-        model_name="orgunittype",
-        name="reference_forms",
-        field=models.ManyToManyField(blank=True, related_name="reference_of_org_unit_types", to="iaso.form"),
-    ),
-    migrations.AddField(
-        model_name="orgunittype",
-        name="sub_unit_types",
-        field=models.ManyToManyField(blank=True, related_name="super_types", to="iaso.orgunittype"),
-    ),
-    migrations.CreateModel(
-        name="OrgUnitReferenceInstance",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.form")),
-            ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
-            ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="OrgUnitChangeRequestConfiguration",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("org_units_editable", models.BooleanField(default=True)),
-            ("type", models.CharField(choices=[("creation", "Creation"), ("edition", "Edition")], max_length=10)),
-            (
-                "editable_fields",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, max_length=30),
-                    blank=True,
-                    default=list,
-                    help_text="List of fields that can be edited in an OrgUnit",
-                    size=None,
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="org_unit_change_request_configurations_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "editable_reference_forms",
-                models.ManyToManyField(
-                    blank=True, related_name="org_unit_change_request_configurations", to="iaso.form"
-                ),
-            ),
-            (
-                "group_sets",
-                models.ManyToManyField(
-                    blank=True, related_name="org_unit_change_request_configurations", to="iaso.groupset"
-                ),
-            ),
-            (
-                "org_unit_type",
-                models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunittype"),
-            ),
-            (
-                "other_groups",
-                models.ManyToManyField(
-                    blank=True, related_name="org_unit_change_request_configurations", to="iaso.group"
-                ),
-            ),
-            (
-                "possible_parent_types",
-                models.ManyToManyField(
-                    blank=True,
-                    related_name="org_unit_change_request_configurations_parent_level",
-                    to="iaso.orgunittype",
-                ),
-            ),
-            (
-                "possible_types",
-                models.ManyToManyField(
-                    blank=True,
-                    related_name="org_unit_change_request_configurations_same_level",
-                    to="iaso.orgunittype",
-                ),
-            ),
-            ("project", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.project")),
-            (
-                "updated_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="org_unit_change_request_configurations_updated_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "verbose_name": "Org unit change request configuration",
-        },
-    ),
-    migrations.CreateModel(
-        name="OrgUnitChangeRequest",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("uuid", models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
-            (
-                "status",
-                models.CharField(
-                    choices=[("new", "New"), ("rejected", "Rejected"), ("approved", "Approved")],
-                    default="new",
-                    max_length=40,
-                ),
-            ),
-            (
-                "kind",
-                models.CharField(
-                    choices=[("org_unit_creation", "Org Unit Creation"), ("org_unit_change", "Org Unit Change")],
-                    default="org_unit_change",
-                    max_length=40,
-                ),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("rejection_comment", models.TextField(blank=True)),
-            ("new_name", models.CharField(blank=True, max_length=255)),
-            (
-                "new_location",
-                django.contrib.gis.db.models.fields.PointField(blank=True, dim=3, geography=True, null=True, srid=4326),
-            ),
-            ("new_location_accuracy", models.DecimalField(blank=True, decimal_places=2, max_digits=7, null=True)),
-            ("new_opening_date", models.DateField(blank=True, null=True)),
-            ("new_closed_date", models.DateField(blank=True, null=True)),
-            (
-                "requested_fields",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, max_length=30),
-                    blank=True,
-                    default=list,
-                    help_text="List of fields names for which a change is requested.",
-                    size=None,
-                ),
-            ),
-            (
-                "approved_fields",
-                django.contrib.postgres.fields.ArrayField(
-                    base_field=models.CharField(blank=True, max_length=30),
-                    blank=True,
-                    default=list,
-                    help_text="List of approved fields names (only a subset can be approved).",
-                    size=None,
-                ),
-            ),
-            ("old_name", models.CharField(blank=True, max_length=255)),
-            (
-                "old_location",
-                django.contrib.gis.db.models.fields.PointField(blank=True, dim=3, geography=True, null=True, srid=4326),
-            ),
-            ("old_opening_date", models.DateField(blank=True, null=True)),
-            ("old_closed_date", models.DateField(blank=True, null=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="org_unit_change_created_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "data_source_synchronization",
-                models.ForeignKey(
-                    blank=True,
-                    help_text="The data source synchronization that generated this change request.",
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="change_requests",
-                    to="iaso.datasourceversionssynchronization",
-                ),
-            ),
-            ("new_groups", models.ManyToManyField(blank=True, to="iaso.group")),
-            (
-                "new_org_unit_type",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunittype"
-                ),
-            ),
-            (
-                "new_parent",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="org_unit_change_parents_set",
-                    to="iaso.orgunit",
-                ),
-            ),
-            ("new_reference_instances", models.ManyToManyField(blank=True, to="iaso.instance")),
-            ("old_groups", models.ManyToManyField(blank=True, related_name="+", to="iaso.group")),
-            (
-                "old_org_unit_type",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="+",
-                    to="iaso.orgunittype",
-                ),
-            ),
-            (
-                "old_parent",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="+",
-                    to="iaso.orgunit",
-                ),
-            ),
-            ("old_reference_instances", models.ManyToManyField(blank=True, related_name="+", to="iaso.instance")),
-            ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit")),
-            (
-                "payment",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="change_requests",
-                    to="iaso.payment",
-                ),
-            ),
-            (
-                "potential_payment",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="change_requests",
-                    to="iaso.potentialpayment",
-                ),
-            ),
-            (
-                "updated_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="org_unit_change_updated_set",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "verbose_name": "Org unit change request",
-        },
-    ),
-    migrations.AddField(
-        model_name="orgunit",
-        name="org_unit_type",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.CASCADE,
-            related_name="org_units",
-            to="iaso.orgunittype",
-        ),
-    ),
-    migrations.AddField(
-        model_name="orgunit",
-        name="parent",
-        field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"),
-    ),
-    migrations.AddField(
-        model_name="orgunit",
-        name="reference_instances",
-        field=models.ManyToManyField(blank=True, through="iaso.OrgUnitReferenceInstance", to="iaso.instance"),
-    ),
-    migrations.AddField(
-        model_name="orgunit",
-        name="version",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
-        ),
-    ),
-    migrations.CreateModel(
-        name="MetricValue",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("year", models.IntegerField(blank=True, null=True)),
-            ("value", models.FloatField(blank=True, null=True)),
-            ("string_value", models.TextField(blank=True, default="")),
-            ("metric_type", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.metrictype")),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="MatchingAlgorithm",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("description", models.TextField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("projects", models.ManyToManyField(blank=True, related_name="match_algos", to="iaso.project")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="MappingVersion",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("json", models.JSONField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "form_version",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="mapping_versions",
-                    to="iaso.formversion",
-                ),
-            ),
-            (
-                "mapping",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="versions",
-                    to="iaso.mapping",
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Link",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("validated", models.BooleanField(default=False)),
-            ("validation_date", models.DateTimeField(auto_now=True, null=True)),
-            ("similarity_score", models.SmallIntegerField(null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "algorithm_run",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.algorithmrun"
-                ),
-            ),
-            (
-                "destination",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="source_set",
-                    to="iaso.orgunit",
-                ),
-            ),
-            (
-                "source",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="destination_set",
-                    to="iaso.orgunit",
-                ),
-            ),
-            (
-                "validator",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="JsonDataStore",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("slug", models.SlugField()),
-            ("content", models.JSONField()),
-            ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="InstanceLock",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("locked_at", models.DateTimeField(auto_now_add=True)),
-            ("unlocked_at", models.DateTimeField(blank=True, null=True)),
-            ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
-            (
-                "locked_by",
-                models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
-            ),
-            (
-                "top_org_unit",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.PROTECT, related_name="instance_lock", to="iaso.orgunit"
-                ),
-            ),
-            (
-                "unlocked_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.PROTECT,
-                    related_name="+",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "ordering": ["-locked_at"],
-        },
-    ),
-    migrations.AddField(
-        model_name="instance",
-        name="org_unit",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.orgunit"
-        ),
-    ),
-    migrations.AddField(
-        model_name="instance",
-        name="planning",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.SET_NULL,
-            related_name="instances",
-            to="iaso.planning",
-        ),
-    ),
-    migrations.AddField(
-        model_name="instance",
-        name="project",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.project"
-        ),
-    ),
-    migrations.CreateModel(
-        name="ImportGPKG",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("file", models.FileField(upload_to=iaso.models.import_gpkg.import_gpkg_upload_to)),
-            ("version_number", models.IntegerField(blank=True, null=True)),
-            ("description", models.CharField(blank=True, max_length=200, null=True)),
-            ("default_valid", models.BooleanField(default=False)),
-            ("data_source", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.datasource")),
-        ],
-    ),
-    migrations.AddField(
-        model_name="groupset",
-        name="source_version",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
-        ),
-    ),
-    migrations.AddField(
-        model_name="group",
-        name="org_units",
-        field=models.ManyToManyField(blank=True, related_name="groups", to="iaso.orgunit"),
-    ),
-    migrations.AddField(
-        model_name="group",
-        name="source_version",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
-        ),
-    ),
-    migrations.CreateModel(
-        name="FormPredefinedFilter",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("short_name", models.CharField(max_length=25)),
-            ("json_logic", models.JSONField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "form",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="predefined_filters", to="iaso.form"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="FormAttachment",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("file", models.FileField(upload_to=iaso.models.forms.form_attachment_upload_to)),
-            ("file_last_scan", models.DateTimeField(blank=True, null=True)),
-            (
-                "file_scan_status",
-                models.CharField(
-                    choices=[
-                        ("CLEAN", "Clean"),
-                        ("PENDING", "Pending"),
-                        ("INFECTED", "Infected"),
-                        ("ERROR", "Error"),
-                    ],
-                    default="PENDING",
-                    max_length=10,
-                ),
-            ),
-            ("md5", models.CharField(max_length=32)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "form",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="attachments", to="iaso.form"
-                ),
-            ),
-        ],
-    ),
-    migrations.AddField(
-        model_name="form",
-        name="org_unit_types",
-        field=models.ManyToManyField(blank=True, to="iaso.orgunittype"),
-    ),
-    migrations.CreateModel(
-        name="ExternalCredentials",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("name", models.TextField()),
-            ("login", models.TextField()),
-            ("password", models.TextField()),
-            ("url", models.TextField()),
-            (
-                "account",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="credentials", to="iaso.account"
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="ExportStatus",
-        fields=[
-            ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "status",
-                models.TextField(
-                    choices=[
-                        ("QUEUED", "Queued"),
-                        ("RUNNING", "Running"),
-                        ("EXPORTED", "Exported"),
-                        ("ERRORED", "Errored"),
-                        ("SKIPPED", "Skipped"),
-                        ("KILLED", "Killed"),
-                        ("SUCCESS", "Success"),
-                    ],
-                    default="QUEUED",
-                ),
-            ),
-            ("last_error_message", models.TextField(blank=True, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("export_logs", models.ManyToManyField(blank=True, to="iaso.exportlog")),
-            (
-                "export_request",
-                models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.exportrequest"),
-            ),
-            ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
-            (
-                "mapping_version",
-                models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.mappingversion"),
-            ),
-        ],
-    ),
-    migrations.AddField(
-        model_name="entitytype",
-        name="reference_form",
-        field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.form"),
-    ),
-    migrations.CreateModel(
-        name="EntityDuplicateAnalyzis",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "algorithm",
-                models.CharField(choices=[("levenshtein", "Levenshtein")], default="levenshtein", max_length=20),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("metadata", models.JSONField(default=dict)),
-            ("finished_at", models.DateTimeField(blank=True, null=True)),
-            (
-                "task",
-                models.ForeignKey(
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="entity_duplicate_analyzis",
-                    to="iaso.task",
-                ),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="EntityDuplicate",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            (
-                "validation_status",
-                models.CharField(
-                    choices=[("PENDING", "Pending"), ("VALIDATED", "Validated"), ("IGNORED", "Ignored")],
-                    default="PENDING",
-                    max_length=20,
-                ),
-            ),
-            (
-                "type_of_relation",
-                models.CharField(
-                    choices=[("DUPLICATE", "Duplicate"), ("COUSIN", "Cousin"), ("PRODUCED", "Produced")],
-                    default="DUPLICATE",
-                    max_length=20,
-                ),
-            ),
-            ("similarity_score", models.SmallIntegerField(null=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("metadata", models.JSONField(blank=True, default=dict)),
-            (
-                "analyze",
-                models.ForeignKey(
-                    default=None,
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="duplicates",
-                    to="iaso.entityduplicateanalyzis",
-                ),
-            ),
-            (
-                "entity1",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="duplicates1", to="iaso.entity"
-                ),
-            ),
-            (
-                "entity2",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE, related_name="duplicates2", to="iaso.entity"
-                ),
-            ),
-        ],
-    ),
-    migrations.AddField(
-        model_name="entity",
-        name="attributes",
-        field=models.OneToOneField(
-            blank=True,
-            help_text="instance",
-            null=True,
-            on_delete=django.db.models.deletion.PROTECT,
-            related_name="attributes",
-            to="iaso.instance",
-        ),
-    ),
-    migrations.AddField(
-        model_name="entity",
-        name="entity_type",
-        field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.entitytype"),
-    ),
-    migrations.AddField(
-        model_name="entity",
-        name="merged_to",
-        field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.entity"),
-    ),
-    migrations.CreateModel(
-        name="DevicePosition",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
-            ("location", django.contrib.gis.db.models.fields.PointField(dim=3, srid=4326)),
-            (
-                "transport",
-                models.CharField(choices=[("car", "Car"), ("foot", "Foot"), ("truck", "Truc")], max_length=32),
-            ),
-            ("accuracy", models.DecimalField(decimal_places=2, max_digits=7)),
-            ("captured_at", models.DateTimeField()),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("device", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.device")),
-        ],
-    ),
-    migrations.CreateModel(
-        name="DeviceOwnership",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("start", models.DateTimeField(auto_now_add=True)),
-            ("end", models.DateTimeField(null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("device", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.device")),
-            (
-                "project",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.project"
-                ),
-            ),
-            ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-        ],
-    ),
-    migrations.AddField(
-        model_name="device",
-        name="projects",
-        field=models.ManyToManyField(blank=True, related_name="devices", to="iaso.project"),
-    ),
-    migrations.AddField(
-        model_name="datasourceversionssynchronization",
-        name="source_version_to_compare_with",
-        field=models.ForeignKey(
-            help_text="The version of the pyramid to use as a comparison.",
-            on_delete=django.db.models.deletion.CASCADE,
-            related_name="synchronized_as_source_version_to_compare_with",
-            to="iaso.sourceversion",
-        ),
-    ),
-    migrations.AddField(
-        model_name="datasourceversionssynchronization",
-        name="source_version_to_update",
-        field=models.ForeignKey(
-            help_text="The version of the pyramid for which we want to generate change requests.",
-            on_delete=django.db.models.deletion.CASCADE,
-            related_name="synchronized_as_source_version_to_update",
-            to="iaso.sourceversion",
-        ),
-    ),
-    migrations.AddField(
-        model_name="datasourceversionssynchronization",
-        name="sync_task",
-        field=models.OneToOneField(
-            blank=True,
-            help_text="The background task that used the diff to create change requests.",
-            null=True,
-            on_delete=django.db.models.deletion.SET_NULL,
-            related_name="+",
-            to="iaso.task",
-        ),
-    ),
-    migrations.AddField(
-        model_name="datasource",
-        name="credentials",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.SET_NULL,
-            related_name="data_sources",
-            to="iaso.externalcredentials",
-        ),
-    ),
-    migrations.AddField(
-        model_name="datasource",
-        name="default_version",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.sourceversion"
-        ),
-    ),
-    migrations.AddField(
-        model_name="datasource",
-        name="projects",
-        field=models.ManyToManyField(blank=True, related_name="data_sources", to="iaso.project"),
-    ),
-    migrations.CreateModel(
-        name="Config",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("slug", models.SlugField(unique=True)),
-            ("content", models.JSONField()),
-            ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            ("users", models.ManyToManyField(blank=True, related_name="jsonconfigs", to=settings.AUTH_USER_MODEL)),
-        ],
-    ),
-    migrations.CreateModel(
-        name="CommentIaso",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("object_pk", models.CharField(db_index=True, max_length=64, verbose_name="object ID")),
-            ("user_name", models.CharField(blank=True, max_length=50, verbose_name="user's name")),
-            ("user_email", models.EmailField(blank=True, max_length=254, verbose_name="user's email address")),
-            ("user_url", models.URLField(blank=True, verbose_name="user's URL")),
-            ("comment", models.TextField(max_length=3000, verbose_name="comment")),
-            ("submit_date", models.DateTimeField(db_index=True, default=None, verbose_name="date/time submitted")),
-            (
-                "ip_address",
-                models.GenericIPAddressField(blank=True, null=True, unpack_ipv4=True, verbose_name="IP address"),
-            ),
-            (
-                "is_public",
-                models.BooleanField(
-                    default=True,
-                    help_text="Uncheck this box to make the comment effectively disappear from the site.",
-                    verbose_name="is public",
-                ),
-            ),
-            (
-                "is_removed",
-                models.BooleanField(
-                    db_index=True,
-                    default=False,
-                    help_text='Check this box if the comment is inappropriate. A "This comment has been removed" message will be displayed instead.',
-                    verbose_name="is removed",
-                ),
-            ),
-            (
-                "content_type",
-                models.ForeignKey(
-                    limit_choices_to={"model": "orgunit"},
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="content_type_set_for_%(class)s2",
-                    to="contenttypes.contenttype",
-                    verbose_name="content type",
-                ),
-            ),
-            (
-                "parent",
-                models.ForeignKey(
-                    null=True,
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="children",
-                    to="iaso.commentiaso",
-                ),
-            ),
-            ("site", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="sites.site")),
-            (
-                "user",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="%(class)s_comments",
-                    to=settings.AUTH_USER_MODEL,
-                    verbose_name="user",
-                ),
-            ),
-        ],
-        options={
-            "verbose_name": "comment",
-            "verbose_name_plural": "comments",
-            "ordering": ("submit_date",),
-            "permissions": [("can_moderate", "Can moderate comments")],
-            "abstract": False,
-        },
-    ),
-    migrations.CreateModel(
-        name="BulkCreateUserCsvFile",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            (
-                "file",
-                models.FileField(upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_csv_file_upload_to),
-            ),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            (
-                "account",
-                models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"),
-            ),
-            (
-                "created_by",
-                models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
-            ),
-        ],
-    ),
-    migrations.CreateModel(
-        name="Assignment",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "created_by",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="assignments_created",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "org_unit",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"
-                ),
-            ),
-            (
-                "planning",
-                models.ForeignKey(
-                    blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.planning"
-                ),
-            ),
-            (
-                "team",
-                models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.team"),
-            ),
-            (
-                "user",
-                models.ForeignKey(
-                    blank=True,
-                    null=True,
-                    on_delete=django.db.models.deletion.SET_NULL,
-                    related_name="assignments",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "ordering": ("planning", "created_at"),
-        },
-    ),
-    migrations.AddField(
-        model_name="algorithmrun",
-        name="algorithm",
-        field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.matchingalgorithm"),
-    ),
-    migrations.AddField(
-        model_name="algorithmrun",
-        name="launcher",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
-        ),
-    ),
-    migrations.AddField(
-        model_name="algorithmrun",
-        name="version_1",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.CASCADE,
-            related_name="runs_where_destination",
-            to="iaso.sourceversion",
-        ),
-    ),
-    migrations.AddField(
-        model_name="algorithmrun",
-        name="version_2",
-        field=models.ForeignKey(
-            blank=True,
-            null=True,
-            on_delete=django.db.models.deletion.CASCADE,
-            related_name="runs_where_source",
-            to="iaso.sourceversion",
-        ),
-    ),
-    migrations.AddField(
-        model_name="account",
-        name="default_version",
-        field=models.ForeignKey(
-            blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.sourceversion"
-        ),
-    ),
-    migrations.AddField(
-        model_name="account",
-        name="feature_flags",
-        field=models.ManyToManyField(to="iaso.accountfeatureflag"),
-    ),
-    migrations.CreateModel(
-        name="TenantUser",
-        fields=[
-            ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-            ("created_at", models.DateTimeField(auto_now_add=True)),
-            ("updated_at", models.DateTimeField(auto_now=True)),
-            (
-                "account_user",
-                models.OneToOneField(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="tenant_user",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-            (
-                "main_user",
-                models.ForeignKey(
-                    on_delete=django.db.models.deletion.CASCADE,
-                    related_name="tenant_users",
-                    to=settings.AUTH_USER_MODEL,
-                ),
-            ),
-        ],
-        options={
-            "indexes": [
-                models.Index(fields=["created_at"], name="iaso_tenant_created_003e12_idx"),
-                models.Index(fields=["updated_at"], name="iaso_tenant_updated_31049b_idx"),
+        migrations.CreateModel(
+            name="CorePermissionSupport",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
             ],
-        },
-    ),
-    migrations.AddConstraint(
-        model_name="tenantuser",
-        constraint=models.UniqueConstraint(fields=("main_user", "account_user"), name="main_user_user_constraint"),
-    ),
-    migrations.AddIndex(
-        model_name="task",
-        index=models.Index(fields=["created_at"], name="iaso_task_created_25fae0_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="task",
-        index=models.Index(fields=["name"], name="iaso_task_name_5f0019_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="task",
-        index=models.Index(fields=["status"], name="iaso_task_status_bb234e_idx"),
-    ),
-    migrations.AlterUniqueTogether(
-        name="storagedevice",
-        unique_together={("customer_chosen_id", "account", "type")},
-    ),
-    migrations.AddConstraint(
-        model_name="sourceversion",
-        constraint=models.UniqueConstraint(fields=("data_source", "number"), name="unique_number_data_source_version"),
-    ),
-    migrations.AddConstraint(
-        model_name="profile",
-        constraint=models.UniqueConstraint(fields=("dhis2_id", "account"), name="dhis2_id_constraint"),
-    ),
-    migrations.AlterUniqueTogether(
-        name="orgunitreferenceinstance",
-        unique_together={("org_unit", "form")},
-    ),
-    migrations.AddIndex(
-        model_name="orgunitchangerequestconfiguration",
-        index=models.Index(fields=["project"], name="iaso_orguni_project_6d2cbe_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunitchangerequestconfiguration",
-        index=models.Index(fields=["org_unit_type"], name="iaso_orguni_org_uni_a6fdd1_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunitchangerequestconfiguration",
-        index=models.Index(fields=["type"], name="iaso_orguni_type_c2bf6e_idx"),
-    ),
-    migrations.AddConstraint(
-        model_name="orgunitchangerequestconfiguration",
-        constraint=models.UniqueConstraint(
-            condition=models.Q(("deleted_at__isnull", True)),
-            fields=("project", "org_unit_type", "type"),
-            name="unique_project_org_unit_type_if_not_deleted",
+            options={
+                "permissions": (
+                    ("iaso_forms", "Formulaires"),
+                    ("iaso_forms_stats", "Statistiques pour les formulaires"),
+                    ("iaso_mappings", "Correspondances avec DHIS2"),
+                    ("iaso_modules", "modules"),
+                    ("iaso_completeness", "Complétude des données"),
+                    ("iaso_org_units", "Unités d'organisations"),
+                    ("iaso_org_units_history", "Historique des unités d'organisation"),
+                    ("iaso_org_units_read", "Lire les unités d'organisations"),
+                    ("iaso_registry_write", "Editer le Registre"),
+                    ("iaso_registry_read", "Lire le Registre"),
+                    ("iaso_links", "Correspondances sources"),
+                    ("iaso_users", "Users"),
+                    ("iaso_users_managed", "Users managed"),
+                    ("iaso_pages", "Pages"),
+                    ("iaso_projects", "Projets"),
+                    ("iaso_sources", "Sources"),
+                    ("iaso_sources_can_change_default_version", "Can change the default version of a data source"),
+                    ("iaso_data_tasks", "Tâches"),
+                    ("iaso_submissions", "Soumissions"),
+                    ("iaso_update_submission", "Editer soumissions"),
+                    ("iaso_planning_write", "Editer le planning"),
+                    ("iaso_planning_read", "Lire le planning"),
+                    ("iaso_reports", "Reports"),
+                    ("iaso_teams", "Equipes"),
+                    ("iaso_assignments", "Attributions"),
+                    ("iaso_entities", "Entities"),
+                    ("iaso_entity_type_write", "Write entity type"),
+                    ("iaso_storages", "Storages"),
+                    ("iaso_completeness_stats", "Completeness stats"),
+                    ("iaso_workflows", "Workflows"),
+                    ("iaso_entity_duplicates_read", "Read Entity duplicates"),
+                    ("iaso_entity_duplicates_write", "Write Entity duplicates"),
+                    ("iaso_user_roles", "Manage user roles"),
+                    ("iaso_datastore_read", "Read data store"),
+                    ("iaso_datastore_write", "Write data store"),
+                    ("iaso_org_unit_types", "Org unit types"),
+                    ("iaso_org_unit_groups", "Org unit groups"),
+                    ("iaso_org_unit_change_request_review", "Org unit change request review"),
+                    ("iaso_org_unit_change_request_configurations", "Org unit change request configurations"),
+                    ("iaso_write_sources", "Write data source"),
+                    ("iaso_page_write", "Write page"),
+                    ("iaso_payments", "Payments page"),
+                    ("iaso_mobile_app_offline_setup", "Mobile app offline setup"),
+                ),
+                "managed": False,
+                "default_permissions": [],
+            },
         ),
-    ),
-    migrations.AddIndex(
-        model_name="orgunitchangerequest",
-        index=models.Index(fields=["created_at"], name="iaso_orguni_created_c06ca8_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunitchangerequest",
-        index=models.Index(fields=["updated_at"], name="iaso_orguni_updated_205eb3_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=django.contrib.postgres.indexes.GistIndex(
-            buffering=True, fields=["path"], name="iaso_orguni_path_d11c66_gist"
+        migrations.CreateModel(
+            name="Account",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField(unique=True, validators=[django.core.validators.MinLengthValidator(1)])),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("user_manual_path", models.TextField(blank=True, null=True)),
+                (
+                    "modules",
+                    iaso.models.base.ChoiceArrayField(
+                        base_field=models.CharField(
+                            choices=[
+                                ("DATA_COLLECTION_FORMS", "Data collection - Forms"),
+                                ("DEFAULT", "Default"),
+                                ("DHIS2_MAPPING", "DHIS2 mapping"),
+                                ("EMBEDDED_LINKS", "Embedded links"),
+                                ("ENTITIES", "Entities"),
+                                ("EXTERNAL_STORAGE", "External storage"),
+                                ("PLANNING", "Planning"),
+                                ("POLIO_PROJECT", "Polio project"),
+                                ("REGISTRY", "Registry"),
+                                ("PAYMENTS", "Payments"),
+                                ("COMPLETENESS_PER_PERIOD", "Completeness per Period"),
+                                ("TRYPELIM_PROJECT", "Trypelim project"),
+                                ("DATA_VALIDATION", "Data validation"),
+                            ],
+                            max_length=100,
+                        ),
+                        blank=True,
+                        default=list,
+                        null=True,
+                        size=None,
+                    ),
+                ),
+                ("analytics_script", models.TextField(blank=True, null=True)),
+                ("custom_translations", models.JSONField(blank=True, null=True)),
+            ],
         ),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=django.contrib.postgres.indexes.GinIndex(fields=["extra_fields"], name="iaso_orguni_extra_f_a15e77_gin"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=models.Index(fields=["created_at"], name="iaso_orguni_created_51218f_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=models.Index(fields=["updated_at"], name="iaso_orguni_updated_8eca3a_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=models.Index(fields=["source_created_at"], name="iaso_orguni_source__c29c2f_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="orgunit",
-        index=models.Index(fields=["org_unit_type", "version"], name="iaso_orguni_org_uni_28a2c8_idx"),
-    ),
-    migrations.AddConstraint(
-        model_name="orgunit",
-        constraint=models.UniqueConstraint(
-            condition=models.Q(models.Q(("code", ""), _negated=True), models.Q(("validation_status", "VALID"))),
-            fields=("code", "version"),
-            name="unique_code_per_source_version_if_not_blank_and_valid_status",
+        migrations.CreateModel(
+            name="AccountFeatureFlag",
+            fields=[
+                ("name", models.CharField(max_length=255)),
+                ("code", models.CharField(max_length=255, primary_key=True, serialize=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+            ],
         ),
-    ),
-    migrations.AlterUniqueTogether(
-        name="metricvalue",
-        unique_together={("metric_type", "org_unit", "year")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="metrictype",
-        unique_together={("account", "code")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="mappingversion",
-        unique_together={("form_version", "name")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="jsondatastore",
-        unique_together={("slug", "account", "org_unit")},
-    ),
-    migrations.AddIndex(
-        model_name="instance",
-        index=models.Index(fields=["created_at"], name="iaso_instan_created_04174a_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="instance",
-        index=models.Index(fields=["updated_at"], name="iaso_instan_updated_1d2d65_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="instance",
-        index=models.Index(fields=["source_created_at"], name="iaso_instan_source__8a77f6_idx"),
-    ),
-    migrations.AddIndex(
-        model_name="instance",
-        index=models.Index(fields=["source_updated_at"], name="iaso_instan_source__da894d_idx"),
-    ),
-    migrations.AlterUniqueTogether(
-        name="formattachment",
-        unique_together={("form", "name")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="entitytype",
-        unique_together={("name", "account")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="entityduplicate",
-        unique_together={("entity1", "entity2")},
-    ),
-    migrations.AlterUniqueTogether(
-        name="assignment",
-        unique_together={("planning", "org_unit")},
-    ),
-]
+        migrations.CreateModel(
+            name="AlgorithmRun",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("ended_at", models.DateTimeField(blank=True, null=True)),
+                ("result", models.JSONField(blank=True, null=True)),
+                ("finished", models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="DataSource",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255, unique=True)),
+                ("read_only", models.BooleanField(default=False)),
+                ("description", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "tree_config_status_fields",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, choices=[], max_length=30),
+                        blank=True,
+                        default=list,
+                        help_text="List of statuses used for display configuration of the OrgUnit tree.",
+                        size=None,
+                    ),
+                ),
+                ("public", models.BooleanField(default=False)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="DataSourceVersionsSynchronization",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "name",
+                    models.CharField(
+                        help_text="Used in the UI e.g. to filter Change Requests by Data Source Synchronization operations.",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "json_diff",
+                    models.JSONField(blank=True, help_text="The diff used to create change requests.", null=True),
+                ),
+                (
+                    "diff_config",
+                    models.TextField(
+                        blank=True, help_text="A string representation of the parameters used for the diff."
+                    ),
+                ),
+                (
+                    "count_create",
+                    models.PositiveIntegerField(
+                        default=0,
+                        help_text="The number of change requests that will be generated to create an org unit.",
+                    ),
+                ),
+                (
+                    "count_update",
+                    models.PositiveIntegerField(
+                        default=0,
+                        help_text="The number of change requests that will be generated to update an org unit.",
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="created_data_source_synchronizations",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Data source synchronization",
+            },
+        ),
+        migrations.CreateModel(
+            name="Device",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("imei", models.CharField(blank=True, max_length=250, null=True)),
+                ("test_device", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Entity",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("name", models.CharField(blank=True, max_length=255)),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
+            ],
+            options={
+                "verbose_name_plural": "Entities",
+            },
+        ),
+        migrations.CreateModel(
+            name="EntityType",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("code", models.CharField(blank=True, max_length=255, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("is_active", models.BooleanField(default=False)),
+                (
+                    "fields_list_view",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
+                        blank=True,
+                        null=True,
+                        size=100,
+                    ),
+                ),
+                (
+                    "fields_detail_info_view",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
+                        blank=True,
+                        null=True,
+                        size=100,
+                    ),
+                ),
+                (
+                    "fields_duplicate_search",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
+                        blank=True,
+                        null=True,
+                        size=100,
+                    ),
+                ),
+                ("prevent_add_if_duplicate_found", models.BooleanField(default=False)),
+                (
+                    "account",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ExportLog",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("sent", models.JSONField(blank=True, null=True)),
+                ("received", models.JSONField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("http_status", models.IntegerField(blank=True, null=True)),
+                ("url", models.TextField(blank=True, null=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ExportRequest",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("params", models.JSONField(blank=True, null=True)),
+                ("result", models.JSONField(blank=True, null=True)),
+                ("finished", models.BooleanField(default=False)),
+                (
+                    "status",
+                    models.TextField(
+                        choices=[
+                            ("QUEUED", "Queued"),
+                            ("RUNNING", "Running"),
+                            ("EXPORTED", "Exported"),
+                            ("ERRORED", "Errored"),
+                            ("SKIPPED", "Skipped"),
+                            ("KILLED", "Killed"),
+                            ("SUCCESS", "Success"),
+                        ],
+                        default="QUEUED",
+                    ),
+                ),
+                ("instance_count", models.IntegerField()),
+                ("exported_count", models.IntegerField()),
+                ("errored_count", models.IntegerField()),
+                ("last_error_message", models.TextField()),
+                ("continue_on_error", models.BooleanField(default=False)),
+                ("queued_at", models.DateTimeField(auto_now_add=True)),
+                ("started_at", models.DateTimeField(blank=True, null=True)),
+                ("ended_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "launcher",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="FeatureFlag",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("code", models.CharField(max_length=100, unique=True)),
+                ("name", models.CharField(max_length=100)),
+                ("requires_authentication", models.BooleanField(default=False)),
+                ("description", models.TextField(blank=True)),
+                (
+                    "category",
+                    models.TextField(
+                        choices=[
+                            ("DCO", "Data collection options"),
+                            ("REO", "Refresh options"),
+                            ("GEO", "Geographic options"),
+                            ("DAV", "Data Validation"),
+                            ("ENT", "Entities"),
+                            ("PLA", "Planning"),
+                            ("SPO", "Specific options"),
+                            ("NA", "Not specified"),
+                        ],
+                        default="NA",
+                    ),
+                ),
+                ("configuration_schema", models.JSONField(blank=True, default=None, null=True)),
+                ("order", models.PositiveSmallIntegerField(default=0)),
+                ("is_dangerous", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Form",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("form_id", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.TextField()),
+                ("device_field", models.TextField(blank=True, null=True)),
+                ("location_field", models.TextField(blank=True, null=True)),
+                ("correlation_field", models.TextField(blank=True, null=True)),
+                ("correlatable", models.BooleanField(default=False)),
+                (
+                    "possible_fields",
+                    models.JSONField(
+                        blank=True,
+                        help_text="Questions present in all versions of the form, as a flat list.Automatically updated on new versions.",
+                        null=True,
+                    ),
+                ),
+                (
+                    "period_type",
+                    models.TextField(
+                        blank=True,
+                        choices=[
+                            ("DAY", "Day"),
+                            ("MONTH", "Month"),
+                            ("QUARTER", "Quarter"),
+                            ("QUARTER_NOV", "Quarter Nov"),
+                            ("SIX_MONTH", "Six-month"),
+                            ("YEAR", "Year"),
+                            ("FINANCIAL_NOV", "Financial Nov"),
+                        ],
+                        null=True,
+                    ),
+                ),
+                ("single_per_period", models.BooleanField(default=False)),
+                ("periods_before_allowed", models.IntegerField(default=0, null=True)),
+                ("periods_after_allowed", models.IntegerField(default=0, null=True)),
+                ("derived", models.BooleanField(default=False)),
+                ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
+                (
+                    "label_keys",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
+                        blank=True,
+                        null=True,
+                        size=100,
+                    ),
+                ),
+                ("legend_threshold", models.JSONField(blank=True, null=True)),
+                (
+                    "change_request_mode",
+                    models.TextField(
+                        choices=[
+                            ("CR_MODE_NONE", "No change request"),
+                            ("CR_MODE_IF_REFERENCE_FORM", "Create change request if form is reference form"),
+                        ],
+                        default="CR_MODE_NONE",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="FormVersion",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("file", models.FileField(upload_to=iaso.models.forms.form_version_upload_to)),
+                ("md5", models.CharField(blank=True, max_length=32)),
+                (
+                    "xls_file",
+                    models.FileField(blank=True, null=True, upload_to=iaso.models.forms.form_version_upload_to),
+                ),
+                ("form_descriptor", models.JSONField(blank=True, null=True)),
+                ("version_id", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("start_period", models.TextField(blank=True, null=True)),
+                ("end_period", models.TextField(blank=True, null=True)),
+                (
+                    "possible_fields",
+                    models.JSONField(
+                        blank=True,
+                        editable=False,
+                        help_text="Questions present in this form version, as a flat list.Update on save. See equivalent on Form for all version",
+                        null=True,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="form_version_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "form",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="form_versions", to="iaso.form"
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="form_version_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Group",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("source_ref", models.TextField(blank=True, null=True)),
+                ("block_of_countries", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="GroupSet",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("source_ref", models.TextField(blank=True, null=True)),
+                (
+                    "group_belonging",
+                    models.TextField(
+                        choices=[("SINGLE", "Single"), ("MULTIPLE", "Multiple")], default="SINGLE", max_length=10
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("groups", models.ManyToManyField(blank=True, related_name="group_sets", to="iaso.group")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Instance",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "source_created_at",
+                    models.DateTimeField(blank=True, help_text="Creation time on the device", null=True),
+                ),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "source_updated_at",
+                    models.DateTimeField(blank=True, help_text="Update time on the device", null=True),
+                ),
+                ("uuid", models.TextField(blank=True, null=True)),
+                ("export_id", models.TextField(blank=True, default=iaso.utils.dhis2.generate_id_for_dhis_2, null=True)),
+                ("correlation_id", models.BigIntegerField(blank=True, null=True)),
+                ("name", models.TextField(blank=True, null=True)),
+                ("file", models.FileField(blank=True, null=True, upload_to=iaso.models.instances.instance_upload_to)),
+                ("file_name", models.TextField(blank=True, null=True)),
+                ("location", django.contrib.gis.db.models.fields.PointField(blank=True, dim=3, null=True, srid=4326)),
+                ("json", models.JSONField(blank=True, null=True)),
+                ("accuracy", models.DecimalField(blank=True, decimal_places=2, max_digits=7, null=True)),
+                ("period", models.TextField(blank=True, db_index=True, null=True)),
+                ("last_export_success_at", models.DateTimeField(blank=True, null=True)),
+                ("deleted", models.BooleanField(default=False)),
+                ("to_export", models.BooleanField(default=False)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    "device",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.device"
+                    ),
+                ),
+                (
+                    "entity",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="instances",
+                        to="iaso.entity",
+                    ),
+                ),
+                (
+                    "form",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="instances",
+                        to="iaso.form",
+                    ),
+                ),
+                (
+                    "form_version",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="form_version",
+                        to="iaso.formversion",
+                    ),
+                ),
+                (
+                    "last_modified_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="last_modified_by",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="InstanceFile",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("name", models.TextField(blank=True, null=True)),
+                (
+                    "file",
+                    models.FileField(blank=True, null=True, upload_to=iaso.models.instances.instance_file_upload_to),
+                ),
+                ("deleted", models.BooleanField(default=False)),
+                (
+                    "instance",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.instance"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Mapping",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                (
+                    "mapping_type",
+                    models.TextField(
+                        choices=[
+                            ("AGGREGATE", "Aggregate"),
+                            ("EVENT", "Event"),
+                            ("EVENT_TRACKER", "Event Tracker"),
+                            ("DERIVED", "Derived"),
+                        ]
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "data_source",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="mappings", to="iaso.datasource"
+                    ),
+                ),
+                (
+                    "form",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.form"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="MetricType",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("code", models.CharField(max_length=255)),
+                ("description", models.TextField(blank=True)),
+                ("source", models.CharField(blank=True, max_length=255)),
+                ("units", models.CharField(blank=True, max_length=255)),
+                ("unit_symbol", models.CharField(blank=True, max_length=255)),
+                ("category", models.CharField(blank=True, max_length=255)),
+                ("comments", models.TextField(blank=True)),
+                (
+                    "legend_type",
+                    models.CharField(
+                        choices=[("threshold", "Threshold"), ("linear", "Linear"), ("ordinal", "Ordinal")],
+                        default="threshold",
+                        max_length=40,
+                    ),
+                ),
+                ("legend_config", models.JSONField(blank=True, default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
+            ],
+            options={
+                "ordering": ["id"],
+            },
+        ),
+        migrations.CreateModel(
+            name="OrgUnit",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("uuid", models.TextField(blank=True, db_index=True, null=True)),
+                ("custom", models.BooleanField(default=False)),
+                ("validated", models.BooleanField(db_index=True, default=True)),
+                (
+                    "validation_status",
+                    models.CharField(
+                        choices=[("NEW", "new"), ("VALID", "valid"), ("REJECTED", "rejected")],
+                        default="NEW",
+                        max_length=25,
+                    ),
+                ),
+                ("path", django_ltree.fields.PathField(blank=True, null=True, unique=True)),
+                (
+                    "aliases",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, db_collation="case_insensitive", max_length=255),
+                        blank=True,
+                        null=True,
+                        size=100,
+                    ),
+                ),
+                ("sub_source", models.TextField(blank=True, null=True)),
+                ("source_ref", models.TextField(blank=True, db_index=True, null=True)),
+                (
+                    "geom",
+                    django.contrib.gis.db.models.fields.MultiPolygonField(
+                        blank=True, geography=True, null=True, srid=4326
+                    ),
+                ),
+                (
+                    "simplified_geom",
+                    django.contrib.gis.db.models.fields.MultiPolygonField(
+                        blank=True, geography=True, null=True, srid=4326
+                    ),
+                ),
+                (
+                    "catchment",
+                    django.contrib.gis.db.models.fields.MultiPolygonField(
+                        blank=True, geography=True, null=True, srid=4326
+                    ),
+                ),
+                ("geom_ref", models.IntegerField(blank=True, null=True)),
+                ("gps_source", models.TextField(blank=True, null=True)),
+                (
+                    "location",
+                    django.contrib.gis.db.models.fields.PointField(
+                        blank=True, dim=3, geography=True, null=True, srid=4326
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "source_created_at",
+                    models.DateTimeField(blank=True, help_text="Creation time on the client device", null=True),
+                ),
+                ("extra_fields", models.JSONField(blank=True, default=dict)),
+                ("opening_date", models.DateField(blank=True, null=True)),
+                ("closed_date", models.DateField(blank=True, null=True)),
+                ("code", models.TextField(blank=True, db_index=True)),
+                (
+                    "creator",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    "default_image",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="default_for_org_units",
+                        to="iaso.instancefile",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="OrgUnitType",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("short_name", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "category",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("COUNTRY", "Country"),
+                            ("REGION", "Region"),
+                            ("DISTRICT", "District"),
+                            ("HF", "Health Facility"),
+                        ],
+                        max_length=8,
+                        null=True,
+                    ),
+                ),
+                ("depth", models.PositiveSmallIntegerField(blank=True, null=True)),
+                (
+                    "allow_creating_sub_unit_types",
+                    models.ManyToManyField(blank=True, related_name="create_types", to="iaso.orgunittype"),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="PaymentLot",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.CharField(max_length=255)),
+                ("comment", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("new", "New"),
+                            ("sent", "Sent"),
+                            ("paid", "Paid"),
+                            ("partially_paid", "Partially Paid"),
+                        ],
+                        default="new",
+                        max_length=40,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="payment_lot_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Project",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("app_id", models.TextField(blank=True, null=True, unique=True)),
+                ("needs_authentication", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("external_token", models.UUIDField(default=uuid.uuid4, null=True)),
+                ("min_version", models.IntegerField(null=True)),
+                ("redirection_url", models.URLField(blank=True, null=True)),
+                ("color", models.CharField(blank=True, default="#1976D2", max_length=7, null=True)),
+                (
+                    "account",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.account"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="StorageDevice",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("customer_chosen_id", models.CharField(max_length=255)),
+                ("type", models.CharField(choices=[("NFC", "NFC"), ("USB", "USB"), ("SD", "SD")], max_length=8)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("OK", "OK"), ("BLACKLISTED", "BLACKLISTED")], default="OK", max_length=64
+                    ),
+                ),
+                (
+                    "status_reason",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("STOLEN", "STOLEN"),
+                            ("LOST", "LOST"),
+                            ("DAMAGED", "DAMAGED"),
+                            ("ABUSE", "ABUSE"),
+                            ("OTHER", "OTHER"),
+                        ],
+                        max_length=64,
+                    ),
+                ),
+                ("status_comment", models.TextField(blank=True)),
+                ("status_updated_at", models.DateTimeField(auto_now_add=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
+                (
+                    "entity",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.entity"
+                    ),
+                ),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.orgunit"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Workflow",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "entity_type",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="workflow", to="iaso.entitytype"
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="WorkflowVersion",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
+                ("name", models.CharField(default="No Name", max_length=50)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("DRAFT", "Draft"), ("UNPUBLISHED", "Unpublished"), ("PUBLISHED", "Published")],
+                        default="DRAFT",
+                        max_length=12,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "workflow",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="workflow_versions",
+                        to="iaso.workflow",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="WorkflowFollowup",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("order", models.IntegerField(default=0)),
+                ("condition", models.JSONField(default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("forms", models.ManyToManyField(to="iaso.form")),
+                (
+                    "workflow_version",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="follow_ups",
+                        to="iaso.workflowversion",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="WorkflowChange",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("mapping", models.JSONField(default=dict)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.form")),
+                (
+                    "workflow_version",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="changes", to="iaso.workflowversion"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="UserRole",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
+                (
+                    "editable_org_unit_types",
+                    models.ManyToManyField(blank=True, related_name="editable_by_user_role_set", to="iaso.orgunittype"),
+                ),
+                (
+                    "group",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="iaso_user_role", to="auth.group"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Team",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                ("path", django_ltree.fields.PathField(unique=True)),
+                (
+                    "type",
+                    models.CharField(
+                        blank=True,
+                        choices=[("TEAM_OF_TEAMS", "Team of teams"), ("TEAM_OF_USERS", "Team of users")],
+                        max_length=100,
+                        null=True,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                (
+                    "manager",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="managed_teams",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="sub_teams",
+                        to="iaso.team",
+                    ),
+                ),
+                ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
+                ("users", models.ManyToManyField(blank=True, related_name="teams", to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                "ordering": ("name",),
+            },
+        ),
+        migrations.CreateModel(
+            name="Task",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("started_at", models.DateTimeField(blank=True, null=True)),
+                ("ended_at", models.DateTimeField(blank=True, null=True)),
+                ("progress_value", models.IntegerField(default=0)),
+                ("end_value", models.IntegerField(default=0)),
+                ("result", models.JSONField(blank=True, null=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("QUEUED", "Queued"),
+                            ("RUNNING", "Running"),
+                            ("EXPORTED", "Exported"),
+                            ("ERRORED", "Errored"),
+                            ("SKIPPED", "Skipped"),
+                            ("KILLED", "Killed"),
+                            ("SUCCESS", "Success"),
+                        ],
+                        default="QUEUED",
+                        max_length=40,
+                    ),
+                ),
+                ("name", models.TextField()),
+                ("params", models.JSONField(blank=True, null=True)),
+                ("queue_answer", models.JSONField(blank=True, null=True)),
+                ("progress_message", models.TextField(blank=True, null=True)),
+                ("should_be_killed", models.BooleanField(default=False)),
+                ("external", models.BooleanField(default=False)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="created_tasks",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "launcher",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ["-created_at"],
+            },
+        ),
+        migrations.CreateModel(
+            name="StoragePassword",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("password", models.CharField(max_length=100)),
+                ("is_compromised", models.BooleanField(default=False)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="storage_passwords", to="iaso.project"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="StorageLogEntry",
+            fields=[
+                ("id", models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                (
+                    "operation_type",
+                    models.CharField(
+                        choices=[
+                            ("WRITE_PROFILE", "WRITE_PROFILE"),
+                            ("RESET", "RESET"),
+                            ("READ", "READ"),
+                            ("WRITE_RECORD", "WRITE_RECORD"),
+                            ("CHANGE_STATUS", "CHANGE_STATUS"),
+                        ],
+                        max_length=32,
+                    ),
+                ),
+                ("performed_at", models.DateTimeField()),
+                (
+                    "status",
+                    models.CharField(blank=True, choices=[("OK", "OK"), ("BLACKLISTED", "BLACKLISTED")], max_length=64),
+                ),
+                (
+                    "status_reason",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("STOLEN", "STOLEN"),
+                            ("LOST", "LOST"),
+                            ("DAMAGED", "DAMAGED"),
+                            ("ABUSE", "ABUSE"),
+                            ("OTHER", "OTHER"),
+                        ],
+                        max_length=64,
+                    ),
+                ),
+                ("status_comment", models.TextField(blank=True)),
+                (
+                    "device",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="log_entries", to="iaso.storagedevice"
+                    ),
+                ),
+                (
+                    "entity",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.entity"
+                    ),
+                ),
+                (
+                    "instances",
+                    models.ManyToManyField(blank=True, related_name="storage_log_entries", to="iaso.instance"),
+                ),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.orgunit"
+                    ),
+                ),
+                (
+                    "performed_by",
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+                ),
+            ],
+            options={
+                "verbose_name_plural": "storage log entries",
+                "ordering": ["-performed_at"],
+            },
+        ),
+        migrations.CreateModel(
+            name="SourceVersion",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("number", models.IntegerField()),
+                ("description", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "data_source",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="versions", to="iaso.datasource"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ReportVersion",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("file", models.FileField(upload_to=iaso.models.reports.report_version_upload_to)),
+                ("name", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("published", "Published"), ("unpublished", "Unpublished")],
+                        default="unpublished",
+                        max_length=255,
+                    ),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="report_version_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="report_version_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="Report",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("name", models.CharField(max_length=255)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
+                (
+                    "published_version",
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.reportversion"),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="RecordType",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("description", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("projects", models.ManyToManyField(blank=True, related_name="record_types", to="iaso.project")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Record",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("value", models.DecimalField(decimal_places=10, max_digits=19)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"
+                    ),
+                ),
+                (
+                    "record_type",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.recordtype"
+                    ),
+                ),
+                (
+                    "version",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ProjectFeatureFlags",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("configuration", models.JSONField(default=None, null=True)),
+                ("featureflag", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.featureflag")),
+                ("project", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.project")),
+            ],
+            options={
+                "db_table": "iaso_project_feature_flags",
+            },
+        ),
+        migrations.AddField(
+            model_name="project",
+            name="feature_flags",
+            field=models.ManyToManyField(
+                blank=True, related_name="+", through="iaso.ProjectFeatureFlags", to="iaso.featureflag"
+            ),
+        ),
+        migrations.AddField(
+            model_name="project",
+            name="forms",
+            field=models.ManyToManyField(blank=True, related_name="projects", to="iaso.form"),
+        ),
+        migrations.CreateModel(
+            name="Profile",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("external_user_id", models.CharField(blank=True, max_length=512, null=True)),
+                ("organization", models.CharField(blank=True, max_length=512, null=True)),
+                ("language", models.CharField(blank=True, max_length=512, null=True)),
+                (
+                    "dhis2_id",
+                    models.CharField(blank=True, help_text="Dhis2 user ID for SSO Auth", max_length=128, null=True),
+                ),
+                ("home_page", models.CharField(blank=True, max_length=512, null=True)),
+                (
+                    "phone_number",
+                    phonenumber_field.modelfields.PhoneNumberField(blank=True, max_length=128, region=None),
+                ),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.account")),
+                (
+                    "editable_org_unit_types",
+                    models.ManyToManyField(
+                        blank=True, related_name="editable_by_iaso_profile_set", to="iaso.orgunittype"
+                    ),
+                ),
+                ("org_units", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.orgunit")),
+                ("projects", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.project")),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="iaso_profile",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                ("user_roles", models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.userrole")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="PotentialPayment",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "payment_lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="potential_payments",
+                        to="iaso.paymentlot",
+                    ),
+                ),
+                (
+                    "task",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="potential_payments",
+                        to="iaso.task",
+                    ),
+                ),
+                (
+                    "user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="potential_payment",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Planning",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("name", models.CharField(max_length=100)),
+                ("description", models.TextField(blank=True)),
+                ("started_at", models.DateField(blank=True, null=True)),
+                ("ended_at", models.DateField(blank=True, null=True)),
+                ("published_at", models.DateTimeField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+                ("forms", models.ManyToManyField(related_name="plannings", to="iaso.form")),
+                ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit")),
+                ("project", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.project")),
+                ("team", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.team")),
+            ],
+            options={
+                "ordering": ("name",),
+            },
+        ),
+        migrations.AddField(
+            model_name="paymentlot",
+            name="task",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="payment_lots",
+                to="iaso.task",
+            ),
+        ),
+        migrations.AddField(
+            model_name="paymentlot",
+            name="updated_by",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="payment_lot_updated_set",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        ),
+        migrations.CreateModel(
+            name="Payment",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("pending", "Pending"), ("sent", "Sent"), ("rejected", "Rejected"), ("paid", "Paid")],
+                        default="pending",
+                        max_length=40,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="payment_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "payment_lot",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="payments",
+                        to="iaso.paymentlot",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="payment_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="payment", to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Page",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("content", models.TextField(blank=True, null=True)),
+                ("needs_authentication", models.BooleanField(default=True)),
+                ("slug", models.SlugField(max_length=1000, unique=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("RAW", "Raw html"),
+                            ("TEXT", "Text"),
+                            ("IFRAME", "Iframe"),
+                            ("POWERBI", "PowerBI report"),
+                            ("SUPERSET", "Superset dashboard"),
+                        ],
+                        default="RAW",
+                        max_length=40,
+                    ),
+                ),
+                ("powerbi_group_id", models.TextField(blank=True, null=True)),
+                ("powerbi_report_id", models.TextField(blank=True, null=True)),
+                ("powerbi_dataset_id", models.TextField(blank=True, null=True)),
+                ("powerbi_filters", models.JSONField(blank=True, null=True)),
+                (
+                    "powerbi_language",
+                    models.CharField(
+                        blank=True,
+                        help_text="Language and locale for the PowerBI embedded report e.g en-us or fr-be",
+                        max_length=20,
+                        null=True,
+                    ),
+                ),
+                ("superset_dashboard_id", models.TextField(blank=True, null=True)),
+                ("superset_dashboard_ui_config", models.JSONField(blank=True, null=True)),
+                (
+                    "account",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"
+                    ),
+                ),
+                ("users", models.ManyToManyField(blank=True, related_name="pages", to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.AddField(
+            model_name="orgunittype",
+            name="projects",
+            field=models.ManyToManyField(related_name="unit_types", to="iaso.project"),
+        ),
+        migrations.AddField(
+            model_name="orgunittype",
+            name="reference_forms",
+            field=models.ManyToManyField(blank=True, related_name="reference_of_org_unit_types", to="iaso.form"),
+        ),
+        migrations.AddField(
+            model_name="orgunittype",
+            name="sub_unit_types",
+            field=models.ManyToManyField(blank=True, related_name="super_types", to="iaso.orgunittype"),
+        ),
+        migrations.CreateModel(
+            name="OrgUnitReferenceInstance",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("form", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.form")),
+                ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
+                ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="OrgUnitChangeRequestConfiguration",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("org_units_editable", models.BooleanField(default=True)),
+                ("type", models.CharField(choices=[("creation", "Creation"), ("edition", "Edition")], max_length=10)),
+                (
+                    "editable_fields",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, max_length=30),
+                        blank=True,
+                        default=list,
+                        help_text="List of fields that can be edited in an OrgUnit",
+                        size=None,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="org_unit_change_request_configurations_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "editable_reference_forms",
+                    models.ManyToManyField(
+                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.form"
+                    ),
+                ),
+                (
+                    "group_sets",
+                    models.ManyToManyField(
+                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.groupset"
+                    ),
+                ),
+                (
+                    "org_unit_type",
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunittype"),
+                ),
+                (
+                    "other_groups",
+                    models.ManyToManyField(
+                        blank=True, related_name="org_unit_change_request_configurations", to="iaso.group"
+                    ),
+                ),
+                (
+                    "possible_parent_types",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="org_unit_change_request_configurations_parent_level",
+                        to="iaso.orgunittype",
+                    ),
+                ),
+                (
+                    "possible_types",
+                    models.ManyToManyField(
+                        blank=True,
+                        related_name="org_unit_change_request_configurations_same_level",
+                        to="iaso.orgunittype",
+                    ),
+                ),
+                ("project", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.project")),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="org_unit_change_request_configurations_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Org unit change request configuration",
+            },
+        ),
+        migrations.CreateModel(
+            name="OrgUnitChangeRequest",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("uuid", models.UUIDField(default=uuid.uuid4, editable=False, unique=True)),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[("new", "New"), ("rejected", "Rejected"), ("approved", "Approved")],
+                        default="new",
+                        max_length=40,
+                    ),
+                ),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[("org_unit_creation", "Org Unit Creation"), ("org_unit_change", "Org Unit Change")],
+                        default="org_unit_change",
+                        max_length=40,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("rejection_comment", models.TextField(blank=True)),
+                ("new_name", models.CharField(blank=True, max_length=255)),
+                (
+                    "new_location",
+                    django.contrib.gis.db.models.fields.PointField(
+                        blank=True, dim=3, geography=True, null=True, srid=4326
+                    ),
+                ),
+                ("new_location_accuracy", models.DecimalField(blank=True, decimal_places=2, max_digits=7, null=True)),
+                ("new_opening_date", models.DateField(blank=True, null=True)),
+                ("new_closed_date", models.DateField(blank=True, null=True)),
+                (
+                    "requested_fields",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, max_length=30),
+                        blank=True,
+                        default=list,
+                        help_text="List of fields names for which a change is requested.",
+                        size=None,
+                    ),
+                ),
+                (
+                    "approved_fields",
+                    django.contrib.postgres.fields.ArrayField(
+                        base_field=models.CharField(blank=True, max_length=30),
+                        blank=True,
+                        default=list,
+                        help_text="List of approved fields names (only a subset can be approved).",
+                        size=None,
+                    ),
+                ),
+                ("old_name", models.CharField(blank=True, max_length=255)),
+                (
+                    "old_location",
+                    django.contrib.gis.db.models.fields.PointField(
+                        blank=True, dim=3, geography=True, null=True, srid=4326
+                    ),
+                ),
+                ("old_opening_date", models.DateField(blank=True, null=True)),
+                ("old_closed_date", models.DateField(blank=True, null=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="org_unit_change_created_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "data_source_synchronization",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="The data source synchronization that generated this change request.",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="change_requests",
+                        to="iaso.datasourceversionssynchronization",
+                    ),
+                ),
+                ("new_groups", models.ManyToManyField(blank=True, to="iaso.group")),
+                (
+                    "new_org_unit_type",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunittype"
+                    ),
+                ),
+                (
+                    "new_parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="org_unit_change_parents_set",
+                        to="iaso.orgunit",
+                    ),
+                ),
+                ("new_reference_instances", models.ManyToManyField(blank=True, to="iaso.instance")),
+                ("old_groups", models.ManyToManyField(blank=True, related_name="+", to="iaso.group")),
+                (
+                    "old_org_unit_type",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="iaso.orgunittype",
+                    ),
+                ),
+                (
+                    "old_parent",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="iaso.orgunit",
+                    ),
+                ),
+                ("old_reference_instances", models.ManyToManyField(blank=True, related_name="+", to="iaso.instance")),
+                ("org_unit", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit")),
+                (
+                    "payment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="change_requests",
+                        to="iaso.payment",
+                    ),
+                ),
+                (
+                    "potential_payment",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="change_requests",
+                        to="iaso.potentialpayment",
+                    ),
+                ),
+                (
+                    "updated_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="org_unit_change_updated_set",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "Org unit change request",
+            },
+        ),
+        migrations.AddField(
+            model_name="orgunit",
+            name="org_unit_type",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="org_units",
+                to="iaso.orgunittype",
+            ),
+        ),
+        migrations.AddField(
+            model_name="orgunit",
+            name="parent",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"
+            ),
+        ),
+        migrations.AddField(
+            model_name="orgunit",
+            name="reference_instances",
+            field=models.ManyToManyField(blank=True, through="iaso.OrgUnitReferenceInstance", to="iaso.instance"),
+        ),
+        migrations.AddField(
+            model_name="orgunit",
+            name="version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
+            ),
+        ),
+        migrations.CreateModel(
+            name="MetricValue",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("year", models.IntegerField(blank=True, null=True)),
+                ("value", models.FloatField(blank=True, null=True)),
+                ("string_value", models.TextField(blank=True, default="")),
+                ("metric_type", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.metrictype")),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="MatchingAlgorithm",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("description", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("projects", models.ManyToManyField(blank=True, related_name="match_algos", to="iaso.project")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="MappingVersion",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("json", models.JSONField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "form_version",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mapping_versions",
+                        to="iaso.formversion",
+                    ),
+                ),
+                (
+                    "mapping",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="versions",
+                        to="iaso.mapping",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Link",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("validated", models.BooleanField(default=False)),
+                ("validation_date", models.DateTimeField(auto_now=True, null=True)),
+                ("similarity_score", models.SmallIntegerField(null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "algorithm_run",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.algorithmrun"
+                    ),
+                ),
+                (
+                    "destination",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="source_set",
+                        to="iaso.orgunit",
+                    ),
+                ),
+                (
+                    "source",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="destination_set",
+                        to="iaso.orgunit",
+                    ),
+                ),
+                (
+                    "validator",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="JsonDataStore",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("slug", models.SlugField()),
+                ("content", models.JSONField()),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("account", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="iaso.account")),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.orgunit"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="InstanceLock",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("locked_at", models.DateTimeField(auto_now_add=True)),
+                ("unlocked_at", models.DateTimeField(blank=True, null=True)),
+                ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
+                (
+                    "locked_by",
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL),
+                ),
+                (
+                    "top_org_unit",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.PROTECT, related_name="instance_lock", to="iaso.orgunit"
+                    ),
+                ),
+                (
+                    "unlocked_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.PROTECT,
+                        related_name="+",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ["-locked_at"],
+            },
+        ),
+        migrations.AddField(
+            model_name="instance",
+            name="org_unit",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.orgunit"
+            ),
+        ),
+        migrations.AddField(
+            model_name="instance",
+            name="planning",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="instances",
+                to="iaso.planning",
+            ),
+        ),
+        migrations.AddField(
+            model_name="instance",
+            name="project",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.project"
+            ),
+        ),
+        migrations.CreateModel(
+            name="ImportGPKG",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("file", models.FileField(upload_to=iaso.models.import_gpkg.import_gpkg_upload_to)),
+                ("version_number", models.IntegerField(blank=True, null=True)),
+                ("description", models.CharField(blank=True, max_length=200, null=True)),
+                ("default_valid", models.BooleanField(default=False)),
+                ("data_source", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.datasource")),
+            ],
+        ),
+        migrations.AddField(
+            model_name="groupset",
+            name="source_version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
+            ),
+        ),
+        migrations.AddField(
+            model_name="group",
+            name="org_units",
+            field=models.ManyToManyField(blank=True, related_name="groups", to="iaso.orgunit"),
+        ),
+        migrations.AddField(
+            model_name="group",
+            name="source_version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.sourceversion"
+            ),
+        ),
+        migrations.CreateModel(
+            name="FormPredefinedFilter",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("short_name", models.CharField(max_length=25)),
+                ("json_logic", models.JSONField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "form",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="predefined_filters", to="iaso.form"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="FormAttachment",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("file", models.FileField(upload_to=iaso.models.forms.form_attachment_upload_to)),
+                ("file_last_scan", models.DateTimeField(blank=True, null=True)),
+                (
+                    "file_scan_status",
+                    models.CharField(
+                        choices=[
+                            ("CLEAN", "Clean"),
+                            ("PENDING", "Pending"),
+                            ("INFECTED", "Infected"),
+                            ("ERROR", "Error"),
+                        ],
+                        default="PENDING",
+                        max_length=10,
+                    ),
+                ),
+                ("md5", models.CharField(max_length=32)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "form",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="attachments", to="iaso.form"
+                    ),
+                ),
+            ],
+        ),
+        migrations.AddField(
+            model_name="form",
+            name="org_unit_types",
+            field=models.ManyToManyField(blank=True, to="iaso.orgunittype"),
+        ),
+        migrations.CreateModel(
+            name="ExternalCredentials",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("login", models.TextField()),
+                ("password", models.TextField()),
+                ("url", models.TextField()),
+                (
+                    "account",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="credentials", to="iaso.account"
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ExportStatus",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "status",
+                    models.TextField(
+                        choices=[
+                            ("QUEUED", "Queued"),
+                            ("RUNNING", "Running"),
+                            ("EXPORTED", "Exported"),
+                            ("ERRORED", "Errored"),
+                            ("SKIPPED", "Skipped"),
+                            ("KILLED", "Killed"),
+                            ("SUCCESS", "Success"),
+                        ],
+                        default="QUEUED",
+                    ),
+                ),
+                ("last_error_message", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("export_logs", models.ManyToManyField(blank=True, to="iaso.exportlog")),
+                (
+                    "export_request",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.exportrequest"),
+                ),
+                ("instance", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.instance")),
+                (
+                    "mapping_version",
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.mappingversion"),
+                ),
+            ],
+        ),
+        migrations.AddField(
+            model_name="entitytype",
+            name="reference_form",
+            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.form"),
+        ),
+        migrations.CreateModel(
+            name="EntityDuplicateAnalyzis",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "algorithm",
+                    models.CharField(choices=[("levenshtein", "Levenshtein")], default="levenshtein", max_length=20),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("metadata", models.JSONField(default=dict)),
+                ("finished_at", models.DateTimeField(blank=True, null=True)),
+                (
+                    "task",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="entity_duplicate_analyzis",
+                        to="iaso.task",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="EntityDuplicate",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "validation_status",
+                    models.CharField(
+                        choices=[("PENDING", "Pending"), ("VALIDATED", "Validated"), ("IGNORED", "Ignored")],
+                        default="PENDING",
+                        max_length=20,
+                    ),
+                ),
+                (
+                    "type_of_relation",
+                    models.CharField(
+                        choices=[("DUPLICATE", "Duplicate"), ("COUSIN", "Cousin"), ("PRODUCED", "Produced")],
+                        default="DUPLICATE",
+                        max_length=20,
+                    ),
+                ),
+                ("similarity_score", models.SmallIntegerField(null=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("metadata", models.JSONField(blank=True, default=dict)),
+                (
+                    "analyze",
+                    models.ForeignKey(
+                        default=None,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="duplicates",
+                        to="iaso.entityduplicateanalyzis",
+                    ),
+                ),
+                (
+                    "entity1",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="duplicates1", to="iaso.entity"
+                    ),
+                ),
+                (
+                    "entity2",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="duplicates2", to="iaso.entity"
+                    ),
+                ),
+            ],
+        ),
+        migrations.AddField(
+            model_name="entity",
+            name="attributes",
+            field=models.OneToOneField(
+                blank=True,
+                help_text="instance",
+                null=True,
+                on_delete=django.db.models.deletion.PROTECT,
+                related_name="attributes",
+                to="iaso.instance",
+            ),
+        ),
+        migrations.AddField(
+            model_name="entity",
+            name="entity_type",
+            field=models.ForeignKey(blank=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.entitytype"),
+        ),
+        migrations.AddField(
+            model_name="entity",
+            name="merged_to",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.entity"
+            ),
+        ),
+        migrations.CreateModel(
+            name="DevicePosition",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
+                ("location", django.contrib.gis.db.models.fields.PointField(dim=3, srid=4326)),
+                (
+                    "transport",
+                    models.CharField(choices=[("car", "Car"), ("foot", "Foot"), ("truck", "Truc")], max_length=32),
+                ),
+                ("accuracy", models.DecimalField(decimal_places=2, max_digits=7)),
+                ("captured_at", models.DateTimeField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("device", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.device")),
+            ],
+        ),
+        migrations.CreateModel(
+            name="DeviceOwnership",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("start", models.DateTimeField(auto_now_add=True)),
+                ("end", models.DateTimeField(null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("device", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.device")),
+                (
+                    "project",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.project"
+                    ),
+                ),
+                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.AddField(
+            model_name="device",
+            name="projects",
+            field=models.ManyToManyField(blank=True, related_name="devices", to="iaso.project"),
+        ),
+        migrations.AddField(
+            model_name="datasourceversionssynchronization",
+            name="source_version_to_compare_with",
+            field=models.ForeignKey(
+                help_text="The version of the pyramid to use as a comparison.",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="synchronized_as_source_version_to_compare_with",
+                to="iaso.sourceversion",
+            ),
+        ),
+        migrations.AddField(
+            model_name="datasourceversionssynchronization",
+            name="source_version_to_update",
+            field=models.ForeignKey(
+                help_text="The version of the pyramid for which we want to generate change requests.",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="synchronized_as_source_version_to_update",
+                to="iaso.sourceversion",
+            ),
+        ),
+        migrations.AddField(
+            model_name="datasourceversionssynchronization",
+            name="sync_task",
+            field=models.OneToOneField(
+                blank=True,
+                help_text="The background task that used the diff to create change requests.",
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="+",
+                to="iaso.task",
+            ),
+        ),
+        migrations.AddField(
+            model_name="datasource",
+            name="credentials",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="data_sources",
+                to="iaso.externalcredentials",
+            ),
+        ),
+        migrations.AddField(
+            model_name="datasource",
+            name="default_version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.sourceversion"
+            ),
+        ),
+        migrations.AddField(
+            model_name="datasource",
+            name="projects",
+            field=models.ManyToManyField(blank=True, related_name="data_sources", to="iaso.project"),
+        ),
+        migrations.CreateModel(
+            name="Config",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("slug", models.SlugField(unique=True)),
+                ("content", models.JSONField()),
+                ("created_at", models.DateTimeField(auto_now_add=True, db_index=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("users", models.ManyToManyField(blank=True, related_name="jsonconfigs", to=settings.AUTH_USER_MODEL)),
+            ],
+        ),
+        migrations.CreateModel(
+            name="CommentIaso",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("object_pk", models.CharField(db_index=True, max_length=64, verbose_name="object ID")),
+                ("user_name", models.CharField(blank=True, max_length=50, verbose_name="user's name")),
+                ("user_email", models.EmailField(blank=True, max_length=254, verbose_name="user's email address")),
+                ("user_url", models.URLField(blank=True, verbose_name="user's URL")),
+                ("comment", models.TextField(max_length=3000, verbose_name="comment")),
+                ("submit_date", models.DateTimeField(db_index=True, default=None, verbose_name="date/time submitted")),
+                (
+                    "ip_address",
+                    models.GenericIPAddressField(blank=True, null=True, unpack_ipv4=True, verbose_name="IP address"),
+                ),
+                (
+                    "is_public",
+                    models.BooleanField(
+                        default=True,
+                        help_text="Uncheck this box to make the comment effectively disappear from the site.",
+                        verbose_name="is public",
+                    ),
+                ),
+                (
+                    "is_removed",
+                    models.BooleanField(
+                        db_index=True,
+                        default=False,
+                        help_text='Check this box if the comment is inappropriate. A "This comment has been removed" message will be displayed instead.',
+                        verbose_name="is removed",
+                    ),
+                ),
+                (
+                    "content_type",
+                    models.ForeignKey(
+                        limit_choices_to={"model": "orgunit"},
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="content_type_set_for_%(class)s2",
+                        to="contenttypes.contenttype",
+                        verbose_name="content type",
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="children",
+                        to="iaso.commentiaso",
+                    ),
+                ),
+                ("site", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="sites.site")),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="%(class)s_comments",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="user",
+                    ),
+                ),
+            ],
+            options={
+                "verbose_name": "comment",
+                "verbose_name_plural": "comments",
+                "ordering": ("submit_date",),
+                "permissions": [("can_moderate", "Can moderate comments")],
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="BulkCreateUserCsvFile",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "file",
+                    models.FileField(
+                        upload_to=iaso.models.bulk_create_user_csv_file.bulk_create_user_csv_file_upload_to
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "account",
+                    models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, to="iaso.account"),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        null=True, on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="Assignment",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("deleted_at", models.DateTimeField(blank=True, default=None, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="assignments_created",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "org_unit",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.orgunit"
+                    ),
+                ),
+                (
+                    "planning",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.planning"
+                    ),
+                ),
+                (
+                    "team",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.team"
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="assignments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "ordering": ("planning", "created_at"),
+            },
+        ),
+        migrations.AddField(
+            model_name="algorithmrun",
+            name="algorithm",
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.matchingalgorithm"),
+        ),
+        migrations.AddField(
+            model_name="algorithmrun",
+            name="launcher",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+            ),
+        ),
+        migrations.AddField(
+            model_name="algorithmrun",
+            name="version_1",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="runs_where_destination",
+                to="iaso.sourceversion",
+            ),
+        ),
+        migrations.AddField(
+            model_name="algorithmrun",
+            name="version_2",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="runs_where_source",
+                to="iaso.sourceversion",
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="default_version",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.sourceversion"
+            ),
+        ),
+        migrations.AddField(
+            model_name="account",
+            name="feature_flags",
+            field=models.ManyToManyField(to="iaso.accountfeatureflag"),
+        ),
+        migrations.CreateModel(
+            name="TenantUser",
+            fields=[
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "account_user",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="tenant_user",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "main_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="tenant_users",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+            ],
+            options={
+                "indexes": [
+                    models.Index(fields=["created_at"], name="iaso_tenant_created_003e12_idx"),
+                    models.Index(fields=["updated_at"], name="iaso_tenant_updated_31049b_idx"),
+                ],
+            },
+        ),
+        migrations.AddConstraint(
+            model_name="tenantuser",
+            constraint=models.UniqueConstraint(fields=("main_user", "account_user"), name="main_user_user_constraint"),
+        ),
+        migrations.AddIndex(
+            model_name="task",
+            index=models.Index(fields=["created_at"], name="iaso_task_created_25fae0_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="task",
+            index=models.Index(fields=["name"], name="iaso_task_name_5f0019_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="task",
+            index=models.Index(fields=["status"], name="iaso_task_status_bb234e_idx"),
+        ),
+        migrations.AlterUniqueTogether(
+            name="storagedevice",
+            unique_together={("customer_chosen_id", "account", "type")},
+        ),
+        migrations.AddConstraint(
+            model_name="sourceversion",
+            constraint=models.UniqueConstraint(
+                fields=("data_source", "number"), name="unique_number_data_source_version"
+            ),
+        ),
+        migrations.AddConstraint(
+            model_name="profile",
+            constraint=models.UniqueConstraint(fields=("dhis2_id", "account"), name="dhis2_id_constraint"),
+        ),
+        migrations.AlterUniqueTogether(
+            name="orgunitreferenceinstance",
+            unique_together={("org_unit", "form")},
+        ),
+        migrations.AddIndex(
+            model_name="orgunitchangerequestconfiguration",
+            index=models.Index(fields=["project"], name="iaso_orguni_project_6d2cbe_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunitchangerequestconfiguration",
+            index=models.Index(fields=["org_unit_type"], name="iaso_orguni_org_uni_a6fdd1_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunitchangerequestconfiguration",
+            index=models.Index(fields=["type"], name="iaso_orguni_type_c2bf6e_idx"),
+        ),
+        migrations.AddConstraint(
+            model_name="orgunitchangerequestconfiguration",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("deleted_at__isnull", True)),
+                fields=("project", "org_unit_type", "type"),
+                name="unique_project_org_unit_type_if_not_deleted",
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="orgunitchangerequest",
+            index=models.Index(fields=["created_at"], name="iaso_orguni_created_c06ca8_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunitchangerequest",
+            index=models.Index(fields=["updated_at"], name="iaso_orguni_updated_205eb3_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=django.contrib.postgres.indexes.GistIndex(
+                buffering=True, fields=["path"], name="iaso_orguni_path_d11c66_gist"
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=django.contrib.postgres.indexes.GinIndex(
+                fields=["extra_fields"], name="iaso_orguni_extra_f_a15e77_gin"
+            ),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=models.Index(fields=["created_at"], name="iaso_orguni_created_51218f_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=models.Index(fields=["updated_at"], name="iaso_orguni_updated_8eca3a_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=models.Index(fields=["source_created_at"], name="iaso_orguni_source__c29c2f_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="orgunit",
+            index=models.Index(fields=["org_unit_type", "version"], name="iaso_orguni_org_uni_28a2c8_idx"),
+        ),
+        migrations.AddConstraint(
+            model_name="orgunit",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(models.Q(("code", ""), _negated=True), models.Q(("validation_status", "VALID"))),
+                fields=("code", "version"),
+                name="unique_code_per_source_version_if_not_blank_and_valid_status",
+            ),
+        ),
+        migrations.AlterUniqueTogether(
+            name="metricvalue",
+            unique_together={("metric_type", "org_unit", "year")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="metrictype",
+            unique_together={("account", "code")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="mappingversion",
+            unique_together={("form_version", "name")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="jsondatastore",
+            unique_together={("slug", "account", "org_unit")},
+        ),
+        migrations.AddIndex(
+            model_name="instance",
+            index=models.Index(fields=["created_at"], name="iaso_instan_created_04174a_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="instance",
+            index=models.Index(fields=["updated_at"], name="iaso_instan_updated_1d2d65_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="instance",
+            index=models.Index(fields=["source_created_at"], name="iaso_instan_source__8a77f6_idx"),
+        ),
+        migrations.AddIndex(
+            model_name="instance",
+            index=models.Index(fields=["source_updated_at"], name="iaso_instan_source__da894d_idx"),
+        ),
+        migrations.AlterUniqueTogether(
+            name="formattachment",
+            unique_together={("form", "name")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="entitytype",
+            unique_together={("name", "account")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="entityduplicate",
+            unique_together={("entity1", "entity2")},
+        ),
+        migrations.AlterUniqueTogether(
+            name="assignment",
+            unique_together={("planning", "org_unit")},
+        ),
+    ]

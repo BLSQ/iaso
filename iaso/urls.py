@@ -281,16 +281,3 @@ for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
-
-##########   creating algorithms in the database so that they will appear in the API  ##########
-try:
-    import importlib
-
-    for pkg in pkgutil.iter_modules(matching.__path__):
-        full_name = "iaso.matching." + pkg.name
-        algo_module = importlib.import_module(full_name)
-        algo = algo_module.Algorithm()
-        MatchingAlgorithm.objects.get_or_create(name=full_name, defaults={"description": algo.description})
-
-except Exception as e:
-    print("!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate", e)

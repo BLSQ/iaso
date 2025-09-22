@@ -15,61 +15,10 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    replaces = [
-        ("polio", "0001_initial"),
-        ("polio", "0002_auto_20210505_0952"),
-        ("polio", "0003_auto_20210505_1620"),
-        ("polio", "0004_auto_20210505_1813"),
-        ("polio", "0005_campaign_group"),
-        ("polio", "0005_auto_20210525_1849"),
-        ("polio", "0006_merge_20210602_1150"),
-        ("polio", "0005_auto_20210528_1640"),
-        ("polio", "0006_merge_20210602_0635"),
-        ("polio", "0007_merge_20210602_1615"),
-        ("polio", "0008_auto_20210603_1656"),
-        ("polio", "0009_auto_20210604_1027"),
-        ("polio", "0010_auto_20210608_0838"),
-        ("polio", "0011_surge_surge_country_name"),
-        ("polio", "0012_auto_20210611_0951"),
-        ("polio", "0013_auto_20210629_1041"),
-        ("polio", "0013_auto_20210615_1327"),
-        ("polio", "0014_merge_20210630_1106"),
-        ("polio", "0015_auto_20210630_2051"),
-        ("polio", "0016_config"),
-        ("polio", "0017_campaign_gpei_email"),
-        ("polio", "0018_campaign_vials_requested"),
-        ("polio", "0019_auto_20210715_1751"),
-        ("polio", "0020_fix_statuses"),
-        ("polio", "0021_auto_20210805_1750"),
-        ("polio", "0022_auto_20210813_1319"),
-        ("polio", "0023_countryusersgroup"),
-        ("polio", "0024_countryusersgroup_language"),
-        ("polio", "0023_linelistimport"),
-        ("polio", "0025_merge_20210901_1222"),
-        ("polio", "0026_auto_20210903_0821"),
-        ("polio", "0027_campaign_creation_email_send_at"),
-        ("polio", "0028_remove_campaign_budget_first_draft_submitted_at"),
-        ("polio", "0029_campaign_country"),
-        ("polio", "0030_campaign_country_data_migration_20211004_1157"),
-        ("polio", "0027_urlcache"),
-        ("polio", "0029_merge_20210930_0946"),
-        ("polio", "0031_merge_20211008_1509"),
-        ("polio", "0032_campaign_is_preventive"),
-        ("polio", "0032_auto_20211024_2118"),
-        ("polio", "0033_merge_20211028_1257"),
-        ("polio", "0034_make_readonlyrole"),
-        ("polio", "0035_spreadsheetimport"),
-        ("polio", "0036_auto_20211203_1025"),
-    ]
-
     initial = True
 
     dependencies = [
-        ("iaso", "0088_group_domain"),
-        ("iaso", "0102_page_type"),
-        ("iaso", "0099_orgunittype_category"),
-        ("iaso", "0085_merge_20210415_2144"),
-        ("iaso", "0107_auto_20211001_1845"),
+        ("iaso", "0001_squashed_0343_importgpkg_default_valid"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

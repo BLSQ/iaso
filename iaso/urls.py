@@ -1,5 +1,3 @@
-import pkgutil
-
 from typing import List, Union
 
 from django.conf import settings
@@ -9,7 +7,6 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.token_authentication import token_auth
-from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
@@ -20,7 +17,6 @@ from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReference
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
-from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet

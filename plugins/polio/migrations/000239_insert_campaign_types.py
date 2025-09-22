@@ -13,7 +13,7 @@ def create_initial_campaign_types(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0001_squashed_0238_lqasrounddata_lqasdistrictdata_and_more       "),
+        ("polio", "0001_squashed_0238_lqasrounddata_lqasdistrictdata_and_more"),
     ]
 
     operations = [

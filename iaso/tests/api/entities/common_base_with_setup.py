@@ -48,10 +48,10 @@ class EntityAPITestCase(APITestCase):
             form_id="form_1",
         )
 
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
-        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4)
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4())
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4())
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4())
+        cls.create_form_instance(form=cls.form_1, org_unit=cls.ou_country, project=cls.project, uuid=uuid.uuid4())
 
         cls.form_1.projects.add(cls.project)
 

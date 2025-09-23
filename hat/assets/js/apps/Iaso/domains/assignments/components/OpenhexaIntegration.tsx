@@ -178,15 +178,16 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                         {formatMessage(MESSAGES.noParameters)}
                                     </Typography>
                                 )}
-                                {pipeline.code === CUSTOM_FORM_CODES && (
-                                    <LQASForm
-                                        parameterValues={parameterValues}
-                                        handleParameterChange={
-                                            handleParameterChange
-                                        }
-                                        planning={planning}
-                                    />
-                                )}
+                                {pipeline.code === CUSTOM_FORM_CODES &&
+                                    parameterValues && (
+                                        <LQASForm
+                                            parameterValues={parameterValues}
+                                            handleParameterChange={
+                                                handleParameterChange
+                                            }
+                                            planning={planning}
+                                        />
+                                    )}
                                 {pipeline.code !== CUSTOM_FORM_CODES &&
                                     pipeline.currentVersion?.parameters?.map(
                                         parameter => (

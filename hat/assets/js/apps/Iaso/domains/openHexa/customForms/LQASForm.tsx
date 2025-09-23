@@ -5,9 +5,14 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { Planning } from '../../assignments/types/planning';
-import { ParameterValues } from '../hooks/usePipelineParameters';
 import { MESSAGES } from '../messages';
-
+type ParameterValues =
+    | {
+          org_unit_type_quantities?: number[];
+          org_unit_type_sequence_identifiers?: number[];
+          org_unit_type_exceptions?: number[][];
+      }
+    | undefined;
 type Props = {
     parameterValues?: ParameterValues;
     handleParameterChange: (parameterName: string, value: any) => void;
@@ -89,7 +94,9 @@ export const LQASForm: FunctionComponent<Props> = ({
     // Memoized values
     const levels = useMemo(() => {
         const identifiers = parameterValues?.org_unit_type_sequence_identifiers;
-        return identifiers?.length > 0 ? identifiers : [undefined];
+        return identifiers?.length && identifiers.length > 0
+            ? identifiers
+            : [undefined];
     }, [parameterValues?.org_unit_type_sequence_identifiers]);
 
     const latestOptions = useMemo(() => {
@@ -143,6 +150,7 @@ export const LQASForm: FunctionComponent<Props> = ({
                                 value={orgUnitType}
                                 options={getOptionsForLevel(index)}
                                 loading={isFetchingOrgUnitTypes}
+                                disabled={!isLastLevel}
                             />
                         </Grid>
                         <Grid item xs={2}>
@@ -155,9 +163,10 @@ export const LQASForm: FunctionComponent<Props> = ({
                                         index,
                                     )
                                 }
+                                disabled={!isLastLevel}
                                 labelString={formatMessage(MESSAGES.quantity)}
                                 value={
-                                    parameterValues?.org_unit_type_quantities[
+                                    parameterValues?.org_unit_type_quantities?.[
                                         index
                                     ]
                                 }

@@ -43,7 +43,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
         parquet_export_sql = f"""
             COPY (
                 SELECT * FROM postgres_query('pg', $$ {full_sql} $$)
-            ) TO '{output_file_path}' (FORMAT PARQUET, ROW_GROUP_SIZE 10000)
+            ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
         """
 
         duckdb_connection.execute(parquet_export_sql)

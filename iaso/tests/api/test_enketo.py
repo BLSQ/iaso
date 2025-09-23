@@ -1,6 +1,7 @@
 import json
 import urllib.parse
 
+from unittest import skip
 from urllib.parse import parse_qs
 
 import responses
@@ -710,6 +711,8 @@ class EnketoAPITestCase(APITestCase):
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
         self.assertEqual(old_count + 1, Instance.objects.count())
 
+
+    @skip("TODO: Skipping for Trypelim, has unique constraint on Instance UUID")
     def test_form_list_work_with_duplicate_instance(self):
         "Check form list work when there are two instances with the same UUID"
         uuid_dup = "uuid-dup"
@@ -746,6 +749,7 @@ class EnketoAPITestCase(APITestCase):
         )
         self.assertEqual(response.content.decode("utf-8"), expected_list)
 
+    @skip("TODO: Skipping for Trypelim, has unique constraint on Instance UUID")
     def test_duplicate_instance_download(self):
         "form download works if there is two instance"
         uuid_dup = "uuid-dup"

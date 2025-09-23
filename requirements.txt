@@ -34,6 +34,8 @@ geopandas==0.14.2  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
 
+duckdb==1.3.2 # https://duckdb.org/docs/stable/clients/python/overview
+
 # Geo.
 # ------------------------------------------------------------------------------
 Fiona==1.9.5  # https://github.com/Toblerity/Fiona/tags

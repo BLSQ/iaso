@@ -162,3 +162,11 @@ quote-style = "double"
 combine-as-imports = true
 lines-after-imports = 2
 lines-between-types = 1
+
+[tool.coverage.run]
+omit = [
+    "plugins/*/migrations/*",
+    "plugins/*/tests/*",
+    "*/migrations/*",  
+    "iaso/tests/*"
+]

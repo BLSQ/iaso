@@ -38,7 +38,7 @@ stuff that the ``webpack common chunk`` plugin finds is shared between the apps.
 
 
 Including a JS bundle via django-webpack-loader
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------------------------
 
 If we have created a new JS app ``MyCustomApp`` in ``hat/assets/js/apps/``.
 

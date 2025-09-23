@@ -277,6 +277,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.addForm',
         defaultMessage: 'Add a form',
     },
+    searchToSeeEntities: {
+        id: 'iaso.entities.searchToSeeEntities',
+        defaultMessage: 'Click "Search" button to see entities',
+    },
 });
 
 export default MESSAGES;

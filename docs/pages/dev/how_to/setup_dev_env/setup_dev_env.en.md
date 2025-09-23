@@ -380,3 +380,11 @@ HIDE_BASIC_NAV_ITEMS="<'yes' or 'no'>"
 
 Those settings are optional and are using a default value if nothing is provided
 
+### 23. Create a new IASO plugin
+
+You can create a new plugin using the command:
+``` {.sourceCode .bash}
+docker compose exec iaso ./manage.py startplugin <plugin_name>
+```
+
+It will create the skeleton of a new plugin in the `plugins/<plugin_name>` folder.

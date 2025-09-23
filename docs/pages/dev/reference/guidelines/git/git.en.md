@@ -9,10 +9,10 @@ Github flow
 - To be mergeable your PR needs to pass build, JS and Python tests.
 - You can also launch Cypress test manually to make sure you didn't brake something else just by tagging `@cypress` in a comment on your PR
 - Add reviewer(s) to make sure someone is gonna take care of it
-- Merge main in your branch if you have conflicts (we are not doing rebase)
+- Merge develop in your branch if you have conflicts
 - If a reviewer request changes apply the changes and mark the discussion on github as resolved when fixed. It will help other reviewers to see if the changes has been done.
 - Re-request a review when all changes are pushed (double check tests again)
-- Wait at least that one reviewer approved the PR and merge the thing
+- Wait at least that one reviewer approved the PR, after you can sqaush and merge following conventional commit
 - Add documentation when necessary (new feature, change in config, etc)
 
 

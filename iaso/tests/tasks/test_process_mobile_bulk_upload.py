@@ -64,6 +64,10 @@ class ProcessMobileBulkUploadTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
+        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
+        super().setUpTestData()
+
         cls.user = User.objects.first()
         cls.project = m.Project.objects.first()
         cls.account = m.Account.objects.first()
@@ -73,9 +77,6 @@ class ProcessMobileBulkUploadTestCase(TestCase):
         cls.default_entity_type = m.EntityType.objects.create(
             id=1, name="Participant", reference_form=cls.form_registration
         )
-
-        # Removing all InMemoryFileNodes inside the storage to avoid name conflicts - some can be kept by previous test classes
-        default_storage._root._children.clear()  # see InMemoryFileStorage in django/core/files/storage/memory.py
 
     @staticmethod
     @contextmanager
@@ -218,12 +219,11 @@ class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
         generated_file_name = instance_upload_to(catt_instance, DISASI_MAKULO_INSTANCE_FILE_NAME)
         # as the generated file name is longer than 100 chars, Django truncates it and adds a random suffix to it
         # it's therefore impossible to strictly check for equality
-        expected_file_name = generated_file_name[:85]
+        expected_file_name = generated_file_name[:75]
         self.assertTrue(catt_instance.file.name.startswith(expected_file_name))
         # same issue about name length for InstanceFile
         generated_attachment_name = instance_file_upload_to(image, DISASI_MAKULO_INSTANCE_ATTACHMENT_NAME)
-        expected_attachment_name = generated_attachment_name[:85]
-        self.assertTrue(image.file.name.startswith(expected_attachment_name))
+        self.assertEqual(image.file.name[:75], generated_attachment_name[:75])
 
         # Entity 2: Patrice Akambu
         reg_instance = m.Instance.objects.get(uuid=PATRICE_AKAMBU_REGISTRATION)

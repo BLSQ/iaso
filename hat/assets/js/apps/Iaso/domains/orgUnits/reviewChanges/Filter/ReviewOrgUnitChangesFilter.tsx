@@ -267,7 +267,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
             const joined = newValue?.map(r => r.value)?.join(',');
@@ -405,6 +404,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     type="select"
                     multi
                     clearable
+                    keyValue="kind"
+                    value={filters.kind}
+                    onChange={handleChange}
+                    options={kindOptions}
+                    labelString={formatMessage(MESSAGES.kind)}
+                />
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
                     keyValue="groups"
                     value={filters.groups}
                     onChange={handleChange}
@@ -505,16 +514,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     onChange={handleChangeRequestedFields}
                     options={requestedFieldsOptions}
                     labelString={formatMessage(MESSAGES.requestedFields)}
-                />
-                <InputComponent
-                    type="select"
-                    multi
-                    clearable
-                    keyValue="kind"
-                    value={filters.kind}
-                    onChange={handleChange}
-                    options={kindOptions}
-                    labelString={formatMessage(MESSAGES.kind)}
                 />
                 <InputComponent
                     type="select"

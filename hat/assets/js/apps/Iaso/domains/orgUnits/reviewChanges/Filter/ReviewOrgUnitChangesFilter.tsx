@@ -231,6 +231,20 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         [formatMessage],
     );
 
+    const kindOptions = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.orgUnitCreation),
+                value: 'org_unit_creation',
+            },
+            {
+                label: formatMessage(MESSAGES.orgUnitChange),
+                value: 'org_unit_change',
+            },
+        ],
+        [formatMessage],
+    );
+
     // Convert comma-separated string to array for multi-select component.
     const requestedFieldsValue = useMemo(() => {
         if (!filters.requested_fields) return [];
@@ -252,6 +266,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
+
 
     const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
@@ -490,6 +505,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     onChange={handleChangeRequestedFields}
                     options={requestedFieldsOptions}
                     labelString={formatMessage(MESSAGES.requestedFields)}
+                />
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="kind"
+                    value={filters.kind}
+                    onChange={handleChange}
+                    options={kindOptions}
+                    labelString={formatMessage(MESSAGES.kind)}
                 />
                 <InputComponent
                     type="select"

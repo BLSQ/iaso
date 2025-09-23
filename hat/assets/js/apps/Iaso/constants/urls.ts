@@ -199,6 +199,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'potentialPaymentIds',
             'projectIds',
             'requested_fields',
+            'kind',
             'source_version_id',
             'status',
             'userIds',

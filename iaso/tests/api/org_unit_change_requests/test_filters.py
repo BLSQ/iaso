@@ -19,7 +19,10 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         version = m.SourceVersion.objects.create(number=1, data_source=data_source)
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(
-            org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
+            org_unit_type=org_unit_type,
+            version=version,
+            uuid="1539f174-4c53-499c-85de-7a58458c49ef",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
         account = m.Account.objects.create(name="Account", default_version=version)
@@ -442,5 +445,40 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Filter by non-existent fields.
         response = self.client.get("/api/orgunits/changes/?requested_fields=foo,bar,1")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 0)
+
+    def test_filter_by_kind(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        new_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type, version=self.version, validation_status=m.OrgUnit.VALIDATION_NEW
+        )
+
+        change_request_for_new_org_unit = m.OrgUnitChangeRequest.objects.create(
+            org_unit=new_org_unit, new_name="Creation Request"
+        )
+        change_request_for_existing_org_unit = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Change Request"
+        )
+
+        # Filter by single kind.
+        response = self.client.get("/api/orgunits/changes/?kind=org_unit_creation")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 1)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_for_new_org_unit.pk, result_ids)
+        self.assertNotIn(change_request_for_existing_org_unit.pk, result_ids)
+
+        # Filter by multiple kinds.
+        response = self.client.get("/api/orgunits/changes/?kind=org_unit_creation,org_unit_change")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["count"], 2)
+        result_ids = {change["id"] for change in response.data["results"]}
+        self.assertIn(change_request_for_new_org_unit.pk, result_ids)
+        self.assertIn(change_request_for_existing_org_unit.pk, result_ids)
+
+        # Filter by non-existent fields.
+        response = self.client.get("/api/orgunits/changes/?kind=foo")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["count"], 0)

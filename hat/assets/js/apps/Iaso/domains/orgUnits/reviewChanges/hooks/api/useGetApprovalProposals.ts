@@ -39,6 +39,7 @@ export const useGetApprovalProposalsParams = (
         ids: params.ids,
         is_soft_deleted: params.is_soft_deleted || false,
         requested_fields: params.requested_fields,
+        kind: params.kind,
     };
 };
 

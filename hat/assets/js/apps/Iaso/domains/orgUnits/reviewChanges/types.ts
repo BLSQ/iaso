@@ -25,6 +25,7 @@ export type ApproveOrgUnitParams = UrlParams & {
     ids?: string; // comma separated ids
     is_soft_deleted?: string;
     requested_fields?: string; // comma separated field names
+    kind?: string; // comma separated kind values
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

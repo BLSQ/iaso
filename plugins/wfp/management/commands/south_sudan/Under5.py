@@ -27,6 +27,8 @@ class Under5:
         i = 0
         instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
         initial_weight = None
+        muac_size = None
+        whz_score = None
         current_weight = None
         initial_date = None
         current_date = None
@@ -92,6 +94,8 @@ class Under5:
                             visit.get("_visit_date", visit.get("visit_date", current_date)),
                         )
                         initial_date = visit_date
+                        muac_size = current_record.get("muac")
+                        whz_score =  current_record.get("_whz_score", current_record.get("whz_score"))
 
                     if initial_date is not None:
                         duration = (current_date - initial_date).days
@@ -105,6 +109,8 @@ class Under5:
                     current_record["discharge_weight"] = weight["discharge_weight"]
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
+                    current_record["muac_size"] = muac_size
+                    current_record["whz_score"] = whz_score
 
                     visit_date = visit.get(
                         "source_created_at",

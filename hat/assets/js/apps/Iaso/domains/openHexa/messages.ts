@@ -53,4 +53,8 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Remove level',
         id: 'iaso.openHexalabel.removeLevel',
     },
+    excludedOrgUnits: {
+        defaultMessage: 'Excluded org units',
+        id: 'iaso.openHexalabel.excludedOrgUnits',
+    },
 });

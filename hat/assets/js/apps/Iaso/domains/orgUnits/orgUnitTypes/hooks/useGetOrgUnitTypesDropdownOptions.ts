@@ -3,7 +3,7 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
-import { DropdownOptions } from '../../../../types/utils';
+import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 import { useCheckUserHasWriteTypePermission } from '../../../../utils/usersUtils';
 import { OrgunitTypes } from '../../types/orgunitTypes';
 
@@ -31,6 +31,11 @@ const getOrgunitTypes = (
     return getRequest(url);
 };
 
+export type OriginalOrgUnitType = {
+    id: number;
+    name: string;
+    sub_unit_types: number[];
+};
 export const useGetOrgUnitTypesDropdownOptions = ({
     projectId,
     projectIds,
@@ -43,7 +48,10 @@ export const useGetOrgUnitTypesDropdownOptions = ({
     sourceVersionId?: number | undefined;
     onlyWriteAccess?: boolean | undefined;
     enabled?: boolean | undefined;
-} = {}): UseQueryResult<DropdownOptions<string>[], Error> => {
+} = {}): UseQueryResult<
+    DropdownOptionsWithOriginal<string, OriginalOrgUnitType>[],
+    Error
+> => {
     const queryKey: any[] = [
         'orgunittypes-dropdown',
         projectId,

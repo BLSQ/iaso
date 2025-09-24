@@ -29,8 +29,6 @@ export const LQASForm: FunctionComponent<Props> = ({
         useGetOrgUnitTypesDropdownOptions({
             projectId: planning.project,
         });
-
-    // Generic array update helper
     const updateArrayAtIndex = useCallback(
         (arrayName: string, index: number, value: any) => {
             const currentArray = parameterValues?.[arrayName] || [];
@@ -41,7 +39,6 @@ export const LQASForm: FunctionComponent<Props> = ({
         [parameterValues, handleParameterChange],
     );
 
-    // Generic array manipulation helpers
     const addToArray = useCallback(
         (arrayName: string, value: any = undefined) => {
             const currentArray = parameterValues?.[arrayName] || [];
@@ -60,7 +57,6 @@ export const LQASForm: FunctionComponent<Props> = ({
         [parameterValues, handleParameterChange],
     );
 
-    // Specific handlers using generic helpers
     const handleOrgUnitTypeChange = useCallback(
         (value: any, index: number) => {
             updateArrayAtIndex(
@@ -93,9 +89,10 @@ export const LQASForm: FunctionComponent<Props> = ({
 
     // Memoized values
     const levels = useMemo(() => {
-        const identifiers = parameterValues?.org_unit_type_sequence_identifiers;
-        return identifiers?.length && identifiers.length > 0
-            ? identifiers
+        const orgunitTypeIds =
+            parameterValues?.org_unit_type_sequence_identifiers;
+        return orgunitTypeIds?.length && orgunitTypeIds.length > 0
+            ? orgunitTypeIds
             : [undefined];
     }, [parameterValues?.org_unit_type_sequence_identifiers]);
 
@@ -113,12 +110,12 @@ export const LQASForm: FunctionComponent<Props> = ({
 
     return (
         <Box>
-            {levels.map((orgUnitType, index) => {
+            {levels.map((orgUnitTypeId, index) => {
                 return (
                     <Level
-                        orgUnitTypes={orgUnitTypes}
+                        orgUnitTypes={orgUnitTypes || []}
                         isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                        key={`level_${index}`}
+                        key={orgUnitTypeId || 'last_level'}
                         index={index}
                         levels={levels}
                         handleOrgUnitTypeChange={handleOrgUnitTypeChange}
@@ -126,7 +123,10 @@ export const LQASForm: FunctionComponent<Props> = ({
                             handleOrgUnitTypeQuantityChange
                         }
                         handleRemoveLevel={handleRemoveLevel}
-                        orgUnitType={orgUnitType}
+                        orgUnitTypeId={orgUnitTypeId}
+                        handleParameterChange={handleParameterChange}
+                        parameterValues={parameterValues}
+                        planning={planning}
                     />
                 );
             })}

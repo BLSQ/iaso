@@ -133,7 +133,7 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
             open={isOpen}
             onCancel={() => null}
             closeDialog={closeDialog}
-            maxWidth="sm"
+            maxWidth="xs"
             closeOnConfirm={false}
             onClose={() => null}
             cancelMessage={currentStep !== 1 ? MESSAGES.close : MESSAGES.cancel}

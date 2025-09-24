@@ -7,9 +7,9 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../../libs/utils';
 
+import { Profile } from '../../../../utils/usersUtils';
 import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
-import { Profile } from '../../../../utils/usersUtils';
 import { AssignmentsApi } from '../../types/assigment';
 import { BaseLocation, Locations } from '../../types/locations';
 import { DropdownTeamsOptions } from '../../types/team';
@@ -146,15 +146,44 @@ const mapLocation = ({
 };
 
 type Props = {
-    orgUnitParentIds: number[] | undefined;
-    baseOrgunitType: string | undefined;
+    orgUnitParentIds?: number[];
+    baseOrgunitType?: string;
     assignments: AssignmentsApi;
     allAssignments: AssignmentsApi;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
-    currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
+    currentType?: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
     order?: string;
     search?: string;
+};
+
+type PropsByOrgUnitTypeId = {
+    orgUnitTypeId?: number;
+    projectId?: number;
+};
+
+export const useGetOrgUnitsByOrgUnitTypeId = ({
+    orgUnitTypeId,
+    projectId,
+}: PropsByOrgUnitTypeId): UseQueryResult<OrgUnit[], Error> => {
+    return useSnackQuery({
+        queryKey: ['orgUnitsByType', orgUnitTypeId, projectId],
+        queryFn: () =>
+            getRequest(
+                makeUrlWithParams('/api/orgunits/', {
+                    orgUnitTypeId,
+                    project: projectId,
+                    defaultVersion: 'true',
+                }),
+            ),
+        options: {
+            enabled: Boolean(orgUnitTypeId) && Boolean(projectId),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
+            select: data => data?.orgUnits || [],
+        },
+    });
 };
 
 export const useGetOrgUnits = ({

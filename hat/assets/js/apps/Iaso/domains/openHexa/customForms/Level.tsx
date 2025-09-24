@@ -2,7 +2,9 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { Grid } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { DropdownOptions } from 'Iaso/types/utils';
+import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
+import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
 import { PopperConfig } from './PopperConfig';
 type ParameterValues =
@@ -14,14 +16,16 @@ type ParameterValues =
     | undefined;
 type Props = {
     parameterValues?: ParameterValues;
-    orgUnitTypes: DropdownOptions<string>[] | undefined;
+    orgUnitTypes: DropdownOptionsWithOriginal<string, OriginalOrgUnitType>[];
     isFetchingOrgUnitTypes: boolean;
     index: number;
     levels: number[] | undefined[];
     handleOrgUnitTypeChange: (value: any, index: number) => void;
     handleOrgUnitTypeQuantityChange: (value: any, index: number) => void;
     handleRemoveLevel: (index: number) => void;
-    orgUnitType: number;
+    orgUnitTypeId: number;
+    handleParameterChange: (parameterName: string, value: any) => void;
+    planning: Planning;
 };
 
 export const Level: FunctionComponent<Props> = ({
@@ -33,11 +37,11 @@ export const Level: FunctionComponent<Props> = ({
     handleOrgUnitTypeChange,
     handleOrgUnitTypeQuantityChange,
     handleRemoveLevel,
-    orgUnitType,
+    orgUnitTypeId,
+    handleParameterChange,
+    planning,
 }) => {
     const { formatMessage } = useSafeIntl();
-
-    // Helper to get options for a specific level
     const getOptionsForLevel = useCallback(
         (index: number) => {
             if (index === 0) return orgUnitTypes;
@@ -70,7 +74,7 @@ export const Level: FunctionComponent<Props> = ({
                     }
                     clearable={false}
                     labelString={`${formatMessage(MESSAGES.level)} ${index + 1}`}
-                    value={orgUnitType}
+                    value={orgUnitTypeId}
                     options={getOptionsForLevel(index)}
                     loading={isFetchingOrgUnitTypes}
                     disabled={!isLastLevel}
@@ -83,35 +87,45 @@ export const Level: FunctionComponent<Props> = ({
                     onChange={(_, value) =>
                         handleOrgUnitTypeQuantityChange(value, index)
                     }
-                    disabled={!isLastLevel}
                     labelString={formatMessage(MESSAGES.quantity)}
                     value={parameterValues?.org_unit_type_quantities?.[index]}
                 />
             </Grid>
+            {index !== 0 && (
+                <Grid
+                    item
+                    xs={1}
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    mt={1}
+                >
+                    <IconButton
+                        icon="delete"
+                        disabled={!canRemove}
+                        onClick={() => handleRemoveLevel(index)}
+                        tooltipMessage={MESSAGES.removeLevel}
+                    />
+                </Grid>
+            )}
             <Grid
                 item
-                xs={1}
+                xs={index !== 0 ? 1 : 2}
                 display="flex"
                 justifyContent="center"
                 alignItems="center"
                 mt={1}
             >
-                <IconButton
-                    icon="delete"
-                    disabled={!canRemove}
-                    onClick={() => handleRemoveLevel(index)}
-                    tooltipMessage={MESSAGES.removeLevel}
+                <PopperConfig
+                    index={index}
+                    selectedOrgUnitIds={
+                        parameterValues?.org_unit_type_exceptions?.[index] || []
+                    }
+                    orgUnitTypeId={orgUnitTypeId}
+                    handleParameterChange={handleParameterChange}
+                    parameterValues={parameterValues}
+                    planning={planning}
                 />
-            </Grid>
-            <Grid
-                item
-                xs={1}
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt={1}
-            >
-                <PopperConfig index={index} />
             </Grid>
         </Grid>
     );

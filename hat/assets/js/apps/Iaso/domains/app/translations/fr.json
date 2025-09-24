@@ -950,6 +950,7 @@
     "iaso.openHexa.label.pipelineDetails": "Détails de la pipeline",
     "iaso.openHexa.label.pipelines": "Pipelines",
     "iaso.openHexalabel.addLevel": "Ajouter un niveau",
+    "iaso.openHexalabel.excludedOrgUnits": "Unités d'org. exclues",
     "iaso.openHexalabel.removeLevel": "Supprimer le niveau",
     "iaso.openHexalabel.unknownParameterType": "Type de paramètre inconnu",
     "iaso.orgUnitChangeRequestConfigs.title.confirmSuppression": "Supprimer la configuration pour {project} - {orgUnitType} ?",

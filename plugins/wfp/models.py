@@ -75,6 +75,8 @@ class Journey(models.Model):
         blank=True,
         db_index=True,
     )
+    muac_size = models.CharField(max_length=10,null=True, blank=True)
+    whz_score = models.CharField(max_length=10,null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True, db_index=True)
     nutrition_programme = models.CharField(
         max_length=255,
@@ -100,6 +102,8 @@ class Visit(models.Model):
     number = models.IntegerField(default=1)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True, db_index=True)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
+    muac_size = models.CharField(max_length=10,null=True, blank=True)
+    whz_score = models.CharField(max_length=10,null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 

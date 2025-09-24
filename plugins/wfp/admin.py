@@ -14,6 +14,8 @@ class JourneyAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "admission_criteria",
+        "muac_size",
+        "whz_score",
         "admission_type",
         "nutrition_programme",
         "programme_type",
@@ -54,7 +56,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "org_unit", "journey")
+    list_display = ("id", "date", "number", "muac_size","whz_score","org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",

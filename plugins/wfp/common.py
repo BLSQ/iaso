@@ -357,6 +357,8 @@ class ETL:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
             current_journey["initial_weight"] = visit.get("initial_weight", None)
+            current_journey["muac_size"] = visit.get("muac_size", None)
+            current_journey["whz_score"] = visit.get("whz_score", None)
             if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
                 current_journey["date"] = visit.get("registration_date", None)
             elif visit.get("_visit_date", None) is not None and visit.get("_visit_date", None) != "":
@@ -586,6 +588,8 @@ class ETL:
             visit = Visit()
             visit.date = current_visit.get("date", None)
             visit.number = visit_number
+            visit.muac_size = current_visit.get("muac_size", None)
+            visit.whz_score = current_visit.get("whz_score", None)
             visit.journey = journey
             orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
             visit.org_unit = orgUnit
@@ -709,6 +713,8 @@ class ETL:
         journey.beneficiary = beneficiary
         journey.programme_type = entity_type
         journey.admission_criteria = record.get("admission_criteria")
+        journey.muac_size = record.get("muac_size")
+        journey.whz_score = record.get("whz_score")
         journey.admission_type = record.get("admission_type", None)
         journey.nutrition_programme = record.get("nutrition_programme")
         journey.exit_type = record.get("exit_type", None)

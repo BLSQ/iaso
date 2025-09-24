@@ -42,6 +42,15 @@ class JourneyAdmin(admin.ModelAdmin):
         "beneficiary__guidelines",
     )
 
+    search_fields = (
+        "beneficiary__account__name",
+        "beneficiary__gender",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+    )
+
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
@@ -53,6 +62,7 @@ class VisitAdmin(admin.ModelAdmin):
         "journey__programme_type",
         "journey__beneficiary__account",
     )
+    search_fields = ("journey__beneficiary__account__name", "org_unit__id", "org_unit__name", "number")
 
 
 @admin.register(Step)
@@ -95,4 +105,15 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "given_sachet_rutf",
         "given_quantity_csb",
         "given_ration_cbt",
+    )
+    search_fields = (
+        "account__name",
+        "org_unit__id",
+        "org_unit__name",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "gender__icontains",
+        "month__icontains",
+        "year__icontains",
     )

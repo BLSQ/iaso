@@ -32,7 +32,7 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
         period="202001",
         org_unit=orgunit,
         project=cls.default_project,
-        uuid=uuid4,
+        uuid=uuid4(),
     )
 
     instance_json["_version"] = form_version

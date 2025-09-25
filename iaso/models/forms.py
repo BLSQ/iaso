@@ -95,7 +95,7 @@ class FormQuerySet(models.QuerySet):
 
     def filter_for_project(self, project: Project, queryset=None):
         if queryset is None:
-            queryset = self.all()
+            queryset = self
         queryset = queryset.filter(projects__in=[project])
         return queryset.exclude(derived=True)  # do not include derived instances for the mobile app
 

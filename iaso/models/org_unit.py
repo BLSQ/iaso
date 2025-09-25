@@ -107,7 +107,7 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
     def filter_for_project(self, project: Project, queryset=None):
         if queryset is None:
-            queryset = self.all()
+            queryset = self
         return queryset.filter(projects__in=[project])
 
 

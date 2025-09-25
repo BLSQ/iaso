@@ -4,16 +4,15 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.models import OrgUnitType, Project, UserRole
+from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
 
 from .common import ModelViewSet, TimestampField
 
 
 class HasUserRolePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (not request.user.has_perm(core_permissions.USERS_ROLES)) and request.method != "GET":
+        if (not request.user.has_perm(CORE_USERS_ROLES_PERMISSION.full_name())) and request.method != "GET":
             return False
         return True
 
@@ -111,7 +110,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 class UserRolesViewSet(ModelViewSet):
     f"""Roles API
 
-    This API is restricted to authenticated users having the "{core_permissions.USERS_ROLES}" permission for write permission
+    This API is restricted to authenticated users having the "{CORE_USERS_ROLES_PERMISSION}" permission for write permission
     Read access is accessible to any authenticated users as it necessary to list roles or display a particular one in
     the interface.
 

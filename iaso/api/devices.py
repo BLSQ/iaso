@@ -1,8 +1,7 @@
 from rest_framework import permissions, serializers
 
-import iaso.permissions as core_permissions
-
 from iaso.models import Device, DeviceOwnership, Instance
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 
 from .common import HasPermission, ModelViewSet, TimestampField
 
@@ -33,7 +32,7 @@ class DeviceSerializer(serializers.ModelSerializer):
 class DevicesViewSet(ModelViewSet):
     f"""Iaso Devices API
 
-    This API is restricted to authenticated users having the "{core_permissions.FORMS}" or "{core_permissions.SUBMISSIONS}" permissions.
+    This API is restricted to authenticated users having the "{CORE_FORMS_PERMISSION}" or "{CORE_SUBMISSIONS_PERMISSION}" permissions.
 
     GET /api/devices/
     GET /api/devices/<id>
@@ -41,7 +40,7 @@ class DevicesViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(core_permissions.FORMS, core_permissions.SUBMISSIONS),  # type: ignore
+        HasPermission(CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_PERMISSION),
     ]
     serializer_class = DeviceSerializer
     results_key = "devices"

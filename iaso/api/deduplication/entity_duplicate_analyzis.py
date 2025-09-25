@@ -5,11 +5,14 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.response import Response
 
 import iaso.models.base as base
-import iaso.permissions as core_permissions
 
 from iaso.api.common import HasPermission, ModelViewSet, Paginator
 from iaso.models import EntityDuplicateAnalyzis, EntityType
 from iaso.models.deduplication import PossibleAlgorithms
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 
@@ -112,9 +115,9 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         return EntityDuplicateAnalyzis.objects.filter(task__account=user_account).select_related("task__created_by")
 
     def get_permissions(self):
-        permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
+        permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
         if self.action in ["partial_update", "destroy", "create"]:
-            permission_classes += [HasPermission(core_permissions.ENTITIES_DUPLICATE_WRITE)]
+            permission_classes += [HasPermission(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION)]
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
@@ -131,7 +134,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         Needs iaso_entity_duplicates_write permission
         """
 
-        if not request.user.has_perm(core_permissions.ENTITIES_DUPLICATE_WRITE):
+        if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -162,7 +165,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         Provides an API to delete the possible duplicates of an analyze
         Needs iaso_entity_duplicates_write permission
         """
-        if not request.user.has_perm(core_permissions.ENTITIES_DUPLICATE_WRITE):
+        if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -192,7 +195,7 @@ class EntityDuplicateAnalyzisViewSet(ModelViewSet):
         Needs iaso_entity_duplicates_write permission
         """
 
-        if not request.user.has_perm(core_permissions.ENTITIES_DUPLICATE_WRITE):
+        if not request.user.has_perm(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         serializer = AnalyzePostBodySerializer(data=request.data)

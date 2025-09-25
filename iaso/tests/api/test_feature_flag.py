@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -6,7 +7,7 @@ class FeatureFlagAPITestCases(APITestCase):
     @classmethod
     def setUpTestData(cls):
         wha = m.Account.objects.create(name="Worldwide Health Aid")
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
         m.FeatureFlag.objects.create(code="first_test", name="first", order=1, category="DCO")
         m.FeatureFlag.objects.create(code="second_test", name="second", order=6, category="DCO")
         m.FeatureFlag.objects.create(code="third_test", name="third", order=3, category="REO")

@@ -3,9 +3,14 @@ from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.models import DataSource, SourceVersion
+from iaso.permissions.core_permissions import (
+    CORE_LINKS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 
 from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
@@ -80,8 +85,8 @@ class SourceVersionsDropdownSerializer(serializers.ModelSerializer):
 class SourceVersionViewSet(ModelViewSet):
     f"""Data source API
 
-    This API is restricted to authenticated users having at least one of the "{core_permissions.MAPPINGS}",
-    "{core_permissions.ORG_UNITS}","{core_permissions.ORG_UNITS_READ}", and "{core_permissions.LINKS}" permissions
+    This API is restricted to authenticated users having at least one of the "{CORE_MAPPINGS_PERMISSION}",
+    "{CORE_ORG_UNITS_PERMISSION}","{CORE_ORG_UNITS_READ_PERMISSION}", and "{CORE_LINKS_PERMISSION}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
@@ -102,12 +107,12 @@ class SourceVersionViewSet(ModelViewSet):
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission(
-            core_permissions.MAPPINGS,
-            core_permissions.ORG_UNITS,
-            core_permissions.ORG_UNITS_READ,
-            core_permissions.LINKS,
-            core_permissions.SOURCES,
-        ),  # type: ignore
+            CORE_MAPPINGS_PERMISSION,
+            CORE_ORG_UNITS_PERMISSION,
+            CORE_ORG_UNITS_READ_PERMISSION,
+            CORE_LINKS_PERMISSION,
+            CORE_SOURCE_PERMISSION,
+        ),
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"

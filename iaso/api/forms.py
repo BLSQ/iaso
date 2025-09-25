@@ -12,12 +12,11 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import FORM_API, log_modification
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired, ReadOnly
 from iaso.models import EntityDuplicateAnalyzis, Form, FormAttachment, FormVersion, OrgUnit, OrgUnitType, Project
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.date_and_time import timestamp_to_datetime
 
 from ..enketo import enketo_settings
@@ -34,7 +33,7 @@ class HasFormPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired):
         if request.method in permissions.SAFE_METHODS:
             return super().has_permission(request, view)
 
-        return request.user.is_authenticated and request.user.has_perm(core_permissions.FORMS)
+        return request.user.is_authenticated and request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -245,7 +244,7 @@ class FormsViewSet(ModelViewSet):
     f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{core_permissions.FORMS}"  permission.
+    having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/forms/
     GET /api/forms/<id>

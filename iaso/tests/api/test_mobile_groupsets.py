@@ -4,6 +4,7 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -25,12 +26,12 @@ class MobileGroupSetsAPITestCase(APITestCase):
         cls.user_nigeria = cls.create_user_with_profile(
             username="user_nigeria",
             account=account_nigeria,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         cls.user_cameroon = cls.create_user_with_profile(
             username="user_cameroon",
             account=account_cameroon,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
 
         cls.project_nigeria = m.Project.objects.create(

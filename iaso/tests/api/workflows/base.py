@@ -8,6 +8,7 @@ from django.utils.timezone import now
 from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowChange, WorkflowFollowup, WorkflowVersionsStatus
+from iaso.permissions.core_permissions import CORE_WORKFLOW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -22,13 +23,13 @@ class BaseWorkflowsAPITestCase(APITestCase):
         cls.anon = AnonymousUser()
 
         cls.blue_adult_1 = cls.create_user_with_profile(
-            username="blue_adult_1", account=blue_adults, permissions=["iaso_workflows"]
+            username="blue_adult_1", account=blue_adults, permissions=[CORE_WORKFLOW_PERMISSION]
         )
 
         cls.blue_child_1 = cls.create_user_with_profile(
             username="blue_child_1",
             account=blue_children,
-            permissions=["iaso_workflows"],
+            permissions=[CORE_WORKFLOW_PERMISSION],
         )
 
         # He doesn't have permissions

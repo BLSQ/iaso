@@ -3,6 +3,7 @@ from rest_framework import status
 from iaso.models import ImportGPKG
 from iaso.models.import_gpkg import import_gpkg_upload_to
 from iaso.models.org_unit import OrgUnit
+from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -15,7 +16,7 @@ class ImportGpkgAPITestCase(TaskAPITestCase):
         cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
             source_name="data source 1", account_name="account 1", project_name="project 1"
         )
-        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, ["iaso_sources"])
+        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, [CORE_SOURCE_PERMISSION])
 
     def test_import_gpkg_happy_path(self):
         self.assertEqual(ImportGPKG.objects.count(), 0)

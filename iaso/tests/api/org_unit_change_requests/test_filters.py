@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -28,7 +29,7 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         user_with_review_perm = cls.create_user_with_profile(
             username="user_with_review_perm",
             account=account,
-            permissions=["iaso_org_unit_change_request_review"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION],
         )
 
         data_source.projects.set([project])

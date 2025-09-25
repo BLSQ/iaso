@@ -7,6 +7,7 @@ from django.utils import timezone
 from iaso import models as m
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models.base import ERRORED, EXPORTED, QUEUED, RUNNING, SUCCESS
+from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
 from iaso.test import APITestCase, TestCase
 
 
@@ -26,7 +27,9 @@ class TaskSerializerSerializerTestCase(TestCase):
         data_source = m.DataSource.objects.create(name="Data source")
         version = m.SourceVersion.objects.create(number=1, data_source=data_source)
         account = m.Account.objects.create(name="Account", default_version=version)
-        cls.user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_data_tasks"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=account, permissions=[CORE_DATA_TASKS_PERMISSION]
+        )
 
         cls.task = m.Task.objects.create(
             progress_value=1,
@@ -133,7 +136,7 @@ class IasoTasksTestCase(APITestCase):
         m.OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=org_unit_type, source_ref="nomercy")
         cls.source = source
         cls.johnny = cls.create_user_with_profile(
-            username="johnny", account=cls.account, permissions=["iaso_data_tasks"]
+            username="johnny", account=cls.account, permissions=[CORE_DATA_TASKS_PERMISSION]
         )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=cls.account, permissions=[])
 

@@ -6,6 +6,7 @@ from rest_framework import status
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION
 from iaso.tests.api.org_unit_change_request_configurations.common_base_with_setup import OUCRCAPIBase
 
 
@@ -84,7 +85,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
     def test_list_with_restricted_queryset(self):
         new_project, new_account = self.create_new_project_and_account(project_name="Palworld", account_name="Palworld")
         new_user = self.create_user_with_profile(
-            username="Palworld guy", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+            username="Palworld guy",
+            account=new_account,
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION],
         )
         new_oucrc = m.OrgUnitChangeRequestConfiguration.objects.create(
             org_unit_type=self.ou_type_water_pokemons,
@@ -761,7 +764,9 @@ class OrgUnitChangeRequestConfigurationAPITestCase(OUCRCAPIBase):
             project_name="New project", account_name="New account"
         )
         new_user = self.create_user_with_profile(
-            username="New user", account=new_account, permissions=["iaso_org_unit_change_request_configurations"]
+            username="New user",
+            account=new_account,
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION],
         )
 
         new_ou_type_1 = self.create_new_org_unit_type("new type 1")

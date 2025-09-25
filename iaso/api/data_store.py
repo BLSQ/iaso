@@ -2,10 +2,9 @@ from django.utils.text import slugify
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, serializers
 
-import iaso.permissions as core_permissions
-
 from iaso.api.common import ModelViewSet
 from iaso.models.data_store import JsonDataStore
+from iaso.permissions.core_permissions import CORE_DATASTORE_READ_PERMISSION, CORE_DATASTORE_WRITE_PERMISSION
 
 
 class DataStoreSerializer(serializers.ModelSerializer):
@@ -13,7 +12,7 @@ class DataStoreSerializer(serializers.ModelSerializer):
         model = JsonDataStore
         fields = ["created_at", "updated_at", "key", "data"]
 
-    data = serializers.JSONField(source="content")  # type: ignore
+    data = serializers.JSONField(source="content")
     key = serializers.CharField(source="slug")
 
     def validate_data(self, request_data):
@@ -54,17 +53,17 @@ class DataStoreSerializer(serializers.ModelSerializer):
 
 class DataStorePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perm = core_permissions.DATASTORE_READ
-        write_perm = core_permissions.DATASTORE_WRITE
+        read_perm = CORE_DATASTORE_READ_PERMISSION
+        write_perm = CORE_DATASTORE_WRITE_PERMISSION
 
         if request.method == "GET":
             can_get = (
-                request.user and request.user.is_authenticated and request.user.has_perm(read_perm)
+                request.user and request.user.is_authenticated and request.user.has_perm(read_perm.full_name())
             ) or request.user.is_superuser
             return can_get
         if request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
             can_post = (
-                request.user and request.user.is_authenticated and request.user.has_perm(write_perm)
+                request.user and request.user.is_authenticated and request.user.has_perm(write_perm.full_name())
             ) or request.user.is_superuser
             return can_post
         return False

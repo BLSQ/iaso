@@ -20,6 +20,13 @@ from iaso import models as m
 from iaso.api import query_params as query
 from iaso.models import FormVersion, Instance, InstanceLock, OrgUnitReferenceInstance
 from iaso.models.microplanning import Planning, Team
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+    CORE_SUBMISSIONS_UPDATE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -44,11 +51,13 @@ class InstancesAPITestCase(TaskAPITestCase):
             last_name="Da",
             first_name="Yo",
             account=star_wars,
-            permissions=["iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
-        cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
+        cls.guest = cls.create_user_with_profile(
+            username="guest", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
         cls.supervisor = cls.create_user_with_profile(
-            username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
+            username="supervisor", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_FORMS_PERMISSION]
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -509,7 +518,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         super_yoda = self.create_user_with_profile(
             account=self.star_wars,
             username="super yoda",
-            permissions=["iaso_sources", "iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SOURCE_PERMISSION, CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
 
         # Then, let's copy the existing source version through an API call (couldn't call task directly)
@@ -1156,7 +1165,9 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertJSONResponse(response, status.HTTP_400_BAD_REQUEST)
 
     def test_user_restriction(self):
-        full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])
+        full = self.create_user_with_profile(
+            username="full", account=self.star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
         self.client.force_authenticate(full)
         self.create_form_instance(
             form=self.form_1, period="202001", org_unit=self.jedi_council_endor, project=self.project
@@ -1175,7 +1186,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         self.assertValidInstanceListData(response.json(), 10)
         # restrict user to endor region, can only see one instance. Not instance without org unit
         restricted = self.create_user_with_profile(
-            username="restricted", account=self.star_wars, permissions=["iaso_submissions"]
+            username="restricted", account=self.star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
         )
         restricted.iaso_profile.org_units.set([self.jedi_council_endor_region])
         restricted.iaso_profile.save()
@@ -1449,15 +1460,21 @@ class InstancesAPITestCase(TaskAPITestCase):
             org_unit=self.ou_top_3, project=self.project, form=self.form_1, period="202001"
         )
         alice = self.create_user_with_profile(
-            username="alice", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="alice",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         alice.iaso_profile.org_units.set([self.ou_top_1])
         bob = self.create_user_with_profile(
-            username="bob", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="bob",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         bob.iaso_profile.org_units.set([self.ou_top_2, self.ou_top_3])
         chris = self.create_user_with_profile(
-            username="chris", account=self.star_wars, permissions=["iaso_submissions", "iaso_update_submission"]
+            username="chris",
+            account=self.star_wars,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION],
         )
         chris.iaso_profile.org_units.set([self.ou_top_3])
         # Check that all user can modify, there is no lock
@@ -2403,7 +2420,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_user, _, _ = self.create_base_users(new_account, [CORE_SUBMISSIONS_PERMISSION])
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
         )
@@ -2565,7 +2582,7 @@ class InstancesAPITestCase(TaskAPITestCase):
         new_account, new_data_source, _, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user, _, _ = self.create_base_users(new_account, ["iaso_submissions"])
+        new_user, _, _ = self.create_base_users(new_account, [CORE_SUBMISSIONS_PERMISSION])
         new_org_unit = m.OrgUnit.objects.create(
             name="New Org Unit", source_ref="new org unit", validation_status="VALID"
         )

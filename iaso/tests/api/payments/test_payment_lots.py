@@ -1,6 +1,11 @@
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import (
+    CORE_DATA_TASKS_PERMISSION,
+    CORE_PAYMENTS_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -17,10 +22,14 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         account = m.Account.objects.create(name="Account", default_version=version)
         # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user = cls.create_user_with_profile(
-            username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+            username="user",
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         cls.geo_limited_user = cls.create_user_with_profile(
-            username="other_user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
+            username="other_user",
+            permissions=[CORE_PAYMENTS_PERMISSION, CORE_SOURCE_PERMISSION, CORE_DATA_TASKS_PERMISSION],
+            account=account,
         )
         cls.payment_beneficiary = cls.create_user_with_profile(
             username="payment_beneficiary", first_name="John", last_name="Doe", account=account

@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from iaso.api.stocks.serializers import StockLedgerItemWriteSerializer
 from iaso.api.stocks.use_cases import compute_new_stock_item_value
-from iaso.models import Project, StockItem, StockItemRule, StockRulesVersion, StockRulesVersionsStatus
+from iaso.models import Project, StockItem, StockRulesVersion, StockRulesVersionsStatus
 
 
 COPY_OF_PREFIX = "Copy of "
@@ -21,7 +21,7 @@ def make_deep_copy_with_relations(orig_version: StockRulesVersion, request) -> S
     new_version.updated_by = request.user
     new_version.save()
 
-    for rule in StockItemRule.objects.filter(version=orig_version):
+    for rule in orig_version.rules.all():
         new_rule = deepcopy(rule)
         new_rule.id = None
         new_rule.version = new_version
@@ -54,5 +54,4 @@ def import_stock_ledger_items(user, app_id, data, queryset):
         sku = serializer.validated_data["sku"]
         stock_item, _ = StockItem.objects.get_or_create(org_unit=org_unit, sku=sku)
         stock_item.value = compute_new_stock_item_value(stock_item)
-        stock_item.updated_by = user
         stock_item.save()

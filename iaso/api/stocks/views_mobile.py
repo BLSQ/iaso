@@ -14,7 +14,7 @@ from iaso.api.stocks.serializers import (
 )
 from iaso.api.stocks.serializers_mobile import (
     StockKeepingUnitMobileSerializer,
-    StockLedgerMobileItemSerializer,
+    StockLedgerItemMobileSerializer,
     StockRulesVersionMobileSerializer,
 )
 from iaso.api.stocks.utils import import_stock_ledger_items
@@ -70,7 +70,7 @@ class StockLedgerItemMobileViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ["list", "retrieve"]:
-            return StockLedgerMobileItemSerializer
+            return StockLedgerItemMobileSerializer
 
         return StockLedgerItemWriteSerializer
 

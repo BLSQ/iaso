@@ -2,8 +2,10 @@ import typing
 import uuid
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import QuerySet
+from numpy import emath
 
 from iaso.models import Project
 from iaso.models.entity import UserNotAuthError
@@ -37,6 +39,12 @@ class StockKeepingUnitQuerySet(QuerySet):
         )
 
 
+def validate_precision(value):
+    result = emath.log10(value)
+    if result != int(result):
+        raise ValidationError(f"{value} is not a power of 10")
+
+
 class StockKeepingUnit(SoftDeletableModel):
     """
     A distinct type of item for tracking in inventory. This is often referred as SKU.
@@ -45,17 +53,17 @@ class StockKeepingUnit(SoftDeletableModel):
     name = models.CharField(max_length=255)
     short_name = models.CharField(max_length=255)
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE, null=False, blank=False)
-    projects = models.ManyToManyField("Project", related_name="sku_projects", blank=True)
-    org_unit_types = models.ManyToManyField("OrgUnitType", related_name="sku_org_unit_types", blank=True)
-    forms = models.ManyToManyField("Form", related_name="sku_forms", blank=True)
+    projects = models.ManyToManyField("Project", related_name="skus", blank=True)
+    org_unit_types = models.ManyToManyField("OrgUnitType", related_name="skus", blank=True)
+    forms = models.ManyToManyField("Form", related_name="skus", blank=True)
     children = models.ManyToManyField("self", blank=True, through="StockKeepingUnitChildren")
-    display_units = models.CharField(max_length=25, null=True, blank=True)
+    display_unit = models.CharField(max_length=25, blank=True)
     """
-    The display_precision should be a multiple of 10 by which the value will be divided.
+    The display_precision should be a power of 10 by which the value will be divided.
     E.g.: 
     - if you want to display kilograms, the value should be in grams but the display_precision is going to be 1000
     """
-    display_precision = models.IntegerField(null=False, blank=False, default=1)
+    display_precision = models.IntegerField(null=False, blank=False, default=1, validators=[validate_precision])
     created_by = models.ForeignKey(
         User, null=True, related_name="sku_created_by", blank=True, on_delete=models.SET_NULL
     )
@@ -73,10 +81,10 @@ class StockKeepingUnit(SoftDeletableModel):
 
 class StockKeepingUnitChildren(models.Model):
     parent = models.ForeignKey(
-        "StockKeepingUnit", related_name="sku_children_parent", on_delete=models.CASCADE, null=False, blank=False
+        "StockKeepingUnit", related_name="parent", on_delete=models.CASCADE, null=False, blank=False
     )
     child = models.ForeignKey(
-        "StockKeepingUnit", related_name="sku_children_child", on_delete=models.CASCADE, null=False, blank=False
+        "StockKeepingUnit", related_name="child", on_delete=models.CASCADE, null=False, blank=False
     )
     value = models.IntegerField()
     created_by = models.ForeignKey(
@@ -104,10 +112,10 @@ class StockItem(models.Model):
     """
 
     org_unit = models.ForeignKey(
-        "OrgUnit", related_name="stock_item_org_unit", null=False, blank=False, on_delete=models.CASCADE
+        "OrgUnit", related_name="stock_items", null=False, blank=False, on_delete=models.CASCADE
     )
     sku = models.ForeignKey(
-        "StockKeepingUnit", related_name="stock_item_sku", null=False, blank=False, on_delete=models.CASCADE
+        "StockKeepingUnit", related_name="stock_items", null=False, blank=False, on_delete=models.CASCADE
     )
     value = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -138,33 +146,34 @@ class StockLedgerItemQuerySet(QuerySet):
 class StockLedgerItem(models.Model):
     """
     An action that changed the stock item value based on a StockItemRule.
-
-    Note: We are not referencing StockItemRule as they can change over time but a StockLedgerItem is immutable.
     """
 
     id = models.UUIDField(primary_key=True, auto_created=True, default=uuid.uuid4, editable=False)
     sku = models.ForeignKey(
-        "StockKeepingUnit", related_name="ledger_item_sku", null=False, blank=False, on_delete=models.CASCADE
+        "StockKeepingUnit", related_name="ledger_items", null=False, blank=False, on_delete=models.CASCADE
     )
     org_unit = models.ForeignKey(
-        "OrgUnit", related_name="ledger_item_org_unit", null=False, blank=False, on_delete=models.CASCADE
+        "OrgUnit", related_name="ledger_items", null=False, blank=False, on_delete=models.CASCADE
     )
     rule = models.ForeignKey(
-        "StockItemRule", related_name="ledger_item_rule", null=True, blank=True, on_delete=models.CASCADE
+        "StockItemRule", related_name="ledger_items", null=True, blank=True, on_delete=models.CASCADE
     )
     submission = models.ForeignKey(
-        "Instance", related_name="ledger_item_instance", null=True, blank=True, on_delete=models.CASCADE
+        "Instance", related_name="ledger_items", null=True, blank=True, on_delete=models.CASCADE
     )
-    question = models.CharField(max_length=255, null=True, blank=True)
+    question = models.CharField(max_length=255, blank=True)
     value = models.IntegerField()
-    impact = models.CharField(max_length=8, choices=StockImpacts.choices, null=True, blank=True)
-    created_by = models.ForeignKey(
-        User, related_name="ledger_item_created_by", null=False, blank=False, on_delete=models.CASCADE
-    )
+    impact = models.CharField(max_length=8, choices=StockImpacts.choices, blank=True)
+    created_by = models.ForeignKey(User, related_name="ledger_item", blank=False, on_delete=models.CASCADE)
     created_at = models.DateTimeField()
     received_at = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager.from_queryset(StockLedgerItemQuerySet)()
+
+    def save(self, *args, **kwargs):
+        if StockLedgerItem.objects.filter(id=self.id).exists():
+            raise ValidationError(f"StockLedgerItem {self.id} already exists")
+        super().save(*args, **kwargs)
 
 
 class StockItemRuleQuerySet(QuerySet):
@@ -192,13 +201,11 @@ class StockItemRule(models.Model):
     """
 
     sku = models.ForeignKey(
-        "StockKeepingUnit", related_name="stock_item_rule_sku", null=False, blank=False, on_delete=models.CASCADE
+        "StockKeepingUnit", related_name="stock_item_rules", null=False, blank=False, on_delete=models.CASCADE
     )
-    form = models.ForeignKey(
-        "Form", related_name="stock_item_rule_form", null=False, blank=False, on_delete=models.CASCADE
-    )
-    question = models.CharField(max_length=255, null=False, blank=False)
-    impact = models.CharField(max_length=8, choices=StockImpacts.choices, null=True, blank=True)
+    form = models.ForeignKey("Form", related_name="stock_item_rules", null=False, blank=False, on_delete=models.CASCADE)
+    question = models.CharField(max_length=255, blank=False)
+    impact = models.CharField(max_length=8, choices=StockImpacts.choices, blank=True)
     created_by = models.ForeignKey(
         User, related_name="stock_item_rule_created_by", null=True, blank=True, on_delete=models.SET_NULL
     )
@@ -262,7 +269,7 @@ class StockRulesVersion(SoftDeletableModel):
     NAME_MAX_LENGTH = 50
 
     account = models.ForeignKey(
-        "iaso.Account", related_name="stock_rule_version_account", on_delete=models.CASCADE, null=False, blank=False
+        "iaso.Account", related_name="stock_rule_versions", on_delete=models.CASCADE, null=False, blank=False
     )
     name = models.CharField(max_length=NAME_MAX_LENGTH, default="No Name")
     status = models.CharField(

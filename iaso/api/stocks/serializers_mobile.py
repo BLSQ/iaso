@@ -26,7 +26,7 @@ class StockKeepingUnitMobileSerializer(serializers.ModelSerializer):
             "short_name",
             "org_unit_types",
             "forms",
-            "display_units",
+            "display_unit",
             "display_precision",
             "created_at",
             "updated_at",
@@ -71,7 +71,7 @@ class StockRulesVersionMobileSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
 
 
-class StockLedgerMobileItemSerializer(serializers.ModelSerializer):
+class StockLedgerItemMobileSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
     sku = serializers.PrimaryKeyRelatedField(queryset=StockKeepingUnit.objects.all())
     form_name = serializers.SerializerMethodField()

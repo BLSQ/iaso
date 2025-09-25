@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from iaso.api.common import TimestampField
@@ -16,6 +17,7 @@ from iaso.models import (
     StockKeepingUnitChildren,
     StockLedgerItem,
     StockRulesVersion,
+    StockRulesVersionsStatus,
 )
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 
@@ -78,7 +80,7 @@ class StockKeepingUnitSerializer(serializers.ModelSerializer):
     created_by = UserNestedSerializer()
     updated_at = TimestampField()
     updated_by = UserNestedSerializer()
-    children = StockKeepingUnitChildrenSerializer(source="sku_children_parent", many=True)
+    children = StockKeepingUnitChildrenSerializer(source="parent", many=True)
     deleted_at = TimestampField()
 
     class Meta:
@@ -91,7 +93,7 @@ class StockKeepingUnitSerializer(serializers.ModelSerializer):
             "org_unit_types",
             "forms",
             "children",
-            "display_units",
+            "display_unit",
             "display_precision",
             "created_at",
             "created_by",
@@ -128,16 +130,25 @@ class StockKeepingUnitWriteSerializer(serializers.ModelSerializer):
             "projects",
             "org_unit_types",
             "forms",
-            "display_units",
+            "display_unit",
             "display_precision",
         ]
 
     def validate(self, validated_data):
         request = self.context.get("request")
-        if "projects" in validated_data and not all(
-            p.account == request.user.iaso_profile.account for p in validated_data["projects"]
+        account_id = request.user.iaso_profile.account_id
+        if "projects" in validated_data and not all(p.account_id == account_id for p in validated_data["projects"]):
+            raise serializers.ValidationError("User doesn't have access to one or more of those projects")
+
+        if "org_unit_types" in validated_data and not all(
+            any(p.account_id == account_id for p in t.projects.all()) for t in validated_data["org_unit_types"]
         ):
-            raise serializers.ValidationError("User doesn't have access to this project")
+            raise serializers.ValidationError("User doesn't have access to one or more of those OrgUnit types")
+
+        if "forms" in validated_data and not all(
+            any(p.account_id == account_id for p in f.projects.all()) for f in validated_data["forms"]
+        ):
+            raise serializers.ValidationError("User doesn't have access to one or more of those forms")
 
         return validated_data
 
@@ -188,7 +199,7 @@ class StockItemWriteSerializer(serializers.ModelSerializer):
     def validate(self, validated_data):
         request = self.context.get("request")
         sku = validated_data.get("sku")
-        if sku.account != request.user.iaso_profile.account:
+        if sku.account_id != request.user.iaso_profile.account_id:
             raise serializers.ValidationError("User doesn't have access to this SKU")
 
         return validated_data
@@ -315,12 +326,15 @@ class StockItemRuleWriteSerializer(serializers.ModelSerializer):
 
     def validate(self, validated_data):
         request = self.context.get("request")
-        if validated_data.get("sku").account != request.user.iaso_profile.account:
+        account_id = request.user.iaso_profile.account_id
+        if validated_data.get("sku").account_id != account_id:
             raise serializers.ValidationError("User doesn't have access to this SKU")
-        if validated_data.get("version").account != request.user.iaso_profile.account:
+        if validated_data.get("version").account_id != account_id:
             raise serializers.ValidationError("User doesn't have access to this version")
-        if validated_data.get("sku").account != validated_data.get("version").account:
+        if validated_data.get("sku").account_id != validated_data.get("version").account_id:
             raise serializers.ValidationError("SKU's account and version's account do not match")
+        if validated_data.get("version").status != StockRulesVersionsStatus.DRAFT:
+            raise PermissionDenied("You can only create items for draft versions")
         return validated_data
 
     def update(self, instance, validated_data):

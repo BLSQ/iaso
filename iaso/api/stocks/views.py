@@ -80,7 +80,7 @@ class StockKeepingUnitViewSet(viewsets.ModelViewSet):
         return (
             StockKeepingUnit.objects.filter_for_user(user)
             .select_related("created_by", "updated_by")
-            .prefetch_related("projects", "org_unit_types", "forms", "sku_children_parent")
+            .prefetch_related("projects", "org_unit_types", "forms", "parent")
             .order_by("id")
         )
 
@@ -286,9 +286,6 @@ class StockItemRuleViewSet(viewsets.ModelViewSet):
         """
         POST to create a `StockItemRule`.
         """
-        if serializer.validated_data.get("version").status != StockRulesVersionsStatus.DRAFT:
-            raise PermissionDenied("You can only create items for draft versions")
-
         serializer.validated_data["created_by"] = self.request.user
         serializer.validated_data["updated_by"] = self.request.user
         serializer.save()

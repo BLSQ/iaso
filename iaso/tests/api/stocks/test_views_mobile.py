@@ -2,6 +2,8 @@ import uuid
 
 from datetime import datetime
 
+import rest_framework.status
+
 from iaso import models as m
 from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT
 from iaso.test import APITestCase
@@ -12,7 +14,7 @@ LEDGER_ITEM_URL = "/api/mobile/stockledgeritems/"
 RULES_VERSION_URL = "/api/mobile/stockrulesversions/"
 
 
-class StockRulesVersionMobileAPITestCase(APITestCase):
+class StockKeepingUnitMobileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account_1 = account_1 = m.Account.objects.create(name="Account 1")
@@ -67,47 +69,52 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
 
     def test_list_unauthenticated(self):
         response = self.client.get(SKU_URL)
-        self.assertJSONResponse(response, 401)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_401_UNAUTHORIZED)
 
     def test_list_authenticated_missing_app_id(self):
         self.client.force_authenticate(self.user_without_rights)
         response = self.client.get(SKU_URL)
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_400_BAD_REQUEST)
 
     def test_list_authenticated_with_app_id(self):
         self.client.force_authenticate(self.user_without_rights)
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             # 1. SELECT project
             # 2. SELECT account
             # 3. SELECT COUNT(*)
             # 4. SELECT stockkeepingunit
             # 5. SELECT stockkeepingunit_org_unit_types
+            # 6. SELECT stockkeepingunit_forms
             response = self.client.get(SKU_URL, data={"app_id": self.project_1.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(1, len(response.data["results"]))
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             response = self.client.get(SKU_URL, data={"app_id": self.project_2.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, len(response.data["results"]))
         with self.assertNumQueries(3):
             response = self.client.get(SKU_URL, data={"app_id": self.project_3.app_id})
-        self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(0, len(response.data["results"]))
 
     def test_post_user_with_rights(self):
+        self.assertEqual(m.StockKeepingUnit.objects.count(), 2)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.post(SKU_URL, data={"app_id": self.project_1.app_id})
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(m.StockKeepingUnit.objects.count(), 2)
 
     def test_patch_user_with_rights(self):
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.patch(SKU_URL, data={"app_id": self.project_1.app_id})
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
 
     def test_delete_user_with_rights(self):
+        self.assertEqual(m.StockKeepingUnit.objects.count(), 2)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.delete(f"{SKU_URL}{self.sku.id}/")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(m.StockKeepingUnit.objects.count(), 2)
 
 
 class StockRulesVersionMobileAPITestCase(APITestCase):
@@ -193,7 +200,7 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
     def test_not_authenticated(self):
         with self.assertNumQueries(0):
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
-            self.assertJSONResponse(response, 401)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_401_UNAUTHORIZED)
 
     def test_authenticated_without_rights_list(self):
         self.client.force_authenticate(self.user_without_rights)
@@ -202,7 +209,7 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
             # 2. SELECT Account
             # 3. SELECT COUNT(*)
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
-            self.assertJSONResponse(response, 204)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_204_NO_CONTENT)
 
         self.version_1.status = m.StockRulesVersionsStatus.PUBLISHED
         self.version_1.save()
@@ -215,7 +222,7 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
             # 5. SELECT StockKeepingUnit
             # 6. SELECT Form
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual("version_1", response.data["name"])
         self.assertEqual(m.StockRulesVersionsStatus.PUBLISHED, response.data["status"])
         self.assertEqual(2, len(response.data["rules"]))
@@ -228,25 +235,32 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
             # 5. SELECT StockKeepingUnit
             # 6. SELECT Form
             response = self.client.get(RULES_VERSION_URL, data={"app_id": self.project_2.app_id})
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual("version_1", response.data["name"])
         self.assertEqual(m.StockRulesVersionsStatus.PUBLISHED, response.data["status"])
         self.assertEqual(4, len(response.data["rules"]))
 
     def test_post(self):
+        self.assertEqual(m.StockRulesVersion.objects.count(), 1)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.post(RULES_VERSION_URL, data={"app_id": self.project_1.app_id})
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(m.StockRulesVersion.objects.count(), 1)
 
     def test_patch(self):
+        self.assertEqual(self.version_1.name, "version_1")
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.patch(f"{RULES_VERSION_URL}{self.version_1.pk}/", data={"name": "NAME"})
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.version_1.refresh_from_db()
+        self.assertEqual(self.version_1.name, "version_1")
 
     def test_delete(self):
+        self.assertEqual(m.StockRulesVersion.objects.count(), 1)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.delete(f"{RULES_VERSION_URL}{self.version_1.pk}/")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(m.StockRulesVersion.objects.count(), 1)
 
 
 class StockLedgerItemMobileAPITestCase(APITestCase):
@@ -298,7 +312,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             impact=m.StockImpacts.ADD,
         )
 
-        cls.ledger_item = m.StockLedgerItem.objects.create(
+        cls.ledger_item_1 = m.StockLedgerItem.objects.create(
             sku=sku_1,
             org_unit=org_unit_1,
             submission=instance,
@@ -309,7 +323,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             created_at=datetime.now(),
         )
 
-        cls.ledger_item = m.StockLedgerItem.objects.create(
+        cls.ledger_item_2 = m.StockLedgerItem.objects.create(
             sku=sku_1,
             org_unit=org_unit_2,
             submission=instance,
@@ -320,7 +334,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             created_at=datetime.now(),
         )
 
-        cls.ledger_item = m.StockLedgerItem.objects.create(
+        cls.ledger_item_3 = m.StockLedgerItem.objects.create(
             sku=sku_2,
             org_unit=org_unit_1,
             submission=instance,
@@ -331,7 +345,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             created_at=datetime.now(),
         )
 
-        cls.ledger_item = m.StockLedgerItem.objects.create(
+        cls.ledger_item_4 = m.StockLedgerItem.objects.create(
             sku=sku_2,
             org_unit=org_unit_2,
             submission=instance,
@@ -345,7 +359,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
     def test_not_authenticated_without_rights_list(self):
         with self.assertNumQueries(0):
             response = self.client.get(LEDGER_ITEM_URL)
-            self.assertJSONResponse(response, 401)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_401_UNAUTHORIZED)
 
     def test_authenticated_without_rights_list(self):
         self.client.force_authenticate(self.user_without_rights)
@@ -355,10 +369,11 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
             # 3. SELECT COUNT(*)
             # 4. SELECT StockLedgerItem
             response = self.client.get(LEDGER_ITEM_URL, data={"app_id": self.project_1.app_id})
-            self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
         self.assertEqual(2, response.data["count"])
 
     def test_create_without_authorization(self):
+        self.assertEqual(m.StockLedgerItem.objects.count(), 4)
         self.client.force_authenticate(self.user_without_rights)
 
         response = self.client.post(
@@ -376,11 +391,13 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_201_CREATED)
         # We already have one ledger item doing +40
         self.assertEqual(50, m.StockItem.objects.filter(sku=self.sku_2, org_unit=self.org_unit_1).get().value)
+        self.assertEqual(m.StockLedgerItem.objects.count(), 5)
 
     def test_create_with_authorization(self):
+        self.assertEqual(m.StockLedgerItem.objects.count(), 4)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.post(
             f"{LEDGER_ITEM_URL}?app_id={self.project_1.app_id}",
@@ -397,18 +414,24 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
                 }
             ],
         )
-        self.assertJSONResponse(response, 201)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_201_CREATED)
         # We already have one ledger item doing +40
         self.assertEqual(20, m.StockItem.objects.filter(sku=self.sku_2, org_unit=self.org_unit_1).get().value)
+        self.assertEqual(m.StockLedgerItem.objects.count(), 5)
 
     def test_patch(self):
+        self.assertEqual(self.ledger_item_1.value, 10)
         self.client.force_authenticate(self.user_with_rights)
         response = self.client.patch(
-            f"{LEDGER_ITEM_URL}{self.ledger_item.pk}/?app_id={self.project_1.app_id}", data={"value": 20}
+            f"{LEDGER_ITEM_URL}{self.ledger_item_1.pk}/?app_id={self.project_1.app_id}", data={"value": 20}
         )
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.ledger_item_1.refresh_from_db()
+        self.assertEqual(self.ledger_item_1.value, 10)
 
     def test_delete(self):
+        self.assertEqual(m.StockLedgerItem.objects.count(), 4)
         self.client.force_authenticate(self.user_with_rights)
-        response = self.client.delete(f"{LEDGER_ITEM_URL}{self.ledger_item.pk}/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 405)
+        response = self.client.delete(f"{LEDGER_ITEM_URL}{self.ledger_item_1.pk}/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, rest_framework.status.HTTP_405_METHOD_NOT_ALLOWED)
+        self.assertEqual(m.StockLedgerItem.objects.count(), 4)

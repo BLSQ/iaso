@@ -783,7 +783,7 @@ class StockKeepingUnitAdmin(admin.ModelAdmin):
         "projects",
         "org_unit_types",
         "forms",
-        "display_units",
+        "display_unit",
         "display_precision",
         "created_at",
         "updated_at",

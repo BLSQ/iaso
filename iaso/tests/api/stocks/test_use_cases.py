@@ -32,11 +32,11 @@ class StockUseCaseUtilsTestCase(TestCase):
         )
         cls.stock_item = m.StockItem.objects.create(sku=sku, org_unit=org_unit)
 
-    def testStockValue_returns_0_when_no_last_reset_and_no_items(self):
+    def test_stock_value_returns_0_when_no_last_reset_and_no_items(self):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(0, balance)
 
-    def testStockValue_returns_last_reset_value_when_there_are_no_subsequent_items(self):
+    def test_stock_value_returns_last_reset_value_when_there_are_no_subsequent_items(self):
         lastResetValue = 100
         lastResetTime = 1000
         m.StockLedgerItem.objects.create(
@@ -54,7 +54,7 @@ class StockUseCaseUtilsTestCase(TestCase):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(lastResetValue, balance)
 
-    def testStockValue_correctly_calculates_stock_with_ADD_impacts(self):
+    def test_stock_value_correctly_calculates_stock_with_ADD_impacts(self):
         lastResetValue = 50
         lastResetTime = 1000
         m.StockLedgerItem.objects.create(
@@ -93,7 +93,7 @@ class StockUseCaseUtilsTestCase(TestCase):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(80, balance)  # 50 (reset) + 10 (add) + 20 (add)
 
-    def testStockValue_correctly_calculates_stock_with_SUBTRACT_impacts(self):
+    def test_stock_value_correctly_calculates_stock_with_SUBTRACT_impacts(self):
         lastResetValue = 100
         lastResetTime = 1000
         m.StockLedgerItem.objects.create(
@@ -133,7 +133,7 @@ class StockUseCaseUtilsTestCase(TestCase):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(70, balance)  # 100 (reset) - 10 (subtract) - 20 (subtract)
 
-    def testStockValue_correctly_calculates_stock_with_mixed_impacts_and_no_reset(self):
+    def test_stock_value_correctly_calculates_stock_with_mixed_impacts_and_no_reset(self):
         m.StockLedgerItem.objects.create(
             sku=self.sku,
             org_unit=self.org_unit,
@@ -170,7 +170,7 @@ class StockUseCaseUtilsTestCase(TestCase):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(40, balance)  # 0 + 30 - 5 + 15
 
-    def testStockValue_correctly_calculates_stock_with_mixed_impacts_and_a_reset(self):
+    def test_stock_value_correctly_calculates_stock_with_mixed_impacts_and_a_reset(self):
         lastResetValue = 50
         lastResetTime = 1000
         m.StockLedgerItem.objects.create(
@@ -210,7 +210,7 @@ class StockUseCaseUtilsTestCase(TestCase):
         balance = compute_new_stock_item_value(self.stock_item)
         self.assertEqual(40, balance)  # 50 (reset) + 10 (add) - 20 (subtract)
 
-    def testStockValue_when_reset_is_last(self):
+    def test_stock_value_when_reset_is_last(self):
         m.StockLedgerItem.objects.create(
             sku=self.sku,
             org_unit=self.org_unit,

@@ -560,11 +560,11 @@ class InstancesViewSet(viewsets.ViewSet):
         # actually return parquet file
         form_ids = filters["form_ids"]
         form = Form.objects.get(pk=form_ids)
-        export_queryset = parquet.build_submissions_queryset(queryset, form.id)
+        export_queryset, mapping = parquet.build_submissions_queryset(queryset, form.id)
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 
-        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name, mapping)
 
         response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
 

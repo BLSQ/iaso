@@ -1,8 +1,9 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
@@ -42,26 +43,68 @@ export const Level: FunctionComponent<Props> = ({
     planning,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const getOptionsForLevel = useCallback(
-        (index: number) => {
-            if (index === 0) return orgUnitTypes;
 
-            const previousLevel = orgUnitTypes?.find(
+    const previousLevel:
+        | DropdownOptionsWithOriginal<string, OriginalOrgUnitType>
+        | undefined = useMemo(
+        () =>
+            orgUnitTypes?.find(
                 orgUnitType => orgUnitType.value === `${levels[index - 1]}`,
-            );
-
-            return previousLevel
-                ? orgUnitTypes?.filter(orgUnitType =>
-                      previousLevel.original?.sub_unit_types.includes(
-                          orgUnitType.original?.id,
-                      ),
-                  )
-                : orgUnitTypes;
-        },
-        [orgUnitTypes, levels],
+            ),
+        [orgUnitTypes, levels, index],
     );
-    const isLastLevel = index === levels.length - 1;
-    const canRemove = isLastLevel && index > 0;
+    const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
+        previousLevel?.value ? parseInt(previousLevel.value, 10) : 0,
+    );
+    const orgUnitTypesOptions = useMemo(() => {
+        let options: DropdownOptionsWithOriginal<
+            string,
+            OriginalOrgUnitType
+        >[] = [];
+        if (!previousLevel) {
+            // First level: use all available org unit types
+            options = orgUnitTypes;
+        }
+
+        // Other levels: flatten the hierarchy and remove the previous level
+        if (!orgUnitTypeHierarchy?.sub_unit_types) return options;
+
+        const flattenHierarchy = (items: any[], level = 0): any[] => {
+            return items.flatMap(item => {
+                if (
+                    parameterValues?.org_unit_type_sequence_identifiers?.includes(
+                        item.id,
+                    ) &&
+                    item.id !== orgUnitTypeId
+                ) {
+                    return [];
+                }
+
+                const currentItem = {
+                    value: item.id,
+                    label: item.name,
+                    original: item,
+                };
+
+                // Recursively flatten children
+                const children =
+                    item.sub_unit_types && item.sub_unit_types.length > 0
+                        ? flattenHierarchy(item.sub_unit_types, level + 1)
+                        : [];
+
+                return [currentItem, ...children];
+            });
+        };
+
+        options = flattenHierarchy(orgUnitTypeHierarchy.sub_unit_types);
+        return options;
+    }, [
+        previousLevel,
+        orgUnitTypeHierarchy?.sub_unit_types,
+        orgUnitTypes,
+        parameterValues?.org_unit_type_sequence_identifiers,
+        orgUnitTypeId,
+    ]);
 
     return (
         <Grid container spacing={1} key={`level_${index}`}>
@@ -75,9 +118,8 @@ export const Level: FunctionComponent<Props> = ({
                     clearable={false}
                     labelString={`${formatMessage(MESSAGES.level)} ${index + 1}`}
                     value={orgUnitTypeId}
-                    options={getOptionsForLevel(index)}
+                    options={orgUnitTypesOptions}
                     loading={isFetchingOrgUnitTypes}
-                    disabled={!isLastLevel}
                 />
             </Grid>
             <Grid item xs={2}>
@@ -102,7 +144,6 @@ export const Level: FunctionComponent<Props> = ({
                 >
                     <IconButton
                         icon="delete"
-                        disabled={!canRemove}
                         onClick={() => handleRemoveLevel(index)}
                         tooltipMessage={MESSAGES.removeLevel}
                     />

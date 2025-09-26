@@ -59,13 +59,20 @@ export const LQASForm: FunctionComponent<Props> = ({
 
     const handleOrgUnitTypeChange = useCallback(
         (value: any, index: number) => {
+            if (index === 0) {
+                // Remove the whole hierarchy behind the selected org unit type
+                handleParameterChange('org_unit_type_sequence_identifiers', [
+                    value,
+                ]);
+                return;
+            }
             updateArrayAtIndex(
                 'org_unit_type_sequence_identifiers',
                 index,
                 value,
             );
         },
-        [updateArrayAtIndex],
+        [updateArrayAtIndex, handleParameterChange],
     );
 
     const handleOrgUnitTypeQuantityChange = useCallback(

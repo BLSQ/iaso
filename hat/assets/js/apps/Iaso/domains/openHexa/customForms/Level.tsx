@@ -1,5 +1,8 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { Grid } from '@mui/material';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { Grid, Collapse, Box } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
@@ -7,14 +10,10 @@ import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
-import { PopperConfig } from './PopperConfig';
-type ParameterValues =
-    | {
-          org_unit_type_quantities?: number[];
-          org_unit_type_sequence_identifiers?: number[];
-          org_unit_type_exceptions?: number[][];
-      }
-    | undefined;
+import { useGetCriteriaOptions } from './constants';
+import { ExcludedOrgUnits } from './ExcludedOrgUnits';
+import { ParameterValues } from './LQASForm';
+
 type Props = {
     parameterValues?: ParameterValues;
     orgUnitTypes: DropdownOptionsWithOriginal<string, OriginalOrgUnitType>[];
@@ -27,6 +26,9 @@ type Props = {
     orgUnitTypeId: number;
     handleParameterChange: (parameterName: string, value: any) => void;
     planning: Planning;
+    handleCriteriaChange: (value: any, index: number) => void;
+    expandedLevels: boolean[];
+    setExpandedLevels: (expandedLevels: boolean[]) => void;
 };
 
 export const Level: FunctionComponent<Props> = ({
@@ -40,9 +42,13 @@ export const Level: FunctionComponent<Props> = ({
     handleRemoveLevel,
     orgUnitTypeId,
     handleParameterChange,
+    handleCriteriaChange,
     planning,
+    expandedLevels,
+    setExpandedLevels,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const criteriaOptions = useGetCriteriaOptions();
 
     const previousLevel:
         | DropdownOptionsWithOriginal<string, OriginalOrgUnitType>
@@ -55,6 +61,18 @@ export const Level: FunctionComponent<Props> = ({
     );
     const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
         previousLevel?.value ? parseInt(previousLevel.value, 10) : 0,
+    );
+    console.log(expandedLevels);
+    const isExpanded = expandedLevels[index];
+    const handleSetIsExpanded = useCallback(
+        (value: boolean) => {
+            setExpandedLevels(
+                expandedLevels.map((_, i) =>
+                    i === index ? value : expandedLevels[i],
+                ),
+            );
+        },
+        [expandedLevels, setExpandedLevels, index],
     );
     const orgUnitTypesOptions = useMemo(() => {
         let options: DropdownOptionsWithOriginal<
@@ -107,67 +125,131 @@ export const Level: FunctionComponent<Props> = ({
     ]);
 
     return (
-        <Grid container spacing={1} key={`level_${index}`}>
-            <Grid item xs={8}>
-                <InputComponent
-                    type="select"
-                    keyValue={`org_unit_type_sequence_identifiers_${index}`}
-                    onChange={(_, value) =>
-                        handleOrgUnitTypeChange(value, index)
-                    }
-                    clearable={false}
-                    labelString={`${formatMessage(MESSAGES.level)} ${index + 1}`}
-                    value={orgUnitTypeId}
-                    options={orgUnitTypesOptions}
-                    loading={isFetchingOrgUnitTypes}
-                />
-            </Grid>
-            <Grid item xs={2}>
-                <InputComponent
-                    type="number"
-                    keyValue={`org_unit_type_quantities_${index}`}
-                    onChange={(_, value) =>
-                        handleOrgUnitTypeQuantityChange(value, index)
-                    }
-                    labelString={formatMessage(MESSAGES.quantity)}
-                    value={parameterValues?.org_unit_type_quantities?.[index]}
-                />
-            </Grid>
-            {index !== 0 && (
+        <Box key={`level_${index}`}>
+            <Grid container spacing={1} alignItems="center">
+                <Grid item xs={index === 0 ? 11 : 10}>
+                    <InputComponent
+                        type="select"
+                        keyValue={`org_unit_type_sequence_identifiers_${index}`}
+                        onChange={(_, value) => {
+                            handleOrgUnitTypeChange(value, index);
+                        }}
+                        clearable={false}
+                        labelString={`${formatMessage(MESSAGES.level)} ${index + 1}`}
+                        value={orgUnitTypeId}
+                        options={orgUnitTypesOptions}
+                        loading={isFetchingOrgUnitTypes}
+                    />
+                </Grid>
+                {index !== 0 && (
+                    <Grid
+                        item
+                        xs={1}
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                    >
+                        <Box sx={{ mt: '11px' }}>
+                            <IconButton
+                                icon="delete"
+                                size="small"
+                                onClick={() => handleRemoveLevel(index)}
+                                tooltipMessage={MESSAGES.removeLevel}
+                            />
+                        </Box>
+                    </Grid>
+                )}
+
                 <Grid
                     item
                     xs={1}
                     display="flex"
                     justifyContent="center"
                     alignItems="center"
-                    mt={1}
                 >
-                    <IconButton
-                        icon="delete"
-                        onClick={() => handleRemoveLevel(index)}
-                        tooltipMessage={MESSAGES.removeLevel}
-                    />
+                    <Box sx={{ mt: '11px' }}>
+                        <IconButton
+                            size="small"
+                            disabled={!orgUnitTypeId}
+                            overrideIcon={
+                                isExpanded ? ExpandLessIcon : ExpandMoreIcon
+                            }
+                            onClick={() => handleSetIsExpanded(!isExpanded)}
+                            tooltipMessage={
+                                isExpanded ? MESSAGES.collapse : MESSAGES.expand
+                            }
+                        />
+                    </Box>
                 </Grid>
-            )}
-            <Grid
-                item
-                xs={index !== 0 ? 1 : 2}
-                display="flex"
-                justifyContent="center"
-                alignItems="center"
-                mt={1}
-            >
-                <PopperConfig
-                    index={index}
-                    selectedOrgUnitIds={
-                        parameterValues?.org_unit_type_exceptions?.[index] || []
-                    }
-                    orgUnitTypeId={orgUnitTypeId}
-                    handleParameterChange={handleParameterChange}
-                    parameterValues={parameterValues}
-                    planning={planning}
-                />
             </Grid>
-        </Grid>
+
+            {/* Collapsible content */}
+            <Collapse in={isExpanded}>
+                <Box
+                    sx={{
+                        p: 2,
+                        border: `1px solid ${grey[500]}`,
+                        borderRadius: 2,
+                        mt: 1,
+                        ml: 1,
+                        mr: 1,
+                    }}
+                >
+                    <Grid container spacing={1.2} sx={{ p: 0 }}>
+                        <Grid item xs={8}>
+                            <InputComponent
+                                withMarginTop={false}
+                                type="select"
+                                keyValue={`org_unit_type_criteria_${index}`}
+                                onChange={(_, value) => {
+                                    handleCriteriaChange(value, index);
+                                }}
+                                clearable={false}
+                                labelString="Criteria"
+                                value={
+                                    parameterValues?.org_unit_type_criteria?.[
+                                        index
+                                    ] || criteriaOptions[0].value
+                                }
+                                options={criteriaOptions}
+                            />
+                        </Grid>
+                        <Grid item xs={4}>
+                            <InputComponent
+                                withMarginTop={false}
+                                type="number"
+                                keyValue={`org_unit_type_quantities_${index}`}
+                                onChange={(_, value) =>
+                                    handleOrgUnitTypeQuantityChange(
+                                        value,
+                                        index,
+                                    )
+                                }
+                                labelString={formatMessage(MESSAGES.quantity)}
+                                value={
+                                    parameterValues?.org_unit_type_quantities?.[
+                                        index
+                                    ]
+                                }
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <ExcludedOrgUnits
+                                index={index}
+                                selectedOrgUnitIds={
+                                    parameterValues?.org_unit_type_exceptions?.[
+                                        index
+                                    ] || []
+                                }
+                                orgUnitTypeId={orgUnitTypeId}
+                                handleParameterChange={handleParameterChange}
+                                parameterValues={parameterValues}
+                                planning={planning}
+                            />
+                        </Grid>
+                    </Grid>
+                </Box>
+            </Collapse>
+        </Box>
     );
 };

@@ -57,4 +57,24 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Excluded org units',
         id: 'iaso.openHexalabel.excludedOrgUnits',
     },
+    collapse: {
+        defaultMessage: 'Collapse',
+        id: 'iaso.openHexalabel.collapse',
+    },
+    expand: {
+        defaultMessage: 'Expand',
+        id: 'iaso.openHexalabel.expand',
+    },
+    ruralUrban: {
+        defaultMessage: 'Rural/Urban',
+        id: 'iaso.openHexalabel.ruralUrban',
+    },
+    urban: {
+        defaultMessage: 'Urban',
+        id: 'iaso.openHexalabel.urban',
+    },
+    rural: {
+        defaultMessage: 'Rural',
+        id: 'iaso.openHexalabel.rural',
+    },
 });

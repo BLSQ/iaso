@@ -3,9 +3,11 @@ import React, {
     useCallback,
     useMemo,
     useState,
+    useEffect,
 } from 'react';
 import PlusIcon from '@mui/icons-material/Add';
-import { Box, Button } from '@mui/material';
+import { Box, Button, Paper } from '@mui/material';
+import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { Planning } from '../../assignments/types/planning';
@@ -17,31 +19,50 @@ export type ParameterValues =
     | {
           org_unit_type_quantities?: number[];
           org_unit_type_sequence_identifiers?: number[];
-          org_unit_type_exceptions?: number[][];
+          org_unit_type_exceptions?: string[];
           org_unit_type_criteria?: Criteria[];
       }
     | undefined;
 type Props = {
     planning: Planning;
+    setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
+    parameterValues: ParameterValues;
+    handleParameterChange: (parameterName: string, value: any) => void;
 };
 
-export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
-    const [parameterValues, setParameterValues] = useState<
-        ParameterValues | undefined
-    >({
-        org_unit_type_quantities: [],
-        org_unit_type_sequence_identifiers: [],
-        org_unit_type_exceptions: [],
-        org_unit_type_criteria: [],
-    });
-    const handleParameterChange = useCallback(
-        (parameterName: string, value: any) => {
-            setParameterValues(prev => ({ ...prev, [parameterName]: value }));
-        },
-        [],
-    );
+export const LQASForm: FunctionComponent<Props> = ({
+    planning,
+    setAllowConfirm,
+    parameterValues,
+    handleParameterChange,
+}) => {
+    // console.log('parameterValues', parameterValues);
+    useEffect(() => {
+        if (
+            parameterValues &&
+            parameterValues?.org_unit_type_sequence_identifiers?.length &&
+            parameterValues?.org_unit_type_sequence_identifiers?.length > 0
+        ) {
+            const allLevelsFilled =
+                parameterValues?.org_unit_type_sequence_identifiers?.every(
+                    (level, index) => {
+                        return (
+                            level !== undefined &&
+                            parameterValues?.org_unit_type_criteria?.[index] !==
+                                undefined &&
+                            parameterValues?.org_unit_type_quantities?.[
+                                index
+                            ] !== undefined
+                        );
+                    },
+                );
+            setAllowConfirm(Boolean(allLevelsFilled));
+        } else {
+            setAllowConfirm(false);
+        }
+    }, [setAllowConfirm, parameterValues]);
     const { formatMessage } = useSafeIntl();
-    const [expandedLevels, setExpandedLevels] = useState<boolean[]>([]);
+    const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypesDropdownOptions({
             projectId: planning.project,
@@ -60,7 +81,7 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
         (arrayName: string, value: any = undefined) => {
             const currentArray = parameterValues?.[arrayName] || [];
             handleParameterChange(arrayName, [...currentArray, value]);
-            setExpandedLevels([...expandedLevels, false]);
+            setExpandedLevels([...expandedLevels, true]);
         },
         [parameterValues, handleParameterChange, expandedLevels],
     );
@@ -88,9 +109,7 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
                 handleParameterChange('org_unit_type_sequence_identifiers', [
                     parseInt(value, 10),
                 ]);
-                if (expandedLevels.length === 0) {
-                    setExpandedLevels([false]);
-                }
+                setExpandedLevels([true]);
                 return;
             }
             if (index !== 0) {
@@ -102,7 +121,7 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
                 return;
             }
         },
-        [updateArrayAtIndex, handleParameterChange, expandedLevels],
+        [updateArrayAtIndex, handleParameterChange],
     );
 
     const handleOrgUnitTypeQuantityChange = useCallback(
@@ -110,7 +129,7 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
             updateArrayAtIndex(
                 'org_unit_type_quantities',
                 index,
-                parseInt(value, 10),
+                value ? parseInt(value, 10) : undefined,
             );
         },
         [updateArrayAtIndex],
@@ -162,28 +181,46 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
     const isLastLevelUndefined = levels[levels.length - 1] === undefined;
 
     return (
-        <Box>
+        <Paper
+            sx={{
+                backgroundColor: grey[200],
+                p: 2,
+                borderRadius: 2,
+                mt: 2,
+                elevation: 2,
+            }}
+        >
             {levels.map((orgUnitTypeId, index) => {
                 return (
-                    <Level
-                        orgUnitTypes={orgUnitTypes || []}
-                        isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                    <Paper
                         key={orgUnitTypeId || 'last_level'}
-                        index={index}
-                        levels={levels}
-                        handleOrgUnitTypeChange={handleOrgUnitTypeChange}
-                        handleOrgUnitTypeQuantityChange={
-                            handleOrgUnitTypeQuantityChange
-                        }
-                        handleRemoveLevel={handleRemoveLevel}
-                        orgUnitTypeId={orgUnitTypeId}
-                        handleParameterChange={handleParameterChange}
-                        parameterValues={parameterValues}
-                        planning={planning}
-                        handleCriteriaChange={handleCriteriaChange}
-                        expandedLevels={expandedLevels}
-                        setExpandedLevels={setExpandedLevels}
-                    />
+                        sx={{
+                            backgroundColor: 'white',
+                            p: 2,
+                            borderRadius: 2,
+                            mt: 2,
+                            elevation: 2,
+                        }}
+                    >
+                        <Level
+                            orgUnitTypes={orgUnitTypes || []}
+                            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                            index={index}
+                            levels={levels}
+                            handleOrgUnitTypeChange={handleOrgUnitTypeChange}
+                            handleOrgUnitTypeQuantityChange={
+                                handleOrgUnitTypeQuantityChange
+                            }
+                            handleRemoveLevel={handleRemoveLevel}
+                            orgUnitTypeId={orgUnitTypeId}
+                            handleParameterChange={handleParameterChange}
+                            parameterValues={parameterValues}
+                            planning={planning}
+                            handleCriteriaChange={handleCriteriaChange}
+                            expandedLevels={expandedLevels}
+                            setExpandedLevels={setExpandedLevels}
+                        />
+                    </Paper>
                 );
             })}
             {canAddLevel && (
@@ -198,6 +235,6 @@ export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
                     {formatMessage(MESSAGES.addLevel)}
                 </Button>
             )}
-        </Box>
+        </Paper>
     );
 };

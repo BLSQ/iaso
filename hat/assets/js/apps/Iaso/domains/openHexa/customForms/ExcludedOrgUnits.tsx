@@ -30,12 +30,10 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
 
     const handleExcludedOrgUnitsChange = useCallback(
         (value: string) => {
-            const selectedOrgUnitIds =
-                value?.split(',').map(id => parseInt(id, 10)) || [];
             const currentArray =
                 parameterValues?.org_unit_type_exceptions || [];
             const updatedArray = [...currentArray];
-            updatedArray[index] = selectedOrgUnitIds;
+            updatedArray[index] = value;
             handleParameterChange('org_unit_type_exceptions', updatedArray);
         },
         [
@@ -48,6 +46,7 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
         <InputComponent
             type="select"
             multi
+            disabled={isFetchingOrgUnits || !orgUnitTypeId}
             withMarginTop={false}
             label={MESSAGES.excludedOrgUnits}
             keyValue="orgUnitId"

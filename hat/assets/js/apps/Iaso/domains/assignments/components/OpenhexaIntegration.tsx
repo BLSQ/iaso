@@ -64,7 +64,7 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
     closeDialog,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const [allowConfirm, setAllowConfirm] = useState(false);
     const [parameterValues, setParameterValues] = useState<
         ParameterValues | undefined
     >(undefined);
@@ -94,11 +94,8 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
         error,
         isSuccess,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
-    const { renderParameterInput } = usePipelineParameters(
-        pipeline,
-        parameterValues,
-        setParameterValues,
-    );
+    const { renderParameterInput, handleParameterChange } =
+        usePipelineParameters(pipeline, parameterValues, setParameterValues);
     const handleSubmit = useCallback(() => {
         setIsPipelineRunning(true);
         const parameters = {
@@ -125,9 +122,14 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
         if (task && !isPipelineRunning && task.status !== 'RUNNING') return 3;
         return 1;
     }, [isPipelineRunning, task]);
+
     return (
         <ConfirmCancelModal
-            allowConfirm={currentStep === 1}
+            allowConfirm={
+                pipeline?.code !== CUSTOM_FORM_CODES
+                    ? currentStep === 1
+                    : allowConfirm
+            }
             titleMessage={formatMessage(MESSAGES.openHexaIntegration)}
             onConfirm={() => {
                 handleSubmit();
@@ -135,7 +137,7 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
             open={isOpen}
             onCancel={() => null}
             closeDialog={closeDialog}
-            maxWidth="xs"
+            maxWidth="sm"
             closeOnConfirm={false}
             onClose={() => null}
             cancelMessage={currentStep !== 1 ? MESSAGES.close : MESSAGES.cancel}
@@ -180,10 +182,16 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                         {formatMessage(MESSAGES.noParameters)}
                                     </Typography>
                                 )}
-                                {pipeline.code === CUSTOM_FORM_CODES &&
-                                    parameterValues && (
-                                        <LQASForm planning={planning} />
-                                    )}
+                                {pipeline.code === CUSTOM_FORM_CODES && (
+                                    <LQASForm
+                                        planning={planning}
+                                        setAllowConfirm={setAllowConfirm}
+                                        parameterValues={parameterValues}
+                                        handleParameterChange={
+                                            handleParameterChange
+                                        }
+                                    />
+                                )}
                                 {pipeline.code !== CUSTOM_FORM_CODES &&
                                     pipeline.currentVersion?.parameters?.map(
                                         parameter => (

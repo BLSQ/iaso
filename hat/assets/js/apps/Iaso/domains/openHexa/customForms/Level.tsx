@@ -31,6 +31,39 @@ type Props = {
     setExpandedLevels: (expandedLevels: boolean[]) => void;
 };
 
+const flattenHierarchy = (
+    items: any[],
+    level = 0,
+    parameterValues: ParameterValues,
+    orgUnitTypeId: number,
+): any[] => {
+    return items.flatMap(item => {
+        if (
+            parameterValues?.org_unit_type_sequence_identifiers?.includes(
+                item.id,
+            ) &&
+            item.id !== orgUnitTypeId
+        ) {
+            return [];
+        }
+        const currentItem = {
+            value: item.id,
+            label: item.name,
+            original: item,
+        };
+        const children =
+            item.sub_unit_types && item.sub_unit_types.length > 0
+                ? flattenHierarchy(
+                      item.sub_unit_types,
+                      level + 1,
+                      parameterValues,
+                      orgUnitTypeId,
+                  )
+                : [];
+
+        return [currentItem, ...children];
+    });
+};
 export const Level: FunctionComponent<Props> = ({
     parameterValues,
     orgUnitTypes,
@@ -79,48 +112,24 @@ export const Level: FunctionComponent<Props> = ({
             OriginalOrgUnitType
         >[] = [];
         if (!previousLevel) {
-            // First level: use all available org unit types
             options = orgUnitTypes;
         }
 
-        // Other levels: flatten the hierarchy and remove the previous level
         if (!orgUnitTypeHierarchy?.sub_unit_types) return options;
 
-        const flattenHierarchy = (items: any[], level = 0): any[] => {
-            return items.flatMap(item => {
-                if (
-                    parameterValues?.org_unit_type_sequence_identifiers?.includes(
-                        item.id,
-                    ) &&
-                    item.id !== orgUnitTypeId
-                ) {
-                    return [];
-                }
-
-                const currentItem = {
-                    value: item.id,
-                    label: item.name,
-                    original: item,
-                };
-
-                // Recursively flatten children
-                const children =
-                    item.sub_unit_types && item.sub_unit_types.length > 0
-                        ? flattenHierarchy(item.sub_unit_types, level + 1)
-                        : [];
-
-                return [currentItem, ...children];
-            });
-        };
-
-        options = flattenHierarchy(orgUnitTypeHierarchy.sub_unit_types);
+        options = flattenHierarchy(
+            orgUnitTypeHierarchy.sub_unit_types,
+            0,
+            parameterValues,
+            orgUnitTypeId,
+        );
         return options;
     }, [
         previousLevel,
         orgUnitTypeHierarchy?.sub_unit_types,
-        orgUnitTypes,
-        parameterValues?.org_unit_type_sequence_identifiers,
+        parameterValues,
         orgUnitTypeId,
+        orgUnitTypes,
     ]);
 
     return (
@@ -128,7 +137,9 @@ export const Level: FunctionComponent<Props> = ({
             <Grid container spacing={1} alignItems="center">
                 <Grid item xs={index === 0 ? 11 : 10}>
                     <InputComponent
+                        withMarginTop={false}
                         type="select"
+                        required
                         keyValue={`org_unit_type_sequence_identifiers_${index}`}
                         onChange={(_, value) => {
                             handleOrgUnitTypeChange(value, index);
@@ -148,7 +159,7 @@ export const Level: FunctionComponent<Props> = ({
                         justifyContent="center"
                         alignItems="center"
                     >
-                        <Box sx={{ mt: '11px' }}>
+                        <Box>
                             <IconButton
                                 icon="delete"
                                 size="small"
@@ -166,10 +177,9 @@ export const Level: FunctionComponent<Props> = ({
                     justifyContent="center"
                     alignItems="center"
                 >
-                    <Box sx={{ mt: '11px' }}>
+                    <Box>
                         <IconButton
                             size="small"
-                            disabled={!orgUnitTypeId}
                             overrideIcon={
                                 isExpanded ? ExpandLessIcon : ExpandMoreIcon
                             }
@@ -181,8 +191,6 @@ export const Level: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-
-            {/* Collapsible content */}
             <Collapse in={isExpanded}>
                 <Box
                     sx={{
@@ -199,6 +207,7 @@ export const Level: FunctionComponent<Props> = ({
                             <InputComponent
                                 withMarginTop={false}
                                 type="select"
+                                required
                                 keyValue={`org_unit_type_criteria_${index}`}
                                 onChange={(_, value) => {
                                     handleCriteriaChange(value, index);
@@ -217,6 +226,7 @@ export const Level: FunctionComponent<Props> = ({
                             <InputComponent
                                 withMarginTop={false}
                                 type="number"
+                                required
                                 keyValue={`org_unit_type_quantities_${index}`}
                                 onChange={(_, value) =>
                                     handleOrgUnitTypeQuantityChange(
@@ -224,6 +234,7 @@ export const Level: FunctionComponent<Props> = ({
                                         index,
                                     )
                                 }
+                                min={0}
                                 labelString={formatMessage(MESSAGES.quantity)}
                                 value={
                                     parameterValues?.org_unit_type_quantities?.[
@@ -238,7 +249,9 @@ export const Level: FunctionComponent<Props> = ({
                                 selectedOrgUnitIds={
                                     parameterValues?.org_unit_type_exceptions?.[
                                         index
-                                    ] || []
+                                    ]
+                                        ?.split(',')
+                                        .map(id => parseInt(id, 10)) || []
                                 }
                                 orgUnitTypeId={orgUnitTypeId}
                                 handleParameterChange={handleParameterChange}

@@ -929,7 +929,8 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">177</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">176</span>
+<span class="normal">177</span>
 <span class="normal">178</span>
 <span class="normal">179</span>
 <span class="normal">180</span>
@@ -1103,6 +1104,7 @@ submission</p>
 <span class="sd">        - soft delete its attached form instances</span>
 <span class="sd">        - delete relevant pending EntityDuplicate pairs</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">from</span> <span class="nn">hat.audit.models</span> <span class="kn">import</span> <span class="n">log_modification</span>
         <span class="kn">from</span> <span class="nn">iaso.models.deduplication</span> <span class="kn">import</span> <span class="n">ValidationStatus</span>
 
         <span class="n">original</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -1152,7 +1154,8 @@ submission</p>
 
       <details class="quote">
         <summary>Source code in <code>iaso/models/entity.py</code></summary>
-        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">250</span>
+        <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">249</span>
+<span class="normal">250</span>
 <span class="normal">251</span>
 <span class="normal">252</span>
 <span class="normal">253</span>
@@ -1180,6 +1183,7 @@ submission</p>
 <span class="sd">    - soft delete its attached form instances</span>
 <span class="sd">    - delete relevant pending EntityDuplicate pairs</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">hat.audit.models</span> <span class="kn">import</span> <span class="n">log_modification</span>
     <span class="kn">from</span> <span class="nn">iaso.models.deduplication</span> <span class="kn">import</span> <span class="n">ValidationStatus</span>
 
     <span class="n">original</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
@@ -1230,7 +1234,8 @@ submission</p>
 
         <details class="quote">
           <summary>Source code in <code>iaso/models/entity.py</code></summary>
-          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">45</span>
+          <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">44</span>
+<span class="normal">45</span>
 <span class="normal">46</span>
 <span class="normal">47</span>
 <span class="normal">48</span>
@@ -1271,8 +1276,7 @@ submission</p>
 <span class="normal">83</span>
 <span class="normal">84</span>
 <span class="normal">85</span>
-<span class="normal">86</span>
-<span class="normal">87</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+<span class="normal">86</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">class</span> <span class="nc">EntityType</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Its `reference_form` describes the core attributes/metadata about the entity type (in case it refers to a person: name, age, ...)&quot;&quot;&quot;</span>
 
     <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">max_length</span><span class="o">=</span><span class="mi">255</span><span class="p">)</span>  <span class="c1"># Example: &quot;Child under 5&quot;</span>

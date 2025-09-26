@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0111_page_account"),
+        ("iaso", "0101_page_needs_authentication_squashed_0110_make_readonlyrole"),
     ]
 
     operations = [

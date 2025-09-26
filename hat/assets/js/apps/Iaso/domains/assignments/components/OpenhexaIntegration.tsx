@@ -94,9 +94,11 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
         error,
         isSuccess,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
-    const { renderParameterInput, handleParameterChange } =
-        usePipelineParameters(pipeline, parameterValues, setParameterValues);
-
+    const { renderParameterInput } = usePipelineParameters(
+        pipeline,
+        parameterValues,
+        setParameterValues,
+    );
     const handleSubmit = useCallback(() => {
         setIsPipelineRunning(true);
         const parameters = {
@@ -180,13 +182,7 @@ export const OpenhexaIntegration: FunctionComponent<Props> = ({
                                 )}
                                 {pipeline.code === CUSTOM_FORM_CODES &&
                                     parameterValues && (
-                                        <LQASForm
-                                            parameterValues={parameterValues}
-                                            handleParameterChange={
-                                                handleParameterChange
-                                            }
-                                            planning={planning}
-                                        />
+                                        <LQASForm planning={planning} />
                                     )}
                                 {pipeline.code !== CUSTOM_FORM_CODES &&
                                     pipeline.currentVersion?.parameters?.map(

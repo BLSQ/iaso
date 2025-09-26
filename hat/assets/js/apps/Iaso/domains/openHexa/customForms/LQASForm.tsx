@@ -22,16 +22,24 @@ export type ParameterValues =
       }
     | undefined;
 type Props = {
-    parameterValues?: ParameterValues;
-    handleParameterChange: (parameterName: string, value: any) => void;
     planning: Planning;
 };
 
-export const LQASForm: FunctionComponent<Props> = ({
-    parameterValues,
-    handleParameterChange,
-    planning,
-}) => {
+export const LQASForm: FunctionComponent<Props> = ({ planning }) => {
+    const [parameterValues, setParameterValues] = useState<
+        ParameterValues | undefined
+    >({
+        org_unit_type_quantities: [],
+        org_unit_type_sequence_identifiers: [],
+        org_unit_type_exceptions: [],
+        org_unit_type_criteria: [],
+    });
+    const handleParameterChange = useCallback(
+        (parameterName: string, value: any) => {
+            setParameterValues(prev => ({ ...prev, [parameterName]: value }));
+        },
+        [],
+    );
     const { formatMessage } = useSafeIntl();
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([]);
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
@@ -94,7 +102,7 @@ export const LQASForm: FunctionComponent<Props> = ({
                 return;
             }
         },
-        [updateArrayAtIndex, handleParameterChange],
+        [updateArrayAtIndex, handleParameterChange, expandedLevels],
     );
 
     const handleOrgUnitTypeQuantityChange = useCallback(

@@ -62,7 +62,6 @@ export const Level: FunctionComponent<Props> = ({
     const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
         previousLevel?.value ? parseInt(previousLevel.value, 10) : 0,
     );
-    console.log(expandedLevels);
     const isExpanded = expandedLevels[index];
     const handleSetIsExpanded = useCallback(
         (value: boolean) => {

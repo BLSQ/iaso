@@ -10,6 +10,7 @@ from iaso.models import OrgUnitType
 from ..common import ModelViewSet
 from .filters import OrgUnitTypeDropdownFilter
 from .serializers import (
+    OrgUnitTypeHierarchySerializer,
     OrgUnitTypesDropdownSerializer,
     OrgUnitTypeSerializerV1,
     OrgUnitTypeSerializerV2,
@@ -133,6 +134,32 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(
+        permission_classes=[IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired],
+        detail=True,
+        methods=["GET"],
+        serializer_class=OrgUnitTypeHierarchySerializer,
+        url_path="hierarchy",
+    )
+    def hierarchy(self, request, pk=None):
+        """
+        Get the complete hierarchy of a specific org unit type.
+
+        This endpoint returns the org unit type with all its sub_unit_types
+        recursively, building the complete hierarchy tree.
+
+        GET /api/v2/orgunittypes/{id}/hierarchy/
+        """
+        try:
+            # Get the base org unit type using the standard queryset
+            org_unit_type = self.get_queryset().get(pk=pk)
+
+            serializer = self.get_serializer(org_unit_type)
+            return Response(serializer.data)
+
+        except OrgUnitType.DoesNotExist:
+            return Response({"error": "Org unit type not found"}, status=status.HTTP_404_NOT_FOUND)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

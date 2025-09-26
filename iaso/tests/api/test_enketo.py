@@ -12,6 +12,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.enketo.enketo_xml import build_substitutions
 from iaso.models import Instance
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -43,9 +44,11 @@ class EnketoAPITestCase(APITestCase):
         star_wars.save()
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms", "iaso_update_submission"]
+            username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION]
         )
-        cls.gunther = cls.create_user_with_profile(username="gunther", account=star_wars, permissions=["iaso_forms"])
+        cls.gunther = cls.create_user_with_profile(
+            username="gunther", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 

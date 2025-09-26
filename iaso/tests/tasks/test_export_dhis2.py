@@ -3,6 +3,7 @@ import datetime
 from unittest.mock import MagicMock, _Call, call, patch
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 from iaso.test import TestCase
 from iaso.tests.diffing.utils import PyramidBaseTest
@@ -32,7 +33,7 @@ class ExportDHIS2TaskTestCase(TestCase, PyramidBaseTest):
         self.account = m.Account.objects.create(name="Account", default_version=self.source_version_to_update)
         self.user = self.create_user_with_profile(username="user", account=self.account)
         self.user_with_perms = self.create_user_with_profile(
-            account=self.account, username="user_with_perms", permissions=["iaso_org_units"]
+            account=self.account, username="user_with_perms", permissions=[CORE_ORG_UNITS_PERMISSION]
         )
 
         self.project = m.Project.objects.create(name="Project", account=self.account, app_id="foo.bar.baz")

@@ -16,8 +16,6 @@ from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
 from iaso.api.instances.instances import InstanceFileSerializer
@@ -25,6 +23,12 @@ from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthentica
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -142,10 +146,10 @@ class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm(core_permissions.FORMS)
-                or request.user.has_perm(core_permissions.ORG_UNITS)
-                or request.user.has_perm(core_permissions.ORG_UNITS_READ)
-                or request.user.has_perm(core_permissions.SUBMISSIONS)
+                request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name())
+                or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
             )
         ):
             return False

@@ -9,8 +9,14 @@ from django.utils import timezone
 
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
 from plugins.polio.models import OutgoingStockMovement
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+)
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -41,20 +47,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
             username="user_ro_perms",
             account=cls.account,
-            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
+            permissions=[POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION],
         )
         cls.user_read_only_perms = cls.create_user_with_profile(
             username="user_read_only_perms",
             account=cls.account,
-            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
+            permissions=[POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=cls.account, permissions=[])
 

@@ -12,7 +12,7 @@ from django.db.models import QuerySet
 logger = getLogger(__name__)
 
 
-def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str):
+def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str, mapping=None):
     start = time.perf_counter()
 
     sql, params = qs.query.sql_with_params()
@@ -40,9 +40,13 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
 
         logger.info(f"exporting parquet : {output_file_path} \n\n {full_sql}")
         # had to specify ROW_GROUP_SIZE when exporting large rows like several geojson on the same row
+        alias_stmt = " * "
+        if mapping:
+            alias_stmt = dict_to_projection(mapping)
+
         parquet_export_sql = f"""
             COPY (
-                SELECT * FROM postgres_query('pg', $$ {full_sql} $$)
+                SELECT {alias_stmt} FROM postgres_query('pg', $$ {full_sql} $$)
             ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
         """
 
@@ -56,3 +60,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     logger.warning(
         f"dumped to {output_file_path} took {duration:.3f} seconds for {row_count} records and {col_count} columns, final file size {size_mb:.2f} Mb"
     )
+
+
+def dict_to_projection(mapping):
+    return ",\n    ".join(f'{safe} as "{orig}"' for orig, safe in mapping.items())

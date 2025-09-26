@@ -1,5 +1,6 @@
 from iaso.test import TestCase
 from plugins.polio.models import VACCINES, Campaign, CampaignType
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -25,7 +26,7 @@ class CampaignTestCase(TestCase, PolioTestCaseMixin):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
         # Org unit types
         cls.org_unit_type_country = cls.create_org_unit_type(name="COUNTRY", projects=[cls.project])

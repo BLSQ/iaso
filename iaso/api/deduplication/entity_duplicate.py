@@ -21,13 +21,13 @@ from rest_framework.response import Response
 
 import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
-import iaso.permissions as core_permissions
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
+from iaso.permissions.core_permissions import CORE_ENTITIES_DUPLICATES_READ_PERMISSION
 from iaso.utils.emoji import fix_emoji
 
 
@@ -424,7 +424,7 @@ class EntityDuplicateViewSet(ModelViewSet):
 
     model = EntityDuplicate
     ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES_DUPLICATE_READ)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_DUPLICATES_READ_PERMISSION)]
     serializer_class = EntityDuplicateSerializer
 
     def get_queryset(self):

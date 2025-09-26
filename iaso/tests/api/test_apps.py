@@ -2,6 +2,7 @@ import typing
 
 from iaso import models as m
 from iaso.models import FeatureFlag
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -17,7 +18,7 @@ class AppsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=[CORE_FORMS_PERMISSION])
         cls.project_1 = m.Project.objects.create(name="Project 1", account=account, app_id="org.ghi.p1")
         cls.project_2 = m.Project.objects.create(
             name="Project 2", account=account, app_id="org.ghi.p2", min_version=1234

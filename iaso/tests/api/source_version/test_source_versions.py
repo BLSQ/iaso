@@ -1,9 +1,14 @@
 from django.contrib.auth.models import Permission
 from rest_framework import status
 
-import iaso.permissions as core_permissions
-
 from iaso import models as m
+from iaso.permissions.core_permissions import (
+    CORE_LINKS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+)
 from iaso.test import APITestCase
 from iaso.tests.diffing.utils import PyramidBaseTest
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
@@ -24,7 +29,9 @@ class SourceVersionAPITestCase(APITestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
         cls.user_with_perms = cls.create_user_with_profile(
-            account=cls.account, username="user_with_perms", permissions=["iaso_org_units"]
+            account=cls.account,
+            username="user_with_perms",
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
 
         cls.project = m.Project.objects.create(name="Project", account=cls.account, app_id="foo.bar.baz")
@@ -53,46 +60,46 @@ class SourceVersionAPITestCase(APITestCase):
     def test_list_ok_with_right_perms(self):
         self.client.force_authenticate(self.user)
 
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._MAPPINGS)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_MAPPINGS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
-        self.assertTrue(self.user.has_perm(core_permissions.MAPPINGS))
+        self.assertTrue(self.user.has_perm(CORE_MAPPINGS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._ORG_UNITS)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
-        self.assertTrue(self.user.has_perm(core_permissions.ORG_UNITS))
+        self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._ORG_UNITS_READ)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_ORG_UNITS_READ_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
-        self.assertTrue(self.user.has_perm(core_permissions.ORG_UNITS_READ))
+        self.assertTrue(self.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._LINKS)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_LINKS_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
-        self.assertTrue(self.user.has_perm(core_permissions.LINKS))
+        self.assertTrue(self.user.has_perm(CORE_LINKS_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
         del self.user._perm_cache
         del self.user._user_perm_cache
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._SOURCES)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.assertEqual(1, self.user.user_permissions.count())
-        self.assertTrue(self.user.has_perm(core_permissions.SOURCES))
+        self.assertTrue(self.user.has_perm(CORE_SOURCE_PERMISSION.full_name()))
         response = self.client.get(self.BASE_URL)
         self.assertJSONResponse(response, 200)
 
     def test_list(self):
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._SOURCES)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
 
         response = self.client.get(self.BASE_URL)
@@ -112,7 +119,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertEqual(version["tree_config_status_fields"], [])
 
     def test_dropdown_sourceversions(self):
-        self.user.user_permissions.set([Permission.objects.get(codename=core_permissions._SOURCES)])
+        self.user.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
         data = self.assertJSONResponse(response, 200)
@@ -133,7 +140,7 @@ class SourceVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_dropdown_sourceversions_with_user_from_another_account(self):
-        self.user2.user_permissions.set([Permission.objects.get(codename=core_permissions._SOURCES)])
+        self.user2.user_permissions.set([Permission.objects.get(codename=CORE_SOURCE_PERMISSION.codename)])
         self.client.force_authenticate(self.user2)
         response = self.client.get(f"{self.BASE_URL}dropdown/")
         data = self.assertJSONResponse(response, 200)
@@ -155,7 +162,7 @@ class SourceVersionPyramidsAPITestCase(PyramidBaseTest, TaskAPITestCase):
         self.account = m.Account.objects.create(name="Account", default_version=self.source_version_to_update)
         self.user = self.create_user_with_profile(username="user", account=self.account)
         self.user_with_perms = self.create_user_with_profile(
-            account=self.account, username="user_with_perms", permissions=["iaso_org_units"]
+            account=self.account, username="user_with_perms", permissions=[CORE_ORG_UNITS_PERMISSION]
         )
 
         self.project = m.Project.objects.create(name="Project", account=self.account, app_id="foo.bar.baz")

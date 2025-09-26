@@ -13,6 +13,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.api.org_units import OrgUnitViewSet
 from iaso.models import OrgUnit, OrgUnitType
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 from iaso.utils.gis import simplify_geom
 
@@ -161,19 +162,23 @@ class OrgUnitAPITestCase(APITestCase):
             code="code5",
         )
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         cls.user_read_permission = cls.create_user_with_profile(
             username="user_read_permission",
             account=star_wars,
-            permissions=["iaso_org_units_read"],
+            permissions=[CORE_ORG_UNITS_READ_PERMISSION],
         )
         cls.luke = cls.create_user_with_profile(
             username="luke",
             account=star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
             org_units=[jedi_council_endor],
         )
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
 
         cls.form_1 = form_1 = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
@@ -528,7 +533,7 @@ class OrgUnitAPITestCase(APITestCase):
             username="superUser",
             is_superuser=True,
             account=self.star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         super_user.iaso_profile.org_units.set([org_unit_country])
         super_user.save()
@@ -552,7 +557,7 @@ class OrgUnitAPITestCase(APITestCase):
         user_manager = self.create_user_with_profile(
             username="userManager",
             account=self.star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         user_manager.iaso_profile.org_units.set([org_unit_country])
         user_manager.save()

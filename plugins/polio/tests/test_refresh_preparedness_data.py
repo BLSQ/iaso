@@ -6,6 +6,7 @@ from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_preparedness_dashboard_data import (
     PREPAREDNESS_CONFIG_SLUG,
     PREPAREDNESS_TASK_NAME,
@@ -19,7 +20,7 @@ class RefreshPreparednessTestCase(APITestCase):
         cls.url = "/api/tasks/create/refreshpreparedness/"
         cls.account = account = m.Account.objects.create(name="test account")
         cls.other_account = m.Account.objects.create(name="other account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
         cls.campaign = Campaign.objects.create(obr_name="right_campaign", account=account)
         cls.wrong_campaign = Campaign.objects.create(obr_name="wrong_campaign", account=cls.other_account)
 
@@ -72,7 +73,7 @@ class RefreshPreparednessDataTestCase(APITestCase):
     def setUp(cls):
         cls.url = "/api/polio/tasks/refreshpreparedness/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True

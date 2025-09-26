@@ -14,8 +14,13 @@ from beanstalk_worker.services import TestTaskService
 from hat import settings
 from iaso import models as m
 from iaso.models import Account, Group, OrgUnitType, Profile, Team
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 from plugins.polio.models import VaccineAuthorization
+from plugins.polio.permissions import (
+    POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+    POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+)
 from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     expired_vaccine_authorizations_email_alert,
@@ -45,27 +50,38 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         cls.user_1 = cls.create_user_with_profile(
             username="user_1",
             account=cls.account,
-            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            permissions=[
+                POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+                POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+            ],
             email="XlfeeekfdpppZ@somemailzz.io",
         )
 
         cls.gpei_coordinator_A = cls.create_user_with_profile(
             username="gpeicoordinator_A",
             account=cls.account,
-            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            permissions=[
+                POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+                POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+            ],
             email="gpeicoordinator@somemailzz.iox",
         )
         cls.gpei_coordinator_B = cls.create_user_with_profile(
             username="gpeicoordinator_B",
             account=cls.account,
-            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            permissions=[
+                POLIO_VACCINE_AUTHORIZATIONS_ADMIN_PERMISSION,
+                POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION,
+            ],
             email="gpeicoordinator@somemailzz.iox",
         )
 
         cls.user_2 = cls.create_user_with_profile(
-            username="user_2", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_read_only"]
+            username="user_2", account=cls.account, permissions=[POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY_PERMISSION]
         )
-        cls.user_3 = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=["iaso_forms"])
+        cls.user_3 = cls.create_user_with_profile(
+            username="user_3", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.project = m.Project.objects.create(
             name="Polio",

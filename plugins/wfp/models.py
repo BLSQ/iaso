@@ -75,8 +75,8 @@ class Journey(models.Model):
         blank=True,
         db_index=True,
     )
-    muac_size = models.CharField(max_length=10,null=True, blank=True)
-    whz_score = models.CharField(max_length=10,null=True, blank=True)
+    muac_size = models.CharField(max_length=10,null=True)
+    whz_score = models.CharField(max_length=10,null=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True, db_index=True)
     nutrition_programme = models.CharField(
         max_length=255,
@@ -102,8 +102,8 @@ class Visit(models.Model):
     number = models.IntegerField(default=1)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True, db_index=True)
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
-    muac_size = models.CharField(max_length=10,null=True, blank=True)
-    whz_score = models.CharField(max_length=10,null=True, blank=True)
+    muac_size = models.CharField(max_length=10,null=True)
+    whz_color = models.CharField(max_length=10,null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
@@ -131,3 +131,12 @@ class MonthlyStatistics(models.Model):
     given_sachet_rutf = models.FloatField(null=True, blank=True)
     given_quantity_csb = models.FloatField(null=True, blank=True)
     given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)
+    muac_under_11_5 = models.FloatField(null=True) # MUAC < 11.5cm
+    muac_11_5_12_4 = models.FloatField(null=True) # MUAC between 11.5 and 12.4 cm
+    muac_above_12_5 = models.FloatField(null=True) # MUAC > 12.5 cm
+    whz_score_2 = models.CharField(max_length=10,null=True) # WHZ greater than -2 (green)
+    whz_score_3 = models.CharField(max_length=10,null=True) # WHZ less than -3 (red)
+    whz_score_3_2 = models.CharField(max_length=10,null=True) # WHZ between -2 and -3 (yellow)
+    beneficiary_with_admission_type = models.FloatField(null=True)
+    beneficiary_with_nutrition_programme = models.FloatField(null=True)
+    beneficiary_with_exit_type  = models.FloatField(null=True)

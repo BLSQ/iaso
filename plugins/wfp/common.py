@@ -6,7 +6,7 @@ from operator import itemgetter
 
 from dateutil.relativedelta import *
 from django.core.paginator import Paginator
-from django.db.models import CharField, F, Value
+from django.db.models import Case, CharField, F, FloatField, Sum, Value, When
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -589,7 +589,14 @@ class ETL:
             visit.date = current_visit.get("date", None)
             visit.number = visit_number
             visit.muac_size = current_visit.get("muac_size", None)
-            visit.whz_score = current_visit.get("whz_score", None)
+            whz_color = ""
+            if current_visit.get("whz_color", None) == "Y":
+                whz_color = "Yellow"
+            elif current_visit.get("whz_color", None) == "R":
+                whz_color = "Red"
+            elif current_visit.get("whz_color", None) == "G":
+                whz_color = "Green"
+            visit.whz_color = whz_color
             visit.journey = journey
             orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
             visit.org_unit = orgUnit
@@ -735,7 +742,7 @@ class ETL:
         monthly_Statistic.gender = monthly_journey.get("gender")
         monthly_Statistic.month = monthly_journey.get("month")
         monthly_Statistic.year = monthly_journey.get("year")
-        monthly_Statistic.number_visits = monthly_journey.get("number_visits")
+        monthly_Statistic.number_visits = monthly_journey.get("number_visits", 0)
         monthly_Statistic.programme_type = monthly_journey.get("programme_type")
         monthly_Statistic.nutrition_programme = monthly_journey.get("nutrition_programme")
         monthly_Statistic.admission_type = monthly_journey.get("admission_type")
@@ -745,6 +752,17 @@ class ETL:
         monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
         monthly_Statistic.given_ration_cbt = monthly_journey.get("given_ration_cbt")
 
+        monthly_Statistic.muac_under_11_5 = monthly_journey.get("muac_under_11_5")
+        monthly_Statistic.muac_11_5_12_4 = monthly_journey.get("muac_11_5_12_4")
+        monthly_Statistic.muac_above_12_5 = monthly_journey.get("muac_above_12_5")
+
+        monthly_Statistic.whz_score_2 = monthly_journey.get("whz_score_2")
+        monthly_Statistic.whz_score_3 = monthly_journey.get("whz_score_3")
+        monthly_Statistic.whz_score_3_2 = monthly_journey.get("whz_score_3_2")
+
+        monthly_Statistic.beneficiary_with_admission_type = monthly_journey.get("beneficiary_with_admission_type")
+        monthly_Statistic.beneficiary_with_exit_type = monthly_journey.get("beneficiary_with_exit_type")
+        monthly_Statistic.dhis2_id = monthly_journey.get("dhis2_id")
         monthly_Statistic.exit_type = monthly_journey.get("exit_type")
         monthly_Statistic.account = account
 
@@ -753,7 +771,12 @@ class ETL:
     def journey_with_visit_and_steps_per_visit(self, account, programme):
         aggregated_journeys = []
         journeys = (
-            Step.objects.select_related("visit", "visit__journey", "visit__org_unit", "visit__journey__beneficiary")
+            Step.objects.select_related(
+                "visit",
+                "visit__journey",
+                "visit__org_unit",
+                "visit__journey__beneficiary",
+            )
             .filter(
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,
@@ -766,6 +789,7 @@ class ETL:
                 "ration_size",
                 "visit",
                 "visit__id",
+                "visit__org_unit__source_ref",
                 "visit__date",
                 "visit__journey",
                 "visit__journey__admission_criteria",
@@ -773,8 +797,11 @@ class ETL:
                 "visit__journey__programme_type",
                 "visit__journey__end_date",
                 "visit__journey__exit_type",
+                "visit__journey__beneficiary__entity_id",
                 "visit__journey__beneficiary__gender",
                 "visit__journey__beneficiary__account",
+                "visit__muac_size",
+                "visit__whz_color",
                 year=Extract("visit__date", "year"),
                 month=Extract("visit__date", "month"),
                 period=Concat(
@@ -785,23 +812,62 @@ class ETL:
                 ),
             )
             .annotate(org_unit=F("visit__org_unit_id"))
+            .annotate(
+                muac_under_11_5=Sum(
+                    Case(
+                        When(visit__muac_size__lt=11.5, then=Value(1)),
+                        default=Value(0),
+                        output_field=FloatField(),
+                    )
+                )
+            )
+            .annotate(
+                muac_11_5_12_4=Sum(
+                    Case(
+                        When(visit__muac_size__range=(11.5, 12.4), then=Value(1)),
+                        default=Value(0),
+                        output_field=FloatField(),
+                    )
+                )
+            )
+            .annotate(
+                muac_above_12_5=Sum(
+                    Case(
+                        When(visit__muac_size__gte=12.5, then=Value(1)),
+                        default=Value(0),
+                        output_field=FloatField(),
+                    )
+                )
+            )
+            .annotate(
+                whz_score_2=Case(
+                    When(visit__whz_color="Green", then=Value(1)),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            )
+            .annotate(
+                whz_score_3=Case(
+                    When(visit__whz_color="Red", then=Value(1)),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            )
+            .annotate(
+                whz_score_3_2=Case(
+                    When(visit__whz_color="Yellow", then=Value(1)),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            )
             .order_by("visit__id")
         )
-
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
 
         for org_unit, journeys in data_by_journey:
             visits_by_period = groupby(journeys, key=itemgetter("period"))
-            assistance = {
-                "rutf_quantity": 0,
-                "rusf_quantity": 0,
-                "csb_quantity": 0,
-                "cbt_ration": "",
-            }
-            aggregated_journeys = AggregatedJourney().group_by_period(
-                visits_by_period, org_unit, aggregated_journeys, assistance
-            )
-
+            aggregated_journeys_by_period = AggregatedJourney().group_by_period(visits_by_period, org_unit)
+            aggregated_journeys.extend(aggregated_journeys_by_period)
         monthly_journeys = list(
             map(
                 lambda journey: self.save_monthly_journey(journey, account),

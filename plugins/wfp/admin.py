@@ -94,6 +94,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit",
+        "dhis2_id",
         "account",
         "month",
         "year",

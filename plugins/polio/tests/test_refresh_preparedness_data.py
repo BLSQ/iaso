@@ -6,6 +6,7 @@ from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_preparedness_dashboard_data import (
     PREPAREDNESS_CONFIG_SLUG,
     PREPAREDNESS_TASK_NAME,
@@ -19,7 +20,7 @@ class RefreshPreparednessTestCase(APITestCase):
         cls.url = "/api/tasks/create/refreshpreparedness/"
         cls.account = account = m.Account.objects.create(name="test account")
         cls.other_account = m.Account.objects.create(name="other account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
         cls.campaign = Campaign.objects.create(obr_name="right_campaign", account=account)
         cls.wrong_campaign = Campaign.objects.create(obr_name="wrong_campaign", account=cls.other_account)
 
@@ -72,7 +73,7 @@ class RefreshPreparednessDataTestCase(APITestCase):
     def setUp(cls):
         cls.url = "/api/polio/tasks/refreshpreparedness/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True
@@ -109,13 +110,13 @@ class RefreshPreparednessDataTestCase(APITestCase):
         }
         cls.preparedness_config = Config.objects.create(slug=PREPAREDNESS_CONFIG_SLUG, content=cls.json_config)
 
-    def mock_openhexa_call_success(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_success(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SUCCESS
 
-    def mock_openhexa_call_skipped(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_skipped(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return SKIPPED
 
-    def mock_openhexa_call_running(self, slug=None, config=None, id_field=None, task_id=None):
+    def mock_openhexa_call_running(self, slug=None, config=None, id_field=None, task_id=None, pipeline_config=None):
         return RUNNING
 
     def test_no_auth_needed(self):

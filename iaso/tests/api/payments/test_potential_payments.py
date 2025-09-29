@@ -1,4 +1,5 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -29,12 +30,12 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         user_with_perm = cls.create_user_with_profile(
             username="user_with_perm",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
         geo_limited_user = cls.create_user_with_profile(
             username="geo_limited_user",
             account=account,
-            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION, CORE_PAYMENTS_PERMISSION],
         )
         geo_limited_user.iaso_profile.org_units.set([other_org_unit])
 

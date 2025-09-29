@@ -67,6 +67,14 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...paginationPathParams,
         ],
     },
+    pipelineList: {
+        url: 'pipelines/',
+        params: ['accountId'],
+    },
+    pipelineDetails: {
+        url: 'pipelines/details',
+        params: ['accountId', 'pipelineId'],
+    },
     formDetail: {
         url: 'forms/detail',
         params: [
@@ -398,6 +406,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'groups',
             'fieldsSearch',
             ...paginationPathParams,
+            'isSearchActive',
         ],
     },
     entityDetails: {
@@ -593,6 +602,8 @@ type IasoBaseUrls = {
     home: string;
     forms: string;
     formDetail: string;
+    pipelineDetails: string;
+    pipelineList: string;
     formsStats: string;
     instances: string;
     instanceDetail: string;

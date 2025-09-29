@@ -1,12 +1,10 @@
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
 from rest_framework import status
-
-import iaso.permissions as core_permissions
 
 from iaso import models as m
 from iaso.api.query_params import ORG_UNIT_TYPE_ID, USER_IDS
 from iaso.models import QUEUED, Task
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -20,7 +18,7 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             "source", "account", "project"
         )
         cls.user, cls.anon_user, cls.user_no_perms = cls.create_base_users(
-            cls.account, ["iaso_submissions", "iaso_org_units"]
+            cls.account, [CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION]
         )
 
         # Preparing form, org unit type & org units
@@ -95,9 +93,8 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
     def test_no_permission_instances(self):
         """POST /api/tasks/create/instancereferencebulklink/ without instances permissions"""
         # Adding org unit permission to user
-        content_type = ContentType.objects.get_for_model(core_permissions.CorePermissionSupport)
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename="iaso_org_units", content_type=content_type).first().id
+            Permission.objects.filter(codename=CORE_ORG_UNITS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)
@@ -111,9 +108,8 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
     def test_no_permission_org_units(self):
         """POST /api/tasks/create/instancereferencebulklink/ without orgunit permissions"""
         # Adding instances permission to user
-        content_type = ContentType.objects.get_for_model(core_permissions.CorePermissionSupport)
         self.user_no_perms.user_permissions.add(
-            Permission.objects.filter(codename="iaso_submissions", content_type=content_type).first().id
+            Permission.objects.filter(codename=CORE_SUBMISSIONS_PERMISSION.codename).first().id
         )
 
         self.client.force_authenticate(self.user_no_perms)
@@ -131,7 +127,9 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             "new source", "new account", "new project"
         )
         new_user = self.create_user_with_profile(
-            username="new user", account=new_account, permissions=["iaso_submissions", "iaso_org_units"]
+            username="new user",
+            account=new_account,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
         new_first_form = m.Form.objects.create(name="new first form", period_type=m.MONTH, single_per_period=True)
         new_second_form = m.Form.objects.create(name="new second form", period_type=m.MONTH, single_per_period=True)
@@ -249,7 +247,9 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
     def test_linking_select_all_with_filters(self):
         # First, let's prepare some things for this test - creating various instances to be filtered out
         new_user = self.create_user_with_profile(
-            username="new user", account=self.account, permissions=["iaso_submissions", "iaso_org_units"]
+            username="new user",
+            account=self.account,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
         new_first_form = m.Form.objects.create(name="new first form", period_type=m.MONTH, single_per_period=True)
         new_org_unit_type = m.OrgUnitType.objects.create(name="Org unit type 2", short_name="OUT 2")

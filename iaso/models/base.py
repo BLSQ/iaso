@@ -17,11 +17,12 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit
+from iaso.modules import MODULES, IasoModule
 
 from .. import periods
+from ..permissions.base import IasoPermission
 from .instances import Instance
 from .project import Project
 
@@ -100,7 +101,7 @@ class ChoiceArrayField(ArrayField):
         return super(ArrayField, self).formfield(**defaults)
 
 
-MODULE_CHOICES = ((modu["codename"], modu["name"]) for modu in MODULES)
+MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
 
 
 class Account(models.Model):
@@ -163,6 +164,18 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    @property
+    def iaso_modules(self) -> list[IasoModule]:
+        """Convert the modules stored as strings in the database to IasoModule objects."""
+        return [module for module in MODULES if module.codename in self.modules]
+
+    @property
+    def permissions_from_active_modules(self) -> list[IasoPermission]:
+        permissions = []
+        for module in self.iaso_modules:
+            permissions.extend(module.permissions)
+        return permissions
 
 
 class RecordType(models.Model):

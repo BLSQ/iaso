@@ -4,20 +4,20 @@ from rest_framework import exceptions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
-from hat.menupermissions.constants import core_permissions
 from iaso.api.common import ModelViewSet
 from iaso.api.form_predefined_filters.permissions import HasFormPredefinedFilterPermission
 from iaso.api.form_predefined_filters.serializers import FormIdSerializer, FormPredefinedFilterSerializer
 from iaso.api.query_params import FORM_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Form, FormPredefinedFilter, Project
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 
 
 class FormPredefinedFiltersViewSet(ModelViewSet):
     f"""Form Predefined Filters API
 
         Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-        having the "{core_permissions.FORMS}"  permission.
+        having the "{CORE_FORMS_PERMISSION}" permission.
 
         GET /api/formpredefinedfilters/
         GET /api/formpredefinedfilters/<id>

@@ -8,7 +8,6 @@ from rest_framework.permissions import SAFE_METHODS
 from rest_framework.response import Response
 
 from iaso.api.common import Paginator
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission, HasChronogramRestrictedWritePermission
 from plugins.polio.api.chronogram.serializers import (
@@ -18,6 +17,7 @@ from plugins.polio.api.chronogram.serializers import (
     ChronogramTemplateTaskSerializer,
 )
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask, Round
+from plugins.polio.permissions import POLIO_CHRONOGRAM_PERMISSION, POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION
 
 
 class ChronogramPagination(Paginator):
@@ -37,10 +37,10 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         return ChronogramSerializer
 
     def get_permissions(self):
-        if self.request.user.has_perm(polio_permissions.POLIO_CHRONOGRAM):
+        if self.request.user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return super().get_permissions()
         if self.request.method not in SAFE_METHODS and self.request.user.has_perm(
-            polio_permissions.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+            POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION.full_name()
         ):
             raise exceptions.PermissionDenied()
         return super().get_permissions()
@@ -132,10 +132,10 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
     serializer_class = ChronogramTaskSerializer
 
     def get_permissions(self):
-        if self.request.user.has_perm(polio_permissions.POLIO_CHRONOGRAM):
+        if self.request.user.has_perm(POLIO_CHRONOGRAM_PERMISSION.full_name()):
             return super().get_permissions()
         if self.request.method in ["POST", "DELETE"] and self.request.user.has_perm(
-            polio_permissions.POLIO_CHRONOGRAM_RESTRICTED_WRITE
+            POLIO_CHRONOGRAM_RESTRICTED_WRITE_PERMISSION.full_name()
         ):
             raise exceptions.PermissionDenied()
         return super().get_permissions()

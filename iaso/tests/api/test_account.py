@@ -1,6 +1,7 @@
 from django.contrib import auth
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_SOURCE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -10,8 +11,8 @@ class AccountAPITestCase(APITestCase):
         cls.ghi = ghi = m.Account.objects.create(name="Global Health Initiative")
         cls.wha = wha = m.Account.objects.create(name="Worldwide Health Aid")
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_sources"])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_sources"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_SOURCE_PERMISSION])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_SOURCE_PERMISSION])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
         ghi_project = m.Project.objects.create(name="ghi_project", account=ghi)

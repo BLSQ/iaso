@@ -3,13 +3,11 @@ import importlib
 import io
 import typing
 
-from importlib import import_module
 from unittest import mock
 
 import numpy as np
 import pandas as pd
 
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AnonymousUser, Permission, User
 from django.contrib.contenttypes.models import ContentType
@@ -22,11 +20,9 @@ from django.utils import timezone
 from jinja2 import Environment, FileSystemLoader
 from rest_framework.test import APIClient, APITestCase as BaseAPITestCase
 
-import iaso.permissions as core_permissions
-
 from hat.api_import.models import APIImport
-from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
+from iaso.permissions.base import PERMISSION_CLASSES, IasoPermission
 
 
 class IasoTestCaseMixin:
@@ -35,7 +31,7 @@ class IasoTestCaseMixin:
         *,
         username: str,
         account: m.Account,
-        permissions=None,
+        permissions: list["IasoPermission"] = [],
         org_units: typing.Sequence[m.OrgUnit] = None,
         language: str = None,
         projects: typing.Sequence[m.Project] = None,
@@ -47,23 +43,12 @@ class IasoTestCaseMixin:
         user = User.objects.create(username=username, **kwargs)
         m.Profile.objects.create(user=user, account=account)
 
-        if permissions is not None:
-            content_types = [ContentType.objects.get_for_model(CustomPermissionSupport)]
-            core_permission_models = core_permissions.permission_models
-            for model in core_permission_models:
-                content_types.append(ContentType.objects.get_for_model(model))
-
-            for plugin in settings.PLUGINS:
-                try:
-                    plugin_permission_models = import_module(f"plugins.{plugin}.permissions").permission_models
-                    for model in plugin_permission_models:
-                        content_types.append(ContentType.objects.get_for_model(model))
-                except ImportError:
-                    pass
-
-            user.user_permissions.set(
-                Permission.objects.filter(codename__in=permissions, content_type__in=content_types)
-            )
+        if permissions:
+            content_types = []
+            for ct in PERMISSION_CLASSES:
+                content_types.append(ContentType.objects.get_for_model(ct))
+            codenames = [perm.codename for perm in permissions]
+            user.user_permissions.set(Permission.objects.filter(codename__in=codenames, content_type__in=content_types))
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
@@ -133,7 +118,7 @@ class IasoTestCaseMixin:
         clear_url_caches()
 
     @staticmethod
-    def create_base_users(account, permissions, user_name="user"):
+    def create_base_users(account, permissions: list[IasoPermission], user_name="user"):
         # anonymous user and user without needed permissions
         anon = AnonymousUser()
         user_no_perms = IasoTestCaseMixin.create_user_with_profile(

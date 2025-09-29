@@ -11,8 +11,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-import iaso.permissions as core_permissions
-
 from hat.audit.models import INSTANCE_API, log_modification
 from iaso.api.common import HasPermission
 from iaso.api.query_params import APP_ID
@@ -28,6 +26,7 @@ from iaso.enketo import (
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
+from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.utils.encryption import calculate_md5
 
 
@@ -264,7 +263,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission(core_permissions.SUBMISSIONS_UPDATE)])  # type: ignore
+@permission_classes([HasPermission(CORE_SUBMISSIONS_UPDATE_PERMISSION)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.

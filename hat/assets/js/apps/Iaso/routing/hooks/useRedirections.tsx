@@ -56,7 +56,7 @@ const baseRedirections = [
         path: `/${baseUrls.entities}`,
         to: `/${baseUrls.entities}${getPaginationParams(
             'last_saved_instance',
-        )}`,
+        )}/isSearchActive/true`,
     },
     {
         path: `/${baseUrls.entityTypes}`,

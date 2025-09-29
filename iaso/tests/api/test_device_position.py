@@ -3,6 +3,7 @@ import typing
 from uuid import uuid4
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -11,7 +12,7 @@ class DevicesPositionAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens",

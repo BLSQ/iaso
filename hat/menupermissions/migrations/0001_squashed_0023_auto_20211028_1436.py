@@ -3,41 +3,7 @@
 from django.db import migrations, models
 
 
-# Functions from the following migrations need manual copying.
-# Move them and any dependencies into this file, then update the
-# RunPython operations to refer to the local versions:
-# hat.menupermissions.migrations.0022_add_permission_polio_to_existing_users FIXED REMOVED
-
-
 class Migration(migrations.Migration):
-    replaces = [
-        ("menupermissions", "0001_initial"),
-        ("menupermissions", "0002_auto_20180822_1020"),
-        ("menupermissions", "0003_auto_20180822_1021"),
-        ("menupermissions", "0004_auto_20181004_1013"),
-        ("menupermissions", "0005_auto_20181011_1254"),
-        ("menupermissions", "0006_auto_20181126_1045"),
-        ("menupermissions", "0007_auto_20190110_0905"),
-        ("menupermissions", "0008_auto_20190212_1105"),
-        ("menupermissions", "0009_auto_20190401_0936"),
-        ("menupermissions", "0010_auto_20190801_0744"),
-        ("menupermissions", "0011_auto_20190802_1407"),
-        ("menupermissions", "0012_auto_20190802_1444"),
-        ("menupermissions", "0010_auto_20190626_0844"),
-        ("menupermissions", "0011_auto_20190627_1327"),
-        ("menupermissions", "0013_merge_20190819_0837"),
-        ("menupermissions", "0014_auto_20190909_1217"),
-        ("menupermissions", "0015_auto_20200415_1242"),
-        ("menupermissions", "0016_auto_20200518_0959"),
-        ("menupermissions", "0017_auto_20200721_1125"),
-        ("menupermissions", "0018_auto_20210112_2007"),
-        ("menupermissions", "0019_auto_20210611_0912"),
-        ("menupermissions", "0020_pages_permissions"),
-        ("menupermissions", "0021_auto_20210901_1228"),
-        ("menupermissions", "0022_add_permission_polio_to_existing_users"),
-        ("menupermissions", "0023_auto_20211028_1436"),
-    ]
-
     initial = True
 
     dependencies = []

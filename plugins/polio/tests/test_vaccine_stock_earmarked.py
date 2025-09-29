@@ -7,7 +7,13 @@ from django.utils import timezone
 
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+)
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -37,10 +43,10 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
             ],
         )
 
@@ -448,8 +454,8 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="non_admin",
             account=self.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
             ],
         )
         self.client.force_authenticate(non_admin)

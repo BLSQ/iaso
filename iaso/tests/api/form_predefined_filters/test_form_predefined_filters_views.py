@@ -2,6 +2,7 @@ import typing
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID, FORM_ID
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -13,7 +14,9 @@ class FormPredefinedFilterViewsTestCase(TaskAPITestCase):
     def setUpTestData(cls):
         cls.account = account = m.Account.objects.create(name="Account")
         cls.account2 = account2 = m.Account.objects.create(name="Account2")
-        cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(account, ["iaso_forms"])
+        cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(
+            account, [CORE_FORMS_PERMISSION]
+        )
 
         cls.unauthenticated_project = unauthenticated_project = m.Project.objects.create(
             name="Unauthenticated Project",

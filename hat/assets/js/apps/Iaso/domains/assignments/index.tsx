@@ -23,7 +23,7 @@ import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { Sidebar } from './components/AssignmentsSidebar';
-import { OpenhexaIntegrationDialog } from './components/OpenhexaIntegration';
+import { OpenhexaIntegrationDrawer } from './components/OpenhexaIntegrationDrawer';
 import { ParentDialog } from './components/ParentDialog';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import MESSAGES from './messages';
@@ -262,14 +262,7 @@ export const Assignments: FunctionComponent = () => {
                     hasPipelineConfig &&
                     planning.pipeline_uuids.length > 0 && (
                         <Box display="flex" justifyContent="flex-end">
-                            <OpenhexaIntegrationDialog
-                                planning={planning}
-                                iconProps={{
-                                    message: formatMessage(
-                                        MESSAGES.openHexaIntegration,
-                                    ),
-                                }}
-                            />
+                            <OpenhexaIntegrationDrawer planning={planning} />
                         </Box>
                     )}
                 <AssignmentsFilters

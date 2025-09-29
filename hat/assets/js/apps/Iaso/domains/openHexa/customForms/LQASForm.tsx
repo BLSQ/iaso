@@ -224,16 +224,20 @@ export const LQASForm: FunctionComponent<Props> = ({
                 );
             })}
             {canAddLevel && (
-                <Button
-                    onClick={handleAddLevel}
-                    variant="contained"
-                    color="primary"
-                    sx={{ mt: 2 }}
-                    disabled={isLastLevelUndefined}
-                >
-                    <PlusIcon sx={{ mr: 1 }} />
-                    {formatMessage(MESSAGES.addLevel)}
-                </Button>
+                <Box display="flex" justifyContent="flex-end">
+                    <Button
+                        onClick={handleAddLevel}
+                        variant="contained"
+                        color="primary"
+                        sx={{
+                            mt: 2,
+                        }}
+                        disabled={isLastLevelUndefined}
+                    >
+                        <PlusIcon sx={{ mr: 1 }} />
+                        {formatMessage(MESSAGES.addLevel)}
+                    </Button>
+                </Box>
             )}
         </Paper>
     );

@@ -1,6 +1,6 @@
 from django.test import TestCase
 
-from ..dhis2 import value_formatter  # type: ignore
+from iaso.dhis2 import value_formatter  # type: ignore
 
 
 orgunit_resolver = lambda x: "resolved-" + x

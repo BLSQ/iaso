@@ -390,6 +390,37 @@ class NonDeletedInstanceManager(models.Manager):
         return super().get_queryset().filter(deleted=False)
 
 
+# to keep the export code "simple"
+# this mock task will be passed when the export is happening outside async task framework
+# see iaso/tests/api/test_enketo.py
+class InMemoryTask:
+    def __init__(self):
+        self.progress_message = ""
+        self.error = None
+        self.has_error = False
+        self.exception = None
+
+    def stop_if_killed(self):
+        pass
+
+    def report_progress_and_stop_if_killed(
+        self, progress_value=None, progress_message=None, end_value=None, prepend_progress=False
+    ):
+        pass
+
+    def report_success_with_result(self, message=None, result_data=None):
+        pass
+
+    def terminate_with_error(self, message=None, exception=None):
+        logger.warn(f"InMemoryTask {self} ended in error", message, exception)
+        self.error = message
+        self.has_error = True
+        self.exception = exception
+
+    def refresh_from_db(self):
+        pass
+
+
 class Instance(models.Model):
     """A series of answers by an individual for a specific form
 
@@ -615,7 +646,7 @@ class Instance(models.Model):
             return None
 
     def export(self, launcher=None, force_export=False):
-        from iaso.dhis2.datavalue_exporter import DataValueExporter
+        from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError
         from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
@@ -624,9 +655,11 @@ class Instance(models.Model):
                 launcher=launcher,
                 force_export=force_export,
             )
-
-            DataValueExporter().export_instances(export_request)
+            task = InMemoryTask()
+            DataValueExporter().export_instances(export_request, task)
             self.refresh_from_db()
+            if task.has_error:
+                raise InstanceExportError(str(task.error), {}, [task.error])
         except NothingToExportError:
             print("Export failed for instance", self)
 

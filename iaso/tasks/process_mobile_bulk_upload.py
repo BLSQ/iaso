@@ -41,6 +41,7 @@ from plugins.trypelim.common.form_utils import (
 )
 from plugins.trypelim.common.utils import sns_notify
 from plugins.trypelim.import_export.bulk_upload import notify_coordinations, positive_instance_qs
+from plugins.trypelim.tasks.utils import acquire_lock, release_lock
 
 
 INSTANCES_JSON = "instances.json"
@@ -49,6 +50,11 @@ STORAGE_LOGS_JSON = "storageLogs.json"
 CHANGE_REQUESTS_JSON = "changeRequests.json"
 
 logger = logging.getLogger(__name__)
+
+TASK_LOCK_RETRY_INTERVAL = 60
+TASK_LOCK_MAX_RETRIES = 120
+TASK_LOCK_MAX_DURATION = 600
+TASK_LOCK_KEY = "process_mobile_bulk_upload"
 
 
 @task_decorator(task_name="process_mobile_bulk_upload")
@@ -66,6 +72,20 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     project = Project.objects.get(id=project_id)
 
     try:
+        # Trypelim-specific
+        # To avoid concurrency issues, we acquire a mutex with a max duration of 10 minutes.
+        acquire_lock(
+            key=TASK_LOCK_KEY,
+            max_retries=TASK_LOCK_MAX_RETRIES,
+            retry_interval=TASK_LOCK_RETRY_INTERVAL,
+            max_duration=TASK_LOCK_MAX_DURATION,
+            progress_callback=lambda num_attempt: the_task.report_progress_and_stop_if_killed(
+                progress_message=f"Acquiring task lock (attempt {num_attempt} of {TASK_LOCK_MAX_RETRIES})",
+                progress_value=10,
+                end_value=100,
+            ),
+        )
+
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
         created_objects_ids = defaultdict(list)
 
@@ -128,6 +148,9 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         api_import.exception = format_exc()
         api_import.save()
         raise e
+
+    finally:
+        release_lock(TASK_LOCK_KEY)
 
     api_import.has_problem = False
     api_import.exception = ""

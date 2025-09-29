@@ -224,10 +224,10 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if created_from or created_to:
             queryset = queryset.annotate(creation_timestamp=Coalesce("source_created_at", "created_at"))
             if created_from:
-                created_from_ts = get_beginning_of_day(created_from)
+                created_from_ts = get_beginning_of_day(created_from, "created_from")
                 queryset = queryset.filter(creation_timestamp__gte=created_from_ts)
             if created_to:
-                created_from_ts = get_end_of_day(created_to)
+                created_from_ts = get_end_of_day(created_to, "created_to")
                 queryset = queryset.filter(creation_timestamp__lte=created_from_ts)
 
         if period_ids:
@@ -324,14 +324,14 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         queryset = queryset.with_status()
 
         if modification_from:
-            queryset = queryset.filter(updated_at__gte=get_beginning_of_day(modification_from))
+            queryset = queryset.filter(updated_at__gte=get_beginning_of_day(modification_from, "modification_from"))
         if modification_to:
-            queryset = queryset.filter(updated_at__lte=get_end_of_day(modification_to))
+            queryset = queryset.filter(updated_at__lte=get_end_of_day(modification_to, "modification_to"))
 
         if sent_from:
-            queryset = queryset.filter(created_at__gte=get_beginning_of_day(sent_from))
+            queryset = queryset.filter(created_at__gte=get_beginning_of_day(sent_from, "sent_from"))
         if sent_to:
-            queryset = queryset.filter(created_at__lte=get_end_of_day(sent_to))
+            queryset = queryset.filter(created_at__lte=get_end_of_day(sent_to, "sent_to"))
 
         if status:
             statuses = status.split(",")

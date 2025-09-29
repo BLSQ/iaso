@@ -62,6 +62,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     requested_fields = django_filters.CharFilter(
         method="filter_requested_fields", label=_("Requested fields (comma-separated)")
     )
+    kind = CharInFilter(field_name="kind", widget=CSVWidget, label=_("Kind (comma-separated)"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -98,6 +98,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "account",
         "month",
         "year",
+        "period",
         "gender",
         "admission_criteria",
         "admission_type",

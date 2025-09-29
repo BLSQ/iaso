@@ -121,6 +121,7 @@ class MonthlyStatistics(models.Model):
     dhis2_id = models.TextField(null=True)
     month = models.CharField(max_length=8, null=True, blank=True)
     year = models.CharField(max_length=6, null=True, blank=True)
+    period = models.CharField(max_length=8, null=True, blank=True)
     gender = models.CharField(max_length=8, choices=GENDERS, null=True, blank=True)
     admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)

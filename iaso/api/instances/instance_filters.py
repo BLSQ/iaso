@@ -1,17 +1,14 @@
-import datetime
 import json
 
 from typing import Any, Dict, Optional
 
-import pytz
-
 from django.http import QueryDict
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
 from iaso.api import query_params as query
 from iaso.models import Form
 from iaso.periods import DayPeriod, Period
+from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
 
 def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
@@ -38,7 +35,16 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         # This filter is passed as a JsonLogic string in the URL, convert it to a Python dict already
         json_content = json.loads(json_content)
 
-    return {
+    # force validation... but keep filters json serializable, so it can be stored in async tasks or export_request
+
+    get_beginning_of_day(req.get(query.DATE_FROM, None), query.DATE_FROM)
+    get_end_of_day(req.get(query.DATE_TO, None), query.DATE_TO)
+    get_beginning_of_day(req.get(query.MODIFICATION_DATE_FROM, None), query.MODIFICATION_DATE_FROM)
+    get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
+    get_beginning_of_day(req.get(query.SENT_DATE_FROM, None), query.SENT_DATE_FROM)
+    get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
+
+    filters = {
         "form_id": req.get(query.FORM_ID, None),
         "form_ids": req.get(query.FORM_IDS, None),
         "with_location": req.get(query.WITH_LOCATION, None),
@@ -54,40 +60,25 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "project_ids": req.get(query.PROJECT_IDS, None),
         "search": req.get(query.SEARCH, None),
         "status": req.get(query.STATUS, None),
-        "created_from": get_beginning_of_day_from_request(req, query.DATE_FROM),
-        "created_to": get_end_of_day_from_request(req, query.DATE_TO),
+        "created_from": req.get(query.DATE_FROM, None),
+        "created_to": req.get(query.DATE_TO, None),
         "show_deleted": show_deleted,
         "entity_id": req.get(query.ENTITY_ID, None),
         "user_ids": req.get(query.USER_IDS, None),
-        "modification_from": get_beginning_of_day_from_request(req, query.MODIFICATION_DATE_FROM),
-        "modification_to": get_end_of_day_from_request(req, query.MODIFICATION_DATE_TO),
-        "sent_from": get_beginning_of_day_from_request(req, query.SENT_DATE_FROM),
-        "sent_to": get_end_of_day_from_request(req, query.SENT_DATE_TO),
+        "modification_from": req.get(query.MODIFICATION_DATE_FROM, None),
+        "modification_to": req.get(query.MODIFICATION_DATE_TO, None),
+        "sent_from": req.get(query.SENT_DATE_FROM, None),
+        "sent_to": req.get(query.SENT_DATE_TO, None),
         "json_content": json_content,
     }
 
-
-def get_beginning_of_day_from_request(req: QueryDict, key: str):
-    date_str = req.get(key, None)
-    if date_str:
-        date = _parse_date(date_str, key)
-        return datetime.datetime.combine(date, datetime.time.min).replace(tzinfo=pytz.UTC)
-    return None
-
-
-def get_end_of_day_from_request(req: QueryDict, key: str):
-    date_str = req.get(key, None)
-    if date_str:
-        date = _parse_date(date_str, key)
-        return datetime.datetime.combine(date, datetime.time.max).replace(tzinfo=pytz.UTC)
-    return None
-
-
-def _parse_date(date: datetime.date, key: str):
+    # TODO discuss to enforce it stays json serialize/deserialiable to prevent future issues
     try:
-        return datetime.date.fromisoformat(date)
-    except ValueError:
-        raise ValidationError(f"Parameter '{key}' must be a valid ISO date (yyyy-MM-dd), received '{date}'")
+        json.dumps(filters)
+    except:
+        raise ValidationError("filters should remain serializable to/from json")
+
+    return filters
 
 
 # TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class

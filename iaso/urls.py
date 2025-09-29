@@ -1,5 +1,3 @@
-import pkgutil
-
 from typing import List, Union
 
 from django.conf import settings
@@ -9,7 +7,6 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.token_authentication import token_auth
-from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
@@ -20,7 +17,6 @@ from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReference
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
-from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet
@@ -283,16 +279,3 @@ for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
-
-##########   creating algorithms in the database so that they will appear in the API  ##########
-try:
-    import importlib
-
-    for pkg in pkgutil.iter_modules(matching.__path__):
-        full_name = "iaso.matching." + pkg.name
-        algo_module = importlib.import_module(full_name)
-        algo = algo_module.Algorithm()
-        MatchingAlgorithm.objects.get_or_create(name=full_name, defaults={"description": algo.description})
-
-except Exception as e:
-    print("!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate", e)

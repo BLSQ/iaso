@@ -8,6 +8,7 @@ from rest_framework import status
 from iaso import models as m
 from iaso.models.base import RUNNING, SUCCESS
 from iaso.models.json_config import Config
+from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -23,7 +24,7 @@ class OpenHexaAPITestCase(APITestCase):
 
         # Create user with permissions
         cls.user = cls.create_user_with_profile(
-            username="testuser", account=cls.account, permissions=["iaso_data_tasks"]
+            username="testuser", account=cls.account, permissions=[CORE_DATA_TASKS_PERMISSION]
         )
 
         # Create OpenHexa config

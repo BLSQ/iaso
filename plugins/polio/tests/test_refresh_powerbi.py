@@ -12,6 +12,7 @@ from iaso.utils.powerbi import (
     launch_external_task,
     monitor_task_and_raise_if_fail,
 )
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG
 
 
@@ -29,7 +30,7 @@ class RefreshPowerBITestCase(APITestCase):
     def setUp(cls):
         cls.url = "/api/polio/powerbirefresh/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True

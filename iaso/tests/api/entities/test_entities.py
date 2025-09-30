@@ -13,6 +13,7 @@ from iaso import models as m
 from iaso.api.common import EXPORTS_DATETIME_FORMAT
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.models.deduplication import ValidationStatus
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 from iaso.tests.api.entities.common_base_with_setup import EntityAPITestCase
 
 
@@ -1187,7 +1188,7 @@ class WebEntityAPITestCase(EntityAPITestCase):
         user_manager = self.create_user_with_profile(
             username="userManager",
             account=self.account,
-            permissions=["iaso_entities"],
+            permissions=[CORE_ENTITIES_PERMISSION],
         )
         user_manager.iaso_profile.org_units.set([district_1])
         user_manager.save()

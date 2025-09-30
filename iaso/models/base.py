@@ -17,11 +17,12 @@ from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit
+from iaso.modules import MODULES, IasoModule
 
 from .. import periods
+from ..permissions.base import IasoPermission
 from .instances import Instance
 from .project import Project
 
@@ -100,7 +101,7 @@ class ChoiceArrayField(ArrayField):
         return super(ArrayField, self).formfield(**defaults)
 
 
-MODULE_CHOICES = ((modu["codename"], modu["name"]) for modu in MODULES)
+MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
 
 
 class Account(models.Model):
@@ -163,6 +164,18 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    @property
+    def iaso_modules(self) -> list[IasoModule]:
+        """Convert the modules stored as strings in the database to IasoModule objects."""
+        return [module for module in MODULES if module.codename in self.modules]
+
+    @property
+    def permissions_from_active_modules(self) -> list[IasoPermission]:
+        permissions = []
+        for module in self.iaso_modules:
+            permissions.extend(module.permissions)
+        return permissions
 
 
 class RecordType(models.Model):
@@ -317,7 +330,9 @@ class Task(models.Model):
             self.result = {"result": KILLED, "message": "Killed"}
             self.save()
 
-    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+    def report_progress_and_stop_if_killed(
+        self, progress_value=None, progress_message=None, end_value=None, prepend_progress=False
+    ):
         """Save progress and check if we have been killed
         We use a separate transaction, so we can report the progress even from a transaction, see services.py
         """
@@ -330,7 +345,12 @@ class Task(models.Model):
         if progress_value:
             self.progress_value = progress_value
         if progress_message:
-            self.progress_message = progress_message
+            if prepend_progress:
+                self.progress_message = (
+                    progress_message + "\n" + self.progress_message if self.progress_message else progress_message
+                )
+            else:
+                self.progress_message = progress_message
         if end_value:
             self.end_value = end_value
         self.save()
@@ -351,9 +371,9 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "message": message}
         self.save()
 
-    def terminate_with_error(self, message=None):
+    def terminate_with_error(self, message=None, exception=None):
         self.refresh_from_db()
-        logger.error(f"Task {self} ended in error")
+        logger.error(f"Task {self} ended in error %s", message, exc_info=exception)
         self.status = ERRORED
         self.ended_at = timezone.now()
         self.result = {"result": ERRORED, "message": message if message else "Error"}

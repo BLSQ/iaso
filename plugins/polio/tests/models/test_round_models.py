@@ -5,6 +5,7 @@ from django.utils import timezone
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -20,7 +21,7 @@ class RoundModelTestCase(APITestCase, PolioTestCaseMixin):
             "Default source", "Default account", "Default project"
         )
         # anonymous user and user without needed permissions
-        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, ["iaso_polio"])
+        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(cls.account, [POLIO_PERMISSION])
         # org unit types to create campaigns and scopes
         cls.ou_type_country = cls.create_org_unit_type(name="COUNTRY", projects=[cls.project])
         cls.ou_type_district = cls.create_org_unit_type(name="DISTRICT", projects=[cls.project])

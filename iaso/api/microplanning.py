@@ -7,8 +7,6 @@ from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
 from iaso.api.common import (
@@ -22,6 +20,7 @@ from iaso.api.permission_checks import ReadOnly
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -239,7 +238,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamTypesFilterBackend,
         TeamProjectsFilterBackend,
     ]
-    permission_classes = [ReadOnlyOrHasPermission(core_permissions.TEAMS)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(CORE_TEAMS_PERMISSION)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
@@ -361,7 +360,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -508,7 +507,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [
@@ -522,7 +521,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         "planning": ["exact"],
         "team": ["exact"],
     }
-    audit_serializer = AuditAssignmentSerializer  # type: ignore
+    audit_serializer = AuditAssignmentSerializer
 
     def get_queryset(self):
         user = self.request.user

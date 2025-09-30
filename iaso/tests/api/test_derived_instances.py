@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_COMPLETENESS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -47,7 +48,7 @@ class DerivedInstancesTests(APITestCase):
             username="Test User Name",
             email="testemail@bluesquarehub.com",
             account=account,
-            permissions=["iaso_completeness"],
+            permissions=[CORE_COMPLETENESS_PERMISSION],
         )
         credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
             name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account

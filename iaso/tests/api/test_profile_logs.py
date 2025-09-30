@@ -8,11 +8,14 @@ import pytz
 from django.contrib import auth
 from django.contrib.contenttypes.models import ContentType
 
-import iaso.permissions as core_permissions
-
 from hat.audit.models import Modification
-from hat.menupermissions.constants import MODULES
 from iaso import models as m
+from iaso.modules import MODULES
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -194,7 +197,7 @@ PROFILE_LOG_DETAIL_SCHEMA = {
 class ProfileLogsTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.MODULES = [module.codename for module in MODULES]
         cls.account = m.Account.objects.create(name="Main account", modules=cls.MODULES)
         cls.other_account = m.Account.objects.create(name="Other account")
         cls.project_1 = m.Project.objects.create(name="Project 1", account=cls.account, app_id="project_1")
@@ -227,18 +230,18 @@ class ProfileLogsTestCase(APITestCase):
         )
         # Users.
         cls.user_with_permission_1 = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[core_permissions._USERS_ADMIN]
+            username="janedoe", account=cls.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         cls.user_with_permission_2 = cls.create_user_with_profile(
-            username="bordoe", account=cls.account, permissions=[core_permissions._USERS_ADMIN]
+            username="bordoe", account=cls.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         cls.user_without_permission = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[core_permissions._FORMS]
+            username="jim", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
         )
         cls.edited_user_1 = cls.create_user_with_profile(
             username="jam",
             account=cls.account,
-            permissions=[core_permissions._USERS_MANAGED],
+            permissions=[CORE_USERS_MANAGED_PERMISSION],
             language="en",
         )
         cls.edited_user_2 = cls.create_user_with_profile(

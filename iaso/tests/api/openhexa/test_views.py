@@ -546,3 +546,72 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         data = response.json()
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
+
+    def test_get_config_with_lqas_pipeline_code(self):
+        """Test config check when OpenHexa config includes lqas_pipeline_code."""
+        # Update config with lqas_pipeline_code
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            "openhexa_token": "test-token",
+            "workspace_slug": "test-workspace",
+            "lqas_pipeline_code": "lqas-pipeline-123",
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])
+        self.assertIn("lqas_pipeline_code", data)
+        self.assertEqual(data["lqas_pipeline_code"], "lqas-pipeline-123")
+
+    def test_get_config_without_lqas_pipeline_code(self):
+        """Test config check when OpenHexa config doesn't include lqas_pipeline_code."""
+        # Config without lqas_pipeline_code (default setup)
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])
+        self.assertNotIn("lqas_pipeline_code", data)
+
+    def test_get_config_with_empty_lqas_pipeline_code(self):
+        """Test config check when OpenHexa config has empty lqas_pipeline_code."""
+        # Update config with empty lqas_pipeline_code
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            "openhexa_token": "test-token",
+            "workspace_slug": "test-workspace",
+            "lqas_pipeline_code": "",  # Empty value
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])
+        self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if empty
+
+    def test_get_config_with_null_lqas_pipeline_code(self):
+        """Test config check when OpenHexa config has null lqas_pipeline_code."""
+        # Update config with null lqas_pipeline_code
+        self.openhexa_config.content = {
+            "openhexa_url": "https://test.openhexa.org/graphql/",
+            "openhexa_token": "test-token",
+            "workspace_slug": "test-workspace",
+            "lqas_pipeline_code": None,  # Null value
+        }
+        self.openhexa_config.save()
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertTrue(data["configured"])
+        self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if null

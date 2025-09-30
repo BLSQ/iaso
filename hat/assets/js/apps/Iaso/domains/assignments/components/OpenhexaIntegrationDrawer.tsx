@@ -19,6 +19,7 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { LQASForm } from 'Iaso/domains/openHexa/customForms/LQASForm';
+import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
@@ -54,12 +55,14 @@ const styles: SxStyles = {
         p: 2,
     },
 };
-const CUSTOM_FORM_CODES = 'iaso-test-pipeline';
 
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const { data: config } = useGetPipelineConfig();
+    const lQAS_code = config?.lqas_pipeline_code;
     const [isOpen, setIsOpen] = useState(false);
     const [allowConfirm, setAllowConfirm] = useState(false);
     const [parameterValues, setParameterValues] = useState<
@@ -176,19 +179,21 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                 display="flex"
                                 alignItems="center"
                             >
-                                <Button
-                                    size="small"
-                                    variant="contained"
-                                    onClick={handleSubmit}
-                                    disabled={
-                                        !allowConfirm ||
-                                        isPipelineRunning ||
-                                        isFetchingPipeline
-                                    }
-                                    fullWidth
-                                >
-                                    {formatMessage(MESSAGES.launch)}
-                                </Button>
+                                {currentStep === 1 && (
+                                    <Button
+                                        size="small"
+                                        variant="contained"
+                                        onClick={handleSubmit}
+                                        disabled={
+                                            !allowConfirm ||
+                                            isPipelineRunning ||
+                                            isFetchingPipeline
+                                        }
+                                        fullWidth
+                                    >
+                                        {formatMessage(MESSAGES.launch)}
+                                    </Button>
+                                )}
                             </Grid>
                         </Grid>
                     </Paper>
@@ -232,8 +237,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                                 )}
                                             </Typography>
                                         )}
-                                        {pipeline.code ===
-                                            CUSTOM_FORM_CODES && (
+                                        {pipeline.code === lQAS_code && (
                                             <LQASForm
                                                 planning={planning}
                                                 setAllowConfirm={
@@ -247,7 +251,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                                 }
                                             />
                                         )}
-                                        {pipeline.code !== CUSTOM_FORM_CODES &&
+                                        {pipeline.code !== lQAS_code &&
                                             pipeline.currentVersion?.parameters?.map(
                                                 parameter => (
                                                     <Box

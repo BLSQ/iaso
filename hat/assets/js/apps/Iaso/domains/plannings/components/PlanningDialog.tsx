@@ -104,7 +104,8 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation(apiErrors, payload);
-    const { data: hasPipelineConfig } = useGetPipelineConfig();
+    const { data: config } = useGetPipelineConfig();
+    const hasPipelineConfig = config?.configured;
     const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
         useGetPipelinesDropdown(Boolean(hasPipelineConfig));
     const formik = useFormik({

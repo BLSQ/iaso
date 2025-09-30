@@ -328,7 +328,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Check if OpenHexa configuration exists.
 
         Returns:
-            Response: {"configured": true/false}
+            Response: {"configured": true/false, "lqas_pipeline_code": "value" or null}
         """
         try:
             # Try to get the config
@@ -340,7 +340,14 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             configured = all(field in content and content[field] for field in required_fields)
 
-            return Response({"configured": configured})
+            # Get optional lqas_pipeline_code parameter
+            lqas_pipeline_code = content.get("lqas_pipeline_code")
+
+            response_data = {"configured": configured}
+            if lqas_pipeline_code:
+                response_data["lqas_pipeline_code"] = lqas_pipeline_code
+
+            return Response(response_data)
 
         except Config.DoesNotExist:
             # Config doesn't exist

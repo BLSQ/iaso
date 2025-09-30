@@ -36,6 +36,32 @@ type Props = {
     ) => void;
 };
 
+const useGetSchema = () => {
+    const { formatMessage }: { formatMessage: IntlFormatMessage } =
+        useSafeIntl();
+
+    return useMemo(
+        () =>
+            yup.lazy(() =>
+                yup.object().shape({
+                    sku: yup
+                        .number()
+                        .required(formatMessage(MESSAGES.nameRequired)),
+                    form: yup
+                        .number()
+                        .required(formatMessage(MESSAGES.nameRequired)),
+                    question: yup
+                        .string()
+                        .required(formatMessage(MESSAGES.nameRequired)),
+                    impact: yup
+                        .string()
+                        .required(formatMessage(MESSAGES.nameRequired)),
+                }),
+            ),
+        [formatMessage],
+    );
+};
+
 const RuleDialog: FunctionComponent<Props> = ({
     titleMessage,
     closeDialog,
@@ -52,30 +78,12 @@ const RuleDialog: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
-    const getSchema = () =>
-        yup.lazy(() =>
-            yup.object().shape({
-                sku: yup
-                    .number()
-                    .required(formatMessage(MESSAGES.nameRequired)),
-                form: yup
-                    .number()
-                    .required(formatMessage(MESSAGES.nameRequired)),
-                question: yup
-                    .string()
-                    .required(formatMessage(MESSAGES.nameRequired)),
-                impact: yup
-                    .string()
-                    .required(formatMessage(MESSAGES.nameRequired)),
-            }),
-        );
-
     const formik: FormikProps<StockItemRuleDto | EmptyStockItemRule> =
         useFormik<StockItemRuleDto | EmptyStockItemRule>({
             initialValues: initialData,
             enableReinitialize: true,
             validateOnBlur: true,
-            validationSchema: getSchema,
+            validationSchema: useGetSchema(),
             onSubmit: values =>
                 saveRule(values, {
                     onSuccess: closeDialog,
@@ -92,11 +100,9 @@ const RuleDialog: FunctionComponent<Props> = ({
         resetForm,
     } = formik;
     const [form, setForm] = useState<number | undefined>(values?.form);
-    const onChange = (keyValue: string, value: any) => {
-        // noinspection JSIgnoredPromiseFromCall
-        setFieldTouched(keyValue, true);
-        // noinspection JSIgnoredPromiseFromCall
-        setFieldValue(keyValue, value);
+    const onChange = async (keyValue: string, value: any) => {
+        await setFieldTouched(keyValue, true);
+        await setFieldValue(keyValue, value);
     };
 
     const getErrors = useTranslatedErrors({
@@ -124,8 +130,9 @@ const RuleDialog: FunctionComponent<Props> = ({
     }, [possibleFields]);
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
             <ConfirmCancelModal
+                id="confirm-cancel-dialog"
+                dataTestId=""
                 allowConfirm={isValid && !isEqual(values, initialData)}
                 titleMessage={titleMessage}
                 onConfirm={handleSubmit}
@@ -137,63 +144,55 @@ const RuleDialog: FunctionComponent<Props> = ({
                 closeDialog={closeDialog}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                maxWidth="md"
+                maxWidth="sm"
                 open={isOpen}
             >
                 <div id="stock-keeping-unit-dialog">
                     {isOpen && (
                         <>
-                            {isFetchingForms ||
-                            isFetchingSkus ||
-                            isFetchingForms ? (
-                                <LoadingSpinner />
-                            ) : (
-                                <>
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="sku"
-                                        loading={isFetchingSkus}
-                                        onChange={onChange}
-                                        value={values.sku}
-                                        errors={getErrors('sku')}
-                                        label={MESSAGES.sku}
-                                        options={skusList ?? []}
-                                    />
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="form"
-                                        loading={isFetchingForms}
-                                        onChange={(key, value) => {
-                                            setForm(value);
-                                            onChange(key, value);
-                                        }}
-                                        errors={getErrors('form')}
-                                        value={values.form}
-                                        label={MESSAGES.form}
-                                        options={formsList ?? []}
-                                    />
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="question"
-                                        loading={isFetchingPossibleFields}
-                                        onChange={onChange}
-                                        errors={getErrors('question')}
-                                        value={values.question}
-                                        label={MESSAGES.question}
-                                        options={possibleFieldsOptions ?? []}
-                                        disabled={values.form == null}
-                                    />
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="impact"
-                                        onChange={onChange}
-                                        errors={getErrors('impact')}
-                                        value={values.impact}
-                                        label={MESSAGES.impact}
-                                        options={impacts ?? []}
-                                    />
-                                </>
-                            )}
+                            <InputComponent
+                                type="select"
+                                keyValue="sku"
+                                loading={isFetchingSkus}
+                                onChange={onChange}
+                                value={values.sku}
+                                errors={getErrors('sku')}
+                                label={MESSAGES.sku}
+                                options={skusList ?? []}
+                            />
+                            <InputComponent
+                                type="select"
+                                keyValue="form"
+                                loading={isFetchingForms}
+                                onChange={async (key, value) => {
+                                    setForm(value);
+                                    await onChange(key, value);
+                                }}
+                                errors={getErrors('form')}
+                                value={values.form}
+                                label={MESSAGES.form}
+                                options={formsList ?? []}
+                            />
+                            <InputComponent
+                                type="select"
+                                keyValue="question"
+                                loading={isFetchingPossibleFields}
+                                onChange={onChange}
+                                errors={getErrors('question')}
+                                value={values.question}
+                                label={MESSAGES.question}
+                                options={possibleFieldsOptions ?? []}
+                                disabled={values.form == null}
+                            />
+                            <InputComponent
+                                type="select"
+                                keyValue="impact"
+                                onChange={onChange}
+                                errors={getErrors('impact')}
+                                value={values.impact}
+                                label={MESSAGES.impact}
+                                options={impacts ?? []}
+                            />
                         </>
                     )}
                 </div>

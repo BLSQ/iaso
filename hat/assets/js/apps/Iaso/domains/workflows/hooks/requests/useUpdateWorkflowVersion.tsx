@@ -22,5 +22,5 @@ export const useUpdateWorkflowVersion = (
     useSnackMutation({
         mutationFn: (data: QueryData) => updateWorkflowVersion(data, versionId),
         invalidateQueryKey: [invalidateQueryKey],
-        showSuccessSnackBar: showSuccessSnackBar,
+        showSuccessSnackBar,
     });

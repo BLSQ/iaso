@@ -1,41 +1,20 @@
 import React, { useMemo } from 'react';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import { RedirectFn } from 'bluesquare-components/dist/types/Routing/redirections';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
 
-import DeleteDialog from 'Iaso/components/dialogs/DeleteDialogComponent';
-import Workflow from 'Iaso/components/svg/Workflow';
 import { baseUrls } from 'Iaso/constants/urls';
 
 import { ProjectChips } from 'Iaso/domains/projects/components/ProjectChips';
+import { SkusActionCell } from 'Iaso/domains/stock/components/ActionCell';
 import { ChipsGroup } from 'Iaso/domains/stock/components/ChipsGroup';
 import { FormsGroup } from 'Iaso/domains/stock/components/FormsGroup';
-import { EditSkuDialog } from 'Iaso/domains/stock/components/SkuDialog';
-import {
-    StockKeepingUnit,
-    StockKeepingUnitDto,
-    StockRulesVersion,
-} from 'Iaso/domains/stock/types/stocks';
-import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { StockKeepingUnit } from 'Iaso/domains/stock/types/stocks';
 import MESSAGES from './messages';
 
 export const baseUrl = baseUrls.stockKeepingUnits;
 
-type Props = {
-    publishedVersion?: StockRulesVersion;
-    redirectTo: RedirectFn;
-    deleteSku: (e: StockKeepingUnit) => void;
-    saveSku: (e: StockKeepingUnitDto) => void;
-};
-
-export const useColumns = ({
-    publishedVersion,
-    redirectTo,
-    deleteSku,
-    saveSku,
-}: Props): Array<Column> => {
+export const useColumns = (): Array<Column> => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     return useMemo(
         () => [
             {
@@ -103,52 +82,10 @@ export const useColumns = ({
                 accessor: 'actions',
                 Cell: settings => {
                     const sku = settings.row.original as StockKeepingUnit;
-                    return (
-                        <>
-                            <EditSkuDialog
-                                initialData={{
-                                    ...sku,
-                                    org_unit_types: sku.org_unit_types?.map(
-                                        type => type.id,
-                                    ),
-                                    projects: sku.projects?.map(
-                                        project => project.id,
-                                    ),
-                                    forms: sku.forms?.map(form => form.id),
-                                    children: sku.children?.map(
-                                        children => children.id,
-                                    ),
-                                }}
-                                iconProps={{}}
-                                titleMessage={MESSAGES.updateMessage}
-                                saveSku={saveSku}
-                            />
-                            <DeleteDialog
-                                keyName={`delete-sku-${sku.id}`}
-                                titleMessage={MESSAGES.deleteTitle}
-                                message={MESSAGES.deleteText}
-                                onConfirm={() => deleteSku(sku)}
-                            />
-                            {publishedVersion != null && (
-                                <IconButton
-                                    id={`rules-link-${sku.id}`}
-                                    url={`/${baseUrls.stockRulesVersions}/versionId/${publishedVersion.id}/skuId/${sku.id}/`}
-                                    tooltipMessage={MESSAGES.rules}
-                                    overrideIcon={Workflow}
-                                />
-                            )}
-                        </>
-                    );
+                    return <SkusActionCell sku={sku} />;
                 },
             },
         ],
-        [
-            currentUser,
-            deleteSku,
-            formatMessage,
-            saveSku,
-            publishedVersion,
-            redirectTo,
-        ],
+        [formatMessage],
     );
 };

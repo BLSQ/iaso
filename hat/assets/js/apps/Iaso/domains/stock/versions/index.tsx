@@ -32,8 +32,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const StockRulesVersions: FunctionComponent = () => {
-    // @ts-ignore
-    const params = useParamsObject(baseUrl) as Params;
+    const params = useParamsObject(baseUrl) as unknown as Params;
     return (
         <>
             {params.versionId === undefined && (

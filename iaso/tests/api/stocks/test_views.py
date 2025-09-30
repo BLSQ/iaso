@@ -320,6 +320,17 @@ class StockItemAPITestCase(APITestCase):
         self.assertJSONResponse(response, rest_framework.status.HTTP_201_CREATED)
         self.assertEqual(m.StockItem.objects.count(), 4)
 
+    def test_create_with_authorization_existing_stock_item(self):
+        self.assertEqual(m.StockItem.objects.count(), 3)
+        self.client.force_authenticate(self.user_with_rights)
+
+        response = self.client.post(
+            STOCK_ITEM_URL,
+            data={"sku": self.sku_1.id, "org_unit": self.org_unit_1.id, "value": 10},
+        )
+        self.assertJSONResponse(response, rest_framework.status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(m.StockItem.objects.count(), 3)
+
     def test_patch_without_authorization(self):
         self.assertEqual(self.stock_item_1.value, 0)
         self.client.force_authenticate(self.user_without_rights)

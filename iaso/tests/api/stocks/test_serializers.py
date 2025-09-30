@@ -1,11 +1,11 @@
 import collections
-import unittest
 import uuid
 
 from datetime import datetime
 
 import time_machine
 
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
@@ -419,7 +419,6 @@ class StockLedgerItemSerializerTestCase(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("This field is required.", serializer.errors["impact"][0])
 
-    @unittest.expectedFailure
     def test_save_with_same_id(self):
         id = uuid.uuid4().hex
         m.StockLedgerItem.objects.create(
@@ -432,15 +431,18 @@ class StockLedgerItemSerializerTestCase(TestCase):
             created_at=datetime.now(),
             created_by=self.user,
         )
-        m.StockLedgerItem.objects.create(
-            id=id,
-            org_unit=self.org_unit_1,
-            sku=self.sku,
-            value=20,
-            impact=m.StockImpacts.ADD,
-            question="question_name",
-            created_at=datetime.now(),
-            created_by=self.user,
+        self.assertRaises(
+            DjangoValidationError,
+            lambda: m.StockLedgerItem.objects.create(
+                id=id,
+                org_unit=self.org_unit_1,
+                sku=self.sku,
+                value=20,
+                impact=m.StockImpacts.ADD,
+                question="question_name",
+                created_at=datetime.now(),
+                created_by=self.user,
+            ),
         )
 
 

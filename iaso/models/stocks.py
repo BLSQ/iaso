@@ -81,10 +81,10 @@ class StockKeepingUnit(SoftDeletableModel):
 
 class StockKeepingUnitChildren(models.Model):
     parent = models.ForeignKey(
-        "StockKeepingUnit", related_name="parent", on_delete=models.CASCADE, null=False, blank=False
+        "StockKeepingUnit", related_name="children_reverse", on_delete=models.CASCADE, null=False, blank=False
     )
     child = models.ForeignKey(
-        "StockKeepingUnit", related_name="child", on_delete=models.CASCADE, null=False, blank=False
+        "StockKeepingUnit", related_name="parents", on_delete=models.CASCADE, null=False, blank=False
     )
     value = models.IntegerField()
     created_by = models.ForeignKey(

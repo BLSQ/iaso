@@ -80,7 +80,7 @@ class StockKeepingUnitSerializer(serializers.ModelSerializer):
     created_by = UserNestedSerializer()
     updated_at = TimestampField()
     updated_by = UserNestedSerializer()
-    children = StockKeepingUnitChildrenSerializer(source="parent", many=True)
+    children = StockKeepingUnitChildrenSerializer(source="children_reverse", many=True)
     deleted_at = TimestampField()
 
     class Meta:

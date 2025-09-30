@@ -80,7 +80,7 @@ class StockKeepingUnitViewSet(viewsets.ModelViewSet):
         return (
             StockKeepingUnit.objects.filter_for_user(user)
             .select_related("created_by", "updated_by")
-            .prefetch_related("projects", "org_unit_types", "forms", "parent")
+            .prefetch_related("projects", "org_unit_types", "forms", "children_reverse")
             .order_by("id")
         )
 

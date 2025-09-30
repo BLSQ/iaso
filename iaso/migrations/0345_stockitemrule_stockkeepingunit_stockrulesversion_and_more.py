@@ -259,7 +259,7 @@ class Migration(migrations.Migration):
                 (
                     "child",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="child", to="iaso.stockkeepingunit"
+                        on_delete=django.db.models.deletion.CASCADE, related_name="parents", to="iaso.stockkeepingunit"
                     ),
                 ),
                 (
@@ -275,7 +275,9 @@ class Migration(migrations.Migration):
                 (
                     "parent",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="parent", to="iaso.stockkeepingunit"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="children_reverse",
+                        to="iaso.stockkeepingunit",
                     ),
                 ),
                 (

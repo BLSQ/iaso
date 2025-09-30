@@ -5,7 +5,7 @@ from datetime import datetime
 import rest_framework.status
 
 from iaso import models as m
-from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT
+from iaso.permissions.core_permissions import CORE_STOCK_MANAGEMENT_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -19,7 +19,7 @@ class StockKeepingUnitMobileAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.account_1 = account_1 = m.Account.objects.create(name="Account 1")
         cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(
-            account_1, [CORE_STOCK_MANAGEMENT]
+            account_1, [CORE_STOCK_MANAGEMENT_PERMISSION]
         )
         cls.account_2 = account_2 = m.Account.objects.create(name="Account 2")
         cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
@@ -122,7 +122,7 @@ class StockRulesVersionMobileAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.account_1 = account_1 = m.Account.objects.create(name="Account 1")
         cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(
-            account_1, [CORE_STOCK_MANAGEMENT]
+            account_1, [CORE_STOCK_MANAGEMENT_PERMISSION]
         )
         cls.account_2 = account_2 = m.Account.objects.create(name="Account 2")
         cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", app_id="p1", account=account_1)
@@ -268,7 +268,7 @@ class StockLedgerItemMobileAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.account_1 = account_1 = m.Account.objects.create(name="Account 1")
         cls.user_with_rights, cls.anon_user, cls.user_without_rights = cls.create_base_users(
-            account_1, [CORE_STOCK_MANAGEMENT]
+            account_1, [CORE_STOCK_MANAGEMENT_PERMISSION]
         )
         cls.account_2 = account_2 = m.Account.objects.create(name="Account 2")
         cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", app_id="p1", account=account_1)

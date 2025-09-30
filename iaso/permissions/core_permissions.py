@@ -277,7 +277,7 @@ CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION = CorePermission(
     module=MODULE_DEFAULT,
     ui_group=PERMISSION_GROUP_ADMIN,
 )
-CORE_STOCK_MANAGEMENT = CorePermission(
+CORE_STOCK_MANAGEMENT_PERMISSION = CorePermission(
     codename="iaso_stock_management",
     label=_("Stock management"),
     module=MODULE_DEFAULT,

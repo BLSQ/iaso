@@ -411,13 +411,16 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
 
         # Create change requests with different requested fields.
         change_request_1 = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_name="Test 1", requested_fields=["name"]
+            org_unit=self.org_unit, new_name="Test 1", requested_fields=["new_name"]
         )
         change_request_2 = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_parent=self.org_unit, requested_fields=["parent"]
+            org_unit=self.org_unit, new_parent=self.org_unit, requested_fields=["new_parent"]
         )
         change_request_3 = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_name="Test 3", new_parent=self.org_unit, requested_fields=["name", "parent"]
+            org_unit=self.org_unit,
+            new_name="Test 3",
+            new_parent=self.org_unit,
+            requested_fields=["new_name", "new_parent"],
         )
 
         # Filter by single field.

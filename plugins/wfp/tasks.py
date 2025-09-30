@@ -8,6 +8,7 @@ from plugins.wfp.common import ETL
 from .management.commands.ethiopia.Under5 import ET_Under5
 from .management.commands.nigeria.Pbwg import NG_PBWG
 from .management.commands.nigeria.Under5 import NG_Under5
+from .management.commands.south_sudan.Dhis2 import Dhis2
 from .management.commands.south_sudan.Pbwg import PBWG
 from .management.commands.south_sudan.Under5 import Under5
 from .models import *
@@ -52,6 +53,11 @@ def etl_ssd():
     )
     MonthlyStatistics.objects.filter(account=child_account, programme_type="U5").delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
+
+    ETL().aggregating_data_to_push_to_dhis2(child_account, "U5")
+
+    Dhis2().run(entity_type_U5_code)
+
     entity_type_pbwg_code = "ssd_pbwg"
     pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
     PBWG().run(entity_type_pbwg_code)

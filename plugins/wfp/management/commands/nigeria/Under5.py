@@ -124,10 +124,10 @@ class NG_Under5:
             )
         )
 
-    def run(self, type):
+    def run(self, type, updated_beneficiaries):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities()
+        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
         pages = beneficiaries.page_range
 
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")

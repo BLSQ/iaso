@@ -37,14 +37,25 @@ class ETL:
         account = entity_type.account
         return account
 
-    def retrieve_entities(self):
+    def get_updated_entity_ids(self, updated_at):
+        entities = (
+            Instance.objects.filter(entity__entity_type__code__in=self.types)
+            .filter(updated_at__gte=updated_at)
+            .values("entity_id")
+            .distinct()
+        )
+        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
+        return list(set(beneficiary_ids))
+
+    def retrieve_entities(self,entity_ids):
         steps_id = ETL().steps_to_exclude()
-        updated_at = date(2023, 7, 10)
+        #updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code__in=self.types)
+            .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
-            .filter(updated_at__gte=updated_at)
+            #.filter(updated_at__gte=updated_at)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)

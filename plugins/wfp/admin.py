@@ -102,6 +102,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "gender",
         "admission_criteria",
         "admission_type",
+        "beneficiary_with_admission_type",
         "nutrition_programme",
         "programme_type",
         "muac_under_11_5",

@@ -156,6 +156,6 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
 
         filters = Q()
         for field in requested_fields:
-            filters |= Q(requested_fields__contains=[field]) | Q(requested_fields__contains=["new_" + field])
+            filters |= Q(requested_fields__contains=["new_" + field])
 
         return queryset.filter(filters)

@@ -7,6 +7,7 @@ import {
     useSnackQuery,
 } from 'Iaso/libs/apiHooks';
 import { getChipColors, getOtChipColors } from '../../constants/chipColors';
+import { useCurrentUser } from '../../utils/usersUtils';
 import { useCheckUserHasWriteTypePermission } from '../../utils/usersUtils';
 import { DataSource } from '../dataSources/types/dataSources';
 import { Link, PaginatedLinks } from '../links/types';
@@ -40,6 +41,8 @@ export const useOrgUnitDetailData = (
     levels: string,
     tab: string,
 ): UseOrgUnitDetailDataReturn => {
+    const { account } = useCurrentUser();
+    console.log('account', account);
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
             ['currentOrgUnit', orgUnitId],

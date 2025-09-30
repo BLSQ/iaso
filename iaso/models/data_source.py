@@ -78,6 +78,7 @@ class DataSource(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "tree_config_status_fields": self.tree_config_status_fields,
+            "projects_ids": [p.id for p in self.projects.all()],
         }
 
     def as_list(self):

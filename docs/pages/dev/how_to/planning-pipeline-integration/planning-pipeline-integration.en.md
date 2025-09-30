@@ -37,6 +37,13 @@ class Planning(SoftDeletableModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    pipeline_uuids = models.JSONField(
+        default=list, blank=True, help_text="List of OpenHexa pipeline UUIDs available for this planning"
+    )
+```
+
+**Key Fields**:
+- `pipeline_uuids`: JSON array of OpenHexa pipeline UUIDs that can be used for this planning. This allows linking specific pipelines to a planning configuration.
 ```
 
 ### Assignment Model
@@ -105,7 +112,7 @@ def lqas_assignment_pipeline(
     task_id: int,
     org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
     org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
-    org_unit_type_exceptions: List[List[int]],      # [[12098, 108033], [], []] - exceptions per level
+    org_unit_type_exceptions: List[str],            # ["12098,108033", "", ""] - exceptions per level
 ):
     """
     LQAS Assignment Pipeline
@@ -115,7 +122,7 @@ def lqas_assignment_pipeline(
         task_id: ID of the task for status updates
         org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
         org_unit_type_quantities: List of quantities to select at each level
-        org_unit_type_exceptions: List of org unit IDs to exclude at each level
+        org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
     """
 ```
 
@@ -139,12 +146,12 @@ def lqas_assignment_pipeline(
   - Total: 2 × 3 × 4 = 24 districts
 
 #### org_unit_type_exceptions
-- **Type**: `List[List[int]]`
-- **Description**: Org unit IDs to exclude from random sampling at each level
-- **Example**: `[[12098, 108033], [], []]` means:
-  - Exclude countries with IDs 12098 and 108033
-  - No region exceptions
-  - No district exceptions
+- **Type**: `List[str]`
+- **Description**: Org unit IDs to exclude from random sampling at each level. Each string contains comma-separated IDs of org units to ignore during sampling at that specific level.
+- **Example**: `["12098,108033", "", ""]` means:
+  - Exclude countries with IDs 12098 and 108033 (comma-separated in first string)
+  - No region exceptions (empty string)
+  - No district exceptions (empty string)
 
 ### Pipeline Execution Flow
 
@@ -171,6 +178,50 @@ def update_task_status(task_id, status, message, progress_value=None, end_value=
 - `ERRORED`: Pipeline failed with error
 - `KILLED`: Pipeline was terminated
 
+## OpenHexa Configuration
+
+### Configuration Parameters
+
+The OpenHexa integration requires configuration stored in the `Config` model with slug `"openhexa-config"`. The configuration includes:
+
+#### Required Parameters
+- `openhexa_url`: The GraphQL endpoint URL for OpenHexa
+- `openhexa_token`: Authentication token for OpenHexa API
+- `workspace_slug`: The workspace identifier in OpenHexa
+
+#### Optional Parameters
+- `lqas_pipeline_code`: The pipeline code used to display a custom form for LQAS sampling in the OpenHexa integration UI. This enables specialized LQAS sampling forms when available.
+
+### Configuration Example
+
+```json
+{
+    "openhexa_url": "https://openhexa.example.com/graphql/",
+    "openhexa_token": "your-api-token-here",
+    "workspace_slug": "your-workspace",
+    "lqas_pipeline_code": "lqas-sampling-pipeline"
+}
+```
+
+### Configuration Endpoint
+
+The system provides an endpoint to check OpenHexa configuration status:
+
+```http
+GET /api/openhexa/pipelines/config/
+```
+
+**Response**:
+```json
+{
+    "configured": true,
+    "lqas_pipeline_code": "lqas-sampling-pipeline"
+}
+```
+
+- `configured`: Boolean indicating if all required parameters are present
+- `lqas_pipeline_code`: Only included if present in configuration
+
 ## API Endpoints
 
 ### Pipeline Management
@@ -187,7 +238,7 @@ Content-Type: application/json
         "task_id": 456,
         "org_unit_type_sequence_identifiers": [398, 399, 400],
         "org_unit_type_quantities": [2, 3, 4],
-        "org_unit_type_exceptions": [[12098, 108033], [], []]
+        "org_unit_type_exceptions": ["12098,108033", "", ""]
     }
 }
 ```
@@ -256,6 +307,8 @@ The correct workflow for planning-pipeline integration is:
 The planning creation/edition dialog should include:
 
 1. **Pipeline Selection**: Multi-select dropdown for available pipelines (only pipeline selection, no parameters) - Only visible if OpenHexa config is present
+   - Selected pipelines are stored in the `pipeline_uuids` field as an array of UUIDs
+   - This links specific pipelines to the planning configuration
 
 ### Assignment View UI (Map Page)
 
@@ -271,7 +324,7 @@ The assignment details view (map page) should display:
    - Pipeline selection (if multiple available)
    - Org unit type hierarchy selection
    - Quantities at each level
-   - Exception org units
+   - Exception org units (comma-separated IDs to exclude per level)
 
 ### Workflow Details
 
@@ -294,7 +347,7 @@ The assignment details view (map page) should display:
 - User configures sampling parameters:
   - Org unit type hierarchy (from higher to lower level)
   - Quantities at each level
-  - Exception org units to exclude
+  - Exception org units to exclude (comma-separated IDs per level)
 - User clicks "Launch Pipeline" to execute
 
 #### Step 5: Pipeline Execution

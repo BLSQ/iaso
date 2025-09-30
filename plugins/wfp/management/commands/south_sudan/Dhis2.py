@@ -1,9 +1,6 @@
 import os
 
-import requests
-
 from dhis2 import Api
-from requests.auth import HTTPBasicAuth
 
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *

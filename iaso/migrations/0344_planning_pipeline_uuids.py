@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0343_importgpkg_default_valid'),
+        ("iaso", "0343_importgpkg_default_valid"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='planning',
-            name='pipeline_uuids',
-            field=models.JSONField(blank=True, default=list, help_text='List of OpenHexa pipeline UUIDs available for this planning'),
+            model_name="planning",
+            name="pipeline_uuids",
+            field=models.JSONField(
+                blank=True, default=list, help_text="List of OpenHexa pipeline UUIDs available for this planning"
+            ),
         ),
     ]

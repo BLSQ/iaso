@@ -120,7 +120,7 @@ const MESSAGES = defineMessages({
     },
     pipeline: {
         defaultMessage: 'Pipeline',
-        id: 'iaso.openHexa.label.pipeline',
+        id: 'iaso.assignment.pipeline',
     },
     noParameters: {
         defaultMessage: 'No parameters',

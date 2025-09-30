@@ -755,6 +755,7 @@
     "iaso.label.published": "Publié",
     "iaso.label.publishingStatus": "Statut de publication",
     "iaso.label.pushGpsToOrgUnits": "Transférer les GPS des soumissions vers les unités d'org.",
+    "iaso.label.quantityShort": "Qté",
     "iaso.label.quarter": "Trimestre",
     "iaso.label.quarter_nov": "Trimestre Novembre",
     "iaso.label.rawHtml": "Simple HTML",

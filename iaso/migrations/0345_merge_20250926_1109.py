@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0344_alter_corepermissionsupport_options'),
-        ('iaso', '0344_planning_pipeline_uuids'),
+        ("iaso", "0344_alter_corepermissionsupport_options"),
+        ("iaso", "0344_planning_pipeline_uuids"),
     ]
 
-    operations = [
-    ]
+    operations = []

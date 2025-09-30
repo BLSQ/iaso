@@ -755,6 +755,7 @@
     "iaso.label.published": "Published",
     "iaso.label.publishingStatus": "Publishing status",
     "iaso.label.pushGpsToOrgUnits": "Push GPS from submissions to Org units",
+    "iaso.label.quantityShort": "Qty",
     "iaso.label.quarter": "Quarter",
     "iaso.label.quarter_nov": "Quarter Nov",
     "iaso.label.rawHtml": "Raw html",

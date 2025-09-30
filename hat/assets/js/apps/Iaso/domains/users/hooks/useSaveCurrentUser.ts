@@ -1,12 +1,12 @@
-import { UseMutationResult } from 'react-query';
-import { patchRequest } from '../../../libs/Api';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { UseMutationResult } from "react-query";
+import { patchRequest } from "Iaso/libs/Api";
+import { useSnackMutation } from "Iaso/libs/apiHooks";
 
 export const useSaveCurrentUser = (
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
 ): UseMutationResult<any> =>
     useSnackMutation({
         mutationFn: body => patchRequest(`/api/profiles/me/`, body),
-        showSucessSnackBar,
+        showSuccessSnackBar: showSuccessSnackBar,
         invalidateQueryKey: 'usersHistoryList',
     });

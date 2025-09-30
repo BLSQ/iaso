@@ -814,7 +814,7 @@ class StockLedgerItemAdmin(admin.ModelAdmin):
 
 @admin.register(StockRulesVersion)
 class StockRuleVersionAdmin(admin.ModelAdmin):
-    fields = ("account", "name", "status", "created_at", "updated_at", "created_by", "updated_by")
+    fields = ("account", "name", "status", "created_at", "updated_at", "created_by", "updated_by", "deleted_at")
     readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
     list_display = ("account", "name", "status")
     list_filter = ("account", "status")

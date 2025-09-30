@@ -877,7 +877,7 @@ class PlanningTestCase(APITestCase):
     def test_planning_api_create_with_pipeline_uuids(self):
         """Test creating planning via API with pipeline_uuids."""
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
 
@@ -905,7 +905,7 @@ class PlanningTestCase(APITestCase):
     def test_planning_api_patch_with_pipeline_uuids(self):
         """Test updating planning via API with pipeline_uuids."""
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
 

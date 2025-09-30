@@ -91,7 +91,15 @@ const VersionFilters: FunctionComponent<VersionProps> = ({ params }) => {
                     options={status ?? []}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3} container alignItems="center">
+            <Grid
+                item
+                xs={6}
+                sm={6}
+                md={6}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 <Button
                     data-test="search-button"
                     disabled={textSearchError || !filtersUpdated}
@@ -182,7 +190,15 @@ const RulesFilters: FunctionComponent<RulesProps> = ({ params }) => {
                     options={allForms ?? []}
                 />
             </Grid>
-            <Grid item xs={12} sm={6} md={3} container alignItems="center">
+            <Grid
+                item
+                xs={6}
+                sm={6}
+                md={6}
+                container
+                justifyContent="flex-end"
+                alignItems="center"
+            >
                 <Button
                     data-test="search-button"
                     disabled={

@@ -19,11 +19,7 @@ import { Params } from 'Iaso/domains/stock/types/filters';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useColumns, baseUrl } from './config';
-import useGetPublishedStockRulesVersion, {
-    useDeleteSKU,
-    useGetStockKeepingUnitPaginated,
-    useSaveSku,
-} from './hooks/requests';
+import { useGetStockKeepingUnitPaginated, useSaveSku } from './hooks/requests';
 import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
@@ -31,25 +27,17 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const StockKeepingUnits: FunctionComponent = () => {
-    // @ts-ignore
-    const params = useParamsObject(baseUrl) as Params;
+    const params = useParamsObject(baseUrl) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
 
-    const { data: publishedVersion } = useGetPublishedStockRulesVersion();
     const { data, isFetching } = useGetStockKeepingUnitPaginated(params);
-    const { mutate: deleteSku, isLoading: deleting } = useDeleteSKU();
     const { mutate: saveSku, isLoading: saving } = useSaveSku();
-    const columns = useColumns({
-        publishedVersion,
-        redirectTo,
-        deleteSku,
-        saveSku,
-    });
+    const columns = useColumns();
     return (
         <>
-            {isFetching || deleting || (saving && <LoadingSpinner />)}
+            {isFetching || (saving && <LoadingSpinner />)}
             <TopBar
                 title={formatMessage(MESSAGES.title)}
                 displayBackButton={false}

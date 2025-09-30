@@ -14,7 +14,7 @@ const launchTask = async (body: any, pipelineId: string, version: string) => {
 export const useLaunchTask = (
     pipelineId?: string,
     version?: string,
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
 ): UseMutationResult<TaskApiResponse<any>, DjangoError, any> => {
     return useSnackMutation({
         mutationFn: (body: any) => {
@@ -23,7 +23,7 @@ export const useLaunchTask = (
             }
             return launchTask(body, pipelineId, version);
         },
-        showSucessSnackBar,
+        showSuccessSnackBar,
         invalidateQueryKey: 'pipeline',
     });
 };

@@ -332,10 +332,9 @@ class PlanningSerializer(serializers.ModelSerializer):
             validation_errors["team"] = "planningAndTeams"
 
         forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
-        if forms:
-            for form in forms:
-                if form not in project.forms.all():
-                    validation_errors["forms"] = "planningAndForms"
+        project_forms = project.forms.all()
+        if forms and not all(f in project_forms for f in forms):
+            validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:

@@ -26,47 +26,41 @@ export const usePipelineParameters = (
 ) => {
     const { formatMessage } = useSafeIntl();
 
+    // Get default value for a parameter based on its type
+    const getDefaultValueForParameter = useCallback((parameter: Parameter) => {
+        if (parameter.multiple) {
+            return parameter.default || [];
+        }
+
+        switch (parameter.type) {
+            case 'str':
+                return parameter.default || '';
+            case 'bool':
+                return parameter.default || false;
+            case 'int':
+                return parameter.default || 0;
+            case 'float':
+                return parameter.default || 0.0;
+            case 'dict':
+                return parameter.default || {};
+            default:
+                return parameter.default || null;
+        }
+    }, []);
+
     // Initialize parameter values when pipeline data is loaded
     useEffect(() => {
         if (pipeline?.currentVersion?.parameters) {
             const initialValues: ParameterValues = {};
             pipeline.currentVersion.parameters.forEach(
                 (parameter: Parameter) => {
-                    // Handle multiple parameters (arrays)
-                    if (parameter.multiple) {
-                        initialValues[parameter.code] = parameter.default || [];
-                    } else {
-                        switch (parameter.type) {
-                            case 'str':
-                                initialValues[parameter.code] =
-                                    parameter.default || '';
-                                break;
-                            case 'bool':
-                                initialValues[parameter.code] =
-                                    parameter.default || false;
-                                break;
-                            case 'int':
-                                initialValues[parameter.code] =
-                                    parameter.default || 0;
-                                break;
-                            case 'float':
-                                initialValues[parameter.code] =
-                                    parameter.default || 0.0;
-                                break;
-                            case 'dict':
-                                initialValues[parameter.code] =
-                                    parameter.default || {};
-                                break;
-                            default:
-                                initialValues[parameter.code] =
-                                    parameter.default || null;
-                        }
-                    }
+                    initialValues[parameter.code] =
+                        getDefaultValueForParameter(parameter);
                 },
             );
             setParameterValues?.(initialValues);
         }
-    }, [pipeline, setParameterValues]);
+    }, [pipeline, setParameterValues, getDefaultValueForParameter]);
 
     // Handle parameter value changes
     const handleParameterChange = useCallback(
@@ -120,8 +114,6 @@ export const usePipelineParameters = (
     const renderParameterInput = useCallback(
         (parameter: Parameter) => {
             const currentValue = parameterValues?.[parameter.code];
-
-            // Handle multiple parameters (arrays)
             if (parameter.multiple) {
                 return (
                     <InputComponent

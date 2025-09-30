@@ -59,7 +59,6 @@ export const LQASForm: FunctionComponent<Props> = ({
     parameterValues,
     handleParameterChange,
 }) => {
-    // console.log('parameterValues', parameterValues);
     useEffect(() => {
         if (
             parameterValues &&

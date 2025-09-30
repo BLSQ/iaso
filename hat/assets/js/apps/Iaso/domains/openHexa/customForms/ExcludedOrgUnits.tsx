@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetOrgUnitsByOrgUnitTypeId } from 'Iaso/domains/assignments/hooks/requests/useGetOrgUnits';
 import { Planning } from 'Iaso/domains/assignments/types/planning';
@@ -50,6 +50,14 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
             parameterValues?.org_unit_type_exceptions,
         ],
     );
+    const options = useMemo(
+        () =>
+            orgUnits?.map(ou => ({
+                label: ou.name,
+                value: ou.id,
+            })),
+        [orgUnits],
+    );
     return (
         <InputComponent
             type="select"
@@ -60,10 +68,7 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
             keyValue="orgUnitId"
             value={selectedOrgUnitIds}
             loading={isFetchingOrgUnits}
-            options={orgUnits?.map(ou => ({
-                label: ou.name,
-                value: ou.id,
-            }))}
+            options={options}
             onChange={(_, value) => {
                 handleExcludedOrgUnitsChange(value);
             }}

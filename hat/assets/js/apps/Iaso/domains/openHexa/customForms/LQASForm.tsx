@@ -10,10 +10,33 @@ import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { SxStyles } from 'Iaso/types/general';
 import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
 import { Level } from './Level';
 
+const styles: SxStyles = {
+    paper: {
+        backgroundColor: grey[200],
+        p: 2,
+        borderRadius: 2,
+        mt: 2,
+        elevation: 2,
+    },
+    subPaper: {
+        backgroundColor: 'white',
+        p: 2,
+        borderRadius: 2,
+        mt: 2,
+        elevation: 2,
+    },
+    button: {
+        mt: 2,
+    },
+    icon: {
+        mr: 1,
+    },
+};
 type Criteria = 'RURAL/URBAN' | 'URBAN' | 'RURAL';
 export type ParameterValues =
     | {
@@ -181,26 +204,12 @@ export const LQASForm: FunctionComponent<Props> = ({
     const isLastLevelUndefined = levels[levels.length - 1] === undefined;
 
     return (
-        <Paper
-            sx={{
-                backgroundColor: grey[200],
-                p: 2,
-                borderRadius: 2,
-                mt: 2,
-                elevation: 2,
-            }}
-        >
+        <Paper sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {
                 return (
                     <Paper
                         key={orgUnitTypeId || 'last_level'}
-                        sx={{
-                            backgroundColor: 'white',
-                            p: 2,
-                            borderRadius: 2,
-                            mt: 2,
-                            elevation: 2,
-                        }}
+                        sx={styles.subPaper}
                     >
                         <Level
                             orgUnitTypes={orgUnitTypes || []}
@@ -229,12 +238,10 @@ export const LQASForm: FunctionComponent<Props> = ({
                         onClick={handleAddLevel}
                         variant="contained"
                         color="primary"
-                        sx={{
-                            mt: 2,
-                        }}
+                        sx={styles.button}
                         disabled={isLastLevelUndefined}
                     >
-                        <PlusIcon sx={{ mr: 1 }} />
+                        <PlusIcon sx={styles.icon} />
                         {formatMessage(MESSAGES.addLevel)}
                     </Button>
                 </Box>

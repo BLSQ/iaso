@@ -7,12 +7,27 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
 import { useGetCriteriaOptions } from './constants';
 import { ExcludedOrgUnits } from './ExcludedOrgUnits';
 import { ParameterValues } from './LQASForm';
+
+const styles: SxStyles = {
+    collapse: {
+        p: 2,
+        border: `1px solid ${grey[500]}`,
+        borderRadius: 2,
+        mt: 1,
+        ml: 1,
+        mr: 1,
+    },
+    grid: {
+        p: 0,
+    },
+};
 
 type Props = {
     parameterValues?: ParameterValues;
@@ -192,17 +207,8 @@ export const Level: FunctionComponent<Props> = ({
                 </Grid>
             </Grid>
             <Collapse in={isExpanded}>
-                <Box
-                    sx={{
-                        p: 2,
-                        border: `1px solid ${grey[500]}`,
-                        borderRadius: 2,
-                        mt: 1,
-                        ml: 1,
-                        mr: 1,
-                    }}
-                >
-                    <Grid container spacing={1.2} sx={{ p: 0 }}>
+                <Box sx={styles.collapse}>
+                    <Grid container spacing={1.2} sx={styles.grid}>
                         <Grid item xs={8}>
                             <InputComponent
                                 withMarginTop={false}

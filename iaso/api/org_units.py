@@ -141,6 +141,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         - onlyDirectChildren: Filter direct children only ("true", "false")
         - orgUnitParentId: Filter by parent ID in hierarchy
         - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - excludedOrgUnitParentIds: Filter by excluded parent IDs (comma-separated)
         - linkedTo: Filter by linked org unit
         - linkValidated: Filter by link validation status
         - linkSource: Filter by link source

@@ -22,10 +22,18 @@ export const ExcludedOrgUnits: FunctionComponent<Props> = ({
     parameterValues,
     planning,
 }) => {
+    const excludedOrgUnitIds =
+        index > 0
+            ? parameterValues?.org_unit_type_exceptions
+                  ?.slice(0, index)
+                  ?.filter(e => Boolean(e))
+                  .join(',')
+            : undefined;
     const { data: orgUnits, isFetching: isFetchingOrgUnits } =
         useGetOrgUnitsByOrgUnitTypeId({
             orgUnitTypeId,
             projectId: planning.project,
+            excludedOrgUnitParentIds: excludedOrgUnitIds || undefined,
         });
 
     const handleExcludedOrgUnitsChange = useCallback(

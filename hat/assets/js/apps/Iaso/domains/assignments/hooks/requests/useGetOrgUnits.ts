@@ -160,20 +160,28 @@ type Props = {
 type PropsByOrgUnitTypeId = {
     orgUnitTypeId?: number;
     projectId?: number;
+    excludedOrgUnitParentIds?: string;
 };
 
 export const useGetOrgUnitsByOrgUnitTypeId = ({
     orgUnitTypeId,
     projectId,
+    excludedOrgUnitParentIds,
 }: PropsByOrgUnitTypeId): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({
-        queryKey: ['orgUnitsByType', orgUnitTypeId, projectId],
+        queryKey: [
+            'orgUnitsByType',
+            orgUnitTypeId,
+            projectId,
+            excludedOrgUnitParentIds,
+        ],
         queryFn: () =>
             getRequest(
                 makeUrlWithParams('/api/orgunits/', {
                     orgUnitTypeId,
                     project: projectId,
                     defaultVersion: 'true',
+                    excludedOrgUnitParentIds,
                 }),
             ),
         options: {

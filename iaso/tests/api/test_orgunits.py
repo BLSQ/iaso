@@ -2416,3 +2416,105 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
         self.assertEqual(response.status_code, 200)
+
+    def test_org_unit_excluded_parent_ids_filter(self):
+        """Test that excludedOrgUnitParentIds parameter excludes org units in the hierarchy of specified parent IDs"""
+        self.client.force_authenticate(self.yoda)
+
+        # First, get all org units to see the baseline
+        response = self.client.get("/api/orgunits/?limit=100")
+        all_org_units = response.json()["orgunits"]
+        all_count = response.json()["count"]
+
+        # Find an org unit that has children (to test hierarchy exclusion)
+        # We'll look for an org unit that appears as a parent_id in other org units
+        parent_ids = set(ou.get("parent_id") for ou in all_org_units if ou.get("parent_id") is not None)
+        self.assertGreater(len(parent_ids), 0, "Should have org units with parents for this test")
+
+        # Get a parent ID to exclude
+        parent_id_to_exclude = list(parent_ids)[0]
+
+        # Count how many org units are in the hierarchy of this parent (including the parent itself and all descendants)
+        # This includes direct children, grandchildren, etc.
+        hierarchy_org_units = []
+        for ou in all_org_units:
+            # Check if this org unit is the parent itself or has the parent in its path
+            if (
+                ou["id"] == parent_id_to_exclude
+                or ou.get("parent_id") == parent_id_to_exclude
+                or any(
+                    ou.get("parent_id") == child_id
+                    for child_id in [
+                        child["id"] for child in all_org_units if child.get("parent_id") == parent_id_to_exclude
+                    ]
+                )
+            ):
+                hierarchy_org_units.append(ou)
+
+        expected_excluded_count = len(hierarchy_org_units)
+
+        # Test the exclusion filter
+        response = self.client.get(f"/api/orgunits/?limit=100&excludedOrgUnitParentIds={parent_id_to_exclude}")
+        filtered_org_units = response.json()["orgunits"]
+        filtered_count = response.json()["count"]
+
+        # Verify that the count is reduced by the expected amount
+        self.assertEqual(filtered_count, all_count - expected_excluded_count)
+
+        # Verify that none of the filtered org units are in the excluded hierarchy
+        excluded_ids = {ou["id"] for ou in hierarchy_org_units}
+        for ou in filtered_org_units:
+            self.assertNotIn(ou["id"], excluded_ids)
+
+    def test_org_unit_excluded_multiple_parent_ids_filter(self):
+        """Test that excludedOrgUnitParentIds parameter works with multiple comma-separated parent IDs (hierarchy exclusion)"""
+        self.client.force_authenticate(self.yoda)
+
+        # First, get all org units to see the baseline
+        response = self.client.get("/api/orgunits/?limit=100")
+        all_org_units = response.json()["orgunits"]
+        all_count = response.json()["count"]
+
+        # Find parent IDs that have children
+        parent_ids = set(ou.get("parent_id") for ou in all_org_units if ou.get("parent_id") is not None)
+        self.assertGreaterEqual(len(parent_ids), 1, "Should have at least 1 org unit with parents for this test")
+
+        # Get up to 2 different parent IDs to exclude (or use the same one twice if only one exists)
+        parent_ids_to_exclude = list(parent_ids)[:2]
+        if len(parent_ids_to_exclude) == 1:
+            parent_ids_to_exclude = [parent_ids_to_exclude[0], parent_ids_to_exclude[0]]
+
+        # Count how many org units are in the hierarchy of these parents
+        hierarchy_org_units = []
+        for ou in all_org_units:
+            # Check if this org unit is in the hierarchy of any of the excluded parents
+            is_in_hierarchy = False
+            for parent_id in parent_ids_to_exclude:
+                if (
+                    ou["id"] == parent_id
+                    or ou.get("parent_id") == parent_id
+                    or any(
+                        ou.get("parent_id") == child_id
+                        for child_id in [child["id"] for child in all_org_units if child.get("parent_id") == parent_id]
+                    )
+                ):
+                    is_in_hierarchy = True
+                    break
+            if is_in_hierarchy:
+                hierarchy_org_units.append(ou)
+
+        expected_excluded_count = len(hierarchy_org_units)
+
+        # Test the exclusion filter with multiple parent IDs
+        excluded_ids_param = ",".join(map(str, parent_ids_to_exclude))
+        response = self.client.get(f"/api/orgunits/?limit=100&excludedOrgUnitParentIds={excluded_ids_param}")
+        filtered_org_units = response.json()["orgunits"]
+        filtered_count = response.json()["count"]
+
+        # Verify that the count is reduced by the expected amount
+        self.assertEqual(filtered_count, all_count - expected_excluded_count)
+
+        # Verify that none of the filtered org units are in the excluded hierarchies
+        excluded_ids = {ou["id"] for ou in hierarchy_org_units}
+        for ou in filtered_org_units:
+            self.assertNotIn(ou["id"], excluded_ids)

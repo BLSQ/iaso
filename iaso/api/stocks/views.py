@@ -28,6 +28,7 @@ from iaso.api.stocks.serializers import (
     StockKeepingUnitWriteSerializer,
     StockLedgerItemSerializer,
     StockLedgerItemWriteSerializer,
+    StockRulesVersionListSerializer,
     StockRulesVersionSerializer,
     StockRulesVersionWriteSerializer,
 )
@@ -250,7 +251,8 @@ class StockItemRuleViewSet(viewsets.ModelViewSet):
         "id",
         "form__name",
         "sku__name",
-        "impactquestion",
+        "impact",
+        "question",
         "submission__id",
         "created_at",
         "created_by__username",
@@ -328,7 +330,9 @@ class StockRulesVersionViewSet(viewsets.ModelViewSet):
     lookup_url_kwarg = "version_id"
 
     def get_serializer_class(self):
-        if self.action in ["list", "retrieve"]:
+        if self.action == "list":
+            return StockRulesVersionListSerializer
+        if self.action == "retrieve":
             return StockRulesVersionSerializer
 
         return StockRulesVersionWriteSerializer
@@ -339,7 +343,7 @@ class StockRulesVersionViewSet(viewsets.ModelViewSet):
             StockRulesVersion.objects.filter_for_user(user)
             .select_related("created_by", "updated_by")
             .prefetch_related("rules", "rules__sku", "rules__form", "rules__created_by", "rules__updated_by")
-            .order_by("id")
+            .order_by("-id")
         )
 
     def get_permissions(self):

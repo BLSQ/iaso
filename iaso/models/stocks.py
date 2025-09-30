@@ -26,7 +26,7 @@ class StockKeepingUnitQuerySet(QuerySet):
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
-        return self.filter(account=profile.account)
+        return self.filter(account=profile.account).filter(deleted_at=None)
 
     def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)
@@ -36,7 +36,7 @@ class StockKeepingUnitQuerySet(QuerySet):
         return self.filter(
             account=project.account,
             projects__in=[project],
-        )
+        ).filter(deleted_at=None)
 
 
 def validate_precision(value):
@@ -228,7 +228,7 @@ class StockRulesVersionQuerySet(QuerySet):
             raise UserNotAuthError("User not Authenticated")
 
         profile = user.iaso_profile
-        return self.filter(account=profile.account)
+        return self.filter(account=profile.account).filter(deleted_at=None)
 
     def filter_for_user_and_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: str):
         project = Project.objects.get_for_user_and_app_id(user, app_id)

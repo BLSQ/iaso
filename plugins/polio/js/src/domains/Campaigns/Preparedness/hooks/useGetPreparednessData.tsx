@@ -100,7 +100,7 @@ export const useGeneratePreparednessSheet = (
                     round_number: roundNumber,
                 },
             ),
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
         options: { onSuccess },
     });
 };

@@ -22,6 +22,8 @@ class StockKeepingUnitListFilter(django_filters.rest_framework.FilterSet):
     created_by = django_filters.CharFilter(
         method="filter_created_by", label=_("Created by - Users IDs (comma-separated)")
     )
+    name = django_filters.CharFilter(lookup_expr="icontains")
+    short_name = django_filters.CharFilter(lookup_expr="icontains")
 
     class Meta:
         model = StockKeepingUnit
@@ -74,7 +76,7 @@ class StockItemRuleListFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = StockItemRule
-        fields = ["impact", "form_id", "sku_id", "question"]
+        fields = ["impact", "form_id", "sku_id", "question", "version_id"]
 
     @staticmethod
     def filter_skus(queryset, name, value):
@@ -83,6 +85,8 @@ class StockItemRuleListFilter(django_filters.rest_framework.FilterSet):
 
 
 class StockRulesVersionListFilter(django_filters.rest_framework.FilterSet):
+    name = django_filters.CharFilter(lookup_expr="icontains")
+
     class Meta:
         model = StockRulesVersion
         fields = ["name", "status"]

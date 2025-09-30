@@ -84,12 +84,14 @@ class StockKeepingUnitSerializerTestCase(TestCase):
                         {
                             "id": self.project_1.pk,
                             "name": "Project 1",
+                            "color": "#1976D2",
                         }
                     ),
                     collections.OrderedDict(
                         {
                             "id": self.project_2.pk,
                             "name": "Project 2",
+                            "color": "#1976D2",
                         },
                     ),
                 ],

@@ -188,8 +188,7 @@ class StockKeepingUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, rest_framework.status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(f"{SKU_URL}{self.sku.pk}/")
-        self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
-        self.assertIsNotNone(response.data["deleted_at"])
+        self.assertJSONResponse(response, rest_framework.status.HTTP_404_NOT_FOUND)
         self.assertEqual(m.StockKeepingUnit.objects.filter(deleted_at=None).count(), 1)
 
 
@@ -935,8 +934,7 @@ class StockRulesVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, rest_framework.status.HTTP_204_NO_CONTENT)
 
         response = self.client.get(f"{RULES_VERSION_URL}{self.version_1.pk}/")
-        self.assertJSONResponse(response, rest_framework.status.HTTP_200_OK)
-        self.assertIsNotNone(response.json()["deleted_at"])
+        self.assertJSONResponse(response, rest_framework.status.HTTP_404_NOT_FOUND)
         self.assertEqual(m.StockRulesVersion.objects.filter(deleted_at=None).count(), 1)
 
     def test_copy_without_rights(self):

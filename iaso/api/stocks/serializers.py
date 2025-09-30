@@ -40,7 +40,7 @@ class StockKeepingUnitChildrenSerializer(serializers.ModelSerializer):
 class ProjectNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
-        fields = ["id", "name"]
+        fields = ["id", "name", "color"]
         ref_name = "ProjectNestedSerializerForStockKeepingUnit"
 
 
@@ -354,6 +354,28 @@ class StockItemRuleUpdateSerializer(serializers.ModelSerializer):
             "impact",
             "order",
         ]
+
+
+class StockRulesVersionListSerializer(serializers.ModelSerializer):
+    created_at = TimestampField()
+    created_by = UserNestedSerializer()
+    updated_at = TimestampField()
+    updated_by = UserNestedSerializer()
+    deleted_at = TimestampField()
+
+    class Meta:
+        model = StockRulesVersion
+        fields = [
+            "id",
+            "name",
+            "status",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+            "deleted_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "created_by", "updated_by", "deleted_at"]
 
 
 class StockRulesVersionSerializer(serializers.ModelSerializer):

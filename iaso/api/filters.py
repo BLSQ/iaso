@@ -1,5 +1,9 @@
 import django_filters
 
+from django.contrib.auth import get_user_model
+
+from iaso.models import Profile
+
 
 def get_users_for_user(user):
     return get_user_model().objects.filter(iaso_profile__in=Profile.objects.filter(account=user.iaso_profile.account))

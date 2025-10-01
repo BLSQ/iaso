@@ -1,5 +1,3 @@
-import uuid
-
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -290,21 +288,7 @@ class PlanningSerializer(serializers.ModelSerializer):
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
-
-    def validate_pipeline_uuids(self, value):
-        """Validate that pipeline_uuids contains valid UUIDs."""
-        if not isinstance(value, list):
-            raise serializers.ValidationError("pipeline_uuids must be a list")
-
-        for uuid_str in value:
-            if not isinstance(uuid_str, str):
-                raise serializers.ValidationError("Each pipeline UUID must be a string")
-            try:
-                uuid.UUID(uuid_str)
-            except ValueError:
-                raise serializers.ValidationError(f"Invalid UUID format: {uuid_str}")
-
-        return value
+    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)

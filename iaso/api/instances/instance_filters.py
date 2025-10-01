@@ -39,8 +39,10 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
 
     get_beginning_of_day(req.get(query.DATE_FROM, None), query.DATE_FROM)
     get_end_of_day(req.get(query.DATE_TO, None), query.DATE_TO)
+
     get_beginning_of_day(req.get(query.MODIFICATION_DATE_FROM, None), query.MODIFICATION_DATE_FROM)
-    get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
+    get_end_of_day(req.get(query.MODIFICATION_DATE_TO, None), query.MODIFICATION_DATE_TO)
+
     get_beginning_of_day(req.get(query.SENT_DATE_FROM, None), query.SENT_DATE_FROM)
     get_end_of_day(req.get(query.SENT_DATE_TO, None), query.SENT_DATE_TO)
 

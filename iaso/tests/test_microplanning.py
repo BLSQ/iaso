@@ -1,3 +1,5 @@
+import uuid
+
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -793,7 +795,6 @@ class PlanningTestCase(APITestCase):
 
     def test_planning_serializer_with_pipeline_uuids(self):
         """Test PlanningSerializer with pipeline_uuids field."""
-        from iaso.api.microplanning import PlanningSerializer
 
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
@@ -813,11 +814,13 @@ class PlanningTestCase(APITestCase):
         )
         self.assertTrue(serializer.is_valid(), serializer.errors)
         planning = serializer.save()
-        self.assertEqual(planning.pipeline_uuids, valid_uuids)
+
+        # DRF UUIDField converts strings to UUID objects, so we expect UUID objects
+        expected_uuids = [uuid.UUID(uuid_str) for uuid_str in valid_uuids]
+        self.assertEqual(planning.pipeline_uuids, expected_uuids)
 
     def test_planning_serializer_invalid_pipeline_uuids(self):
         """Test PlanningSerializer validation with invalid pipeline_uuids."""
-        from iaso.api.microplanning import PlanningSerializer
 
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)
@@ -839,7 +842,6 @@ class PlanningTestCase(APITestCase):
 
     def test_planning_serializer_pipeline_uuids_not_list(self):
         """Test PlanningSerializer validation when pipeline_uuids is not a list."""
-        from iaso.api.microplanning import PlanningSerializer
 
         user = User.objects.get(username="test")
         request = mock.Mock(user=user)

@@ -49,13 +49,11 @@ class ETL:
 
     def retrieve_entities(self,entity_ids):
         steps_id = ETL().steps_to_exclude()
-        #updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code__in=self.types)
             .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
-            #.filter(updated_at__gte=updated_at)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)

@@ -486,6 +486,7 @@ class OrgUnit(TreeModel):
             "code": self.code,
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
+            "source_projects_ids": [project.id for project in self.version.data_source.projects.all()],
             "source_ref": self.source_ref,
             "source_url": (
                 self.version.data_source.credentials.url

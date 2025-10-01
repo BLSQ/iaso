@@ -53,6 +53,14 @@ export const useOrgUnitDetailData = (
                 onSuccess: ou => setCurrentOrgUnit(ou),
             },
         );
+    const projectsIds: number[] | undefined = isNewOrgunit
+        ? account?.default_version?.data_source?.projects_ids
+        : originalOrgUnit?.source_projects_ids;
+
+    const orgunitTypeApiUrl =
+        projectsIds && projectsIds.length > 0
+            ? `/api/v2/orgunittypes/?project_ids=${projectsIds?.join(',')}`
+            : '/api/v2/orgunittypes/';
     let groupsDataSourceQueryParams;
     if (originalOrgUnit?.version_id) {
         groupsDataSourceQueryParams = `?version=${originalOrgUnit.version_id}`;
@@ -126,12 +134,14 @@ export const useOrgUnitDetailData = (
             },
         },
         {
-            queryKey: ['orgUnitTypes'],
-            queryFn: () => getRequest('/api/v2/orgunittypes/'),
+            queryKey: ['orgUnitTypes', orgunitTypeApiUrl],
+            queryFn: () => getRequest(orgunitTypeApiUrl),
             snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
             options: {
                 select: onSelectOrgUnitTypes,
-                enabled: tab === 'map' || tab === 'children' || tab === 'infos',
+                enabled:
+                    (tab === 'map' || tab === 'children' || tab === 'infos') &&
+                    (isNewOrgunit || !isFetchingDetail),
                 ...cacheOptions,
             },
         },

@@ -36,6 +36,7 @@ export type DataSource = {
         org_units_count: number;
     }[];
     tree_config_status_fields: OrgUnitStatus[];
+    projects_ids: number[];
 };
 
 export type DefaultVersion = {

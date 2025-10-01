@@ -58,6 +58,7 @@ export type OrgUnit = {
     code?: string;
     sub_source: string;
     sub_source_id: string | undefined;
+    source_projects_ids: number[];
     source_ref: string;
     source_url: null;
     parent_id: number;

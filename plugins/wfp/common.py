@@ -47,7 +47,7 @@ class ETL:
         beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
         return list(set(beneficiary_ids))
 
-    def retrieve_entities(self,entity_ids):
+    def retrieve_entities(self, entity_ids):
         steps_id = ETL().steps_to_exclude()
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code__in=self.types)

@@ -109,6 +109,14 @@ export const usePipelineParameters = (
         },
         [handleParameterChange],
     );
+    const geOptions = useCallback((parameter: Parameter) => {
+        return (
+            parameter?.choices?.map(choice => ({
+                label: `${choice}`,
+                value: choice,
+            })) || []
+        );
+    }, []);
 
     // Render parameter input based on type
     const renderParameterInput = useCallback(
@@ -122,12 +130,7 @@ export const usePipelineParameters = (
                         labelString={parameter.name}
                         value={currentValue || []}
                         required={parameter.required}
-                        options={
-                            parameter?.choices?.map(choice => ({
-                                label: `${choice}`,
-                                value: choice,
-                            })) || []
-                        }
+                        options={geOptions(parameter)}
                         multi={true}
                         placeholder={`Select ${parameter.name}`}
                         onChange={(_, value) =>

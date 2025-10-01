@@ -11,8 +11,14 @@ import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { SxStyles } from 'Iaso/types/general';
+import {
+    addToArray,
+    removeFromArray,
+    updateArrayAtIndex,
+} from 'Iaso/utils/arrays';
 import { Planning } from '../../assignments/types/planning';
 import { MESSAGES } from '../messages';
+import { Criteria } from '../types/custom';
 import { Level } from './Level';
 
 const styles: SxStyles = {
@@ -37,7 +43,6 @@ const styles: SxStyles = {
         mr: 1,
     },
 };
-type Criteria = 'RURAL/URBAN' | 'URBAN' | 'RURAL';
 export type ParameterValues =
     | {
           org_unit_type_quantities?: number[];
@@ -61,18 +66,17 @@ export const LQASForm: FunctionComponent<Props> = ({
 }) => {
     useEffect(() => {
         if (
-            parameterValues &&
             parameterValues?.org_unit_type_sequence_identifiers?.length &&
             parameterValues?.org_unit_type_sequence_identifiers?.length > 0
         ) {
             const allLevelsFilled =
-                parameterValues?.org_unit_type_sequence_identifiers?.every(
+                parameterValues.org_unit_type_sequence_identifiers?.every(
                     (level, index) => {
                         return (
                             level !== undefined &&
-                            parameterValues?.org_unit_type_criteria?.[index] !==
+                            parameterValues.org_unit_type_criteria?.[index] !==
                                 undefined &&
-                            parameterValues?.org_unit_type_quantities?.[
+                            parameterValues.org_unit_type_quantities?.[
                                 index
                             ] !== undefined
                         );
@@ -89,32 +93,30 @@ export const LQASForm: FunctionComponent<Props> = ({
         useGetOrgUnitTypesDropdownOptions({
             projectId: planning.project,
         });
-    const updateArrayAtIndex = useCallback(
+
+    const update = useCallback(
         (arrayName: string, index: number, value: any) => {
             const currentArray = parameterValues?.[arrayName] || [];
-            const updatedArray = [...currentArray];
-            updatedArray[index] = value;
+            const updatedArray = updateArrayAtIndex(index, value, currentArray);
             handleParameterChange(arrayName, updatedArray);
         },
         [parameterValues, handleParameterChange],
     );
-
-    const addToArray = useCallback(
+    const add = useCallback(
         (arrayName: string, value: any = undefined) => {
             const currentArray = parameterValues?.[arrayName] || [];
-            handleParameterChange(arrayName, [...currentArray, value]);
+            const updatedArray = addToArray(value, currentArray);
+            handleParameterChange(arrayName, updatedArray);
             setExpandedLevels([...expandedLevels, true]);
         },
         [parameterValues, handleParameterChange, expandedLevels],
     );
 
-    const removeFromArray = useCallback(
+    const remove = useCallback(
         (arrayName: string, index: number) => {
             const currentArray = parameterValues?.[arrayName] || [];
-            const updatedArray = [...currentArray];
-            updatedArray.splice(index, 1);
-            const expandedLevelsCopy = [...expandedLevels];
-            expandedLevelsCopy.splice(index, 1);
+            const updatedArray = removeFromArray(index, currentArray);
+            const expandedLevelsCopy = removeFromArray(index, expandedLevels);
             setExpandedLevels(expandedLevelsCopy);
             handleParameterChange(arrayName, updatedArray);
         },
@@ -123,9 +125,9 @@ export const LQASForm: FunctionComponent<Props> = ({
 
     const handleOrgUnitTypeChange = useCallback(
         (value: any, index: number) => {
-            updateArrayAtIndex('org_unit_type_criteria', index, 'RURAL/URBAN');
-            updateArrayAtIndex('org_unit_type_exceptions', index, undefined);
-            updateArrayAtIndex('org_unit_type_quantities', index, undefined);
+            update('org_unit_type_criteria', index, 'RURAL/URBAN');
+            update('org_unit_type_exceptions', index, undefined);
+            update('org_unit_type_quantities', index, undefined);
             if (index === 0) {
                 // Remove the whole hierarchy behind the selected org unit type
                 handleParameterChange('org_unit_type_sequence_identifiers', [
@@ -135,7 +137,7 @@ export const LQASForm: FunctionComponent<Props> = ({
                 return;
             }
             if (index !== 0) {
-                updateArrayAtIndex(
+                update(
                     'org_unit_type_sequence_identifiers',
                     index,
                     parseInt(value, 10),
@@ -143,42 +145,42 @@ export const LQASForm: FunctionComponent<Props> = ({
                 return;
             }
         },
-        [updateArrayAtIndex, handleParameterChange],
+        [update, handleParameterChange],
     );
 
     const handleOrgUnitTypeQuantityChange = useCallback(
         (value: any, index: number) => {
-            updateArrayAtIndex(
+            update(
                 'org_unit_type_quantities',
                 index,
                 value ? parseInt(value, 10) : undefined,
             );
         },
-        [updateArrayAtIndex],
+        [update],
     );
 
     const handleAddLevel = useCallback(() => {
-        addToArray('org_unit_type_sequence_identifiers');
-        addToArray('org_unit_type_exceptions');
-        addToArray('org_unit_type_criteria');
-        addToArray('org_unit_type_quantities');
-    }, [addToArray]);
+        add('org_unit_type_sequence_identifiers');
+        add('org_unit_type_exceptions');
+        add('org_unit_type_criteria');
+        add('org_unit_type_quantities');
+    }, [add]);
 
     const handleRemoveLevel = useCallback(
         (index: number) => {
-            removeFromArray('org_unit_type_sequence_identifiers', index);
-            removeFromArray('org_unit_type_quantities', index);
-            removeFromArray('org_unit_type_criteria', index);
-            removeFromArray('org_unit_type_exceptions', index);
+            remove('org_unit_type_sequence_identifiers', index);
+            remove('org_unit_type_quantities', index);
+            remove('org_unit_type_criteria', index);
+            remove('org_unit_type_exceptions', index);
         },
-        [removeFromArray],
+        [remove],
     );
 
     const handleCriteriaChange = useCallback(
         (value: any, index: number) => {
-            updateArrayAtIndex('org_unit_type_criteria', index, value);
+            update('org_unit_type_criteria', index, value);
         },
-        [updateArrayAtIndex],
+        [update],
     );
 
     // Memoized values

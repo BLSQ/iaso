@@ -6,7 +6,7 @@ import { Pipeline } from '../types/pipeline';
 
 export const useGetPipelineDetails = (
     pipelineId?: string,
-    parameterstoRemove: string[] = ['task_id', 'pipeline_id'],
+    parametersToRemove: string[] = ['task_id', 'pipeline_id'],
 ): UseQueryResult<Pipeline, DjangoError> => {
     return useSnackQuery({
         queryKey: ['pipeline', pipelineId],
@@ -22,7 +22,7 @@ export const useGetPipelineDetails = (
                         ...data.currentVersion,
                         parameters: data.currentVersion?.parameters.filter(
                             parameter =>
-                                !parameterstoRemove.includes(parameter.code),
+                                !parametersToRemove.includes(parameter.code),
                         ),
                     },
                 };

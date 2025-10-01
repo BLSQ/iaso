@@ -24,6 +24,7 @@ import {
 } from '../../../libs/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetPublishingStatusOptions } from '../constants';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
@@ -205,7 +206,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             setFieldTouched('selectedTeam', false);
         }
     }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
-
+    const publishingStatusOptions = useGetPublishingStatusOptions();
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -280,12 +281,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
-                                onChange={(keyValue, value) => {
+                                onChange={(keyValue, value) =>
                                     onChange(
                                         keyValue,
                                         commaSeparatedIdsToArray(value),
-                                    );
-                                }}
+                                    )
+                                }
                                 value={values.forms}
                                 errors={getErrors('forms')}
                                 label={MESSAGES.forms}
@@ -349,12 +350,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                     type="select"
                                     multi
                                     keyValue="pipelineUuids"
-                                    onChange={(keyValue, value) => {
+                                    onChange={(keyValue, value) =>
                                         onChange(
                                             keyValue,
                                             value ? value.split(',') : [],
-                                        );
-                                    }}
+                                        )
+                                    }
                                     loading={isFetchingPipelineUuids}
                                     options={pipelineUuidsOptions}
                                     value={values.pipelineUuids}
@@ -371,18 +372,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 value={values.publishingStatus}
                                 errors={getErrors('publishingStatus')}
                                 label={MESSAGES.publishingStatus}
-                                options={[
-                                    {
-                                        label: formatMessage(
-                                            MESSAGES.published,
-                                        ),
-                                        value: 'published',
-                                    },
-                                    {
-                                        label: formatMessage(MESSAGES.draft),
-                                        value: 'draft',
-                                    },
-                                ]}
+                                options={publishingStatusOptions}
                                 required
                             />
                         </Grid>

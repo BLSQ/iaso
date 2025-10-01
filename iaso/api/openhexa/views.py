@@ -11,7 +11,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.openhexa.serializers import PipelineLaunchSerializer, TaskResponseSerializer, TaskUpdateSerializer
+from iaso.api.openhexa.serializers import (
+    OpenHexaConfigSerializer,
+    PipelineLaunchSerializer,
+    TaskResponseSerializer,
+    TaskUpdateSerializer,
+)
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
@@ -334,18 +339,15 @@ class OpenHexaPipelinesViewSet(ViewSet):
             # Try to get the config
             openhexa_config = Config.objects.get(slug=OPENHEXA_CONFIG_SLUG)
 
-            # Check if required fields exist and are not empty
-            content = openhexa_config.content
-            required_fields = ["openhexa_url", "openhexa_token", "workspace_slug"]
-
-            configured = all(field in content and content[field] for field in required_fields)
-
-            # Get optional lqas_pipeline_code parameter
-            lqas_pipeline_code = content.get("lqas_pipeline_code")
+            # Use serializer to validate configuration
+            config_serializer = OpenHexaConfigSerializer(data=openhexa_config.content)
+            configured = config_serializer.is_valid()
 
             response_data = {"configured": configured}
-            if lqas_pipeline_code:
-                response_data["lqas_pipeline_code"] = lqas_pipeline_code
+
+            # Get optional lqas_pipeline_code parameter if configuration is valid
+            if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
+                response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
 
             return Response(response_data)
 

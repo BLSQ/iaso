@@ -283,7 +283,7 @@ class OrgUnitTypeHierarchySerializer(serializers.ModelSerializer):
 
     def get_sub_unit_types(self, obj):
         """Recursively serialize sub_unit_types to build complete hierarchy"""
-        sub_types = obj.sub_unit_types.prefetch_related("sub_unit_types").all()
+        sub_types = obj.sub_unit_types.all()
         return OrgUnitTypeHierarchySerializer(sub_types, many=True, context=self.context).data
 
 

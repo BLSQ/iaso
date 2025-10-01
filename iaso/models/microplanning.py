@@ -4,6 +4,7 @@ import typing
 from functools import reduce
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
 from django_ltree.fields import PathField  # type: ignore
 
@@ -139,8 +140,11 @@ class Planning(SoftDeletableModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     published_at = models.DateTimeField(null=True, blank=True)
-    pipeline_uuids = models.JSONField(
-        default=list, blank=True, help_text="List of OpenHexa pipeline UUIDs available for this planning"
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
     )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

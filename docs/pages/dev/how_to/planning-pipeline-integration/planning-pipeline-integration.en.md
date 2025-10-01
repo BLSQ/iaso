@@ -37,13 +37,16 @@ class Planning(SoftDeletableModel):
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    pipeline_uuids = models.JSONField(
-        default=list, blank=True, help_text="List of OpenHexa pipeline UUIDs available for this planning"
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
     )
 ```
 
 **Key Fields**:
-- `pipeline_uuids`: JSON array of OpenHexa pipeline UUIDs that can be used for this planning. This allows linking specific pipelines to a planning configuration.
+- `pipeline_uuids`:  Array of OpenHexa pipeline UUIDs that can be used for this planning. This allows linking specific pipelines to a planning configuration.
 ```
 
 ### Assignment Model

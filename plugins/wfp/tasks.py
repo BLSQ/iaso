@@ -41,6 +41,8 @@ def etl_ng():
 
 @shared_task()
 def etl_ssd():
+    # from django.db import connection # For debugging purposes only, to see the SQL queries executed
+
     logger.info("Starting ETL for South Sudan")
     entity_type_U5_code = "ssd_under5"
     child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
@@ -60,6 +62,8 @@ def etl_ssd():
     )
     MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
+    # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
+    # print(connection.queries) # Uncomment this line to see the SQL queries executed
 
 
 @shared_task()

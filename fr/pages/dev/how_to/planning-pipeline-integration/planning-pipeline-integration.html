@@ -1,0 +1,1550 @@
+
+<!doctype html>
+<html lang="fr" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      <link rel="icon" href="../../../../../assets/iaso-favicon.png">
+      <meta name="generator" content="mkdocs-1.5.2, mkdocs-material-9.1.1">
+    
+    
+      
+        <title>Planning-Pipeline Integration Documentation - IASO</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/stylesheets/main.402914a4.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../../../assets/stylesheets/palette.a0c5b2b5.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="custom" data-md-color-accent="">
+  
+    
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#planning-pipeline-integration-documentation" class="md-skip">
+          Aller au contenu
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="En-tête">
+    <a href="../../../../index.html" title="IASO" class="md-header__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            IASO
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Planning-Pipeline Integration Documentation
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <div class="md-header__option">
+        <div class="md-select">
+          
+          <button class="md-header__button md-icon" aria-label="Sélectionner la langue">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"/></svg>
+          </button>
+          <div class="md-select__inner">
+            <ul class="md-select__list">
+              
+                <li class="md-select__item">
+                  <a href="../../../../../pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html" hreflang="en" class="md-select__link">
+                    English
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="planning-pipeline-integration.html" hreflang="fr" class="md-select__link">
+                    Français
+                  </a>
+                </li>
+              
+                <li class="md-select__item">
+                  <a href="../../../../../es/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.html" hreflang="es" class="md-select__link">
+                    Español
+                  </a>
+                </li>
+              
+            </ul>
+          </div>
+        </div>
+      </div>
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Rechercher" placeholder="Rechercher" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Recherche">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Effacer" aria-label="Effacer" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initialisation de la recherche
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+<!-- Navigation -->
+
+
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../../../index.html" title="IASO" class="md-nav__button md-logo" aria-label="IASO" data-md-component="logo">
+      
+  <img src="../../../../../assets/iaso.png" alt="logo">
+
+    </a>
+    IASO
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/BLSQ/iaso" title="Aller au dépôt" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../../index.html" class="md-nav__link">
+        Accueil
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Guide d'utilisateur
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guide d'utilisateur
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_concepts/iaso_concepts.html" class="md-nav__link">
+        Concepts
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_modules/iaso_modules.html" class="md-nav__link">
+        Modules
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_web/user_guide.html" class="md-nav__link">
+        Plateforme Web
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../users/reference/iaso_mobile/iaso_mobile.html" class="md-nav__link">
+        Mobile
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Développeurs
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3">
+          <span class="md-nav__icon md-icon"></span>
+          Développeurs
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          Références
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1">
+          <span class="md-nav__icon md-icon"></span>
+          Références
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data_model_glossary/data_model_glossary.html" class="md-nav__link">
+        Data model glossary
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/sql_dashboard/SQL_Dashboard_feature.html" class="md-nav__link">
+        SQL Dashboard feature
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/docker/docker.html" class="md-nav__link">
+        Docker
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/background_tasks/background_tasks.html" class="md-nav__link">
+        Background tasks
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/env_variables/env_variables.html" class="md-nav__link">
+        Variables d'environnement
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_1_6" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Modèles
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_1_6_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_1_6">
+          <span class="md-nav__icon md-icon"></span>
+          Modèles
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/API/entity.html" class="md-nav__link">
+        API reference: Entity
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          Guides
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_3_2">
+          <span class="md-nav__icon md-icon"></span>
+          Guides
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contribute/contribute.html" class="md-nav__link">
+        Contribute
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup_dev_env/setup_dev_env.html" class="md-nav__link">
+        Setup dev env
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use_iaso_apis/use_iaso_apis.html" class="md-nav__link">
+        Use iaso apis
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+      
+      
+      <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+      
+      
+      
+        <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          En savoir plus sur IASO
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <label class="md-nav__title" for="__nav_4">
+          <span class="md-nav__icon md-icon"></span>
+          En savoir plus sur IASO
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.openiaso.com/" class="md-nav__link">
+        Demander une démo
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.digitalpublicgoods.net/r/iaso" class="md-nav__link">
+        Digital Public Goods Registry
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://github.com/BLSQ/iaso/releases" class="md-nav__link">
+        Release notes
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="https://www.bluesquarehub.com/" class="md-nav__link">
+        Bluesquare
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+            <!-- pdf download  -->
+            <div id="pdf-download-container">
+                <button id="pdf-download" type="button">
+                    <span id="button-text">Download current page</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px"
+                        fill="#192041">
+                        <path
+                            d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Table of contents -->
+
+
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+    <div class="md-sidebar__scrollwrap">
+        <div class="md-sidebar__inner">
+            
+
+<nav class="md-nav md-nav--secondary" aria-label="Table des matières">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table des matières
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    Overview
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-overview" class="md-nav__link">
+    Architecture Overview
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Overview">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-components" class="md-nav__link">
+    Core Components
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#data-flow" class="md-nav__link">
+    Data Flow
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-models" class="md-nav__link">
+    Data Models
+  </a>
+  
+    <nav class="md-nav" aria-label="Data Models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#planning-model" class="md-nav__link">
+    Planning Model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#orgunittype-hierarchy" class="md-nav__link">
+    OrgUnitType Hierarchy
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#team-hierarchy" class="md-nav__link">
+    Team Hierarchy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pipeline-integration" class="md-nav__link">
+    Pipeline Integration
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-parameters" class="md-nav__link">
+    Pipeline Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parameter-structure" class="md-nav__link">
+    Parameter Structure
+  </a>
+  
+    <nav class="md-nav" aria-label="Parameter Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_sequence_identifiers" class="md-nav__link">
+    org_unit_type_sequence_identifiers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_quantities" class="md-nav__link">
+    org_unit_type_quantities
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#org_unit_type_exceptions" class="md-nav__link">
+    org_unit_type_exceptions
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-execution-flow" class="md-nav__link">
+    Pipeline Execution Flow
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-status-updates" class="md-nav__link">
+    Task Status Updates
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#openhexa-configuration" class="md-nav__link">
+    OpenHexa Configuration
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenHexa Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#configuration-parameters" class="md-nav__link">
+    Configuration Parameters
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-parameters" class="md-nav__link">
+    Required Parameters
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#optional-parameters" class="md-nav__link">
+    Optional Parameters
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-example" class="md-nav__link">
+    Configuration Example
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration-endpoint" class="md-nav__link">
+    Configuration Endpoint
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#api-endpoints" class="md-nav__link">
+    API Endpoints
+  </a>
+  
+    <nav class="md-nav" aria-label="API Endpoints">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-management" class="md-nav__link">
+    Pipeline Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Pipeline Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#launch-pipeline" class="md-nav__link">
+    Launch Pipeline
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#update-task-status" class="md-nav__link">
+    Update Task Status
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment-management" class="md-nav__link">
+    Assignment Management
+  </a>
+  
+    <nav class="md-nav" aria-label="Assignment Management">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#delete-all-assignments-for-planning" class="md-nav__link">
+    Delete All Assignments for Planning
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bulk-create-assignments" class="md-nav__link">
+    Bulk Create Assignments
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frontend-integration" class="md-nav__link">
+    Frontend Integration
+  </a>
+  
+    <nav class="md-nav" aria-label="Frontend Integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#user-workflow" class="md-nav__link">
+    User Workflow
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#planning-configuration-ui" class="md-nav__link">
+    Planning Configuration UI
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assignment-view-ui-map-page" class="md-nav__link">
+    Assignment View UI (Map Page)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workflow-details" class="md-nav__link">
+    Workflow Details
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflow Details">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-planning-creationedition" class="md-nav__link">
+    Step 1: Planning Creation/Edition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-assignment-map-view" class="md-nav__link">
+    Step 2: Assignment Map View
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-3-launch-sample" class="md-nav__link">
+    Step 3: Launch Sample
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-4-parameter-configuration" class="md-nav__link">
+    Step 4: Parameter Configuration
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-5-pipeline-execution" class="md-nav__link">
+    Step 5: Pipeline Execution
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validation-rules" class="md-nav__link">
+    Validation Rules
+  </a>
+  
+    <nav class="md-nav" aria-label="Validation Rules">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hierarchy-validation" class="md-nav__link">
+    Hierarchy Validation
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-validation" class="md-nav__link">
+    Pipeline Validation
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#error-handling" class="md-nav__link">
+    Error Handling
+  </a>
+  
+    <nav class="md-nav" aria-label="Error Handling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#common-error-scenarios" class="md-nav__link">
+    Common Error Scenarios
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#error-response-format" class="md-nav__link">
+    Error Response Format
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+        </div>
+    </div>
+</div>
+
+
+
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/how_to/planning-pipeline-integration/planning-pipeline-integration.en.md" title="Editer cette page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+
+
+<h1 id="planning-pipeline-integration-documentation">Planning-Pipeline Integration Documentation<a class="headerlink" href="#planning-pipeline-integration-documentation" title="Permanent link">#</a></h1>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">#</a></h2>
+<p>This document describes the integration between Iaso's Planning feature and OpenHexa pipelines for automated assignment generation. The integration allows users to configure sampling parameters and automatically generate assignments of organizational units to teams/users using LQAS (Lot Quality Assurance Sampling) algorithms.</p>
+<h2 id="architecture-overview">Architecture Overview<a class="headerlink" href="#architecture-overview" title="Permanent link">#</a></h2>
+<h3 id="core-components">Core Components<a class="headerlink" href="#core-components" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Planning System</strong>: Manages planning configurations and assignment results</li>
+<li><strong>OpenHexa Integration</strong>: Handles pipeline execution and task management</li>
+<li><strong>Assignment Engine</strong>: Generates assignments based on pipeline results</li>
+<li><strong>UI Components</strong>: Frontend interfaces for configuration and monitoring</li>
+</ol>
+<h3 id="data-flow">Data Flow<a class="headerlink" href="#data-flow" title="Permanent link">#</a></h3>
+<pre><code>Planning Configuration → Pipeline Parameters → OpenHexa Execution → Assignment Generation → UI Display
+</code></pre>
+<h2 id="data-models">Data Models<a class="headerlink" href="#data-models" title="Permanent link">#</a></h2>
+<h3 id="planning-model">Planning <strong>Model</strong><a class="headerlink" href="#planning-model" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Planning(SoftDeletableModel):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    forms = models.ManyToManyField(Form, related_name=&quot;plannings&quot;)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)  # Main team
+    org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)  # Root org unit (usually country)
+    published_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text=&quot;List of OpenHexa pipeline UUIDs available for this planning&quot;,
+    )
+</code></pre>
+<p><strong>Key Fields</strong>:
+- <code>pipeline_uuids</code>:  Array of OpenHexa pipeline UUIDs that can be used for this planning. This allows linking specific pipelines to a planning configuration.</p>
+<pre><code>
+### Assignment Model
+
+```python
+class Assignment(SoftDeletableModel):
+    planning = models.ForeignKey(&quot;Planning&quot;, on_delete=models.CASCADE)
+    org_unit = models.ForeignKey(&quot;OrgUnit&quot;, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    team = models.ForeignKey(Team, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [[&quot;planning&quot;, &quot;org_unit&quot;]]
+</code></pre>
+<h3 id="orgunittype-hierarchy">OrgUnitType Hierarchy<a class="headerlink" href="#orgunittype-hierarchy" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class OrgUnitType(models.Model):
+    name = models.CharField(max_length=255)  # e.g., &quot;Country&quot;, &quot;Region&quot;, &quot;District&quot;, &quot;Health Facility&quot;
+    short_name = models.CharField(max_length=255)
+    depth = models.PositiveSmallIntegerField(null=True, blank=True)  # Hierarchy level
+    sub_unit_types = models.ManyToManyField(&quot;OrgUnitType&quot;, related_name=&quot;super_types&quot;, blank=True)
+    projects = models.ManyToManyField(&quot;Project&quot;, related_name=&quot;unit_types&quot;, blank=False)
+
+    CATEGORIES = [
+        (&quot;COUNTRY&quot;, _(&quot;Country&quot;)),
+        (&quot;REGION&quot;, _(&quot;Region&quot;)),
+        (&quot;DISTRICT&quot;, _(&quot;District&quot;)),
+        (&quot;HF&quot;, _(&quot;Health Facility&quot;)),
+    ]
+    category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
+</code></pre>
+<h3 id="team-hierarchy">Team Hierarchy<a class="headerlink" href="#team-hierarchy" title="Permanent link">#</a></h3>
+<pre><code class="language-python">class Team(SoftDeletableModel):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    users = models.ManyToManyField(User, related_name=&quot;teams&quot;, blank=True)
+    manager = models.ForeignKey(User, on_delete=models.PROTECT, related_name=&quot;managed_teams&quot;)
+    parent = models.ForeignKey(&quot;self&quot;, on_delete=models.PROTECT, null=True, blank=True, related_name=&quot;sub_teams&quot;)
+    path = PathField(unique=True)  # Hierarchical path
+    type = models.CharField(choices=TeamType.choices, max_length=100, null=True, blank=True)
+
+class TeamType(models.TextChoices):
+    TEAM_OF_TEAMS = &quot;TEAM_OF_TEAMS&quot;, &quot;Team of teams&quot;
+    TEAM_OF_USERS = &quot;TEAM_OF_USERS&quot;, &quot;Team of users&quot;
+</code></pre>
+<h2 id="pipeline-integration">Pipeline Integration<a class="headerlink" href="#pipeline-integration" title="Permanent link">#</a></h2>
+<h3 id="pipeline-parameters">Pipeline Parameters<a class="headerlink" href="#pipeline-parameters" title="Permanent link">#</a></h3>
+<p>The OpenHexa pipeline receives the following parameters:</p>
+<pre><code class="language-python">@pipeline
+def lqas_assignment_pipeline(
+    planning_id: int,
+    task_id: int,
+    org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
+    org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
+    org_unit_type_exceptions: List[str],            # [&quot;12098,108033&quot;, &quot;&quot;, &quot;&quot;] - exceptions per level
+):
+    &quot;&quot;&quot;
+    LQAS Assignment Pipeline
+
+    Args:
+        planning_id: ID of the planning to generate assignments for
+        task_id: ID of the task for status updates
+        org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
+        org_unit_type_quantities: List of quantities to select at each level
+        org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
+    &quot;&quot;&quot;
+</code></pre>
+<h3 id="parameter-structure">Parameter Structure<a class="headerlink" href="#parameter-structure" title="Permanent link">#</a></h3>
+<h4 id="org_unit_type_sequence_identifiers">org_unit_type_sequence_identifiers<a class="headerlink" href="#org_unit_type_sequence_identifiers" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[int]</code></li>
+<li><strong>Description</strong>: IDs of org unit types in hierarchical order (from highest to lowest level)</li>
+<li><strong>Example</strong>: <code>[398, 399, 400]</code> where:</li>
+<li><code>398</code> = Country level</li>
+<li><code>399</code> = Region level  </li>
+<li><code>400</code> = District level</li>
+</ul>
+<h4 id="org_unit_type_quantities">org_unit_type_quantities<a class="headerlink" href="#org_unit_type_quantities" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[int]</code></li>
+<li><strong>Description</strong>: Number of org units to select at each level</li>
+<li><strong>Example</strong>: <code>[2, 3, 4]</code> means:</li>
+<li>Select 2 countries</li>
+<li>From each country, select 3 regions</li>
+<li>From each region, select 4 districts</li>
+<li>Total: 2 × 3 × 4 = 24 districts</li>
+</ul>
+<h4 id="org_unit_type_exceptions">org_unit_type_exceptions<a class="headerlink" href="#org_unit_type_exceptions" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>List[str]</code></li>
+<li><strong>Description</strong>: Org unit IDs to exclude from random sampling at each level. Each string contains comma-separated IDs of org units to ignore during sampling at that specific level.</li>
+<li><strong>Example</strong>: <code>["12098,108033", "", ""]</code> means:</li>
+<li>Exclude countries with IDs 12098 and 108033 (comma-separated in first string)</li>
+<li>No region exceptions (empty string)</li>
+<li>No district exceptions (empty string)</li>
+</ul>
+<h3 id="pipeline-execution-flow">Pipeline Execution Flow<a class="headerlink" href="#pipeline-execution-flow" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Validation</strong>: Verify org unit type hierarchy matches team hierarchy</li>
+<li><strong>Sampling</strong>: Apply LQAS algorithm to select org units</li>
+<li><strong>Assignment</strong>: Assign selected org units to teams/users</li>
+<li><strong>Status Updates</strong>: Update task progress throughout execution</li>
+<li><strong>Result Storage</strong>: Store final assignments in Iaso database</li>
+</ol>
+<h3 id="task-status-updates">Task Status Updates<a class="headerlink" href="#task-status-updates" title="Permanent link">#</a></h3>
+<p>The pipeline updates task status at key milestones:</p>
+<pre><code class="language-python">def update_task_status(task_id, status, message, progress_value=None, end_value=None, result_data=None):
+    &quot;&quot;&quot;Update task status in Iaso&quot;&quot;&quot;
+    # Send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
+    # with task_id, status, progress_message, progress_value, end_value, result_data
+</code></pre>
+<p><strong>Status Values</strong>:
+- <code>RUNNING</code>: Pipeline is executing
+- <code>SUCCESS</code>: Pipeline completed successfully
+- <code>ERRORED</code>: Pipeline failed with error
+- <code>KILLED</code>: Pipeline was terminated</p>
+<h2 id="openhexa-configuration">OpenHexa Configuration<a class="headerlink" href="#openhexa-configuration" title="Permanent link">#</a></h2>
+<h3 id="configuration-parameters">Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permanent link">#</a></h3>
+<p>The OpenHexa integration requires configuration stored in the <code>Config</code> model with slug <code>"openhexa-config"</code>. The configuration includes:</p>
+<h4 id="required-parameters">Required Parameters<a class="headerlink" href="#required-parameters" title="Permanent link">#</a></h4>
+<ul>
+<li><code>openhexa_url</code>: The GraphQL endpoint URL for OpenHexa</li>
+<li><code>openhexa_token</code>: Authentication token for OpenHexa API</li>
+<li><code>workspace_slug</code>: The workspace identifier in OpenHexa</li>
+</ul>
+<h4 id="optional-parameters">Optional Parameters<a class="headerlink" href="#optional-parameters" title="Permanent link">#</a></h4>
+<ul>
+<li><code>lqas_pipeline_code</code>: The pipeline code used to display a custom form for LQAS sampling in the OpenHexa integration UI. This enables specialized LQAS sampling forms when available.</li>
+</ul>
+<h3 id="configuration-example">Configuration Example<a class="headerlink" href="#configuration-example" title="Permanent link">#</a></h3>
+<pre><code class="language-json">{
+    &quot;openhexa_url&quot;: &quot;https://openhexa.example.com/graphql/&quot;,
+    &quot;openhexa_token&quot;: &quot;your-api-token-here&quot;,
+    &quot;workspace_slug&quot;: &quot;your-workspace&quot;,
+    &quot;lqas_pipeline_code&quot;: &quot;lqas-sampling-pipeline&quot;
+}
+</code></pre>
+<h3 id="configuration-endpoint">Configuration Endpoint<a class="headerlink" href="#configuration-endpoint" title="Permanent link">#</a></h3>
+<p>The system provides an endpoint to check OpenHexa configuration status:</p>
+<pre><code class="language-http">GET /api/openhexa/pipelines/config/
+</code></pre>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    &quot;configured&quot;: true,
+    &quot;lqas_pipeline_code&quot;: &quot;lqas-sampling-pipeline&quot;
+}
+</code></pre>
+<ul>
+<li><code>configured</code>: Boolean indicating if all required parameters are present</li>
+<li><code>lqas_pipeline_code</code>: Only included if present in configuration</li>
+</ul>
+<h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">#</a></h2>
+<h3 id="pipeline-management">Pipeline Management<a class="headerlink" href="#pipeline-management" title="Permanent link">#</a></h3>
+<h4 id="launch-pipeline">Launch Pipeline<a class="headerlink" href="#launch-pipeline" title="Permanent link">#</a></h4>
+<pre><code class="language-http">POST /api/openhexa/pipelines/{pipeline_id}/
+Content-Type: application/json
+
+{
+    &quot;version&quot;: &quot;uuid-of-pipeline-version&quot;,
+    &quot;config&quot;: {
+        &quot;planning_id&quot;: 123,
+        &quot;task_id&quot;: 456,
+        &quot;org_unit_type_sequence_identifiers&quot;: [398, 399, 400],
+        &quot;org_unit_type_quantities&quot;: [2, 3, 4],
+        &quot;org_unit_type_exceptions&quot;: [&quot;12098,108033&quot;, &quot;&quot;, &quot;&quot;]
+    }
+}
+</code></pre>
+<h4 id="update-task-status">Update Task Status<a class="headerlink" href="#update-task-status" title="Permanent link">#</a></h4>
+<pre><code class="language-http">PATCH /api/openhexa/pipelines/{pipeline_id}/
+Content-Type: application/json
+
+{
+    &quot;task_id&quot;: 456,
+    &quot;status&quot;: &quot;SUCCESS&quot;,
+    &quot;progress_message&quot;: &quot;Pipeline completed successfully&quot;,
+    &quot;progress_value&quot;: 100,
+    &quot;end_value&quot;: 100,
+    &quot;result_data&quot;: {
+        &quot;assignments_created&quot;: 24,
+        &quot;org_units_selected&quot;: [...],
+        &quot;teams_assigned&quot;: [...]
+    }
+}
+</code></pre>
+<h3 id="assignment-management">Assignment Management<a class="headerlink" href="#assignment-management" title="Permanent link">#</a></h3>
+<h4 id="delete-all-assignments-for-planning">Delete All Assignments for Planning<a class="headerlink" href="#delete-all-assignments-for-planning" title="Permanent link">#</a></h4>
+<pre><code class="language-http">DELETE /api/assignments/?planning={planning_id}
+</code></pre>
+<h4 id="bulk-create-assignments">Bulk Create Assignments<a class="headerlink" href="#bulk-create-assignments" title="Permanent link">#</a></h4>
+<pre><code class="language-http">POST /api/assignments/bulk_create_assignments/
+Content-Type: application/json
+
+{
+    &quot;planning&quot;: 123,
+    &quot;assignments&quot;: [
+        {
+            &quot;org_unit&quot;: 1001,
+            &quot;team&quot;: 201,
+            &quot;user&quot;: null
+        },
+        {
+            &quot;org_unit&quot;: 1002,
+            &quot;team&quot;: 202,
+            &quot;user&quot;: 301
+        }
+    ]
+}
+</code></pre>
+<h2 id="frontend-integration">Frontend Integration<a class="headerlink" href="#frontend-integration" title="Permanent link">#</a></h2>
+<h3 id="user-workflow">User Workflow<a class="headerlink" href="#user-workflow" title="Permanent link">#</a></h3>
+<p>The correct workflow for planning-pipeline integration is:</p>
+<ol>
+<li><strong>Planning Creation/Edition</strong>: User selects available pipelines (no parameters)</li>
+<li><strong>Assignment Map View</strong>: User views current assignments and launches sampling</li>
+<li><strong>Parameter Configuration</strong>: User configures sampling parameters in a dialog</li>
+<li><strong>Pipeline Execution</strong>: System executes pipeline and updates assignments</li>
+</ol>
+<h3 id="planning-configuration-ui">Planning Configuration UI<a class="headerlink" href="#planning-configuration-ui" title="Permanent link">#</a></h3>
+<p>The planning creation/edition dialog should include:</p>
+<ol>
+<li><strong>Pipeline Selection</strong>: Multi-select dropdown for available pipelines (only pipeline selection, no parameters) - Only visible if OpenHexa config is present</li>
+<li>Selected pipelines are stored in the <code>pipeline_uuids</code> field as an array of UUIDs</li>
+<li>This links specific pipelines to the planning configuration</li>
+</ol>
+<h3 id="assignment-view-ui-map-page">Assignment View UI (Map Page)<a class="headerlink" href="#assignment-view-ui-map-page" title="Permanent link">#</a></h3>
+<p>The assignment details view (map page) should display:</p>
+<ol>
+<li><strong>Current Assignments</strong>: Table showing org units assigned to teams/users</li>
+<li><strong>Visual Map</strong>: Geographic representation of assignments</li>
+<li><strong>Pipeline Controls</strong>: Buttons to:</li>
+<li><strong>Launch Sample</strong>: Open parameter configuration dialog</li>
+<li>View pipeline status</li>
+<li>Delete existing assignments (with confirmation)</li>
+<li><strong>Parameter Configuration Dialog</strong>: Modal/dialog for:</li>
+<li>Pipeline selection (if multiple available)</li>
+<li>Org unit type hierarchy selection</li>
+<li>Quantities at each level</li>
+<li>Exception org units (comma-separated IDs to exclude per level)</li>
+</ol>
+<h3 id="workflow-details">Workflow Details<a class="headerlink" href="#workflow-details" title="Permanent link">#</a></h3>
+<h4 id="step-1-planning-creationedition">Step 1: Planning Creation/Edition<a class="headerlink" href="#step-1-planning-creationedition" title="Permanent link">#</a></h4>
+<ul>
+<li>User creates or edits a planning</li>
+<li>User selects which pipelines are available for this planning</li>
+</ul>
+<h4 id="step-2-assignment-map-view">Step 2: Assignment Map View<a class="headerlink" href="#step-2-assignment-map-view" title="Permanent link">#</a></h4>
+<ul>
+<li>User navigates to the assignment map view for the planning</li>
+<li>User sees current assignments (if any) on the map and in the table</li>
+<li>User sees "Launch Sample" button (only if OpenHexa is configured)</li>
+</ul>
+<h4 id="step-3-launch-sample">Step 3: Launch Sample<a class="headerlink" href="#step-3-launch-sample" title="Permanent link">#</a></h4>
+<ul>
+<li>User clicks "Launch Sample" button</li>
+<li>If existing assignments exist, show confirmation dialog: "This will delete all existing assignments. Continue?"</li>
+<li>Open parameter configuration dialog</li>
+</ul>
+<h4 id="step-4-parameter-configuration">Step 4: Parameter Configuration<a class="headerlink" href="#step-4-parameter-configuration" title="Permanent link">#</a></h4>
+<ul>
+<li>User selects pipeline (if multiple available)</li>
+<li>User configures sampling parameters:</li>
+<li>Org unit type hierarchy (from higher to lower level)</li>
+<li>Quantities at each level</li>
+<li>Exception org units to exclude (comma-separated IDs per level)</li>
+<li>User clicks "Launch Pipeline" to execute</li>
+</ul>
+<h4 id="step-5-pipeline-execution">Step 5: Pipeline Execution<a class="headerlink" href="#step-5-pipeline-execution" title="Permanent link">#</a></h4>
+<ul>
+<li>System creates task and launches pipeline</li>
+<li>User sees task status updates</li>
+<li>System updates assignments when pipeline completes</li>
+<li>User sees new assignments on map and in table</li>
+</ul>
+<h2 id="validation-rules">Validation Rules<a class="headerlink" href="#validation-rules" title="Permanent link">#</a></h2>
+<h3 id="hierarchy-validation">Hierarchy Validation<a class="headerlink" href="#hierarchy-validation" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Org Unit Type Hierarchy</strong>: Must match team hierarchy depth</li>
+<li><strong>Team Hierarchy</strong>: Must be compatible with org unit type structure</li>
+<li><strong>Exception Validation</strong>: Exception org units must exist and be of correct type</li>
+</ol>
+<h3 id="pipeline-validation">Pipeline Validation<a class="headerlink" href="#pipeline-validation" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Parameter Validation</strong>: All required parameters must be provided</li>
+<li><strong>Type Validation</strong>: Parameter types must match expected formats</li>
+<li><strong>Range Validation</strong>: Quantities must be positive integers</li>
+<li><strong>Existence Validation</strong>: All referenced IDs must exist in database</li>
+</ol>
+<h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">#</a></h2>
+<h3 id="common-error-scenarios">Common Error Scenarios<a class="headerlink" href="#common-error-scenarios" title="Permanent link">#</a></h3>
+<ol>
+<li><strong>Hierarchy Mismatch</strong>: Org unit type hierarchy doesn't match team hierarchy</li>
+<li><strong>Invalid Parameters</strong>: Missing or invalid pipeline parameters</li>
+<li><strong>Pipeline Failure</strong>: OpenHexa pipeline execution fails</li>
+<li><strong>Assignment Conflicts</strong>: Attempting to create duplicate assignments</li>
+</ol>
+<h3 id="error-response-format">Error Response Format<a class="headerlink" href="#error-response-format" title="Permanent link">#</a></h3>
+<pre><code class="language-json">{
+    &quot;error&quot;: &quot;Error message&quot;,
+    &quot;details&quot;: {
+        &quot;field&quot;: &quot;specific field error&quot;,
+        &quot;code&quot;: &quot;ERROR_CODE&quot;
+    }
+}
+</code></pre>
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../../../../..", "features": ["content.action.edit"], "search": "../../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copi\u00e9 dans le presse-papier", "clipboard.copy": "Copier dans le presse-papier", "search.result.more.one": "1 de plus sur cette page", "search.result.more.other": "# de plus sur cette page", "search.result.none": "Aucun document trouv\u00e9", "search.result.one": "1 document trouv\u00e9", "search.result.other": "# documents trouv\u00e9s", "search.result.placeholder": "Taper pour d\u00e9marrer la recherche", "search.result.term.missing": "Non trouv\u00e9", "select.version": "S\u00e9lectionner la version"}}</script>
+    
+    
+      <script src="../../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+      
+        <script src="../../../../../extrajs/html2pdf.bundle.min.js"></script>
+      
+        <script src="../../../../../extrajs/pdfDownload.js"></script>
+      
+        <script src="https://plausible.io/js/script.js"></script>
+      
+    
+  </body>
+</html>

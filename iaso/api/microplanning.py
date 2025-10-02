@@ -281,12 +281,14 @@ class PlanningSerializer(serializers.ModelSerializer):
             "published_at",
             "started_at",
             "ended_at",
+            "pipeline_uuids",
         ]
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
+    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -313,10 +315,10 @@ class PlanningSerializer(serializers.ModelSerializer):
         if team.project != project:
             validation_errors["team"] = "planningAndTeams"
 
-        forms = validated_data.get("forms", self.instance.forms if self.instance else None)
-        for form in forms:
-            if form not in project.forms.all():
-                validation_errors["forms"] = "planningAndForms"
+        forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
+        project_forms = project.forms.all()
+        if forms and not all(f in project_forms for f in forms):
+            validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:

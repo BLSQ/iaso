@@ -684,6 +684,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "team",
                     "started_at",
                     "ended_at",
+                    "pipeline_uuids",
                 ),
             },
         ),

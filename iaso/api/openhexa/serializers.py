@@ -46,3 +46,22 @@ class TaskResponseSerializer(serializers.Serializer):
     end_value = serializers.IntegerField(allow_null=True, required=False)
     result = serializers.JSONField(allow_null=True, required=False)
     updated_at = serializers.DateTimeField(allow_null=True, required=False)
+
+
+class OpenHexaConfigSerializer(serializers.Serializer):
+    """Serializer for validating OpenHexa configuration."""
+
+    openhexa_url = serializers.URLField(required=True, allow_blank=False)
+    openhexa_token = serializers.CharField(required=True, allow_blank=False)
+    workspace_slug = serializers.CharField(required=True, allow_blank=False)
+    lqas_pipeline_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def validate(self, data):
+        """Validate that all required fields are present and not empty."""
+        required_fields = ["openhexa_url", "openhexa_token", "workspace_slug"]
+
+        for field in required_fields:
+            if not data.get(field):
+                raise serializers.ValidationError(f"{field} is required and cannot be empty.")
+
+        return data

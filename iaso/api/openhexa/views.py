@@ -11,7 +11,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.openhexa.serializers import PipelineLaunchSerializer, TaskResponseSerializer, TaskUpdateSerializer
+from iaso.api.openhexa.serializers import (
+    OpenHexaConfigSerializer,
+    PipelineLaunchSerializer,
+    TaskResponseSerializer,
+    TaskUpdateSerializer,
+)
 from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import RUNNING, Task
 from iaso.models.json_config import Config
@@ -68,6 +73,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
     GET /api/openhexa/pipelines/{id}/               - Get pipeline details
     POST /api/openhexa/pipelines/{id}/launch/       - Launch pipeline
     PATCH /api/openhexa/pipelines/{id}/             - Update task status
+    GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
 
     def list(self, request):
@@ -148,6 +154,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                     pipeline(id: $pipelineId) {
                         id
                         name
+                        code
                         currentVersion {
                             versionNumber
                             id
@@ -303,9 +310,9 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if "end_value" in validated_data:
                 task.end_value = validated_data["end_value"]
 
-            if "result_data" in validated_data:
+            if "result" in validated_data:
                 # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": validated_data["result_data"]}
+                task.result = {"result": task.status, "data": validated_data["result"]}
 
             task.save()
 
@@ -319,3 +326,34 @@ class OpenHexaPipelinesViewSet(ViewSet):
         except Exception as e:
             logger.exception(f"Could not update task {task_id}")
             return Response({"error": _("Failed to update task")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(detail=False, methods=["get"])
+    def config(self, request):
+        """
+        Check if OpenHexa configuration exists.
+
+        Returns:
+            Response: {"configured": true/false, "lqas_pipeline_code": "value" or null}
+        """
+        try:
+            # Try to get the config
+            openhexa_config = Config.objects.get(slug=OPENHEXA_CONFIG_SLUG)
+
+            # Use serializer to validate configuration
+            config_serializer = OpenHexaConfigSerializer(data=openhexa_config.content)
+            configured = config_serializer.is_valid()
+
+            response_data = {"configured": configured}
+
+            # Get optional lqas_pipeline_code parameter if configuration is valid
+            if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
+                response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
+
+            return Response(response_data)
+
+        except Config.DoesNotExist:
+            # Config doesn't exist
+            return Response({"configured": False})
+        except Exception as e:
+            logger.exception(f"Error checking OpenHexa config: {str(e)}")
+            return Response({"configured": False})

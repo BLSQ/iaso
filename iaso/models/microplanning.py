@@ -4,6 +4,7 @@ import typing
 from functools import reduce
 
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
 from django_ltree.fields import PathField  # type: ignore
 
@@ -139,12 +140,38 @@ class Planning(SoftDeletableModel):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     published_at = models.DateTimeField(null=True, blank=True)
+    pipeline_uuids = ArrayField(
+        models.CharField(max_length=36),
+        default=list,
+        blank=True,
+        help_text="List of OpenHexa pipeline UUIDs available for this planning",
+    )
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.name
+
+    def add_pipeline_uuid(self, pipeline_uuid: str):
+        """Add a pipeline UUID to the planning if not already present."""
+        if pipeline_uuid not in self.pipeline_uuids:
+            self.pipeline_uuids.append(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def remove_pipeline_uuid(self, pipeline_uuid: str):
+        """Remove a pipeline UUID from the planning."""
+        if pipeline_uuid in self.pipeline_uuids:
+            self.pipeline_uuids.remove(pipeline_uuid)
+            self.save(update_fields=["pipeline_uuids"])
+
+    def has_pipeline_uuid(self, pipeline_uuid: str) -> bool:
+        """Check if the planning has a specific pipeline UUID."""
+        return pipeline_uuid in self.pipeline_uuids
+
+    def get_pipeline_uuids(self) -> list:
+        """Get the list of pipeline UUIDs for this planning."""
+        return self.pipeline_uuids or []
 
 
 class AssignmentQuerySet(models.QuerySet):

@@ -14,21 +14,23 @@ import {
     useRedirectTo,
     useRedirectToReplace,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
 import TopBar from '../../components/nav/TopBarComponent';
-import { AssignmentsFilters } from './components/AssignmentsFilters';
-import { AssignmentsMapTab } from './components/AssignmentsMapTab';
-import { AssignmentsListTab } from './components/AssignmentsListTab';
-import { Sidebar } from './components/AssignmentsSidebar';
-import { ParentDialog } from './components/ParentDialog';
-import { AssignmentParams, AssignmentApi } from './types/assigment';
-import { Team, SubTeam, User } from './types/team';
-import { AssignmentUnit } from './types/locations';
-import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
-import { useGetAssignmentData } from './hooks/useGetAssignmentData';
-import { getSaveParams } from './utils';
-import MESSAGES from './messages';
+import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetPipelineConfig } from '../openHexa/hooks/useGetPipelineConfig';
+import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
+import { AssignmentsFilters } from './components/AssignmentsFilters';
+import { AssignmentsListTab } from './components/AssignmentsListTab';
+import { AssignmentsMapTab } from './components/AssignmentsMapTab';
+import { Sidebar } from './components/AssignmentsSidebar';
+import { OpenhexaIntegrationDrawer } from './components/OpenhexaIntegrationDrawer';
+import { ParentDialog } from './components/ParentDialog';
+import { useGetAssignmentData } from './hooks/useGetAssignmentData';
+import MESSAGES from './messages';
+import { AssignmentParams, AssignmentApi } from './types/assigment';
+import { AssignmentUnit } from './types/locations';
+import { Team, SubTeam, User } from './types/team';
+import { getSaveParams } from './utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -104,6 +106,7 @@ export const Assignments: FunctionComponent = () => {
     });
     const isLoading = isLoadingPlanning || isSaving;
 
+    const { data: hasPipelineConfig } = useGetPipelineConfig();
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {
             if (planning && selectedItem) {
@@ -255,6 +258,13 @@ export const Assignments: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
+                {planning &&
+                    hasPipelineConfig &&
+                    planning.pipeline_uuids.length > 0 && (
+                        <Box display="flex" justifyContent="flex-end">
+                            <OpenhexaIntegrationDrawer planning={planning} />
+                        </Box>
+                    )}
                 <AssignmentsFilters
                     params={params}
                     teams={teams || []}

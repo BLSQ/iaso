@@ -24,4 +24,5 @@ export type Planning = {
     started_at?: string;
     ended_at?: string;
     org_unit_details: OrgUnitDetail;
+    pipeline_uuids: Array<string>;
 };

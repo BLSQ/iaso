@@ -77,6 +77,7 @@ from ..models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLog,
     TenantUser,
     UserRole,
     Workflow,
@@ -557,6 +558,13 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("launcher")
+
+
+@admin.register(TaskLog)
+class TaskLogAdmin(admin.ModelAdmin):
+    list_display = ("task", "created_at", "message")
+    list_filter = ["task"]
+    readonly_fields = ["created_at"]
 
 
 @admin.register(SourceVersion)

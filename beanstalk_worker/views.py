@@ -10,7 +10,8 @@ from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
-from iaso.models.base import QUEUED, RUNNING, Task
+from iaso.models.base import QUEUED, RUNNING
+from iaso.models.task import Task
 
 from . import task_service
 

@@ -181,6 +181,10 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         self.assertEqual(
             self.not_linked_org_unit.reference_instances.filter(id=self.reference_instance_not_linked.id).count(), 0
         )
+        logs = m.TaskLog.objects.filter(task=task).all()
+        self.assertEqual(len(logs), 2)
+        self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
+        self.assertEqual(logs[1].message, "No matching instances found")
 
     def test_multiple_updates_same_org_unit(self):
         """POST /api/tasks/create/instancereferencebulklink/ with instances that target the same orgunit"""
@@ -215,6 +219,10 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
             duplicate_reference_instance,
         ]:
             self.assertIn(str(instance.org_unit_id), result)
+        logs = m.TaskLog.objects.filter(task=task).all()
+        self.assertEqual(len(logs), 2)
+        self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
+        self.assertEqual(logs[1].message, result)
 
     def test_warning_when_instance_is_not_reference(self):
         """POST /api/tasks/create/instancereferencebulklink/ with instances which are not reference"""
@@ -345,6 +353,12 @@ class ReferenceInstanceBulkLinkAPITestCase(TaskAPITestCase):
         # they were filtered out
         self.assertNotIn(instance_filtered_out_by_user.id, reference_instances)
         self.assertNotIn(instance_filtered_out_by_org_unit_type.id, reference_instances)
+        logs = m.TaskLog.objects.filter(task=task).all()
+        self.assertEqual(len(logs), 4)
+        self.assertEqual(logs[0].message, "Searching for Instances for link or unlink to/from Org unit")
+        self.assertIn("sec, processed 0 instances", logs[1].message)
+        self.assertIn("sec, processed 1 instances", logs[2].message)
+        self.assertEqual(logs[3].message, result)
 
     def test_task_kill(self):
         """Launch the task and then kill it

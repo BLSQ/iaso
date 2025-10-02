@@ -334,3 +334,53 @@ class IasoTasksTestCase(APITestCase):
         )
         task_ids = [t["id"] for t in response.json()["tasks"]]
         self.assertEqual(task_ids, [task_5.id])
+
+    def test_logs_not_found(self):
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get("/api/tasks/100000/logs/")
+        self.assertEqual(response.status_code, 404)
+
+    def test_logs_not_authenticated(self):
+        task = m.Task.objects.create(
+            progress_value=1,
+            end_value=1,
+            account=self.account,
+            created_by=self.johnny,
+            status=SUCCESS,
+            name="The best task",
+        )
+        response = self.client.get(f"/api/tasks/{task.id}/logs/")
+        self.assertEqual(response.status_code, 401)
+
+    def test_logs_authenticated(self):
+        task = m.Task.objects.create(
+            progress_value=1,
+            end_value=1,
+            account=self.account,
+            created_by=self.johnny,
+            status=SUCCESS,
+            name="The best task",
+        )
+        task2 = m.Task.objects.create(
+            progress_value=1,
+            end_value=1,
+            account=self.account,
+            created_by=self.johnny,
+            status=SUCCESS,
+            name="The best task",
+        )
+
+        m.TaskLog.objects.create(task=task, message="We have the best task.")
+        m.TaskLog.objects.create(task=task, message="Simply the best task.")
+        m.TaskLog.objects.create(task=task, message="You can't believe how good this task is.")
+
+        m.TaskLog.objects.create(task=task2, message="We have the worst task.")
+        m.TaskLog.objects.create(task=task2, message="Simply the worst task.")
+        self.client.force_authenticate(self.johnny)
+        response = self.client.get(f"/api/tasks/{task.id}/logs/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["status"], SUCCESS)
+        self.assertEqual(len(response.json()["logs"]), 3)
+        self.assertEqual(response.json()["logs"][0]["message"], "We have the best task.")
+        self.assertEqual(response.json()["logs"][1]["message"], "Simply the best task.")
+        self.assertEqual(response.json()["logs"][2]["message"], "You can't believe how good this task is.")

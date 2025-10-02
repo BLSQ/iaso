@@ -17,12 +17,14 @@ from iaso.api.tasks.filters import (
     TaskTypeFilterBackend,
     UsersFilterBackend,
 )
-from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED, Task
+from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED
 from iaso.models.json_config import Config
+from iaso.models.task import Task
 from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
-from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
+from ...models import TaskLog
+from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
@@ -102,6 +104,18 @@ class TaskSourceViewSet(ModelViewSet):
         raise serializers.ValidationError(
             {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
         )
+
+    @action(detail=True, methods=["get"], url_path="logs")
+    def get_logs(self, request, pk=None):
+        task = get_object_or_404(Task, pk=pk)
+
+        logs = TaskLog.objects.filter(task=task)
+        serializer = TaskLogSerializer(logs, many=True, context=self.get_serializer_context())
+        response = {
+            "status": task.status,
+            "logs": serializer.data,
+        }
+        return Response(response)
 
     @action(detail=True, methods=["patch"], url_path="relaunch")
     def relaunch(self, request, pk):

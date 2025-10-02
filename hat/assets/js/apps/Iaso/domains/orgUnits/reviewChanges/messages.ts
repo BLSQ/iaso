@@ -334,6 +334,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.showValuesAtCreation',
         defaultMessage: 'Show values at creation',
     },
+    requestedFields: {
+        id: 'iaso.changeRequest.requestedFields',
+        defaultMessage: 'Fields with requested changes',
+    },
+    kind: {
+        id: 'iaso.changeRequest.kind',
+        defaultMessage: 'Kind',
+    },
+    orgUnitCreation: {
+        id: 'iaso.changeRequest.orgUnitCreation',
+        defaultMessage: 'Org Unit Creation',
+    },
+    orgUnitChange: {
+        id: 'iaso.changeRequest.orgUnitChange',
+        defaultMessage: 'Org Unit Change',
+    },
 });
 
 export default MESSAGES;

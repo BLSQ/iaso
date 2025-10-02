@@ -330,7 +330,9 @@ class Task(models.Model):
             self.result = {"result": KILLED, "message": "Killed"}
             self.save()
 
-    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+    def report_progress_and_stop_if_killed(
+        self, progress_value=None, progress_message=None, end_value=None, prepend_progress=False
+    ):
         """Save progress and check if we have been killed
         We use a separate transaction, so we can report the progress even from a transaction, see services.py
         """
@@ -343,7 +345,12 @@ class Task(models.Model):
         if progress_value:
             self.progress_value = progress_value
         if progress_message:
-            self.progress_message = progress_message
+            if prepend_progress:
+                self.progress_message = (
+                    progress_message + "\n" + self.progress_message if self.progress_message else progress_message
+                )
+            else:
+                self.progress_message = progress_message
         if end_value:
             self.end_value = end_value
         self.save()
@@ -364,9 +371,9 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "message": message}
         self.save()
 
-    def terminate_with_error(self, message=None):
+    def terminate_with_error(self, message=None, exception=None):
         self.refresh_from_db()
-        logger.error(f"Task {self} ended in error")
+        logger.error(f"Task {self} ended in error %s", message, exc_info=exception)
         self.status = ERRORED
         self.ended_at = timezone.now()
         self.result = {"result": ERRORED, "message": message if message else "Error"}

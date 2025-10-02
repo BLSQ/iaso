@@ -14,7 +14,8 @@ from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.test import TestCase
 
-from iaso.dhis2.datavalue_exporter import DataValueExporter, EventHandler, InstanceExportError
+from iaso.dhis2.datavalue_exporter import DataValueExporter, EventHandler
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     ERRORED,
     EVENT,
@@ -34,10 +35,9 @@ from iaso.models import (
     Profile,
     Project,
     SourceVersion,
+    Task,
     User,
 )
-
-from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):
@@ -169,6 +169,8 @@ class DataValueExporterTests(TestCase):
         mapping = Mapping(form=form, data_source=datasource, mapping_type=EVENT)
         mapping.save()
         self.mapping = mapping
+
+        self.task = Task.objects.create(name="dhis2_submission_exporter_task", account=account)
 
     def test_error_handling_support_various_versions(self):
         versions = ("229", "230", "231", "232", "233")
@@ -308,7 +310,7 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
         self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
@@ -339,7 +341,7 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
-        DataValueExporter().export_instances(export_request)
+        DataValueExporter().export_instances(export_request, self.task)
         self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
@@ -368,18 +370,13 @@ class DataValueExporterTests(TestCase):
             status=200,
         )
 
-        with self.assertRaises(InstanceExportError) as context:
-            DataValueExporter().export_instances(export_request)
-            self.expect_logs("exported")
-
-            instance.refresh_from_db()
-            self.assertIsNotNone(instance.last_export_success_at)
+        DataValueExporter().export_instances(export_request, self.task)
 
         self.expect_logs(ERRORED)
 
         self.assertEqual(
             "ERROR while processing page 1/1 : Program is not assigned to this organisation unit: YuQRtpLP10I",
-            context.exception.message,
+            export_request.last_error_message,
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
@@ -407,18 +404,48 @@ class DataValueExporterTests(TestCase):
             status=200,
         )
 
-        with self.assertRaises(InstanceExportError) as context:
-            DataValueExporter().export_instances(export_request)
-            self.expect_logs("exported")
-
-            instance.refresh_from_db()
-            self.assertIsNotNone(instance.last_export_success_at)
-
+        DataValueExporter().export_instances(export_request, self.task)
+        instance.refresh_from_db()
         self.expect_logs(ERRORED)
 
         self.assertEqual(
             'ERROR while processing page 1/1 : [[{"object": "DkhbIf6Xm9X", "value": "value_not_positive_integer"}]]',
-            context.exception.message,
+            export_request.last_error_message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_handle_errors_non_json_response(self):
+        mapping_version = MappingVersion(
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+        # mock expected calls
+
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/events",
+            body="<html><body><h1>504 Gateway Timeout</h1></body></html>",
+            status=504,
+            content_type="text/html",
+        )
+
+        DataValueExporter().export_instances(export_request, self.task)
+        instance.refresh_from_db()
+        self.expect_logs(ERRORED)
+
+        self.assertEqual(
+            "ERROR while processing page 1/1 : non json response return by server: <html><body><h1>504 Gateway Timeout</h1></body></html>",
+            export_request.last_error_message,
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)

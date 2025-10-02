@@ -348,6 +348,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
             # Get optional lqas_pipeline_code parameter if configuration is valid
             if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
                 response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
+            if configured and config_serializer.validated_data.get("connection_name"):
+                response_data["connection_name"] = config_serializer.validated_data["connection_name"]
 
             return Response(response_data)
 

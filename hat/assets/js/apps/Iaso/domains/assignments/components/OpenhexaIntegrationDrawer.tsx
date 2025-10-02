@@ -98,13 +98,22 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         usePipelineParameters(pipeline, parameterValues, setParameterValues);
     const handleSubmit = useCallback(() => {
         setIsPipelineRunning(true);
-        const parameters = {
+        const parameters: Record<string, any> = {
             ...parameterValues,
             planning_id: planning.id,
             pipeline_id: selectedPipelineId,
         };
-        launchTask(parameters as any);
-    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
+        if (config?.connection_name) {
+            parameters.connection_name = config.connection_name;
+        }
+        launchTask(parameters);
+    }, [
+        launchTask,
+        parameterValues,
+        planning.id,
+        selectedPipelineId,
+        config?.connection_name,
+    ]);
 
     const taskId = launchResult?.task?.id;
     const { data: task } = usePollTask(taskId);

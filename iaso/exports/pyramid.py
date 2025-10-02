@@ -58,6 +58,7 @@ def build_org_unit_annotations(model_prefix: str):
         "path",
         "org_unit_type_id",
         "org_unit_type__name",
+        "parent_id",
     ]
 
     # sad to not be aligned with submission : created_by__username, created_by_id

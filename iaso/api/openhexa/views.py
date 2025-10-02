@@ -295,27 +295,43 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if not task.external:
                 return Response({"error": _("Task is not external")}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update task fields
+            # Update task using proper Task model methods
             if "status" in validated_data:
-                task.status = validated_data["status"]
-                # Set ended_at if task is completed
-                if task.status in ["SUCCESS", "ERRORED", "KILLED"]:
-                    task.ended_at = timezone.now()
+                status = validated_data["status"]
 
-            if "progress_message" in validated_data:
-                task.progress_message = validated_data["progress_message"]
-
-            if "progress_value" in validated_data:
-                task.progress_value = validated_data["progress_value"]
-
-            if "end_value" in validated_data:
-                task.end_value = validated_data["end_value"]
-
-            if "result" in validated_data:
-                # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": validated_data["result"]}
-
-            task.save()
+                if status == "SUCCESS":
+                    # Use Task model's success reporting method
+                    result_data = validated_data.get("result")
+                    message = validated_data.get("progress_message", "Pipeline completed successfully")
+                    task.report_success_with_result(message, result_data)
+                elif status == "ERRORED":
+                    # Use Task model's error reporting method
+                    message = validated_data.get("progress_message", "Pipeline failed")
+                    error = Exception(message)
+                    task.report_failure(error)
+                elif status == "RUNNING":
+                    # Use Task model's progress reporting method
+                    progress_value = validated_data.get("progress_value")
+                    progress_message = validated_data.get("progress_message")
+                    end_value = validated_data.get("end_value")
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
+                else:
+                    # For other statuses, update manually
+                    task.status = status
+                    if status in ["SUCCESS", "ERRORED", "KILLED"]:
+                        task.ended_at = timezone.now()
+                    task.save()
+            else:
+                # If no status update, just update progress
+                progress_value = validated_data.get("progress_value")
+                progress_message = validated_data.get("progress_message")
+                end_value = validated_data.get("end_value")
+                if progress_value is not None or progress_message is not None or end_value is not None:
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 

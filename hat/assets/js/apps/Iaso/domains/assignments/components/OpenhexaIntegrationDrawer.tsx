@@ -27,6 +27,9 @@ import {
     ParameterValues,
     usePipelineParameters,
 } from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
+import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
+import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
+
 import { SxStyles } from 'Iaso/types/general';
 import { usePollTask } from '../hooks/requests/usePollTask';
 import MESSAGES from '../messages';
@@ -44,7 +47,7 @@ const styles: SxStyles = {
         mr: 1,
     },
     box: {
-        width: '500px',
+        width: '600px',
     },
     container: {
         height: 'calc(100vh - 66px)',
@@ -60,6 +63,28 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const getStatusStyles = (status: string) => {
+        if (status === 'SUCCESS') {
+            return {
+                backgroundColor: '#e8f5e8',
+                border: '1px solid #4caf50',
+                color: '#2e7d32',
+            };
+        }
+        if (status === 'ERRORED') {
+            return {
+                backgroundColor: '#ffebee',
+                border: '1px solid #f44336',
+                color: '#d32f2f',
+            };
+        }
+        return {
+            backgroundColor: '#fff3e0',
+            border: '1px solid #ff9800',
+            color: '#ef6c00',
+        };
+    };
 
     const { data: config } = useGetPipelineConfig();
     const lQAS_code = config?.lqas_pipeline_code;
@@ -92,7 +117,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         mutate: launchTask,
         data: launchResult,
         error,
-        isSuccess,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const { renderParameterInput, handleParameterChange } =
         usePipelineParameters(pipeline, parameterValues, setParameterValues);
@@ -117,6 +141,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
 
     const taskId = launchResult?.task?.id;
     const { data: task } = usePollTask(taskId);
+    const { data: taskLogs } = useGetLogs(taskId, task?.status === 'RUNNING');
     useEffect(() => {
         if (
             (error && isPipelineRunning) ||
@@ -127,8 +152,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     }, [error, isPipelineRunning, task]);
 
     const currentStep = useMemo(() => {
-        if (isPipelineRunning) return 2;
-        if (task && !isPipelineRunning && task.status !== 'RUNNING') return 3;
+        if (isPipelineRunning || Boolean(task)) return 2;
         return 1;
     }, [isPipelineRunning, task]);
     return (
@@ -313,52 +337,12 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                     </Box>
                                 )}
 
-                                {isSuccess && !error && (
-                                    <Box
-                                        sx={{
-                                            p: 2,
-                                            backgroundColor: '#e8f5e8',
-                                            border: '1px solid #4caf50',
-                                            borderRadius: 1,
-                                            color: '#2e7d32',
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="subtitle2"
-                                            sx={{ fontWeight: 'bold' }}
-                                        >
-                                            ✅ Pipeline launched successfully
-                                        </Typography>
-                                    </Box>
-                                )}
-
-                                {taskId && (
-                                    <Box
-                                        sx={{
-                                            p: 2,
-                                            backgroundColor: '#e3f2fd',
-                                            border: '1px solid #2196f3',
-                                            borderRadius: 1,
-                                            color: '#1565c0',
-                                        }}
-                                    >
-                                        <Typography
-                                            variant="subtitle2"
-                                            sx={{ fontWeight: 'bold' }}
-                                        >
-                                            Task ID: {taskId}
-                                        </Typography>
-                                    </Box>
-                                )}
-
                                 {task && (
                                     <Box
                                         sx={{
                                             p: 2,
-                                            backgroundColor: '#fff3e0',
-                                            border: '1px solid #ff9800',
                                             borderRadius: 1,
-                                            color: '#ef6c00',
+                                            ...getStatusStyles(task.status),
                                         }}
                                     >
                                         <Typography
@@ -369,47 +353,20 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         </Typography>
                                     </Box>
                                 )}
-                            </Box>
-                        )}
-                        {/* Step 3: Pipeline result */}
-                        {currentStep === 3 && (
-                            <Box
-                                minHeight="100px"
-                                sx={{ width: '100%', maxWidth: '500px' }}
-                            >
-                                <Typography variant="h6" gutterBottom>
-                                    {task?.progress_message}
-                                </Typography>
-                                {task?.result && (
-                                    <Box>
-                                        <Typography
-                                            variant="subtitle2"
-                                            gutterBottom
-                                        >
-                                            Result:
-                                        </Typography>
+                                {taskId &&
+                                    taskLogs &&
+                                    taskLogs?.logs?.length > 0 && (
                                         <Box
                                             sx={{
-                                                backgroundColor: '#f5f5f5',
-                                                border: '1px solid #ddd',
+                                                p: 2,
                                                 borderRadius: 1,
-                                                padding: 2,
-                                                height: '60vh',
-                                                overflow: 'auto',
-                                                fontFamily: 'monospace',
-                                                fontSize: '0.875rem',
-                                                whiteSpace: 'pre-wrap',
-                                                wordBreak: 'break-word',
                                             }}
                                         >
-                                            {JSON.stringify(
-                                                task?.result,
-                                                null,
-                                                2,
-                                            )}
+                                            <TaskLogMessages
+                                                messages={taskLogs.logs}
+                                            />
                                         </Box>
-                                    </Box>
-                                )}
+                                    )}
                             </Box>
                         )}
                     </Box>

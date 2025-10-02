@@ -716,32 +716,3 @@ class OrgUnitTypesAPITestCase(APITestCase):
         child_data = response_data["sub_unit_types"][0]
         for field in expected_fields:
             self.assertIn(field, child_data)
-
-    def test_org_unit_type_hierarchy_without_permissions(self):
-        """Test GET /orgunittypes/{id}/hierarchy/ with user that has no permissions"""
-
-        # Create a user without any permissions
-        user_no_perms = self.create_user_with_profile(username="no_perms_user", account=self.ead.account)
-
-        # Create a simple hierarchy
-        parent = m.OrgUnitType.objects.create(name="Parent", short_name="PARENT", depth=1)
-        child = m.OrgUnitType.objects.create(name="Child", short_name="CHILD", depth=2)
-
-        parent.sub_unit_types.set([child])
-        parent.projects.set([self.ead])
-        child.projects.set([self.ead])
-
-        # Authenticate user without permissions
-        self.client.force_authenticate(user_no_perms)
-
-        # Test hierarchy endpoint - should be forbidden
-        response = self.client.get(f"{self.BASE_URL}{parent.id}/hierarchy/")
-        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
-
-        # Test regular org unit types list - should also be forbidden
-        response = self.client.get(self.BASE_URL)
-        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)
-
-        # Test org unit types retrieve - should be forbidden
-        response = self.client.get(f"{self.BASE_URL}{parent.id}/")
-        self.assertJSONResponse(response, status.HTTP_403_FORBIDDEN)

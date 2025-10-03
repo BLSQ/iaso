@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, TextField } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { AutocompleteRenderGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
@@ -8,7 +9,6 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { isArray } from 'lodash';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
@@ -146,6 +146,11 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                         label={formatMessage(label)}
                         required={required}
                         helperText={helperText}
+                        placeholder={
+                            inputValue.length < minCharBeforeQuery
+                                ? formatMessage(MESSAGES.noOptionsText)
+                                : undefined
+                        }
                     />
                 )}
                 renderTags={renderTags}

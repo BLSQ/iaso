@@ -202,6 +202,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Rural',
         id: 'iaso.openHexalabel.rural',
     },
+    back: {
+        defaultMessage: 'Back',
+        id: 'iaso.label.back',
+    },
 });
 
 export default MESSAGES;

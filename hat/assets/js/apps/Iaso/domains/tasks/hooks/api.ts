@@ -68,7 +68,7 @@ export const useGetLogs = (
     autoRefresh = false,
 ): UseQueryResult<TaskLogApiResponse, Error> => {
     return useSnackQuery({
-        queryKey: ['tasks'],
+        queryKey: ['tasksLogs', taskId],
         queryFn: () => getRequest(`/api/tasks/${taskId}/logs/`),
         options: {
             retry: false,

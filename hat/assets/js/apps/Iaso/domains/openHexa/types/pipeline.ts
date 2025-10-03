@@ -20,3 +20,5 @@ export type Pipeline = {
         parameters?: [Parameter];
     };
 };
+
+export type ParameterValues = Record<string, any>;

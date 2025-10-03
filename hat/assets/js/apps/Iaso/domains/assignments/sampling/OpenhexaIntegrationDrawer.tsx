@@ -1,9 +1,11 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useState,
     useMemo,
 } from 'react';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CloseIcon from '@mui/icons-material/Close';
 import {
     Box,
@@ -18,14 +20,13 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
+import { Parameters } from 'Iaso/domains/openHexa/components/Parameters';
 import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
 import { useGetPipelineDetails } from 'Iaso/domains/openHexa/hooks/useGetPipelineDetails';
 import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
-import {
-    ParameterValues,
-    usePipelineParameters,
-} from 'Iaso/domains/openHexa/hooks/usePipelineParameters';
+import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
+
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
@@ -50,9 +51,13 @@ const styles: SxStyles = {
         width: '600px',
     },
     container: {
-        height: 'calc(100vh - 66px)',
         overflow: 'auto',
         p: 2,
+        height: 'calc(100vh - 66px)',
+    },
+    containerHidden: {
+        height: '0',
+        overflow: 'hidden',
     },
     paper: {
         p: 2,
@@ -76,6 +81,7 @@ const styles: SxStyles = {
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
 }) => {
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [allowConfirm, setAllowConfirm] = useState(false);
@@ -106,6 +112,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         mutate: launchTask,
         data: launchResult,
         error,
+        isLoading: isLaunchingTask,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
     const { data: task } = usePollTask(taskId);
@@ -118,10 +125,17 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             ),
         [data, planning.pipeline_uuids],
     );
-    const { renderParameterInput, handleParameterChange } =
-        usePipelineParameters(pipeline, parameterValues, setParameterValues);
-
+    const handleParameterChange = useCallback(
+        (parameterName: string, value: any) => {
+            setParameterValues?.(prev => ({
+                ...prev,
+                [parameterName]: value,
+            }));
+        },
+        [setParameterValues],
+    );
     const handleSubmit = useCallback(() => {
+        setIsSubmitting(true);
         setCurrentStep(2);
         const parameters: Record<string, any> = {
             ...parameterValues,
@@ -139,6 +153,11 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         selectedPipelineId,
         config?.connection_name,
     ]);
+    useEffect(() => {
+        if (isSubmitting && !isLaunchingTask) {
+            setIsSubmitting(false);
+        }
+    }, [isSubmitting, isLaunchingTask]);
 
     const isPipelineRunning = task?.status === 'RUNNING';
     return (
@@ -213,6 +232,20 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         {formatMessage(MESSAGES.launch)}
                                     </Button>
                                 )}
+                                {currentStep === 2 && (
+                                    <Button
+                                        size="small"
+                                        variant="contained"
+                                        onClick={() => setCurrentStep(1)}
+                                        disabled={
+                                            isPipelineRunning || isLaunchingTask
+                                        }
+                                        fullWidth
+                                    >
+                                        <ArrowBackIcon sx={styles.icon} />
+                                        {formatMessage(MESSAGES.back)}
+                                    </Button>
+                                )}
                             </Grid>
                         </Grid>
                     </Paper>
@@ -221,73 +254,72 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                             <LoadingSpinner absolute fixed={false} />
                         )}
                         {/* Step 1: Pipeline selection and parameters */}
-                        {currentStep === 1 && (
-                            <>
-                                <InputComponent
-                                    type="select"
-                                    keyValue="pipeline"
-                                    loading={isFetchingPipelineUuids}
-                                    options={pipelineUuidsOptions}
-                                    value={
-                                        isFetchingPipelineUuids
-                                            ? undefined
-                                            : selectedPipelineId
-                                    }
-                                    onChange={(_, value) =>
-                                        setSelectedPipelineId(value)
-                                    }
-                                    label={MESSAGES.pipeline}
-                                    required
-                                    disabled={
-                                        isFetchingPipelineUuids ||
-                                        planning.pipeline_uuids.length === 1
-                                    }
-                                />
-                                {pipeline && (
-                                    <>
-                                        {!pipeline.currentVersion
-                                            ?.parameters && (
-                                            <Typography
-                                                variant="body2"
-                                                sx={styles.typography}
-                                            >
-                                                {formatMessage(
-                                                    MESSAGES.noParameters,
-                                                )}
-                                            </Typography>
-                                        )}
-                                        {pipeline.code === lQAS_code && (
-                                            <LQASForm
-                                                planning={planning}
-                                                setAllowConfirm={
-                                                    setAllowConfirm
-                                                }
-                                                parameterValues={
-                                                    parameterValues
-                                                }
-                                                handleParameterChange={
-                                                    handleParameterChange
-                                                }
-                                            />
-                                        )}
-                                        {/* Custom pipeline code - this should be changed */}
-                                        {pipeline.code !== lQAS_code &&
-                                            pipeline.currentVersion?.parameters?.map(
-                                                parameter => (
-                                                    <Box
-                                                        key={parameter.name}
-                                                        mb={2}
-                                                    >
-                                                        {renderParameterInput(
-                                                            parameter,
-                                                        )}
-                                                    </Box>
-                                                ),
+                        <Box
+                            sx={
+                                currentStep !== 1
+                                    ? styles.containerHidden
+                                    : undefined
+                            }
+                        >
+                            <InputComponent
+                                type="select"
+                                keyValue="pipeline"
+                                loading={isFetchingPipelineUuids}
+                                options={pipelineUuidsOptions}
+                                value={
+                                    isFetchingPipelineUuids
+                                        ? undefined
+                                        : selectedPipelineId
+                                }
+                                onChange={(_, value) =>
+                                    setSelectedPipelineId(value)
+                                }
+                                label={MESSAGES.pipeline}
+                                required
+                                disabled={
+                                    isFetchingPipelineUuids ||
+                                    planning.pipeline_uuids.length === 1
+                                }
+                            />
+                            {pipeline && (
+                                <>
+                                    {!pipeline.currentVersion?.parameters && (
+                                        <Typography
+                                            variant="body2"
+                                            sx={styles.typography}
+                                        >
+                                            {formatMessage(
+                                                MESSAGES.noParameters,
                                             )}
-                                    </>
-                                )}
-                            </>
-                        )}
+                                        </Typography>
+                                    )}
+                                    {pipeline.code === lQAS_code && (
+                                        <LQASForm
+                                            planning={planning}
+                                            setAllowConfirm={setAllowConfirm}
+                                            parameterValues={parameterValues}
+                                            handleParameterChange={
+                                                handleParameterChange
+                                            }
+                                        />
+                                    )}
+                                    {/* Custom pipeline code - this should be changed */}
+                                    {pipeline.code !== lQAS_code && (
+                                        <Parameters
+                                            parameters={
+                                                pipeline.currentVersion
+                                                    ?.parameters
+                                            }
+                                            parameterValues={parameterValues}
+                                            setParameterValues={
+                                                setParameterValues
+                                            }
+                                            setAllowConfirm={setAllowConfirm}
+                                        />
+                                    )}
+                                </>
+                            )}
+                        </Box>
                         {currentStep === 2 && (
                             <Box sx={styles.taskLogsContainer}>
                                 {error && (

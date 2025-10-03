@@ -134,6 +134,74 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
     },
+    QUEUED: {
+        id: 'iaso.tasks.queued',
+        defaultMessage: 'Queued',
+    },
+    RUNNING: {
+        id: 'iaso.tasks.running',
+        defaultMessage: 'Running',
+    },
+    ERRORED: {
+        id: 'iaso.tasks.errored',
+        defaultMessage: 'Errored',
+    },
+    EXPORTED: {
+        id: 'iaso.tasks.exported',
+        defaultMessage: 'Exported',
+    },
+    SUCCESS: {
+        id: 'iaso.tasks.success',
+        defaultMessage: 'Success',
+    },
+    SKIPPED: {
+        id: 'iaso.tasks.skipped',
+        defaultMessage: 'Skipped',
+    },
+    KILLED: {
+        id: 'iaso.tasks.killed',
+        defaultMessage: 'Killed',
+    },
+    addLevel: {
+        defaultMessage: 'Add level',
+        id: 'iaso.openHexalabel.addLevel',
+    },
+    removeLevel: {
+        defaultMessage: 'Remove level',
+        id: 'iaso.openHexalabel.removeLevel',
+    },
+    collapse: {
+        defaultMessage: 'Collapse',
+        id: 'iaso.openHexalabel.collapse',
+    },
+    expand: {
+        defaultMessage: 'Expand',
+        id: 'iaso.openHexalabel.expand',
+    },
+    quantity: {
+        defaultMessage: 'Qty',
+        id: 'iaso.label.quantityShort',
+    },
+    level: {
+        defaultMessage: 'Level',
+        id: 'iaso.forms.level',
+    },
+    excludedOrgUnits: {
+        defaultMessage: 'Excluded org units',
+        id: 'iaso.openHexalabel.excludedOrgUnits',
+    },
+    ruralUrban: {
+        defaultMessage: 'Rural/Urban',
+        id: 'iaso.openHexalabel.ruralUrban',
+    },
+    urban: {
+        defaultMessage: 'Urban',
+        id: 'iaso.openHexalabel.urban',
+    },
+    rural: {
+        defaultMessage: 'Rural',
+        id: 'iaso.openHexalabel.rural',
+    },
 });
 
 export default MESSAGES;

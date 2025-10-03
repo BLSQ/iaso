@@ -360,6 +360,7 @@
     "iaso.forms.status": "Statut",
     "iaso.forms.sub_source": "Sous-source",
     "iaso.forms.subSource": "Sous-source",
+    "iaso.forms.noResultsFound": "Aucun résultat trouvé",
     "iaso.forms.textSearch": "Recherche textuelle",
     "iaso.forms.title": "Formulaires",
     "iaso.forms.type": "Type",

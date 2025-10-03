@@ -297,19 +297,19 @@ class OpenHexaPipelinesViewSet(ViewSet):
 
             # Update task using proper Task model methods
             if "status" in validated_data:
-                status = validated_data["status"]
+                new_status = validated_data["status"]
 
-                if status == "SUCCESS":
+                if new_status == "SUCCESS":
                     # Use Task model's success reporting method
                     result_data = validated_data.get("result")
                     message = validated_data.get("progress_message", "Pipeline completed successfully")
                     task.report_success_with_result(message, result_data)
-                elif status == "ERRORED":
+                elif new_status == "ERRORED":
                     # Use Task model's error reporting method
                     message = validated_data.get("progress_message", "Pipeline failed")
                     error = Exception(message)
                     task.report_failure(error)
-                elif status == "RUNNING":
+                elif new_status == "RUNNING":
                     # Use Task model's progress reporting method
                     progress_value = validated_data.get("progress_value")
                     progress_message = validated_data.get("progress_message")
@@ -319,8 +319,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
                     )
                 else:
                     # For other statuses, update manually
-                    task.status = status
-                    if status in ["SUCCESS", "ERRORED", "KILLED"]:
+                    task.status = new_status
+                    if new_status in ["SKIPPED", "EXPORTED", "KILLED"]:
                         task.ended_at = timezone.now()
                     task.save()
             else:

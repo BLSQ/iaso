@@ -111,6 +111,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "whz_score_3_2",
         "whz_score_2",
         "whz_score_3",
+        "oedema",
         "exit_type",
         "beneficiary_with_exit_type",
         "number_visits",

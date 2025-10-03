@@ -359,6 +359,7 @@ class ETL:
             current_journey["initial_weight"] = visit.get("initial_weight", None)
             current_journey["muac_size"] = visit.get("muac_size", None)
             current_journey["whz_score"] = visit.get("whz_score", None)
+            current_journey["oedema"] = visit.get("oedema", None)
             if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
                 current_journey["date"] = visit.get("registration_date", None)
             elif visit.get("_visit_date", None) is not None and visit.get("_visit_date", None) != "":
@@ -760,6 +761,7 @@ class ETL:
         monthly_Statistic.whz_score_2 = monthly_journey.get("whz_score_2")
         monthly_Statistic.whz_score_3 = monthly_journey.get("whz_score_3")
         monthly_Statistic.whz_score_3_2 = monthly_journey.get("whz_score_3_2")
+        monthly_Statistic.oedema = monthly_journey.get("oedema")
 
         monthly_Statistic.beneficiary_with_admission_type = monthly_journey.get("beneficiary_with_admission_type")
         monthly_Statistic.beneficiary_with_exit_type = monthly_journey.get("beneficiary_with_exit_type")
@@ -859,7 +861,11 @@ class ETL:
                     default=Value(0),
                     output_field=FloatField(),
                 )
-            )
+            ).annotate(oedema=Case(
+                    When(visit__journey__admission_criteria="OEDEMA", then=Value(1)),
+                    default=Value(0),
+                    output_field=FloatField(),
+                ))
             .order_by("visit__id")
         )
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
@@ -906,7 +912,6 @@ class ETL:
         row = {}
 
         for org_unit, journeys in journey_by_org_units:
-            dataValues = []
             journeys = list(journeys)
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
             row["dataSet"] = "m2GaBFDJDeV"
@@ -914,11 +919,12 @@ class ETL:
 
             for period, journey_period in journey_by_org_units_period:
                 row["period"] = period
-
+                dataValues = []
                 journey_by_gender = groupby(list(journey_period), key=itemgetter("gender"))
                 for gender, journey_gender in journey_by_gender:
                     journey_by_gender = list(journey_gender)
                     admission_program =  journey_by_gender[0]["admission_type"] if len(journey_by_gender) > 0 else ""
+                    admission_criteria = journey_by_gender[0]["admission_criteria"] if len(journey_by_gender) > 0 else ""
                     journey_by_gender_and_nutrition_program = groupby(
                         journey_by_gender, key=itemgetter("nutrition_programme")
                     )
@@ -939,7 +945,6 @@ class ETL:
                             {**dataElement, "categoryOptionCombo": "Ad1FdN2tKlA", "value": row["muac_11_5_12_4"]},
                             {**dataElement, "categoryOptionCombo": "Qnd1bDi04CU", "value": row["muac_above_12_5"]},
                             ])
-                    #row["dataValues"] = dataValues
                     for program, journey_program in journey_by_gender_and_nutrition_program:
                         row["total_beneficiary"] = self.aggregate_by_field_name(journey_program, "beneficiary_with_admission_type")
                         row["muac_under_11_5"] = self.aggregate_by_field_name(journey_program, "muac_under_11_5")
@@ -979,14 +984,20 @@ class ETL:
                                 elif admission_program == "transfer_from_other_tsfp":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "kyIFy9GuWJ6", "value": row["total_beneficiary"]}]) 
                         elif program == "OTP":
-                            #dataValues.extend()
-                            dv = { "dataElement": "", "categoryOptionCombo": "", "categoryCombo": "" }
-                            # if gender == "Male":
-                            #dataValues.append({})
-                        #row["program"] = program
+                            dataElement = {"dataElement": "t4WxTl6Gp14"} #NU_OTP clients at the beginning of reporting period by gender
+                            categoryOptionCombo = None
+                            if gender == "Male":
+                                dataValues.extend([{**dataElement, "categoryOptionCombo": "OUXxVEWIxuM", "value": row["total_beneficiary"]}])
+                                if admission_program == "new_case":
+                                    dataValues.extend([{**dataElement, "categoryOptionCombo": "","value": ""}])
+                                elif admission_program == "relapse":
+                                    dataValues.extend([{**dataElement}])
+                            elif gender == "Female" :
+                                dataValues.extend([{**dataElement, "categoryOptionCombo": "qvjvq1hK7Lc", "value": row["total_beneficiary"]}])
+
                         row["dataValues"] = dataValues
-                        #print("ROW ...:", row)
-                    dataSet = {"dataSet": row["dataSet"], "period": row["period"], "orgUnit": row["orgUnit"], "dataValues": dataValues}
-                    dhis2_aggregated_data.append(dataSet)
+                            #print("ROW ...:", row)
+                dataSet = {"dataSet": row["dataSet"], "period": row["period"], "orgUnit": row["orgUnit"], "dataValues": dataValues}
+                dhis2_aggregated_data.append(dataSet)
 
         return dhis2_aggregated_data

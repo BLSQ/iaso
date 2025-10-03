@@ -28,6 +28,7 @@ class AggregatedJourney:
             row["whz_score_2"] = 0
             row["whz_score_3"] = 0
             row["whz_score_3_2"] = 0
+            row["oedema"] = 0
 
             for (
                 admission_criteria,
@@ -46,6 +47,9 @@ class AggregatedJourney:
                 )
                 row["whz_score_3_2"] = row["whz_score_3_2"] + sum(
                     visit.get("whz_score_3_2", 0) for visit in all_visits_by_criteria
+                )
+                row["oedema"] = row["oedema"] + sum(
+                    visit.get("oedema", 0) for visit in all_visits_by_criteria
                 )
 
                 journey_by_exit_types = groupby(

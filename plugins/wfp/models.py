@@ -104,6 +104,7 @@ class Visit(models.Model):
     journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
     muac_size = models.CharField(max_length=10, null=True)
     whz_color = models.CharField(max_length=10, null=True)
+    oedema = models.FloatField(null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 
@@ -133,6 +134,7 @@ class MonthlyStatistics(models.Model):
     given_sachet_rutf = models.FloatField(null=True, blank=True)
     given_quantity_csb = models.FloatField(null=True, blank=True)
     given_ration_cbt = models.CharField(max_length=255, choices=RATION_SIZE, null=True, blank=True)
+    oedema = models.FloatField(null=True)
     muac_under_11_5 = models.FloatField(null=True)  # MUAC < 11.5cm
     muac_11_5_12_4 = models.FloatField(null=True)  # MUAC between 11.5 and 12.4 cm
     muac_above_12_5 = models.FloatField(null=True)  # MUAC > 12.5 cm

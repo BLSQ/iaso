@@ -16,6 +16,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.textSearch',
         defaultMessage: 'Text search',
     },
+    noResultsFound: {
+        id: 'iaso.forms.noResultsFound',
+        defaultMessage: 'No results found',
+    },
 });
 
 type Props = {
@@ -70,6 +74,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [inputValue, setInputValue] = useState<string>('');
     const [isLoading, setLoading] = useState<boolean>(loading);
+    const [hasSearched, setHasSearched] = useState<boolean>(false);
     const values = useMemo(() => {
         if (isArray(value)) {
             return value;
@@ -93,6 +98,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                     callback: (results?: readonly any[]) => void,
                 ) => {
                     setLoading(true);
+                    setHasSearched(true);
                     fetchOptions(request.input)
                         .then(newOptions => {
                             callback(newOptions);
@@ -111,6 +117,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
         let active = true;
         if (inputValue.length < minCharBeforeQuery) {
             setOptions([...values]);
+            setHasSearched(false);
             return undefined;
         }
 
@@ -134,6 +141,10 @@ export const AsyncSelect: FunctionComponent<Props> = ({
         };
     }, [values, inputValue, fetch, minCharBeforeQuery]);
     const displayedOptions = useMemo(() => [...options] ?? [], [options]);
+    const shouldDisplayOptionsText =
+        hasSearched &&
+        displayedOptions.length === 0 &&
+        inputValue.length >= minCharBeforeQuery;
     return (
         <Box>
             <Autocomplete
@@ -159,14 +170,20 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 disableClearable={!clearable}
                 loading={isLoading}
                 loadingText={
-                    loadingText ? formatMessage(loadingText) : undefined
+                    loadingText && inputValue.length >= minCharBeforeQuery
+                        ? formatMessage(loadingText)
+                        : undefined
                 }
                 options={displayedOptions}
                 value={multi ? values : values.length > 0 && values[0]}
                 getOptionLabel={option => option?.label ?? ''}
                 filterOptions={(x: any[]) => x}
                 autoComplete
-                noOptionsText={formatMessage(MESSAGES.noOptionsText)}
+                noOptionsText={
+                    shouldDisplayOptionsText
+                        ? formatMessage(MESSAGES.noResultsFound)
+                        : undefined
+                }
                 includeInputInList
                 filterSelectedOptions
                 onChange={(_, newValue: any | null) => {
@@ -176,7 +193,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                     setInputValue(newInputValue);
                 }}
                 isOptionEqualToValue={getOptionSelected}
-                freeSolo
+                freeSolo={!shouldDisplayOptionsText}
             />
         </Box>
     );

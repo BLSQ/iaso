@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Tab, Tabs, Typography } from '@mui/material';
-import {
-    MENU_HEIGHT_WITHOUT_TABS,
-    useRedirectTo,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useRedirectTo, useSafeIntl } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { OffLineLangSwitch } from '../../../../../../../hat/assets/js/apps/Iaso/domains/home/components/LangSwitch';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
@@ -27,7 +24,6 @@ const styles: SxStyles = {
             md: 4,
         },
         margin: 0,
-        overflow: 'auto',
         backgroundColor: 'white',
         // '& td': { padding: 0 },
     },
@@ -66,14 +62,7 @@ export const VaccineRepository: FunctionComponent = () => {
                     displayBackButton={false}
                 />
             )}
-            <Box
-                sx={styles.container}
-                height={
-                    isEmbedded
-                        ? '100vh'
-                        : `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`
-                }
-            >
+            <MainWrapper embedded={isEmbedded} sx={styles.container}>
                 {isEmbedded && (
                     <Box
                         sx={{
@@ -104,7 +93,7 @@ export const VaccineRepository: FunctionComponent = () => {
                 </Tabs>
                 {tab === 'forms' && <Forms params={params} />}
                 {tab === 'reports' && <Reports params={params} />}
-            </Box>
+            </MainWrapper>
         </>
     );
 };

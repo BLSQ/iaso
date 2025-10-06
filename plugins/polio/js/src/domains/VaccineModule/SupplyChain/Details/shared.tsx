@@ -1,3 +1,4 @@
+import React, { FunctionComponent, ReactNode } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -7,7 +8,6 @@ import {
     MENU_HEIGHT_WITH_TABS,
     useSafeIntl,
 } from 'bluesquare-components';
-import React, { FunctionComponent, ReactNode } from 'react';
 
 export const useSharedStyles = makeStyles({
     scrollableForm: {

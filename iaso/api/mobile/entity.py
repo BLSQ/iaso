@@ -13,7 +13,7 @@ from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, P
 
 
 def filter_for_mobile_entity(queryset, request):
-    if queryset:
+    if queryset is not None:
         try:
             queryset = queryset.filter_for_mobile_entity(
                 request.query_params.get("limit_date"), request.query_params.get("json_content")

@@ -39,27 +39,19 @@ export const MainWrapper: FC<MainWrapperProps> = ({
     embedded = false,
 }) => {
     const wrapperStyle = useMemo(() => {
+        let style = styles.standalone;
         if (embedded) {
-            return styles.embedded;
+            style = styles.embedded;
         }
         if (navHasTabs) {
-            return styles.standaloneTabbed;
+            style = styles.standaloneTabbed;
         }
 
-        return styles.standalone;
-    }, [embedded, navHasTabs]);
-
-    return (
-        <Box
-            sx={{
-                ...styles.base,
-                ...(Array.isArray(wrapperStyle)
-                    ? wrapperStyle
-                    : [wrapperStyle]),
-                ...(Array.isArray(sx) ? sx : [sx]),
-            }}
-        >
-            {children}
-        </Box>
-    );
+        return {
+            ...styles.base,
+            ...style,
+            ...sx,
+        };
+    }, [embedded, navHasTabs, sx]);
+    return <Box sx={wrapperStyle}>{children}</Box>;
 };

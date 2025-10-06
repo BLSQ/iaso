@@ -36,6 +36,7 @@
     "iaso.assignment.clickRowToUnAssign": "Click on the row to unassign",
     "iaso.assignment.count": "Assignments count",
     "iaso.assignment.deleteAssignments": "Delete assignments for planning : {name}",
+    "iaso.assignment.deleteAssignmentsInfos": "Please delete all assignments first",
     "iaso.assignment.deleteAssignmentsWarning": "Are you sure you want to delete {name} assignments?",
     "iaso.assignment.inAnotherTeam": "in another team",
     "iaso.assignment.label": "Assignment",

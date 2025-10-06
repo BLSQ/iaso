@@ -237,8 +237,6 @@ export const Assignments: FunctionComponent = () => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [planning?.id, currentTeam?.id]);
-    console.log(allAssignments);
-    console.log(orgUnitsList);
     return (
         <>
             <TopBar
@@ -276,8 +274,10 @@ export const Assignments: FunctionComponent = () => {
                                     isLoading || allAssignments.length > 0
                                 }
                                 disabledMessage={
-                                    isLoading || allAssignments.length >= 0
-                                        ? 'DELETE ALL ASSIGNMENTS FIRST'
+                                    isLoading || allAssignments.length > 0
+                                        ? formatMessage(
+                                              MESSAGES.deleteAssignmentsWarning,
+                                          )
                                         : undefined
                                 }
                             />

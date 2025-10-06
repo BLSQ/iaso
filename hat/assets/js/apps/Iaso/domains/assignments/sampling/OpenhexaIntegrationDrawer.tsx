@@ -168,18 +168,20 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     return (
         <>
             <Tooltip title={disabledMessage}>
-                <Button
-                    variant="outlined"
-                    size="medium"
-                    onClick={() => {
-                        setIsOpen(true);
-                    }}
-                    sx={styles.button}
-                    disabled={disabled}
-                >
-                    <OpenHexaSvg sx={styles.icon} />
-                    {formatMessage(MESSAGES.openHexaIntegration)}
-                </Button>
+                <Box>
+                    <Button
+                        variant="outlined"
+                        size="medium"
+                        onClick={() => {
+                            setIsOpen(true);
+                        }}
+                        sx={styles.button}
+                        disabled={disabled}
+                    >
+                        <OpenHexaSvg sx={styles.icon} />
+                        {formatMessage(MESSAGES.openHexaIntegration)}
+                    </Button>
+                </Box>
             </Tooltip>
             <Drawer
                 open={isOpen}

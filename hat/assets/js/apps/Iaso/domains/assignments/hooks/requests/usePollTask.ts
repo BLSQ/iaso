@@ -6,6 +6,7 @@ import { DjangoError } from 'Iaso/types/general';
 
 export const usePollTask = (
     taskId?: number,
+    onSuccess?: (data: Task<any>) => void,
 ): UseQueryResult<Task<any>, DjangoError> => {
     return useSnackQuery({
         queryKey: ['task', taskId],
@@ -22,6 +23,12 @@ export const usePollTask = (
             },
             refetchIntervalInBackground: true,
             retry: false,
+            onSuccess: data => {
+                if (data?.status === 'SUCCESS') {
+                    onSuccess?.(data);
+                }
+                return data;
+            },
         },
     });
 };

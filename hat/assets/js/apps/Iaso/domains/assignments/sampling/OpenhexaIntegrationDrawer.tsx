@@ -18,6 +18,7 @@ import {
     Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
@@ -86,6 +87,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     disabledMessage,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [allowConfirm, setAllowConfirm] = useState(false);
@@ -119,7 +121,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         isLoading: isLaunchingTask,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
-    const { data: task } = usePollTask(taskId);
+    const handleEndTask = useCallback(() => {
+        queryClient.invalidateQueries(['assignmentsList']);
+    }, [queryClient]);
+    const { data: task } = usePollTask(taskId, handleEndTask);
     const { data: taskLogs, isFetching: isFetchingTaskLogs } = useGetLogs(
         taskId,
         task?.status === 'RUNNING',

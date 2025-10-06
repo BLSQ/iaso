@@ -178,7 +178,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         sx={styles.button}
                         disabled={disabled}
                     >
-                        <OpenHexaSvg sx={styles.icon} />
+                        <OpenHexaSvg sx={styles.icon} disabled={disabled} />
                         {formatMessage(MESSAGES.openHexaIntegration)}
                     </Button>
                 </Box>

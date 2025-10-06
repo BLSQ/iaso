@@ -226,6 +226,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
         defaultMessage: 'Assignments deleted successfully',
     },
+    emptyAssignments: {
+        id: 'iaso.assignment.emptyAssignments',
+        defaultMessage: 'Delete assignments',
+    },
 });
 
 export default MESSAGES;

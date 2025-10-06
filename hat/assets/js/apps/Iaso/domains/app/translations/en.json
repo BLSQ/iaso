@@ -16,6 +16,7 @@
     "blsq.treeview.loading": "Loading",
     "blsq.treeview.search.cancel": "Cancel",
     "blsq.treeview.search.confirm": "Confirm",
+    "iaso.assignment.emptyAssignments": "Delete assignments",
     "blsq.treeview.search.inputLabelObject": "Enter search term",
     "blsq.treeview.search.options.label.clear": "Clear",
     "blsq.treeview.search.options.label.noOptions": "No result found",

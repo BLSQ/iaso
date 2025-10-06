@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import DeleteIcon from '@mui/icons-material/Delete';
+import ClearIcon from '@mui/icons-material/Clear';
 import { Button } from '@mui/material';
 import {
     useSafeIntl,
@@ -57,13 +57,14 @@ export const DeleteAssignments: FunctionComponent<Props> = ({
                 Trigger={({ onClick }) => (
                     <Button
                         variant="outlined"
+                        color="error"
                         size="medium"
                         onClick={onClick}
                         sx={styles.button}
                         disabled={disabled}
                     >
-                        <DeleteIcon sx={styles.icon} />
-                        {formatMessage(MESSAGES.delete)}
+                        <ClearIcon sx={styles.icon} />
+                        {formatMessage(MESSAGES.emptyAssignments)}
                     </Button>
                 )}
             />

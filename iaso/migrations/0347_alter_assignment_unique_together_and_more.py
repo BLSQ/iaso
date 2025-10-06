@@ -4,18 +4,21 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0346_tasklog'),
+        ("iaso", "0346_tasklog"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='assignment',
+            name="assignment",
             unique_together=set(),
         ),
         migrations.AddConstraint(
-            model_name='assignment',
-            constraint=models.UniqueConstraint(condition=models.Q(('deleted_at__isnull', True)), fields=('planning', 'org_unit'), name='unique_planning_org_unit_when_not_deleted'),
+            model_name="assignment",
+            constraint=models.UniqueConstraint(
+                condition=models.Q(("deleted_at__isnull", True)),
+                fields=("planning", "org_unit"),
+                name="unique_planning_org_unit_when_not_deleted",
+            ),
         ),
     ]

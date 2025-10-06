@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
-import { Receipt } from '@mui/icons-material';
-import { Box, CircularProgress, IconButton } from '@mui/material';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
+import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
 import { AlertModal, makeFullModal, useSafeIntl } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
@@ -16,11 +16,7 @@ export type Props = {
     closeDialog: () => void;
 };
 
-const TaskLogsModal: FunctionComponent<Props> = ({
-    task,
-    isOpen,
-    closeDialog,
-}) => {
+const TaskModal: FunctionComponent<Props> = ({ task, isOpen, closeDialog }) => {
     const queryClient = useQueryClient();
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
     const [isRunning, setRunning] = useState(false);
@@ -43,31 +39,26 @@ const TaskLogsModal: FunctionComponent<Props> = ({
             closeDialog={closeDialog}
             titleMessage={''}
             id="task-logs-modal"
-            maxWidth="lg"
+            maxWidth="md"
         >
-            <WidgetPaper title={formatMessage(MESSAGES.task)}>
-                <TaskBaseInfo size="small" task={fetchedTask ?? task} />
-            </WidgetPaper>
+            <Grid container spacing={2}>
+                <Grid item xs={8}>
+                    <WidgetPaper title={formatMessage(MESSAGES.task)}>
+                        <TaskBaseInfo size="small" task={fetchedTask ?? task} />
+                    </WidgetPaper>
+                </Grid>
+            </Grid>
+
             <Box
-                style={{
-                    overflowY: 'auto',
-                    maxHeight: 500,
-                    scrollSnapAlign: 'end',
+                sx={{
+                    mt: 2,
                 }}
             >
-                {!isRunning && (data == null || data?.logs.length == 0) && (
-                    <p
-                        style={{
-                            width: '100%',
-                            textAlign: 'center',
-                            fontStyle: 'italic',
-                        }}
-                    >
-                        {formatMessage(MESSAGES.noLogsToShow)}
-                    </p>
-                )}
-                {data?.logs && <TaskLogMessages messages={data.logs} />}
-                <div ref={messagesEndRef} />
+                <TaskLogMessages
+                    messages={data?.logs}
+                    isFetching={isFetching}
+                    isRunning={isRunning}
+                />
             </Box>
             {(isFetching || isRunning) && (
                 <Box
@@ -92,11 +83,11 @@ type IconButtonProps = {
 const Icon: FunctionComponent<IconButtonProps> = ({ onClick }) => {
     return (
         <IconButton color="default" aria-label="Logs" onClick={onClick}>
-            <Receipt />
+            <RemoveRedEyeIcon />
         </IconButton>
     );
 };
 
-const modalWithIconButton = makeFullModal(TaskLogsModal, Icon);
+const modalWithIconButton = makeFullModal(TaskModal, Icon);
 
-export { modalWithIconButton as TaskLogsModal };
+export { modalWithIconButton as TaskModal };

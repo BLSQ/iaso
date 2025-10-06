@@ -331,7 +331,8 @@ class BulkAssignmentSerializer(serializers.Serializer):
         requester = request.user
         assignments_list = []
         for org_unit in self.validated_data["org_units"]:
-            assignment, created = Assignment.objects.get_or_create(
+            # Only consider non-deleted assignments for get_or_create
+            assignment, created = Assignment.objects.filter(deleted_at__isnull=True).get_or_create(
                 planning=planning, org_unit=org_unit, defaults={"created_by": requester}
             )
             old_value = []

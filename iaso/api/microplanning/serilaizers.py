@@ -1,26 +1,16 @@
 from django.contrib.auth.models import User
-from django.db.models import Q
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, serializers
-from rest_framework.decorators import action
+from django.utils import timezone
+from rest_framework import serializers
 from rest_framework.fields import Field
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 
-from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
 from iaso.api.common import (
     DateTimestampField,
-    DeletionFilterBackend,
-    ModelViewSet,
-    ReadOnlyOrHasPermission,
     TimestampField,
 )
-from iaso.api.permission_checks import ReadOnly
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
-from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -166,95 +156,6 @@ class TeamSerializer(serializers.ModelSerializer):
         return validated_data
 
 
-class TeamManagersFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        managers = request.GET.get("managers", None)
-        if managers:
-            manager_ids = [int(val) for val in managers.split(",") if val.isnumeric()]
-            return queryset.filter(manager_id__in=manager_ids)
-        return queryset
-
-
-class TeamProjectsFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        projects = request.GET.get("projects", None)
-        if projects:
-            project_ids = [int(val) for val in projects.split(",") if val.isnumeric()]
-            return queryset.filter(project_id__in=project_ids)
-        return queryset
-
-
-class TeamTypesFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        types = request.GET.get("types", None)
-        if types:
-            team_types = [val for val in types.split(",") if TeamType.is_valid_team_type(val)]
-            return queryset.filter(type__in=team_types)
-        return queryset
-
-
-class TeamSearchFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-
-        if search:
-            queryset = queryset.filter(Q(name__icontains=search)).distinct()
-
-        return queryset
-
-
-class TeamAncestorFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        ancestor_id = request.query_params.get("ancestor")
-
-        if ancestor_id:
-            try:
-                ancestor = Team.objects.get(pk=ancestor_id)
-            except Team.DoesNotExist:
-                raise serializers.ValidationError(
-                    {"ancestor": "Select a valid choice. That choice is not one of the available choices."}
-                )
-            queryset = queryset.filter(path__descendants=ancestor.path)
-
-        return queryset
-
-
-class TeamViewSet(AuditMixin, ModelViewSet):
-    """Api for teams
-
-    Read access for all auth users.
-    Write access necessitate iaso_teams permissions.
-    The tree assignation are handled by settings the child subteams (parent is readonly)
-    """
-
-    remove_results_key_if_paginated = True
-    filter_backends = [
-        TeamAncestorFilterBackend,
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        TeamSearchFilterBackend,
-        DeletionFilterBackend,
-        TeamManagersFilterBackend,
-        TeamTypesFilterBackend,
-        TeamProjectsFilterBackend,
-    ]
-    permission_classes = [ReadOnlyOrHasPermission(CORE_TEAMS_PERMISSION)]  # type: ignore
-    serializer_class = TeamSerializer
-    queryset = Team.objects.all()
-    ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
-    filterset_fields = {
-        "id": ["in"],
-        "name": ["icontains"],
-        "project": ["exact"],
-    }
-
-    audit_serializer = AuditTeamSerializer  # type: ignore
-
-    def get_queryset(self):
-        user = self.request.user
-        return self.queryset.filter_for_user(user).select_related("project").prefetch_related("users", "sub_teams")
-
-
 class PlanningSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -335,56 +236,6 @@ class AuditPlanningSerializer(serializers.ModelSerializer):
     class Meta:
         model = Planning
         fields = "__all__"
-
-
-class PlanningSearchFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        search = request.query_params.get("search")
-
-        if search:
-            queryset = queryset.filter(Q(name__icontains=search)).distinct()
-        return queryset
-
-
-class PublishingStatusFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        status = request.query_params.get("publishing_status", "all")
-        form_ids = request.query_params.get("form_ids", None)
-
-        if status == "draft":
-            queryset = queryset.filter(published_at__isnull=True)
-        if status == "published":
-            queryset = queryset.exclude(published_at__isnull=True)
-        if form_ids:
-            queryset = queryset.filter(forms__id__in=form_ids.split(","))
-        return queryset
-
-
-class PlanningViewSet(AuditMixin, ModelViewSet):
-    remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
-    serializer_class = PlanningSerializer
-    queryset = Planning.objects.all()
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        PublishingStatusFilterBackend,
-        PlanningSearchFilterBackend,
-        DeletionFilterBackend,
-    ]
-    ordering_fields = ["id", "name", "started_at", "ended_at", "project__name", "org_unit__name"]
-    filterset_fields = {
-        "name": ["icontains"],
-        "started_at": ["gte", "lte"],
-        "ended_at": ["gte", "lte"],
-    }
-    audit_serializer = AuditPlanningSerializer  # type: ignore
-
-    def get_queryset(self):
-        user = self.request.user
-        return (
-            self.queryset.filter_for_user(user).select_related("project", "org_unit", "team").prefetch_related("forms")
-        )
 
 
 class AssignmentSerializer(serializers.ModelSerializer):
@@ -504,38 +355,49 @@ class BulkAssignmentSerializer(serializers.Serializer):
         return assignments_list
 
 
-class AssignmentViewSet(AuditMixin, ModelViewSet):
-    """Use the same permission as planning. Multi tenancy is done via the planning. An assignment don't make much
-    sense outside of it's planning."""
+class BulkDeleteAssignmentSerializer(serializers.Serializer):
+    """Bulk soft delete all assignments for a specific planning.
 
-    remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
-    serializer_class = AssignmentSerializer
-    queryset = Assignment.objects.all()
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-        PublishingStatusFilterBackend,
-        DeletionFilterBackend,
-    ]
-    ordering_fields = ["id", "team__name", "user__username"]
-    filterset_fields = {
-        "planning": ["exact"],
-        "team": ["exact"],
-    }
-    audit_serializer = AuditAssignmentSerializer
+    Marks all assignments linked to the specified planning as deleted using the deleted_at field.
+    Audit the modification.
+    """
 
-    def get_queryset(self):
-        user = self.request.user
-        return self.queryset.filter_for_user(user).select_related("user", "team", "org_unit", "org_unit__org_unit_type")
+    planning = serializers.PrimaryKeyRelatedField(queryset=Planning.objects.none(), write_only=True)
 
-    @action(methods=["POST"], detail=False)
-    def bulk_create_assignments(self, request):
-        serializer = BulkAssignmentSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        assignments_list = serializer.save()
-        return_serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
-        return Response(return_serializer.data)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        user = self.context["request"].user
+        self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
+
+    def save(self, **kwargs):
+        planning = self.validated_data["planning"]
+        request = self.context["request"]
+        requester = request.user
+
+        # Get all assignments for this planning that are not already deleted
+        assignments = Assignment.objects.filter(planning=planning, deleted_at__isnull=True).filter_for_user(requester)
+
+        if not assignments.exists():
+            return {"deleted_count": 0, "assignments": []}
+
+        # Store assignment IDs before update for audit trail
+        assignment_ids = list(assignments.values_list("id", flat=True))
+        deleted_count = assignments.update(deleted_at=timezone.now())
+
+        # Create audit entries for each deleted assignment
+        for assignment_id in assignment_ids:
+            assignment = Assignment.objects.get(id=assignment_id)
+            old_value = [AuditAssignmentSerializer(instance=assignment).data]
+            new_value = [AuditAssignmentSerializer(instance=assignment).data]
+            Modification.objects.create(
+                user=requester,
+                past_value=old_value,
+                new_value=new_value,
+                content_object=assignment,
+                source="API " + request.method + request.path,
+            )
+
+        return {"deleted_count": deleted_count, "assignments": list(Assignment.objects.filter(id__in=assignment_ids))}
 
 
 # noinspection PyMethodMayBeStatic
@@ -580,29 +442,3 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             # TODO: investigate type error on next line
             r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
         return r
-
-
-class MobilePlanningViewSet(ModelViewSet):
-    """Planning for mobile, contrary to the more general API.
-    it only returns the Planning where the user has assigned OrgUnit
-    and his assignments
-    """
-
-    remove_results_key_if_paginated = False
-    results_key = "plannings"
-    permission_classes = [IsAuthenticated, ReadOnly]
-    serializer_class = MobilePlanningSerializer
-
-    def get_queryset(self):
-        user = self.request.user
-        # Only return  planning which 1. contain assignment for user 2. are published 3. undeleted
-        # distinct is necessary otherwise if a planning contain multiple assignment for the same user it got duplicated
-
-        return (
-            Planning.objects.filter(assignment__user=user)
-            .exclude(published_at__isnull=True)
-            .exclude(started_at__isnull=True)
-            .exclude(ended_at__isnull=True)
-            .filter(deleted_at__isnull=True)
-            .distinct()
-        )

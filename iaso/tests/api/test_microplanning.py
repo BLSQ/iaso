@@ -7,7 +7,7 @@ from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
-from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
+from iaso.api.microplanning.serilaizers import AssignmentSerializer, PlanningSerializer, TeamSerializer
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
@@ -1142,6 +1142,202 @@ class AssignmentAPITestCase(APITestCase):
         self.assertEqual(last_created_assignment.deleted_at, None)
         self.assertEqual(last_created_assignment.org_unit, self.child2)
         self.assertEqual(last_created_assignment.team, self.team1)
+
+    def test_bulk_delete_assignments(self):
+        """Test successful bulk delete of all assignments for a planning"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Create additional assignments for the planning
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+
+        # Verify we have 4 assignments total (1 from setUp + 3 from bulk create)
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 4)
+
+        # Bulk delete all assignments for this planning
+        delete_data = {"planning": self.planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["deleted_count"], 4)
+        self.assertEqual(r["planning_id"], self.planning.id)
+        self.assertIn("Successfully deleted 4 assignments", r["message"])
+
+        # Verify all assignments are soft deleted
+        assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(assignments.count(), 0)
+
+        # Verify assignments still exist but are marked as deleted
+        all_assignments = Assignment.objects.filter(planning=self.planning)
+        self.assertEqual(all_assignments.count(), 4)
+        for assignment in all_assignments:
+            self.assertIsNotNone(assignment.deleted_at)
+
+    def test_bulk_delete_assignments_no_assignments(self):
+        """Test bulk delete when no assignments exist for the planning"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Create a new planning with no assignments
+        new_planning = Planning.objects.create(
+            project=self.project1,
+            name="empty_planning",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+        )
+
+        delete_data = {"planning": new_planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["deleted_count"], 0)
+        self.assertEqual(r["planning_id"], new_planning.id)
+        self.assertIn("Successfully deleted 0 assignments", r["message"])
+
+    def test_bulk_delete_assignments_no_permission(self):
+        """Test bulk delete without proper permissions"""
+        user_no_perms = self.create_user_with_profile(username="user_no_perms", account=self.account, permissions=[])
+        self.client.force_authenticate(user_no_perms)
+
+        delete_data = {"planning": self.planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        self.assertJSONResponse(response, 403)
+
+    def test_bulk_delete_assignments_invalid_planning(self):
+        """Test bulk delete with planning that doesn't exist or user doesn't have access to"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Test with non-existent planning ID
+        delete_data = {"planning": 99999}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+
+        # Test with planning from different account
+        other_account = Account.objects.create(name="other_account")
+        other_user = self.create_user_with_profile(username="other_user", account=other_account)
+        other_project = other_account.project_set.create(name="other_project")
+        other_planning = Planning.objects.create(
+            project=other_project,
+            name="other_planning",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+        )
+
+        delete_data = {"planning": other_planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 400)
+        self.assertIn("planning", r)
+
+    def test_bulk_delete_assignments_audit_trail(self):
+        """Test that bulk delete creates proper audit trail"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Create additional assignments
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+
+        # Count modifications after bulk create (should be 2 new ones for the created assignments)
+        modifications_after_create = Modification.objects.count()
+
+        # Bulk delete all assignments
+        delete_data = {"planning": self.planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        self.assertJSONResponse(response, 200)
+
+        # Verify audit entries were created for each deleted assignment
+        final_modification_count = Modification.objects.count()
+        # We should have 3 new audit entries (one for each of the 3 assignments: child1, child2, child3)
+        self.assertEqual(final_modification_count, modifications_after_create + 3)
+
+        # Verify audit entries have correct structure
+        delete_modifications = Modification.objects.filter(
+            user=user_with_perms, source__contains="bulk_delete_assignments"
+        )
+        self.assertEqual(delete_modifications.count(), 3)
+
+        for mod in delete_modifications:
+            self.assertEqual(mod.user, user_with_perms)
+            self.assertIn("bulk_delete_assignments", mod.source)
+            self.assertIsInstance(mod.past_value, list)
+            self.assertIsInstance(mod.new_value, list)
+
+    def test_bulk_delete_assignments_already_deleted(self):
+        """Test bulk delete when some assignments are already deleted"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Create additional assignments
+        data = {
+            "planning": self.planning.id,
+            "org_units": [self.child2.id, self.child3.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=data, format="json")
+
+        # Manually delete one assignment
+        assignment_to_delete = Assignment.objects.filter(planning=self.planning, org_unit=self.child2).first()
+        assignment_to_delete.deleted_at = now()
+        assignment_to_delete.save()
+
+        # Verify we have 2 active assignments (1 from setUp + 1 from bulk create, 1 already deleted)
+        active_assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(active_assignments.count(), 2)
+
+        # Bulk delete all assignments
+        delete_data = {"planning": self.planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["deleted_count"], 2)  # Only 2 were actually deleted
+
+        # Verify only 2 assignments were soft deleted (the one already deleted should remain unchanged)
+        active_assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(active_assignments.count(), 0)
+
+        # Verify the previously deleted assignment still has its original deleted_at timestamp
+        assignment_to_delete.refresh_from_db()
+        self.assertIsNotNone(assignment_to_delete.deleted_at)
 
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)

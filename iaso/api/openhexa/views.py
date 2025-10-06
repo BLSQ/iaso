@@ -304,6 +304,14 @@ class OpenHexaPipelinesViewSet(ViewSet):
                     result_data = validated_data.get("result")
                     message = validated_data.get("progress_message", "Pipeline completed successfully")
                     task.report_success_with_result(message, result_data)
+                    progress_value = validated_data.get("progress_value")
+                    end_value = validated_data.get("end_value")
+                    if progress_value is not None:
+                        task.progress_value = progress_value
+                    if end_value is not None:
+                        task.end_value = end_value
+                    if progress_value is not None or end_value is not None:
+                        task.save()
                 elif new_status == "ERRORED":
                     # Use Task model's error reporting method
                     message = validated_data.get("progress_message", "Pipeline failed")

@@ -66,7 +66,6 @@ const styles: SxStyles = {
         p: 2,
     },
     taskLogs: {
-        p: 2,
         borderRadius: 1,
     },
     taskLogsContainer: {
@@ -121,7 +120,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
     const { data: task } = usePollTask(taskId);
-    const { data: taskLogs } = useGetLogs(taskId, task?.status === 'RUNNING');
+    const { data: taskLogs, isFetching: isFetchingTaskLogs } = useGetLogs(
+        taskId,
+        task?.status === 'RUNNING',
+    );
 
     const pipelineUuidsOptions = useMemo(
         () =>
@@ -345,6 +347,8 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         <Box sx={styles.taskLogs}>
                                             <TaskLogMessages
                                                 messages={taskLogs.logs}
+                                                isFetching={isFetchingTaskLogs}
+                                                isRunning={isPipelineRunning}
                                             />
                                         </Box>
                                     )}

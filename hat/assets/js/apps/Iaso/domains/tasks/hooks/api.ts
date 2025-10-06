@@ -73,7 +73,7 @@ export const useGetLogs = (
         options: {
             retry: false,
             keepPreviousData: true,
-            refetchInterval: autoRefresh ? 1000 : false,
+            refetchInterval: autoRefresh ? 5000 : false,
             enabled: Boolean(taskId),
         },
     });

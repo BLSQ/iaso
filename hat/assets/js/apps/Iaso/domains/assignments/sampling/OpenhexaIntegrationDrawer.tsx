@@ -15,6 +15,7 @@ import {
     Typography,
     Paper,
     IconButton,
+    Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -38,6 +39,8 @@ import { StatusInfos } from './StatusInfos';
 
 type Props = {
     planning: Planning;
+    disabled?: boolean;
+    disabledMessage?: string;
 };
 
 const styles: SxStyles = {
@@ -80,6 +83,8 @@ const styles: SxStyles = {
 
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
+    disabled = false,
+    disabledMessage,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
@@ -162,17 +167,20 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const isPipelineRunning = task?.status === 'RUNNING';
     return (
         <>
-            <Button
-                variant="outlined"
-                size="medium"
-                onClick={() => {
-                    setIsOpen(true);
-                }}
-                sx={styles.button}
-            >
-                <OpenHexaSvg sx={styles.icon} />
-                {formatMessage(MESSAGES.openHexaIntegration)}
-            </Button>
+            <Tooltip title={disabledMessage}>
+                <Button
+                    variant="outlined"
+                    size="medium"
+                    onClick={() => {
+                        setIsOpen(true);
+                    }}
+                    sx={styles.button}
+                    disabled={disabled}
+                >
+                    <OpenHexaSvg sx={styles.icon} />
+                    {formatMessage(MESSAGES.openHexaIntegration)}
+                </Button>
+            </Tooltip>
             <Drawer
                 open={isOpen}
                 onClose={() => setIsOpen(false)}

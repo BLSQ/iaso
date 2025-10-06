@@ -206,6 +206,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Back',
         id: 'iaso.label.back',
     },
+    deleteAssignments: {
+        id: 'iaso.assignment.deleteAssignments',
+        defaultMessage: 'Delete assignments for planning : {name}',
+    },
+    deleteAssignmentsWarning: {
+        id: 'iaso.assignment.deleteAssignmentsWarning',
+        defaultMessage: 'Are you sure you want to delete {name} assignments?',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
+    bulkDeleteAssignmentsSuccess: {
+        id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
+        defaultMessage: 'Assignments deleted successfully',
+    },
 });
 
 export default MESSAGES;

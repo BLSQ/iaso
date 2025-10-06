@@ -26,7 +26,7 @@ class MobilePlanningViewSet(ModelViewSet):
         # distinct is necessary otherwise if a planning contain multiple assignment for the same user it got duplicated
 
         return (
-            Planning.objects.filter(assignment__user=user)
+            Planning.objects.filter(assignment__user=user, assignment__deleted_at__isnull=True)
             .exclude(published_at__isnull=True)
             .exclude(started_at__isnull=True)
             .exclude(ended_at__isnull=True)

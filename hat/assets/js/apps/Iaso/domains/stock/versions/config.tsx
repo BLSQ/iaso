@@ -132,7 +132,7 @@ export const useRulesColumns = (
                             />
                             <DeleteDialog
                                 keyName={`delete-sku-${rule.id}`}
-                                titleMessage={MESSAGES.deleteTitle}
+                                titleMessage={MESSAGES.deleteRuleTitle}
                                 message={MESSAGES.deleteText}
                                 onConfirm={() => deleteRule(rule)}
                             />

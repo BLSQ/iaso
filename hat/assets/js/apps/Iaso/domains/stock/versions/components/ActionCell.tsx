@@ -55,7 +55,7 @@ export const VersionsActionCell: FunctionComponent<Props> = ({ version }) => {
             {status === 'DRAFT' && (
                 <DeleteDialog
                     keyName={`stock-rules-version-${id}`}
-                    titleMessage={MESSAGES.deleteTitle}
+                    titleMessage={MESSAGES.deleteVersionTitle}
                     message={MESSAGES.deleteText}
                     onConfirm={() => deleteStockRulesVersion(version)}
                 />

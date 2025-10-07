@@ -763,6 +763,7 @@
     "iaso.label.startPeriod": "Período de inicio",
     "iaso.label.stats": "Estadísticas",
     "iaso.label.stock": "Existencias",
+    "iaso.label.stockRulesVersion": "Versión de las reglas de stock",
     "iaso.label.stockManagement": "Gestión de existencias",
     "iaso.label.stockkeepingunit": "Unidad de mantenimiento de existencias",
     "iaso.label.stopDelete": "Detener eliminación",
@@ -1227,9 +1228,11 @@
     "iaso.stock.display_unit": "Unidad de visualización",
     "iaso.stock.display_precision": "Mostrar precisión",
     "iaso.stock.impact": "Impacto",
-    "iaso.stock.sku.dialog.delete": "¿Estás seguro de que quieres eliminar este SKU?",
+    "iaso.stock.rule.dialog.delete": "¿Estás seguro de que quieres eliminar esta regla?",
     "iaso.stock.rules": "Normas",
-    "iaso.stock.sku.update": "Actualizar SKU"
+    "iaso.stock.sku.dialog.delete": "¿Estás seguro de que quieres eliminar este SKU?",
+    "iaso.stock.sku.update": "Actualizar SKU",
+    "iaso.stock.version.dialog.delete": "¿Estás seguro de que quieres eliminar esta versión?",
     "iaso.snackBar.deleteEntityTypeError": "Se ha producido un error al eliminar un tipo de entidad",
     "iaso.tasks.no_logs_to_show": "No hay registros para mostrar."
 }

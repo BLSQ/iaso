@@ -9,6 +9,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { baseUrls } from 'Iaso/constants/urls';
 import MESSAGES from 'Iaso/domains/stock/messages';
 import { AddVersionModal } from 'Iaso/domains/stock/versions/components/AddVersionModal';
 import {
@@ -59,8 +60,9 @@ const StockRulesVersionsList: FunctionComponent<Props> = ({ params }) => {
         <>
             {isFetching && <LoadingSpinner />}
             <TopBar
-                title={formatMessage(MESSAGES.title)}
-                displayBackButton={false}
+                title={formatMessage(MESSAGES.titleVersion)}
+                displayBackButton={true}
+                goBack={() => redirectTo(baseUrls.stockKeepingUnits)}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <VersionFilters params={params} />
@@ -115,8 +117,9 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
         <>
             {isFetchingRules || (isFetchingVersion && <LoadingSpinner />)}
             <TopBar
-                title={formatMessage(MESSAGES.title)}
-                displayBackButton={false}
+                title={version?.name}
+                displayBackButton={true}
+                goBack={() => redirectTo(baseUrl)}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <RulesFilters params={params} />

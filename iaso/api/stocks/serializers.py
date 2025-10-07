@@ -199,9 +199,11 @@ class StockItemWriteSerializer(serializers.ModelSerializer):
     def validate(self, validated_data):
         request = self.context.get("request")
         sku = validated_data.get("sku")
-        if sku.account_id != request.user.iaso_profile.account_id:
+        account_id = request.user.iaso_profile.account_id
+        if sku.account_id != account_id:
             raise serializers.ValidationError("User doesn't have access to this SKU")
-
+        if not any(p.account_id == account_id for p in validated_data["org_unit"].org_unit_type.projects.all()):
+            raise serializers.ValidationError("User doesn't have access to this OrgUnit")
         return validated_data
 
     def update(self, instance, validated_data):

@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stock',
         id: 'iaso.label.stock',
     },
+    titleVersion: {
+        defaultMessage: 'Stock Rules Version',
+        id: 'iaso.label.stockRulesVersion',
+    },
     id: {
         defaultMessage: 'Identifier',
         id: 'iaso.label.id',
@@ -109,9 +113,17 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Update SKU',
         id: 'iaso.stock.sku.update',
     },
-    deleteTitle: {
+    deleteRuleTitle: {
+        id: 'iaso.stock.rule.dialog.delete',
+        defaultMessage: 'Are you sure you want to delete this rule?',
+    },
+    deleteSkuTitle: {
         id: 'iaso.stock.sku.dialog.delete',
         defaultMessage: 'Are you sure you want to delete this SKU?',
+    },
+    deleteVersionTitle: {
+        id: 'iaso.stock.version.dialog.delete',
+        defaultMessage: 'Are you sure you want to delete this version?',
     },
     deleteError: {
         id: 'iaso.errors.label',

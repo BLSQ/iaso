@@ -35,7 +35,7 @@ export const SkusActionCell: FunctionComponent<Props> = ({ sku }) => {
             />
             <DeleteDialog
                 keyName={`delete-sku-${sku.id}`}
-                titleMessage={MESSAGES.deleteTitle}
+                titleMessage={MESSAGES.deleteSkuTitle}
                 message={MESSAGES.deleteText}
                 onConfirm={() => deleteSku(sku)}
             />

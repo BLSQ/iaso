@@ -202,12 +202,15 @@ class StockItemAPITestCase(APITestCase):
         cls.account_2 = account_2 = m.Account.objects.create(name="Account 2")
         cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Org unit type 1")
         cls.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Org unit type 2")
-        cls.org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
+        cls.org_unit_type_3 = org_unit_type_3 = m.OrgUnitType.objects.create(name="Org unit type 3")
         cls.org_unit_1 = org_unit_1 = m.OrgUnit.objects.create(name="OrgUnit 1", org_unit_type=org_unit_type_1)
         cls.org_unit_2 = org_unit_2 = m.OrgUnit.objects.create(name="OrgUnit 2", org_unit_type=org_unit_type_1)
         cls.project_1 = project_1 = m.Project.objects.create(name="Project 1", account=account_1)
         cls.project_2 = project_2 = m.Project.objects.create(name="Project 2", account=account_1)
-        cls.project_3 = m.Project.objects.create(name="Project 3", account=account_2)
+        cls.project_3 = project_3 = m.Project.objects.create(name="Project 3", account=account_2)
+        org_unit_type_1.projects.set([project_1])
+        org_unit_type_2.projects.set([project_2])
+        org_unit_type_3.projects.set([project_3])
 
         cls.sku_1 = sku_1 = m.StockKeepingUnit.objects.create(
             name="SKU 1",

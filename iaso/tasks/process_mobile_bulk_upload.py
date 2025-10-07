@@ -31,14 +31,16 @@ from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
+from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
-from iaso.models import Instance, Project
+from iaso.models import Instance, Project, StockLedgerItem
 
 
 INSTANCES_JSON = "instances.json"
 ORG_UNITS_JSON = "orgUnits.json"
 STORAGE_LOGS_JSON = "storageLogs.json"
 CHANGE_REQUESTS_JSON = "changeRequests.json"
+STOCK_LEDGER_ITEMS_JSON = "stockLedgerItems.json"
 
 logger = logging.getLogger(__name__)
 
@@ -91,6 +93,16 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                     logger.info("Processing storage logs")
                     storage_logs_data = read_json_file_from_zip(zip_ref, STORAGE_LOGS_JSON)
                     import_storage_logs(storage_logs_data, user)
+
+                if STOCK_LEDGER_ITEMS_JSON in zip_ref.namelist():
+                    logger.info("Processing stock ledger items")
+                    stock_ledger_items_data = read_json_file_from_zip(zip_ref, STOCK_LEDGER_ITEMS_JSON)
+                    import_stock_ledger_items(
+                        user,
+                        project.app_id,
+                        stock_ledger_items_data,
+                        StockLedgerItem.objects.filter_for_project(project),
+                    )
 
                 if CHANGE_REQUESTS_JSON in zip_ref.namelist():
                     logger.info("Processing change requests")

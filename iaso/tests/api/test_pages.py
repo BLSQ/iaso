@@ -2,6 +2,7 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.models import Page
+from iaso.permissions.core_permissions import CORE_PAGE_WRITE_PERMISSION, CORE_PAGES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -14,22 +15,22 @@ class PagesAPITestCase(APITestCase):
         second_account = m.Account.objects.create(name="Second account")
 
         cls.first_user = cls.create_user_with_profile(
-            username="firstUser", account=first_account, permissions=["iaso_page_write"]
+            username="firstUser", account=first_account, permissions=[CORE_PAGE_WRITE_PERMISSION]
         )
         cls.second_user = cls.create_user_with_profile(
-            username="secondUser", account=first_account, permissions=["iaso_page_write"]
+            username="secondUser", account=first_account, permissions=[CORE_PAGE_WRITE_PERMISSION]
         )
         cls.third_user = cls.create_user_with_profile(
-            username="thirdUser", account=second_account, permissions=["iaso_page_write"]
+            username="thirdUser", account=second_account, permissions=[CORE_PAGE_WRITE_PERMISSION]
         )
         cls.fourth_user = cls.create_user_with_profile(
-            username="fourth user", account=first_account, permissions=["iaso_page_write"]
+            username="fourth user", account=first_account, permissions=[CORE_PAGE_WRITE_PERMISSION]
         )
         cls.fifth_user = cls.create_user_with_profile(
-            username="fifth user", account=first_account, permissions=["iaso_page_write"]
+            username="fifth user", account=first_account, permissions=[CORE_PAGE_WRITE_PERMISSION]
         )
         cls.user_no_write_permission = cls.create_user_with_profile(
-            username="NoWritePermission", account=first_account, permissions=["iaso_pages"]
+            username="NoWritePermission", account=first_account, permissions=[CORE_PAGES_PERMISSION]
         )
         cls.user_no_iaso_pages_permission = cls.create_user_with_profile(
             username="userNoIasoPagesPermission", account=first_account

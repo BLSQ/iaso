@@ -3,6 +3,7 @@ import json
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 data_store_content1 = json.dumps({"hello": "world"})
@@ -19,13 +20,13 @@ class LQASCountryAPITestCase(APITestCase):
         cls.account1 = Account.objects.create(name="Account 1")
         cls.account2 = Account.objects.create(name="Account 2")
         cls.authorized_user_regular = cls.create_user_with_profile(
-            username="authorized_polio", account=cls.account1, permissions=["iaso_polio"]
+            username="authorized_polio", account=cls.account1, permissions=[POLIO_PERMISSION]
         )
         cls.authorized_user_admin = cls.create_user_with_profile(
-            username="authorized_polio_admin", account=cls.account1, permissions=["iaso_polio_config"]
+            username="authorized_polio_admin", account=cls.account1, permissions=[POLIO_CONFIG_PERMISSION]
         )
         cls.user_with_perm_but_wrong_account = cls.create_user_with_profile(
-            username="other_account", account=cls.account2, permissions=["iaso_polio", "iaso_polio_config"]
+            username="other_account", account=cls.account2, permissions=[POLIO_PERMISSION, POLIO_CONFIG_PERMISSION]
         )
         cls.unauthorized = cls.create_user_with_profile(username="unauthorized", account=cls.account1)
 

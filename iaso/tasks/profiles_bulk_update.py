@@ -7,17 +7,19 @@ from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied
 
-import iaso.permissions as core_permissions
-
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from hat.audit.audit_logger import AuditLogger
-from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.microplanning import AuditTeamSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.profiles import get_filtered_profiles
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole
 from iaso.models.microplanning import Team, TeamType
+from iaso.permissions.core_permissions import (
+    CORE_TEAMS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+)
+from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 
 
 class TeamAuditLogger(AuditLogger):
@@ -53,36 +55,32 @@ def update_single_profile_from_bulk(
     org_units_to_be_removed = []
 
     user_has_project_restrictions = hasattr(user, "iaso_profile") and bool(user.iaso_profile.projects_ids)
-    user_has_perm_users_admin = user.has_perm(core_permissions.USERS_ADMIN)
+    user_has_perm_users_admin = user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name())
 
-    if teams_id_added and not user.has_perm(core_permissions.TEAMS):
-        raise PermissionDenied(f"User without the permission {core_permissions.TEAMS} cannot add users to team")
+    if teams_id_added and not user.has_perm(CORE_TEAMS_PERMISSION.full_name()):
+        raise PermissionDenied(f"User without the permission {CORE_TEAMS_PERMISSION} cannot add users to team")
 
-    if teams_id_removed and not user.has_perm(core_permissions.TEAMS):
-        raise PermissionDenied(f"User without the permission {core_permissions.TEAMS} cannot remove users to team")
+    if teams_id_removed and not user.has_perm(CORE_TEAMS_PERMISSION.full_name()):
+        raise PermissionDenied(f"User without the permission {CORE_TEAMS_PERMISSION} cannot remove users to team")
 
     if roles_id_added:
         for role_id in roles_id_added:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not user_has_perm_users_admin:
-                    for p in role.group.permissions.all():
-                        CustomPermissionSupport.assert_right_to_assign(user, p.codename)
+                role_permission_names = role.group.permissions.values_list("codename", flat=True)
+                raise_error_if_user_lacks_admin_permission(user, role_permission_names)
                 roles_to_be_added.append(role)
 
     if roles_id_removed:
         for role_id in roles_id_removed:
             role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
             if role.account.id == account_id:
-                if not user_has_perm_users_admin:
-                    for p in role.group.permissions.all():
-                        CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 roles_to_be_removed.append(role)
 
     if projects_ids_added:
         if not user_has_perm_users_admin:
             raise PermissionDenied(
-                f"User with permission {core_permissions.USERS_MANAGED} cannot changed project attributions"
+                f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
         if user_has_project_restrictions:
             authorized_projects_ids = [id_ for id_ in projects_ids_added if id_ in user.iaso_profile.projects_ids]
@@ -93,7 +91,7 @@ def update_single_profile_from_bulk(
     if projects_ids_removed:
         if not user_has_perm_users_admin:
             raise PermissionDenied(
-                f"User with permission {core_permissions.USERS_MANAGED} cannot changed project attributions"
+                f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot changed project attributions"
             )
         if user_has_project_restrictions:
             authorized_projects_ids = [id_ for id_ in projects_ids_removed if id_ in user.iaso_profile.projects_ids]
@@ -105,7 +103,7 @@ def update_single_profile_from_bulk(
         for location_id in location_ids_added:
             if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
-                    f"User with permission {core_permissions.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
@@ -115,7 +113,7 @@ def update_single_profile_from_bulk(
         for location_id in location_ids_removed:
             if managed_org_units and (not user_has_perm_users_admin) and (location_id not in managed_org_units):
                 raise PermissionDenied(
-                    f"User with permission {core_permissions.USERS_MANAGED} cannot change OrgUnits outside of their own "
+                    f"User with permission {CORE_USERS_ADMIN_PERMISSION} cannot change OrgUnits outside of their own "
                     f"health pyramid"
                 )
             org_unit = OrgUnit.objects.select_related("org_unit_type").get(pk=location_id)
@@ -240,7 +238,7 @@ def profiles_bulk_update(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         managed_org_units = None
-        if user and not user.has_perm(core_permissions.USERS_ADMIN):
+        if user and not user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )

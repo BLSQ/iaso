@@ -3,9 +3,8 @@ import typing
 from django.utils.timezone import now
 from rest_framework import status
 
-import iaso.permissions as core_permissions
-
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -21,9 +20,13 @@ class GroupsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version_2)
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         cls.chewbacca = cls.create_user_with_profile(username="chewbacca", account=star_wars)
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -46,7 +49,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 401)
 
     def test_groups_list_wrong_permission(self):
-        f"""GET /groups/ with authenticated user, without the {core_permissions.ORG_UNITS} permission"""
+        f"""GET /groups/ with authenticated user, without the {CORE_ORG_UNITS_PERMISSION} permission"""
 
         self.client.force_authenticate(self.chewbacca)
         response = self.client.get("/api/groups/")

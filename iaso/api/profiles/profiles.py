@@ -21,18 +21,16 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import PROFILE_API
-from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.models import OrgUnit, OrgUnitType, Profile, Project, TenantUser, UserRole
 from iaso.models.tenant_users import UserCreationData, UsernameAlreadyExistsError
+from iaso.permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION, CORE_USERS_MANAGED_PERMISSION
+from iaso.permissions.utils import raise_error_if_user_lacks_admin_permission
 from iaso.utils import is_mobile_request
-from iaso.utils.module_permissions import account_module_permissions
 
 
 PK_ME = "me"
@@ -43,9 +41,9 @@ class HasProfilePermission(permissions.BasePermission):
         pk = view.kwargs.get("pk")
         if view.action in ("retrieve", "partial_update") and pk == PK_ME:
             return True
-        if request.user.has_perm(core_permissions.USERS_ADMIN):
+        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             return True
-        if request.user.has_perm(core_permissions.USERS_MANAGED):
+        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
             return self.has_permission_over_user(request, pk)
 
         return request.method == "GET"
@@ -61,11 +59,11 @@ class HasProfilePermission(permissions.BasePermission):
             new_user_org_units = request.data.get("org_units", [])
             if len(new_user_org_units) == 0:
                 raise PermissionDenied(
-                    f"User with '{core_permissions.USERS_MANAGED}' can not create a new user without a location."
+                    f"User with '{CORE_USERS_MANAGED_PERMISSION}' can not create a new user without a location."
                 )
 
         if pk == request.user.id:
-            raise PermissionDenied(f"User with '{core_permissions.USERS_MANAGED}' cannot edit their own permissions.")
+            raise PermissionDenied(f"User with '{CORE_USERS_MANAGED_PERMISSION}' cannot edit their own permissions.")
 
         org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
 
@@ -94,7 +92,6 @@ def get_filtered_profiles(
     managed_users_only: Optional[bool] = False,
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
-    original_queryset = queryset
     if search:
         queryset = queryset.filter(
             Q(user__username__icontains=search)
@@ -106,7 +103,7 @@ def get_filtered_profiles(
     if perms:
         queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
 
-    if location:
+    if location and not (parent_ou or children_ou):
         queryset = queryset.filter(
             user__iaso_profile__org_units__pk=location,
         ).distinct()
@@ -117,41 +114,24 @@ def get_filtered_profiles(
         if parent_ou and ou.parent is not None:
             parent = ou.parent
 
+        org_unit_filter = Q(user__iaso_profile__org_units__pk=location)
+
         if parent_ou and not children_ou:
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
-            if not parent:
-                queryset = queryset_current
-            else:
-                queryset = (
-                    original_queryset.filter(
-                        user__iaso_profile__org_units__pk=parent.id,
-                    )
-                ) | queryset_current
+        elif children_ou and not parent_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
-                queryset = queryset.distinct()
-
-        if children_ou and not parent_ou:
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            # Get all descendants in hierarchy instead of just direct children
-            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
-            queryset = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous) | queryset_current
-
-        if parent_ou and children_ou:
-            if not parent:
-                queryset_parent = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            else:
-                queryset_parent = original_queryset.filter(
-                    user__iaso_profile__org_units__pk=parent.pk,
-                )
-
-            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-
-            # Get all descendants in hierarchy instead of just direct children
-            descendant_ous = OrgUnit.objects.hierarchy(ou).exclude(id=ou.id)
-            queryset_children = original_queryset.filter(user__iaso_profile__org_units__in=descendant_ous)
-
-            queryset = queryset_current | queryset_parent | queryset_children
+        elif parent_ou and children_ou:
+            descendant_ous = OrgUnit.objects.hierarchy(ou)
+            org_unit_filter |= Q(user__iaso_profile__org_units__in=descendant_ous)
+            if parent:
+                org_unit_filter |= Q(user__iaso_profile__org_units__pk=parent.pk)
+            queryset = queryset.filter(org_unit_filter).distinct()
 
     if org_unit_type:
         if org_unit_type == "unassigned":
@@ -173,9 +153,9 @@ def get_filtered_profiles(
     if managed_users_only:
         if not user:
             raise Exception("User cannot be 'None' when filtering on managed users only")
-        if user.has_perm(core_permissions.USERS_ADMIN):
+        if user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             queryset = queryset  # no filter needed
-        elif user.has_perm(core_permissions.USERS_MANAGED):
+        elif user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )
@@ -198,7 +178,7 @@ class ProfileError(ValidationError):
 class ProfilesViewSet(viewsets.ViewSet):
     f"""Profiles API
 
-    This API is restricted to authenticated users having the "{core_permissions.USERS_ADMIN}" or "{core_permissions.USERS_MANAGED}"
+    This API is restricted to authenticated users having the "{CORE_USERS_ADMIN_PERMISSION}" or "{CORE_USERS_MANAGED_PERMISSION}"
     permission for write core_permissions.
     Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
     the interface.
@@ -615,11 +595,14 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def validate_user_permissions(self, request, current_account):
         user_permissions = []
-        module_permissions = self.module_permissions(current_account)
+        module_permissions = [perm.codename for perm in current_account.permissions_from_active_modules]
+        valid_permissions = []
         for permission_codename in request.data.get("user_permissions", []):
             if permission_codename in module_permissions:
-                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
                 user_permissions.append(get_object_or_404(Permission, codename=permission_codename))
+                valid_permissions.append(permission_codename)
+        # Making sure that this user can actually assign those permissions
+        raise_error_if_user_lacks_admin_permission(request.user, valid_permissions)
         return user_permissions
 
     def validate_org_units(self, request, profile) -> QuerySet[OrgUnit]:
@@ -642,8 +625,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return OrgUnit.objects.filter(id__in=org_unit_ids)
 
         filtered_org_unit_ids = []
-        if request.user.has_perm(core_permissions.USERS_MANAGED) and not request.user.has_perm(
-            core_permissions.USERS_ADMIN
+        if request.user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()) and not request.user.has_perm(
+            CORE_USERS_ADMIN_PERMISSION.full_name()
         ):
             profile_org_units = request.user.iaso_profile.org_units.all()
             managed_org_units = OrgUnit.objects.hierarchy(profile_org_units).values_list("id", flat=True)
@@ -656,7 +639,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                         and not request.user.is_superuser
                     ):
                         raise PermissionDenied(
-                            f"User with {core_permissions.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                            f"User with {CORE_USERS_MANAGED_PERMISSION} cannot assign an OrgUnit outside of their own health "
                             f"pyramid. Trying to assign {org_unit_id}."
                         )
                     filtered_org_unit_ids.append(org_unit_id)
@@ -675,8 +658,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             # Get only a user role linked to the account's user
             user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
-            for p in user_group_item.permissions.all():
-                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
+            # Checking if that user can receive that role
+            role_permission_names = user_group_item.permissions.values_list("codename", flat=True)
+            raise_error_if_user_lacks_admin_permission(request.user, role_permission_names)
             result["groups"].append(user_group_item)
             result["user_roles"].append(user_role_item)
         return result
@@ -684,7 +668,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def validate_projects(self, request: HttpRequest, profile: Profile) -> list:
         new_project_ids = set([pk for pk in request.data.get("projects", []) if str(pk).isdigit()])
 
-        if request.user.has_perm(core_permissions.USERS_ADMIN):
+        if request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
             return Project.objects.filter(id__in=new_project_ids, account=profile.account_id)
 
         user_restricted_projects_ids = set(request.user.iaso_profile.projects_ids)
@@ -719,13 +703,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             raise ValidationError("Invalid editable org unit type submitted.")
 
         return editable_org_unit_types
-
-    @staticmethod
-    def module_permissions(current_account):
-        # Get all modules linked to the current account
-        account_modules = current_account.modules if current_account.modules else []
-        # Get and return all permissions linked to the modules
-        return account_module_permissions(account_modules)
 
     @staticmethod
     def extract_phone_number(request):

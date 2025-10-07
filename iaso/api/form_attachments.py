@@ -6,9 +6,8 @@ from rest_framework.exceptions import NotFound
 from rest_framework.fields import Field
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.models import Form, FormAttachment, Project
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.utils.encryption import calculate_md5
 from iaso.utils.virus_scan.clamav import scan_uploaded_file_for_virus
 
@@ -92,7 +91,7 @@ class FormAttachmentsViewSet(ModelViewSet):
     f"""Form Attachments API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "{core_permissions.FORMS}"  permission.
+    having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/formattachments/?form_id=<form_id>
     GET /api/formattachments/<id>/

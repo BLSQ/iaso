@@ -10,18 +10,18 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinLengthValidator
 from django.db import models
 from django.db.models import Q
-from django.utils import timezone
 from django.utils.functional import cached_property
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from phonenumber_field.modelfields import PhoneNumberField
 from phonenumbers.phonenumberutil import region_code_for_number
 
-from hat.menupermissions.constants import MODULES
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit
+from iaso.modules import MODULES, IasoModule
 
 from .. import periods
+from ..permissions.base import IasoPermission
 from .instances import Instance
 from .project import Project
 
@@ -100,7 +100,7 @@ class ChoiceArrayField(ArrayField):
         return super(ArrayField, self).formfield(**defaults)
 
 
-MODULE_CHOICES = ((modu["codename"], modu["name"]) for modu in MODULES)
+MODULE_CHOICES = ((module.codename, module.name) for module in MODULES)
 
 
 class Account(models.Model):
@@ -163,6 +163,18 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    @property
+    def iaso_modules(self) -> list[IasoModule]:
+        """Convert the modules stored as strings in the database to IasoModule objects."""
+        return [module for module in MODULES if module.codename in self.modules]
+
+    @property
+    def permissions_from_active_modules(self) -> list[IasoPermission]:
+        permissions = []
+        for module in self.iaso_modules:
+            permissions.extend(module.permissions)
+        return permissions
 
 
 class RecordType(models.Model):
@@ -245,119 +257,6 @@ class AlgorithmRun(models.Model):
             "destination": self.version_1.as_list() if self.version_1 else None,
             "source": self.version_2.as_list() if self.version_2 else None,
         }
-
-
-class Task(models.Model):
-    """Represents an asynchronous function that will be run by a background worker for things like a data import"""
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    started_at = models.DateTimeField(null=True, blank=True)
-    ended_at = models.DateTimeField(null=True, blank=True)
-    progress_value = models.IntegerField(default=0)
-    end_value = models.IntegerField(default=0)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name="created_tasks")
-    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-    result = models.JSONField(null=True, blank=True)
-    status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
-    name = models.TextField()
-    params = models.JSONField(null=True, blank=True)
-    queue_answer = models.JSONField(null=True, blank=True)
-    progress_message = models.TextField(null=True, blank=True)
-    should_be_killed = models.BooleanField(default=False)
-    external = models.BooleanField(default=False)
-
-    class Meta:
-        ordering = ["-created_at"]
-        indexes = [
-            models.Index(fields=["created_at"]),
-            models.Index(fields=["name"]),
-            models.Index(fields=["status"]),
-        ]
-
-    def __str__(self):
-        return "%s - %s - %s -%s" % (
-            self.name,
-            self.created_by,
-            self.status,
-            self.created_at,
-        )
-
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "started_at": self.started_at.timestamp() if self.started_at else None,
-            "ended_at": self.ended_at.timestamp() if self.ended_at else None,
-            "params": self.params,
-            "result": self.result,
-            "status": self.status,
-            "created_by": (
-                self.created_by.iaso_profile.as_short_dict()
-                if self.created_by and self.created_by.iaso_profile
-                else None
-            ),
-            "launcher": (
-                self.launcher.iaso_profile.as_short_dict() if self.launcher and self.launcher.iaso_profile else None
-            ),
-            "progress_value": self.progress_value,
-            "end_value": self.end_value,
-            "name": self.name,
-            "queue_answer": self.queue_answer,
-            "progress_message": self.progress_message,
-            "should_be_killed": self.should_be_killed,
-        }
-
-    def stop_if_killed(self):
-        self.refresh_from_db()
-        if self.should_be_killed:
-            logger.warning(f"Stopping Task {self} as it as been marked for kill")
-            self.status = KILLED
-            self.ended_at = timezone.now()
-            self.result = {"result": KILLED, "message": "Killed"}
-            self.save()
-
-    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
-        """Save progress and check if we have been killed
-        We use a separate transaction, so we can report the progress even from a transaction, see services.py
-        """
-        logger.info(f"Task {self} reported {progress_message}")
-        self.refresh_from_db()
-        if self.should_be_killed:
-            self.stop_if_killed()
-            raise KilledException("Killed by user")
-
-        if progress_value:
-            self.progress_value = progress_value
-        if progress_message:
-            self.progress_message = progress_message
-        if end_value:
-            self.end_value = end_value
-        self.save()
-
-    def report_success_with_result(self, message=None, result_data=None):
-        logger.info(f"Task {self} reported success with message {message}")
-        self.progress_message = message
-        self.status = SUCCESS
-        self.ended_at = timezone.now()
-        self.result = {"result": SUCCESS, "data": result_data}
-        self.save()
-
-    def report_success(self, message=None):
-        logger.info(f"Task {self} reported success with message {message}")
-        self.progress_message = message
-        self.status = SUCCESS
-        self.ended_at = timezone.now()
-        self.result = {"result": SUCCESS, "message": message}
-        self.save()
-
-    def terminate_with_error(self, message=None):
-        self.refresh_from_db()
-        logger.error(f"Task {self} ended in error")
-        self.status = ERRORED
-        self.ended_at = timezone.now()
-        self.result = {"result": ERRORED, "message": message if message else "Error"}
-        self.save()
 
 
 class Link(models.Model):

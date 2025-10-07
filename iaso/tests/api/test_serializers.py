@@ -12,6 +12,7 @@ from django.test import TestCase
 from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer, OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -110,13 +111,16 @@ class OrgUnitAPITestCase(APITestCase):
                 first_name="master",
                 last_name="yoda",
                 account=star_wars,
-                permissions=["iaso_org_units"],
+                permissions=[CORE_ORG_UNITS_PERMISSION],
             )
             cls.luke = cls.create_user_with_profile(
-                username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
+                username="luke",
+                account=star_wars,
+                permissions=[CORE_ORG_UNITS_PERMISSION],
+                org_units=[cls.jedi_council_endor],
             )
             cls.raccoon = cls.create_user_with_profile(
-                username="raccoon", account=marvel, permissions=["iaso_org_units"]
+                username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
             )
 
             cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)

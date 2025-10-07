@@ -8,12 +8,16 @@ from django.core import mail
 from django.test import override_settings
 from rest_framework import status
 
-import iaso.permissions as core_permissions
-
-from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.models import Profile
 from iaso.models.microplanning import Team
+from iaso.modules import MODULES
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -118,7 +122,7 @@ PROFILE_LOG_SCHEMA = {
 class ProfileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.MODULES = [module.codename for module in MODULES]
         cls.account = m.Account.objects.create(name="Global Health Initiative", modules=cls.MODULES)
         cls.another_account = m.Account.objects.create(name="Another account")
 
@@ -196,16 +200,16 @@ class ProfileAPITestCase(APITestCase):
 
         # Users.
         cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=cls.account, permissions=[core_permissions._FORMS]
+            username="janedoe", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
         )
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.account, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.account, permissions=[core_permissions._FORMS, core_permissions._USERS_ADMIN]
+            username="jim", account=cls.account, permissions=[CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION]
         )
         cls.jam = cls.create_user_with_profile(
             username="jam",
             account=cls.account,
-            permissions=[core_permissions._USERS_MANAGED],
+            permissions=[CORE_USERS_MANAGED_PERMISSION],
             language="en",
         )
         cls.jom = cls.create_user_with_profile(username="jom", account=cls.account, permissions=[], language="fr")
@@ -215,7 +219,7 @@ class ProfileAPITestCase(APITestCase):
         cls.user_managed_geo_limit = cls.create_user_with_profile(
             username="managedGeoLimit",
             account=cls.account,
-            permissions=[core_permissions._USERS_MANAGED],
+            permissions=[CORE_USERS_MANAGED_PERMISSION],
             org_units=[cls.org_unit_from_parent_type],
         )
         cls.team1 = Team.objects.create(project=cls.project, name="team1", manager=cls.jane)
@@ -367,11 +371,13 @@ class ProfileAPITestCase(APITestCase):
 
         expected_csv += "janedoe,,,,,,,,,,iaso_forms,,,,\r\n"
         expected_csv += f'johndoe,,,,,"{self.org_unit_from_sub_type.pk},{self.org_unit_from_parent_type.pk}",{self.org_unit_from_parent_type.source_ref},,,,,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,,,"iaso_forms,iaso_users",,,,\r\n'
-        expected_csv += "jam,,,,,,,en,,,iaso_users_managed,,,,\r\n"
+        expected_csv += (
+            f'jim,,,,,,,,,,"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",,,,\r\n'
+        )
+        expected_csv += f"jam,,,,,,,en,,,{CORE_USERS_MANAGED_PERMISSION.codename},,,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,,,,\r\n"
         expected_csv += f"jum,,,,,,,,,,,,{self.project.name},,{self.sub_unit_type.pk}\r\n"
-        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,iaso_users_managed,"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
+        expected_csv += f'managedGeoLimit,,,,,{self.org_unit_from_parent_type.id},{self.org_unit_from_parent_type.source_ref},,,,{CORE_USERS_MANAGED_PERMISSION.codename},"{self.user_role_name},{self.user_role_another_account_name}",,,\r\n'
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -434,13 +440,13 @@ class ProfileAPITestCase(APITestCase):
                 "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "organization": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None, 6: None},
                 "permissions": {
-                    0: "iaso_forms",
+                    0: CORE_FORMS_PERMISSION.codename,
                     1: None,
-                    2: "iaso_forms,iaso_users",
-                    3: "iaso_users_managed",
+                    2: f"{CORE_FORMS_PERMISSION.codename},{CORE_USERS_ADMIN_PERMISSION.codename}",
+                    3: CORE_USERS_MANAGED_PERMISSION.codename,
                     4: None,
                     5: None,
-                    6: "iaso_users_managed",
+                    6: CORE_USERS_MANAGED_PERMISSION.codename,
                 },
                 "user_roles": {
                     0: None,
@@ -554,7 +560,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": ["iaso_forms"],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "user_roles": [self.user_role.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -578,7 +584,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": ["iaso_forms"],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "user_roles": [self.user_role.id, self.user_role_another_account.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -656,7 +662,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": ["iaso_forms"],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
             "editable_org_unit_type_ids": [self.sub_unit_type.id],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -736,7 +742,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.child_org_unit.id}],
-            "user_permissions": ["iaso_forms"],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
 
         response = self.client.post("/api/profiles/", data=data, format="json")
@@ -773,7 +779,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
-            "user_permissions": ["iaso_forms"],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
 
@@ -961,7 +967,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "unittest_password",
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
-            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename, CORE_USERS_MANAGED_PERMISSION.codename],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
@@ -976,7 +982,7 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
             "org_units": [{"id": self.org_unit_from_parent_type.id}],
-            "user_permissions": [core_permissions._FORMS, core_permissions._USERS_MANAGED],
+            "user_permissions": [CORE_FORMS_PERMISSION.codename, CORE_USERS_MANAGED_PERMISSION.codename],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         jum.refresh_from_db()
@@ -991,9 +997,9 @@ class ProfileAPITestCase(APITestCase):
         data = {
             "user_name": "jum",
             "user_permissions": [
-                core_permissions._FORMS,
-                core_permissions._USERS_MANAGED,
-                core_permissions._USERS_ADMIN,
+                CORE_FORMS_PERMISSION.codename,
+                CORE_USERS_MANAGED_PERMISSION.codename,
+                CORE_USERS_ADMIN_PERMISSION.codename,
             ],
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
@@ -1001,7 +1007,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=core_permissions._USERS_ADMIN)])
+        group.permissions.set([Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1016,7 +1022,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_can_grant_user_roles(self):
         group = Group.objects.create(name="admin")
-        group.permissions.set([Permission.objects.get(codename=core_permissions._FORMS)])
+        group.permissions.set([Permission.objects.get(codename=CORE_FORMS_PERMISSION.codename)])
         role = m.UserRole.objects.create(account=self.account, group=group)
         self.jam.iaso_profile.org_units.set([self.org_unit_from_parent_type.id])
         self.jum.iaso_profile.org_units.set([self.child_org_unit.id])
@@ -1097,8 +1103,8 @@ class ProfileAPITestCase(APITestCase):
         user = self.jam
         user.iaso_profile.org_units.set([self.org_unit_from_sub_type])
 
-        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
-        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
+        self.assertTrue(user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
+        self.assertFalse(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         profile_to_modify = Profile.objects.get(user=self.jum)
         profile_to_modify.org_units.set([self.org_unit_from_sub_type])
@@ -1117,7 +1123,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(
             response.data["detail"],
             (
-                f"User with iaso.iaso_users_managed cannot assign an OrgUnit outside "
+                f"User with {CORE_USERS_MANAGED_PERMISSION} cannot assign an OrgUnit outside "
                 f"of their own health pyramid. Trying to assign {self.org_unit_from_parent_type.pk}."
             ),
         )
@@ -1129,8 +1135,8 @@ class ProfileAPITestCase(APITestCase):
         """
         user = self.jam
 
-        self.assertTrue(user.has_perm(core_permissions.USERS_MANAGED))
-        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
+        self.assertTrue(user.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
+        self.assertFalse(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         user.iaso_profile.org_units.set([self.org_unit_from_parent_type])
         user.iaso_profile.editable_org_unit_types.set(
@@ -1380,10 +1386,10 @@ class ProfileAPITestCase(APITestCase):
         )
 
         # An "admin" user with `projects` restrictions can assign projects outside his range.
-        user.user_permissions.add(Permission.objects.get(codename=core_permissions._USERS_ADMIN))
+        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename))
         del user._perm_cache
         del user._user_perm_cache
-        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
+        self.assertTrue(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
         user.iaso_profile.projects.set([self.project])
         response = self.client.patch(
             f"/api/profiles/{profile_to_edit.id}/",
@@ -1403,8 +1409,8 @@ class ProfileAPITestCase(APITestCase):
         project_2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=self.account)
 
         user_admin = self.jim
-        self.assertFalse(user_admin.has_perm(core_permissions.USERS_MANAGED))
-        self.assertTrue(user_admin.has_perm(core_permissions.USERS_ADMIN))
+        self.assertFalse(user_admin.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
+        self.assertTrue(user_admin.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         profile_to_edit = user_admin.iaso_profile
         profile_to_edit.projects.set([project_1])
@@ -1457,7 +1463,7 @@ class ProfileAPITestCase(APITestCase):
                 "updated_at": self.user_role.updated_at,
             }
         ]
-        user_permissions = ["iaso_org_units_read"]
+        user_permissions = [CORE_ORG_UNITS_READ_PERMISSION.codename]
         send_email_invitation = False
         projects = [self.project.id]
         phone_number = "32475888888"
@@ -1636,7 +1642,7 @@ class ProfileAPITestCase(APITestCase):
             "password": "yolo",
             "home_page": "/orgunits/list",
             "organization": "Bluesquare",
-            "user_permissions": ["iaso_org_units_read", "iaso_forms"],
+            "user_permissions": [CORE_ORG_UNITS_READ_PERMISSION.codename, CORE_FORMS_PERMISSION.codename],
             "user_roles": [],
             "user_roles_permissions": [],
         }
@@ -1830,6 +1836,40 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(len(profiles), 1)
         self.assertEqual(profiles[0]["user_name"], "janedoe")
 
+    def test_profile_list_search_with_children_ou_preserves_search_results(self):
+        """
+        Test that search results are preserved with `ouChildren`.
+        """
+        # Clear existing org units first.
+        for profile in m.Profile.objects.all():
+            profile.org_units.clear()
+
+        # This user matches "jim" search.
+        self.jim.iaso_profile.org_units.set([self.child_org_unit])
+
+        # Create a user that matches "jim" search but is NOT in the hierarchy.
+        self.create_user_with_profile(
+            username="jim_outside", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
+        )
+
+        self.client.force_authenticate(self.jim)
+
+        # Search for "jim" without ouChildren - should return both `jim` and `jim_outside`.
+        response = self.client.get("/api/profiles/?search=jim")
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        self.assertEqual(len(profiles), 2)
+
+        # Search for "jim" with `ouChildren=true` - should only return jim (who is in hierarchy).
+        response = self.client.get(
+            f"/api/profiles/?search=jim&location={self.org_unit_from_parent_type.pk}&ouChildren=true"
+        )
+        self.assertEqual(response.status_code, 200)
+        profiles = response.json()["profiles"]
+        # Should only return `jim` (who is in the hierarchy) and NOT `jim_outside`.
+        self.assertEqual(len(profiles), 1)
+        self.assertEqual(profiles[0]["user_name"], "jim")
+
     def test_update_password_for_single_user(self):
         single_user = self.jim
         single_user.set_password("p4ssword")
@@ -1857,7 +1897,7 @@ class ProfileAPITestCase(APITestCase):
             username="user_1",
             email="user_1@health.org",
             account=self.account,
-            permissions=[core_permissions._USERS_ADMIN],
+            permissions=[CORE_USERS_ADMIN_PERMISSION],
         )
         m.TenantUser.objects.create(main_user=main_user, account_user=account_user)
 
@@ -1888,25 +1928,25 @@ class ProfileAPITestCase(APITestCase):
 
         # User 1: multiple roles starting with "Data manager" (should be first).
         user1 = self.create_user_with_profile(
-            username="user_multi_data", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+            username="user_multi_data", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         user1.iaso_profile.user_roles.set([data_manager_role, gpei_role])
 
         # User 2: single role "GPEI" (should be middle).
         user2 = self.create_user_with_profile(
-            username="user_single_gpei", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+            username="user_single_gpei", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         user2.iaso_profile.user_roles.set([gpei_role])
 
         # User 3: single role "Zulu" (should be last)
         user3 = self.create_user_with_profile(
-            username="user_single_zulu", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+            username="user_single_zulu", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         user3.iaso_profile.user_roles.set([zulu_role])
 
         # User 4: multiple roles starting with "GPEI coordinators" (should be between user1 and user3)
         user4 = self.create_user_with_profile(
-            username="user_multi_gpei", account=self.account, permissions=[core_permissions._USERS_ADMIN]
+            username="user_multi_gpei", account=self.account, permissions=[CORE_USERS_ADMIN_PERMISSION]
         )
         user4.iaso_profile.user_roles.set([gpei_role, zulu_role])
 

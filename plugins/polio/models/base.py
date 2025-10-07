@@ -32,10 +32,11 @@ from translated_fields import TranslatedField
 
 from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
-from iaso.models.base import Account, Task
+from iaso.models.base import Account
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.models.project import Project
+from iaso.models.task import Task
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -1856,20 +1857,22 @@ class NotificationImport(ModelWithFile):
 
     XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
 
-    EXPECTED_XLSX_COL_NAMES = [
-        "EPID_NUMBER",
-        "VDPV_CATEGORY",
-        "SOURCE(AFP/ENV/CONTACT/HC)",
-        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
-        "COUNTRY",
-        "PROVINCE",
-        "DISTRICT",
-        "SITE_NAME/GEOCODE",
-        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
-        "LINEAGE",
-        "CLOSEST_MATCH_VDPV2",
-        "DATE_RESULTS_RECEIVED",
-    ]
+    # Allow the XLSX file to have variant headers.
+    # EXPECTED_NAME -> [VARIANT1, VARIANT2, …].
+    EXPECTED_XLSX_COL_NAMES = {
+        "EPID_NUMBER": [],
+        "VDPV_CATEGORY": ["VIRUS"],
+        "SOURCE(AFP/ENV/CONTACT/HC)": ["SOURCE"],
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2": ["VDPV_NTD_D/CE_SABIN_1/2"],
+        "COUNTRY": [],
+        "PROVINCE": [],
+        "DISTRICT": [],
+        "SITE_NAME/GEOCODE": ["ES_SITE_NAME"],
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)": ["ONSET/COLLECTION"],
+        "LINEAGE": ["EMERGENCE"],
+        "CLOSEST_MATCH_VDPV2": ["CLOSEST_MATCH_VDPV1/2"],
+        "DATE_RESULTS_RECEIVED": [],
+    }
 
     class Status(models.TextChoices):
         NEW = "new", _("New")
@@ -1909,7 +1912,19 @@ class NotificationImport(ModelWithFile):
 
         # Normalize xlsx header's names.
         df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in cls.EXPECTED_XLSX_COL_NAMES:
+
+        column_mapping = {}
+        for expected_col, variants in cls.EXPECTED_XLSX_COL_NAMES.items():
+            for variant in variants:
+                if variant in df.columns:
+                    column_mapping[variant] = expected_col
+                    break  # Use the first matching variant.
+
+        if column_mapping:
+            df.rename(columns=column_mapping, inplace=True)
+
+        expected_cols = list(cls.EXPECTED_XLSX_COL_NAMES.keys())
+        for name in expected_cols:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
 
@@ -1931,8 +1946,10 @@ class NotificationImport(ModelWithFile):
         )
 
         for idx, row in df.iterrows():
-            # Remove columns not in `EXPECTED_XLSX_COL_NAMES`.
-            row_data_as_dict = {k: v for k, v in row.to_dict().items() if k in self.EXPECTED_XLSX_COL_NAMES}
+            # Remove columns not in expected column names.
+            row_data_as_dict = {
+                k: v for k, v in row.to_dict().items() if k in list(self.EXPECTED_XLSX_COL_NAMES.keys())
+            }
             try:
                 epid_number = importer.clean_str(row["EPID_NUMBER"])
                 org_unit = importer.find_org_unit_in_caches(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-12 16:12+0000\n"
+"POT-Creation-Date: 2025-09-23 13:42+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -107,6 +107,38 @@ msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
+#: iaso/api/openhexa/views.py
+msgid "OpenHexa configuration not found"
+msgstr "Configuration OpenHexa introuvable"
+
+#: iaso/api/openhexa/views.py
+msgid "Failed to retrieve pipelines"
+msgstr "Échec de la récupération des pipelines"
+
+#: iaso/api/openhexa/views.py
+msgid "Failed to retrieve pipeline details"
+msgstr "Échec de la récupération des détails du pipeline"
+
+#: iaso/api/openhexa/views.py
+msgid "Pipeline ID is required"
+msgstr "L'ID de la pipeline est requis"
+
+#: iaso/api/openhexa/views.py
+msgid "Failed to launch pipeline"
+msgstr "Échec du lancement du pipeline"
+
+#: iaso/api/openhexa/views.py
+msgid "Task is not external"
+msgstr "La tâche n'est pas externe"
+
+#: iaso/api/openhexa/views.py
+msgid "Task not found"
+msgstr "Tâche introuvable"
+
+#: iaso/api/openhexa/views.py
+msgid "Failed to update task"
+msgstr "Échec de la mise à jour de la tâche"
+
 #: iaso/api/org_unit_change_request_configurations/filters.py
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Project ID"
@@ -186,6 +218,14 @@ msgstr "IDs des paiements potentiels (séparés par des virgules)"
 msgid "Source version ID"
 msgstr "ID de version source"
 
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Requested fields (comma-separated)"
+msgstr "Champs demandés (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Kind (comma-separated)"
+msgstr "Types (séparés par des virgules)"
+
 #: iaso/api/org_unit_tree/filters.py
 msgid "Ignore empty names"
 msgstr "Ignorer les noms vides"
@@ -202,11 +242,6 @@ msgstr "Statut de validation"
 msgid "You cannot create or edit an Org unit of this type"
 msgstr ""
 "Vous ne pouvez pas créer ou modifier une unité organisationnelle de ce type"
-
-#: iaso/api/org_units.py
-#, python-brace-format
-msgid "Invalid validation status : {validation_status}"
-msgstr "Statut de validation invalide : {validation_status}"
 
 #: iaso/api/org_units.py
 msgid "Can't parse geom"
@@ -343,6 +378,15 @@ msgstr "Format de numéro de téléphone invalide"
 msgid "Invalid phone number"
 msgstr "Numéro de téléphone invalide"
 
+#: iaso/api/setup_account.py
+msgid "Email is required when email_invitation is True"
+msgstr "L'email est requis lorsque l'invitation par email est activée"
+
+#: iaso/api/setup_account.py
+msgid "Password is required when email_invitation is False"
+msgstr ""
+"Le mot de passe est requis lorsque l'invitation par email est désactivée"
+
 #: iaso/models/base.py
 msgid "Aggregate"
 msgstr "Agrégé"
@@ -394,78 +438,6 @@ msgstr "UNIQUE"
 #: iaso/models/base.py
 msgid "MULTIPLE"
 msgstr "MULTIPLE"
-
-#: iaso/models/base.py
-msgid "The Instance must be linked to a Form."
-msgstr "L'instance doit être liée à un formulaire."
-
-#: iaso/models/base.py
-msgid "The OrgUnit must be linked to a OrgUnitType."
-msgstr ""
-"L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
-
-#: iaso/models/base.py
-msgid "The submission must be an instance of a reference form."
-msgstr "La soumission doit être une instance d'un formulaire de référence."
-
-#: iaso/models/base.py
-msgid "Data collection options"
-msgstr "Options de collection de données"
-
-#: iaso/models/base.py
-msgid "Refresh options"
-msgstr "Options de rafraichissement"
-
-#: iaso/models/base.py
-msgid "Geographic options"
-msgstr "Options géographiques"
-
-#: iaso/models/base.py
-msgid "Data Validation"
-msgstr "Validation de données"
-
-#: iaso/models/base.py iaso/permissions.py
-msgid "Entities"
-msgstr "Entités"
-
-#: iaso/models/base.py
-msgid "Planning"
-msgstr "Planification"
-
-#: iaso/models/base.py
-msgid "Specific options"
-msgstr "Options spécifiques"
-
-#: iaso/models/base.py
-msgid "Not specified"
-msgstr "Génériques"
-
-#: iaso/models/base.py
-msgid "Immediate export of instances to DHIS2"
-msgstr "Export immédiat des instances vers DHIS2"
-
-#: iaso/models/base.py
-msgid "GPS localization on start of instance on mobile"
-msgstr "Localisation GPS au démarrage de l'instance sur mobile"
-
-#: iaso/models/base.py
-msgid "Require authentication on mobile"
-msgstr "Authentification requise sur mobile"
-
-#: iaso/models/base.py
-msgid "Mobile: Limit download of orgunit to what the user has access to"
-msgstr ""
-"Mobile : Limiter le téléchargement des unités organisationnelles à celles "
-"auxquelles l'utilisateur a accès"
-
-#: iaso/models/base.py
-msgid ""
-"Saving a form as finalized on mobile triggers an upload attempt immediately "
-"+ everytime network becomes available"
-msgstr ""
-"L'enregistrement d'un formulaire comme finalisé sur mobile déclenche une "
-"tentative de téléchargement immédiatement + à chaque fois que le réseau "
-"devient disponible"
 
 #: iaso/models/comment.py
 msgid "content type"
@@ -565,6 +537,65 @@ msgstr "À pied"
 msgid "Truc"
 msgstr "Truc"
 
+#: iaso/models/feature_flags.py
+msgid "Data collection options"
+msgstr "Options de collection de données"
+
+#: iaso/models/feature_flags.py
+msgid "Refresh options"
+msgstr "Options de rafraichissement"
+
+#: iaso/models/feature_flags.py
+msgid "Geographic options"
+msgstr "Options géographiques"
+
+#: iaso/models/feature_flags.py
+msgid "Data Validation"
+msgstr "Validation de données"
+
+#: iaso/models/feature_flags.py iaso/permissions/core_permissions.py
+msgid "Entities"
+msgstr "Entités"
+
+#: iaso/models/feature_flags.py
+msgid "Planning"
+msgstr "Planification"
+
+#: iaso/models/feature_flags.py
+msgid "Specific options"
+msgstr "Options spécifiques"
+
+#: iaso/models/feature_flags.py
+msgid "Not specified"
+msgstr "Génériques"
+
+#: iaso/models/feature_flags.py
+msgid "Immediate export of instances to DHIS2"
+msgstr "Export immédiat des instances vers DHIS2"
+
+#: iaso/models/feature_flags.py
+msgid "GPS localization on start of instance on mobile"
+msgstr "Localisation GPS au démarrage de l'instance sur mobile"
+
+#: iaso/models/feature_flags.py
+msgid "Require authentication on mobile"
+msgstr "Authentification requise sur mobile"
+
+#: iaso/models/feature_flags.py
+msgid "Mobile: Limit download of orgunit to what the user has access to"
+msgstr ""
+"Mobile : Limiter le téléchargement des unités organisationnelles à celles "
+"auxquelles l'utilisateur a accès"
+
+#: iaso/models/feature_flags.py
+msgid ""
+"Saving a form as finalized on mobile triggers an upload attempt immediately "
+"+ everytime network becomes available"
+msgstr ""
+"L'enregistrement d'un formulaire comme finalisé sur mobile déclenche une "
+"tentative de téléchargement immédiatement + à chaque fois que le réseau "
+"devient disponible"
+
 #: iaso/models/forms.py
 msgid "Day"
 msgstr "Jour"
@@ -602,6 +633,19 @@ msgid "Create change request if form is reference form"
 msgstr ""
 "Créer une demande de modification si le formulaire est un formulaire de "
 "référence"
+
+#: iaso/models/instances.py
+msgid "The Instance must be linked to a Form."
+msgstr "L'instance doit être liée à un formulaire."
+
+#: iaso/models/instances.py
+msgid "The OrgUnit must be linked to a OrgUnitType."
+msgstr ""
+"L'unité organisationnelle doit être liée à un type d'unité organisationnelle."
+
+#: iaso/models/instances.py
+msgid "The submission must be an instance of a reference form."
+msgstr "La soumission doit être une instance d'un formulaire de référence."
 
 #: iaso/models/metric.py
 msgid "Threshold"
@@ -711,169 +755,173 @@ msgstr "Payé"
 msgid "Partially Paid"
 msgstr "Partiellement payé"
 
-#: iaso/permissions.py
-msgid "Formulaires"
-msgstr "Formulaires"
-
-#: iaso/permissions.py
-msgid "Statistiques pour les formulaires"
-msgstr "Statistiques pour les formulaires"
-
-#: iaso/permissions.py
-msgid "Correspondances avec DHIS2"
-msgstr "Correspondances avec DHIS2"
-
-#: iaso/permissions.py
-msgid "modules"
-msgstr "modules"
-
-#: iaso/permissions.py
-msgid "Complétude des données"
-msgstr "Complétude des données"
-
-#: iaso/permissions.py
-msgid "Unités d'organisations"
-msgstr "Unités d'organisations"
-
-#: iaso/permissions.py
-msgid "Historique des unités d'organisation"
-msgstr "Historique des unités d'organisation"
-
-#: iaso/permissions.py
-msgid "Lire les unités d'organisations"
-msgstr "Lire les unités d'organisations"
-
-#: iaso/permissions.py
-msgid "Editer le Registre"
-msgstr "Editer le Registre"
-
-#: iaso/permissions.py
-msgid "Lire le Registre"
-msgstr "Lire le Registre"
-
-#: iaso/permissions.py
-msgid "Correspondances sources"
-msgstr "Correspondances sources"
-
-#: iaso/permissions.py
-msgid "Users"
-msgstr "Utilisateurs"
-
-#: iaso/permissions.py
-msgid "Users managed"
-msgstr "Utilisateurs gérés"
-
-#: iaso/permissions.py
-msgid "Pages"
-msgstr "Pages"
-
-#: iaso/permissions.py
-msgid "Projets"
-msgstr "Projets"
-
-#: iaso/permissions.py
-msgid "Sources"
-msgstr "Sources"
-
-#: iaso/permissions.py
-msgid "Can change the default version of a data source"
-msgstr "Peut modifier la version par défaut d'une source de données"
-
-#: iaso/permissions.py
-msgid "Tâches"
-msgstr "Tâches"
-
-#: iaso/permissions.py
-msgid "Soumissions"
-msgstr "Soumissions"
-
-#: iaso/permissions.py
-msgid "Editer soumissions"
-msgstr "Editer soumissions"
-
-#: iaso/permissions.py
-msgid "Editer le planning"
-msgstr "Editer le planning"
-
-#: iaso/permissions.py
-msgid "Lire le planning"
-msgstr "Lire le planning"
-
-#: iaso/permissions.py
-msgid "Reports"
-msgstr "Rapports"
-
-#: iaso/permissions.py
-msgid "Equipes"
-msgstr "Equipes"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Attributions"
 msgstr "Attributions"
 
-#: iaso/permissions.py
-msgid "Write entity type"
-msgstr "Écrire type d'entité"
+#: iaso/permissions/core_permissions.py
+msgid "Complétude des données"
+msgstr "Complétude des données"
 
-#: iaso/permissions.py
-msgid "Storages"
-msgstr "Stockages"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Completeness stats"
 msgstr "Statistiques de complétude"
 
-#: iaso/permissions.py
-msgid "Workflows"
-msgstr "Flux de travail"
-
-#: iaso/permissions.py
-msgid "Read Entity duplicates"
-msgstr "Lire les doublons d'entités"
-
-#: iaso/permissions.py
-msgid "Write Entity duplicates"
-msgstr "Écrire les doublons d'entités"
-
-#: iaso/permissions.py
-msgid "Manage user roles"
-msgstr "Gérer les rôles utilisateurs"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Read data store"
 msgstr "Lire le stockage de données"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Write data store"
 msgstr "Écrire dans le stockage de données"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
+msgid "Tâches"
+msgstr "Tâches"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write entity type"
+msgstr "Écrire type d'entité"
+
+#: iaso/permissions/core_permissions.py
+msgid "Read Entity duplicates"
+msgstr "Lire les doublons d'entités"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write Entity duplicates"
+msgstr "Écrire les doublons d'entités"
+
+#: iaso/permissions/core_permissions.py
+msgid "Formulaires"
+msgstr "Formulaires"
+
+#: iaso/permissions/core_permissions.py
+msgid "Statistiques pour les formulaires"
+msgstr "Statistiques pour les formulaires"
+
+#: iaso/permissions/core_permissions.py
+msgid "Correspondances sources"
+msgstr "Correspondances sources"
+
+#: iaso/permissions/core_permissions.py
+msgid "Correspondances avec DHIS2"
+msgstr "Correspondances avec DHIS2"
+
+#: iaso/permissions/core_permissions.py
+msgid "Mobile app offline setup"
+msgstr "Export hors ligne de l'application mobile"
+
+#: iaso/permissions/core_permissions.py
+msgid "modules"
+msgstr "modules"
+
+#: iaso/permissions/core_permissions.py
+msgid "Unités d'organisations"
+msgstr "Unités d'organisations"
+
+#: iaso/permissions/core_permissions.py
+msgid "Historique des unités d'organisation"
+msgstr "Historique des unités d'organisation"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire les unités d'organisations"
+msgstr "Lire les unités d'organisations"
+
+#: iaso/permissions/core_permissions.py
 msgid "Org unit types"
 msgstr "Types d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit groups"
 msgstr "Groupes d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit change request review"
 msgstr "Révision des demandes de modification d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit change request configurations"
 msgstr "Configurations des demandes de modification d'unités d'organisation"
 
-#: iaso/permissions.py
-msgid "Write data source"
-msgstr "Écrire source de données"
+#: iaso/permissions/core_permissions.py
+msgid "Pages"
+msgstr "Pages"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Write page"
 msgstr "Écrire page"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Payments page"
 msgstr "Page des paiements"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer le planning"
+msgstr "Editer le planning"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire le planning"
+msgstr "Lire le planning"
+
+#: iaso/permissions/core_permissions.py
+msgid "Projets"
+msgstr "Projets"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer le Registre"
+msgstr "Editer le Registre"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire le Registre"
+msgstr "Lire le Registre"
+
+#: iaso/permissions/core_permissions.py
+msgid "Reports"
+msgstr "Rapports"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write data source"
+msgstr "Écrire source de données"
+
+#: iaso/permissions/core_permissions.py
+msgid "Sources"
+msgstr "Sources"
+
+#: iaso/permissions/core_permissions.py
+msgid "Can change the default version of a data source"
+msgstr "Peut modifier la version par défaut d'une source de données"
+
+#: iaso/permissions/core_permissions.py
+msgid "Storages"
+msgstr "Stockages"
+
+#: iaso/permissions/core_permissions.py
+msgid "Soumissions"
+msgstr "Soumissions"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer soumissions"
+msgstr "Editer soumissions"
+
+#: iaso/permissions/core_permissions.py
+msgid "Equipes"
+msgstr "Equipes"
+
+#: iaso/permissions/core_permissions.py
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: iaso/permissions/core_permissions.py
+msgid "Users managed"
+msgstr "Utilisateurs gérés"
+
+#: iaso/permissions/core_permissions.py
+msgid "Manage user roles"
+msgstr "Gérer les rôles utilisateurs"
+
+#: iaso/permissions/core_permissions.py
+msgid "Workflows"
+msgstr "Flux de travail"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py
@@ -923,13 +971,12 @@ msgstr "Virus détecté"
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
 
-#: iaso/api/setup_account.py
-msgid "Email is required when email_invitation is True"
-msgstr "L'email est requis lorsque l'invitation par email est activée"
+#~ msgid "task_id is required"
+#~ msgstr "L'ID de tâche est requis"
 
-#: iaso/api/setup_account.py
-msgid "Password is required when email_invitation is False"
-msgstr "Le mot de passe est requis lorsque l'invitation par email est désactivée"
+#, python-brace-format
+#~ msgid "Invalid validation status : {validation_status}"
+#~ msgstr "Statut de validation invalide : {validation_status}"
 
 #~ msgid "Polio"
 #~ msgstr "Polio"

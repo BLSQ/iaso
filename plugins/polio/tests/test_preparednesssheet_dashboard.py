@@ -1,7 +1,7 @@
 from iaso.models.base import Account
 from iaso.test import APITestCase
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import SpreadSheetImport
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 
 class PreparednessDashboardsAPITestCase(APITestCase):
@@ -14,15 +14,13 @@ class PreparednessDashboardsAPITestCase(APITestCase):
             username="authorized",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO,
+                POLIO_PERMISSION,
             ],
         )
         cls.authorized_user_admin = cls.create_user_with_profile(
             username="authorized_admin",
             account=cls.account,
-            permissions=[
-                polio_permissions._POLIO_CONFIG,
-            ],
+            permissions=[POLIO_CONFIG_PERMISSION],
         )
         cls.unauthorized_user = cls.create_user_with_profile(
             username="unAuthorized", account=cls.account, permissions=[]

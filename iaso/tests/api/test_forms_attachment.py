@@ -18,6 +18,7 @@ from iaso import models as m
 from iaso.api.query_params import APP_ID
 from iaso.enketo.enketo_url import generate_signed_url
 from iaso.models.forms import form_attachment_upload_to
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase, MockClamavScanResults
 from iaso.utils.virus_scan.model import VirusScanStatus
 
@@ -50,7 +51,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         time = cls.now = now()
 
         star_wars = m.Account.objects.create(name="Star Wars")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
 
         jedi_council = cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         jedi_academy = cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")

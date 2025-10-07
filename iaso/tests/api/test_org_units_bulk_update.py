@@ -6,6 +6,7 @@ from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models import QUEUED, Task
+from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -96,13 +97,16 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_org_units", "iaso_data_tasks"]
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION, CORE_DATA_TASKS_PERMISSION]
         )
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
+            username="luke",
+            account=star_wars,
+            permissions=[CORE_ORG_UNITS_PERMISSION],
+            org_units=[cls.jedi_council_endor],
         )
         cls.raccoon = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=["iaso_org_units", "iaso_data_tasks"]
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION, CORE_DATA_TASKS_PERMISSION]
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)

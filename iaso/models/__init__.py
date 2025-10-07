@@ -18,6 +18,7 @@ from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
+from .task import Task, TaskLog
 from .tenant_users import TenantUser
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
@@ -51,6 +52,7 @@ __all__ = [
     "InstanceLock",
     "InstanceFile",
     "InstanceQuerySet",
+    "KilledException",
     "MetricType",
     "MetricValue",
     "OrgUnit",
@@ -68,9 +70,19 @@ __all__ = [
     "Report",
     "ReportVersion",
     "SourceVersion",
+    "STATUS_TYPE_CHOICES",
+    "QUEUED",
+    "RUNNING",
+    "ERRORED",
+    "EXPORTED",
+    "SUCCESS",
+    "SKIPPED",
+    "KILLED",
     "StorageDevice",
     "StorageLogEntry",
     "StoragePassword",
+    "Task",
+    "TaskLog",
     "Team",
     "TenantUser",
     "Workflow",

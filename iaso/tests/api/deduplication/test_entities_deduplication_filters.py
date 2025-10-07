@@ -1,4 +1,8 @@
 from iaso import models as m
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -22,7 +26,7 @@ class EntitiesDuplicationFiltersAPITestCase(APITestCase):
         cls.user_with_default_ou_rw = cls.create_user_with_profile(
             username="user_with_default_ou_rw",
             account=cls.account,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
             org_units=[cls.org_unit],
         )
 

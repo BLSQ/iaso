@@ -6,10 +6,9 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
 
-import iaso.permissions as core_permissions
-
 from iaso.models import Project
 
+from ...permissions.core_permissions import CORE_USERS_ADMIN_PERMISSION
 from ..common import ModelViewSet
 from .serializers import ProjectSerializer
 
@@ -47,8 +46,8 @@ class ProjectsViewSet(ModelViewSet):
         else:
             # An admin should be able to bypass its own project restrictions in some cases,
             # e.g., for users management.
-            if not self.request.user.has_perm(core_permissions.USERS_ADMIN):
-                raise PermissionDenied(f"{core_permissions.USERS_ADMIN} permission is required to access all projects.")
+            if not self.request.user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()):
+                raise PermissionDenied(f"{CORE_USERS_ADMIN_PERMISSION} permission is required to access all projects.")
 
         return projects
 

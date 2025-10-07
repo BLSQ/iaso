@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_USERS_ROLES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -20,7 +21,9 @@ class UserRoleAPITestCase(APITestCase):
         account.default_version = sw_version
         account.save()
 
-        cls.user = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_user_roles"])
+        cls.user = cls.create_user_with_profile(
+            username="yoda", account=account, permissions=[CORE_USERS_ROLES_PERMISSION]
+        )
         cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=account)
 
         cls.permission = Permission.objects.create(

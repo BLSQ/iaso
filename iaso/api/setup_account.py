@@ -10,23 +10,25 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
-from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS, MODULES
+from hat.menupermissions.constants import DEFAULT_ACCOUNT_FEATURE_FLAGS
 from iaso.api.common import IsAdminOrSuperUser
 from iaso.models import (
     Account,
     AccountFeatureFlag,
     DataSource,
+    FeatureFlag,
     Form,
     FormVersion,
     OrgUnit,
     OrgUnitType,
     Profile,
     Project,
+    ProjectFeatureFlags,
     SourceVersion,
 )
+from iaso.modules import MODULES
 from iaso.odk import parsing
 from iaso.utils import parse_json_field
-from iaso.utils.module_permissions import account_module_permissions
 
 
 logger = logging.getLogger(__name__)
@@ -50,8 +52,7 @@ class SetupAccountSerializer(serializers.Serializer):
         default="en",
         help_text="Language for the user interface and email invitations",
     )
-    modules = serializers.JSONField(required=True, initial=["DEFAULT", "DATA_COLLECTION_FORMS"])  # type: ignore
-    analytics_script = serializers.CharField(required=False)
+    modules = serializers.JSONField(required=True, initial=["DATA_COLLECTION_FORMS"])  # type: ignore
     feature_flags = serializers.JSONField(
         required=False, default=DEFAULT_ACCOUNT_FEATURE_FLAGS, initial=DEFAULT_ACCOUNT_FEATURE_FLAGS
     )
@@ -96,7 +97,7 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_modules(self, modules):
         if len(modules) == 0:
             raise serializers.ValidationError("modules_empty")
-        module_codenames = [module["codename"] for module in MODULES]
+        module_codenames = [module.codename for module in MODULES]
         for module_codename in modules:
             if module_codename not in module_codenames:
                 raise serializers.ValidationError("module_not_exist")
@@ -141,19 +142,21 @@ class SetupAccountSerializer(serializers.Serializer):
                 email=validated_data.get("user_email", ""),
             )
 
-        module_codenames = [module["codename"] for module in MODULES]
+        module_codenames = [module.codename for module in MODULES]
 
         account_modules = []
         for module in validated_data.get("modules"):
             if module in module_codenames and module not in account_modules:
                 account_modules.append(module)
 
+        if "DEFAULT" not in account_modules:
+            account_modules.append("DEFAULT")
+
         account = Account.objects.create(
             name=validated_data["account_name"],
             default_version=source_version,
             user_manual_path=validated_data.get("user_manual_path"),
             modules=account_modules,
-            analytics_script=validated_data.get("analytics_script", ""),
         )
         account.feature_flags.set(validated_data.get("feature_flags"))
 
@@ -161,6 +164,23 @@ class SetupAccountSerializer(serializers.Serializer):
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
 
         initial_project = Project.objects.create(name="Main Project", account=account, app_id=app_id)
+
+        # Add project feature flags
+        codes = [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD, FeatureFlag.TAKE_GPS_ON_FORM]
+        feature_flags = FeatureFlag.objects.filter(code__in=codes)
+
+        found_codes = [ff.code for ff in feature_flags]
+        missing_codes = [code for code in codes if code not in found_codes]
+        if missing_codes:
+            logger.warning(f"Could not find the following feature flags: {missing_codes}")
+
+        project_feature_flags = [
+            ProjectFeatureFlags(project=initial_project, featureflag=feature_flag, configuration=None)
+            for feature_flag in feature_flags
+        ]
+        ProjectFeatureFlags.objects.bulk_create(project_feature_flags)
+
+        logger.info(f"Added project feature flags to project {initial_project.name}")
 
         # Link data source to projects and source version
         data_source.projects.set([initial_project])
@@ -204,7 +224,7 @@ class SetupAccountSerializer(serializers.Serializer):
         profile = Profile.objects.create(account=account, user=user, language=language)
 
         # Get all permissions linked to the modules
-        modules_permissions = account_module_permissions(account_modules)
+        modules_permissions = [perm.codename for perm in account.permissions_from_active_modules]
 
         user.user_permissions.set(Permission.objects.filter(codename__in=modules_permissions))
 
@@ -246,6 +266,7 @@ class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
             "language": request.data.get("language", "en"),
             "modules": request.data.get("modules", []),
             "feature_flags": request.data.get("feature_flags", []),
+            "project_feature_flags": [FeatureFlag.REQUIRE_AUTHENTICATION, FeatureFlag.FORMS_AUTO_UPLOAD],
             "requesting_user": request.user.username if request.user else None,
             "requesting_user_id": request.user.id if request.user else None,
         }

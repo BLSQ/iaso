@@ -20,6 +20,7 @@ from iaso.models import (
     Project,
     SourceVersion,
 )
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -39,8 +40,12 @@ class MobileOrgUnitAPITestCase(APITestCase):
             account=account,
             needs_authentication=True,
         )
-        cls.user = user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_org_units"])
-        cls.user2 = cls.create_user_with_profile(username="user2", account=account2, permissions=["iaso_org_units"])
+        cls.user = user = cls.create_user_with_profile(
+            username="user", account=account, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
+        cls.user2 = cls.create_user_with_profile(
+            username="user2", account=account2, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
         cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)

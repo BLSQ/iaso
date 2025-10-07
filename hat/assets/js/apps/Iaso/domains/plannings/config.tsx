@@ -9,7 +9,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../constants/urls';
 import { PLANNING_WRITE } from '../../utils/permissions';
 import { ProjectChip } from '../projects/components/ProjectChip';
-import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
+import { EditPlanning, DuplicatePlanning } from './components/PlanningDialog';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
 
@@ -92,8 +92,9 @@ export const usePlanningColumns = (
                             <DisplayIfUserHasPerm
                                 permissions={[PLANNING_WRITE]}
                             >
-                                <CreateEditPlanning
+                                <EditPlanning
                                     type="edit"
+                                    iconProps={{}}
                                     id={settings.row.original.id}
                                     name={settings.row.original?.name}
                                     selectedTeam={settings.row.original?.team}
@@ -112,12 +113,17 @@ export const usePlanningColumns = (
                                     description={
                                         settings.row.original?.description
                                     }
+                                    pipelineUuids={
+                                        settings.row.original?.pipeline_uuids ??
+                                        []
+                                    }
                                 />
                             </DisplayIfUserHasPerm>
                             <DisplayIfUserHasPerm
                                 permissions={[PLANNING_WRITE]}
                             >
-                                <CreateEditPlanning
+                                <DuplicatePlanning
+                                    iconProps={{}}
                                     type="copy"
                                     name={settings.row.original?.name}
                                     selectedTeam={settings.row.original?.team}
@@ -135,6 +141,10 @@ export const usePlanningColumns = (
                                     project={settings.row.original?.project}
                                     description={
                                         settings.row.original?.description
+                                    }
+                                    pipelineUuids={
+                                        settings.row.original?.pipeline_uuids ??
+                                        []
                                     }
                                 />
                             </DisplayIfUserHasPerm>

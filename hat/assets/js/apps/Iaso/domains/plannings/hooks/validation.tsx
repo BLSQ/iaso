@@ -1,13 +1,13 @@
 import { useMemo } from 'react';
 import moment from 'moment';
 import { array, date, mixed, number, object, ObjectSchema, string } from 'yup';
+import { useAPIErrorValidator } from '../../../libs/validation';
+import { ValidationError } from '../../../types/utils';
 import { getLocaleDateFormat } from '../../../utils/dates';
 import { SavePlanningQuery } from './requests/useSavePlanning';
-import { ValidationError } from '../../../types/utils';
-import { useAPIErrorValidator } from '../../../libs/validation';
 
 // parse DD-MM-YYYY string to Date object
-// eslint-disable-next-line consistent-return
+
 const parseStringTodate = (_yupValue, pickerValue): Date | void => {
     // skipping if null to be able to set value to null without validation error
     // because we need to be able to send null to the API
@@ -57,6 +57,7 @@ export const usePlanningValidation = (
                 publishingStatus: mixed()
                     .oneOf(['draft', 'published'])
                     .required('requiredField'),
+                pipelineUuids: array().nullable(),
             }),
         [apiValidator],
     );

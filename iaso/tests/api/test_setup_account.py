@@ -3,11 +3,10 @@ from django.contrib.auth.models import Permission, User
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import (
     DEFAULT_ACCOUNT_FEATURE_FLAGS,
-    MODULES,
 )
 from iaso import models as m
+from iaso.modules import MODULES
 from iaso.test import APITestCase
-from iaso.utils.module_permissions import account_module_permissions
 
 
 class SetupAccountApiTestCase(APITestCase):
@@ -20,7 +19,7 @@ class SetupAccountApiTestCase(APITestCase):
         account.default_version = version
         account.save()
         cls.account = account
-        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.MODULES = [module.codename for module in MODULES]
         user = m.User.objects.create(username="link")
         user.set_password("tiredofplayingthesameagain")
         user.save()
@@ -339,9 +338,10 @@ class SetupAccountApiTestCase(APITestCase):
         has_all_perms = True
 
         account = m.Account.objects.filter(name="unittest_account")
-        modules_permissions = account_module_permissions(account.first().modules)
+        modules_permissions = account.first().permissions_from_active_modules
+        codenames = [perm.codename for perm in modules_permissions]
 
-        for perm in Permission.objects.filter(codename__in=modules_permissions):
+        for perm in Permission.objects.filter(codename__in=codenames):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 
@@ -628,7 +628,45 @@ class SetupAccountApiTestCase(APITestCase):
     def test_setup_account_serializer_default_modules(self):
         """Test that the serializer has the correct default modules"""
         serializer = self.get_serializer_instance()
-        self.assertEqual(serializer.fields["modules"].initial, ["DEFAULT", "DATA_COLLECTION_FORMS"])
+        self.assertEqual(serializer.fields["modules"].initial, ["DATA_COLLECTION_FORMS"])
+
+    def test_setup_account_auto_adds_default_module(self):
+        """Test that DEFAULT module is automatically added even when not provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": ["DATA_COLLECTION_FORMS"],  # Only provide DATA_COLLECTION_FORMS
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that DEFAULT module was automatically added
+        account = m.Account.objects.get(name="unittest_account")
+        expected_modules = ["DEFAULT", "DATA_COLLECTION_FORMS"]
+        self.assertEqual(sorted(account.modules), sorted(expected_modules))
+
+    def test_setup_account_does_not_duplicate_default_module(self):
+        """Test that DEFAULT module is not duplicated when already provided"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": ["DEFAULT", "DATA_COLLECTION_FORMS"],  # Explicitly include DEFAULT
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that DEFAULT module is not duplicated
+        account = m.Account.objects.get(name="unittest_account")
+        expected_modules = ["DEFAULT", "DATA_COLLECTION_FORMS"]
+        self.assertEqual(sorted(account.modules), sorted(expected_modules))
+        # Verify no duplicates by checking length
+        self.assertEqual(len(account.modules), 2)
 
     def get_serializer_instance(self):
         """Helper method to get a serializer instance for testing"""
@@ -1067,3 +1105,182 @@ class SetupAccountApiTestCase(APITestCase):
         # Verify the account was properly created with expected properties
         self.assertEqual(created_account.name, data["account_name"])
         self.assertEqual(created_account.modules, data["modules"])
+
+    def test_setup_account_creates_project_feature_flags(self):
+        """Test that setup account creates project feature flags for REQUIRE_AUTHENTICATION and FORMS_AUTO_UPLOAD and TAKE_GPS_ON_FORM"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Get the created project
+        project = m.Project.objects.filter(name="Main Project").first()
+        self.assertIsNotNone(project)
+
+        # Check that the project has the required feature flags
+        self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
+        self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+        self.assertTrue(project.has_feature(m.FeatureFlag.TAKE_GPS_ON_FORM))
+
+        # Verify ProjectFeatureFlags entries exist
+        require_auth_pff = m.ProjectFeatureFlags.objects.filter(
+            project=project, featureflag__code=m.FeatureFlag.REQUIRE_AUTHENTICATION
+        ).first()
+        self.assertIsNotNone(require_auth_pff)
+
+        forms_auto_upload_pff = m.ProjectFeatureFlags.objects.filter(
+            project=project, featureflag__code=m.FeatureFlag.FORMS_AUTO_UPLOAD
+        ).first()
+        self.assertIsNotNone(forms_auto_upload_pff)
+
+        # Verify the feature flags are properly linked
+        self.assertEqual(require_auth_pff.featureflag.code, m.FeatureFlag.REQUIRE_AUTHENTICATION)
+        self.assertEqual(forms_auto_upload_pff.featureflag.code, m.FeatureFlag.FORMS_AUTO_UPLOAD)
+
+    def test_setup_account_project_feature_flags_audit_logging(self):
+        """Test that project feature flags are included in audit logs"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+
+        # Count audit logs before
+        initial_count = Modification.objects.filter(source=SETUP_ACCOUNT_API).count()
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Check that an audit log was created
+        audit_logs = Modification.objects.filter(source=SETUP_ACCOUNT_API)
+        self.assertEqual(audit_logs.count(), initial_count + 1)
+
+        # Get the latest audit log
+        latest_log = audit_logs.latest("id")
+        audit_data = latest_log.new_value[0]
+
+        # Check that project feature flags are included in audit data
+        self.assertIn("project_feature_flags", audit_data)
+        self.assertEqual(
+            audit_data["project_feature_flags"], [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD]
+        )
+
+    def test_setup_account_feature_flags_exist_in_database(self):
+        """Test that the required feature flags exist in the database"""
+        # Verify that the feature flags exist
+        require_auth_flag = m.FeatureFlag.objects.filter(code=m.FeatureFlag.REQUIRE_AUTHENTICATION).first()
+        self.assertIsNotNone(require_auth_flag)
+        self.assertEqual(require_auth_flag.code, m.FeatureFlag.REQUIRE_AUTHENTICATION)
+
+        forms_auto_upload_flag = m.FeatureFlag.objects.filter(code=m.FeatureFlag.FORMS_AUTO_UPLOAD).first()
+        self.assertIsNotNone(forms_auto_upload_flag)
+        self.assertEqual(forms_auto_upload_flag.code, m.FeatureFlag.FORMS_AUTO_UPLOAD)
+
+    def test_setup_account_project_feature_flags_configuration(self):
+        """Test that project feature flags are created with proper configuration"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Get the created project
+        project = m.Project.objects.filter(name="Main Project").first()
+        self.assertIsNotNone(project)
+
+        # Check ProjectFeatureFlags configuration
+        project_feature_flags = m.ProjectFeatureFlags.objects.filter(project=project)
+        self.assertEqual(project_feature_flags.count(), 3)
+
+        for pff in project_feature_flags:
+            # Configuration should be None for these feature flags
+            self.assertIsNone(pff.configuration)
+            # Feature flag should be one of the expected ones
+            self.assertIn(
+                pff.featureflag.code,
+                [m.FeatureFlag.REQUIRE_AUTHENTICATION, m.FeatureFlag.FORMS_AUTO_UPLOAD, m.FeatureFlag.TAKE_GPS_ON_FORM],
+            )
+
+    def test_setup_account_project_feature_flags_multiple_accounts(self):
+        """Test that multiple accounts get the same project feature flags"""
+        self.client.force_authenticate(self.admin)
+
+        # Create first account
+        data1 = {
+            "account_name": "unittest_account_1",
+            "user_username": "unittest_username_1",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response1 = self.client.post("/api/setupaccount/", data=data1, format="json")
+        self.assertEqual(response1.status_code, 201)
+
+        # Create second account
+        data2 = {
+            "account_name": "unittest_account_2",
+            "user_username": "unittest_username_2",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response2 = self.client.post("/api/setupaccount/", data=data2, format="json")
+        self.assertEqual(response2.status_code, 201)
+
+        # Get both projects
+        project1 = m.Project.objects.filter(name="Main Project", account__name="unittest_account_1").first()
+        project2 = m.Project.objects.filter(name="Main Project", account__name="unittest_account_2").first()
+
+        self.assertIsNotNone(project1)
+        self.assertIsNotNone(project2)
+
+        # Both projects should have the same feature flags
+        for project in [project1, project2]:
+            self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
+            self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+
+            # Check ProjectFeatureFlags entries
+            pff_count = m.ProjectFeatureFlags.objects.filter(project=project).count()
+            self.assertEqual(pff_count, 3)
+
+    def test_setup_account_project_feature_flags_integration(self):
+        """Test that project feature flags work with the complete setup account flow"""
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+            "email_invitation": False,
+            "modules": self.MODULES,
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        # Verify complete integration
+        account = m.Account.objects.get(name="unittest_account")
+        project = m.Project.objects.get(name="Main Project", account=account)
+
+        # Project should have feature flags
+        self.assertTrue(project.has_feature(m.FeatureFlag.REQUIRE_AUTHENTICATION))
+        self.assertTrue(project.has_feature(m.FeatureFlag.FORMS_AUTO_UPLOAD))
+
+        # Project should be linked to account
+        self.assertEqual(project.account, account)
+
+        # Project should have proper app_id
+        expected_app_id = "unittest_account"
+        self.assertEqual(project.app_id, expected_app_id)

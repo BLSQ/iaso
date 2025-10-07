@@ -165,6 +165,11 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         selectedPipelineId,
         config?.connection_name,
     ]);
+    const handleChangePipeline = useCallback((_, value) => {
+        setSelectedPipelineId(value);
+        setParameterValues(undefined);
+        setAllowConfirm(false);
+    }, []);
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
@@ -288,9 +293,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         ? undefined
                                         : selectedPipelineId
                                 }
-                                onChange={(_, value) =>
-                                    setSelectedPipelineId(value)
-                                }
+                                onChange={handleChangePipeline}
                                 label={MESSAGES.pipeline}
                                 required
                                 disabled={

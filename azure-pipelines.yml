@@ -123,6 +123,15 @@ steps:
     testResultsFiles: "**/TEST-*.xml"
     testRunTitle: 'Python $(PYTHON_VERSION)'
 
+- script: |
+    echo "Disk space before Docker cleanup:"
+    df -h
+    echo "Cleaning up Docker system to free space..."
+    docker system prune -af --volumes
+    echo "Disk space after Docker cleanup:"
+    df -h
+  displayName: 'Clean up Docker system'
+
 - script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
   env:
     VERSION_NAME: test
@@ -131,13 +140,22 @@ steps:
 - script: docker save -o $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz dev-coda2
   displayName: 'Save docker image'
 
+- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash dev-coda2 -c "cp -R /opt/app/static /opt/mount/"
+  displayName: 'Copy static files from docker'
+
+- script: |
+    echo "Disk space before cleanup:"
+    df -h
+    echo "Removing Docker image to free space..."
+    docker rmi dev-coda2 || true
+    echo "Disk space after cleanup:"
+    df -h
+  displayName: 'Clean up Docker image'
+
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: dev-coda2
-
-- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash dev-coda2 -c "cp -R /opt/app/static /opt/mount/"
-  displayName: 'Copy static files from docker'
 
 - task: PublishBuildArtifacts@1
   inputs:

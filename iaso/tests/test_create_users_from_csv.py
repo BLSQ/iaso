@@ -8,12 +8,16 @@ from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
 
-import iaso.permissions as core_permissions
-
-from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.api.profiles.bulk_create_users import BulkCreateUserFromCsvViewSet
 from iaso.models import BulkCreateUserCsvFile, Profile
+from iaso.modules import MODULES
+from iaso.permissions.core_permissions import (
+    CORE_SUBMISSIONS_PERMISSION,
+    CORE_USERS_ADMIN_PERMISSION,
+    CORE_USERS_MANAGED_PERMISSION,
+    CORE_USERS_ROLES_PERMISSION,
+)
 from iaso.test import APITestCase
 from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
 
@@ -45,7 +49,7 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.source = m.DataSource.objects.create(name="Source")
         version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
-        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.MODULES = [module.codename for module in MODULES]
         account1 = m.Account.objects.create(name="Account 1")
         cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
         cls.project2 = m.Project.objects.create(name="Project 2", app_id="project.2", account=account1)
@@ -53,7 +57,9 @@ class BulkCreateCsvTestCase(APITestCase):
         account1.save()
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=account1, permissions=["iaso_submissions", "iaso_users", "iaso_user_roles"]
+            username="yoda",
+            account=account1,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_USERS_ADMIN_PERMISSION, CORE_USERS_ROLES_PERMISSION],
         )
         cls.obi = cls.create_user_with_profile(username="obi", account=account1)
         cls.john = cls.create_user_with_profile(username="johndoe", account=account1, is_superuser=True)
@@ -73,7 +79,7 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.user_managed_geo_limit = cls.create_user_with_profile(
             username="user_managed_geo_limit",
             account=account1,
-            permissions=["iaso_users_managed"],
+            permissions=[CORE_USERS_MANAGED_PERMISSION],
         )
 
         cls.org_unit1 = m.OrgUnit.objects.create(name="Coruscant Jedi Council", version=version1, source_ref="foo")
@@ -88,7 +94,9 @@ class BulkCreateCsvTestCase(APITestCase):
 
         account2 = m.Account.objects.create(name="Account 2")
         cls.create_user_with_profile(
-            username="han solo", account=account2, permissions=["iaso_submissions", "iaso_users"]
+            username="han solo",
+            account=account2,
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_USERS_ADMIN_PERMISSION],
         )
 
         cls.version1 = version1
@@ -487,7 +495,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.groups.all().first(), new_user_1_user_role.first().group)
         self.assertEqual(len(new_user_2_user_roles), 2)
         self.assertEqual(len(new_user_2.groups.all()), 2)
-        self.assertEqual(
+        self.assertCountEqual(
             [user_role.group for user_role in new_user_2_user_roles],
             [group for group in new_user_2.groups.all()],
         )
@@ -546,8 +554,8 @@ class BulkCreateCsvTestCase(APITestCase):
             self.assertEqual(csv_line_2[projects_index], self.project.name)
 
         self.user_managed_geo_limit.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
-        self.assertTrue(self.user_managed_geo_limit.has_perm(core_permissions.USERS_MANAGED))
-        self.assertFalse(self.user_managed_geo_limit.has_perm(core_permissions.USERS_ADMIN))
+        self.assertTrue(self.user_managed_geo_limit.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
+        self.assertFalse(self.user_managed_geo_limit.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         self.client.force_authenticate(self.user_managed_geo_limit)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:
@@ -569,8 +577,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.yoda.iaso_profile.projects.set([self.project2.id])  # Restrict user to `project2`.
         self.yoda.iaso_profile.org_units.set([self.org_unit_child])
-        self.assertFalse(self.yoda.has_perm(core_permissions.USERS_MANAGED))
-        self.assertTrue(self.yoda.has_perm(core_permissions.USERS_ADMIN))
+        self.assertFalse(self.yoda.has_perm(CORE_USERS_MANAGED_PERMISSION.full_name()))
+        self.assertTrue(self.yoda.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
 
         self.client.force_authenticate(self.yoda)
         with open("iaso/tests/fixtures/test_user_bulk_create_managed_geo_limit.csv") as csv_users:

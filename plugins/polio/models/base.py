@@ -32,10 +32,11 @@ from translated_fields import TranslatedField
 
 from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
-from iaso.models.base import Account, Task
+from iaso.models.base import Account
 from iaso.models.entity import UserNotAuthError
 from iaso.models.microplanning import Team
 from iaso.models.project import Project
+from iaso.models.task import Task
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import (
     DefaultSoftDeletableManager,

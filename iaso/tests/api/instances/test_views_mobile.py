@@ -2,6 +2,7 @@ from uuid import uuid4
 
 from iaso import models as m
 from iaso.api.query_params import IMAGE_ONLY
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_SUBMISSIONS_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 
 
@@ -20,7 +21,7 @@ class InstancesMobileAPITestCase(TaskAPITestCase):
             last_name="Doe",
             first_name="John",
             account=account,
-            permissions=["iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
 
         cls.org_unit_type = m.OrgUnitType.objects.create(name="Org Unit Type", short_name="Cnc")

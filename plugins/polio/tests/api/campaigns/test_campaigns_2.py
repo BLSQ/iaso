@@ -13,6 +13,7 @@ from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account, Team
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 from plugins.polio.export_utils import format_date
 from plugins.polio.models import Campaign, CampaignType, ReasonForDelay, Round, RoundScope
@@ -46,7 +47,9 @@ class PolioAPITestCase(APITestCase):
         cls.star_wars = m.Account.objects.create(name="Star Wars")
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         cls.account = Account.objects.create(name="Global Health Initiative", default_version=cls.source_version_1)
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.account, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.org_unit = m.OrgUnit.objects.create(
             org_unit_type=m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc"),
@@ -78,7 +81,7 @@ class PolioAPITestCase(APITestCase):
         ]
 
         cls.luke = cls.create_user_with_profile(
-            username="luke", account=cls.account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+            username="luke", account=cls.account, permissions=[CORE_FORMS_PERMISSION], org_units=[cls.child_org_unit]
         )
         cls.initial_data = ReasonForDelay.objects.create(
             account=cls.account, key_name="INITIAL_DATA", name_en="Initial data", name_fr="Données initiales"

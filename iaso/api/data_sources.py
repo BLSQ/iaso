@@ -10,9 +10,16 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
+from iaso.permissions.core_permissions import (
+    CORE_LINKS_PERMISSION,
+    CORE_MAPPINGS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION,
+    CORE_SOURCE_PERMISSION,
+    CORE_SOURCE_WRITE_PERMISSION,
+)
 
 from ..dhis2.url_helper import clean_url
 from ..tasks.dhis2_ou_importer import get_api
@@ -135,7 +142,9 @@ class DataSourceSerializer(serializers.ModelSerializer):
             source_version = get_object_or_404(data_source.versions, id=default_version_id)
 
             new_default_version: bool = data_source.default_version_id != source_version.id
-            if new_default_version and not request.user.has_perm(core_permissions.SOURCES_CAN_CHANGE_DEFAULT_VERSION):
+            if new_default_version and not request.user.has_perm(
+                CORE_SOURCE_CAN_CHANGE_DEFAULT_VERSION_PERMISSION.full_name()
+            ):
                 raise serializers.ValidationError(
                     "User doesn't have the permission to change the default version of a data source."
                 )
@@ -225,23 +234,23 @@ class DataSourcePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # see permission logic on view
         read_perms = (
-            core_permissions.MAPPINGS,
-            core_permissions.ORG_UNITS,
-            core_permissions.ORG_UNITS_READ,
-            core_permissions.LINKS,
-            core_permissions.SOURCES,
+            CORE_MAPPINGS_PERMISSION,
+            CORE_ORG_UNITS_PERMISSION,
+            CORE_ORG_UNITS_READ_PERMISSION,
+            CORE_LINKS_PERMISSION,
+            CORE_SOURCE_PERMISSION,
         )
-        write_perms = (core_permissions.SOURCE_WRITE,)
+        write_perms = (CORE_SOURCE_WRITE_PERMISSION,)
 
         if (
             request.method in permissions.SAFE_METHODS
             and request.user
-            and any(request.user.has_perm(perm) for perm in read_perms)
+            and any(request.user.has_perm(perm.full_name()) for perm in read_perms)
         ):
             return True
         if request.method == "DELETE":
             return False
-        return request.user and any(request.user.has_perm(perm) for perm in write_perms)
+        return request.user and any(request.user.has_perm(perm.full_name()) for perm in write_perms)
 
 
 class DataSourceDropdownSerializer(serializers.ModelSerializer):
@@ -255,9 +264,9 @@ class DataSourceViewSet(ModelViewSet):
     f"""Data source API
 
     This API is restricted to authenticated users:
-    Read permission are restricted to user with at least one of the "{core_permissions.SOURCES}",
-        "{core_permissions.MAPPINGS}","{core_permissions.ORG_UNITS}","{core_permissions.ORG_UNITS_READ}" and "{core_permissions.LINKS}" permissions
-    Write permission are restricted to user having the "{core_permissions.SOURCES}" permissions.
+    Read permission are restricted to user with at least one of the "{CORE_SOURCE_PERMISSION}",
+        "{CORE_MAPPINGS_PERMISSION}","{CORE_ORG_UNITS_PERMISSION}","{CORE_ORG_UNITS_READ_PERMISSION}" and "{CORE_LINKS_PERMISSION}" permissions
+    Write permission are restricted to user having the "{CORE_SOURCE_PERMISSION}" permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>

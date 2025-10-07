@@ -38,6 +38,8 @@ export const useGetApprovalProposalsParams = (
         data_source_synchronization_id: params.data_source_synchronization_id,
         ids: params.ids,
         is_soft_deleted: params.is_soft_deleted || false,
+        requested_fields: params.requested_fields,
+        kind: params.kind,
     };
 };
 

@@ -20,7 +20,6 @@ from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
@@ -864,6 +863,8 @@ class OrgUnitChangeRequest(SoftDeletableModel):
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+        from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
+
         initial_org_unit = deepcopy(self.org_unit)
 
         for field_name in approved_fields:

@@ -12,23 +12,23 @@ from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.base import Group
 from iaso.models.org_unit import OrgUnit
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.models import Campaign, Round
 from plugins.polio.models.base import SubActivity
+from plugins.polio.permissions import POLIO_PERMISSION
 
 
 class HasPolioPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(polio_permissions.POLIO) or request.user.is_superuser
+            request.user.has_perm(POLIO_PERMISSION.full_name()) or request.user.is_superuser
         )
 
 
 class HasPolioAdminPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(polio_permissions.POLIO_CONFIG) or request.user.is_superuser
+            request.user.has_perm(POLIO_PERMISSION.full_name()) or request.user.is_superuser
         )
 
 

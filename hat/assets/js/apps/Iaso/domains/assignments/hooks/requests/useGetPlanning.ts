@@ -1,10 +1,10 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../../libs/apiHooks';
 import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
 import { Planning } from '../../types/planning';
 
 const getPlanning = (planningId: string): Promise<Planning> => {
-    return getRequest(`/api/microplanning/plannings/${planningId}`);
+    return getRequest(`/api/microplanning/plannings/${planningId}/`);
 };
 export const useGetPlanning = (
     planningId: string,

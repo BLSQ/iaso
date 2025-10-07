@@ -561,3 +561,25 @@ class DataSourceVersionsSynchronizationModelTestCase(TestCase):
                 org_unit=self.angola_facility_without_source_ref_to_compare_with
             ).count(),
         )
+
+    def test_parent_modification(self):
+        # Simulate a parent modification.
+        self.angola_facility_to_compare_with.parent = self.angola_country_to_compare_with
+        self.angola_facility_to_compare_with.save()
+
+        data_source_sync = m.DataSourceVersionsSynchronization.objects.create(
+            name="Parent modification test",
+            source_version_to_update=self.source_version_to_update,
+            source_version_to_compare_with=self.source_version_to_compare_with,
+            json_diff=None,
+            account=self.account,
+            created_by=self.user,
+        )
+
+        data_source_sync.create_json_diff()
+        data_source_sync.synchronize_source_versions()
+
+        angola_facility_change_request = m.OrgUnitChangeRequest.objects.get(
+            org_unit__source_ref="id-4", data_source_synchronization=data_source_sync
+        )
+        self.assertEqual(angola_facility_change_request.new_parent, self.angola_country_to_update)

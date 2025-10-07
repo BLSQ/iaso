@@ -169,6 +169,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.orgUnitSingle',
         defaultMessage: 'Org unit',
     },
+    pipelines: {
+        id: 'iaso.label.pipelines',
+        defaultMessage: 'Pipelines',
+    },
 });
 
 export default MESSAGES;

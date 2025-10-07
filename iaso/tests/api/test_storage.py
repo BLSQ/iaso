@@ -23,6 +23,7 @@ from iaso.models import (
     StorageDevice,
     StorageLogEntry,
 )
+from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -37,7 +38,9 @@ class StorageAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.star_wars = Account.objects.create(name="Star Wars")
         star_wars_2 = Account.objects.create(name="Star Wars revival")
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.star_wars, permissions=["iaso_storages"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.star_wars, permissions=[CORE_STORAGE_PERMISSION]
+        )
 
         # Another user that doesn't have the iaso_storages permission
         cls.another_user = cls.create_user_with_profile(username="yoda2", account=cls.star_wars)

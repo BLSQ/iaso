@@ -4,7 +4,6 @@ from iaso import models as m
 from iaso.models.base import Account
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.models import (
     Campaign,
     DestructionReport,
@@ -16,6 +15,7 @@ from plugins.polio.models import (
     VaccineStock,
 )
 from plugins.polio.models.base import Round
+from plugins.polio.permissions import POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION
 
 
 class SupplyChainDashboardsAPITestCase(APITestCase):
@@ -31,9 +31,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         cls.authorized_user_read = cls.create_user_with_profile(
             username="authorized_read",
             account=cls.account,
-            permissions=[
-                polio_permissions._POLIO_VACCINE_SUPPLY_CHAIN_READ,
-            ],
+            permissions=[POLIO_VACCINE_SUPPLY_CHAIN_READ_PERMISSION],
         )
         cls.unauthorized_user = cls.create_user_with_profile(
             username="unAuthorized", account=cls.account, permissions=[]

@@ -9,6 +9,7 @@ import time_machine
 from hat.audit import models as audit_models
 from iaso import models as m
 from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
 from iaso.utils.models.common import get_creator_name
 
@@ -53,7 +54,9 @@ class OrgUnitChangeRequestAPITestCase(TaskAPITestCase):
         project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
         user = cls.create_user_with_profile(username="user", account=account)
         user_with_review_perm = cls.create_user_with_profile(
-            username="user_with_review_perm", account=account, permissions=["iaso_org_unit_change_request_review"]
+            username="user_with_review_perm",
+            account=account,
+            permissions=[CORE_ORG_UNITS_CHANGE_REQUEST_REVIEW_PERMISSION],
         )
 
         data_source.projects.set([project])

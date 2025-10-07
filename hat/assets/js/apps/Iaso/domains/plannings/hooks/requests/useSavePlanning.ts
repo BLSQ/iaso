@@ -19,6 +19,7 @@ export type SavePlanningQuery = {
     description?: string;
     project: number;
     publishingStatus: 'published' | 'draft';
+    pipelineUuids: string[];
 };
 
 const convertToApi = data => {
@@ -28,6 +29,7 @@ const convertToApi = data => {
         endDate,
         startDate,
         publishingStatus,
+        pipelineUuids,
         ...converted
     } = data;
     if (selectedTeam !== undefined) {
@@ -48,12 +50,22 @@ const convertToApi = data => {
     } else if (publishingStatus === 'draft') {
         converted.published_at = null;
     }
+    if (pipelineUuids !== undefined) {
+        converted.pipeline_uuids = pipelineUuids;
+    }
 
     return converted;
 };
 export const convertAPIErrorsToState = data => {
-    const { team, org_unit, ended_at, started_at, published_at, ...converted } =
-        data;
+    const {
+        team,
+        org_unit,
+        ended_at,
+        started_at,
+        published_at,
+        pipeline_uuids,
+        ...converted
+    } = data;
     if (team !== undefined) {
         converted.selectedTeam = team;
     }
@@ -69,6 +81,9 @@ export const convertAPIErrorsToState = data => {
     }
     if (published_at !== undefined) {
         converted.publishingStatus = published_at;
+    }
+    if (pipeline_uuids !== undefined) {
+        converted.pipelineUuids = pipeline_uuids;
     }
 
     return converted;

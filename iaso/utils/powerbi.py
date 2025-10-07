@@ -9,7 +9,8 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING, SUCCESS, Task
+from iaso.models.base import RUNNING, SUCCESS
+from iaso.models.task import Task
 
 
 SP_AUTH_URL = "https://login.microsoftonline.com/{tenant_id}/oauth2/token"

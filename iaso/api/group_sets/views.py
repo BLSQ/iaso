@@ -4,10 +4,9 @@ from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.api.common import Paginator
 from iaso.models import GroupSet, Project, SourceVersion
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 
 from ..common import HasPermission, ModelViewSet
 from .filters import GroupSetFilter
@@ -48,7 +47,7 @@ class GroupSetDropdownSerializer(serializers.ModelSerializer):
 class GroupSetsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{core_permissions.ORG_UNITS}", "{core_permissions.ORG_UNITS_READ}" permission
+    This API is restricted to users having the "{CORE_ORG_UNITS_PERMISSION}", "{CORE_ORG_UNITS_READ_PERMISSION}" permission
 
     GET /api/group_sets/      params : version, dataSource, defaultVersion, search, order
     GET /api/group_sets/<id>
@@ -60,7 +59,7 @@ class GroupSetsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(core_permissions.ORG_UNITS, core_permissions.ORG_UNITS_READ),  # type: ignore
+        HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION),  # type: ignore
         HasGroupsetPermission,
     ]
 

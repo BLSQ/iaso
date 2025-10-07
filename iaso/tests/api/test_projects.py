@@ -4,10 +4,9 @@ from itertools import chain
 
 from django.contrib.auth.models import Permission
 
-import iaso.permissions as core_permissions
-
 from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_USERS_ADMIN_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -17,8 +16,8 @@ class ProjectsAPITestCase(APITestCase):
         ghi = m.Account.objects.create(name="Global Health Initiative")
         wha = m.Account.objects.create(name="Worldwide Health Aid")
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
 
         cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi, color="#FF5733")
@@ -108,7 +107,7 @@ class ProjectsAPITestCase(APITestCase):
 
         # Projects list should be restricted by default.
         user.iaso_profile.projects.set([project])
-        self.assertFalse(user.has_perm(core_permissions.USERS_ADMIN))
+        self.assertFalse(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
         response = self.client.get("/api/projects/")
         self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 1)
@@ -116,13 +115,15 @@ class ProjectsAPITestCase(APITestCase):
         # You should NOT be able to bypass restrictions if you're not an admin.
         response = self.client.get("/api/projects/?bypass_restrictions=1")
         json_response = self.assertJSONResponse(response, 403)
-        self.assertEqual(json_response, {"detail": "iaso.iaso_users permission is required to access all projects."})
+        self.assertEqual(
+            json_response, {"detail": f"{CORE_USERS_ADMIN_PERMISSION} permission is required to access all projects."}
+        )
 
         # You should be able to bypass restrictions if you're admin.
-        user.user_permissions.add(Permission.objects.get(codename=core_permissions._USERS_ADMIN))
+        user.user_permissions.add(Permission.objects.get(codename=CORE_USERS_ADMIN_PERMISSION.codename))
         del user._perm_cache
         del user._user_perm_cache
-        self.assertTrue(user.has_perm(core_permissions.USERS_ADMIN))
+        self.assertTrue(user.has_perm(CORE_USERS_ADMIN_PERMISSION.full_name()))
         response = self.client.get("/api/projects/?bypass_restrictions=1")
         self.assertJSONResponse(response, 200)
         total_projects_for_account = m.Project.objects.filter(account=user.iaso_profile.account).count()

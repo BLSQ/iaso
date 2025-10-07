@@ -6,6 +6,7 @@ from iaso import models as m
 from iaso.test import TestCase
 from plugins.polio.models import Campaign, CampaignType, Chronogram, ChronogramTask, Round
 from plugins.polio.models.chronogram import ChronogramTemplateTask, Period
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 
 
 TODAY = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -29,7 +30,7 @@ class ChronogramTaskTestCase(TestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
 
         # Campaign.
@@ -171,7 +172,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
             first_name="John",
             last_name="Doe",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
 
         # Campaign.

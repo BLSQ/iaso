@@ -10,6 +10,10 @@ from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate_analyzis import AnalyzePostBodySerializer
 from iaso.models.deduplication import ValidationStatus
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -94,34 +98,34 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=default_account, permissions=["iaso_entity_duplicates_read"]
+            username="user_without_ou", account=default_account, permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION]
         )
 
         cls.user_with_default_ou_ro = cls.create_user_with_profile(
             username="user_with_default_ou_ro",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION],
             org_units=[cls.default_orgunit],
         )
 
         cls.user_with_default_ou_rw = cls.create_user_with_profile(
             username="user_with_default_ou_rw",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
             org_units=[cls.default_orgunit],
         )
 
         cls.user_with_other_ou_ro = cls.create_user_with_profile(
             username="user_with_other_ou_ro",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION],
             org_units=[cls.another_orgunit],
         )
 
         cls.user_with_other_ou_rw = cls.create_user_with_profile(
             username="user_with_other_ou_rw",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
             org_units=[cls.another_orgunit],
         )
 
@@ -720,7 +724,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         user2 = self.create_user_with_profile(
             username="user__2",
             account=account_2,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
         )
 
         # Authenticate as user2 and check if we see the duplicate

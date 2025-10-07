@@ -1,6 +1,7 @@
 from iaso.models.base import Group
 from iaso.test import APITestCase
 from plugins.polio.models import VACCINES, CampaignType
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tests.api.test import PolioTestCaseMixin
 
 
@@ -13,7 +14,9 @@ class CampaignCalendarTestCase(APITestCase, PolioTestCaseMixin):
         cls.account, cls.data_source, cls.source_version, cls.project = cls.create_account_datasource_version_project(
             source_name="Data source", account_name="Account", project_name="Project"
         )
-        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(account=cls.account, permissions=["iaso_polio"])
+        cls.user, cls.anon, cls.user_no_perms = cls.create_base_users(
+            account=cls.account, permissions=[POLIO_PERMISSION]
+        )
         cls.country_type = cls.create_org_unit_type(name="COUNTRY", category="COUNTRY", projects=[cls.project])
         cls.district_type = cls.create_org_unit_type(name="DISTRICT", category="DISTRICT", projects=[cls.project])
 

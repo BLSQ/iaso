@@ -1,8 +1,8 @@
-import { defineMessages } from 'react-intl';
 import React, { FunctionComponent } from 'react';
-import { useQuery } from 'react-query';
 import { Button, Container } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import { defineMessages } from 'react-intl';
+import { useQuery } from 'react-query';
 // @ts-ignore
 import { Task } from 'Iaso/domains/tasks/types';
 // @ts-ignore
@@ -25,7 +25,7 @@ const MESSAGES = defineMessages({
 });
 
 type Props = {
-    task: Task;
+    task: Task<any>;
 };
 
 const TaskDetails: FunctionComponent<Props> = ({ task }) => {

@@ -7,9 +7,9 @@ import {
     useSafeIntl,
     useRedirectTo,
 } from 'bluesquare-components';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { Filters } from './components/Filters';
@@ -25,10 +25,6 @@ import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    container: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
-        overflow: 'auto',
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -136,7 +132,7 @@ export const Entities: FunctionComponent = () => {
                     <Tab value="map" label={formatMessage(MESSAGES.map)} />
                 </Tabs>
             </TopBar>
-            <Box p={4} className={classes.container}>
+            <MainWrapper sx={{ padding: 4 }} navHasTabs={true}>
                 <Filters
                     params={params}
                     isFetching={isFetching}
@@ -178,7 +174,7 @@ export const Entities: FunctionComponent = () => {
                         </Box>
                     )}
                 </Box>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

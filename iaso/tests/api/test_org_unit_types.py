@@ -2,6 +2,7 @@ import typing
 
 from iaso import models as m
 from iaso.api.query_params import APP_ID
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -18,8 +19,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         cls.esd = m.Project.objects.create(name="End Some Diseases", app_id="esd", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=[CORE_FORMS_PERMISSION])
         cls.reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )

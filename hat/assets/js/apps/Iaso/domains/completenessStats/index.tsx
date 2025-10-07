@@ -1,3 +1,10 @@
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { Box, Grid, Paper, Tab, Tabs, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -7,19 +14,12 @@ import {
 } from 'bluesquare-components';
 import Color from 'color';
 import { closeSnackbar } from 'notistack';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { warningSnackBar } from '../../constants/snackBars';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
@@ -37,10 +37,6 @@ import { CompletenessRouterParams } from './types';
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    container: {
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        overflow: 'auto',
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -147,7 +143,7 @@ export const CompletenessStats: FunctionComponent = () => {
                 title={formatMessage(MESSAGES.completenessStats)}
                 displayBackButton={false}
             />
-            <Box p={4} className={classes.container}>
+            <MainWrapper sx={{ p: 4 }}>
                 <Box>
                     <CompletenessStatsFilters
                         params={params}
@@ -220,7 +216,7 @@ export const CompletenessStats: FunctionComponent = () => {
                         />
                     </Box>
                 )}
-            </Box>
+            </MainWrapper>
         </>
     );
 };

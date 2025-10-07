@@ -5,6 +5,7 @@ from iaso import models as m
 from iaso.models.base import KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.test import APITestCase
+from plugins.polio.permissions import POLIO_PERMISSION
 from plugins.polio.tasks.api.refresh_lqas_data import LQAS_CONFIG_SLUG, RefreshLQASDataViewset
 
 
@@ -14,7 +15,7 @@ class RefreshLQASDataTestCase(APITestCase):
         cls.url = "/api/polio/tasks/refreshlqas/"
         cls.action_url = f"{cls.url}last_run_for_country/"
         cls.account = account = m.Account.objects.create(name="test account")
-        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=["iaso_polio"])
+        cls.user = cls.create_user_with_profile(username="test user", account=account, permissions=[POLIO_PERMISSION])
 
         cls.external_task1 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="external task 1", external=True
@@ -56,7 +57,10 @@ class RefreshLQASDataTestCase(APITestCase):
             status=RUNNING, account=account, launcher=cls.user, name="task 2", external=True
         )
         cls.limited_user = cls.create_user_with_profile(
-            username="other user", account=account, permissions=["iaso_polio"], org_units=[cls.other_country_org_unit]
+            username="other user",
+            account=account,
+            permissions=[POLIO_PERMISSION],
+            org_units=[cls.other_country_org_unit],
         )
         cls.json_config = {
             "pipeline": "pipeline",

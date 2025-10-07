@@ -155,15 +155,16 @@ steps:
 
 # Save the Docker image compressed to reduce disk usage
 - script: |
-    mkdir -p $(Build.ArtifactStagingDirectory)
-    docker save dev-coda2 | gzip > $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz
-    ls -lh $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz
+    mkdir -p $(Build.ArtifactStagingDirectory)/image
+    docker save dev-coda2 | gzip > $(Build.ArtifactStagingDirectory)/image/dev-coda2.tar.gz
+    ls -lh $(Build.ArtifactStagingDirectory)/image/dev-coda2.tar.gz
   displayName: 'Save docker image (compressed)'
 
 # Copy static files efficiently (no bind mounts)
 - script: |
     cid=$(docker create dev-coda2)
-    docker cp "$cid":/opt/app/static $(Build.ArtifactStagingDirectory)/
+    mkdir -p $(Build.ArtifactStagingDirectory)/static_artifact
+    docker cp "$cid":/opt/app/static $(Build.ArtifactStagingDirectory)/static_artifact/
     docker rm "$cid" || true
   displayName: 'Copy static files from docker'
 
@@ -179,11 +180,12 @@ steps:
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/image'
     artifactName: dev-coda2
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: $(Build.ArtifactStagingDirectory)/static
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/static_artifact'
     artifactName: dev-coda2-static
   displayName: 'Publish static files'
+

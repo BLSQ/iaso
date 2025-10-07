@@ -7,6 +7,7 @@ from rest_framework.exceptions import ValidationError
 from iaso import models as m
 from iaso.api.org_unit_types.serializers import validate_reference_forms
 from iaso.api.query_params import PROJECT, SOURCE_VERSION_ID
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -56,7 +57,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=cls.version_2)
         cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=[CORE_FORMS_PERMISSION])
         cls.reference_form = reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
@@ -502,7 +503,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         new_account, new_datasource, new_source_version, new_project = self.create_account_datasource_version_project(
             "new source", "new account", "new project"
         )
-        new_user = self.create_user_with_profile(username="new user", account=new_account, permissions=["iaso_forms"])
+        new_user = self.create_user_with_profile(
+            username="new user", account=new_account, permissions=[CORE_FORMS_PERMISSION]
+        )
         new_out_1 = m.OrgUnitType.objects.create(name="new out 1", short_name="new out 1")
         new_out_2 = m.OrgUnitType.objects.create(name="new out 2", short_name="new out 2")
         new_project.unit_types.set([new_out_1, new_out_2])
@@ -579,3 +582,137 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasField(data, "id", int)
         self.assertHasField(data, "name", str)
         self.assertHasField(data, "depth", int, optional=True)
+
+    def test_org_unit_type_hierarchy_success(self):
+        """Test GET /orgunittypes/{id}/hierarchy/ returns complete hierarchy"""
+
+        # Create a hierarchy: Country -> Region -> District -> Health Facility
+        country = m.OrgUnitType.objects.create(name="Country", short_name="COUNTRY", depth=1, category="COUNTRY")
+        region = m.OrgUnitType.objects.create(name="Region", short_name="REGION", depth=2, category="REGION")
+        district = m.OrgUnitType.objects.create(name="District", short_name="DISTRICT", depth=3, category="DISTRICT")
+        health_facility = m.OrgUnitType.objects.create(name="Health Facility", short_name="HF", depth=4, category="HF")
+
+        country.sub_unit_types.set([region])
+        region.sub_unit_types.set([district])
+        district.sub_unit_types.set([health_facility])
+
+        country.projects.set([self.ead])
+        region.projects.set([self.ead])
+        district.projects.set([self.ead])
+        health_facility.projects.set([self.ead])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}{country.id}/hierarchy/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = response.json()
+
+        self.assertEqual(response_data["id"], country.id)
+        self.assertEqual(response_data["name"], "Country")
+        self.assertEqual(response_data["depth"], 1)
+        self.assertEqual(response_data["category"], "COUNTRY")
+
+        self.assertEqual(len(response_data["sub_unit_types"]), 1)
+        region_data = response_data["sub_unit_types"][0]
+        self.assertEqual(region_data["id"], region.id)
+        self.assertEqual(region_data["name"], "Region")
+        self.assertEqual(region_data["depth"], 2)
+
+        self.assertEqual(len(region_data["sub_unit_types"]), 1)
+        district_data = region_data["sub_unit_types"][0]
+        self.assertEqual(district_data["id"], district.id)
+        self.assertEqual(district_data["name"], "District")
+        self.assertEqual(district_data["depth"], 3)
+
+        # Check third level (health facility)
+        self.assertEqual(len(district_data["sub_unit_types"]), 1)
+        hf_data = district_data["sub_unit_types"][0]
+        self.assertEqual(hf_data["id"], health_facility.id)
+        self.assertEqual(hf_data["name"], "Health Facility")
+        self.assertEqual(hf_data["depth"], 4)
+
+        self.assertEqual(len(hf_data["sub_unit_types"]), 0)
+
+    def test_org_unit_type_hierarchy_not_found(self):
+        """Test GET /orgunittypes/{id}/hierarchy/ with non-existent ID returns 404"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}99999/hierarchy/")
+
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+        response_data = response.json()
+        self.assertIn("error", response_data)
+
+    def test_org_unit_type_hierarchy_without_auth(self):
+        """Test GET /orgunittypes/{id}/hierarchy/ without authentication"""
+
+        response = self.client.get(f"{self.BASE_URL}{self.org_unit_type_1.id}/hierarchy/")
+        # Without authentication, the queryset is filtered and returns empty, so 404 is expected
+        self.assertJSONResponse(response, status.HTTP_404_NOT_FOUND)
+
+    def test_org_unit_type_hierarchy_multiple_children(self):
+        """Test hierarchy with multiple children at same level"""
+
+        parent = m.OrgUnitType.objects.create(name="Parent", short_name="PARENT", depth=1)
+        child1 = m.OrgUnitType.objects.create(name="Child 1", short_name="CHILD1", depth=2)
+        child2 = m.OrgUnitType.objects.create(name="Child 2", short_name="CHILD2", depth=2)
+        child3 = m.OrgUnitType.objects.create(name="Child 3", short_name="CHILD3", depth=2)
+
+        parent.sub_unit_types.set([child1, child2, child3])
+        parent.projects.set([self.ead])
+        child1.projects.set([self.ead])
+        child2.projects.set([self.ead])
+        child3.projects.set([self.ead])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}{parent.id}/hierarchy/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = response.json()
+
+        self.assertEqual(len(response_data["sub_unit_types"]), 3)
+
+        child_ids = [child["id"] for child in response_data["sub_unit_types"]]
+        self.assertIn(child1.id, child_ids)
+        self.assertIn(child2.id, child_ids)
+        self.assertIn(child3.id, child_ids)
+
+    def test_org_unit_type_hierarchy_empty_children(self):
+        """Test hierarchy with no children (leaf node)"""
+
+        leaf = m.OrgUnitType.objects.create(name="Leaf Node", short_name="LEAF", depth=1)
+        leaf.projects.set([self.ead])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}{leaf.id}/hierarchy/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = response.json()
+
+        self.assertEqual(len(response_data["sub_unit_types"]), 0)
+        self.assertEqual(response_data["id"], leaf.id)
+        self.assertEqual(response_data["name"], "Leaf Node")
+
+    def test_org_unit_type_hierarchy_serializer_fields(self):
+        """Test that hierarchy serializer returns correct fields"""
+
+        parent = m.OrgUnitType.objects.create(name="Parent", short_name="PARENT", depth=1, category="COUNTRY")
+        child = m.OrgUnitType.objects.create(name="Child", short_name="CHILD", depth=2, category="REGION")
+
+        parent.sub_unit_types.set([child])
+        parent.projects.set([self.ead])
+        child.projects.set([self.ead])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"{self.BASE_URL}{parent.id}/hierarchy/")
+
+        self.assertJSONResponse(response, status.HTTP_200_OK)
+        response_data = response.json()
+
+        expected_fields = ["id", "name", "short_name", "depth", "category", "sub_unit_types"]
+        for field in expected_fields:
+            self.assertIn(field, response_data)
+
+        child_data = response_data["sub_unit_types"][0]
+        for field in expected_fields:
+            self.assertIn(field, child_data)

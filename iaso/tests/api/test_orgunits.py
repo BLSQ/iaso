@@ -13,6 +13,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.api.org_units import OrgUnitViewSet
 from iaso.models import OrgUnit, OrgUnitType
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.test import APITestCase
 from iaso.utils.gis import simplify_geom
 
@@ -161,19 +162,23 @@ class OrgUnitAPITestCase(APITestCase):
             code="code5",
         )
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         cls.user_read_permission = cls.create_user_with_profile(
             username="user_read_permission",
             account=star_wars,
-            permissions=["iaso_org_units_read"],
+            permissions=[CORE_ORG_UNITS_READ_PERMISSION],
         )
         cls.luke = cls.create_user_with_profile(
             username="luke",
             account=star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
             org_units=[jedi_council_endor],
         )
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
 
         cls.form_1 = form_1 = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
@@ -528,7 +533,7 @@ class OrgUnitAPITestCase(APITestCase):
             username="superUser",
             is_superuser=True,
             account=self.star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         super_user.iaso_profile.org_units.set([org_unit_country])
         super_user.save()
@@ -552,7 +557,7 @@ class OrgUnitAPITestCase(APITestCase):
         user_manager = self.create_user_with_profile(
             username="userManager",
             account=self.star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
         )
         user_manager.iaso_profile.org_units.set([org_unit_country])
         user_manager.save()
@@ -2411,3 +2416,169 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/orgunits/?limit=20&order=-name&page=1&asLocation=true")
         self.assertEqual(response.status_code, 200)
+
+    def test_org_unit_excluded_parent_ids_filter(self):
+        """Test that excludedOrgUnitParentIds parameter excludes org units in the hierarchy of specified parent IDs"""
+        self.client.force_authenticate(self.yoda)
+
+        # Create a simple, deterministic pyramid for testing
+        # Structure: Country -> Region -> District -> Health Center
+        country = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Test Country",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        region1 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Region 1",
+            parent=country,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        region2 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Region 2",
+            parent=country,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        district1 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test District 1",
+            parent=region1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        district2 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test District 2",
+            parent=region2,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        health_center = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Health Center",
+            parent=district1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        # Get all org units to establish baseline
+        response = self.client.get("/api/orgunits/?limit=100")
+        all_count = response.json()["count"]
+
+        # Test excluding region1 - should exclude region1, district1, and health_center
+        # (region1 + its descendants: district1 + health_center = 3 org units)
+        response = self.client.get(f"/api/orgunits/?limit=100&excludedOrgUnitParentIds={region1.id}")
+        filtered_count = response.json()["count"]
+        filtered_org_units = response.json()["orgunits"]
+
+        # Should exclude 3 org units: region1, district1, health_center
+        self.assertEqual(filtered_count, all_count - 3)
+
+        # Verify specific org units are excluded
+        filtered_ids = {ou["id"] for ou in filtered_org_units}
+        self.assertNotIn(region1.id, filtered_ids)
+        self.assertNotIn(district1.id, filtered_ids)
+        self.assertNotIn(health_center.id, filtered_ids)
+
+        # Verify other org units are still present
+        self.assertIn(country.id, filtered_ids)
+        self.assertIn(region2.id, filtered_ids)
+        self.assertIn(district2.id, filtered_ids)
+
+    def test_org_unit_excluded_multiple_parent_ids_filter(self):
+        """Test that excludedOrgUnitParentIds parameter works with multiple comma-separated parent IDs (hierarchy exclusion)"""
+        self.client.force_authenticate(self.yoda)
+
+        # Create a simple, deterministic pyramid for testing
+        # Structure: Country -> Region -> District -> Health Center
+        country = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            version=self.sw_version_1,
+            name="Test Country 2",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        region1 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Region A",
+            parent=country,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        region2 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Region B",
+            parent=country,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        district1 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test District A",
+            parent=region1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        district2 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test District B",
+            parent=region2,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        health_center1 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Health Center A",
+            parent=district1,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        health_center2 = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_squad,
+            version=self.sw_version_1,
+            name="Test Health Center B",
+            parent=district2,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        # Get all org units to establish baseline
+        response = self.client.get("/api/orgunits/?limit=100")
+        all_count = response.json()["count"]
+
+        # Test excluding both region1 and region2 - should exclude both regions and all their descendants
+        # region1 hierarchy: region1 + district1 + health_center1 = 3 org units
+        # region2 hierarchy: region2 + district2 + health_center2 = 3 org units
+        # Total excluded: 6 org units
+        excluded_ids_param = f"{region1.id},{region2.id}"
+        response = self.client.get(f"/api/orgunits/?limit=100&excludedOrgUnitParentIds={excluded_ids_param}")
+        filtered_count = response.json()["count"]
+        filtered_org_units = response.json()["orgunits"]
+
+        # Should exclude 6 org units total
+        self.assertEqual(filtered_count, all_count - 6)
+
+        # Verify specific org units are excluded
+        filtered_ids = {ou["id"] for ou in filtered_org_units}
+        self.assertNotIn(region1.id, filtered_ids)
+        self.assertNotIn(region2.id, filtered_ids)
+        self.assertNotIn(district1.id, filtered_ids)
+        self.assertNotIn(district2.id, filtered_ids)
+        self.assertNotIn(health_center1.id, filtered_ids)
+        self.assertNotIn(health_center2.id, filtered_ids)
+
+        # Verify country is still present
+        self.assertIn(country.id, filtered_ids)

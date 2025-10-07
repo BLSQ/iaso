@@ -68,14 +68,10 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit_a, form=cls.form_1, instance=cls.instance_1)
         m.OrgUnitReferenceInstance.objects.create(org_unit=cls.org_unit_a, form=cls.form_2, instance=cls.instance_2)
 
-        cls.user = cls.create_user_with_profile(
-            username="user", account=cls.account, permissions=["iaso_org_unit_change_request"]
-        )
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=[])
         cls.user.iaso_profile.org_units.set([cls.org_unit_a, cls.org_unit_b])
 
-        cls.user2 = cls.create_user_with_profile(
-            username="user2", account=cls.account, permissions=["iaso_org_unit_change_request"]
-        )
+        cls.user2 = cls.create_user_with_profile(username="user2", account=cls.account, permissions=[])
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit_a, new_name="Foo", created_by=self.user)

@@ -5,7 +5,8 @@ from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
+from plugins.polio.permissions import POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION
 
 
 class TestVaccineStockArchive(TaskAPITestCase):
@@ -40,7 +41,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
         cls.user = cls.create_user_with_profile(
             username="user_2",
             account=cls.account,
-            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE],
+            permissions=[POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_3", account=cls.account, permissions=[])
 

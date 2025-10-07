@@ -5,15 +5,14 @@ from django.shortcuts import get_object_or_404
 from rest_framework import exceptions, permissions, viewsets
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from iaso.models import AlgorithmRun, DataSource, MatchingAlgorithm, SourceVersion
+from iaso.permissions.core_permissions import CORE_LINKS_PERMISSION
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
     f"""Algorithms runs API
 
-    This API is restricted to authenticated users having the "{core_permissions.LINKS}" permission
+    This API is restricted to authenticated users having the "{CORE_LINKS_PERMISSION}" permission
 
     GET /api/algorithmsruns/
     GET /api/algorithmsruns/<id>

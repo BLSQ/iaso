@@ -7,8 +7,6 @@ from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import Modification
 from iaso.api.common import (
@@ -22,6 +20,7 @@ from iaso.api.permission_checks import ReadOnly
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
+from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -239,7 +238,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamTypesFilterBackend,
         TeamProjectsFilterBackend,
     ]
-    permission_classes = [ReadOnlyOrHasPermission(core_permissions.TEAMS)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(CORE_TEAMS_PERMISSION)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "project__name", "name", "created_at", "updated_at", "type"]
@@ -282,12 +281,14 @@ class PlanningSerializer(serializers.ModelSerializer):
             "published_at",
             "started_at",
             "ended_at",
+            "pipeline_uuids",
         ]
         read_only_fields = ["created_at", "parent"]
 
     team_details = NestedTeamSerializer(source="team", read_only=True)
     org_unit_details = NestedOrgUnitSerializer(source="org_unit", read_only=True)
     project_details = NestedProjectSerializer(source="project", read_only=True)
+    pipeline_uuids = serializers.ListField(child=serializers.UUIDField(), required=False, allow_empty=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -314,10 +315,10 @@ class PlanningSerializer(serializers.ModelSerializer):
         if team.project != project:
             validation_errors["team"] = "planningAndTeams"
 
-        forms = validated_data.get("forms", self.instance.forms if self.instance else None)
-        for form in forms:
-            if form not in project.forms.all():
-                validation_errors["forms"] = "planningAndForms"
+        forms = validated_data.get("forms", list(self.instance.forms.all()) if self.instance else None)
+        project_forms = project.forms.all()
+        if forms and not all(f in project_forms for f in forms):
+            validation_errors["forms"] = "planningAndForms"
 
         org_unit = validated_data.get("org_unit", self.instance.org_unit if self.instance else None)
         if org_unit and org_unit.org_unit_type:
@@ -361,7 +362,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -508,7 +509,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(core_permissions.PLANNING_WRITE)]  # type: ignore
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(CORE_PLANNING_WRITE_PERMISSION)]
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [
@@ -522,7 +523,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         "planning": ["exact"],
         "team": ["exact"],
     }
-    audit_serializer = AuditAssignmentSerializer  # type: ignore
+    audit_serializer = AuditAssignmentSerializer
 
     def get_queryset(self):
         user = self.request.user

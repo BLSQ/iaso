@@ -318,13 +318,22 @@ class DataSourceVersionsSynchronizer:
 
         org_unit = diff["orgunit_dhis2"]
         requested_fields = []
-        new_parent = None
+        new_parent_id = None
         new_name = ""
         new_opening_date = None
         new_closed_date = None
 
         if changes.get("parent"):
-            new_parent = changes["parent"]
+            parent_source_ref = changes["parent"]
+            parent_org_unit = (
+                OrgUnit.objects.filter(
+                    source_ref=parent_source_ref, version=self.data_source_sync.source_version_to_update
+                )
+                .only("pk")
+                .first()
+            )
+            if parent_org_unit:
+                new_parent_id = parent_org_unit.pk
             requested_fields.append("new_parent")
 
         if changes.get("name"):
@@ -361,7 +370,7 @@ class DataSourceVersionsSynchronizer:
             old_opening_date=org_unit.get("opening_date"),
             old_closed_date=org_unit.get("closed_date"),
             # New values.
-            new_parent=new_parent,
+            new_parent_id=new_parent_id,
             new_name=new_name,
             new_opening_date=new_opening_date,
             new_closed_date=new_closed_date,

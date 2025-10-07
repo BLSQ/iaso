@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import HelpOutline from '@mui/icons-material/HelpOutline';
+import NotAuthorized from '@mui/icons-material/NotInterested';
 import { Paper, Container, Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import ErrorOutline from '@mui/icons-material/ErrorOutline';
-import NotAuthorized from '@mui/icons-material/NotInterested';
-import HelpOutline from '@mui/icons-material/HelpOutline';
+import PropTypes from 'prop-types';
+import { FormattedMessage } from 'react-intl';
 import TopBar from '../nav/TopBarComponent';
 
 import MESSAGES from './messages';
@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PageError = ({ errorCode, displayMenuButton }) => {
+const PageError = ({ errorCode, displayMenuButton, customMessage }) => {
     const classes = useStyles();
     return (
         <>
@@ -42,52 +42,71 @@ const PageError = ({ errorCode, displayMenuButton }) => {
                                     {errorCode}
                                 </Typography>
                             </Box>
-                            {errorCode === '401' && (
-                                <>
-                                    <Box pt={2} pb={2}>
-                                        <Typography variant="h5">
-                                            <FormattedMessage
-                                                {...MESSAGES.notAuthenticated}
-                                            />
-                                        </Typography>
-                                    </Box>
-                                    <NotAuthorized className={classes.icon} />
-                                </>
+                            {customMessage && (
+                                <Box pt={2} pb={2}>
+                                    <Typography variant="h5">
+                                        {customMessage}
+                                    </Typography>
+                                </Box>
                             )}
-                            {errorCode === '403' && (
+                            {!customMessage && (
                                 <>
-                                    <Box pt={2} pb={2}>
-                                        <Typography variant="h5">
-                                            <FormattedMessage
-                                                {...MESSAGES.unauthorized}
+                                    {errorCode === '401' && (
+                                        <>
+                                            <Box pt={2} pb={2}>
+                                                <Typography variant="h5">
+                                                    <FormattedMessage
+                                                        {...MESSAGES.notAuthenticated}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                            <NotAuthorized
+                                                className={classes.icon}
                                             />
-                                        </Typography>
-                                    </Box>
-                                    <NotAuthorized className={classes.icon} />
-                                </>
-                            )}
-                            {errorCode === '404' && (
-                                <>
-                                    <Box pt={2} pb={2}>
-                                        <Typography variant="h5">
-                                            <FormattedMessage
-                                                {...MESSAGES.notFound}
+                                        </>
+                                    )}
+                                    {errorCode === '403' && (
+                                        <>
+                                            <Box pt={2} pb={2}>
+                                                <Typography variant="h5">
+                                                    <FormattedMessage
+                                                        {...MESSAGES.unauthorized}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                            <NotAuthorized
+                                                className={classes.icon}
                                             />
-                                        </Typography>
-                                    </Box>
-                                    <HelpOutline className={classes.icon} />
-                                </>
-                            )}
-                            {errorCode === '500' && (
-                                <>
-                                    <Box pt={2} pb={2}>
-                                        <Typography variant="h5">
-                                            <FormattedMessage
-                                                {...MESSAGES.labelError}
+                                        </>
+                                    )}
+                                    {errorCode === '404' && (
+                                        <>
+                                            <Box pt={2} pb={2}>
+                                                <Typography variant="h5">
+                                                    <FormattedMessage
+                                                        {...MESSAGES.notFound}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                            <HelpOutline
+                                                className={classes.icon}
                                             />
-                                        </Typography>
-                                    </Box>
-                                    <ErrorOutline className={classes.icon} />
+                                        </>
+                                    )}
+                                    {errorCode === '500' && (
+                                        <>
+                                            <Box pt={2} pb={2}>
+                                                <Typography variant="h5">
+                                                    <FormattedMessage
+                                                        {...MESSAGES.labelError}
+                                                    />
+                                                </Typography>
+                                            </Box>
+                                            <ErrorOutline
+                                                className={classes.icon}
+                                            />
+                                        </>
+                                    )}
                                 </>
                             )}
                         </Box>
@@ -100,11 +119,13 @@ const PageError = ({ errorCode, displayMenuButton }) => {
 
 PageError.defaultProps = {
     displayMenuButton: true,
+    customMessage: null,
 };
 
 PageError.propTypes = {
     errorCode: PropTypes.string.isRequired,
     displayMenuButton: PropTypes.bool,
+    customMessage: PropTypes.string,
 };
 
 export default PageError;

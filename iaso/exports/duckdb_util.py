@@ -12,7 +12,7 @@ from django.db.models import QuerySet
 logger = getLogger(__name__)
 
 
-def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str):
+def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: str, mapping=None):
     start = time.perf_counter()
 
     sql, params = qs.query.sql_with_params()
@@ -22,20 +22,32 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     # initially was full_sql = sql % tuple(map(adapt_param, params)) but supporting all types is complicated
     dsn = connection.get_connection_params()
 
+    tmpdir = "/tmp/duckdb_tmp"
+    os.makedirs(tmpdir, exist_ok=True)
+
     with duckdb.connect() as duckdb_connection:
+        duckdb_connection.execute(f"PRAGMA temp_directory='{tmpdir}'")
+        duckdb_connection.execute(
+            "PRAGMA memory_limit='1500MB'"
+        )  # reasonable but should work even if you don't have that memory available
+
         attach_sql = f"""
             INSTALL postgres;
             LOAD postgres;
             ATTACH 'dbname={dsn["dbname"]} host={dsn["host"]} user={dsn["user"]} password={dsn["password"]} port={dsn["port"]}' AS pg (TYPE postgres, READ_ONLY);
-
         """
         duckdb_connection.execute(attach_sql)
 
         logger.info(f"exporting parquet : {output_file_path} \n\n {full_sql}")
+        # had to specify ROW_GROUP_SIZE when exporting large rows like several geojson on the same row
+        alias_stmt = " * "
+        if mapping:
+            alias_stmt = dict_to_projection(mapping)
+
         parquet_export_sql = f"""
             COPY (
-                SELECT * FROM postgres_query('pg', $$ {full_sql} $$)
-            ) TO '{output_file_path}' (FORMAT PARQUET)
+                SELECT {alias_stmt} FROM postgres_query('pg', $$ {full_sql} $$)
+            ) TO '{output_file_path}' (FORMAT PARQUET, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 10000)
         """
 
         duckdb_connection.execute(parquet_export_sql)
@@ -48,3 +60,7 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
     logger.warning(
         f"dumped to {output_file_path} took {duration:.3f} seconds for {row_count} records and {col_count} columns, final file size {size_mb:.2f} Mb"
     )
+
+
+def dict_to_projection(mapping):
+    return ",\n    ".join(f'{safe} as "{orig}"' for orig, safe in mapping.items())

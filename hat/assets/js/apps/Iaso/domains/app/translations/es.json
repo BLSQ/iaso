@@ -121,6 +121,7 @@
     "iaso.dataSources.dhisName": "Nombre DHIS2",
     "iaso.dataSources.dhisPassword": "Contraseña DHIS2",
     "iaso.dataSources.dhisUrl": "URL DHIS2",
+    "iaso.datasources.downloadGpkg": "Descargar GeoPackage",
     "iaso.datasources.emptyProjectsError": "Por favor elija al menos un proyecto",
     "iaso.datasources.exportMessageDisabled": "Por favor seleccione una fuente de datos con credenciales DHIS2 para habilitar la exportación",
     "iaso.datasources.geoPkg": "Importar GeoPackage",
@@ -766,6 +767,7 @@
     "iaso.label.submissionsLocations": "Submissions locations",
     "iaso.label.submitter": "Submitter",
     "iaso.label.submitterTeam": "Submitter team",
+    "iaso.label.tasks": "Task",
     "iaso.label.tasks": "Tasks",
     "iaso.label.team": "Team",
     "iaso.label.teams": "Teams",
@@ -1212,5 +1214,6 @@
     "iaso.projets.featureflag.mobile_check_ou_update": "Móvil: Advertir al usuario cuando las unidades organizativas han sido actualizadas",
     "iaso.projets.featureflag.mobile_entity_limited_search": "Móvil: Limitar búsqueda de entidades",
     "iaso.projets.featureflag.mobile_entity_no_creation": "Móvil: El usuario no puede crear una entidad",
-    "iaso.snackBar.deleteEntityTypeError": "Se ha producido un error al eliminar un tipo de entidad"
+    "iaso.snackBar.deleteEntityTypeError": "Se ha producido un error al eliminar un tipo de entidad",
+    "iaso.tasks.no_logs_to_show": "No hay registros para mostrar."
 }

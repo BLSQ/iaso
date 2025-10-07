@@ -33,6 +33,7 @@ def build_org_units_queryset(queryset, params, profile):
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
     org_unit_parent_ids = params.get("orgUnitParentIds", None)
+    excluded_org_unit_parent_ids = params.get("excludedOrgUnitParentIds", None)
 
     linked_to = params.get("linkedTo", None)
     link_validated = params.get("linkValidated", True)
@@ -210,6 +211,13 @@ def build_org_units_queryset(queryset, params, profile):
         parent_ids = org_unit_parent_ids.split(",")
         parent = OrgUnit.objects.filter(id__in=parent_ids)
         queryset = queryset.hierarchy(parent)
+
+    if excluded_org_unit_parent_ids:
+        excluded_parent_ids = excluded_org_unit_parent_ids.split(",")
+        excluded_parents = OrgUnit.objects.filter(id__in=excluded_parent_ids)
+        # Get all org units in the hierarchy of the excluded parents
+        excluded_hierarchy = OrgUnit.objects.hierarchy(excluded_parents)
+        queryset = queryset.exclude(id__in=excluded_hierarchy.values_list("id", flat=True))
 
     if linked_to:
         is_destination = Q(destination_set__destination_id=linked_to)

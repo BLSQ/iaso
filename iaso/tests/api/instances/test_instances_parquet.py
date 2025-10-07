@@ -12,6 +12,11 @@ from django.core.files import File
 
 from iaso import models as m
 from iaso.models import OrgUnitReferenceInstance
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
@@ -39,11 +44,13 @@ class InstancesAPITestCase(BaseAPITransactionTestCase):
             last_name="Da",
             first_name="Yo",
             account=star_wars,
-            permissions=["iaso_submissions", "iaso_org_units"],
+            permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_ORG_UNITS_PERMISSION],
         )
-        cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
+        cls.guest = cls.create_user_with_profile(
+            username="guest", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION]
+        )
         cls.supervisor = cls.create_user_with_profile(
-            username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
+            username="supervisor", account=star_wars, permissions=[CORE_SUBMISSIONS_PERMISSION, CORE_FORMS_PERMISSION]
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")

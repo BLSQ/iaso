@@ -1,0 +1,292 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:odk="http://www.opendatakit.org/xforms">
+  <h:head>
+    <h:title>hydro(2)</h:title>
+    <model odk:xforms-version="1.0.0">
+      <instance>
+        <data id="hydro(2)" version="2025091901">
+          <start/>
+          <end/>
+          <today/>
+          <deviceid/>
+          <subscriberid/>
+          <imei/>
+          <simserial/>
+          <phonenumber/>
+          <user_name/>
+          <region/>
+          <prefecture/>
+          <district/>
+          <sous-prefecture/>
+          <fosa/>
+          <year/>
+          <quarter/>
+          <Ident_type_structure/>
+          <Ident_type_services/>
+          <Ident_type_serv_medical/>
+          <Ident_type_serv_protect/>
+          <Ident_type_serv_jurid/>
+          <Ident_type_serv_psycho/>
+          <Ident_type_serv_educ/>
+          <Ident_type_serv_recope/>
+          <Ident_type_serv_club/>
+          <Ident_statut/>
+          <Ident_eau_courante/>
+          <Ident_electricite/>
+          <Ident_nom_responsable/>
+          <Ident_telephone/>
+          <fermeture_structure/>
+          <Ident_ferm_lundi/>
+          <Ident_ferm_mardi/>
+          <Ident_ferm_mercredi/>
+          <Ident_ferm_jeudi/>
+          <Ident_ferm_vendredi/>
+          <Ident_ferm_samedi/>
+          <Ident_ferm_dim/>
+          <Ident_ferm_aucun/>
+          <Ident_serv_cout/>
+          <Ident_type_batiment/>
+          <imgUrl/>
+          <gps/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <instance id="type_structure">
+        <root>
+          <item>
+            <name>ce</name>
+            <label>CE</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="type_services">
+        <root>
+          <item>
+            <name>hosp</name>
+            <label>hospitalisation</label>
+          </item>
+          <item>
+            <name>chir</name>
+            <label>chirurgy</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="statut">
+        <root>
+          <item>
+            <name>ong</name>
+            <label>NGO</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="fermeture_structure">
+        <root>
+          <item>
+            <name>sam</name>
+            <label>Saturday</label>
+          </item>
+        </root>
+      </instance>
+      <instance id="type_batiment">
+        <root>
+          <item>
+            <name>sem_dur</name>
+            <label>Semi-durable</label>
+          </item>
+        </root>
+      </instance>
+      <bind nodeset="/data/start" jr:preload="timestamp" type="dateTime" jr:preloadParams="start"/>
+      <bind nodeset="/data/end" jr:preload="timestamp" type="dateTime" jr:preloadParams="end"/>
+      <bind nodeset="/data/today" type="date"/>
+      <bind nodeset="/data/deviceid" type="string"/>
+      <bind nodeset="/data/subscriberid" type="string"/>
+      <bind nodeset="/data/imei" type="string"/>
+      <bind nodeset="/data/simserial" type="string"/>
+      <bind nodeset="/data/phonenumber" type="string"/>
+      <bind nodeset="/data/user_name" type="string"/>
+      <bind nodeset="/data/region" type="string"/>
+      <bind nodeset="/data/prefecture" type="string"/>
+      <bind nodeset="/data/district" type="string"/>
+      <bind nodeset="/data/sous-prefecture" type="string"/>
+      <bind nodeset="/data/fosa" type="string"/>
+      <bind nodeset="/data/year" type="int"/>
+      <bind nodeset="/data/quarter" type="int"/>
+      <bind nodeset="/data/Ident_type_structure" type="string"/>
+      <bind nodeset="/data/Ident_type_services" type="string"/>
+      <bind nodeset="/data/Ident_type_serv_medical" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_protect" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_jurid" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_psycho" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_educ" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_recope" type="int"/>
+      <bind nodeset="/data/Ident_type_serv_club" type="int"/>
+      <bind nodeset="/data/Ident_statut" type="string"/>
+      <bind nodeset="/data/Ident_eau_courante" type="int"/>
+      <bind nodeset="/data/Ident_electricite" type="int"/>
+      <bind nodeset="/data/Ident_nom_responsable" type="string"/>
+      <bind nodeset="/data/Ident_telephone" type="string"/>
+      <bind nodeset="/data/fermeture_structure" type="string"/>
+      <bind nodeset="/data/Ident_ferm_lundi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_mardi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_mercredi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_jeudi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_vendredi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_samedi" type="int"/>
+      <bind nodeset="/data/Ident_ferm_dim" type="int"/>
+      <bind nodeset="/data/Ident_ferm_aucun" type="int"/>
+      <bind nodeset="/data/Ident_serv_cout" type="int"/>
+      <bind nodeset="/data/Ident_type_batiment" type="string"/>
+      <bind nodeset="/data/imgUrl" type="binary"/>
+      <bind nodeset="/data/gps" type="geopoint"/>
+      <bind nodeset="/data/meta/instanceID" type="string" readonly="true()" jr:preload="uid"/>
+    </model>
+  </h:head>
+  <h:body>
+    <input ref="/data/today">
+      <label>Today</label>
+    </input>
+    <input ref="/data/deviceid">
+      <label>Device ID</label>
+    </input>
+    <input ref="/data/subscriberid">
+      <label>Subscriber ID</label>
+    </input>
+    <input ref="/data/imei">
+      <label>IMEI</label>
+    </input>
+    <input ref="/data/simserial">
+      <label>SIM Serial</label>
+    </input>
+    <input ref="/data/phonenumber">
+      <label>Phone number</label>
+    </input>
+    <input ref="/data/user_name">
+      <label>User name</label>
+    </input>
+    <input ref="/data/region">
+      <label>Region</label>
+    </input>
+    <input ref="/data/prefecture">
+      <label>Prefecture</label>
+    </input>
+    <input ref="/data/district">
+      <label>District</label>
+    </input>
+    <input ref="/data/sous-prefecture">
+      <label>Sous-prefecture</label>
+    </input>
+    <input ref="/data/fosa">
+      <label>FOSA</label>
+    </input>
+    <input ref="/data/year">
+      <label>Year</label>
+    </input>
+    <input ref="/data/quarter">
+      <label>Quarter</label>
+    </input>
+    <select1 ref="/data/Ident_type_structure">
+      <label>Type structure</label>
+      <itemset nodeset="instance('type_structure')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <select1 ref="/data/Ident_type_services">
+      <label>Type services</label>
+      <itemset nodeset="instance('type_services')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <input ref="/data/Ident_type_serv_medical">
+      <label>Service medical</label>
+    </input>
+    <input ref="/data/Ident_type_serv_protect">
+      <label>Service protect</label>
+    </input>
+    <input ref="/data/Ident_type_serv_jurid">
+      <label>Service juridical</label>
+    </input>
+    <input ref="/data/Ident_type_serv_psycho">
+      <label>Service psychological</label>
+    </input>
+    <input ref="/data/Ident_type_serv_educ">
+      <label>Service education</label>
+    </input>
+    <input ref="/data/Ident_type_serv_recope">
+      <label>Service recope</label>
+    </input>
+    <input ref="/data/Ident_type_serv_club">
+      <label>Service club</label>
+    </input>
+    <select1 ref="/data/Ident_statut">
+      <label>Status</label>
+      <itemset nodeset="instance('statut')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <input ref="/data/Ident_eau_courante">
+      <label>Water available</label>
+    </input>
+    <input ref="/data/Ident_electricite">
+      <label>Electricity available</label>
+    </input>
+    <input ref="/data/Ident_nom_responsable">
+      <label>Responsible person</label>
+    </input>
+    <input ref="/data/Ident_telephone">
+      <label>Telephone</label>
+    </input>
+    <select1 ref="/data/fermeture_structure">
+      <label>Closing day</label>
+      <itemset nodeset="instance('fermeture_structure')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <input ref="/data/Ident_ferm_lundi">
+      <label>Closed Monday</label>
+    </input>
+    <input ref="/data/Ident_ferm_mardi">
+      <label>Closed Tuesday</label>
+    </input>
+    <input ref="/data/Ident_ferm_mercredi">
+      <label>Closed Wednesday</label>
+    </input>
+    <input ref="/data/Ident_ferm_jeudi">
+      <label>Closed Thursday</label>
+    </input>
+    <input ref="/data/Ident_ferm_vendredi">
+      <label>Closed Friday</label>
+    </input>
+    <input ref="/data/Ident_ferm_samedi">
+      <label>Closed Saturday</label>
+    </input>
+    <input ref="/data/Ident_ferm_dim">
+      <label>Closed Sunday</label>
+    </input>
+    <input ref="/data/Ident_ferm_aucun">
+      <label>Never closed</label>
+    </input>
+    <input ref="/data/Ident_serv_cout">
+      <label>Service cost</label>
+    </input>
+    <select1 ref="/data/Ident_type_batiment">
+      <label>Building type</label>
+      <itemset nodeset="instance('type_batiment')/root/item">
+        <value ref="name"/>
+        <label ref="label"/>
+      </itemset>
+    </select1>
+    <upload mediatype="image/*" ref="/data/imgUrl">
+      <label>Image</label>
+    </upload>
+    <input ref="/data/gps">
+      <label>GPS</label>
+    </input>
+  </h:body>
+</h:html>
+/home/smestach/Downloads/hydro(2).xlsx

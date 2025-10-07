@@ -17,6 +17,7 @@ from iaso.test import APITestCase, MockClamavScanResults, TestCase
 from iaso.utils.virus_scan.model import VirusScanStatus
 from plugins.polio.api.notifications.serializers import NotificationImportSerializer, NotificationSerializer
 from plugins.polio.models import Notification, NotificationImport
+from plugins.polio.permissions import POLIO_NOTIFICATIONS_PERMISSION
 
 
 DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -236,7 +237,7 @@ class NotificationViewSetTestCase(APITestCase):
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(
-            username="user", account=cls.account, permissions=["iaso_polio_notifications"]
+            username="user", account=cls.account, permissions=[POLIO_NOTIFICATIONS_PERMISSION]
         )
 
         country_angola = m.OrgUnit.objects.create(

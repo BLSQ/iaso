@@ -77,6 +77,7 @@ from ..models import (
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLog,
     TenantUser,
     UserRole,
     Workflow,
@@ -537,9 +538,9 @@ def relaunch_task(_, request, queryset) -> None:
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message", "result")
     list_filter = ("account", "status", "name")
-    readonly_fields = ("stacktrace", "created_at", "result")
+    readonly_fields = ("stacktrace", "created_at")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
@@ -557,6 +558,13 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("launcher")
+
+
+@admin.register(TaskLog)
+class TaskLogAdmin(admin.ModelAdmin):
+    list_display = ("task", "created_at", "message")
+    list_filter = ["task"]
+    readonly_fields = ["created_at"]
 
 
 @admin.register(SourceVersion)
@@ -684,6 +692,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "team",
                     "started_at",
                     "ended_at",
+                    "pipeline_uuids",
                 ),
             },
         ),

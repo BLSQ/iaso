@@ -1,3 +1,5 @@
+import uuid
+
 from unittest import mock
 
 from django.contrib.auth.models import User
@@ -8,6 +10,7 @@ from hat.audit.models import Modification
 from iaso.api.microplanning import AssignmentSerializer, PlanningSerializer, TeamSerializer
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 from iaso.test import APITestCase, IasoTestCaseMixin
 
 
@@ -312,7 +315,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -349,7 +352,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_patch(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -408,7 +411,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_soft_delete(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_teams"]
+            username="user_with_perms", account=self.account, permissions=[CORE_TEAMS_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         team = self.team1
@@ -460,7 +463,7 @@ class TeamAPITestCase(APITestCase):
     def test_list_filter_by_manager(self):
         # Set up new team and new user who'll be the new manager
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_fire_pokemons = Team.objects.create(project=self.project1, name="team_fire_pokemons", manager=ash_ketchum)
         team_electric_pokemons = Team.objects.create(
@@ -468,7 +471,7 @@ class TeamAPITestCase(APITestCase):
         )
 
         misty = self.create_user_with_profile(
-            username="misty", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="misty", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_water_pokemons = Team.objects.create(project=self.project1, name="team_water_pokemons", manager=misty)
 
@@ -489,7 +492,7 @@ class TeamAPITestCase(APITestCase):
     def test_list_filter_by_type(self):
         # Set up teams of various types
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_fire_pokemons = Team.objects.create(
             project=self.project1, name="team_fire_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
@@ -532,7 +535,7 @@ class TeamAPITestCase(APITestCase):
 
     def test_list_filter_by_project(self):
         ash_ketchum = self.create_user_with_profile(
-            username="ash_ketchum", account=self.account, permissions=["iaso_teams"], projects=[self.project1]
+            username="ash_ketchum", account=self.account, permissions=[CORE_TEAMS_PERMISSION], projects=[self.project1]
         )
         team_electric_pokemons = Team.objects.create(
             project=self.project1, name="team_electric_pokemons", manager=ash_ketchum, type=TeamType.TEAM_OF_USERS
@@ -633,6 +636,7 @@ class PlanningTestCase(APITestCase):
                 "published_at": None,
                 "started_at": "2025-01-01",
                 "ended_at": "2025-01-10",
+                "pipeline_uuids": [],
             },
             r,
         )
@@ -694,7 +698,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -726,7 +730,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -751,7 +755,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -770,7 +774,7 @@ class PlanningTestCase(APITestCase):
 
     def test_create_api(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -788,6 +792,140 @@ class PlanningTestCase(APITestCase):
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))
         self.assertEqual(Modification.objects.all().count(), 1)
+
+    def test_planning_serializer_with_pipeline_uuids(self):
+        """Test PlanningSerializer with pipeline_uuids field."""
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+        valid_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        # Test valid pipeline_uuids
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Pipelines",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": valid_uuids,
+            },
+        )
+        self.assertTrue(serializer.is_valid(), serializer.errors)
+        planning = serializer.save()
+
+        # DRF UUIDField converts strings to UUID objects, so we expect UUID objects
+        expected_uuids = [uuid.UUID(uuid_str) for uuid_str in valid_uuids]
+        self.assertEqual(planning.pipeline_uuids, expected_uuids)
+
+    def test_planning_serializer_invalid_pipeline_uuids(self):
+        """Test PlanningSerializer validation with invalid pipeline_uuids."""
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        # Test invalid UUID format
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Invalid UUIDs",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": ["invalid-uuid", "not-a-uuid"],
+            },
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pipeline_uuids", serializer.errors)
+
+    def test_planning_serializer_pipeline_uuids_not_list(self):
+        """Test PlanningSerializer validation when pipeline_uuids is not a list."""
+
+        user = User.objects.get(username="test")
+        request = mock.Mock(user=user)
+
+        # Test non-list value
+        serializer = PlanningSerializer(
+            context={"request": request},
+            data={
+                "name": "Test Planning with Non-List UUIDs",
+                "org_unit": self.org_unit.id,
+                "team": self.team1.id,
+                "project": self.project1.id,
+                "forms": [self.form1.id, self.form2.id],
+                "pipeline_uuids": "not-a-list",
+            },
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("pipeline_uuids", serializer.errors)
+
+    def test_planning_api_response_includes_pipeline_uuids(self):
+        """Test that API response includes pipeline_uuids field."""
+        # Add some pipeline UUIDs to the planning
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+        self.planning.pipeline_uuids = test_uuids
+        self.planning.save()
+
+        # Authenticate user and test GET request
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/microplanning/plannings/{self.planning.id}/", format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+    def test_planning_api_create_with_pipeline_uuids(self):
+        """Test creating planning via API with pipeline_uuids."""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        data = {
+            "name": "New Planning with Pipelines",
+            "org_unit": self.org_unit.id,
+            "team": self.team1.id,
+            "project": self.project1.id,
+            "forms": [self.form1.id, self.form2.id],
+            "pipeline_uuids": test_uuids,
+        }
+
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+        # Verify in database
+        planning = Planning.objects.get(id=r["id"])
+        self.assertEqual(planning.pipeline_uuids, test_uuids)
+
+    def test_planning_api_patch_with_pipeline_uuids(self):
+        """Test updating planning via API with pipeline_uuids."""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        test_uuids = ["60fcb048-a5f6-4a79-9529-1ccfa55e75d1", "70fcb048-a5f6-4a79-9529-1ccfa55e75d2"]
+
+        data = {
+            "pipeline_uuids": test_uuids,
+        }
+
+        response = self.client.patch(f"/api/microplanning/plannings/{self.planning.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        r = response.json()
+        self.assertIn("pipeline_uuids", r)
+        self.assertEqual(r["pipeline_uuids"], test_uuids)
+
+        # Verify in database
+        self.planning.refresh_from_db()
+        self.assertEqual(self.planning.pipeline_uuids, test_uuids)
 
 
 class AssignmentAPITestCase(APITestCase):
@@ -892,7 +1030,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -913,7 +1051,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_bulk_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         assignments = Assignment.objects.filter(planning=self.planning)
         self.assertEqual(assignments.count(), 1)
@@ -950,7 +1088,7 @@ class AssignmentAPITestCase(APITestCase):
         other_account = Account.objects.create(name="other_account")
 
         user = self.create_user_with_profile(
-            username="user_with_perms", account=other_account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=other_account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user)
         data = {
@@ -967,7 +1105,7 @@ class AssignmentAPITestCase(APITestCase):
         """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
 
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
         )
         self.client.force_authenticate(user_with_perms)
         data = {

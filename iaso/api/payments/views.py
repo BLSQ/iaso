@@ -15,8 +15,6 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
@@ -29,6 +27,7 @@ from iaso.api.tasks.serializers import TaskSerializer
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.org_unit import OrgUnit
 from iaso.models.payments import PaymentStatuses
+from iaso.permissions.core_permissions import CORE_PAYMENTS_PERMISSION
 from iaso.tasks.create_payment_lot import create_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
 
@@ -80,7 +79,7 @@ class PaymentLotsViewSet(ModelViewSet):
        - else, only the `PaymentLot` is logged, in the `update` method
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -437,7 +436,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -590,7 +589,7 @@ class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get", "options"]
     results_key = "results"
     serializer_class = PaymentSerializer
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.PAYMENTS)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_PAYMENTS_PERMISSION)]
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

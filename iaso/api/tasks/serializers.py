@@ -5,7 +5,8 @@ from django.utils.text import slugify
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField, UserSerializer
-from iaso.models.base import ERRORED, KILLED, RUNNING, SUCCESS, Task
+from iaso.models.base import ERRORED, KILLED, RUNNING, SUCCESS
+from iaso.models.task import Task, TaskLog
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -14,7 +15,7 @@ class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
 
-        # Do not include the params, it can contains sensitive information such as passwords
+        # Do not include the params, it can contain sensitive information such as passwords
         fields = [
             "id",
             "created_at",
@@ -133,3 +134,13 @@ class ExternalTaskPostSerializer(serializers.Serializer):
         )
         task.save()
         return task
+
+
+class TaskLogSerializer(serializers.Serializer):
+    created_at = TimestampField()
+    message = serializers.CharField()
+
+    class Meta:
+        model = TaskLog
+        fields = ["created_at", "message"]
+        read_only_fields = ["created_at", "message"]

@@ -52,9 +52,14 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: Params;
     isFetching: boolean;
+    isSearchActive: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
+const Filters: FunctionComponent<Props> = ({
+    params,
+    isFetching,
+    isSearchActive,
+}) => {
     const getParams = useFiltersParams();
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
@@ -114,13 +119,15 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         ? JSON.parse(filters.fieldsSearch)
         : undefined;
 
+    const searchEnabled = filtersUpdated || !isSearchActive;
     const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
+        if (searchEnabled) {
             setFiltersUpdated(false);
             const tempParams: Params = getParams(params, filters);
+            tempParams.isSearchActive = 'true';
             redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, getParams, params, filters, redirectTo]);
+    }, [searchEnabled, getParams, params, filters, redirectTo]);
 
     const handleChange = useCallback(
         (key, value) => {
@@ -287,9 +294,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             <Box mb={2}>
                                 <Button
                                     data-test="search-button"
-                                    disabled={
-                                        textSearchError || !filtersUpdated
-                                    }
+                                    disabled={textSearchError || !searchEnabled}
                                     variant="contained"
                                     color="primary"
                                     onClick={() => handleSearch()}
@@ -300,11 +305,13 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                                     {formatMessage(MESSAGES.search)}
                                 </Button>
                             </Box>
-                            <DownloadButtonsComponent
-                                csvUrl={`${apiUrl}&csv=true`}
-                                xlsxUrl={`${apiUrl}&xlsx=true`}
-                                disabled={isFetching}
-                            />
+                            {isSearchActive && (
+                                <DownloadButtonsComponent
+                                    csvUrl={`${apiUrl}&csv=true`}
+                                    xlsxUrl={`${apiUrl}&xlsx=true`}
+                                    disabled={isFetching}
+                                />
+                            )}
                         </Box>
                     </Grid>
                 </Grid>

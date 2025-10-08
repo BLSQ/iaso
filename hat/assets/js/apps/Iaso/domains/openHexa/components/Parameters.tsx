@@ -4,18 +4,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { MESSAGES } from '../messages';
-
-type Parameter = {
-    type: string;
-    code: string;
-    name: string;
-    default?: any;
-    required?: boolean;
-    choices?: any[];
-    multiple?: boolean;
-};
-
-type ParameterValues = Record<string, any>;
+import { Parameter, ParameterValues } from '../types/pipeline';
 
 type ParametersProps = {
     parameters?: Parameter[];

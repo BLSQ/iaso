@@ -167,8 +167,8 @@ def lqas_assignment_pipeline(
 
 #### connection_token
 - **Type**: `str`
-- **Description**: Session token for authentication with the Iaso API. This replaces the previous username/password authentication approach.
-- **Example**: `"hr8ixkck2o7w1mxztiavl0s6hhpszz9e"`
+- **Description**: Session token for authentication with the Iaso API. Can be either a sessionid cookie value or CSRF token. The pipeline automatically detects the token type and uses the appropriate authentication method.
+- **Example**: `"hr8ixkck2o7w1mxztiavl0s6hhpszz9e"` (sessionid) or `"i0A510fLxbGQcnV4RNYDxl144gVzUmay"` (CSRF token)
 
 ### Pipeline Execution Flow
 
@@ -230,10 +230,11 @@ def test_connection(connection_host: str, connection_token: str) -> bool:
 
 **Benefits of this approach:**
 - **Multitenant Support**: Each pipeline run can connect to different Iaso instances
-- **Direct Authentication**: Uses session tokens instead of username/password
+- **Flexible Authentication**: Automatically detects and uses sessionid cookies or CSRF tokens
 - **Better Performance**: No dependency on OpenHexa's connection management
 - **Error Handling**: Proper connection testing and error reporting
-- **Flexibility**: Easy to extend for other API endpoints
+- **Security**: Uses existing session-based authentication without exposing credentials
+- **Fallback Support**: Works even when sessionid cookies are HttpOnly by using CSRF tokens
 
 ### Task Status Updates
 

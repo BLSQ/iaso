@@ -38,6 +38,7 @@ CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() =
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
 SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
 ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
+SESSION_COOKIE_HTTPONLY = False
 
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
@@ -61,7 +62,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
 USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
-
 # Storage provider configuration
 STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
 if USE_S3:

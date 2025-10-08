@@ -167,8 +167,8 @@ def lqas_assignment_pipeline(
 
 #### connection_token
 - **Type**: `str`
-- **Description**: Session token for authentication with the Iaso API. Can be either a sessionid cookie value or CSRF token. The pipeline automatically detects the token type and uses the appropriate authentication method.
-- **Example**: `"hr8ixkck2o7w1mxztiavl0s6hhpszz9e"` (sessionid) or `"i0A510fLxbGQcnV4RNYDxl144gVzUmay"` (CSRF token)
+- **Description**: JWT Bearer token for authentication with the Iaso API. The token is obtained from the `/api/apitoken/` endpoint and used in the `Authorization: Bearer {token}` header.
+- **Example**: `"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."` (JWT access token)
 
 ### Pipeline Execution Flow
 
@@ -181,7 +181,7 @@ def lqas_assignment_pipeline(
 
 ### API Authentication
 
-The pipeline uses session-based authentication instead of OpenHexa's connection system. This approach provides better multitenant support and direct control over API calls.
+The pipeline uses JWT Bearer token authentication instead of OpenHexa's connection system. This approach provides better multitenant support, security, and direct control over API calls.
 
 #### Generic API Caller
 
@@ -189,18 +189,18 @@ The pipeline uses session-based authentication instead of OpenHexa's connection 
 def call_api(
     base_url: str,
     endpoint: str,
-    session_id: str,
+    bearer_token: str,
     method: str = "GET",
     data: Optional[Dict] = None,
     params: Optional[Dict] = None,
 ) -> Any:
     """
-    Generic API caller that uses a sessionid cookie for authentication.
+    Generic API caller that uses Bearer token authentication.
 
     Args:
         base_url (str): Root server URL, e.g. "http://localhost:8081"
         endpoint (str): API endpoint, e.g. "/api/forms/" (no trailing slash required)
-        session_id (str): Session ID value (from cookie)
+        bearer_token (str): JWT Bearer token for authentication
         method (str): HTTP method, default "GET" (can be "POST", "PUT", "PATCH", "DELETE")
         data (dict, optional): Data payload for POST/PUT/PATCH
         params (dict, optional): Query params for GET requests
@@ -209,6 +209,17 @@ def call_api(
         dict or str: JSON response if possible, otherwise raw text
     """
 ```
+
+#### Token Acquisition
+
+The frontend automatically obtains JWT tokens for pipeline authentication:
+
+```javascript
+// Frontend automatically gets JWT token from /api/apitoken/ endpoint
+const connection_token = await getRequest('/api/apitoken/');
+```
+
+The `/api/apitoken/` endpoint returns a JWT access token that can be used as a Bearer token for API authentication.
 
 #### Connection Testing
 
@@ -221,7 +232,7 @@ def test_connection(connection_host: str, connection_token: str) -> bool:
     
     Args:
         connection_host: Host URL of the Iaso server
-        connection_token: Session token for authentication
+        connection_token: JWT Bearer token for authentication
         
     Returns:
         bool: True if connection is successful, False otherwise
@@ -230,11 +241,12 @@ def test_connection(connection_host: str, connection_token: str) -> bool:
 
 **Benefits of this approach:**
 - **Multitenant Support**: Each pipeline run can connect to different Iaso instances
-- **Flexible Authentication**: Automatically detects and uses sessionid cookies or CSRF tokens
+- **Standard Authentication**: Uses industry-standard JWT Bearer token authentication
 - **Better Performance**: No dependency on OpenHexa's connection management
 - **Error Handling**: Proper connection testing and error reporting
-- **Security**: Uses existing session-based authentication without exposing credentials
-- **Fallback Support**: Works even when sessionid cookies are HttpOnly by using CSRF tokens
+- **Security**: JWT tokens are time-limited and secure
+- **Clean Implementation**: No cookie access issues or HttpOnly problems
+- **Compatibility**: Works seamlessly with existing Django JWT setup
 
 ### Task Status Updates
 
@@ -258,9 +270,12 @@ def update_task_status(
 ```
 
 **Status Values**:
+- `QUEUED`: Pipeline is queued for execution
 - `RUNNING`: Pipeline is executing
 - `SUCCESS`: Pipeline completed successfully
 - `ERRORED`: Pipeline failed with error
+- `EXPORTED`: Pipeline results have been exported
+- `SKIPPED`: Pipeline execution was skipped
 - `KILLED`: Pipeline was terminated
 
 ## OpenHexa Configuration
@@ -327,7 +342,7 @@ Content-Type: application/json
         "org_unit_type_quantities": [2, 3, 4],
         "org_unit_type_exceptions": ["12098,108033", "", ""],
         "connection_host": "http://localhost:8081",
-        "connection_token": "hr8ixkck2o7w1mxztiavl0s6hhpszz9e"
+        "connection_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
     }
 }
 ```

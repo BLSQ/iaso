@@ -18,7 +18,7 @@ from iaso.api.openhexa.serializers import (
     TaskUpdateSerializer,
 )
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING
+from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
 
@@ -299,10 +299,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if "status" in validated_data:
                 new_status = validated_data["status"]
 
-                if new_status == "SUCCESS":
+                # Prepare data for success reporting if needed
+                result_data = validated_data.get("result")
+                message = validated_data.get("progress_message", "Pipeline completed successfully")
+
+                if new_status == SUCCESS:
                     # Use Task model's success reporting method
-                    result_data = validated_data.get("result")
-                    message = validated_data.get("progress_message", "Pipeline completed successfully")
                     task.report_success_with_result(message, result_data)
                     progress_value = validated_data.get("progress_value")
                     end_value = validated_data.get("end_value")
@@ -312,12 +314,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
                         task.end_value = end_value
                     if progress_value is not None or end_value is not None:
                         task.save()
-                elif new_status == "ERRORED":
+                elif new_status == ERRORED:
                     # Use Task model's error reporting method
                     message = validated_data.get("progress_message", "Pipeline failed")
                     error = Exception(message)
                     task.report_failure(error)
-                elif new_status == "RUNNING":
+                elif new_status == RUNNING:
                     # Use Task model's progress reporting method
                     progress_value = validated_data.get("progress_value")
                     progress_message = validated_data.get("progress_message")
@@ -328,7 +330,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 else:
                     # For other statuses, update manually
                     task.status = new_status
-                    if new_status in ["SKIPPED", "EXPORTED", "KILLED"]:
+                    if new_status in [SKIPPED, EXPORTED, KILLED]:
                         task.ended_at = timezone.now()
                     task.save()
             else:

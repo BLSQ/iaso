@@ -116,6 +116,8 @@ def lqas_assignment_pipeline(
     org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
     org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
     org_unit_type_exceptions: List[str],            # ["12098,108033", "", ""] - exceptions per level
+    connection_host: str,                           # "http://localhost:8081" - Iaso server URL
+    connection_token: str,                          # Session token for authentication
 ):
     """
     LQAS Assignment Pipeline
@@ -126,6 +128,8 @@ def lqas_assignment_pipeline(
         org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
         org_unit_type_quantities: List of quantities to select at each level
         org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
+        connection_host: Host URL of the Iaso server (e.g., "http://localhost:8081")
+        connection_token: Session token for authentication
     """
 ```
 
@@ -156,22 +160,99 @@ def lqas_assignment_pipeline(
   - No region exceptions (empty string)
   - No district exceptions (empty string)
 
+#### connection_host
+- **Type**: `str`
+- **Description**: Host URL of the Iaso server to connect to. This enables multitenant support by allowing pipelines to connect to different Iaso instances.
+- **Example**: `"http://localhost:8081"` or `"https://iaso.example.com"`
+
+#### connection_token
+- **Type**: `str`
+- **Description**: Session token for authentication with the Iaso API. This replaces the previous username/password authentication approach.
+- **Example**: `"hr8ixkck2o7w1mxztiavl0s6hhpszz9e"`
+
 ### Pipeline Execution Flow
 
-1. **Validation**: Verify org unit type hierarchy matches team hierarchy
-2. **Sampling**: Apply LQAS algorithm to select org units
-3. **Assignment**: Assign selected org units to teams/users
-4. **Status Updates**: Update task progress throughout execution
-5. **Result Storage**: Store final assignments in Iaso database
+1. **Connection Test**: Validate connection to Iaso API using provided host and token
+2. **Validation**: Verify org unit type hierarchy matches team hierarchy
+3. **Sampling**: Apply LQAS algorithm to select org units
+4. **Assignment**: Assign selected org units to teams/users
+5. **Status Updates**: Update task progress throughout execution
+6. **Result Storage**: Store final assignments in Iaso database
+
+### API Authentication
+
+The pipeline uses session-based authentication instead of OpenHexa's connection system. This approach provides better multitenant support and direct control over API calls.
+
+#### Generic API Caller
+
+```python
+def call_api(
+    base_url: str,
+    endpoint: str,
+    session_id: str,
+    method: str = "GET",
+    data: Optional[Dict] = None,
+    params: Optional[Dict] = None,
+) -> Any:
+    """
+    Generic API caller that uses a sessionid cookie for authentication.
+
+    Args:
+        base_url (str): Root server URL, e.g. "http://localhost:8081"
+        endpoint (str): API endpoint, e.g. "/api/forms/" (no trailing slash required)
+        session_id (str): Session ID value (from cookie)
+        method (str): HTTP method, default "GET" (can be "POST", "PUT", "PATCH", "DELETE")
+        data (dict, optional): Data payload for POST/PUT/PATCH
+        params (dict, optional): Query params for GET requests
+
+    Returns:
+        dict or str: JSON response if possible, otherwise raw text
+    """
+```
+
+#### Connection Testing
+
+The pipeline includes a connection test function that validates API connectivity before proceeding:
+
+```python
+def test_connection(connection_host: str, connection_token: str) -> bool:
+    """
+    Test the connection to Iaso API.
+    
+    Args:
+        connection_host: Host URL of the Iaso server
+        connection_token: Session token for authentication
+        
+    Returns:
+        bool: True if connection is successful, False otherwise
+    """
+```
+
+**Benefits of this approach:**
+- **Multitenant Support**: Each pipeline run can connect to different Iaso instances
+- **Direct Authentication**: Uses session tokens instead of username/password
+- **Better Performance**: No dependency on OpenHexa's connection management
+- **Error Handling**: Proper connection testing and error reporting
+- **Flexibility**: Easy to extend for other API endpoints
 
 ### Task Status Updates
 
-The pipeline updates task status at key milestones:
+The pipeline updates task status at key milestones using the generic API caller:
 
 ```python
-def update_task_status(task_id, status, message, progress_value=None, end_value=None, result_data=None):
-    """Update task status in Iaso"""
-    # Send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
+def update_task_status(
+    task_id: int,
+    status: str,
+    message: str,
+    progress_value: Optional[int] = None,
+    end_value: Optional[int] = None,
+    pipeline_id: Optional[str] = None,
+    result_data: Optional[Dict] = None,
+    connection_host: str = "",
+    connection_token: str = "",
+):
+    """Update task status in Iaso using direct connection parameters."""
+    # Uses call_api() function to send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
     # with task_id, status, progress_message, progress_value, end_value, result_data
 ```
 
@@ -194,7 +275,8 @@ The OpenHexa integration requires configuration stored in the `Config` model wit
 
 #### Optional Parameters
 - `lqas_pipeline_code`: The pipeline code used to display a custom form for LQAS sampling in the OpenHexa integration UI. This enables specialized LQAS sampling forms when available.
-- `connection_name`: Connection used by OpenHexa hook to save data into Iaso default is ('iaso-pipeline')
+
+**Note**: The `connection_name` parameter is no longer used as pipelines now use direct connection parameters (`connection_host` and `connection_token`) for better multitenant support.
 
 ### Configuration Example
 
@@ -203,8 +285,7 @@ The OpenHexa integration requires configuration stored in the `Config` model wit
     "openhexa_url": "https://openhexa.example.com/graphql/",
     "openhexa_token": "your-api-token-here",
     "workspace_slug": "your-workspace",
-    "lqas_pipeline_code": "lqas-sampling-pipeline",
-    "connection_name": "iaso-pipeline"
+    "lqas_pipeline_code": "lqas-sampling-pipeline"
 }
 ```
 
@@ -243,7 +324,9 @@ Content-Type: application/json
         "task_id": 456,
         "org_unit_type_sequence_identifiers": [398, 399, 400],
         "org_unit_type_quantities": [2, 3, 4],
-        "org_unit_type_exceptions": ["12098,108033", "", ""]
+        "org_unit_type_exceptions": ["12098,108033", "", ""],
+        "connection_host": "http://localhost:8081",
+        "connection_token": "hr8ixkck2o7w1mxztiavl0s6hhpszz9e"
     }
 }
 ```

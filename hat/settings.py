@@ -38,7 +38,6 @@ CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() =
 CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
 SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
 ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
-SESSION_COOKIE_HTTPONLY = False
 
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link

@@ -92,6 +92,7 @@ describe('Tasks', () => {
                 .last()
                 .prev()
                 .find('button')
+                .first()
                 .click();
             cy.get('#notistack-snackbar').should('exist');
             cy.wait('@patchRequest');

@@ -9,5 +9,5 @@ export const useSwitchAccount = (
         mutationFn: accountId =>
             patchRequest('/api/accounts/switch/', { account_id: accountId }),
         options: { onSuccess: onSuccess || (() => null) },
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });

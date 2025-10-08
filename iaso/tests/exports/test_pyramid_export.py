@@ -10,7 +10,7 @@ from .parquet_helper import get_columns_from_parquet
 class PyramidExportTest(TestCase):
     def test_expected_columns_all_fields_even_if_no_records(self):
         qs = parquet.build_pyramid_queryset(OrgUnit.objects, extra_fields=[":all"])
-
+        self.maxDiff = None
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
             parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name)
             actual_columns = get_columns_from_parquet(tmpfile)
@@ -32,6 +32,7 @@ class PyramidExportTest(TestCase):
             ["org_unit_path", "VARCHAR"],
             ["org_unit_type_id", "INTEGER"],
             ["org_unit_type_name", "VARCHAR"],
+            ["org_unit_parent_id", "INTEGER"],
             ["org_unit_level", "INTEGER"],
             ["org_unit_longitude", "DOUBLE"],
             ["org_unit_latitude", "DOUBLE"],

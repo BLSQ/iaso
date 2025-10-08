@@ -1,4 +1,4 @@
-FROM enketo/enketo-express:4.1.1-4
+FROM enketo/enketo-express:4.1.1
 
 EXPOSE 8005
 

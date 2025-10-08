@@ -20,7 +20,7 @@ services:
       - redis_main
       - redis_cache
     environment:
-      - DEBUG=*
+      - DISABLED_DEBUG=*
       - PORT=8005
       - ENKETO_VAR=yes
       - ENKETO_API_KEY=AZE78974654azeAZE

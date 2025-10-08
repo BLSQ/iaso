@@ -2,10 +2,10 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from 'Iaso/constants/urls';
+import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { baseUrls } from '../../../constants/urls';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import MESSAGES from './messages';
@@ -28,6 +28,7 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
         () => ({
             parent_id: params.parent_id,
             groups: params.groups,
+            org_unit: params.org_unit,
             org_unit_type_id: params.org_unit_type_id,
             status: params.status,
             created_at_after: params.created_at_after,
@@ -43,6 +44,7 @@ export const ReviewOrgUnitChanges: FunctionComponent = () => {
             params.created_at_before,
             params.forms,
             params.groups,
+            params.org_unit,
             params.org_unit_type_id,
             params.parent_id,
             params.source_version_id,

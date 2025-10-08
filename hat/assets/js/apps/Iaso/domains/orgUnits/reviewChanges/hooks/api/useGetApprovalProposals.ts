@@ -19,6 +19,7 @@ export const useGetApprovalProposalsParams = (
     return {
         parent_id: params.parent_id,
         groups: params.groups,
+        org_unit_search: params.org_unit,
         org_unit_type_id: params.org_unit_type_id,
         status: params.status,
         order: params.order || '-updated_at',

@@ -1,26 +1,34 @@
-version: "3"
 services:
-  enketo:
-    image: enketo/enketo-express:5.0.0
-#    entrypoint: pm2 start --no-daemon app.js -n enketo
-#    environment:
-      # uncomment for more debug output
-#       DEBUG: "express"
-    depends_on:
-      - redis_main
-    ports:
-      - "8005:8005"
-    volumes:
-      - ./docker/enketo/config/config.json:/srv/src/enketo_express/config/config.json
-      - ./docker/enketo/checksum/:/srv/src/enketo_express/checksum
-      - ./docker/enketo/css:/srv/src/enketo_express/public/css
-      - ./docker/enketo/js:/srv/src/enketo_express/public/js/build
-      - ./docker/enketo/locales:/srv/src/enketo_express/locales/build
-      - ./docker/enketo/secrets/:/srv/src/enketo_express/setup/docker/secrets/
-      # Override enketo script for a fix, see top comment
-      - ./docker/enketo/start.sh:/srv/src/enketo_express/setup/docker/start.sh
   redis_main:
     image: redis:5
-    volumes:
-      - ./docker/enketo/redis/redis-enketo-main.conf:/etc/redis/redis.conf:ro
-      - ./docker/enketo/redis_main_data/:/data/
+    command: redis-server
+    restart: unless-stopped
+
+  redis_cache:
+    image: redis:5
+    command: redis-server
+    restart: unless-stopped
+  
+  enketo:
+    build:
+      context: .
+      dockerfile: ./docker/enketo/Dockerfile
+
+    ports:
+      - "8005:8005"
+    depends_on:
+      - redis_main
+      - redis_cache
+    environment:
+      - DEBUG=*
+      - PORT=8005
+      - ENKETO_VAR=yes
+      - ENKETO_API_KEY=AZE78974654azeAZE
+      - ENKETO_APP_NAME=Enketo for Iaso dev
+      - ENKETO_DEFAULT_THEME=grid
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_API_KEY=AZE78974654azeAZE
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_NAME=Iaso Dev
+      - ENKETO_LINKED_FORM_AND_DATA_SERVER_SERVER_URL=
+      - ENKETO_LOGO_SOURCE=https://i1.wp.com/bluesquarehub.com/wp-content/uploads/2019/11/Bluesquare-horizontal-white.png?w=200&ssl=1
+      - ENKETO_REDIS_CACHE_URL=redis://redis_cache:6379
+      - ENKETO_REDIS_MAIN_URL=redis://redis_cache:6379

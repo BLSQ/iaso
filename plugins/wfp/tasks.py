@@ -75,6 +75,8 @@ def etl_ssd():
     )
     MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
+    # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
+    # print(connection.queries) # Uncomment this line to see the SQL queries executed
 
 
 @shared_task()

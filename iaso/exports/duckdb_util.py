@@ -63,4 +63,4 @@ def export_django_query_to_parquet_via_duckdb(qs: QuerySet, output_file_path: st
 
 
 def dict_to_projection(mapping):
-    return ",\n    ".join(f'{safe} as "{orig}"' for orig, safe in mapping.items())
+    return ",\n    ".join(f'"{safe}" as "{orig}"' for orig, safe in mapping.items())

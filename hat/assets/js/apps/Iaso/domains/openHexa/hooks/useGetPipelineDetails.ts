@@ -1,11 +1,13 @@
+import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { DjangoError } from 'Iaso/types/general';
+import { Pipeline } from '../types/pipeline';
 
 export const useGetPipelineDetails = (
     pipelineId?: string,
-    setError?: (error: DjangoError | null) => void,
-) => {
+    parametersToRemove: string[] = ['task_id', 'pipeline_id'],
+): UseQueryResult<Pipeline, DjangoError> => {
     return useSnackQuery({
         queryKey: ['pipeline', pipelineId],
         queryFn: () => getRequest(`/api/openhexa/pipelines/${pipelineId}/`),
@@ -20,8 +22,7 @@ export const useGetPipelineDetails = (
                         ...data.currentVersion,
                         parameters: data.currentVersion?.parameters.filter(
                             parameter =>
-                                parameter.code !== 'task_id' &&
-                                parameter.code !== 'pipeline_id',
+                                !parametersToRemove.includes(parameter.code),
                         ),
                     },
                 };
@@ -30,11 +31,6 @@ export const useGetPipelineDetails = (
             cacheTime: 60000,
             staleTime: 60000,
             retry: false,
-            onError: error => {
-                if (setError) {
-                    setError(error);
-                }
-            },
         },
     });
 };

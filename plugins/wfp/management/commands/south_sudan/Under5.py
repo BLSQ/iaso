@@ -170,7 +170,10 @@ class Under5:
             )
             existing_beneficiaries = ETL().existing_beneficiaries()
             instances = self.group_visit_by_entity(entities)
-
+            all_steps = []
+            all_visits = []
+            all_journeys = []
+            all_beneficiaries = []
             for index, instance in enumerate(instances):
                 logger.info(
                     f"---------------------------------------- Beneficiary N° {(index + 1)} {instance['entity_id']}-----------------------------------"
@@ -190,8 +193,7 @@ class Under5:
                     beneficiary.entity_id = instance["entity_id"]
                     beneficiary.account = account
                     beneficiary.guidelines = instance.get("guidelines", "OLD")
-
-                    beneficiary.save()
+                    all_beneficiaries.append(beneficiary)
                     logger.info("Created new beneficiary")
                 else:
                     beneficiary = Beneficiary.objects.filter(entity_id=instance["entity_id"]).first()
@@ -201,16 +203,23 @@ class Under5:
                     for journey_instance in instance["journey"]:
                         if len(journey_instance["visits"]) > 0:
                             journey = self.save_journey(beneficiary, journey_instance)
+                            all_journeys.append(journey)
                             visits = ETL().save_visit(journey_instance["visits"], journey)
+                            all_visits.extend(visits)
                             logger.info(f"Inserted {len(visits)} Visits")
                             grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
                             admission_step = grouped_steps[0]
 
                             followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
                             steps = ETL().save_steps(visits, followUpVisits)
+                            all_steps.extend(steps)
                             logger.info(f"Inserted {len(steps)} Steps")
                         else:
                             logger.info("No new journey")
                     logger.info(
                         "---------------------------------------------------------------------------------------------\n\n"
                     )
+            Beneficiary.objects.bulk_create(all_beneficiaries)
+            Journey.objects.bulk_create(all_journeys)
+            Visit.objects.bulk_create(all_visits)
+            Step.objects.bulk_create(all_steps)

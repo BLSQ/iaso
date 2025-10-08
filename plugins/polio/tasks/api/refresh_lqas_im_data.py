@@ -7,8 +7,9 @@ from rest_framework.response import Response
 from iaso.api.common import HasPermission
 from iaso.api.tasks.serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import ERRORED, RUNNING, SUCCESS, Task
+from iaso.models.base import ERRORED, RUNNING, SUCCESS
 from iaso.models.org_unit import OrgUnit
+from iaso.models.task import Task
 from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 
 

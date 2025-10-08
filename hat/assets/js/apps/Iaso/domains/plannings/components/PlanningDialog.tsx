@@ -1,17 +1,21 @@
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect } from 'react';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { Box, Grid } from '@mui/material';
 import {
     AddButton,
-    IconButton,
     IntlFormatMessage,
     useSafeIntl,
+    ConfirmCancelModal,
+    makeFullModal,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 
+import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { useGetPipelineConfig } from 'Iaso/domains/openHexa/hooks/useGetPipelineConfig';
+import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipelines';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
@@ -20,6 +24,7 @@ import {
 } from '../../../libs/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetPublishingStatusOptions } from '../constants';
 import { useGetForms } from '../hooks/requests/useGetForms';
 import { useGetTeams } from '../hooks/requests/useGetTeams';
 import {
@@ -34,34 +39,9 @@ type ModalMode = 'create' | 'edit' | 'copy';
 
 type Props = Partial<SavePlanningQuery> & {
     type: ModalMode;
+    closeDialog: () => void;
+    isOpen: boolean;
 };
-const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
-    if (type === 'create') {
-        return ({ openDialog }) => (
-            <AddButton
-                dataTestId="create-plannning-button"
-                onClick={openDialog}
-            />
-        );
-    }
-    if (type === 'copy') {
-        return ({ openDialog }) => (
-            <IconButton
-                onClick={openDialog}
-                overrideIcon={FileCopyIcon}
-                tooltipMessage={MESSAGES.duplicatePlanning}
-            />
-        );
-    }
-    return ({ openDialog }) => (
-        <IconButton
-            onClick={openDialog}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
-    );
-};
-
 // TODO move to utils
 export const makeResetTouched =
     (
@@ -105,9 +85,11 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     project,
     description,
     publishingStatus,
+    pipelineUuids,
+    closeDialog,
+    isOpen,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [closeModal, setCloseModal] = useState<any>();
     const { mutateAsync: savePlanning } = useSavePlanning(type);
     const {
         apiErrors,
@@ -116,7 +98,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SavePlanningQuery>, any>({
         mutationFn: savePlanning,
         onSuccess: () => {
-            closeModal.closeDialog();
             formik.resetForm();
         },
 
@@ -124,7 +105,10 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     });
 
     const schema = usePlanningValidation(apiErrors, payload);
-
+    const { data: config } = useGetPipelineConfig();
+    const hasPipelineConfig = config?.configured;
+    const { data: pipelineUuidsOptions, isFetching: isFetchingPipelineUuids } =
+        useGetPipelinesDropdown(Boolean(hasPipelineConfig));
     const formik = useFormik({
         initialValues: {
             id,
@@ -137,6 +121,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             project,
             description,
             publishingStatus: publishingStatus ?? 'draft',
+            pipelineUuids,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -166,8 +151,6 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
     // TODO filter out by team and forms
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
-
-    const renderTrigger = useMemo(() => makeRenderTrigger(type), [type]);
 
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
@@ -223,25 +206,27 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             setFieldTouched('selectedTeam', false);
         }
     }, [values?.project, teamsDropdown, setFieldValue, setFieldTouched]);
-
+    const publishingStatusOptions = useGetPublishingStatusOptions();
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
                 allowConfirm={isValid && !isEqual(values, initialValues)}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
+                onConfirm={() => {
                     handleSubmit();
                 }}
-                onCancel={closeDialog => {
-                    closeDialog();
+                open={isOpen}
+                onCancel={() => {
                     resetForm();
+                    closeDialog();
                 }}
+                closeDialog={closeDialog}
                 maxWidth="md"
+                onClose={() => null}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                renderTrigger={renderTrigger}
+                id={`${id ?? 'create'}-planning-dialog`}
+                dataTestId={`${id ?? 'create'}-planning-dialog`}
             >
                 <>
                     <Grid container id="top-row" spacing={2}>
@@ -296,12 +281,12 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
-                                onChange={(keyValue, value) => {
+                                onChange={(keyValue, value) =>
                                     onChange(
                                         keyValue,
                                         commaSeparatedIdsToArray(value),
-                                    );
-                                }}
+                                    )
+                                }
                                 value={values.forms}
                                 errors={getErrors('forms')}
                                 label={MESSAGES.forms}
@@ -357,29 +342,75 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         blockInvalidDates={false}
                         marginTop={0}
                     />
-                    <Grid item>
-                        <InputComponent
-                            type="radio"
-                            keyValue="publishingStatus"
-                            onChange={onChange}
-                            value={values.publishingStatus}
-                            errors={getErrors('publishingStatus')}
-                            label={MESSAGES.publishingStatus}
-                            options={[
-                                {
-                                    label: formatMessage(MESSAGES.published),
-                                    value: 'published',
-                                },
-                                {
-                                    label: formatMessage(MESSAGES.draft),
-                                    value: 'draft',
-                                },
-                            ]}
-                            required
-                        />
+
+                    <Grid container spacing={2}>
+                        {hasPipelineConfig && (
+                            <Grid item xs={6}>
+                                <InputComponent
+                                    type="select"
+                                    multi
+                                    keyValue="pipelineUuids"
+                                    onChange={(keyValue, value) =>
+                                        onChange(
+                                            keyValue,
+                                            value ? value.split(',') : [],
+                                        )
+                                    }
+                                    loading={isFetchingPipelineUuids}
+                                    options={pipelineUuidsOptions}
+                                    value={values.pipelineUuids}
+                                    errors={getErrors('pipelineUuids')}
+                                    label={MESSAGES.pipelines}
+                                />
+                            </Grid>
+                        )}
+                        <Grid item xs={6}>
+                            <InputComponent
+                                type="radio"
+                                keyValue="publishingStatus"
+                                onChange={onChange}
+                                value={values.publishingStatus}
+                                errors={getErrors('publishingStatus')}
+                                label={MESSAGES.publishingStatus}
+                                options={publishingStatusOptions}
+                                required
+                            />
+                        </Grid>
                     </Grid>
                 </>
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
+};
+
+type DuplicateButtonProps = {
+    onClick: () => void;
+    disabled?: boolean;
+};
+
+const DuplicateIconButton: FunctionComponent<DuplicateButtonProps> = ({
+    onClick,
+    disabled = false,
+}) => {
+    return (
+        <EditIconButton
+            onClick={onClick}
+            overrideIcon={FileCopyIcon}
+            message={MESSAGES.duplicatePlanning}
+            disabled={disabled}
+        />
+    );
+};
+
+const modalCreateButton = makeFullModal(CreateEditPlanning, AddButton);
+const modalEditIcon = makeFullModal(CreateEditPlanning, EditIconButton);
+const modalDuplicateIcon = makeFullModal(
+    CreateEditPlanning,
+    DuplicateIconButton,
+);
+
+export {
+    modalCreateButton as CreatePlanning,
+    modalEditIcon as EditPlanning,
+    modalDuplicateIcon as DuplicatePlanning,
 };

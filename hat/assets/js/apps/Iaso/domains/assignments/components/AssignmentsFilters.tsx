@@ -1,15 +1,15 @@
-import { Grid, Button, Box } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
+import { Grid, Button, Box } from '@mui/material';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { AssignmentParams } from '../types/assigment';
-import { DropdownTeamsOptions } from '../types/team';
 import { DropdownOptions } from '../../../types/utils';
 
 import MESSAGES from '../messages';
+import { AssignmentParams } from '../types/assigment';
+import { DropdownTeamsOptions } from '../types/team';
 
 type Props = {
     params: AssignmentParams;

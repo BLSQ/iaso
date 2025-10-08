@@ -61,6 +61,24 @@ class SubmissionsExportTest(TestCase):
         ]
         self.assertEqual(actual_columns, expected)
 
+    def test_expected_columns_all_fields_even_with_reserved_names(self):
+        self.form_to_export.possible_fields = [
+            {"name": "end"},
+        ]
+        self.form_to_export.save()
+
+        qs, mapping = parquet.build_submissions_queryset(Instance.objects, self.form_to_export.id)
+
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as tmpfile:
+            parquet.export_django_query_to_parquet_via_duckdb(qs, tmpfile.name, mapping)
+            actual_columns = get_columns_from_parquet(tmpfile)
+
+        expected = [
+            *STANDARD_COLUMNS,
+            ["end", "VARCHAR"],
+        ]
+        self.assertEqual(actual_columns, expected)
+
     def test_expected_columns_all_fields_even_if_some_answers_collide_with_model_field(
         self,
     ):

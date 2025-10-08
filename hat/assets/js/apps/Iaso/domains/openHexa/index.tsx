@@ -1,9 +1,8 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import PageError from 'Iaso/components/errors/PageError';
-import { DjangoError } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
@@ -20,8 +19,7 @@ const baseUrl = baseUrls.pipelineList;
 export const PipelineList: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const [error, setError] = useState<DjangoError | null>(null);
-    const { data, isFetching } = useGetPipelines(setError);
+    const { data, isFetching, error } = useGetPipelines();
     const defaultSorted = [{ id: 'id', desc: true }];
 
     const columns = useColumns();

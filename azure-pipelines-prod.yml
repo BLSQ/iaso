@@ -21,14 +21,13 @@ variables:
 pool:
   vmImage: ubuntu-24.04
 
-
 services:
   postgres: postgis
 
 steps:
 - task: NodeTool@0
   inputs:
-    versionSpec: '20.x'
+    versionSpec: '22.18.0'
   displayName: 'Install Node.js'
 
 - script: |
@@ -122,40 +121,61 @@ steps:
     testResultsFiles: "**/TEST-*.xml"
     testRunTitle: 'Python $(PYTHON_VERSION)'
 
+# --- Free disk on / (dev/root) BEFORE docker build ---
 - script: |
-    echo "Disk space before Docker cleanup:"
-    df -h
+    echo "Before cleanup:" && df -h
+    echo "Removing large preinstalled SDKs..."
+    sudo rm -rf /usr/local/lib/android || true
+    sudo rm -rf /usr/share/dotnet      || true
+    sudo rm -rf /usr/lib/jvm           || true
+    sudo rm -rf /opt/ghc               || true
+    sudo rm -rf /opt/hostedtoolcache   || true
+    sudo apt-get clean
+    sudo rm -rf /var/lib/apt/lists/*
+    echo "After cleanup:" && df -h
+  displayName: 'Free disk space on hosted agent'
+
+- script: |
+    echo "Disk space before Docker cleanup:" && df -h
     echo "Cleaning up Docker system to free space..."
-    docker system prune -af --volumes
-    echo "Disk space after Docker cleanup:"
-    df -h
+    docker system prune -af --volumes || true
+    echo "Disk space after Docker cleanup:" && df -h
   displayName: 'Clean up Docker system'
 
 - script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
   displayName: 'Build docker image'
 
-- script: docker save -o $(Build.ArtifactStagingDirectory)/prod-coda2.tar.gz prod-coda2
-  displayName: 'Save docker image'
+# Save the Docker image compressed, in a dedicated folder for the artifact
+- script: |
+    mkdir -p $(Build.ArtifactStagingDirectory)/image
+    docker save prod-coda2 | gzip > $(Build.ArtifactStagingDirectory)/image/prod-coda2.tar.gz
+    ls -lh $(Build.ArtifactStagingDirectory)/image/prod-coda2.tar.gz
+  displayName: 'Save docker image (compressed)'
 
-- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash prod-coda2 -c "cp -R /opt/app/static /opt/mount/"
+# Copy static files into a separate artifact folder
+- script: |
+    cid=$(docker create prod-coda2)
+    mkdir -p $(Build.ArtifactStagingDirectory)/static_artifact
+    docker cp "$cid":/opt/app/static $(Build.ArtifactStagingDirectory)/static_artifact/
+    docker rm "$cid" || true
   displayName: 'Copy static files from docker'
 
 - script: |
-    echo "Disk space before cleanup:"
-    df -h
+    echo "Disk space before cleanup:" && df -h
     echo "Removing Docker image to free space..."
     docker rmi prod-coda2 || true
-    echo "Disk space after cleanup:"
-    df -h
+    docker system prune -af --volumes || true
+    echo "Disk space after cleanup:" && df -h
   displayName: 'Clean up Docker image'
 
+# --- Publish artifacts (same layout as dev) ---
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/image'
     artifactName: prod-coda2
 
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: $(Build.ArtifactStagingDirectory)/static
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/static_artifact'
     artifactName: prod-coda2-static
   displayName: 'Publish static files'

@@ -26,7 +26,7 @@ export const useSaveAssignment = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
         options: { onSuccess },
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };
 
@@ -45,6 +45,6 @@ export const useBulkSaveAssignments = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: saveBulkAssignments,
         options: { onSuccess },
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

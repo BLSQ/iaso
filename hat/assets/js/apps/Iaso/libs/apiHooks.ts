@@ -70,7 +70,7 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
           >
         | undefined;
     ignoreErrorCodes?: number[];
-    showSucessSnackBar?: boolean;
+    showSuccessSnackBar?: boolean;
     successSnackBar?: (
         msg: IntlMessage,
         data: any,
@@ -100,7 +100,7 @@ const useBaseSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
         msg: IntlMessage,
@@ -139,7 +139,7 @@ const useBaseSnackMutation = <
             return undefined;
         },
         onSuccess: (data, variables, context) => {
-            if (snackSuccessMessage && showSucessSnackBar) {
+            if (snackSuccessMessage && showSuccessSnackBar) {
                 openSnackBar(successSnackBar(snackSuccessMessage, data));
             }
             if (invalidateQueryKey) {
@@ -179,7 +179,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
         msg: IntlMessage,
@@ -221,7 +221,7 @@ export const useSnackMutation = <
         ).options;
         arg6 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
-        ).showSucessSnackBar;
+        ).showSuccessSnackBar;
         arg7 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
         ).ignoreErrorCodes;
@@ -234,7 +234,7 @@ export const useSnackMutation = <
         arg3 = snackErrorMsg;
         arg4 = invalidateQueryKey;
         arg5 = options;
-        arg6 = showSucessSnackBar;
+        arg6 = showSuccessSnackBar;
         arg7 = ignoreErrorCodes;
         arg8 = successSnackBar;
     }

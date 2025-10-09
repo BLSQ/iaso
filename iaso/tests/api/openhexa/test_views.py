@@ -393,7 +393,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             started_at=timezone.now(),
         )
 
-        with patch.object(m.Task, "save", side_effect=Exception("Save failed")):
+        with patch.object(m.Task, "report_success_with_result", side_effect=Exception("Save failed")):
             response = self.client.patch(
                 f"/api/openhexa/pipelines/{self.pipeline_id}/",
                 data={

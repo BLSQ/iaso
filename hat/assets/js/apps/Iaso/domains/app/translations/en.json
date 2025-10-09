@@ -1010,6 +1010,7 @@
     "iaso.orgUnits.name": "Name",
     "iaso.orgUnits.new": "Create an org unit",
     "iaso.orgUnits.onlyDirectChildren": "Only Direct children",
+    "iaso.orgUnits.openDate": "Open on",
     "iaso.orgUnits.openingDate": "Opening date",
     "iaso.orgUnits.orgUnitsTypes": "Organisation unit type",
     "iaso.orgUnits.ouTypesHelperText": "Children org units",

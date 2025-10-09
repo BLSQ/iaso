@@ -13,18 +13,7 @@ export const useGetPipelineConfig = () => {
         DjangoError
     >({
         queryKey: ['pipelineConfig'],
-        queryFn: async () => {
-            const config = await getRequest('/api/openhexa/pipelines/config/');
-            const connection_token = await getRequest('/api/apitoken/').then(
-                data => data.token,
-            );
-            const connection_host = window.location.origin;
-            return {
-                ...config,
-                connection_host,
-                connection_token: connection_token || '',
-            };
-        },
+        queryFn: () => getRequest('/api/openhexa/pipelines/config/'),
         dispatchOnError: false,
         options: {
             keepPreviousData: true,

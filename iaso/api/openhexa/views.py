@@ -21,6 +21,7 @@ from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
+from iaso.utils.tokens import get_user_token
 
 
 logger = logging.getLogger(__name__)
@@ -210,6 +211,19 @@ class OpenHexaPipelinesViewSet(ViewSet):
         pipeline_id = pk  # Use pipeline ID from URL
         version = validated_data["version"]
         config = validated_data["config"]
+
+        # Add connection token and host to config
+        try:
+            config["connection_token"] = get_user_token(request.user)
+            # Build complete URL with scheme
+            scheme = "https" if request.is_secure() else "http"
+            host = request.get_host()
+            config["connection_host"] = f"{scheme}://{host}"
+        except Exception as e:
+            logger.exception(f"Failed to generate connection token for user {request.user.id}: {str(e)}")
+            return Response(
+                {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
         config_result = get_openhexa_config()
         if isinstance(config_result, Response):

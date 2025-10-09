@@ -7,8 +7,6 @@ export const useGetPipelineConfig = () => {
         {
             configured: boolean;
             lqas_pipeline_code?: string;
-            connection_host: string;
-            connection_token: string;
         },
         DjangoError
     >({

@@ -763,7 +763,7 @@ class StockItemAdmin(admin.ModelAdmin):
     fields = ("org_unit", "sku", "value", "created_at", "updated_at")
     readonly_fields = ("created_at", "updated_at")
     list_display = ("org_unit", "sku", "value")
-    list_filter = ("org_unit", "sku")
+    list_filter = ["sku"]
 
 
 @admin.register(StockItemRule)
@@ -809,7 +809,7 @@ class StockLedgerItemAdmin(admin.ModelAdmin):
     fields = ("rule", "sku", "org_unit", "submission", "question", "impact", "value", "created_at", "created_by")
     readonly_fields = ("created_at", "created_by")
     list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
-    list_filter = ("sku", "org_unit", "impact", "rule")
+    list_filter = ("sku", "impact", "rule")
 
 
 @admin.register(StockRulesVersion)

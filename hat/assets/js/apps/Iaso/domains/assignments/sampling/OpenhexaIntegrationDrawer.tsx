@@ -154,17 +154,8 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             planning_id: planning.id,
             pipeline_id: selectedPipelineId,
         };
-        if (config?.connection_name) {
-            parameters.connection_name = config.connection_name;
-        }
         launchTask(parameters);
-    }, [
-        launchTask,
-        parameterValues,
-        planning.id,
-        selectedPipelineId,
-        config?.connection_name,
-    ]);
+    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
     const handleChangePipeline = useCallback((_, value) => {
         setSelectedPipelineId(value);
         setParameterValues(undefined);

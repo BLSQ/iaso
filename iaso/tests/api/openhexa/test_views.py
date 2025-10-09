@@ -212,8 +212,12 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         version_uuid = str(uuid.uuid4())
         config = {"country_name": "Burkina Faso", "use_demo_data": True}
 
-        with patch("iaso.api.openhexa.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task:
+        with (
+            patch("iaso.api.openhexa.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task,
+            patch("iaso.api.openhexa.views.get_user_token") as mock_get_user_token,
+        ):
             mock_launch_task.return_value = RUNNING
+            mock_get_user_token.return_value = "test-jwt-token"
 
             response = self.client.post(
                 f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
@@ -235,6 +239,45 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             self.assertEqual(task.external, True)
             self.assertEqual(task.status, RUNNING)
             self.assertIn("pipeline_id", task.params["kwargs"])
+
+            # Verify that connection_token and connection_host were added to config
+            updated_config = task.params["kwargs"]["config"]
+            self.assertIn("connection_token", updated_config)
+            self.assertEqual(updated_config["connection_token"], "test-jwt-token")
+            self.assertIn("connection_host", updated_config)
+            self.assertEqual(updated_config["connection_host"], "http://testserver")
+
+            # Verify original config fields are still present
+            self.assertEqual(updated_config["country_name"], "Burkina Faso")
+            self.assertEqual(updated_config["use_demo_data"], True)
+
+            # Verify get_user_token was called with the correct user
+            mock_get_user_token.assert_called_once_with(self.user)
+
+    def test_post_launch_pipeline_token_generation_error(self):
+        """Test pipeline launch when token generation fails."""
+        version_uuid = str(uuid.uuid4())
+        config = {"country_name": "Burkina Faso"}
+
+        with (
+            patch("iaso.api.openhexa.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task,
+            patch("iaso.api.openhexa.views.get_user_token") as mock_get_user_token,
+        ):
+            mock_launch_task.return_value = RUNNING
+            mock_get_user_token.side_effect = Exception("Token generation failed")
+
+            response = self.client.post(
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+                data={
+                    "version": version_uuid,
+                    "config": config,
+                },
+                format="json",
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", response.json())
+            self.assertIn("Failed to generate authentication token", response.json()["error"])
 
     def test_post_launch_pipeline_invalid_data(self):
         """Test pipeline launch with invalid data."""
@@ -393,7 +436,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             started_at=timezone.now(),
         )
 
-        with patch.object(m.Task, "save", side_effect=Exception("Save failed")):
+        with patch.object(m.Task, "report_success_with_result", side_effect=Exception("Save failed")):
             response = self.client.patch(
                 f"/api/openhexa/pipelines/{self.pipeline_id}/",
                 data={

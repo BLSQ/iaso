@@ -21,6 +21,7 @@ from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
+from iaso.utils.tokens import get_user_token
 
 
 logger = logging.getLogger(__name__)
@@ -211,6 +212,19 @@ class OpenHexaPipelinesViewSet(ViewSet):
         version = validated_data["version"]
         config = validated_data["config"]
 
+        # Add connection token and host to config
+        try:
+            config["connection_token"] = get_user_token(request.user)
+            # Build complete URL with scheme
+            scheme = "https" if request.is_secure() else "http"
+            host = request.get_host()
+            config["connection_host"] = f"{scheme}://{host}"
+        except Exception as e:
+            logger.exception(f"Failed to generate connection token for user {request.user.id}: {str(e)}")
+            return Response(
+                {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         config_result = get_openhexa_config()
         if isinstance(config_result, Response):
             return config_result
@@ -307,10 +321,13 @@ class OpenHexaPipelinesViewSet(ViewSet):
                         task.progress_value = progress_value
                     if end_value is not None:
                         task.end_value = end_value
+
+                    result_data = validated_data.get("result")
+                    message = validated_data.get("progress_message", "Pipeline completed successfully")
+                    task.report_success_with_result(message, result_data)
+
+                    # Only call save() if we manually set progress_value or end_value
                     if progress_value is not None or end_value is not None:
-                        result_data = validated_data.get("result")
-                        message = validated_data.get("progress_message", "Pipeline completed successfully")
-                        task.report_success_with_result(message, result_data)
                         task.save()
                 elif new_status == ERRORED:
                     # Use Task model's error reporting method

@@ -23,8 +23,7 @@ export const useLaunchTask = (
             }
             return launchTask(body, pipelineId, version);
         },
-        showSucessSnackBar: showSuccessSnackBar,
-        // showSuccessSnackBar,
+        showSuccessSnackBar,
         invalidateQueryKey: 'pipeline',
     });
 };

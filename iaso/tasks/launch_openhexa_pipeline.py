@@ -1,6 +1,8 @@
 import logging
 import time
 
+from datetime import datetime, timedelta
+
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 
@@ -54,9 +56,9 @@ def launch_openhexa_pipeline(
     openhexa_token: str,
     version: str,
     config: dict,
-    max_attempts: int = 30,
     delay: int = 2,
     task: Task = None,
+    max_polling_duration_minutes: int = 10,
 ):
     """
     Background task to launch OpenHEXA pipeline and monitor its status.
@@ -67,8 +69,8 @@ def launch_openhexa_pipeline(
         openhexa_token: OpenHEXA authentication token
         version: Pipeline version to launch
         config: Pipeline configuration
-        max_attempts: Maximum number of polling attempts
         delay: Delay between polling attempts in seconds
+        max_polling_duration_minutes: Maximum duration to poll for pipeline completion (default: 10 minutes)
     """
     logger.info(f"Starting OpenHEXA pipeline launch and monitoring for pipeline {pipeline_id}")
 
@@ -105,12 +107,28 @@ def launch_openhexa_pipeline(
 
     logger.info(f"Started OpenHexa polling task for task {task.pk}")
 
-    for attempt in range(max_attempts):
+    # Set up timeout for polling
+    polling_start_time = datetime.now()
+    max_polling_duration = timedelta(minutes=max_polling_duration_minutes)
+    logger.info(f"Polling timeout set to {max_polling_duration_minutes} minutes for task {task.pk}")
+
+    while True:
         try:
             # Check if task was killed
             task.refresh_from_db()
             if task.should_be_killed:
                 logger.info(f"Task {task.pk} was killed, stopping polling")
+                return
+
+            # Check if polling timeout has been reached
+            current_time = datetime.now()
+            elapsed_time = current_time - polling_start_time
+            if elapsed_time > max_polling_duration:
+                timeout_message = (
+                    f"Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}"
+                )
+                logger.warning(timeout_message)
+                task.report_failure(Exception(timeout_message))
                 return
 
             transport = RequestsHTTPTransport(
@@ -143,9 +161,7 @@ def launch_openhexa_pipeline(
 
             if not runs:
                 logger.warning(f"No runs found for pipeline {pipeline_id}")
-                task.report_progress_and_stop_if_killed(
-                    progress_message=f"No runs found for pipeline {pipeline_id} (attempt {attempt + 1}/{max_attempts})"
-                )
+                task.report_progress_and_stop_if_killed(progress_message=f"No runs found for pipeline {pipeline_id}")
                 time.sleep(delay)
                 continue
 
@@ -206,11 +222,4 @@ def launch_openhexa_pipeline(
         except Exception as e:
             logger.error(f"Error polling OpenHEXA for task {task.pk}: {str(e)}")
             task.report_progress_and_stop_if_killed(progress_message=f"Error polling OpenHEXA: {str(e)}")
-            time.sleep(delay)
-            continue
-
-    logger.warning(f"OpenHEXA polling timeout for task {task.pk} after {max_attempts} attempts")
-    error_message = "Pipeline monitoring timeout - status unknown after polling OpenHEXA"
-    error = Exception(error_message)
-    task.report_failure(error)
-    logger.info(f"Updated task {task.pk} to ERRORED due to polling timeout")
+            return

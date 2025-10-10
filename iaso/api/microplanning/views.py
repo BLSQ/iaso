@@ -183,7 +183,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         if not assignments.exists():
             return Response(
                 {
-                    "message": _("Successfully deleted 0 assignments"),
+                    "message": _("No assignments to delete"),
                     "deleted_count": 0,
                     "planning_id": planning.id,
                 }
@@ -208,7 +208,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
 
         return Response(
             {
-                "message": _(f"Successfully deleted {deleted_count} assignments"),
+                "message": _("Successfully deleted %(count)s assignments") % {"count": deleted_count},
                 "deleted_count": deleted_count,
                 "planning_id": planning.id,
             }

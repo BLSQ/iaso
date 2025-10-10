@@ -24,7 +24,7 @@ from iaso.enketo import (
     to_xforms_xml,
 )
 from iaso.enketo.enketo_url import generate_signed_url
-from iaso.enketo.enketo_xml import inject_xml_find_uuid
+from iaso.enketo.enketo_xml import collect_values, inject_xml_find_uuid, parse_to_structured_dict
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.utils.encryption import calculate_md5
@@ -421,6 +421,9 @@ class EnketoSubmissionAPIView(APIView):
             except:
                 pass
 
+            used_files = collect_values(parse_to_structured_dict(xml))
+            deprecated_files = instance.instancefile_set.exclude(name__in=used_files)
+
             for file_name in request.FILES:
                 if file_name != "xml_submission_file":
                     fi = InstanceFile()
@@ -428,6 +431,10 @@ class EnketoSubmissionAPIView(APIView):
                     fi.instance_id = instance.id
                     fi.name = file_name
                     fi.save()
+
+            for deprecated_file in deprecated_files:
+                deprecated_file.deleted = True
+                deprecated_file.save()
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:

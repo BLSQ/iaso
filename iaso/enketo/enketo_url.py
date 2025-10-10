@@ -73,8 +73,10 @@ def enketo_url_for_edition(
                 # just don't know what will happen if there's a [ or ] in the file name
 
                 path = "/api/enketo/instance_files/{instance_file.id}/{file.name}"
-                data[f"instance_attachments[{instance_file.name}]"] = generate_url_for_enketo(instance_file.file.url)
-    print(data)
+                safe_filename = instance_file.name.replace("[", "%5B").replace("]", "%5D")
+                key = f"instance_attachments[{safe_filename}]"
+                data[key] = generate_url_for_enketo(instance_file.file.url)
+
     return get_url_from_enketo(url, data)
 
 

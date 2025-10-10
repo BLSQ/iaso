@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-10 07:46+0000\n"
+"POT-Creation-Date: 2025-10-10 08:44+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -106,6 +106,15 @@ msgid ""
 msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
+
+#: iaso/api/microplanning/views.py
+msgid "No assignments to delete"
+msgstr "Aucune assignation à effacer"
+
+#: iaso/api/microplanning/views.py
+#, python-format
+msgid "Successfully deleted %(count)s assignments"
+msgstr "%(count)s assignations ont été supprimées avec succès"
 
 #: iaso/api/openhexa/views.py
 msgid "OpenHexa configuration not found"

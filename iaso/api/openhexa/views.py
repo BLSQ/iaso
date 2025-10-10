@@ -215,7 +215,6 @@ class OpenHexaPipelinesViewSet(ViewSet):
         # Add connection token and host to config
         try:
             config["connection_token"] = get_user_token(request.user)
-            # config["brol"] = "fsdfd"
             # Build complete URL with scheme
             scheme = "https" if request.is_secure() else "http"
             host = request.get_host()

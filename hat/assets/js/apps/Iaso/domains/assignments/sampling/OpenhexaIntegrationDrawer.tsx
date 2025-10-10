@@ -15,8 +15,10 @@ import {
     Typography,
     Paper,
     IconButton,
+    Tooltip,
 } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { OpenHexaSvg } from 'Iaso/components/svg/OpenHexaSvg';
 import { LQASForm } from 'Iaso/domains/assignments/sampling/customForms/LQASForm';
@@ -38,6 +40,8 @@ import { StatusInfos } from './StatusInfos';
 
 type Props = {
     planning: Planning;
+    disabled?: boolean;
+    disabledMessage?: string;
 };
 
 const styles: SxStyles = {
@@ -79,8 +83,11 @@ const styles: SxStyles = {
 
 export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
+    disabled = false,
+    disabledMessage,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
     const [currentStep, setCurrentStep] = useState(1);
     const [allowConfirm, setAllowConfirm] = useState(false);
@@ -114,7 +121,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         isLoading: isLaunchingTask,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
-    const { data: task } = usePollTask(taskId);
+    const handleEndTask = useCallback(() => {
+        queryClient.invalidateQueries(['assignmentsList']);
+    }, [queryClient]);
+    const { data: task } = usePollTask(taskId, handleEndTask);
     const { data: taskLogs, isFetching: isFetchingTaskLogs } = useGetLogs(
         taskId,
         task?.status === 'RUNNING',
@@ -144,17 +154,13 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             planning_id: planning.id,
             pipeline_id: selectedPipelineId,
         };
-        if (config?.connection_name) {
-            parameters.connection_name = config.connection_name;
-        }
         launchTask(parameters);
-    }, [
-        launchTask,
-        parameterValues,
-        planning.id,
-        selectedPipelineId,
-        config?.connection_name,
-    ]);
+    }, [launchTask, parameterValues, planning.id, selectedPipelineId]);
+    const handleChangePipeline = useCallback((_, value) => {
+        setSelectedPipelineId(value);
+        setParameterValues(undefined);
+        setAllowConfirm(false);
+    }, []);
     useEffect(() => {
         if (isSubmitting && !isLaunchingTask) {
             setIsSubmitting(false);
@@ -164,17 +170,22 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const isPipelineRunning = task?.status === 'RUNNING';
     return (
         <>
-            <Button
-                variant="outlined"
-                size="medium"
-                onClick={() => {
-                    setIsOpen(true);
-                }}
-                sx={styles.button}
-            >
-                <OpenHexaSvg sx={styles.icon} />
-                {formatMessage(MESSAGES.openHexaIntegration)}
-            </Button>
+            <Tooltip title={disabled ? disabledMessage : undefined}>
+                <Box>
+                    <Button
+                        variant="outlined"
+                        size="medium"
+                        onClick={() => {
+                            setIsOpen(true);
+                        }}
+                        sx={styles.button}
+                        disabled={disabled}
+                    >
+                        <OpenHexaSvg sx={styles.icon} disabled={disabled} />
+                        {formatMessage(MESSAGES.openHexaIntegration)}
+                    </Button>
+                </Box>
+            </Tooltip>
             <Drawer
                 open={isOpen}
                 onClose={() => setIsOpen(false)}
@@ -273,9 +284,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         ? undefined
                                         : selectedPipelineId
                                 }
-                                onChange={(_, value) =>
-                                    setSelectedPipelineId(value)
-                                }
+                                onChange={handleChangePipeline}
                                 label={MESSAGES.pipeline}
                                 required
                                 disabled={

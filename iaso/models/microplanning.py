@@ -6,6 +6,7 @@ from functools import reduce
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import ArrayField
 from django.db import models, transaction
+from django.db.models import Q
 from django_ltree.fields import PathField  # type: ignore
 
 from iaso.models import Form, OrgUnit, Project
@@ -183,7 +184,13 @@ class Assignment(SoftDeletableModel):
     objects = AssignmentQuerySet.as_manager()
 
     class Meta:
-        unique_together = [["planning", "org_unit"]]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["planning", "org_unit"],
+                condition=Q(deleted_at__isnull=True),
+                name="unique_planning_org_unit_when_not_deleted",
+            ),
+        ]
         ordering = ("planning", "created_at")
 
     planning = models.ForeignKey("Planning", on_delete=models.CASCADE, null=True, blank=True)

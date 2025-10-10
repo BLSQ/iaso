@@ -2,7 +2,7 @@
 import React from 'react';
 import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 
-export const OpenHexaSvg = (props: SvgIconProps) => {
+export const OpenHexaSvg = (props: SvgIconProps & { disabled: boolean }) => {
     const finalProps = {
         ...props,
         viewBox: '0 0 44 48',
@@ -14,7 +14,7 @@ export const OpenHexaSvg = (props: SvgIconProps) => {
                     fillRule="evenodd"
                     clipRule="evenodd"
                     d="M42.3892 14.4791C42.3892 12.876 41.2588 10.9004 39.8792 10.0886L23.7585 0.608863C22.3763 -0.202954 20.1182 -0.202954 18.736 0.608863L2.61783 10.0886C1.23826 10.903 0.10788 12.876 0.10788 14.4791V33.5209C0.10788 35.124 1.23826 37.0996 2.61783 37.9114L18.736 47.3911C20.1182 48.203 22.3763 48.203 23.7585 47.3911L39.8767 37.9114C41.2588 37.0996 42.3866 35.124 42.3866 33.5209V14.4791H42.3892Z"
-                    fill="#FF3E96"
+                    fill={props.disabled ? 'rgba(0, 0, 0, 0.12)' : '#FF3E96'}
                 />
                 <path
                     fillRule="evenodd"

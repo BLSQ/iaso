@@ -23,6 +23,7 @@ import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { Sidebar } from './components/AssignmentsSidebar';
+import { DeleteAssignments } from './components/DeleteAssignments';
 import { ParentDialog } from './components/ParentDialog';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import MESSAGES from './messages';
@@ -258,13 +259,26 @@ export const Assignments: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
-                {planning &&
-                    hasPipelineConfig &&
-                    planning.pipeline_uuids.length > 0 && (
-                        <Box display="flex" justifyContent="flex-end">
-                            <OpenhexaIntegrationDrawer planning={planning} />
-                        </Box>
-                    )}
+                <Box display="flex" justifyContent="flex-end">
+                    <DeleteAssignments
+                        planning={planning}
+                        disabled={isLoading || allAssignments.length === 0}
+                        count={allAssignments.length}
+                    />
+                    {planning &&
+                        hasPipelineConfig &&
+                        planning.pipeline_uuids.length > 0 && (
+                            <OpenhexaIntegrationDrawer
+                                planning={planning}
+                                disabled={
+                                    isLoading || allAssignments.length > 0
+                                }
+                                disabledMessage={formatMessage(
+                                    MESSAGES.deleteAssignmentsInfos,
+                                )}
+                            />
+                        )}
+                </Box>
                 <AssignmentsFilters
                     params={params}
                     teams={teams || []}

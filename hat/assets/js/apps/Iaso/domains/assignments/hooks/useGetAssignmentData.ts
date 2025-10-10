@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
+import { useBoundState } from '../../../hooks/useBoundState';
 import { DropdownOptions } from '../../../types/utils';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 import { Locations } from '../types/locations';
 import { ChildrenOrgUnits } from '../types/orgUnit';
@@ -21,10 +24,6 @@ import {
     useSaveAssignment,
 } from './requests/useSaveAssignment';
 import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
-
-import { useBoundState } from '../../../hooks/useBoundState';
-import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     planningId: string;

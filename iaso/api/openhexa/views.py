@@ -18,7 +18,7 @@ from iaso.api.openhexa.serializers import (
     TaskUpdateSerializer,
 )
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING
+from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
 
@@ -295,27 +295,55 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if not task.external:
                 return Response({"error": _("Task is not external")}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update task fields
+            # Update task using proper Task model methods
             if "status" in validated_data:
-                task.status = validated_data["status"]
-                # Set ended_at if task is completed
-                if task.status in ["SUCCESS", "ERRORED", "KILLED"]:
-                    task.ended_at = timezone.now()
+                new_status = validated_data["status"]
 
-            if "progress_message" in validated_data:
-                task.progress_message = validated_data["progress_message"]
-
-            if "progress_value" in validated_data:
-                task.progress_value = validated_data["progress_value"]
-
-            if "end_value" in validated_data:
-                task.end_value = validated_data["end_value"]
-
-            if "result" in validated_data:
-                # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": validated_data["result"]}
-
-            task.save()
+                if new_status == SUCCESS:
+                    # Use Task model's success reporting method
+                    progress_value = validated_data.get("progress_value")
+                    end_value = validated_data.get("end_value")
+                    if progress_value is not None:
+                        task.progress_value = progress_value
+                    if end_value is not None:
+                        task.end_value = end_value
+                    if progress_value is not None or end_value is not None:
+                        result_data = validated_data.get("result")
+                        message = validated_data.get("progress_message", "Pipeline completed successfully")
+                        task.report_success_with_result(message, result_data)
+                    else:
+                        # If no progress/end values, just update status and save
+                        task.status = SUCCESS
+                        task.ended_at = timezone.now()
+                        task.save()
+                elif new_status == ERRORED:
+                    # Use Task model's error reporting method
+                    message = validated_data.get("progress_message", "Pipeline failed")
+                    error = Exception(message)
+                    task.report_failure(error)
+                elif new_status == RUNNING:
+                    # Use Task model's progress reporting method
+                    progress_value = validated_data.get("progress_value")
+                    progress_message = validated_data.get("progress_message")
+                    end_value = validated_data.get("end_value")
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
+                else:
+                    # For other statuses, update manually
+                    task.status = new_status
+                    if new_status in [SKIPPED, EXPORTED, KILLED]:
+                        task.ended_at = timezone.now()
+                    task.save()
+            else:
+                # If no status update, just update progress
+                progress_value = validated_data.get("progress_value")
+                progress_message = validated_data.get("progress_message")
+                end_value = validated_data.get("end_value")
+                if progress_value is not None or progress_message is not None or end_value is not None:
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 
@@ -349,6 +377,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
             # Get optional lqas_pipeline_code parameter if configuration is valid
             if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
                 response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
+            if configured and config_serializer.validated_data.get("connection_name"):
+                response_data["connection_name"] = config_serializer.validated_data["connection_name"]
 
             return Response(response_data)
 

@@ -55,6 +55,7 @@ class OpenHexaConfigSerializer(serializers.Serializer):
     openhexa_token = serializers.CharField(required=True, allow_blank=False)
     workspace_slug = serializers.CharField(required=True, allow_blank=False)
     lqas_pipeline_code = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    connection_name = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
     def validate(self, data):
         """Validate that all required fields are present and not empty."""

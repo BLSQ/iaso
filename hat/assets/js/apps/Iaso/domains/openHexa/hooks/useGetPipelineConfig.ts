@@ -4,7 +4,11 @@ import { DjangoError } from 'Iaso/types/general';
 
 export const useGetPipelineConfig = () => {
     return useSnackQuery<
-        { configured: boolean; lqas_pipeline_code?: string },
+        {
+            configured: boolean;
+            lqas_pipeline_code?: string;
+            connection_name?: string;
+        },
         DjangoError
     >({
         queryKey: ['pipelineConfig'],

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from 'Iaso/types/utils';
-import { MESSAGES } from '../messages';
-import { Criteria } from '../types/custom';
+import MESSAGES from '../../messages';
+import { Criteria } from '../types';
 
 export const useGetCriteriaOptions = (): DropdownOptions<Criteria>[] => {
     const { formatMessage } = useSafeIntl();

@@ -7,7 +7,7 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage, ErrorBoundary } from 'bluesquare-components';
 
 import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
@@ -95,10 +95,10 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
                     </TableCell>
                 </TableRow>
             </TableHead>
-            <InstanceLogContentBodyTable
-                fileContent={fileContent}
-                fileDescriptor={fileDescriptor}
-            />
+                <InstanceLogContentBodyTable
+                    fileContent={fileContent}
+                    fileDescriptor={fileDescriptor}
+                />
         </Table>
     );
 };

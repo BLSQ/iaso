@@ -847,6 +847,20 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#connection_host" class="md-nav__link">
+    connection_host
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection_token" class="md-nav__link">
+    connection_token
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -856,6 +870,40 @@
   <a href="#pipeline-execution-flow" class="md-nav__link">
     Pipeline Execution Flow
   </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-authentication" class="md-nav__link">
+    API Authentication
+  </a>
+  
+    <nav class="md-nav" aria-label="API Authentication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#generic-api-caller" class="md-nav__link">
+    Generic API Caller
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#token-acquisition" class="md-nav__link">
+    Token Acquisition
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connection-testing" class="md-nav__link">
+    Connection Testing
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -1247,6 +1295,8 @@ def lqas_assignment_pipeline(
     org_unit_type_sequence_identifiers: List[int],  # [398, 399, 400] - IDs from higher to lower level
     org_unit_type_quantities: List[int],            # [2, 3, 4] - quantities at each level
     org_unit_type_exceptions: List[str],            # [&quot;12098,108033&quot;, &quot;&quot;, &quot;&quot;] - exceptions per level
+    connection_host: str,                           # &quot;http://localhost:8081&quot; - Iaso server URL
+    connection_token: str,                          # Session token for authentication
 ):
     &quot;&quot;&quot;
     LQAS Assignment Pipeline
@@ -1257,6 +1307,8 @@ def lqas_assignment_pipeline(
         org_unit_type_sequence_identifiers: List of org unit type IDs in hierarchy order (top to bottom)
         org_unit_type_quantities: List of quantities to select at each level
         org_unit_type_exceptions: List of comma-separated org unit IDs to exclude at each level
+        connection_host: Host URL of the Iaso server (e.g., &quot;http://localhost:8081&quot;)
+        connection_token: Session token for authentication
     &quot;&quot;&quot;
 </code></pre>
 <h3 id="parameter-structure">Parameter Structure<a class="headerlink" href="#parameter-structure" title="Permanent link">#</a></h3>
@@ -1288,25 +1340,116 @@ def lqas_assignment_pipeline(
 <li>No region exceptions (empty string)</li>
 <li>No district exceptions (empty string)</li>
 </ul>
+<h4 id="connection_host">connection_host<a class="headerlink" href="#connection_host" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>str</code></li>
+<li><strong>Description</strong>: Host URL of the Iaso server to connect to. This enables multitenant support by allowing pipelines to connect to different Iaso instances. This URL is automatically generated during pipeline launch based on the current request.</li>
+<li><strong>Example</strong>: <code>"http://localhost:8081"</code> or <code>"https://iaso.example.com"</code></li>
+<li><strong>Note</strong>: This parameter is automatically added to the config by the backend during pipeline launch - it should not be provided by the frontend.</li>
+</ul>
+<h4 id="connection_token">connection_token<a class="headerlink" href="#connection_token" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Type</strong>: <code>str</code></li>
+<li><strong>Description</strong>: JWT Bearer token for authentication with the Iaso API. This token is automatically generated during pipeline launch using the authenticated user's credentials and used in the <code>Authorization: Bearer {token}</code> header.</li>
+<li><strong>Example</strong>: <code>"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."</code> (JWT access token)</li>
+<li><strong>Note</strong>: This parameter is automatically added to the config by the backend during pipeline launch - it should not be provided by the frontend.</li>
+</ul>
 <h3 id="pipeline-execution-flow">Pipeline Execution Flow<a class="headerlink" href="#pipeline-execution-flow" title="Permanent link">#</a></h3>
 <ol>
+<li><strong>Connection Test</strong>: Validate connection to Iaso API using provided host and token</li>
 <li><strong>Validation</strong>: Verify org unit type hierarchy matches team hierarchy</li>
 <li><strong>Sampling</strong>: Apply LQAS algorithm to select org units</li>
 <li><strong>Assignment</strong>: Assign selected org units to teams/users</li>
 <li><strong>Status Updates</strong>: Update task progress throughout execution</li>
 <li><strong>Result Storage</strong>: Store final assignments in Iaso database</li>
 </ol>
+<h3 id="api-authentication">API Authentication<a class="headerlink" href="#api-authentication" title="Permanent link">#</a></h3>
+<p>The pipeline uses JWT Bearer token authentication instead of OpenHexa's connection system. This approach provides better multitenant support, security, and direct control over API calls.</p>
+<h4 id="generic-api-caller">Generic API Caller<a class="headerlink" href="#generic-api-caller" title="Permanent link">#</a></h4>
+<pre><code class="language-python">def call_api(
+    base_url: str,
+    endpoint: str,
+    bearer_token: str,
+    method: str = &quot;GET&quot;,
+    data: Optional[Dict] = None,
+    params: Optional[Dict] = None,
+) -&gt; Any:
+    &quot;&quot;&quot;
+    Generic API caller that uses Bearer token authentication.
+
+    Args:
+        base_url (str): Root server URL, e.g. &quot;http://localhost:8081&quot;
+        endpoint (str): API endpoint, e.g. &quot;/api/forms/&quot; (no trailing slash required)
+        bearer_token (str): JWT Bearer token for authentication
+        method (str): HTTP method, default &quot;GET&quot; (can be &quot;POST&quot;, &quot;PUT&quot;, &quot;PATCH&quot;, &quot;DELETE&quot;)
+        data (dict, optional): Data payload for POST/PUT/PATCH
+        params (dict, optional): Query params for GET requests
+
+    Returns:
+        dict or str: JSON response if possible, otherwise raw text
+    &quot;&quot;&quot;
+</code></pre>
+<h4 id="token-acquisition">Token Acquisition<a class="headerlink" href="#token-acquisition" title="Permanent link">#</a></h4>
+<p>JWT tokens for pipeline authentication are automatically generated by the backend during pipeline launch:</p>
+<pre><code class="language-python"># Backend automatically generates JWT token during pipeline launch
+config[&quot;connection_token&quot;] = get_user_token(request.user)
+config[&quot;connection_host&quot;] = f&quot;{scheme}://{host}&quot;
+</code></pre>
+<p>The backend uses the authenticated user's credentials to generate a JWT access token that can be used as a Bearer token for API authentication. This approach ensures that:</p>
+<ul>
+<li>The token is always valid and properly scoped to the authenticated user</li>
+<li>No additional API calls are needed from the frontend</li>
+<li>Token generation is handled securely on the server side</li>
+<li>The token is automatically included in the pipeline configuration</li>
+</ul>
+<h4 id="connection-testing">Connection Testing<a class="headerlink" href="#connection-testing" title="Permanent link">#</a></h4>
+<p>The pipeline includes a connection test function that validates API connectivity before proceeding:</p>
+<pre><code class="language-python">def test_connection(connection_host: str, connection_token: str) -&gt; bool:
+    &quot;&quot;&quot;
+    Test the connection to Iaso API.
+
+    Args:
+        connection_host: Host URL of the Iaso server
+        connection_token: JWT Bearer token for authentication
+
+    Returns:
+        bool: True if connection is successful, False otherwise
+    &quot;&quot;&quot;
+</code></pre>
+<p><strong>Benefits of this approach:</strong>
+- <strong>Automatic Token Generation</strong>: JWT tokens are generated server-side during pipeline launch
+- <strong>Multitenant Support</strong>: Each pipeline run can connect to different Iaso instances
+- <strong>Standard Authentication</strong>: Uses industry-standard JWT Bearer token authentication
+- <strong>Better Performance</strong>: No dependency on OpenHexa's connection management
+- <strong>Error Handling</strong>: Proper connection testing and error reporting
+- <strong>Security</strong>: JWT tokens are time-limited and secure, generated with user's credentials
+- <strong>Clean Implementation</strong>: No cookie access issues or HttpOnly problems
+- <strong>Compatibility</strong>: Works seamlessly with existing Django JWT setup
+- <strong>Simplified Frontend</strong>: Frontend doesn't need to handle token acquisition</p>
 <h3 id="task-status-updates">Task Status Updates<a class="headerlink" href="#task-status-updates" title="Permanent link">#</a></h3>
-<p>The pipeline updates task status at key milestones:</p>
-<pre><code class="language-python">def update_task_status(task_id, status, message, progress_value=None, end_value=None, result_data=None):
-    &quot;&quot;&quot;Update task status in Iaso&quot;&quot;&quot;
-    # Send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
+<p>The pipeline updates task status at key milestones using the generic API caller:</p>
+<pre><code class="language-python">def update_task_status(
+    task_id: int,
+    status: str,
+    message: str,
+    progress_value: Optional[int] = None,
+    end_value: Optional[int] = None,
+    pipeline_id: Optional[str] = None,
+    result_data: Optional[Dict] = None,
+    connection_host: str = &quot;&quot;,
+    connection_token: str = &quot;&quot;,
+):
+    &quot;&quot;&quot;Update task status in Iaso using direct connection parameters.&quot;&quot;&quot;
+    # Uses call_api() function to send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
     # with task_id, status, progress_message, progress_value, end_value, result_data
 </code></pre>
 <p><strong>Status Values</strong>:
+- <code>QUEUED</code>: Pipeline is queued for execution
 - <code>RUNNING</code>: Pipeline is executing
 - <code>SUCCESS</code>: Pipeline completed successfully
 - <code>ERRORED</code>: Pipeline failed with error
+- <code>EXPORTED</code>: Pipeline results have been exported
+- <code>SKIPPED</code>: Pipeline execution was skipped
 - <code>KILLED</code>: Pipeline was terminated</p>
 <h2 id="openhexa-configuration">OpenHexa Configuration<a class="headerlink" href="#openhexa-configuration" title="Permanent link">#</a></h2>
 <h3 id="configuration-parameters">Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permanent link">#</a></h3>
@@ -1326,7 +1469,7 @@ def lqas_assignment_pipeline(
     &quot;openhexa_url&quot;: &quot;https://openhexa.example.com/graphql/&quot;,
     &quot;openhexa_token&quot;: &quot;your-api-token-here&quot;,
     &quot;workspace_slug&quot;: &quot;your-workspace&quot;,
-    &quot;lqas_pipeline_code&quot;: &quot;lqas-sampling-pipeline&quot;
+    &quot;lqas_pipeline_code&quot;: &quot;lqas-sampling-pipeline&quot;,
 }
 </code></pre>
 <h3 id="configuration-endpoint">Configuration Endpoint<a class="headerlink" href="#configuration-endpoint" title="Permanent link">#</a></h3>
@@ -1346,7 +1489,7 @@ def lqas_assignment_pipeline(
 <h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">#</a></h2>
 <h3 id="pipeline-management">Pipeline Management<a class="headerlink" href="#pipeline-management" title="Permanent link">#</a></h3>
 <h4 id="launch-pipeline">Launch Pipeline<a class="headerlink" href="#launch-pipeline" title="Permanent link">#</a></h4>
-<pre><code class="language-http">POST /api/openhexa/pipelines/{pipeline_id}/
+<pre><code class="language-http">POST /api/openhexa/pipelines/{pipeline_id}/launch/
 Content-Type: application/json
 
 {
@@ -1360,6 +1503,7 @@ Content-Type: application/json
     }
 }
 </code></pre>
+<p><strong>Note</strong>: The <code>connection_host</code> and <code>connection_token</code> parameters are automatically added to the config by the backend during pipeline launch. The frontend should not include these parameters in the request.</p>
 <h4 id="update-task-status">Update Task Status<a class="headerlink" href="#update-task-status" title="Permanent link">#</a></h4>
 <pre><code class="language-http">PATCH /api/openhexa/pipelines/{pipeline_id}/
 Content-Type: application/json

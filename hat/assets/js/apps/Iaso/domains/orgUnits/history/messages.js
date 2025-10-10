@@ -74,5 +74,3 @@ export const MESSAGES = defineMessages({
         defaultMessage: `These changes originated from Change Request #{change_request_id}`,
     },
 });
-
-export default MESSAGES;

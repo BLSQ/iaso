@@ -1,20 +1,20 @@
 import React, { FunctionComponent, useState } from 'react';
+import { makeStyles } from '@mui/styles';
 import { wktToGeoJSON as terraformer } from '@terraformer/wkt';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { makeStyles } from '@mui/styles';
 
-import { GeoJsonMap } from '../../../components/maps/GeoJsonMapComponent';
-import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
-import { GeoJson } from '../../../components/maps/types';
+import { GeoJsonMap } from 'Iaso/components/maps/GeoJsonMapComponent';
+import { MarkerMap } from 'Iaso/components/maps/MarkerMapComponent';
+import { GeoJson } from 'Iaso/components/maps/types';
 import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 
-import MESSAGES from './messages';
+import { MESSAGES } from './messages';
 
 type Props = {
     fieldKey: string;
-    value?: string | number;
+    value?: any;
 };
 
 export const wktToGeoJSON = (value: string | number): GeoJson | undefined => {
@@ -81,11 +81,12 @@ export const LogValue: FunctionComponent<Props> = ({ fieldKey, value }) => {
                     </div>
                 );
             }
+            case 'org_unit_type':
+                return `${value.name} (id: ${value.id})`;
             default:
                 return value.toString();
         }
     } catch (e) {
-        // eslint-disable-next-line no-console
         console.error('Could not parse', e);
         throw new Error(value.toString());
     }

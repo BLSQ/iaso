@@ -1,5 +1,5 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
-import { User } from '../../../utils/usersUtils';
+import { User } from 'Iaso/utils/usersUtils';
 import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 
@@ -8,6 +8,7 @@ export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
     parent_id?: string;
     groups?: string;
+    org_unit?: string;
     org_unit_type_id?: string;
     status?: ChangeRequestValidationStatus;
     created_at_after?: string;

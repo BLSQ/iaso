@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-30 10:41+0000\n"
+"POT-Creation-Date: 2025-10-08 13:25+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -157,6 +157,10 @@ msgstr "Créé par - IDs utilisateurs (séparés par des virgules)"
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "IDs (comma-separated)"
 msgstr "IDs (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Org unit"
+msgstr "Unité d'organisation"
 
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Org unit ID"

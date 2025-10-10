@@ -13,10 +13,10 @@ ADMISSION_ANTHROPOMETRIC_FORMS = ["ng_pbwg_anthropometric"]
 
 
 class NG_PBWG:
-    def run(self, type):
+    def run(self, type, updated_beneficiaries):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities()
+        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
         pages = beneficiaries.page_range
         logger.info(f"Instances linked to PBWG program: {beneficiaries.count} for {account}")
 

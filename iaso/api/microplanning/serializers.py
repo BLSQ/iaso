@@ -1,9 +1,7 @@
 from django.contrib.auth.models import User
-from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.fields import Field
 
-from hat.audit.models import Modification
 from iaso.api.common import (
     DateTimestampField,
     TimestampField,
@@ -323,38 +321,6 @@ class BulkAssignmentSerializer(serializers.Serializer):
             )
         return validated_data
 
-    def save(self, **kwargs):
-        team = self.validated_data.get("team")
-        user = self.validated_data.get("user")
-        planning = self.validated_data["planning"]
-        request = self.context["request"]
-        requester = request.user
-        assignments_list = []
-        for org_unit in self.validated_data["org_units"]:
-            # Only consider non-deleted assignments for get_or_create
-            assignment, created = Assignment.objects.filter(deleted_at__isnull=True).get_or_create(
-                planning=planning, org_unit=org_unit, defaults={"created_by": requester}
-            )
-            old_value = []
-            if not created:
-                old_value = [AuditAssignmentSerializer(instance=assignment).data]
-
-            assignment.deleted_at = None
-            assignment.team = team
-            assignment.user = user
-            assignments_list.append(assignment)
-            assignment.save()
-
-            new_value = [AuditAssignmentSerializer(instance=assignment).data]
-            Modification.objects.create(
-                user=requester,
-                past_value=old_value,
-                new_value=new_value,
-                content_object=assignment,
-                source="API " + request.method + request.path,
-            )
-        return assignments_list
-
 
 class BulkDeleteAssignmentSerializer(serializers.Serializer):
     """Bulk soft delete all assignments for a specific planning.
@@ -369,36 +335,6 @@ class BulkDeleteAssignmentSerializer(serializers.Serializer):
         super().__init__(*args, **kwargs)
         user = self.context["request"].user
         self.fields["planning"].queryset = Planning.objects.filter_for_user(user)
-
-    def save(self, **kwargs):
-        planning = self.validated_data["planning"]
-        request = self.context["request"]
-        requester = request.user
-
-        # Get all assignments for this planning that are not already deleted
-        assignments = Assignment.objects.filter(planning=planning, deleted_at__isnull=True).filter_for_user(requester)
-
-        if not assignments.exists():
-            return {"deleted_count": 0, "assignments": []}
-
-        # Store assignment IDs before update for audit trail
-        assignment_ids = list(assignments.values_list("id", flat=True))
-        deleted_count = assignments.update(deleted_at=timezone.now())
-
-        # Create audit entries for each deleted assignment
-        for assignment_id in assignment_ids:
-            assignment = Assignment.objects.get(id=assignment_id)
-            old_value = [AuditAssignmentSerializer(instance=assignment).data]
-            new_value = [AuditAssignmentSerializer(instance=assignment).data]
-            Modification.objects.create(
-                user=requester,
-                past_value=old_value,
-                new_value=new_value,
-                content_object=assignment,
-                source="API " + request.method + request.path,
-            )
-
-        return {"deleted_count": deleted_count, "assignments": list(Assignment.objects.filter(id__in=assignment_ids))}
 
 
 # noinspection PyMethodMayBeStatic

@@ -273,13 +273,9 @@ export const Assignments: FunctionComponent = () => {
                                 disabled={
                                     isLoading || allAssignments.length > 0
                                 }
-                                disabledMessage={
-                                    isLoading || allAssignments.length > 0
-                                        ? formatMessage(
-                                              MESSAGES.deleteAssignmentsInfos,
-                                          )
-                                        : undefined
-                                }
+                                disabledMessage={formatMessage(
+                                    MESSAGES.deleteAssignmentsInfos,
+                                )}
                             />
                         )}
                 </Box>

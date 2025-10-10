@@ -1,3 +1,5 @@
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters
 from rest_framework.decorators import action
@@ -5,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from hat.audit.audit_mixin import AuditMixin
+from hat.audit.models import Modification
 from iaso.api.common import (
     DeletionFilterBackend,
     ModelViewSet,
@@ -22,7 +25,7 @@ from .filters import (
     TeamSearchFilterBackend,
     TeamTypesFilterBackend,
 )
-from .serilaizers import (
+from .serializers import (
     AssignmentSerializer,
     AuditAssignmentSerializer,
     AuditPlanningSerializer,
@@ -126,7 +129,38 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     def bulk_create_assignments(self, request):
         serializer = BulkAssignmentSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        assignments_list = serializer.save()
+
+        # Handle the save logic in the view (following codebase patterns)
+        team = serializer.validated_data.get("team")
+        user = serializer.validated_data.get("user")
+        planning = serializer.validated_data["planning"]
+        requester = request.user
+        assignments_list = []
+
+        for org_unit in serializer.validated_data["org_units"]:
+            # Only consider non-deleted assignments for get_or_create
+            assignment, created = Assignment.objects.filter(deleted_at__isnull=True).get_or_create(
+                planning=planning, org_unit=org_unit, defaults={"created_by": requester}
+            )
+            old_value = []
+            if not created:
+                old_value = [AuditAssignmentSerializer(instance=assignment).data]
+
+            assignment.deleted_at = None
+            assignment.team = team
+            assignment.user = user
+            assignments_list.append(assignment)
+            assignment.save()
+
+            new_value = [AuditAssignmentSerializer(instance=assignment).data]
+            Modification.objects.create(
+                user=requester,
+                past_value=old_value,
+                new_value=new_value,
+                content_object=assignment,
+                source="API " + request.method + request.path,
+            )
+
         return_serializer = AssignmentSerializer(assignments_list, many=True, context={"request": request})
         return Response(return_serializer.data)
 
@@ -138,12 +172,44 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         """
         serializer = BulkDeleteAssignmentSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
-        result = serializer.save()
+
+        # Handle the save logic in the view (following codebase patterns)
+        planning = serializer.validated_data["planning"]
+        requester = request.user
+
+        # Get all assignments for this planning that are not already deleted
+        assignments = Assignment.objects.filter(planning=planning, deleted_at__isnull=True).filter_for_user(requester)
+
+        if not assignments.exists():
+            return Response(
+                {
+                    "message": _("Successfully deleted 0 assignments"),
+                    "deleted_count": 0,
+                    "planning_id": planning.id,
+                }
+            )
+
+        # Store assignment IDs before update for audit trail
+        assignment_ids = list(assignments.values_list("id", flat=True))
+        deleted_count = assignments.update(deleted_at=timezone.now())
+
+        # Create audit entries for each deleted assignment
+        for assignment_id in assignment_ids:
+            assignment = Assignment.objects.get(id=assignment_id)
+            old_value = [AuditAssignmentSerializer(instance=assignment).data]
+            new_value = [AuditAssignmentSerializer(instance=assignment).data]
+            Modification.objects.create(
+                user=requester,
+                past_value=old_value,
+                new_value=new_value,
+                content_object=assignment,
+                source="API " + request.method + request.path,
+            )
 
         return Response(
             {
-                "message": f"Successfully deleted {result['deleted_count']} assignments",
-                "deleted_count": result["deleted_count"],
-                "planning_id": serializer.validated_data["planning"].id,
+                "message": _(f"Successfully deleted {deleted_count} assignments"),
+                "deleted_count": deleted_count,
+                "planning_id": planning.id,
             }
         )

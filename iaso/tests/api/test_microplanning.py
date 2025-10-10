@@ -8,7 +8,7 @@ from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
-from iaso.api.microplanning.serilaizers import AssignmentSerializer, PlanningSerializer, TeamSerializer
+from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningSerializer, TeamSerializer
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.microplanning import Assignment, Planning, Team, TeamType
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION

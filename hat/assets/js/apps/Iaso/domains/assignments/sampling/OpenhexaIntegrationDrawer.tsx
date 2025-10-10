@@ -88,11 +88,11 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
-    const [allowConfirm, setAllowConfirm] = useState(false);
     const [parameterValues, setParameterValues] = useState<
         ParameterValues | undefined
     >(undefined);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [allowConfirm, setAllowConfirm] = useState(false);
     const [selectedPipelineId, setSelectedPipelineId] = useState<
         string | undefined
     >(

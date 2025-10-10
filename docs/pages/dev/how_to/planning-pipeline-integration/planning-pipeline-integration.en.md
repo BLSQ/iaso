@@ -301,6 +301,7 @@ The OpenHexa integration requires configuration stored in the `Config` model wit
 
 #### Optional Parameters
 - `lqas_pipeline_code`: The pipeline code used to display a custom form for LQAS sampling in the OpenHexa integration UI. This enables specialized LQAS sampling forms when available.
+- `connection_name`: Connection used by OpenHexa hook to save data into Iaso default is ('iaso-pipeline')
 
 **Note**: The `connection_name` parameter is no longer used as pipelines now use direct connection parameters (`connection_host` and `connection_token`) for better multitenant support.
 
@@ -311,7 +312,8 @@ The OpenHexa integration requires configuration stored in the `Config` model wit
     "openhexa_url": "https://openhexa.example.com/graphql/",
     "openhexa_token": "your-api-token-here",
     "workspace_slug": "your-workspace",
-    "lqas_pipeline_code": "lqas-sampling-pipeline"
+    "lqas_pipeline_code": "lqas-sampling-pipeline",
+    "connection_name": "iaso-pipeline"
 }
 ```
 

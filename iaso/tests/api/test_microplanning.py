@@ -1214,7 +1214,7 @@ class AssignmentAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["deleted_count"], 0)
         self.assertEqual(r["planning_id"], new_planning.id)
-        self.assertIn("Successfully deleted 0 assignments", r["message"])
+        self.assertIn("No assignments to delete", r["message"])
 
     def test_bulk_delete_assignments_no_permission(self):
         """Test bulk delete without proper permissions"""

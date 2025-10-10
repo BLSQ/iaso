@@ -50,7 +50,7 @@ from .api.enketo import (
     enketo_public_create_url,
     enketo_public_launch,
 )
-from .api.entity import EntityViewSet
+from .api.entities.views import EntityViewSet
 from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet

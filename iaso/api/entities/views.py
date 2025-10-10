@@ -9,7 +9,7 @@ from typing import Any, List, Union
 import pytz
 
 from django.core.paginator import Paginator
-from django.db.models import Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Prefetch, Q
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
@@ -33,89 +33,9 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
-from iaso.models.deduplication import ValidationStatus
-from iaso.models.storage import StorageDevice
 from iaso.utils.jsonlogic import entities_jsonlogic_to_q
 
-
-class EntitySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Entity
-        fields = [
-            "id",
-            "name",
-            "uuid",
-            "created_at",
-            "updated_at",
-            "attributes",
-            "entity_type",
-            "entity_type_name",
-            "instances",
-            "submitter",
-            "org_unit",
-            "duplicates",
-            "nfc_cards",
-            "migration_source",
-        ]
-
-    entity_type_name = serializers.SerializerMethodField()
-    attributes = serializers.SerializerMethodField()
-    submitter = serializers.SerializerMethodField()
-    org_unit = serializers.SerializerMethodField()
-    duplicates = serializers.SerializerMethodField()
-    nfc_cards = serializers.SerializerMethodField()
-    migration_source = serializers.SerializerMethodField()
-
-    def get_attributes(self, entity: Entity):
-        if entity.attributes:
-            return entity.attributes.as_dict()
-        return None
-
-    def get_org_unit(self, entity: Entity):
-        if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_dict_for_entity()
-        return None
-
-    def get_submitter(self, entity: Entity):
-        try:
-            # TODO: investigate type issue on next line
-            submitter = entity.attributes.created_by.username  # type: ignore
-        except AttributeError:
-            submitter = None
-        return submitter
-
-    def get_duplicates(self, entity: Entity):
-        return _get_duplicates(entity)
-
-    def get_nfc_cards(self, entity: Entity):
-        nfc_count = StorageDevice.objects.filter(entity=entity, type=StorageDevice.NFC).count()
-        return nfc_count
-
-    @staticmethod
-    def get_entity_type_name(obj: Entity):
-        return obj.entity_type.name if obj.entity_type else None
-
-    def get_migration_source(self, obj: Entity):
-        if not obj.attributes:
-            return None
-
-        if obj.attributes.patient_set.exists():
-            patient = obj.attributes.patient_set.first()
-            if patient:
-                return patient.id
-
-        return None
-
-
-def _get_duplicates(entity):
-    results = []
-    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
-    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
-    if e1qs.count() > 0:
-        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
-    elif e2qs.count() > 0:
-        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
-    return results
+from .serializers import EntitySerializer
 
 
 class EntityViewSet(ModelViewSet):
@@ -165,11 +85,7 @@ class EntityViewSet(ModelViewSet):
 
         queryset = (
             Entity.objects.filter_for_user(self.request.user)
-            .select_related(
-                "attributes__org_unit",
-                "attributes__created_by",
-                "entity_type",
-            )
+            .select_related("entity_type")
             .prefetch_related(
                 "attributes__created_by__teams",
                 "attributes__form",
@@ -177,7 +93,10 @@ class EntityViewSet(ModelViewSet):
                 "attributes__org_unit__org_unit_type",
                 "attributes__org_unit__parent",
                 "attributes__org_unit__version__data_source",
-                "instances",
+                Prefetch(
+                    "instances",
+                    queryset=Instance.objects.only("id", "entity_id", "source_created_at", "created_at"),
+                ),
             )
         )
 
@@ -309,10 +228,11 @@ class EntityViewSet(ModelViewSet):
         order_columns = request.GET.get("order_columns", None)
         as_location = request.GET.get("asLocation", None)
 
-        # we don't need duplicates for map display or exports
-        fetch_duplicates = not as_location and not is_export
-        if fetch_duplicates:
-            queryset = queryset.with_duplicates()
+        # Let's deactivate duplicates entirely for now because of performance issues.
+        # # we don't need duplicates for map display or exports
+        # fetch_duplicates = not as_location and not is_export
+        # if fetch_duplicates:
+        #     queryset = queryset.with_duplicates()
 
         queryset = queryset.order_by(*orders)
 
@@ -381,17 +301,19 @@ class EntityViewSet(ModelViewSet):
                 if attributes is not None and entity.attributes is not None:
                     file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
                     attributes_pk = attributes.pk
-                    attributes_ou = (
-                        entity.attributes.org_unit.as_dict_for_entity() if entity.attributes.org_unit else None
-                    )  # type: ignore
+                    if entity.attributes.org_unit:
+                        if as_location:
+                            attributes_ou = entity.attributes.org_unit.as_location(with_parents=False)
+                        else:
+                            attributes_ou = entity.attributes.org_unit.as_minimal_dict()
                     attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                     attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
                 name = None
                 if file_content is not None:
                     name = file_content.get("name")
-                has_duplicates = False
-                if fetch_duplicates:
-                    has_duplicates = getattr(entity, "has_duplicates", False)
+                # has_duplicates = False
+                # if fetch_duplicates:
+                #     has_duplicates = getattr(entity, "has_duplicates", False)
 
                 result = {
                     "id": entity.id,
@@ -403,7 +325,7 @@ class EntityViewSet(ModelViewSet):
                     "entity_type": entity.entity_type.name,
                     "last_saved_instance": entity.last_saved_instance,
                     "org_unit": attributes_ou,
-                    "has_duplicates": has_duplicates,
+                    "has_duplicates": False,
                     "latitude": attributes_latitude,
                     "longitude": attributes_longitude,
                 }

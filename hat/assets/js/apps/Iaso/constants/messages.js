@@ -165,6 +165,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Entities',
         id: 'iaso.label.entities',
     },
+    stockManagement: {
+        defaultMessage: 'Stock Management',
+        id: 'iaso.label.stockManagement',
+    },
     storages: {
         defaultMessage: 'External storage',
         id: 'iaso.label.storages',

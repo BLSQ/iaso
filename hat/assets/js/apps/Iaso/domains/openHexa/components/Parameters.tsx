@@ -1,67 +1,38 @@
-import React, { useEffect, useCallback } from 'react';
-import { Typography } from '@mui/material';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { MESSAGES } from '../messages';
+import { Parameter, ParameterValues } from '../types/pipeline';
 
-type Parameter = {
-    type: string;
-    code: string;
-    name: string;
-    default?: any;
-    required?: boolean;
-    choices?: any[];
-    multiple?: boolean;
-};
-
-export type ParameterValues = Record<string, any>;
-
-export const usePipelineParameters = (
-    pipeline?: any,
-    parameterValues?: ParameterValues,
+type ParametersProps = {
+    parameters?: Parameter[];
+    parameterValues?: ParameterValues;
     setParameterValues?: React.Dispatch<
         React.SetStateAction<ParameterValues | undefined>
-    >,
-) => {
+    >;
+    setAllowConfirm?: React.Dispatch<React.SetStateAction<boolean>>;
+};
+
+export const Parameters: React.FC<ParametersProps> = ({
+    parameters,
+    parameterValues,
+    setParameterValues,
+    setAllowConfirm,
+}) => {
     const { formatMessage } = useSafeIntl();
-
-    // Get default value for a parameter based on its type
-    const getDefaultValueForParameter = useCallback((parameter: Parameter) => {
-        if (parameter.multiple) {
-            return parameter.default || [];
-        }
-
-        switch (parameter.type) {
-            case 'str':
-                return parameter.default || '';
-            case 'bool':
-                return parameter.default || false;
-            case 'int':
-                return parameter.default || 0;
-            case 'float':
-                return parameter.default || 0.0;
-            case 'dict':
-                return parameter.default || {};
-            default:
-                return parameter.default || null;
-        }
-    }, []);
-
-    // Initialize parameter values when pipeline data is loaded
+    const allParamsFilled = useMemo(() => {
+        return parameters
+            ?.filter(parameter => parameter.required)
+            .filter(parameter => parameter.type !== 'bool')
+            .every(parameter => parameterValues?.[parameter.code]);
+    }, [parameters, parameterValues]);
     useEffect(() => {
-        if (pipeline?.currentVersion?.parameters) {
-            const initialValues: ParameterValues = {};
-            pipeline.currentVersion.parameters.forEach(
-                (parameter: Parameter) => {
-                    initialValues[parameter.code] =
-                        getDefaultValueForParameter(parameter);
-                },
-            );
-            setParameterValues?.(initialValues);
+        if (setAllowConfirm) {
+            setAllowConfirm(Boolean(allParamsFilled));
         }
-    }, [pipeline, setParameterValues, getDefaultValueForParameter]);
-
+    }, [allParamsFilled, setAllowConfirm]);
     // Handle parameter value changes
     const handleParameterChange = useCallback(
         (parameterName: string, value: any) => {
@@ -109,7 +80,8 @@ export const usePipelineParameters = (
         },
         [handleParameterChange],
     );
-    const geOptions = useCallback((parameter: Parameter) => {
+
+    const getOptions = useCallback((parameter: Parameter) => {
         return (
             parameter?.choices?.map(choice => ({
                 label: `${choice}`,
@@ -117,11 +89,43 @@ export const usePipelineParameters = (
             })) || []
         );
     }, []);
+    // Get default value for a parameter based on its type
+    const getDefaultValueForParameter = useCallback((parameter: Parameter) => {
+        if (parameter.multiple) {
+            return parameter.default || [];
+        }
+
+        switch (parameter.type) {
+            case 'str':
+                return parameter.default || '';
+            case 'bool':
+                return parameter.default || false;
+            case 'int':
+                return parameter.default || 0;
+            case 'float':
+                return parameter.default || 0.0;
+            case 'dict':
+                return parameter.default || {};
+            default:
+                return parameter.default || null;
+        }
+    }, []);
+    useEffect(() => {
+        if (parameters) {
+            const initialValues: ParameterValues = {};
+            parameters.forEach((parameter: Parameter) => {
+                initialValues[parameter.code] =
+                    getDefaultValueForParameter(parameter);
+            });
+            setParameterValues?.(initialValues);
+        }
+    }, [parameters, setParameterValues, getDefaultValueForParameter]);
 
     // Render parameter input based on type
     const renderParameterInput = useCallback(
         (parameter: Parameter) => {
             const currentValue = parameterValues?.[parameter.code];
+
             if (parameter.multiple) {
                 return (
                     <InputComponent
@@ -130,7 +134,7 @@ export const usePipelineParameters = (
                         labelString={parameter.name}
                         value={currentValue || []}
                         required={parameter.required}
-                        options={geOptions(parameter)}
+                        options={getOptions(parameter)}
                         multi={true}
                         placeholder={`Select ${parameter.name}`}
                         onChange={(_, value) =>
@@ -234,14 +238,29 @@ export const usePipelineParameters = (
             handleJsonChange,
             formatMessage,
             handleMultipleParameterChange,
+            getOptions,
         ],
     );
 
-    return {
-        parameterValues,
-        handleParameterChange,
-        handleJsonChange,
-        handleMultipleParameterChange,
-        renderParameterInput,
-    };
+    if (!parameters || parameters.length === 0) {
+        return (
+            <Box>
+                <Typography variant="body2" color="text.secondary">
+                    No parameters available
+                </Typography>
+            </Box>
+        );
+    }
+
+    return (
+        <Box>
+            {parameters.map(parameter => (
+                <Box key={parameter.code}>
+                    {renderParameterInput(parameter)}
+                </Box>
+            ))}
+        </Box>
+    );
 };
+
+export default Parameters;

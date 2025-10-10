@@ -16,9 +16,10 @@ import {
     removeFromArray,
     updateArrayAtIndex,
 } from 'Iaso/utils/arrays';
-import { Planning } from '../../assignments/types/planning';
-import { MESSAGES } from '../messages';
-import { Criteria } from '../types/custom';
+import MESSAGES from '../../messages';
+import { Planning } from '../../types/planning';
+
+import { Criteria } from '../types';
 import { Level } from './Level';
 
 const styles: SxStyles = {

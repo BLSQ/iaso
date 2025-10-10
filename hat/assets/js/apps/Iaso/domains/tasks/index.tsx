@@ -7,7 +7,6 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { baseUrls } from 'Iaso/constants/urls';
-import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 import { makeUrlWithParams } from 'Iaso/libs/utils';
@@ -15,7 +14,7 @@ import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { TaskFilters } from './components/Filters';
 import { useTasksTableColumns } from './config';
 import MESSAGES from './messages';
-import { Task, TaskParams } from './types';
+import { TaskParams } from './types';
 
 const baseUrl = baseUrls.tasks;
 
@@ -81,9 +80,6 @@ const Tasks = () => {
                     baseUrl={baseUrl}
                     extraProps={{
                         loading: isLoading,
-                        SubComponent: (task: Task<any>) => {
-                            return task ? <TaskDetails task={task} /> : null;
-                        },
                     }}
                 />
             </Box>

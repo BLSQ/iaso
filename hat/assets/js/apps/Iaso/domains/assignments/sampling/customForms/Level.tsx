@@ -9,8 +9,8 @@ import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/us
 import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
-import { Planning } from '../../assignments/types/planning';
-import { MESSAGES } from '../messages';
+import MESSAGES from '../../messages';
+import { Planning } from '../../types/planning';
 import { useGetCriteriaOptions } from './constants';
 import { ExcludedOrgUnits } from './ExcludedOrgUnits';
 import { ParameterValues } from './LQASForm';
@@ -146,7 +146,13 @@ export const Level: FunctionComponent<Props> = ({
         orgUnitTypeId,
         orgUnitTypes,
     ]);
-
+    const selectedOrgUnitTypeId = useMemo(
+        () =>
+            parameterValues?.org_unit_type_exceptions?.[index]
+                ?.split(',')
+                .map(id => parseInt(id, 10)) || [],
+        [index, parameterValues?.org_unit_type_exceptions],
+    );
     return (
         <Box key={`level_${index}`}>
             <Grid container spacing={1} alignItems="center">
@@ -252,13 +258,7 @@ export const Level: FunctionComponent<Props> = ({
                         <Grid item xs={12}>
                             <ExcludedOrgUnits
                                 index={index}
-                                selectedOrgUnitIds={
-                                    parameterValues?.org_unit_type_exceptions?.[
-                                        index
-                                    ]
-                                        ?.split(',')
-                                        .map(id => parseInt(id, 10)) || []
-                                }
+                                selectedOrgUnitIds={selectedOrgUnitTypeId}
                                 orgUnitTypeId={orgUnitTypeId}
                                 handleParameterChange={handleParameterChange}
                                 parameterValues={parameterValues}

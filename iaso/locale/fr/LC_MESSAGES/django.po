@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-23 13:42+0000\n"
+"POT-Creation-Date: 2025-09-30 10:41+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -71,7 +71,7 @@ msgstr "ID de la version"
 msgid "Data Source ID"
 msgstr "ID de la source de données"
 
-#: iaso/api/groups/filters.py
+#: iaso/api/groups/filters.py iaso/api/stocks/filters.py
 msgid "Project IDs (comma-separated)"
 msgstr "ID des projets (séparés par des virgules)"
 
@@ -150,6 +150,7 @@ msgid "Org unit type ID"
 msgstr "ID du type d'unité organisationnelle"
 
 #: iaso/api/org_unit_change_request_configurations/filters.py
+#: iaso/api/stocks/filters.py
 msgid "Created by - Users IDs (comma-separated)"
 msgstr "Créé par - IDs utilisateurs (séparés par des virgules)"
 
@@ -386,6 +387,14 @@ msgstr "L'email est requis lorsque l'invitation par email est activée"
 msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
+
+#: iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+
+#: iaso/api/stocks/filters.py
+msgid "SKUs - SKU IDs (comma-separated)"
+msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
 
 #: iaso/models/base.py
 msgid "Aggregate"
@@ -890,6 +899,10 @@ msgstr "Sources"
 #: iaso/permissions/core_permissions.py
 msgid "Can change the default version of a data source"
 msgstr "Peut modifier la version par défaut d'une source de données"
+
+#: iaso/permissions/core_permissions.py
+msgid "Stock management"
+msgstr "Management de stock"
 
 #: iaso/permissions/core_permissions.py
 msgid "Storages"

@@ -99,11 +99,16 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.filter(projects__in=[project])
+                queryset = self.filter_for_project(project, queryset)
             except Project.DoesNotExist:
                 return self.none()
 
         return queryset
+
+    def filter_for_project(self, project: Project, queryset=None):
+        if queryset is None:
+            queryset = self
+        return queryset.filter(projects__in=[project])
 
 
 OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)

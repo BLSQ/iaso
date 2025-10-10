@@ -205,6 +205,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Details',
         id: 'iaso.label.details',
     },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
     date: {
         defaultMessage: 'Date',
         id: 'iaso.label.date',
@@ -562,6 +566,10 @@ const MESSAGES = defineMessages({
     multiReferenceInstancesLabel: {
         id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
         defaultMessage: 'Reference submissions',
+    },
+    openDate: {
+        id: 'iaso.orgUnits.openDate',
+        defaultMessage: 'Open on',
     },
     openingDate: {
         id: 'iaso.orgUnits.openingDate',

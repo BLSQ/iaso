@@ -948,6 +948,7 @@
     "iaso.orgUnits.name": "Nombre",
     "iaso.orgUnits.new": "Crear una unidad organizativa",
     "iaso.orgUnits.onlyDirectChildren": "Solo hijos directos",
+    "iaso.orgUnits.openDate": "Abierto el",
     "iaso.orgUnits.openingDate": "Fecha de apertura",
     "iaso.orgUnits.orgUnitsTypes": "Tipo de unidad organizativa",
     "iaso.orgUnits.ouTypesHelperText": "Unidades organizativas hijas",

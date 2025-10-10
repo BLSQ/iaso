@@ -1347,6 +1347,61 @@ class AssignmentAPITestCase(APITestCase):
         assignment_to_delete.refresh_from_db()
         self.assertIsNotNone(assignment_to_delete.deleted_at)
 
+    def test_bulk_delete_assignments_does_not_affect_other_plannings(self):
+        """Test that bulk delete only affects assignments from the specified planning"""
+        user_with_perms = self.create_user_with_profile(
+            username="user_with_perms", account=self.account, permissions=[CORE_PLANNING_WRITE_PERMISSION]
+        )
+        self.client.force_authenticate(user_with_perms)
+
+        # Create a second planning with its own assignments
+        other_planning = Planning.objects.create(
+            project=self.project1,
+            name="other_planning",
+            team=self.team1,
+            org_unit=self.root_org_unit,
+            started_at="2025-01-01",
+            ended_at="2025-01-10",
+        )
+
+        # Create assignments for the other planning
+        other_data = {
+            "planning": other_planning.id,
+            "org_units": [self.child2.id, self.child3.id, self.child4.id],
+            "team": self.team1.id,
+        }
+        self.client.post("/api/microplanning/assignments/bulk_create_assignments/", data=other_data, format="json")
+
+        # Verify both plannings have their assignments
+        original_planning_assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        other_planning_assignments = Assignment.objects.filter(planning=other_planning, deleted_at__isnull=True)
+
+        self.assertEqual(original_planning_assignments.count(), 1)  # 1 from setUp
+        self.assertEqual(other_planning_assignments.count(), 3)  # 3 from bulk create
+
+        # Bulk delete assignments from the original planning only
+        delete_data = {"planning": self.planning.id}
+        response = self.client.post(
+            "/api/microplanning/assignments/bulk_delete_assignments/", data=delete_data, format="json"
+        )
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["deleted_count"], 1)  # Only 1 assignment from original planning
+        self.assertEqual(r["planning_id"], self.planning.id)
+
+        # Verify original planning assignments are deleted
+        original_planning_assignments = Assignment.objects.filter(planning=self.planning, deleted_at__isnull=True)
+        self.assertEqual(original_planning_assignments.count(), 0)
+
+        # Verify other planning assignments are NOT affected
+        other_planning_assignments = Assignment.objects.filter(planning=other_planning, deleted_at__isnull=True)
+        self.assertEqual(other_planning_assignments.count(), 3)  # Still 3, unchanged
+
+        # Verify the other planning's assignments are still active
+        for assignment in other_planning_assignments:
+            self.assertIsNone(assignment.deleted_at)
+            self.assertEqual(assignment.planning, other_planning)
+
     def test_no_perm_create(self):
         self.client.force_authenticate(self.user)
         data = {

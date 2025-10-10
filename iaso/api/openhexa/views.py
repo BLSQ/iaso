@@ -17,11 +17,10 @@ from iaso.api.openhexa.serializers import (
     TaskResponseSerializer,
     TaskUpdateSerializer,
 )
-from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import ERRORED, EXPORTED, KILLED, QUEUED, RUNNING, SKIPPED, SUCCESS
+from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
-from iaso.tasks.poll_openhexa_pipeline import poll_openhexa_pipeline
+from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.utils.tokens import get_user_token
 
 
@@ -233,58 +232,16 @@ class OpenHexaPipelinesViewSet(ViewSet):
         openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
-            # Construct pipeline_config object for launch_task
-            pipeline_config = MockConfig(
-                {
-                    "pipeline_version": str(version),  # Convert UUID to string
-                    "pipeline": str(pipeline_id),
-                    "oh_pipeline_target": None,
-                    "openhexa_url": openhexa_url,
-                    "openhexa_token": openhexa_token,
-                }
-            )
-
-            # Create external task following the same pattern as powerbi.py
             user = request.user
-            task_name = f"pipeline-{pipeline_id}-v{version}"
 
-            task = Task.objects.create(
-                created_by=user,
-                launcher=user,
-                account=user.iaso_profile.account,
-                name=task_name,
-                status=QUEUED,
-                external=True,
-                started_at=timezone.now(),
-                should_be_killed=False,
-                params={
-                    "args": [],
-                    "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
-                },
-            )
-
-            # Launch the task using the existing launch_task function
-            task_status = ExternalTaskModelViewSet.launch_task(
-                slug=None,  # Not needed since we're passing pipeline_config
-                config=config,
-                task_id=task.pk,
-                pipeline_config=pipeline_config,
-            )
-
-            # Update task status
-            task.status = task_status
-            task.save()
-
-            logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
-
-            poll_openhexa_pipeline(
+            task = launch_openhexa_pipeline(
                 user=user,
-                task_id=task.pk,
                 pipeline_id=pipeline_id,
                 openhexa_url=openhexa_url,
                 openhexa_token=openhexa_token,
+                version=str(version),
+                config=config,
             )
-            logger.info(f"Started OpenHexa polling task for task {task.pk}")
 
             # Use serializer for response
             serializer = TaskResponseSerializer(task)

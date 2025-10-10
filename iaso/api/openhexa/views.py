@@ -1,4 +1,6 @@
 import logging
+import threading
+import time
 
 from django.http import Http404
 from django.shortcuts import get_object_or_404
@@ -63,6 +65,138 @@ def get_openhexa_config():
         logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
         # Return a simple error response instead of raising an exception
         return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+def poll_openhexa_pipeline_status(task_id, pipeline_id, openhexa_url, openhexa_token, max_attempts=30, delay=2):
+    """
+    Poll OpenHexa to check pipeline status and update Iaso task accordingly.
+
+    Args:
+        task_id: Iaso task ID to update
+        pipeline_id: OpenHexa pipeline ID to check
+        openhexa_url: OpenHexa GraphQL endpoint URL
+        openhexa_token: OpenHexa authentication token
+        max_attempts: Maximum number of polling attempts
+        delay: Delay between polling attempts in seconds
+    """
+    logger.info(f"Starting OpenHexa polling for task {task_id}, pipeline {pipeline_id}")
+
+    for attempt in range(max_attempts):
+        try:
+            # Get pipeline run status from OpenHexa
+            transport = RequestsHTTPTransport(
+                url=openhexa_url,
+                headers={"Authorization": f"Bearer {openhexa_token}"},
+                verify=True,
+            )
+            client = Client(transport=transport, fetch_schema_from_transport=True)
+
+            # Query to get the latest run for this pipeline (using same format as launch_task)
+            query = gql(
+                """
+                query pipeline {
+                    pipeline(id: "%s"){
+                        runs{
+                            items{
+                                run_id
+                                status
+                                config
+                                logs
+                            }
+                        }
+                    }
+                }
+                """
+                % pipeline_id
+            )
+
+            result = client.execute(query)
+            runs = result.get("pipeline", {}).get("runs", {}).get("items", [])
+
+            if not runs:
+                logger.warning(f"No runs found for pipeline {pipeline_id}")
+                time.sleep(delay)
+                continue
+
+            # Get the latest run (first in the list, as OpenHexa returns them in reverse chronological order)
+            latest_run = runs[0]
+            run_status = latest_run["status"]
+            run_id = latest_run["run_id"]
+            logs = latest_run.get("logs", "")
+
+            logger.info(f"OpenHexa run {run_id} status: {run_status} (attempt {attempt + 1}/{max_attempts})")
+
+            # Extract error details from logs if available
+            error_details = []
+
+            # Use logs as a string (contains all log messages)
+            if logs:
+                error_details.append(f"Logs: {logs}")
+
+            # Combine error details
+            full_error_message = "; ".join(error_details) if error_details else ""
+
+            # Get the task to update
+            try:
+                task = Task.objects.get(pk=task_id)
+            except Task.DoesNotExist:
+                logger.error(f"Task {task_id} not found")
+                return
+
+            # Update task status based on OpenHexa run status (case-insensitive)
+            run_status_lower = run_status.lower()
+
+            if run_status_lower in ["failed", "errored", "cancelled", "error"]:
+                logger.info(f"Pipeline {pipeline_id} failed in OpenHexa, updating task {task_id} to ERRORED")
+
+                # Create detailed error message
+                if full_error_message:
+                    detailed_error = (
+                        f"Pipeline failed in OpenHexa with status: {run_status}. Details: {full_error_message}"
+                    )
+                else:
+                    detailed_error = f"Pipeline failed in OpenHexa with status: {run_status}"
+
+                error = Exception(detailed_error)
+                task.report_failure(error)
+                return
+
+            if run_status_lower in ["success", "completed", "done"]:
+                logger.info(f"Pipeline {pipeline_id} succeeded in OpenHexa, updating task {task_id} to SUCCESS")
+                task.status = SUCCESS
+                task.progress_message = "Pipeline completed successfully"
+                task.progress_value = 100
+                task.end_value = 100
+                task.ended_at = timezone.now()
+                task.save()
+                return
+
+            if run_status_lower in ["running", "queued", "pending", "started"]:
+                # Still running, continue polling
+                logger.info(f"Pipeline {pipeline_id} still running, continuing to poll...")
+                time.sleep(delay)
+                continue
+
+            logger.warning(f"Unknown OpenHexa run status: {run_status}")
+            time.sleep(delay)
+            continue
+
+        except Exception as e:
+            logger.error(f"Error polling OpenHexa for task {task_id}: {str(e)}")
+            time.sleep(delay)
+            continue
+
+    # If we get here, we've exhausted all attempts
+    logger.warning(f"OpenHexa polling timeout for task {task_id} after {max_attempts} attempts")
+    try:
+        task = Task.objects.get(pk=task_id)
+        if task.status == RUNNING:
+            error_message = "Pipeline monitoring timeout - status unknown after polling OpenHexa"
+            error = Exception(error_message)
+            task.report_failure(error)
+            logger.info(f"Updated task {task_id} to ERRORED due to polling timeout")
+    except Task.DoesNotExist:
+        logger.error(f"Task {task_id} not found during timeout handling")
 
 
 class OpenHexaPipelinesViewSet(ViewSet):
@@ -215,6 +349,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         # Add connection token and host to config
         try:
             config["connection_token"] = get_user_token(request.user)
+            config["brol"] = "fsdfd"
             # Build complete URL with scheme
             scheme = "https" if request.is_secure() else "http"
             host = request.get_host()
@@ -274,6 +409,15 @@ class OpenHexaPipelinesViewSet(ViewSet):
             task.save()
 
             logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
+
+            # Start background polling to monitor pipeline status
+            polling_thread = threading.Thread(
+                target=poll_openhexa_pipeline_status,
+                args=(task.pk, pipeline_id, openhexa_url, openhexa_token),
+                daemon=True,
+            )
+            polling_thread.start()
+            logger.info(f"Started OpenHexa polling thread for task {task.pk}")
 
             # Use serializer for response
             serializer = TaskResponseSerializer(task)

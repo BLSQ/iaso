@@ -14,7 +14,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from iaso.api.entity import EntitySerializer
+from iaso.api.entities.serializers import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import Entity, Instance, OrgUnit, StorageDevice, StorageLogEntry
 from iaso.permissions.core_permissions import CORE_STORAGE_PERMISSION

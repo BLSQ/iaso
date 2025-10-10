@@ -170,7 +170,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const isPipelineRunning = task?.status === 'RUNNING';
     return (
         <>
-            <Tooltip title={disabledMessage}>
+            <Tooltip title={disabled ? disabledMessage : undefined}>
                 <Box>
                     <Button
                         variant="outlined"

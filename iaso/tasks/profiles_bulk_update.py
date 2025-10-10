@@ -10,7 +10,7 @@ from rest_framework.exceptions import PermissionDenied
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from hat.audit.audit_logger import AuditLogger
-from iaso.api.microplanning.serilaizers import AuditTeamSerializer
+from iaso.api.microplanning.serializers import AuditTeamSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.profiles import get_filtered_profiles
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole

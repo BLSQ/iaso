@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Button } from '@mui/material';
 import {
@@ -35,22 +35,29 @@ export const DeleteAssignments: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutate: bulkDeleteAssignments, isLoading } =
         useBulkDeleteAssignments(planning?.id);
+    const deleteTitle = useMemo(() => {
+        return {
+            ...MESSAGES.deleteAssignments,
+            values: {
+                name: planning?.name,
+            },
+        };
+    }, [planning?.name]);
+
+    const deleteMessage = useMemo(() => {
+        return {
+            ...MESSAGES.deleteAssignmentsWarning,
+            values: {
+                name: formatThousand(count),
+            },
+        };
+    }, [count]);
     return (
         <>
             {isLoading && <LoadingSpinner />}
             <DeleteDialog
-                titleMessage={{
-                    ...MESSAGES.deleteAssignments,
-                    values: {
-                        name: planning?.name,
-                    },
-                }}
-                message={{
-                    ...MESSAGES.deleteAssignmentsWarning,
-                    values: {
-                        name: formatThousand(count),
-                    },
-                }}
+                titleMessage={deleteTitle}
+                message={deleteMessage}
                 onConfirm={() =>
                     bulkDeleteAssignments({ planning: planning?.id })
                 }

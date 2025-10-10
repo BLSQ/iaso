@@ -6,7 +6,7 @@ from iaso.api.common import (
 from iaso.api.permission_checks import ReadOnly
 from iaso.models.microplanning import Planning
 
-from .serilaizers import MobilePlanningSerializer
+from .serializers import MobilePlanningSerializer
 
 
 class MobilePlanningViewSet(ModelViewSet):

@@ -38,6 +38,11 @@ class EntityDuplicateAnalyzis(models.Model):
         return f"Analyzis {self.id} - {self.algorithm} ({self.task.status}) @ {self.created_at.strftime('%d/%m/%Y %H:%M') if self.created_at else 'None'}"
 
 
+class EntityDuplicateQuerySet(models.QuerySet):
+    def filter_for_account(self, account):
+        return self.filter(entity1__account=account, entity2__account=account)
+
+
 class EntityDuplicate(models.Model):
     entity1 = models.ForeignKey("iaso.Entity", on_delete=models.CASCADE, related_name="duplicates1")
     entity2 = models.ForeignKey("iaso.Entity", on_delete=models.CASCADE, related_name="duplicates2")
@@ -58,6 +63,8 @@ class EntityDuplicate(models.Model):
         default=None,
         null=True,
     )
+
+    objects = models.Manager.from_queryset(EntityDuplicateQuerySet)()
 
     def get_entity_type(self):
         return self.entity1.entity_type

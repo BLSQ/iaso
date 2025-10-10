@@ -211,6 +211,8 @@
     "iaso.devices.timeSynched": "Temps de synchronisation",
     "iaso.devices.timeUpdated": "Dernière modification",
     "iaso.duplicate.analysisBusy": "Analyse en cours",
+    "iaso.duplicate.ignoreSelectionTitle": "Ignorer la sélection ?",
+    "iaso.duplicate.ignoreSelectionMessage": "Êtes-vous sûr de vouloir ignorer les doublons sélectionnés ?",
     "iaso.duplicate.latestAnalysis": "Dernière analyse terminée : {finishedAt}",
     "iaso.duplicate.launchAnalysis": "Lancer l'analyse",
     "iaso.duplicate.messageErrorMissingFields": "Aucun champ à analyser. Vous pouvez les configurer dans les types d'entités",

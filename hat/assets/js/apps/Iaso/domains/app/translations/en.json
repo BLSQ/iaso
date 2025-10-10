@@ -210,6 +210,8 @@
     "iaso.devices.timeSynched": "Time synchronised",
     "iaso.devices.timeUpdated": "Date modified",
     "iaso.duplicate.analysisBusy": "Analysis in progress",
+    "iaso.duplicate.ignoreSelectionTitle": "Ignore selection?",
+    "iaso.duplicate.ignoreSelectionMessage": "Are you sure you wish to ignore selected duplicates?",
     "iaso.duplicate.latestAnalysis": "Latest analysis completed: {finishedAt}",
     "iaso.duplicate.launchAnalysis": "Launch analysis",
     "iaso.duplicate.messageErrorMissingFields": "No fields to analyse. You can set them up in the entity types page",

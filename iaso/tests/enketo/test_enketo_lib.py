@@ -3,7 +3,7 @@ from django.test import TestCase
 import iaso.models as m
 
 from iaso.enketo import to_xforms_xml
-from iaso.enketo.enketo_xml import inject_xml_find_uuid
+from iaso.enketo.enketo_xml import collect_values, inject_xml_find_uuid, parse_to_structured_dict
 
 
 class EnketoLibTests(TestCase):
@@ -62,3 +62,87 @@ class EnketoLibTests(TestCase):
             "</xforms>",
         ]
         self.assertEqual(xml, "".join(expectedXforms))
+
+    def test_parse_to_structured_dict(self):
+        xml = b"""<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="survey-media" version="2025100901" iasoInstance="11854">
+          <respondent>test bracket</respondent>
+          <photo>Untitled-19_51_21 (Copy)-8_53_32.jpeg</photo>
+          <pdf_attachment>export(11)-8_36_42.xlsx</pdf_attachment>
+          
+        
+        <invoices>
+            <excel>survey-media(6)-9_21_0.xlsx</excel>
+            <photo_meeting>Untitled-19_51_21 (Copy)-9_21_6.jpeg</photo_meeting>
+          </invoices><invoices>
+            <excel>survey-media(6)-9_21_14.xlsx</excel>
+            <photo_meeting>image (3)-9_23_14.png</photo_meeting>
+          </invoices>
+          <end_note/>
+        <meta>
+            <instanceID>uuid:12e9de6e-676c-4379-a816-9fabe9305c02</instanceID>
+          <editUserID>1</editUserID><deprecatedID>uuid:26630473-f13b-4c6f-bbf7-82412eef9b3d</deprecatedID></meta>
+        </data>"""
+
+        json_payload = parse_to_structured_dict(xml)
+
+        expected = {
+            "data": {
+                "_iasoInstance": "11854",
+                "_id": "survey-media",
+                "_version": "2025100901",
+                "end_note": {},
+                "invoices": [
+                    {"excel": "survey-media(6)-9_21_0.xlsx", "photo_meeting": "Untitled-19_51_21 (Copy)-9_21_6.jpeg"},
+                    {"excel": "survey-media(6)-9_21_14.xlsx", "photo_meeting": "image (3)-9_23_14.png"},
+                ],
+                "meta": {
+                    "deprecatedID": "uuid:26630473-f13b-4c6f-bbf7-82412eef9b3d",
+                    "editUserID": "1",
+                    "instanceID": "uuid:12e9de6e-676c-4379-a816-9fabe9305c02",
+                },
+                "pdf_attachment": "export(11)-8_36_42.xlsx",
+                "photo": "Untitled-19_51_21 (Copy)-8_53_32.jpeg",
+                "respondent": "test bracket",
+            }
+        }
+
+        self.assertEqual(json_payload, expected)
+
+    def test_collect_values(self):
+        input_dict = {
+            "data": {
+                "_iasoInstance": "11854",
+                "_id": "survey-media",
+                "_version": "2025100901",
+                "end_note": {},
+                "invoices": [
+                    {"excel": "survey-media(6)-9_21_0.xlsx", "photo_meeting": "Untitled-19_51_21 (Copy)-9_21_6.jpeg"},
+                    {"excel": "survey-media(6)-9_21_14.xlsx", "photo_meeting": "image (3)-9_23_14.png"},
+                ],
+                "meta": {
+                    "deprecatedID": "uuid:26630473-f13b-4c6f-bbf7-82412eef9b3d",
+                    "editUserID": "1",
+                    "instanceID": "uuid:12e9de6e-676c-4379-a816-9fabe9305c02",
+                },
+                "pdf_attachment": "export(11)-8_36_42.xlsx",
+                "photo": "Untitled-19_51_21 (Copy)-8_53_32.jpeg",
+                "respondent": "test bracket",
+            }
+        }
+        values = collect_values(input_dict)
+
+        self.assertEqual(
+            values,
+            [
+                "survey-media(6)-9_21_0.xlsx",
+                "Untitled-19_51_21 (Copy)-9_21_6.jpeg",
+                "survey-media(6)-9_21_14.xlsx",
+                "image (3)-9_23_14.png",
+                "uuid:26630473-f13b-4c6f-bbf7-82412eef9b3d",
+                "1",
+                "uuid:12e9de6e-676c-4379-a816-9fabe9305c02",
+                "export(11)-8_36_42.xlsx",
+                "Untitled-19_51_21 (Copy)-8_53_32.jpeg",
+                "test bracket",
+            ],
+        )

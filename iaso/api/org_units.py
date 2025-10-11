@@ -974,12 +974,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         The file should have columns matching the OrgUnit model fields.
         Required columns: 'name', 'org_unit_type'.
-        Optional column: 'parent'.
+        Optional columns: 'parent', 'parent2', 'parent3', ... to specify the hierarchy for disambiguation.
+        'parent' is the direct parent, 'parent2' is the grandparent, and so on.
 
         Example CSV:
-        name,parent,org_unit_type
-        Region A,,Region
-        District A1,Region A,District
+        name,parent,parent2,org_unit_type
+        Region A,,,Region
+        District A1,Region A,,District
+        Hôpital St-Pierre,District A1,Region A,Facility
         """
         serializer = OrgUnitImportSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -997,25 +999,51 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return Response({"error": f"Error reading file: {e}"}, status=status.HTTP_400_BAD_REQUEST)
 
         created_count = 0
+        updated_count = 0
         errors = []
 
         default_version = request.user.iaso_profile.account.default_version
         if not default_version:
             return Response({"error": "No default version found for your account"}, status=status.HTTP_400_BAD_REQUEST)
 
+        # Find parent columns dynamically and sort them to respect hierarchy
+        parent_cols = sorted([col for col in df.columns if col.startswith("parent")], key=lambda x: (len(x), x))
+
         for index, row in df.iterrows():
             name = row.get("name")
-            parent_name = row.get("parent")
             org_unit_type_name = row.get("org_unit_type")
 
             if not name or not org_unit_type_name:
-                errors.append(f"Row {index + 1}: 'name' and 'org_unit_type' are required.")
+                errors.append(f"Row {index + 2}: 'name' and 'org_unit_type' are required.")
                 continue
 
             try:
                 parent = None
-                if parent_name and not pd.isna(parent_name):
-                    parent = OrgUnit.objects.get(name=parent_name, version=default_version)
+                parent_names = []
+                for col in parent_cols:
+                    parent_name = row.get(col)
+                    if pd.isna(parent_name) or parent_name == "":
+                        break
+                    parent_names.append(parent_name)
+
+                if parent_names:
+                    parent_filters = {"name": parent_names[0], "version": default_version}
+
+                    current_parent_level = "parent"
+                    for ancestor_name in parent_names[1:]:
+                        parent_filters[f"{current_parent_level}__name"] = ancestor_name
+                        current_parent_level += "__parent"
+
+                    try:
+                        parent = OrgUnit.objects.get(**parent_filters)
+                    except OrgUnit.DoesNotExist:
+                        errors.append(f"Row {index + 2}: Parent hierarchy {parent_names} not found.")
+                        continue
+                    except OrgUnit.MultipleObjectsReturned:
+                        errors.append(
+                            f"Row {index + 2}: Ambiguous parent hierarchy {parent_names}. Multiple matches found."
+                        )
+                        continue
 
                 org_unit_type = OrgUnitType.objects.get(name=org_unit_type_name)
 
@@ -1025,24 +1053,34 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit_type=org_unit_type,
                     version=default_version,
                 )
+
                 org_unit.validation_status = OrgUnit.VALIDATION_NEW
                 org_unit.creator = request.user
                 org_unit.save()
-                created_count += 1
 
-            except OrgUnit.DoesNotExist:
-                errors.append(f"Row {index + 1}: Parent org unit '{parent_name}' not found.")
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
             except OrgUnitType.DoesNotExist:
-                errors.append(f"Row {index + 1}: Org unit type '{org_unit_type_name}' not found.")
+                errors.append(f"Row {index + 2}: Org unit type '{org_unit_type_name}' not found.")
+            except OrgUnit.MultipleObjectsReturned:
+                errors.append(
+                    f"Row {index + 2}: Ambiguous org unit '{name}' with parent '{parent.name if parent else None}'. Multiple matches found."
+                )
             except Exception as e:
-                errors.append(f"Row {index + 1}: An unexpected error occurred: {e}")
+                errors.append(f"Row {index + 2}: An unexpected error occurred: {e}")
 
         if errors:
             return Response(
-                {"status": "error", "created": created_count, "errors": errors}, status=status.HTTP_400_BAD_REQUEST
+                {"status": "error", "created": created_count, "updated": updated_count, "errors": errors},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        return Response({"status": "success", "created": created_count}, status=status.HTTP_201_CREATED)
+        return Response(
+            {"status": "success", "created": created_count, "updated": updated_count}, status=status.HTTP_201_CREATED
+        )
 
     def retrieve(self, request, pk=None):
         prefetch_args = ["reference_instances", "org_unit_type__sub_unit_types", "groups"]

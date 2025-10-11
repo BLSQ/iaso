@@ -15,7 +15,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from iaso.views import ModelDataView, health, health_clamav, page, robots_txt
+from iaso.views import ModelDataView, health, health_clamav, org_unit_import_view, page, robots_txt
 
 
 admin.site.site_header = "Administration de Iaso"
@@ -111,6 +111,7 @@ else:
         ),
         path("sync/", include("hat.sync.urls")),
         path("models/", ModelDataView.as_view(), name="models"),
+        path("orgunits/import/", org_unit_import_view, name="org_unit_import"),
     ]
 
     for plugin_name in settings.PLUGINS:

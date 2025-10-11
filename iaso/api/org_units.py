@@ -1027,11 +1027,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     parent_names.append(parent_name)
 
                 if parent_names:
-                    parent_filters = {"name": parent_names[0], "version": default_version}
+                    parent_filters = {"name__iexact": parent_names[0], "version": default_version}
 
                     current_parent_level = "parent"
                     for ancestor_name in parent_names[1:]:
-                        parent_filters[f"{current_parent_level}__name"] = ancestor_name
+                        parent_filters[f"{current_parent_level}__name__iexact"] = ancestor_name
                         current_parent_level += "__parent"
 
                     try:

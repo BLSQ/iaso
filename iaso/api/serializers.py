@@ -247,3 +247,7 @@ class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSer
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id", "org_unit_type_short_name"]
+
+
+class OrgUnitImportSerializer(serializers.Serializer):
+    file = serializers.FileField()

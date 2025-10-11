@@ -229,3 +229,11 @@ class ModelDataView(View):
         if isinstance(field, GenericForeignKey):
             return "GenericForeignKey"
         return field.__class__.__name__
+
+
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def org_unit_import_view(request):
+    return render(request, "iaso/org_unit_import.html")

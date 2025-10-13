@@ -136,6 +136,8 @@ class ProcessMobileBulkUploadTestCase(TestCase):
 
 
 class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
+    fixtures = ["user.yaml", "orgunit.yaml", "forms"]
+
     def setUp(self):
         self.api_import = APIImport.objects.create(
             user=self.user,
@@ -151,6 +153,9 @@ class ProcessMobileBulkUploadTest(ProcessMobileBulkUploadTestCase):
     @staticmethod
     def zip_fixture_dir(subdir=""):
         return f"iaso/tests/fixtures/mobile_bulk_uploads/{subdir}"
+        # Create 2 forms: Registration + CATT
+        self.form_registration = m.Form.objects.get(form_id="trypelim_registration")
+        self.form_catt = m.Form.objects.get(form_id="trypelim_CATT")
 
     @classmethod
     def create_zip_file(cls, api_import):

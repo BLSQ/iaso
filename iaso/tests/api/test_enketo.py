@@ -711,7 +711,6 @@ class EnketoAPITestCase(APITestCase):
         self.assertTrue(responses.assert_call_count("https://enketo_url.host.test/api_v2/instance", 1))
         self.assertEqual(old_count + 1, Instance.objects.count())
 
-
     @skip("TODO: Skipping for Trypelim, has unique constraint on Instance UUID")
     def test_form_list_work_with_duplicate_instance(self):
         "Check form list work when there are two instances with the same UUID"

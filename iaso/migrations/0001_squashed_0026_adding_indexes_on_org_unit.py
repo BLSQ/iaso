@@ -10,7 +10,11 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL)]
+    dependencies = [
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("django_comments", "0004_add_object_pk_is_removed_index"),
+        ("django_ltree", "0001_create_extension"),
+    ]
 
     operations = [
         CreateExtension("postgis"),

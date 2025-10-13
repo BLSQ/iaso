@@ -82,6 +82,7 @@ const useMultiSelection = (
     );
     return {
         selection,
+        setSelection,
         handleTableSelection,
         selectionActions,
     };
@@ -91,7 +92,7 @@ export const Duplicates: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as Params;
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
-    const { selection, handleTableSelection, selectionActions } =
+    const { selection, setSelection, handleTableSelection, selectionActions } =
         useMultiSelection(setMultiActionPopupOpen);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -107,7 +108,9 @@ export const Duplicates: FunctionComponent = () => {
         pages: 1,
         count: 0,
     };
-    const { mutate: bulkIgnore } = useBulkIgnoreDuplicate();
+    const { mutate: bulkIgnore } = useBulkIgnoreDuplicate(() =>
+        setSelection(selectionInitialState),
+    );
 
     return (
         <>

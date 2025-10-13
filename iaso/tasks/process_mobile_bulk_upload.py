@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 
 TASK_LOCK_RETRY_INTERVAL = 60
 TASK_LOCK_MAX_RETRIES = 120
-TASK_LOCK_MAX_DURATION = 600
+TASK_LOCK_MAX_DURATION = 1200
 TASK_LOCK_KEY = "process_mobile_bulk_upload"
 
 
@@ -85,7 +85,11 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 end_value=100,
             ),
         )
-
+        the_task.report_progress_and_stop_if_killed(
+            progress_message="Lock acquired, processing upload",
+            progress_value=20,
+            end_value=100,
+        )
         stats = {"new_org_units": 0, "new_instances": 0, "new_instance_files": 0, "new_change_requests": 0}
         created_objects_ids = defaultdict(list)
 

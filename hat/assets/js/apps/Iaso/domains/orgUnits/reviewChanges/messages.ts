@@ -310,6 +310,11 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
+    searchOrgUnitInfos: {
+        id: 'iaso.orgUnits.searchParams',
+        defaultMessage:
+            'Use prefix “refs:” for external org unit ID search, “ids:” for internal org unit ID search or “codes:” for org unit code search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd” or “codes: OU420, OU69”',
+    },
     bulkDeleteAction: {
         id: 'iaso.changeRequest.bulkDeleteAction',
         defaultMessage: 'Delete selected change requests?',

@@ -490,14 +490,18 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputComponent
-                    type="text"
-                    clearable
-                    keyValue="org_unit"
-                    value={filters.org_unit}
-                    onChange={handleChange}
-                    labelString={formatMessage(MESSAGES.orgUnit)}
-                />
+                <InputWithInfos
+                    infos={formatMessage(MESSAGES.searchOrgUnitInfos)}
+                >
+                    <InputComponent
+                        type="text"
+                        clearable
+                        keyValue="org_unit"
+                        value={filters.org_unit}
+                        onChange={handleChange}
+                        labelString={formatMessage(MESSAGES.orgUnit)}
+                    />
+                </InputWithInfos>
                 <InputComponent
                     type="select"
                     multi

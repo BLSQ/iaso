@@ -1,5 +1,3 @@
-import re
-
 import django_filters
 
 from django.conf import settings
@@ -10,6 +8,7 @@ from django_filters.widgets import CSVWidget
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import parse_comma_separated_numeric_values
+from iaso.api.org_unit_search import apply_org_unit_search
 from iaso.models import OrgUnit, OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 
@@ -167,33 +166,4 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         if not value:
             return queryset
 
-        if value.startswith("ids:"):
-            s = value.replace("ids:", "")
-            try:
-                ids = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(org_unit__id__in=ids)
-            except:
-                queryset = queryset.filter(org_unit__id__in=[])
-                print("Failed parsing ids in search", value)
-        elif value.startswith("refs:"):
-            s = value.replace("refs:", "")
-            try:
-                # First, checking if there are any "fake"/"internal" external refs (e.g. 'iaso:123')
-                internal_refs = re.findall(r"iaso:\d+", s)
-                internal_refs_filter = Q()
-                if internal_refs:
-                    iaso_ids = [int(i.split(":")[1]) for i in internal_refs]  # Split and parse ID
-                    internal_refs_filter = Q(org_unit__id__in=iaso_ids)
-                    s = re.sub(r"iaso:\d+", "", s)  # Remove internal refs to prevent them from breaking the other value
-
-                # Then we can check real external refs
-                refs = re.findall("[A-Za-z0-9_-]+", s)
-                external_refs_filter = Q(org_unit__source_ref__in=refs)
-                queryset = queryset.filter(external_refs_filter | internal_refs_filter)
-            except:
-                queryset = queryset.filter(org_unit__source_ref__in=[])
-                print("Failed parsing refs in search", value)
-        else:
-            queryset = queryset.filter(org_unit__name__icontains=value)
-
-        return queryset
+        return apply_org_unit_search(queryset, value, "org_unit__")

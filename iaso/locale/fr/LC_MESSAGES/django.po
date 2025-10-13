@@ -172,6 +172,10 @@ msgid "IDs (comma-separated)"
 msgstr "IDs (séparés par des virgules)"
 
 #: iaso/api/org_unit_change_requests/filters.py
+msgid "Org unit"
+msgstr "Unité d'organisation"
+
+#: iaso/api/org_unit_change_requests/filters.py
 msgid "Org unit ID"
 msgstr "ID de l'unité organisationnelle"
 

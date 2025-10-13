@@ -1017,6 +1017,7 @@
     "iaso.orgUnits.name": "Nom",
     "iaso.orgUnits.new": "Créer une unité d'org.",
     "iaso.orgUnits.onlyDirectChildren": "Seulement les enfants directs",
+    "iaso.orgUnits.openDate": "Ouverte le",
     "iaso.orgUnits.openingDate": "Date d'ouverture",
     "iaso.orgUnits.orgUnitsTypes": "Type d'unité d'org.",
     "iaso.orgUnits.ouTypesHelperText": "Unité d'organisation enfants",

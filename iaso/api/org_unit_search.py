@@ -92,6 +92,7 @@ def build_org_units_queryset(queryset, params, profile):
     org_unit_type_category = params.get("orgUnitTypeCategory", None)
     path_depth = params.get("depth", None)
 
+    date_open = params.get("date_open", None)
     opening_date = params.get("opening_date", None)
     closed_date = params.get("closed_date", None)
 
@@ -254,6 +255,11 @@ def build_org_units_queryset(queryset, params, profile):
 
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
+    if date_open is not None:
+        date = datetime.strptime(date_open, "%d-%m-%Y").date()
+        queryset = queryset.filter(Q(opening_date__isnull=True) | Q(opening_date__lte=date)).filter(
+            Q(closed_date__isnull=True) | Q(closed_date__gt=date)
+        )
     if opening_date:
         queryset = queryset.filter(opening_date=datetime.strptime(opening_date, "%d-%m-%Y").date())
     if closed_date:

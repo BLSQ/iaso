@@ -123,6 +123,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                         new_instance_files += process_instance_attachments(dirs[uuid], instance)
                         created_objects_ids["instance"].append(instance.id)
 
+                    # Trypelim-specifics
                     duplicated_count = duplicate_instance_files(new_instance_files)
                     stats["new_instance_files"] = len(new_instance_files) + duplicated_count
                     # Trypelim-specifics

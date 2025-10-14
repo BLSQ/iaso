@@ -73,8 +73,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             po_number="PO123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
-            # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
-            # and calculated vials_received and vials_shipped
+            doses_per_vial=20,
         )
 
         cls.vaccine_stock = pm.VaccineStock.objects.create(

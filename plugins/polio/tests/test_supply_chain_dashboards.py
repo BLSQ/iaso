@@ -70,15 +70,17 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             vaccine_type=cls.vaccine_type,
         )
         cls.other_vrf.rounds.set([])
-        cls.pre_alert = VaccinePreAlert.objects.create(request_form=cls.vrf, date_pre_alert_reception=date.today())
+        cls.pre_alert = VaccinePreAlert.objects.create(
+            request_form=cls.vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
+        )
         cls.other_pre_alert = VaccinePreAlert.objects.create(
-            request_form=cls.other_vrf, date_pre_alert_reception=date.today()
+            request_form=cls.other_vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
         )
         cls.arrival_report = VaccineArrivalReport.objects.create(
-            request_form=cls.vrf, arrival_report_date=date.today(), doses_received=1000
+            request_form=cls.vrf, arrival_report_date=date.today(), doses_received=1000, doses_per_vial=20
         )
         cls.other_arrival_report = VaccineArrivalReport.objects.create(
-            request_form=cls.other_vrf, arrival_report_date=date.today(), doses_received=1000
+            request_form=cls.other_vrf, arrival_report_date=date.today(), doses_received=1000, doses_per_vial=20
         )
 
         cls.vaccine_stock = VaccineStock.objects.create(
@@ -218,9 +220,11 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             campaign=new_campaign, number=2, started_at=date(2024, 1, 1), ended_at=date(2024, 1, 10)
         )
         new_vrf.rounds.set([new_vrf_round_1, new_vrf_round_2])
-        new_pre_alert = VaccinePreAlert.objects.create(request_form=new_vrf, date_pre_alert_reception=date.today())
+        new_pre_alert = VaccinePreAlert.objects.create(
+            request_form=new_vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
+        )
         new_arrival_report = VaccineArrivalReport.objects.create(
-            request_form=new_vrf, arrival_report_date=date.today(), doses_received=2000
+            request_form=new_vrf, arrival_report_date=date.today(), doses_received=2000, doses_per_vial=20
         )
 
         # Should appear only in 2nd VRF

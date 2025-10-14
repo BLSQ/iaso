@@ -1,0 +1,642 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../../../../assets/iaso-favicon.png" rel="icon"/>
+<meta content="mkdocs-1.5.2, mkdocs-material-9.1.1" name="generator"/>
+<title>Vaccine Management in IASO - IASO</title>
+<link href="../../../../assets/stylesheets/main.402914a4.min.css" rel="stylesheet"/>
+<link href="../../../../assets/stylesheets/palette.a0c5b2b5.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&amp;display=fallback" rel="stylesheet"/>
+<style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+<link href="../../../../assets/_mkdocstrings.css" rel="stylesheet"/>
+<link href="../../../../stylesheets/extra.css" rel="stylesheet"/>
+<script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+</head>
+<body data-md-color-accent="" data-md-color-primary="custom" data-md-color-scheme="default" dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#vaccine-management-in-iaso">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header md-header--shadow" data-md-component="header">
+<nav aria-label="Header" class="md-header__inner md-grid">
+<a aria-label="IASO" class="md-header__button md-logo" data-md-component="logo" href="../../../../index.html" title="IASO">
+<img alt="logo" src="../../../../assets/iaso.png"/>
+</a>
+<label class="md-header__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"></path></svg>
+</label>
+<div class="md-header__title" data-md-component="header-title">
+<div class="md-header__ellipsis">
+<div class="md-header__topic">
+<span class="md-ellipsis">
+            IASO
+          </span>
+</div>
+<div class="md-header__topic" data-md-component="header-topic">
+<span class="md-ellipsis">
+            
+              Vaccine Management in IASO
+            
+          </span>
+</div>
+</div>
+</div>
+<div class="md-header__option">
+<div class="md-select">
+<button aria-label="Select language" class="md-header__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="m12.87 15.07-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04M18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12m-2.62 7 1.62-4.33L19.12 17h-3.24Z"></path></svg>
+</button>
+<div class="md-select__inner">
+<ul class="md-select__list">
+<li class="md-select__item">
+<a class="md-select__link" href="vaccine_management.html" hreflang="en">
+                    English
+                  </a>
+</li>
+<li class="md-select__item">
+<a class="md-select__link" href="../../../../fr/pages/dev/reference/campaigns/vaccine_management.html" hreflang="fr">
+                    Français
+                  </a>
+</li>
+<li class="md-select__item">
+<a class="md-select__link" href="../../../../es/pages/dev/reference/campaigns/vaccine_management.html" hreflang="es">
+                    Español
+                  </a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<label class="md-header__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" name="query" placeholder="Search" required="" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"></path></svg>
+</label>
+<nav aria-label="Search" class="md-search__options">
+<button aria-label="Clear" class="md-search__icon md-icon" tabindex="-1" title="Clear" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"></path></svg>
+</button>
+</nav>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list" role="presentation"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header__source">
+<a class="md-source" data-md-component="source" href="https://github.com/BLSQ/iaso" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<!-- Navigation -->
+<div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="IASO" class="md-nav__button md-logo" data-md-component="logo" href="../../../../index.html" title="IASO">
+<img alt="logo" src="../../../../assets/iaso.png"/>
+</a>
+    IASO
+  </label>
+<div class="md-nav__source">
+<a class="md-source" data-md-component="source" href="https://github.com/BLSQ/iaso" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><!--! Font Awesome Free 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../index.html">
+        Home
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          Users
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_2_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_2">
+<span class="md-nav__icon md-icon"></span>
+          Users
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_concepts/iaso_concepts.html">
+        Concepts
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_modules/iaso_modules.html">
+        Modules
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_web/user_guide.html">
+        Web Platform
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../users/reference/iaso_mobile/iaso_mobile.html">
+        Mobile Application
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+          Developers
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_3">
+<span class="md-nav__icon md-icon"></span>
+          Developers
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+          References
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_1">
+<span class="md-nav__icon md-icon"></span>
+          References
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../data_model_glossary/data_model_glossary.html">
+        Data model glossary
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../sql_dashboard/SQL_Dashboard_feature.html">
+        SQL Dashboard feature
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../docker/docker.html">
+        Docker
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../background_tasks/background_tasks.html">
+        Background tasks &amp; worker
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../env_variables/env_variables.html">
+        Environnement variables
+      </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_1_6" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_1_6" id="__nav_3_1_6_label" tabindex="0">
+          Models
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_1_6_label" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="__nav_3_1_6">
+<span class="md-nav__icon md-icon"></span>
+          Models
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../API/entity.html">
+        API reference: Entity
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_3_2" type="checkbox"/>
+<label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+          How to
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_3_2_label" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="__nav_3_2">
+<span class="md-nav__icon md-icon"></span>
+          How to
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../how_to/contribute/contribute.html">
+        Contribute
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../how_to/setup_dev_env/setup_dev_env.html">
+        Setup a dev environment
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../how_to/use_iaso_apis/use_iaso_apis.html">
+        Use iaso apis
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" id="__nav_4" type="checkbox"/>
+<label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+          More about IASO
+          <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-expanded="false" aria-labelledby="__nav_4_label" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="__nav_4">
+<span class="md-nav__icon md-icon"></span>
+          More about IASO
+        </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.openiaso.com/">
+        IASO website
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.digitalpublicgoods.net/r/iaso">
+        Digital Public Goods Registry
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://github.com/BLSQ/iaso/releases">
+        Release notes
+      </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="https://www.bluesquarehub.com/">
+        Bluesquare website
+      </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+<!-- pdf download  -->
+<div id="pdf-download-container">
+<button id="pdf-download" type="button">
+<span id="button-text">Download current page</span>
+<svg fill="#192041" height="24px" viewbox="0 -960 960 960" width="24px" xmlns="http://www.w3.org/2000/svg">
+<path d="M360-460h40v-80h40q17 0 28.5-11.5T480-580v-40q0-17-11.5-28.5T440-660h-80v200Zm40-120v-40h40v40h-40Zm120 120h80q17 0 28.5-11.5T640-500v-120q0-17-11.5-28.5T600-660h-80v200Zm40-40v-120h40v120h-40Zm120 40h40v-80h40v-40h-40v-40h40v-40h-80v200ZM320-240q-33 0-56.5-23.5T240-320v-480q0-33 23.5-56.5T320-880h480q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T800-240H320Zm0-80h480v-480H320v480ZM160-80q-33 0-56.5-23.5T80-160v-560h80v560h560v80H160Zm160-720v480-480Z"></path>
+</svg>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Table of contents -->
+<div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-component="toc" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#introduction">
+    Introduction
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#data-models-and-structure">
+    Data Models and Structure
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#stock-management-module-tracking-inventory">
+    Stock Management Module: Tracking Inventory
+  </a>
+<nav aria-label="Stock Management Module: Tracking Inventory" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#tracking-totals-in-stock">
+    Tracking Totals in Stock
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#incident-reports-and-their-impact">
+    Incident Reports and Their Impact
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#dashboard-endpoints-for-stock-management">
+    Dashboard Endpoints for Stock Management
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#supply-chain-module-managing-the-flow-of-vaccines">
+    Supply Chain Module: Managing the Flow of Vaccines
+  </a>
+<nav aria-label="Supply Chain Module: Managing the Flow of Vaccines" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#pre-alerts">
+    Pre-Alerts
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#arrival-reports">
+    Arrival Reports
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#dashboard-endpoints-for-supply-chain">
+    Dashboard Endpoints for Supply Chain
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#example-calculation-from-shipment-to-stock">
+    Example Calculation: From Shipment to Stock
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#summary">
+    Summary
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content" data-md-component="content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/BLSQ/iaso/edit/main/docs/pages/dev/reference/campaigns/vaccine_management.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"></path></svg>
+</a>
+<h1 id="vaccine-management-in-iaso">Vaccine Management in IASO<a class="headerlink" href="#vaccine-management-in-iaso" title="Permanent link">#</a></h1>
+<p><strong>Vaccine Stock Management &amp; Supply Chain Documentation</strong></p>
+<h2 id="introduction">Introduction<a class="headerlink" href="#introduction" title="Permanent link">#</a></h2>
+<p>This document provides a detailed explanation of how the vaccine stock management and supply chain modules function in our backend system, focusing on how vaccine totals are calculated at various stages. This guide is intended for both technical and non-technical audiences to understand how vaccine supplies are managed from request to distribution.</p>
+<p>The vaccine management system is split into two main modules: <strong>Stock Management</strong> and <strong>Supply Chain</strong>. The <strong>Stock Management</strong> module deals with tracking vaccines at warehouses, including incidents that might affect stock, while the <strong>Supply Chain</strong> module tracks the movement of vaccines from the time they are ordered until they arrive. Additionally, the system provides several <strong>dashboard endpoints</strong> that aggregate and display the relevant data, ensuring that stakeholders have an up-to-date overview of the vaccine inventory.</p>
+<h2 id="data-models-and-structure">Data Models and Structure<a class="headerlink" href="#data-models-and-structure" title="Permanent link">#</a></h2>
+<p>The system uses a variety of data models to store information about vaccines. Here are some of the key models:</p>
+<ol>
+<li>
+<p><strong>Vaccine Request Form (VaccineRequestForm)</strong>: This form holds the details of the vaccine requests made by countries or regions. It keeps track of all the related information such as the total number of vaccine doses requested, shipped, and received.</p>
+<ul>
+<li><strong>Total Doses Shipped</strong>: The total doses shipped are calculated by summing the <code>doses_shipped</code> field from all linked <code>VaccinePreAlert</code> records.</li>
+<li><strong>Total Doses Received</strong>: The total number of doses received is calculated by summing the <code>doses_received</code> field from all linked <code>VaccineArrivalReport</code> records.</li>
+</ul>
+</li>
+<li>
+<p><strong>Vaccine Pre-Alert (VaccinePreAlert)</strong>: This record indicates when a shipment of vaccines is on the way. It includes information such as the <code>doses_shipped</code>, the estimated time of arrival, and lot numbers.</p>
+</li>
+<li>
+<p><strong>Vaccine Arrival Report (VaccineArrivalReport)</strong>: This record confirms the arrival of vaccines and includes the <code>doses_received</code>.</p>
+</li>
+<li>
+<p><strong>Incident Reports (IncidentReport)</strong>: Incidents that affect stock, such as losses, returns, or breakages, are recorded here. These incidents play a crucial role in updating stock counts.</p>
+</li>
+<li>
+<p><strong>Destruction Reports (DestructionReport) and Outgoing Movements (OutgoingStockMovement)</strong>: These models are used to manage vaccines that are discarded or moved out of storage for distribution. These records impact the overall stock and are essential for tracking reductions in stock.</p>
+</li>
+<li>
+<p><strong>Vaccine Stock (VaccineStock)</strong>: This model represents the current stock of vaccines for a specific account and country.</p>
+</li>
+</ol>
+<h2 id="stock-management-module-tracking-inventory">Stock Management Module: Tracking Inventory<a class="headerlink" href="#stock-management-module-tracking-inventory" title="Permanent link">#</a></h2>
+<p>The <strong>Stock Management Module</strong> is responsible for managing vaccine stocks after they have been received into storage, such as at warehouses or distribution centers.</p>
+<h3 id="tracking-totals-in-stock">Tracking Totals in Stock<a class="headerlink" href="#tracking-totals-in-stock" title="Permanent link">#</a></h3>
+<p>To track the current stock, the system records all incoming and outgoing vaccine doses and uses these to calculate current totals.</p>
+<ul>
+<li><strong>Usable Stock</strong>: The number of doses available for use is tracked by counting all received vials minus any losses or other incident-related adjustments.</li>
+<li><strong>Unusable Stock</strong>: This includes any doses that are reported as expired, broken, or lost due to other incidents. The system sums up these unusable doses and keeps them separate from the usable stock.</li>
+</ul>
+<h3 id="incident-reports-and-their-impact">Incident Reports and Their Impact<a class="headerlink" href="#incident-reports-and-their-impact" title="Permanent link">#</a></h3>
+<p>Incidents such as broken vials or expired vaccines reduce the total available stock. The system maintains details of every incident, such as the number of unusable vials and their impact on the overall vaccine inventory.</p>
+<p>For example, if there is a report of 50 broken vials, and each vial contains 10 doses, the system calculates 500 unusable doses and removes them from the usable stock.</p>
+<h3 id="dashboard-endpoints-for-stock-management">Dashboard Endpoints for Stock Management<a class="headerlink" href="#dashboard-endpoints-for-stock-management" title="Permanent link">#</a></h3>
+<p>The system includes endpoints that are used to display stock data on dashboards. These endpoints provide summaries, such as stock-in-hand and incidents summary, allowing stakeholders to quickly understand the available stock and recent incidents affecting vaccine inventory.</p>
+<p>Key endpoints include:</p>
+<ul>
+<li><code>/api/polio/stock/stock_in_hand/</code>: Provides a summary of current stock levels.</li>
+<li><code>/api/polio/stock/incidents_summary/</code>: Summarizes recent incidents affecting stock.</li>
+</ul>
+<p>These endpoints aggregate data from the <code>VaccineStock</code>, <code>IncidentReport</code>, and <code>DestructionReport</code> models to provide up-to-date information on stock levels and incidents.</p>
+<h2 id="supply-chain-module-managing-the-flow-of-vaccines">Supply Chain Module: Managing the Flow of Vaccines<a class="headerlink" href="#supply-chain-module-managing-the-flow-of-vaccines" title="Permanent link">#</a></h2>
+<p>The <strong>Supply Chain Module</strong> tracks vaccines as they are shipped to their final destinations. This includes everything from the initial shipment notification (pre-alert) to when the vaccines arrive and are confirmed.</p>
+<h3 id="pre-alerts">Pre-Alerts<a class="headerlink" href="#pre-alerts" title="Permanent link">#</a></h3>
+<p>A pre-alert is a record that a shipment is on its way. This helps stakeholders be prepared to receive the vaccines. It includes details such as the estimated arrival time and number of doses.</p>
+<p>The pre-alert information is used to keep track of vaccines in transit and estimate future availability.</p>
+<h3 id="arrival-reports">Arrival Reports<a class="headerlink" href="#arrival-reports" title="Permanent link">#</a></h3>
+<p>When vaccines arrive at their destination, an arrival report is created to confirm how many doses actually arrived.</p>
+<p>If any discrepancy exists between the doses shipped (in the pre-alert) and the doses received (in the arrival report), the system calculates the difference and marks it for review.</p>
+<h3 id="dashboard-endpoints-for-supply-chain">Dashboard Endpoints for Supply Chain<a class="headerlink" href="#dashboard-endpoints-for-supply-chain" title="Permanent link">#</a></h3>
+<p>Several endpoints are used to support dashboards displaying supply chain metrics. These endpoints provide data on shipment status, arrival times, and discrepancies. By aggregating data from pre-alerts and arrival reports, stakeholders can view up-to-date shipment statuses and quickly identify any issues in the supply chain.</p>
+<p>Key endpoints include:</p>
+<ul>
+<li><code>/api/polio/vaccine/request_forms/</code>: Provides a list of all vaccine request forms.</li>
+<li><code>/api/polio/vaccine/pre_alerts/</code>: Lists all pre-alerts for incoming vaccine shipments.</li>
+<li><code>/api/polio/vaccine/arrival_reports/</code>: Shows all arrival reports for received vaccine shipments.</li>
+</ul>
+<p>These endpoints aggregate data from the <code>VaccineRequestForm</code>, <code>VaccinePreAlert</code>, and <code>VaccineArrivalReport</code> models to provide comprehensive information on the supply chain status.</p>
+<h2 id="example-calculation-from-shipment-to-stock">Example Calculation: From Shipment to Stock<a class="headerlink" href="#example-calculation-from-shipment-to-stock" title="Permanent link">#</a></h2>
+<p>To make things clearer, let's walk through a typical scenario involving all key models:</p>
+<ol>
+<li><strong>Vaccine Request Form</strong>: A country submits a request for 10,000 doses of vaccine using a <code>VaccineRequestForm</code>.</li>
+<li><strong>Pre-Alert</strong>: A <code>VaccinePreAlert</code> is created in the system, indicating that 10,000 doses are being shipped.</li>
+<li><strong>Arrival Report</strong>: On arrival, a <code>VaccineArrivalReport</code> is created that notes that only 9,800 doses have been received. The system automatically calculates that there is a shortfall of 200 doses, which needs to be reconciled.</li>
+<li><strong>Incident Report</strong>: If some of the received vials are found to be damaged, say 100 vials containing 10 doses each, these are marked as unusable in an <code>IncidentReport</code>, resulting in 1,000 doses being deducted from the usable stock.</li>
+<li><strong>Outgoing Stock</strong>: After checking the stock, <code>OutgoingStockMovement</code> records are created to distribute 1,000 doses to health facilities. This is recorded to reflect the movement of vaccines out of the central storage.</li>
+<li><strong>Destruction Report</strong>: A <code>DestructionReport</code> records that 200 vials expired during storage, which further impacts the usable stock.</li>
+<li><strong>Final Stock Calculation</strong>: Initially shipped doses were 10,000. After arrival, usable doses were noted to be 9,800. After adjusting for incidents (1,000 unusable doses) and accounting for outgoing movements and destructions, the total usable doses are now 7,600.</li>
+</ol>
+<h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">#</a></h2>
+<ul>
+<li><strong>Stock Management</strong> handles everything related to vaccines in storage, tracking usable and unusable doses through the <code>VaccineStock</code>, <code>IncidentReport</code>, and <code>DestructionReport</code> models.</li>
+<li><strong>Supply Chain</strong> manages vaccine movement, from shipment notifications (<code>VaccinePreAlert</code>) to confirming receipt (<code>VaccineArrivalReport</code>).</li>
+<li><strong>Dashboard Endpoints</strong> provide stakeholders with visual and data-based summaries of vaccine stocks and supply chain statuses, aggregating data from various models.</li>
+<li>Totals are calculated by adding received doses (from <code>VaccineArrivalReport</code>) and subtracting doses lost due to incidents (<code>IncidentReport</code>) or discrepancies in arrival.</li>
+</ul>
+<p>These processes ensure that all stakeholders have an accurate picture of the vaccine inventory at every stage, from initial shipment to final distribution.</p>
+<h1 id="screenshots-and-details-on-the-calculations">Screenshots and details on the calculations<a class="headerlink" href="#screenshots-and-details-on-the-calculations" title="Permanent link">#</a></h1>
+<p><img alt="image" src="https://github.com/user-attachments/assets/51f7c245-453c-46f2-b42a-be982220f7b1"/></p>
+<p>The stock management page.</p>
+<h3 id="vials-received">Vials Received<a class="headerlink" href="#vials-received" title="Permanent link">#</a></h3>
+<p>Calculated by summing up all the vials received from VaccineArrivalReports. The method <code>get_vials_received()</code> in the VaccineStockCalculator class iterates through the list of vaccines received and sums up the 'vials_in' values.</p>
+<h3 id="vials-used">Vials Used<a class="headerlink" href="#vials-used" title="Permanent link">#</a></h3>
+<p>Calculated by summing up all the vials used from OutgoingStockMovements. The method <code>get_vials_used()</code> in the VaccineStockCalculator class iterates through the list of used vials and sums up the 'vials_in' values.</p>
+<h3 id="stock-of-usable-vials">Stock of usable vials<a class="headerlink" href="#stock-of-usable-vials" title="Permanent link">#</a></h3>
+<p>Calculated by the <code>get_total_of_usable_vials()</code> method in the VaccineStockCalculator class. It considers all movements of usable vials, including incoming (vials_in) and outgoing (vials_out) movements. The total is the sum of all incoming vials minus the sum of all outgoing vials.</p>
+<h3 id="stock-of-unusable-vials">Stock of unusable vials<a class="headerlink" href="#stock-of-unusable-vials" title="Permanent link">#</a></h3>
+<p>Calculated by the <code>get_total_of_unusable_vials()</code> method in the VaccineStockCalculator class. Similar to usable vials, it considers all movements of unusable vials, including incoming (vials_in) and outgoing (vials_out) movements. The total is the sum of all incoming unusable vials minus the sum of all outgoing unusable vials.</p>
+<h3 id="vials-destroyed">Vials destroyed<a class="headerlink" href="#vials-destroyed" title="Permanent link">#</a></h3>
+<p>Calculated by the <code>get_vials_destroyed()</code> method in the VaccineStockCalculator class. It sums up all the unusable vials destroyed as recorded in DestructionReports associated with the VaccineStock.</p>
+<hr/>
+<p><img alt="image2" src="https://github.com/user-attachments/assets/d1ae0248-43f4-4671-a549-49fdd21b1308"/></p>
+<p>Details for a country/vaccine type.</p>
+<h3 id="stock-balance">Stock balance<a class="headerlink" href="#stock-balance" title="Permanent link">#</a></h3>
+<p>The stock balance is calculated using the <code>/api/polio/vaccine/vaccine_stock/{id}/summary/</code> endpoint. This endpoint returns a JSON object with the following key fields</p>
+<h3 id="usable-vials">Usable vials<a class="headerlink" href="#usable-vials" title="Permanent link">#</a></h3>
+<p>Calculated by the <code>get_total_of_usable_vials()</code> method in the VaccineStockCalculator class. This method computes the difference between all incoming and outgoing usable vials, considering various stock movements such as arrivals, usage, and corrections.</p>
+<h3 id="unusable-vials">Unusable vials<a class="headerlink" href="#unusable-vials" title="Permanent link">#</a></h3>
+<p>Calculated by the <code>get_total_of_unusable_vials()</code> method in the VaccineStockCalculator class. Similar to usable vials, this method computes the difference between all incoming and outgoing unusable vials, considering incidents, destructions, and other relevant stock movements.</p>
+<h3 id="usable-doses">Usable doses<a class="headerlink" href="#usable-doses" title="Permanent link">#</a></h3>
+<p>Derived from the total_usable_vials. The number of doses is calculated by multiplying the number of usable vials by the doses per vial for the specific vaccine type. This conversion is handled within the VaccineStockCalculator class.</p>
+<h3 id="unusable-doses">Unusable doses<a class="headerlink" href="#unusable-doses" title="Permanent link">#</a></h3>
+<p>Derived from the total_unusable_vials. The number of unusable doses is calculated by multiplying the number of unusable vials by the doses per vial for the specific vaccine type. This conversion is also handled within the VaccineStockCalculator class.</p>
+<p>These calculations take into account all relevant stock movements, including arrivals, usage, incidents, and destructions, providing a comprehensive view of the current vaccine stock status.</p>
+<h1 id="overview-of-the-related-db-models">Overview of the related DB models<a class="headerlink" href="#overview-of-the-related-db-models" title="Permanent link">#</a></h1>
+<div class="mermaid">classDiagram
+    class Account {
+        +String name
+    }
+    class Campaign {
+        +UUID id
+        +String obr_name
+        +Boolean separate_scopes_per_round
+        +ForeignKey account
+        +ForeignKey initial_org_unit
+        +ForeignKey country
+        +ManyToManyField campaign_types
+        +OneToManyField rounds
+        +OneToManyField scopes
+    }
+    class Round {
+        +Integer number
+        +ForeignKey campaign
+        +OneToManyField scopes
+    }
+    class RoundScope {
+        +ForeignKey round
+        +CharField vaccine
+    }
+    class CampaignScope {
+        +ForeignKey campaign
+        +CharField vaccine
+    }
+    class VaccineRequestForm {
+        +ForeignKey campaign
+        +CharField vaccine_type
+        +ManyToManyField rounds
+    }
+    class VaccinePreAlert {
+        +ForeignKey request_form
+        +Integer doses_shipped
+    }
+    class VaccineArrivalReport {
+        +ForeignKey request_form
+        +Integer doses_received
+    }
+    class VaccineStock {
+        +ForeignKey account
+        +ForeignKey country
+        +CharField vaccine
+    }
+    class OutgoingStockMovement {
+        +ForeignKey campaign
+        +ForeignKey vaccine_stock
+    }
+    class DestructionReport {
+        +ForeignKey vaccine_stock
+    }
+    class IncidentReport {
+        +ForeignKey vaccine_stock
+    }
+    Campaign --&gt; Round : has
+    Account --&gt; Campaign : has
+    Account --&gt; VaccineStock : has
+    Round --&gt; RoundScope : has
+    Campaign --&gt; CampaignScope : has
+    Campaign --&gt; VaccineRequestForm : has
+    Campaign --&gt; OutgoingStockMovement : has
+    VaccineRequestForm --&gt; Round : relates to
+    VaccineRequestForm --&gt; VaccinePreAlert : has
+    VaccineRequestForm --&gt; VaccineArrivalReport : has
+    VaccineStock --&gt; OutgoingStockMovement : has
+    VaccineStock --&gt; DestructionReport : has
+    VaccineStock --&gt; IncidentReport : has
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+      Material for MkDocs
+    </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<div class="md-dialog" data-md-component="dialog">
+<div class="md-dialog__inner md-typeset"></div>
+</div>
+<script id="__config" type="application/json">{"base": "../../../..", "features": ["content.action.edit"], "search": "../../../../assets/javascripts/workers/search.208ed371.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+<script src="../../../../assets/javascripts/bundle.b78d2936.min.js"></script>
+<script src="../../../../extrajs/html2pdf.bundle.min.js"></script>
+<script src="../../../../extrajs/pdfDownload.js"></script>
+<script src="https://plausible.io/js/script.js"></script>
+<script src="https://unpkg.com/mermaid@8.8.0/dist/mermaid.min.js"></script><script>mermaid.initialize({});</script></body>
+</html>

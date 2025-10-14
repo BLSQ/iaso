@@ -521,6 +521,70 @@ class OrgUnitAPITestCase(APITestCase):
             },
         )
 
+    def test_org_unit_search_with_open_date(self):
+        """GET /orgunits/ with a search based on open date"""
+
+        self.client.force_authenticate(self.yoda)
+
+        self.jedi_council_corruscant.opening_date = None
+        self.jedi_council_corruscant.closed_date = None
+        self.jedi_council_corruscant.save()
+        self.jedi_council_endor.opening_date = datetime.datetime(2020, 1, 1)
+        self.jedi_council_endor.closed_date = None
+        self.jedi_council_endor.save()
+        self.jedi_squad_endor.opening_date = datetime.datetime(2020, 1, 1)
+        self.jedi_squad_endor.closed_date = datetime.datetime(2020, 2, 1)
+        self.jedi_squad_endor.save()
+        self.jedi_squad_endor_2.opening_date = datetime.datetime(2020, 2, 1)
+        self.jedi_squad_endor_2.closed_date = datetime.datetime(2020, 3, 1)
+        self.jedi_squad_endor_2.save()
+        self.jedi_council_brussels.opening_date = None
+        self.jedi_council_brussels.closed_date = datetime.datetime(2020, 12, 1)
+        self.jedi_council_brussels.save()
+
+        def get_at_date(date: str):
+            return self.client.get(
+                '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1", "date_open": "'
+                + date
+                + '"}]&limit=50'
+            )
+
+        def check_answer(date: str, org_units: list[OrgUnit]):
+            response = get_at_date(date)
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(response.json()["count"], len(org_units))
+            i = 0
+            for org_unit in org_units:
+                self.assertEqual(
+                    response.json()["orgunits"][i]["id"],
+                    org_unit.id,
+                    msg=f"{org_unit.name} not found at position {i} for date {date}",
+                )
+                i += 1
+
+        check_answer(
+            "9-10-2025",
+            [self.jedi_council_corruscant, self.jedi_council_endor],
+        )
+        check_answer(
+            "1-1-2020",
+            [
+                self.jedi_council_corruscant,
+                self.jedi_council_endor,
+                self.jedi_squad_endor,
+                self.jedi_council_brussels,
+            ],
+        )
+        check_answer(
+            "1-2-2020",  # Date jedi_squad_endor is closed but jedi_squad_endor_2 opens
+            [
+                self.jedi_council_corruscant,
+                self.jedi_council_endor,
+                self.jedi_squad_endor_2,
+                self.jedi_council_brussels,
+            ],
+        )
+
     def test_org_units_tree_super_user(self):
         """Search orgunits tree when the user is a super user"""
         org_unit_country = m.OrgUnit.objects.create(

@@ -257,6 +257,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             const mappedRevision = {
                 ...currentOrgUnit,
                 ...revision,
+                org_unit_type_id: revision.org_unit_type?.id,
                 location,
                 geo_json: null, // this line to prevent overwriting the geo_json with a simplified shape/ Disables restoring a previous version of a single shape
                 aliases,
@@ -275,10 +276,11 @@ const OrgUnitDetail: FunctionComponent = () => {
             mappedRevision.groups = group_ids;
             saveOu(mappedRevision).then(res => {
                 refreshOrgUnitQueryCache(res);
+                queryClient.invalidateQueries('currentOrgUnit');
                 onSuccess();
             });
         },
-        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu],
+        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu, queryClient],
     );
     const handleSaveOrgUnit = useCallback(
         (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
@@ -303,6 +305,7 @@ const OrgUnitDetail: FunctionComponent = () => {
                         });
                     }
                     refreshOrgUnitQueryCache(ou);
+                    queryClient.invalidateQueries('logs');
                     onSuccess(ou);
                 })
                 .catch(onError);
@@ -314,6 +317,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
+            queryClient,
         ],
     );
 

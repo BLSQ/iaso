@@ -108,6 +108,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             doses_received=400,
             doses_shipped=400,
             po_number="PO123",
+            doses_per_vial=20,
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]

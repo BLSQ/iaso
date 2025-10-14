@@ -1606,6 +1606,7 @@ class OutgoingStockMovement(ModelWithFile):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
     non_obr_name = models.CharField(blank=True)
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1622,6 +1623,7 @@ class DestructionReport(ModelWithFile):
     unusable_vials_destroyed = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     comment = models.TextField(blank=True, null=True)
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1661,6 +1663,7 @@ class IncidentReport(ModelWithFile):
     incident_report_received_by_rrt = models.DateField()  # Date reception document
     unusable_vials = models.PositiveIntegerField()
     usable_vials = models.PositiveIntegerField()
+    doses_per_vial = models.IntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

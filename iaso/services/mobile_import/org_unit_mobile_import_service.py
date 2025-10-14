@@ -10,6 +10,9 @@ class OrgUnitMobileImportService:
         self.org_units = org_units
         self.user = user
         self.project = Project.objects.get_for_user_and_app_id(user, app_id)
+        # TODO: Not sure about this, needs some reflection + tests
+        if self.project.account.default_version.data_source.read_only:
+            raise Exception("Creation of org unit not authorized on default data source")
 
     def create_org_units(self):
         new_org_units = []
@@ -28,14 +31,15 @@ class OrgUnitMobileImportService:
 
             if created:
                 org_unit_db.custom = True
-                org_unit_db.validated = False
+                org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
+                org_unit_db.validated = False  # legacy field
                 org_unit_db.name = org_unit.get("name", None)
                 org_unit_db.accuracy = org_unit.get("accuracy", None)
+
                 parent_id = org_unit.get("parentId", None)
+                # there exist versions of the mobile app in the wild with both parentId and parent_id
                 if not parent_id:
-                    parent_id = org_unit.get(
-                        "parent_id", None
-                    )  # there exist versions of the mobile app in the wild with both parentId and parent_id
+                    parent_id = org_unit.get("parent_id", None)
 
                 if parent_id is not None:
                     if str.isdigit(parent_id):
@@ -44,9 +48,8 @@ class OrgUnitMobileImportService:
                         parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
                         org_unit_db.parent_id = parent_org_unit.id
 
-                org_unit_type_id = org_unit.get(
-                    "orgUnitTypeId", None
-                )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+                org_unit_type_id = org_unit.get("orgUnitTypeId", None)
+                # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
                 if not org_unit_type_id:
                     org_unit_type_id = org_unit.get("org_unit_type_id", None)
                 org_unit_db.org_unit_type_id = org_unit_type_id
@@ -62,6 +65,7 @@ class OrgUnitMobileImportService:
                     org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
                 else:
                     org_unit_db.updated_at = org_unit.get("created_at", None)
+
                 if self.user and not self.user.is_anonymous:
                     org_unit_db.creator = self.user
                 org_unit_db.source = "API"

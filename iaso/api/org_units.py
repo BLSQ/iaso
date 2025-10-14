@@ -30,6 +30,7 @@ from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSeri
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.services.mobile_import import OrgUnitMobileImportService
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
@@ -921,10 +922,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res = org_unit.as_dict_with_parents()
         return Response(res)
 
+    # NOTE: Deprecated endpoint: mobile app uses `POST /api/mobile/orgunits/` since September 2020
+    # Should be safely-removable if we don't see Sentry errors.
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        """This endpoint is used by mobile app"""
-        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
+        logger.error(f"Deprecated endpoint accessed: {request.path} by user id {request.user.id}")
+        import_service = OrgUnitMobileImportService(request.data, request.user, request.query_params.get("app_id"))
+        new_org_units = import_service.create_org_units()
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
@@ -980,57 +984,3 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
         return Response(res)
-
-
-def import_data(org_units: List[Dict], user, app_id):
-    new_org_units = []
-    project = Project.objects.get_for_user_and_app_id(user, app_id)
-    if project.account.default_version.data_source.read_only:
-        raise Exception("Creation of org unit not authorized on default data source")
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
-
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                # there exist versions of the mobile app in the wild with both parentId and parent_id
-                parent_id = org_unit.get("parent_id", None)
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
-
-            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
-
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
-
-            if not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
-            org_unit_db.save()
-    return new_org_units

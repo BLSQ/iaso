@@ -276,11 +276,10 @@ const OrgUnitDetail: FunctionComponent = () => {
             mappedRevision.groups = group_ids;
             saveOu(mappedRevision).then(res => {
                 refreshOrgUnitQueryCache(res);
-                queryClient.invalidateQueries('currentOrgUnit');
                 onSuccess();
             });
         },
-        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu, queryClient],
+        [currentOrgUnit, refreshOrgUnitQueryCache, saveOu],
     );
     const handleSaveOrgUnit = useCallback(
         (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
@@ -305,7 +304,6 @@ const OrgUnitDetail: FunctionComponent = () => {
                         });
                     }
                     refreshOrgUnitQueryCache(ou);
-                    queryClient.invalidateQueries('logs');
                     onSuccess(ou);
                 })
                 .catch(onError);

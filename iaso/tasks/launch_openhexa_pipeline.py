@@ -48,6 +48,149 @@ class MockConfig:
         self.content = content_dict
 
 
+def _create_pipeline_config(pipeline_id: str, version: str, openhexa_url: str, openhexa_token: str) -> MockConfig:
+    """Create pipeline configuration for OpenHEXA."""
+    return MockConfig(
+        {
+            "pipeline_version": str(version),
+            "pipeline": str(pipeline_id),
+            "oh_pipeline_target": None,
+            "openhexa_url": openhexa_url,
+            "openhexa_token": openhexa_token,
+        }
+    )
+
+
+def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, pipeline_config: MockConfig) -> None:
+    """Launch the OpenHEXA pipeline and update task status."""
+    task.status = QUEUED
+    task.external = True
+    task.params = {
+        "args": [],
+        "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
+    }
+    task.save()
+
+    ExternalTaskModelViewSet.launch_task(
+        slug=None,
+        config=config,
+        task_id=task.pk,
+        pipeline_config=pipeline_config,
+    )
+
+    logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
+    task.report_progress_and_stop_if_killed(
+        progress_message=f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}"
+    )
+
+
+def _check_timeout(
+    polling_start_time,
+    max_polling_duration_seconds: float,
+    task: Task,
+    pipeline_id: str,
+    max_polling_duration_minutes: int,
+) -> bool:
+    """Check if polling has exceeded timeout. Returns True if timeout reached."""
+    current_time = timezone.now()
+    elapsed_time_seconds = (current_time - polling_start_time).total_seconds()
+
+    if elapsed_time_seconds > max_polling_duration_seconds:
+        timeout_message = (
+            f"Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}"
+        )
+        logger.warning(timeout_message)
+        task.report_failure(Exception(timeout_message))
+        return True
+
+    return False
+
+
+def _query_pipeline_runs(openhexa_url: str, openhexa_token: str, pipeline_id: str) -> list:
+    """Query OpenHEXA for pipeline runs and return the list of runs."""
+    transport = RequestsHTTPTransport(
+        url=openhexa_url,
+        headers={"Authorization": f"Bearer {openhexa_token}"},
+        verify=True,
+    )
+    client = Client(transport=transport, fetch_schema_from_transport=True)
+
+    query = gql(
+        """
+        query pipeline {
+            pipeline(id: "%s"){
+                runs{
+                    items{
+                        run_id
+                        status
+                        config
+                        logs
+                    }
+                }
+            }
+        }
+        """
+        % pipeline_id
+    )
+
+    result = client.execute(query)
+    return result.get("pipeline", {}).get("runs", {}).get("items", [])
+
+
+def _handle_failure_status(task: Task, pipeline_id: str, run_status: str, logs: str) -> bool:
+    """Handle failure status. Returns True if this was a failure status."""
+    run_status_lower = run_status.lower()
+
+    if run_status_lower not in OpenHexaStatus.FAILURE_STATUSES:
+        return False
+
+    if task.status != ERRORED:
+        logger.info(
+            f"Pipeline {pipeline_id} failed in OpenHEXA with status: {run_status}, updating task {task.pk} to ERRORED"
+        )
+
+        if logs:
+            detailed_error = f"Pipeline failed in OpenHEXA with status: {run_status}. Details: Logs: {logs}"
+        else:
+            detailed_error = f"Pipeline failed in OpenHEXA with status: {run_status}"
+
+        task.report_failure(Exception(detailed_error))
+
+    return True
+
+
+def _handle_success_status(task: Task, pipeline_id: str, run_status: str) -> bool:
+    """Handle success status. Returns True if this was a success status."""
+    run_status_lower = run_status.lower()
+
+    if run_status_lower not in OpenHexaStatus.SUCCESS_STATUSES:
+        return False
+
+    if task.status != SUCCESS:
+        logger.info(
+            f"Pipeline {pipeline_id} succeeded in OpenHEXA with status: {run_status}, updating task {task.pk} to SUCCESS"
+        )
+        task.report_success("Pipeline completed successfully")
+
+    return True
+
+
+def _handle_in_progress_status(task: Task, pipeline_id: str, run_status: str, delay: int) -> bool:
+    """Handle in-progress status. Returns True if this was an in-progress status."""
+    run_status_lower = run_status.lower()
+
+    if run_status_lower not in OpenHexaStatus.IN_PROGRESS_STATUSES:
+        return False
+
+    if task.status != RUNNING:
+        logger.info(f"Pipeline {pipeline_id} status changed to {run_status}, updating task {task.pk} to RUNNING")
+        task.status = RUNNING
+        task.save()
+
+    time.sleep(delay)
+    return True
+
+
 @task_decorator(task_name="launch_openhexa_pipeline")
 def launch_openhexa_pipeline(
     pipeline_id: str,
@@ -73,44 +216,18 @@ def launch_openhexa_pipeline(
     """
     logger.info(f"Starting OpenHEXA pipeline launch and monitoring for pipeline {pipeline_id}")
 
-    pipeline_config = MockConfig(
-        {
-            "pipeline_version": str(version),  # Convert UUID to string
-            "pipeline": str(pipeline_id),
-            "oh_pipeline_target": None,
-            "openhexa_url": openhexa_url,
-            "openhexa_token": openhexa_token,
-        }
-    )
+    # Launch pipeline
+    pipeline_config = _create_pipeline_config(pipeline_id, version, openhexa_url, openhexa_token)
+    _launch_pipeline(task, pipeline_id, version, config, pipeline_config)
 
-    task.status = QUEUED
-    task.external = True
-    task.params = {
-        "args": [],
-        "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
-    }
-    task.save()
-    # Launch the task using the existing launch_task function
-    ExternalTaskModelViewSet.launch_task(
-        slug=None,  # Not needed since we're passing pipeline_config
-        config=config,
-        task_id=task.pk,
-        pipeline_config=pipeline_config,
-    )
-
-    logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
-
-    task.report_progress_and_stop_if_killed(
-        progress_message=f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}"
-    )
-
+    # Set up polling
     logger.info(f"Started OpenHexa polling task for task {task.pk}")
-
-    # Set up timeout for polling
     polling_start_time = timezone.now()
     max_polling_duration_seconds = max_polling_duration_minutes * 60
     logger.info(f"Polling timeout set to {max_polling_duration_minutes} minutes for task {task.pk}")
 
+    # Poll for status
+    last_logged_status = None
     while True:
         try:
             # Check if task was killed
@@ -119,104 +236,50 @@ def launch_openhexa_pipeline(
                 logger.info(f"Task {task.pk} was killed, stopping polling")
                 return
 
-            # Check if polling timeout has been reached
-            current_time = timezone.now()
-            elapsed_time_seconds = (current_time - polling_start_time).total_seconds()
-            if elapsed_time_seconds > max_polling_duration_seconds:
-                timeout_message = (
-                    f"Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}"
-                )
-                logger.warning(timeout_message)
-                task.report_failure(Exception(timeout_message))
+            # Check timeout
+            if _check_timeout(
+                polling_start_time, max_polling_duration_seconds, task, pipeline_id, max_polling_duration_minutes
+            ):
                 return
 
-            transport = RequestsHTTPTransport(
-                url=openhexa_url,
-                headers={"Authorization": f"Bearer {openhexa_token}"},
-                verify=True,
-            )
-            client = Client(transport=transport, fetch_schema_from_transport=True)
-
-            query = gql(
-                """
-                query pipeline {
-                    pipeline(id: "%s"){
-                        runs{
-                            items{
-                                run_id
-                                status
-                                config
-                                logs
-                            }
-                        }
-                    }
-                }
-                """
-                % pipeline_id
-            )
-
-            result = client.execute(query)
-            runs = result.get("pipeline", {}).get("runs", {}).get("items", [])
+            # Query pipeline runs
+            runs = _query_pipeline_runs(openhexa_url, openhexa_token, pipeline_id)
 
             if not runs:
-                logger.warning(f"No runs found for pipeline {pipeline_id}")
-                task.report_progress_and_stop_if_killed(progress_message=f"No runs found for pipeline {pipeline_id}")
+                if last_logged_status != "no_runs":
+                    logger.warning(f"No runs found for pipeline {pipeline_id}")
+                    task.report_progress_and_stop_if_killed(
+                        progress_message=f"No runs found for pipeline {pipeline_id}"
+                    )
+                    last_logged_status = "no_runs"
                 time.sleep(delay)
                 continue
 
+            # Process latest run
             latest_run = runs[0]
             run_status = latest_run["status"]
             run_id = latest_run["run_id"]
             logs = latest_run.get("logs", "")
 
-            logger.info(f"OpenHEXA run {run_id} status: {run_status} ")
+            # Only log when status changes
+            if run_status != last_logged_status:
+                logger.info(f"OpenHEXA run {run_id} status: {run_status}")
+                last_logged_status = run_status
 
-            error_details = []
-            if logs:
-                error_details.append(f"Logs: {logs}")
-
-            full_error_message = "; ".join(error_details) if error_details else ""
-
-            run_status_lower = run_status.lower()
-
-            if run_status_lower in OpenHexaStatus.FAILURE_STATUSES:
-                if task.status != ERRORED:
-                    logger.info(
-                        f"Pipeline {pipeline_id} failed in OpenHEXA with status: {run_status}, updating task {task.pk} to ERRORED"
-                    )
-                    if full_error_message:
-                        detailed_error = (
-                            f"Pipeline failed in OpenHEXA with status: {run_status}. Details: {full_error_message}"
-                        )
-                    else:
-                        detailed_error = f"Pipeline failed in OpenHEXA with status: {run_status}"
-
-                    error = Exception(detailed_error)
-                    task.report_failure(error)
+            # Handle different status types
+            if _handle_failure_status(task, pipeline_id, run_status, logs):
                 return
 
-            if run_status_lower in OpenHexaStatus.SUCCESS_STATUSES:
-                if task.status != SUCCESS:
-                    logger.info(
-                        f"Pipeline {pipeline_id} succeeded in OpenHEXA with status: {run_status}, updating task {task.pk} to SUCCESS"
-                    )
-                    task.report_success("Pipeline completed successfully")
+            if _handle_success_status(task, pipeline_id, run_status):
                 return
 
-            if run_status_lower in OpenHexaStatus.IN_PROGRESS_STATUSES:
-                if task.status != RUNNING:
-                    logger.info(
-                        f"Pipeline {pipeline_id} status changed to {run_status}, updating task {task.pk} to RUNNING"
-                    )
-                    task.status = RUNNING
-                    task.save()
-                time.sleep(delay)
+            if _handle_in_progress_status(task, pipeline_id, run_status, delay):
                 continue
 
+            # Unknown status
             logger.warning(f"Unknown OpenHEXA run status: {run_status} for pipeline {pipeline_id}")
             task.report_progress_and_stop_if_killed(progress_message=f"Pipeline status unknown: {run_status}")
             time.sleep(delay)
-            continue
 
         except Exception as e:
             logger.error(f"Error polling OpenHEXA for task {task.pk}: {str(e)}")

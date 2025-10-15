@@ -32,6 +32,7 @@ import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
+import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../messages';
 import { Planning } from '../types/planning';
@@ -120,7 +121,9 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         isLoading: isLaunchingTask,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
-    const [taskStatus, setTaskStatus] = useState<string | undefined>(undefined);
+    const [taskStatus, setTaskStatus] = useState<TaskStatus | undefined>(
+        undefined,
+    );
 
     const isPipelineActive =
         (!taskStatus || taskStatus === 'RUNNING' || taskStatus === 'QUEUED') &&

@@ -220,7 +220,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     const isRestoreAction = params.is_soft_deleted === 'true';
 
     const { selection, handleTableSelection, handleUnselectAll } =
-        useTableSelection<OrgUnitChangeRequest>(data?.results?.length ?? 0);
+        useTableSelection<OrgUnitChangeRequest>(data?.count ?? 0);
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -298,11 +298,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 selection={selection}
                 selectionActions={selectionActions}
                 setTableSelection={(selectionType, items) =>
-                    handleTableSelection(
-                        selectionType,
-                        items,
-                        data?.results?.length,
-                    )
+                    handleTableSelection(selectionType, items, data?.count)
                 }
             />
         </>

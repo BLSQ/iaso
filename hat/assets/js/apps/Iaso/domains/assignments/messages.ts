@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.assignment.searchOrgUnit',
     },
     openHexaIntegration: {
-        defaultMessage: 'Sampling',
+        defaultMessage: 'Assign',
         id: 'iaso.assignment.openHexaIntegration',
     },
     pipeline: {

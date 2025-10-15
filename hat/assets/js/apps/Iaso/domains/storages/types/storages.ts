@@ -33,6 +33,7 @@ type Log = {
 };
 
 export type Storage = {
+    id: number;
     storage_id: string;
     updated_at: number;
     created_at: number;

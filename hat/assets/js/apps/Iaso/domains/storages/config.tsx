@@ -1,23 +1,22 @@
 import React from 'react';
 import {
+    Column,
+    IntlFormatMessage,
     useSafeIntl,
     IconButton as IconButtonComponent,
-    IntlFormatMessage,
-    Column,
 } from 'bluesquare-components';
-
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import { StatusCell } from './components/StatusCell';
-import { LinkToEntity } from './components/LinkToEntity';
-import { LinkToInstance } from '../instances/components/LinkToInstance';
-import { baseUrls } from '../../constants/urls';
-import { StorageParams } from './types/storages';
+import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from 'Iaso/constants/urls';
 import getDisplayName from '../../utils/usersUtils';
+import { LinkToInstance } from '../instances/components/LinkToInstance';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import { LinkToEntity } from './components/LinkToEntity';
+import { StatusCell } from './components/StatusCell';
 import { useGetOperationsTypesLabel } from './hooks/useGetOperationsTypes';
 import { useGetReasons } from './hooks/useGetReasons';
 import { useGetStatus } from './hooks/useGetStatus';
 import MESSAGES from './messages';
+import { Storage, StorageParams } from './types/storages';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];
 
@@ -74,9 +73,11 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             sortable: false,
             accessor: 'actions',
             Cell: settings => {
+                const storage = settings.row.original as Storage;
+                const url = `/${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${storage.id}`;
                 return (
                     <IconButtonComponent
-                        url={`/${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${settings.row.original.storage_id}`}
+                        url={url}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
                     />
@@ -101,7 +102,7 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
 export const useGetDetailsColumns = (): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const getOparationTypeLabel = useGetOperationsTypesLabel();
+    const getOperationTypeLabel = useGetOperationsTypesLabel();
     const reasons = useGetReasons();
     const statusList = useGetStatus();
     return [
@@ -123,7 +124,7 @@ export const useGetDetailsColumns = (): Array<Column> => {
             accessor: 'operation_type',
             id: 'operation_type',
             Cell: settings =>
-                getOparationTypeLabel(settings.row.original.operation_type),
+                getOperationTypeLabel(settings.row.original.operation_type),
         },
         {
             Header: formatMessage(MESSAGES.status),
@@ -179,7 +180,7 @@ export const useGetDetailsColumns = (): Array<Column> => {
             Cell: settings => {
                 const { instances } = settings.row.original;
                 if (instances.length === 0) return '-';
-                return instances.map((instanceId, index) => (
+                return instances.map((instanceId: string, index: number) => (
                     <span key={instanceId}>
                         <LinkToInstance instanceId={instanceId} />
                         {index + 1 < instances.length && ', '}
@@ -205,5 +206,3 @@ export const useGetDetailsColumns = (): Array<Column> => {
         },
     ];
 };
-
-useGetOperationsTypesLabel;

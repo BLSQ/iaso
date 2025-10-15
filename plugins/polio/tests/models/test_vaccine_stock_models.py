@@ -96,6 +96,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             usable_vials_used=10,
             lot_numbers=["LOT123"],
             comment="Hello world",
+            doses_per_vial=20,
         )
 
         cls.outgoing_stock_movement_2 = pm.OutgoingStockMovement.objects.create(
@@ -104,6 +105,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             report_date=cls.now - datetime.timedelta(days=3),
             form_a_reception_date=cls.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         cls.destruction_report = pm.DestructionReport.objects.create(
@@ -114,6 +116,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             unusable_vials_destroyed=3,
             lot_numbers=["LOT456"],
             comment="Goodbye World",
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -122,6 +125,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=3),
             unusable_vials=1,  # 1 vial will be moved from usable to unusable
             usable_vials=0,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -130,6 +134,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=4),
             unusable_vials=0,
             usable_vials=1,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -138,6 +143,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=16,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -146,6 +152,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=20,
             usable_vials=0,
+            doses_per_vial=20,
         )
 
     def test_campaign_and_non_obr_name_cannot_both_be_null(self):
@@ -157,6 +164,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             form_a_reception_date=datetime.date(2025, 1, 1),
             usable_vials_used=10,
             campaign=self.campaign,
+            doses_per_vial=20,
         )
         self.assertTrue(created)
         new_movement_with_custom_name, created = pm.OutgoingStockMovement.objects.get_or_create(
@@ -165,6 +173,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
             form_a_reception_date=datetime.date(2025, 1, 2),
             usable_vials_used=10,
             non_obr_name="Test Alternative Campaign Name",
+            doses_per_vial=20,
         )
         self.assertTrue(created)
 
@@ -177,6 +186,7 @@ class OutgoingStockMovementModelTestCase(TestCase):
                 usable_vials_used=10,
                 campaign=None,
                 non_obr_name=None,
+                doses_per_vial=20,
             )
 
     def test_campaign_and_non_obr_name_cannot_both_have_value(self):
@@ -189,4 +199,5 @@ class OutgoingStockMovementModelTestCase(TestCase):
                 usable_vials_used=10,
                 campaign=self.campaign,
                 non_obr_name="Another alt campaign",
+                doses_per_vial=20,
             )

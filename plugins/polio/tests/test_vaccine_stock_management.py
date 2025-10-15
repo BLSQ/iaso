@@ -135,6 +135,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             usable_vials_used=10,
             lot_numbers=["LOT123"],
             comment="Hello world",
+            doses_per_vial=20,
         )
 
         cls.outgoing_stock_movement_2 = pm.OutgoingStockMovement.objects.create(
@@ -143,6 +144,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=cls.now - datetime.timedelta(days=3),
             form_a_reception_date=cls.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         cls.destruction_report = pm.DestructionReport.objects.create(
@@ -153,6 +155,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             unusable_vials_destroyed=3,
             lot_numbers=["LOT456"],
             comment="Goodbye World",
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -161,6 +164,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=3),
             unusable_vials=1,  # 1 vial will be moved from usable to unusable
             usable_vials=0,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -169,6 +173,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=4),
             unusable_vials=0,
             usable_vials=1,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -177,6 +182,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=16,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -185,6 +191,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=20,
             usable_vials=0,
+            doses_per_vial=20,
         )
         # Remove from usable
         cls.incident_report = pm.IncidentReport.objects.create(
@@ -194,6 +201,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=1,
+            doses_per_vial=20,
         )
         # remove from unusable
         cls.incident_report = pm.IncidentReport.objects.create(
@@ -203,6 +211,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=1,
             usable_vials=0,
+            doses_per_vial=20,
         )
 
     def test_anonymous_user_cannot_see_list(self):
@@ -249,6 +258,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "missing_vials": 2,
             "round": self.campaign_round_1.id,
             "comment": "Test OSM",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
@@ -306,6 +316,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials": 5,
             "usable_vials": 0,
             "comment": "Test incident",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
@@ -362,6 +373,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
             "comment": "Test destruction",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -884,6 +896,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 form_a_reception_date="2023-10-01",
                 usable_vials_used=999,
                 file=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_1", outgoing_stock_movement.file.name)
@@ -908,6 +921,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 file=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
                 unusable_vials=7,  # 1 vial will be moved from usable to unusable
                 usable_vials=3,
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_2", incident_report.file.name)
@@ -937,6 +951,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     content_type="application/pdf",
                 ),
                 unusable_vials_destroyed=3,
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_3", destruction_report.file.name)
@@ -966,6 +981,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -990,6 +1006,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -1013,6 +1030,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -1034,6 +1052,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "rrt_destruction_report_reception_date": "2024-01-02",
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -1201,6 +1220,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "missing_vials": 2,
             "round": self.campaign_round_1.id,
             "comment": "Test OSM",
+            "doses_per_vial": 20,
         }
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1215,6 +1235,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials": 5,
             "usable_vials": 0,
             "comment": "Test incident",
+            "doses_per_vial": 20,
         }
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1229,6 +1250,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
             "comment": "Test destruction",
+            "doses_per_vial": 20,
         }
         response = self.client.post(
             f"{BASE_URL_SUB_RESOURCES}destruction_report/",
@@ -1332,6 +1354,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "usable_vials_used": VIALS_COUNT,
             "lot_numbers": ["123", "456"],
             "comment": "Test without campaign",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{FORMA_URL}", data=data)
@@ -1345,6 +1368,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "lot_numbers": ["123", "456"],
             "comment": "Test without campaign",
             "alternative_campaign": ALT_CAMPAIGN_NAME,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{FORMA_URL}", data=data)
@@ -1382,6 +1406,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "comment": "Test without campaign",
             "alternative_campaign": alt_campaign_name,
             "campaign": self.campaign.obr_name,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{forma_url}", data=data)
@@ -1402,6 +1427,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
             non_obr_name="Test Campaign Name",  # Required by constraint
         )
         self.assertEqual(serializer.get_campaign_category(obj_without_campaign), CampaignCategory.REGULAR)
@@ -1426,6 +1452,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_test_campaign), CampaignCategory.TEST_CAMPAIGN)
 
@@ -1449,6 +1476,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_campaign_on_hold), CampaignCategory.CAMPAIGN_ON_HOLD)
 
@@ -1479,6 +1507,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_all_rounds_hold), CampaignCategory.ALL_ROUNDS_ON_HOLD)
 
@@ -1509,6 +1538,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_round_on_hold), CampaignCategory.ROUND_ON_HOLD)
 
@@ -1520,6 +1550,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_regular), CampaignCategory.REGULAR)
 
@@ -1625,6 +1656,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         hold_movement = pm.OutgoingStockMovement.objects.create(
@@ -1634,6 +1666,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         # Test API responses

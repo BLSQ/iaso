@@ -53,6 +53,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     safe_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -99,6 +100,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -133,6 +135,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -175,6 +178,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -209,6 +213,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             outgoing_stock_movement_infected = pm.OutgoingStockMovement.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -223,6 +228,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             outgoing_stock_movement_pending = pm.OutgoingStockMovement.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -237,6 +243,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             outgoing_stock_movement_error = pm.OutgoingStockMovement.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -251,6 +258,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         # Use a non-admin user
@@ -262,7 +270,6 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
 
         r = self.assertJSONResponse(response, 200)
         data = r["results"]
-        print("DATA", data)
         self.assertEqual(len(data), 5)  # Including the 1 from setUpTestData
 
         # Find our test records in the response
@@ -316,6 +323,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=infected_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.SAFE_FILE_PATH, "rb") as safe_file:
@@ -372,6 +380,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -416,6 +425,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -471,6 +481,7 @@ class OutgoingStockMovementVirusScanAPITestCase(VaccineStockManagementAPITestCas
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:

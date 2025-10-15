@@ -361,6 +361,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -397,6 +398,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -429,6 +431,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(

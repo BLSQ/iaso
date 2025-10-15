@@ -93,6 +93,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2022, 2, 2),
             usable_vials_used=100,
+            doses_per_vial=20,
         )
 
         cls.destruction_report = DestructionReport.objects.create(
@@ -101,6 +102,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date.today(),
             unusable_vials_destroyed=10,
             action="destroyed",
+            doses_per_vial=20,
         )
 
     def test_user_has_permission_vrf(self):
@@ -234,6 +236,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2024, 2, 1),
             usable_vials_used=60,
+            doses_per_vial=20,
         )
 
         DestructionReport.objects.create(
@@ -242,6 +245,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date(2023, 3, 3),
             unusable_vials_destroyed=6,
             action="destroyed",
+            doses_per_vial=20,
         )
 
         last_dr = DestructionReport.objects.create(
@@ -250,6 +254,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date(2024, 2, 15),
             unusable_vials_destroyed=6,
             action="destroyed",
+            doses_per_vial=20,
         )
 
         response = self.client.get(self.vrf_url)

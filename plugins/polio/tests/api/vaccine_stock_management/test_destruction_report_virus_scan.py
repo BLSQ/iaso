@@ -53,6 +53,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     safe_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -99,6 +100,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -133,6 +135,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -175,6 +178,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -209,6 +213,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             destruction_report_infected = pm.DestructionReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -223,6 +228,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             destruction_report_pending = pm.DestructionReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -237,6 +243,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             destruction_report_error = pm.DestructionReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -251,6 +258,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         # Use a non-admin user
@@ -312,6 +320,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=infected_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.SAFE_FILE_PATH, "rb") as safe_file:
@@ -370,6 +379,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -416,6 +426,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -474,6 +485,7 @@ class DestructionReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:

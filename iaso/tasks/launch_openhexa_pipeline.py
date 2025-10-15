@@ -1,8 +1,7 @@
 import logging
 import time
 
-from datetime import datetime, timedelta
-
+from django.utils import timezone
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 
@@ -108,8 +107,8 @@ def launch_openhexa_pipeline(
     logger.info(f"Started OpenHexa polling task for task {task.pk}")
 
     # Set up timeout for polling
-    polling_start_time = datetime.now()
-    max_polling_duration = timedelta(minutes=max_polling_duration_minutes)
+    polling_start_time = timezone.now()
+    max_polling_duration_seconds = max_polling_duration_minutes * 60
     logger.info(f"Polling timeout set to {max_polling_duration_minutes} minutes for task {task.pk}")
 
     while True:
@@ -121,9 +120,9 @@ def launch_openhexa_pipeline(
                 return
 
             # Check if polling timeout has been reached
-            current_time = datetime.now()
-            elapsed_time = current_time - polling_start_time
-            if elapsed_time > max_polling_duration:
+            current_time = timezone.now()
+            elapsed_time_seconds = (current_time - polling_start_time).total_seconds()
+            if elapsed_time_seconds > max_polling_duration_seconds:
                 timeout_message = (
                     f"Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}"
                 )

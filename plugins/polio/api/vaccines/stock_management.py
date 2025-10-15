@@ -289,6 +289,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             "can_edit",
             "alternative_campaign",
             "campaign_category",
+            "doses_per_vial",
         ]
 
     def validate(self, data):

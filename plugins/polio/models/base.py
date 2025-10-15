@@ -2118,9 +2118,6 @@ class VaccineStockCalculator:
         self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
         self.earmarked_stocks = EarmarkedStock.objects.filter(vaccine_stock=vaccine_stock).order_by("created_at")
 
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
-
     def get_vials_used(self, end_date=None):
         results = self.get_list_of_used_vials(end_date)
         total = 0
@@ -2285,7 +2282,7 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": real_vials_used or 0,
-                    "doses_out": (real_vials_used or 0) * self.get_doses_per_vial(),
+                    "doses_out": (real_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                 }
                 if not expanded:
@@ -2300,7 +2297,7 @@ class VaccineStockCalculator:
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used or 0,
-                        "doses_out": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                        "doses_out": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                     if not expanded:
@@ -2323,7 +2320,7 @@ class VaccineStockCalculator:
                     "date": report.date_of_incident_report,
                     "action": report.stock_correction,
                     "vials_in": report.usable_vials or 0,
-                    "doses_in": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_in": (report.usable_vials or 0) * report.doses_per_vial,
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
@@ -2342,7 +2339,7 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.usable_vials or 0,
-                    "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
                 if not expanded:
@@ -2362,7 +2359,7 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.usable_vials or 0,
-                    "doses_out": (report.usable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
                 if not expanded:
@@ -2381,7 +2378,7 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials or 0,
-                    "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
                 if not expanded:
@@ -2467,7 +2464,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "vials_in": movement.usable_vials_used or 0,
-                    "doses_in": (movement.usable_vials_used or 0) * self.get_doses_per_vial(),
+                    "doses_in": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                 }
                 if not expanded:
@@ -2504,7 +2501,7 @@ class VaccineStockCalculator:
                 "vials_in": None,
                 "doses_in": None,
                 "vials_out": report.unusable_vials_destroyed or 0,
-                "doses_out": (report.unusable_vials_destroyed or 0) * self.get_doses_per_vial(),
+                "doses_out": (report.unusable_vials_destroyed or 0) * report.doses_per_vial,
                 "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
             }
             if not expanded:
@@ -2525,7 +2522,7 @@ class VaccineStockCalculator:
                     "date": report.date_of_incident_report,
                     "action": report.stock_correction,  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                     "vials_in": report.unusable_vials or 0,
-                    "doses_in": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_in": (report.unusable_vials or 0) * report.doses_per_vial,
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
@@ -2544,7 +2541,7 @@ class VaccineStockCalculator:
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials or 0,
-                    "doses_out": (report.unusable_vials or 0) * self.get_doses_per_vial(),
+                    "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
                 if not expanded:

@@ -3,7 +3,6 @@ import io
 
 import jsonschema
 
-from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -19,6 +18,7 @@ from iaso.permissions.core_permissions import (
     CORE_USERS_MANAGED_PERMISSION,
     CORE_USERS_ROLES_PERMISSION,
 )
+from iaso.plugins import is_trypelim_plugin_active
 from iaso.test import APITestCase
 from iaso.tests.api.test_profiles import PROFILE_LOG_SCHEMA
 
@@ -113,8 +113,8 @@ class BulkCreateCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
         correct_query_num = 83
-        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
-            correct_query_num += 9
+        if is_trypelim_plugin_active():
+            correct_query_num += 9  # extra queries because of trypelim_profile
         with self.assertNumQueries(correct_query_num):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
@@ -142,8 +142,8 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_valid_csv_with_perms(self):
         correct_query_num = 92
-        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
-            correct_query_num += 12
+        if is_trypelim_plugin_active():
+            correct_query_num += 12  # extra queries because of trypelim_profile
         with self.assertNumQueries(correct_query_num):
             self.client.force_authenticate(self.yoda)
             self.source.projects.set([self.project])

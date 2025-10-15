@@ -83,7 +83,11 @@ class EntityViewSet(ModelViewSet):
 
         queryset = (
             Entity.objects.filter_for_user(self.request.user)
-            .select_related("entity_type")
+            .select_related(
+                "attributes__org_unit",
+                "attributes__created_by",
+                "entity_type",
+            )
             .prefetch_related(
                 "attributes__created_by__teams",
                 "attributes__form",

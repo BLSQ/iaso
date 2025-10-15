@@ -3,6 +3,7 @@ from rest_framework import serializers
 from iaso.models import Entity
 from iaso.models.deduplication import ValidationStatus
 from iaso.models.storage import StorageDevice
+from iaso.plugins import is_trypelim_plugin_active
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -66,7 +67,7 @@ class EntitySerializer(serializers.ModelSerializer):
         if not obj.attributes:
             return None
 
-        if obj.attributes.patient_set.exists():
+        if is_trypelim_plugin_active() and obj.attributes.patient_set.exists():
             patient = obj.attributes.patient_set.first()
             if patient:
                 return patient.id

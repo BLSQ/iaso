@@ -238,7 +238,9 @@ class WebEntityAPITestCase(EntityAPITestCase):
         result = response.json()["result"]
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0]["id"], entities[0].id)
-        self.assertTrue(result[0]["has_duplicates"])
+        # Trypelim specific: "has_duplicates" has been deactivated for performance reasons
+        # self.assertTrue(result[0]["has_duplicates"])
+        self.assertFalse(result[0]["has_duplicates"])
 
     @time_machine.travel(datetime.datetime(2021, 7, 18, 14, 57, 0, 1), tick=False)
     def test_list_entities_single_entity_type(self):

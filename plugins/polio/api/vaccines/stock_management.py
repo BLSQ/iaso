@@ -414,6 +414,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
                         doses_earmarked=doses_earmarked_used,
                         comment="Created from Form A submission",
                         form_a=movement,
+                        doses_per_vial=movement.doses_per_vial,
                     )
 
         return response
@@ -549,6 +550,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "updated_at",
             "can_edit",
             "campaign_category",
+            "doses_per_vial",
         ]
 
     def get_can_edit(self, obj):

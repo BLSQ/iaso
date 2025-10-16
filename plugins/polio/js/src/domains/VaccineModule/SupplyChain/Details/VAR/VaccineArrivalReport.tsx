@@ -33,6 +33,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     const vialsReceivedRef = useRef<boolean>(false);
     const dosesShippedRef = useRef<boolean>(false);
     const vialsShippedRef = useRef<boolean>(false);
+    const dosesPerVialsRef = useRef<boolean>(false);
 
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
@@ -175,6 +176,34 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
         [doses_per_vial, handleSetValues],
     );
 
+    const handleDosesPerVialUpdate = useCallback(
+        (value: number) => {
+            if (dosesPerVialsRef.current) {
+                const vialsShipped = Math.ceil(
+                    parseInt(
+                        (arrival_reports?.[index].doses_shipped ??
+                            '0') as string,
+                        10,
+                    ) / value,
+                );
+                const vialsReceived = Math.ceil(
+                    parseInt(
+                        (arrival_reports?.[index].doses_received ??
+                            '0') as string,
+                        10,
+                    ) / value,
+                );
+
+                handleSetValues({
+                    vials_shipped: vialsShipped,
+                    doses_per_vial: value,
+                    vials_received: vialsReceived,
+                });
+            }
+        },
+        [index, setFieldValue, arrival_reports],
+    );
+
     const onDosesShippedFocused = () => {
         dosesShippedRef.current = true;
     };
@@ -198,6 +227,12 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     };
     const onVialsReceivedBlur = () => {
         vialsReceivedRef.current = false;
+    };
+    const onDosesPerVialFocus = () => {
+        dosesPerVialsRef.current = true;
+    };
+    const onDosesPerVialBlur = () => {
+        dosesPerVialsRef.current = false;
     };
 
     return (
@@ -284,13 +319,21 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                 required
                             />
                             <Box mt={2}>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}
+                                    name={`arrival_reports[${index}].doses_per_vial`}
+                                    component={NumberInput}
+                                    disabled={
+                                        markedForDeletion ||
+                                        !arrival_reports?.[index].can_edit
+                                    }
+                                    onChange={handleDosesPerVialUpdate}
+                                    onFocus={onDosesPerVialFocus}
+                                    onBlur={onDosesPerVialBlur}
+                                    required
+                                />
                             </Box>
                         </Grid>
 

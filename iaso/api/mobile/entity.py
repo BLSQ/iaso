@@ -1,12 +1,13 @@
+from django.db.models import Exists, OuterRef, Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, permissions, serializers
+from rest_framework import filters, mixins, permissions, serializers, viewsets
 from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import CursorPagination, PageNumberPagination
 
 from iaso.api.common import DeletionFilterBackend, HasPermission, ModelViewSet, Paginator, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import Entity, EntityType, FormVersion, Instance, Project
+from iaso.models import Entity, EntityType, FormVersion, Instance, OrgUnit, Project
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError, ProjectNotFoundError, UserNotAuthError
 from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 
@@ -188,6 +189,93 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = queryset.select_related("entity_type", "attributes").prefetch_related("instances")
         queryset = queryset.distinct("id")
         return queryset.order_by("id")
+
+
+class MobileEntityCursorPagination(CursorPagination):
+    """Cursor pagination for the MobileEntityViewSet using 'id' for ordering."""
+
+    page_size = 1000
+    ordering = "id"
+    cursor_query_param = "cursor"
+
+
+class InternalMobileEntityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    """Internal API for Entities in the mobile export setup task using cursor pagination.
+
+    Note: This endpoint was designed to provide cursor-based pagination for the mobile upload task
+    without affecting the public API.
+
+    list: /api/internal/entities
+    sample usage: /api/internal/entities/?limit_date=2022-12-29&cursor=bGltaXQ9MTAwMCZvcmRlcmluZz1pZA%3D%3D
+
+    """
+
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    filter_backends = [DjangoFilterBackend, DeletionFilterBackend]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES)]  # type: ignore
+    pagination_class = MobileEntityCursorPagination
+
+    lookup_field = "uuid"
+
+    def get_serializer_class(self):
+        return MobileEntitySerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = self.request.user
+
+        qs = FormVersion.objects.filter(form__projects__account=user.iaso_profile.account).values_list(
+            "version_id", "form_id", "id"
+        )
+
+        context["possible_form_versions"] = {
+            f"{version_id}|{form_id}": version_pk for version_id, form_id, version_pk in qs
+        }
+
+        return context
+
+    def get_queryset(self):
+        user = self.request.user
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
+
+        project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+        entity_types = EntityType.objects.filter(reference_form__projects=project).only("id")
+
+        queryset = Entity.objects.filter(entity_type__in=set(entity_types))
+
+        # The following filters replicate the functionality of `filter_on_user_and_app_id`
+        # and `filter_for_mobile_entity` with some performance improvements.
+
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError("User not Authenticated")
+
+        profile = user.iaso_profile
+        queryset = queryset.filter(account=profile.account)
+
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+            instance_orgunit_exists = Instance.objects.filter(entity=OuterRef("pk")).filter(org_unit__in=orgunits)
+            queryset = queryset.filter(Exists(instance_orgunit_exists))
+
+        queryset = queryset.filter(attributes_id__isnull=False)
+
+        has_attributes = Instance.objects.filter(id=OuterRef("attributes_id"), deleted=False).values("pk")
+        queryset = queryset.filter(Exists(has_attributes))
+
+        p = Prefetch(
+            "instances",
+            queryset=Instance.objects.filter(
+                deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID
+            ).exclude(file=""),
+        )
+
+        queryset = (
+            queryset.select_related("entity_type", "attributes").prefetch_related(p).prefetch_related("instances__form")
+        )
+
+        return queryset
 
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):

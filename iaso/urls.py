@@ -66,7 +66,7 @@ from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricV
 from .api.microplanning.views import AssignmentViewSet, PlanningViewSet, TeamViewSet
 from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
-from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
+from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet, InternalMobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.group_sets import MobileGroupSetsViewSet
 from .api.mobile.groups import MobileGroupsViewSet
@@ -199,6 +199,7 @@ router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"mobile/entities/deleted", MobileEntityDeletedViewSet, basename="entitiesdeleted")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
+router.register(r"internal/entities", InternalMobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
 router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")

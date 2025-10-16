@@ -20,6 +20,8 @@ import re
 import uuid
 import zipfile
 
+from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urlencode, urlparse, urlunparse
 
 import requests
@@ -116,27 +118,108 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
     return app_info
 
 
+@dataclass
+class CursorState:
+    """Holds the necessary state and metadata for cursor pagination shimming."""
+
+    total_count: int
+    total_pages: int
+    page_size: int
+    next_url: Optional[str] = None
+
+
+def _get_cursor_pagination_metadata(iaso_client, call, app_id):
+    """Retrieves total count for cursor pagination and calculates total pages."""
+    page_size = call.get("page_size", 1000)
+
+    # Retrieve total count from the legacy url
+    count_path = call["cursor_pagination"]["legacy_url"]
+    count_query_params = {k: v for k, v in call.get("query_params", {}).items() if k not in ["limit", "page", "cursor"]}
+    count_query_params["app_id"] = app_id
+
+    count_url = urlunparse(("", "", count_path, "", urlencode(count_query_params), ""))
+    count_result = _call_endpoint(iaso_client, count_url, None)
+    total_count = count_result.get("count", 0)
+
+    total_pages = (total_count + page_size - 1) // page_size
+
+    logger.info(f"Total count: {total_count}, Total pages: {total_pages} (Page size: {page_size})")
+
+    return CursorState(total_count, total_pages, page_size)
+
+
+def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
+    """Handles a single page call for cursor pagination."""
+    query_params = call.get("query_params", {}).copy()
+    query_params["app_id"] = app_id
+
+    if page == 1:
+        query_params["limit"] = cursor_state.page_size
+        url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
+    else:
+        url = cursor_state.next_url
+
+    filename = f"{call['filename']}-{page}.json"
+    result = _call_endpoint(iaso_client, url, filename)
+
+    cursor_state.next_url = result.pop("next", None)
+    result.pop("previous", None)
+
+    # Transform the cursor response into the old offset format
+    if result:
+        result["count"] = cursor_state.total_count
+        result["has_next"] = cursor_state.next_url is not None
+        result["has_previous"] = page > 1
+        result["page"] = page
+        result["pages"] = cursor_state.total_pages
+        result["limit"] = cursor_state.page_size
+
+    return result, filename
+
+
 def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
 
-    page = 1
-    while page == 1 or (isinstance(result, dict) and result.get("has_next", False)):
-        query_params = call.get("query_params", {})
-        query_params["app_id"] = app_id
+    paginated = call.get("paginated", False)
 
+    # Determine if we're using cursor pagination and need to maintain
+    # compatibility with the api responses from offset pagination
+    cursor_shim = call.get("cursor_pagination", {}).get("shim", False)
+    cursor_state = None
+
+    if cursor_shim:
+        logger.info(f"{call['filename']}: using cursor pagination with pagination shim.")
+        cursor_state = _get_cursor_pagination_metadata(iaso_client, call, app_id)
+
+    page = 1
+    has_more_data = True
+    result = None
+
+    while page == 1 or has_more_data:
+        url = None
         filename = None
-        if call.get("paginated", False):
+
+        if paginated and cursor_shim:
+            # Cursor pagination
+            result, filename = _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state)
+        elif paginated:
+            # Offset-based pagination
+            query_params = call.get("query_params", {})
+            query_params["app_id"] = app_id
             query_params["page"] = page
             if "page_size" in call:
                 query_params["limit"] = call["page_size"]
+            url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
             filename = f"{call['filename']}-{page}.json"
-        else:
+            result = _call_endpoint(iaso_client, url, filename)
+        else:  # Not paginated
+            query_params = call.get("query_params", {})
+            query_params["app_id"] = app_id
             filename = call["filename"] + ".json"
-
-        url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
-        result = _call_endpoint(iaso_client, url, filename)
+            url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
+            result = _call_endpoint(iaso_client, url, filename)
 
         # Before saving, for certain resources we need to:
         # 1. Download the attached files
@@ -160,6 +243,10 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
             json.dump(result, json_file)
 
         page += 1
+        if cursor_shim:
+            has_more_data = cursor_state and cursor_state.next_url is not None
+        else:
+            has_more_data = isinstance(result, dict) and result.get("has_next", False)
 
 
 # The URL is potentially an S3 signed URL, thus containing query params with

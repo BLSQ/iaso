@@ -253,6 +253,17 @@ export const useGetEarmarkedList = (
     });
 };
 
+export const useGetDosesOptions = (stockId: number) => {
+    return useSnackQuery({
+        queryKey: ['earmarked-list', 'options'],
+        queryFn: () => getRequest(`${apiUrl}doses_options/?stockId=${stockId}`),
+        options: {
+            ...options,
+            select: data => data?.results ?? [],
+        },
+    });
+};
+
 type UseCampaignOptionsResult = {
     roundOptions: DropdownOptions<string>[];
     campaignOptions: DropdownOptions<string>[];
@@ -509,6 +520,9 @@ export const useSaveIncident = () => {
 };
 const createEditEarmarked = (body: any) => {
     const copy = { ...body };
+    if (!body.doses_earmarked) {
+        copy.doses_earmarked = body.vials_earmarked * body.doses_per_vial;
+    }
 
     const filteredParams = copy
         ? Object.fromEntries(

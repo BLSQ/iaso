@@ -59,10 +59,11 @@ API_CALLS = [
         "filename": "storage-blacklisted",
     },
     {
-        "path": "/api/mobile/entities/",
+        "path": "/api/internal/entities/",
         "required_feature_flag": "ENTITY",
         "filename": "entities",
         "paginated": True,
+        "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
     },
     {
         "path": "/api/mobile/entities/deleted/",

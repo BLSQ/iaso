@@ -32,11 +32,7 @@ import {
 } from '../types';
 import { FormAFormValues } from '../StockVariation/Modals/CreateEditFormA';
 
-const defaults = {
-    order: 'country',
-    pageSize: 20,
-    page: 1,
-};
+const defaults = { order: 'country', pageSize: 20, page: 1 };
 const options = {
     select: data => {
         if (!data) return { results: [] };
@@ -134,35 +130,6 @@ export const useGetUnusableVials = (
     });
 };
 
-const getEarmarked = async (id: string, queryString: string) => {
-    return getRequest(`${apiUrl}${id}/get_earmarked_stock/?${queryString}`);
-};
-// Need to pass id to apiUrl
-// Splitting hooks to be able to store both payloads in the cache and avoid refetching with each tab change
-export const useGetEarmarked = (
-    params: StockManagementDetailsParams,
-    enabled: boolean,
-): UseQueryResult<any, any> => {
-    const {
-        earmarkedOrder: order,
-        earmarkedPage: page,
-        earmarkedPageSize: pageSize,
-    } = params;
-    const safeParams = useUrlParams({
-        order,
-        page,
-        pageSize,
-    } as Partial<UrlParams>);
-    const { id } = params;
-    const apiParams = useApiParams(safeParams);
-    const queryString = new URLSearchParams(apiParams).toString();
-    return useSnackQuery({
-        queryKey: ['earmarked', queryString, id],
-        queryFn: () => getEarmarked(id, queryString),
-        options: { ...options, enabled },
-    });
-};
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
     return getRequest(`${apiUrl}${id}/summary/`);
@@ -194,16 +161,8 @@ export const useGetFormAList = (
     } = params;
 
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-form_a_reception_date',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-form_a_reception_date', pageSize: 20 },
     );
 
     const apiParams = useApiParams(safeParams);
@@ -229,16 +188,8 @@ export const useGetDestructionList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-rrt_destruction_report_reception_date',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-rrt_destruction_report_reception_date', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -263,16 +214,8 @@ export const useGetIncidentList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-incident_report_received_by_rrt',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-incident_report_received_by_rrt', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -298,16 +241,8 @@ export const useGetEarmarkedList = (
         id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams(
-        {
-            order,
-            page,
-            pageSize,
-            vaccine_stock,
-        } as Partial<UrlParams>,
-        {
-            order: '-created_at',
-            pageSize: 20,
-        },
+        { order, page, pageSize, vaccine_stock } as Partial<UrlParams>,
+        { order: '-created_at', pageSize: 20 },
     );
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
@@ -392,10 +327,7 @@ export const useCampaignOptions = (
                     c.id === selectedCampaign?.id,
             )
             .map(c => {
-                return {
-                    label: c.obr_name,
-                    value: c.obr_name,
-                };
+                return { label: c.obr_name, value: c.obr_name };
             });
         const defaultList = [{ label: campaignName, value: campaignName }];
         if ((campaignsList ?? []).length > 0) {

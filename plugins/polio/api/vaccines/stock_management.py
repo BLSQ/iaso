@@ -368,10 +368,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     filter_backends = [
         filters.OrderingFilter,
     ]
-    ordering_fields = [
-        "report_date",
-        "form_a_reception_date",
-    ]
+    ordering_fields = ["report_date", "form_a_reception_date", "doses_per_vial"]
 
     def get_serializer_class(self):
         if self.action == "partial_update":
@@ -457,6 +454,7 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
 
 class DestructionReportSerializer(ModelWithFileSerializer):
@@ -495,6 +493,7 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     @action(detail=False, methods=["GET"])
     def check_duplicate(self, request):
@@ -632,6 +631,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
             read_only_perm=POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     def get_queryset(self):
         return (

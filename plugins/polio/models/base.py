@@ -1704,6 +1704,7 @@ class EarmarkedStock(models.Model):
     comment = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    doses_per_vial = models.IntegerField()
 
     class Meta:
         indexes = [
@@ -2100,11 +2101,12 @@ class MovementTypeEnum(enum.Enum):
 
 
 class VaccineStockCalculator:
-    def __init__(self, vaccine_stock: VaccineStock):
+    def __init__(self, vaccine_stock: VaccineStock, end_date=None):
         if not isinstance(vaccine_stock, VaccineStock):
             raise TypeError("vaccine_stock must be a VaccineStock object")
 
         self.vaccine_stock = vaccine_stock
+        self.end_date = end_date
         self.arrival_reports = VaccineArrivalReport.objects.filter(
             request_form__campaign__country=vaccine_stock.country,
             request_form__vaccine_type=vaccine_stock.vaccine,
@@ -2118,24 +2120,24 @@ class VaccineStockCalculator:
         self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
         self.earmarked_stocks = EarmarkedStock.objects.filter(vaccine_stock=vaccine_stock).order_by("created_at")
 
-    def get_vials_used(self, end_date=None):
-        results = self.get_list_of_used_vials(end_date)
+    def get_vials_used(self):
+        results = self.get_list_of_used_vials()
         total = 0
         for result in results:
             total += result["vials_in"]
 
         return total
 
-    def get_vials_destroyed(self, end_date=None):
+    def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
             return 0
         destruction_reports = self.destruction_reports
-        if end_date:
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
+        if self.end_date:
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
         return sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
 
-    def get_total_of_usable_vials(self, end_date=None):
-        results = self.get_list_of_usable_vials(end_date)
+    def get_total_of_usable_vials(self):
+        results = self.get_list_of_usable_vials()
         total_vials_in = 0
         total_doses_in = 0
 
@@ -2151,8 +2153,8 @@ class VaccineStockCalculator:
 
         return total_vials_in, total_doses_in
 
-    def get_vials_received(self, end_date=None):
-        results = self.get_list_of_vaccines_received(end_date)
+    def get_vials_received(self):
+        results = self.get_list_of_vaccines_received()
 
         total_vials_in = 0
 
@@ -2162,8 +2164,8 @@ class VaccineStockCalculator:
 
         return total_vials_in
 
-    def get_total_of_unusable_vials(self, end_date=None):
-        results = self.get_list_of_unusable_vials(end_date)
+    def get_total_of_unusable_vials(self):
+        results = self.get_list_of_unusable_vials()
 
         total_vials_in = 0
         total_doses_in = 0
@@ -2180,8 +2182,8 @@ class VaccineStockCalculator:
 
         return total_vials_in, total_doses_in
 
-    def get_total_of_earmarked(self, end_date=None):
-        earmarked_list = self.get_list_of_earmarked(end_date)
+    def get_total_of_earmarked(self):
+        earmarked_list = self.get_list_of_earmarked()
 
         total_vials = 0
         total_doses = 0
@@ -2198,7 +2200,7 @@ class VaccineStockCalculator:
 
         return total_vials, total_doses
 
-    def get_list_of_vaccines_received(self, end_date=None, expanded=False):
+    def get_list_of_vaccines_received(self, expanded=False):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
@@ -2207,7 +2209,7 @@ class VaccineStockCalculator:
             campaign__country=self.vaccine_stock.country,
             vaccine_type=self.vaccine_stock.vaccine,
         )
-        if end_date:
+        if self.end_date:
             eligible_rounds = (
                 Round.objects.filter(campaign=OuterRef("campaign"))
                 .filter(
@@ -2217,7 +2219,7 @@ class VaccineStockCalculator:
                     )
                     | (Q(campaign__separate_scopes_per_round=True) & Q(scopes__vaccine=self.vaccine_stock.vaccine))
                 )
-                .filter(ended_at__lte=end_date)
+                .filter(ended_at__lte=self.end_date)
                 .filter(id__in=OuterRef("rounds"))
             )
             vrfs = vrfs.filter(Exists(Subquery(eligible_rounds)))
@@ -2227,8 +2229,8 @@ class VaccineStockCalculator:
         else:
             # Then find the corresponding VaccineArrivalReports
             arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
-            if end_date:
-                arrival_reports = arrival_reports.filter(arrival_report_date__lte=end_date)
+            if self.end_date:
+                arrival_reports = arrival_reports.filter(arrival_report_date__lte=self.end_date)
             if not arrival_reports.exists():
                 arrival_reports = []
         results = []
@@ -2250,6 +2252,7 @@ class VaccineStockCalculator:
                 "vials_out": None,
                 "doses_out": None,
                 "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
+                "doses_per_vial": report.doses_per_vial,
             }
             if not expanded:
                 results.append(base_result)
@@ -2257,9 +2260,9 @@ class VaccineStockCalculator:
                 results.append({**base_result, **additional_fields})
         return results
 
-    def get_list_of_usable_vials(self, end_date=None, expanded=False):
+    def get_list_of_usable_vials(self, expanded=False):
         # First get vaccines received from arrival reports
-        results = self.get_list_of_vaccines_received(end_date, expanded=expanded)
+        results = self.get_list_of_vaccines_received(expanded=expanded)
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
@@ -2270,8 +2273,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            stock_movements = stock_movements.filter(report_date__lte=end_date)
+        if self.end_date:
+            stock_movements = stock_movements.filter(report_date__lte=self.end_date)
         for movement in stock_movements:
             if movement.earmarked_stocks.count() > 0:
                 earmarked_stock_vials = movement.earmarked_stocks.aggregate(total=Sum("vials_earmarked"))["total"] or 0
@@ -2284,6 +2287,7 @@ class VaccineStockCalculator:
                     "vials_out": real_vials_used or 0,
                     "doses_out": (real_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    "doses_per_vial": movement.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2299,6 +2303,7 @@ class VaccineStockCalculator:
                         "vials_out": movement.usable_vials_used or 0,
                         "doses_out": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                        "doses_per_vial": movement.doses_per_vial,
                     }
                     if not expanded:
                         results.append(base_result)
@@ -2309,8 +2314,8 @@ class VaccineStockCalculator:
         incident_reports = IncidentReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "date_of_incident_report"
         )
-        if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
+        if self.end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=self.end_date)
         for report in incident_reports:
             if (
                 report.usable_vials > 0
@@ -2324,6 +2329,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2341,6 +2347,7 @@ class VaccineStockCalculator:
                     "vials_out": report.usable_vials or 0,
                     "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2361,6 +2368,7 @@ class VaccineStockCalculator:
                     "vials_out": report.usable_vials or 0,
                     "doses_out": (report.usable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2380,6 +2388,7 @@ class VaccineStockCalculator:
                     "vials_out": report.unusable_vials or 0,
                     "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2387,8 +2396,8 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
         earmarked_stocks = self.earmarked_stocks
-        if end_date:
-            earmarked_stocks = earmarked_stocks.filter(created_at__lte=end_date)
+        if self.end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__lte=self.end_date)
 
         for stock in earmarked_stocks:
             if stock.earmarked_stock_type == EarmarkedStock.EarmarkedStockChoices.CREATED:
@@ -2406,6 +2415,7 @@ class VaccineStockCalculator:
                     "vials_out": stock.vials_earmarked,
                     "doses_out": stock.doses_earmarked,
                     "type": "earmarked_stock__created",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2426,6 +2436,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": "earmarked_stock__returned",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
 
                 if not expanded:
@@ -2435,7 +2446,7 @@ class VaccineStockCalculator:
 
         return results
 
-    def get_list_of_used_vials(self, end_date=None, expanded=False):
+    def get_list_of_used_vials(self, expanded=False):
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
         additional_fields = {
@@ -2445,8 +2456,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            outgoing_movements = outgoing_movements.filter(report_date__lte=end_date)
+        if self.end_date:
+            outgoing_movements = outgoing_movements.filter(report_date__lte=self.end_date)
         results = []
         for movement in outgoing_movements:
             if movement.usable_vials_used > 0:
@@ -2466,6 +2477,7 @@ class VaccineStockCalculator:
                     "vials_in": movement.usable_vials_used or 0,
                     "doses_in": (movement.usable_vials_used or 0) * movement.doses_per_vial,
                     "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    "doses_per_vial": movement.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2474,9 +2486,9 @@ class VaccineStockCalculator:
 
         return results
 
-    def get_list_of_unusable_vials(self, end_date=None, expanded=False):
+    def get_list_of_unusable_vials(self, expanded=False):
         # First get the used vials
-        results = self.get_list_of_used_vials(end_date, expanded=expanded)
+        results = self.get_list_of_used_vials(expanded=expanded)
         additional_fields = {
             "id": self.vaccine_stock.id,
             "country_name": self.vaccine_stock.country.name,
@@ -2490,9 +2502,9 @@ class VaccineStockCalculator:
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=self.vaccine_stock).order_by(
             "destruction_report_date"
         )
-        if end_date:
-            incident_reports = incident_reports.filter(date_of_incident_report__lte=end_date)
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=end_date)
+        if self.end_date:
+            incident_reports = incident_reports.filter(date_of_incident_report__lte=self.end_date)
+            destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
 
         for report in destruction_reports:
             base_result = {
@@ -2503,6 +2515,7 @@ class VaccineStockCalculator:
                 "vials_out": report.unusable_vials_destroyed or 0,
                 "doses_out": (report.unusable_vials_destroyed or 0) * report.doses_per_vial,
                 "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
+                "doses_per_vial": report.doses_per_vial,
             }
             if not expanded:
                 results.append(base_result)
@@ -2526,6 +2539,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2543,6 +2557,7 @@ class VaccineStockCalculator:
                     "vials_out": report.unusable_vials or 0,
                     "doses_out": (report.unusable_vials or 0) * report.doses_per_vial,
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    "doses_per_vial": report.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2554,8 +2569,8 @@ class VaccineStockCalculator:
             earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.USED,
         )
 
-        if end_date:
-            earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=end_date)
+        if self.end_date:
+            earmarked_stocks = earmarked_stocks.filter(created_at__date__lte=self.end_date)
 
         for stock in earmarked_stocks:
             if (
@@ -2569,6 +2584,7 @@ class VaccineStockCalculator:
                     "vials_out": None,
                     "doses_out": None,
                     "type": "earmarked_stock__used",
+                    "doses_per_vial": stock.doses_per_vial,
                 }
                 if not expanded:
                     results.append(base_result)
@@ -2577,7 +2593,7 @@ class VaccineStockCalculator:
 
         return results
 
-    def get_list_of_earmarked(self, end_date=None, expanded=False):
+    def get_list_of_earmarked(self, expanded=False):
         earmarked_movements = self.earmarked_stocks
         additional_fields = {
             "id": self.vaccine_stock.id,
@@ -2586,8 +2602,8 @@ class VaccineStockCalculator:
             "vaccine_type": self.vaccine_stock.vaccine,
             "vials_type": "usable",
         }
-        if end_date:
-            earmarked_movements = earmarked_movements.filter(created_at__lte=end_date)
+        if self.end_date:
+            earmarked_movements = earmarked_movements.filter(created_at__lte=self.end_date)
 
         results = []
         for movement in earmarked_movements:

@@ -1592,6 +1592,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             vaccine_stock=self.vaccine_stock,
             vials_earmarked=5,
             doses_earmarked=100,
+            doses_per_vial=20,
         )
 
         # Test list endpoint

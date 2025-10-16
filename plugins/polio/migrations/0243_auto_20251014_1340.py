@@ -14,6 +14,7 @@ def add_doses_per_vial(apps, schema_editor):
     OutgoingStockMovement = apps.get_model("polio", "OutgoingStockMovement")
     IncidentReport = apps.get_model("polio", "IncidentReport")
     DestructionReport = apps.get_model("polio", "DestructionReport")
+    EarmarkedStock = apps.get_model("polio", "EarmarkedStock")
 
     outgoing_stock_movements = OutgoingStockMovement.objects.filter(doses_per_vial__isnull=True).prefetch_related(
         "vaccine_stock"
@@ -22,6 +23,7 @@ def add_doses_per_vial(apps, schema_editor):
     destruction_reports = DestructionReport.objects.filter(doses_per_vial__isnull=True).prefetch_related(
         "vaccine_stock"
     )
+    earmarked_stocks = EarmarkedStock.objects.filter(doses_per_vial__isnull=True).prefetch_related("vaccine_stock")
 
     for movement in outgoing_stock_movements:
         doses_per_vial = DOSES_PER_VIAL.get(movement.vaccine_stock.vaccine, 20)
@@ -37,6 +39,11 @@ def add_doses_per_vial(apps, schema_editor):
         doses_per_vial = DOSES_PER_VIAL.get(destruction_report.vaccine_stock.vaccine, 20)
         destruction_report.doses_per_vial = doses_per_vial
         destruction_report.save()
+
+    for stock in earmarked_stocks:
+        doses_per_vial = DOSES_PER_VIAL.get(stock.vaccine_stock.vaccine, 20)
+        stock.doses_per_vial = doses_per_vial
+        stock.save()
 
 
 class Migration(migrations.Migration):

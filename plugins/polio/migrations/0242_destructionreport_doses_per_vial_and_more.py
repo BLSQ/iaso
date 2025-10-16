@@ -24,4 +24,9 @@ class Migration(migrations.Migration):
             name="doses_per_vial",
             field=models.IntegerField(blank=True, null=True),
         ),
+        migrations.AddField(
+            model_name="earmarkedstock",
+            name="doses_per_vial",
+            field=models.IntegerField(blank=True, null=True),
+        ),
     ]

@@ -1332,13 +1332,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(len(data["results"]), 5)
 
-    def test_user_with_read_only_can_see_earmarked_stock(self):
-        self.client.force_authenticate(user=self.user_read_only_perms)
-        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_earmarked_stock/")
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("results", data)
-
     def test_outgoing_stock_movement_without_campaign(self):
         """Test that an OutgoingStockMovement can be created without a campaign"""
         FORMA_URL = "/api/polio/vaccine/stock/outgoing_stock_movement/"

@@ -1721,18 +1721,20 @@ class EarmarkedStock(models.Model):
         return f"Earmarked {self.vials_earmarked} vials"
 
     @classmethod
-    def get_available_vials_count(cls, vaccine_stock: VaccineStock, _round: Round):
+    def get_available_vials_count(cls, vaccine_stock: VaccineStock, rnd: Round, doses_per_vial):
         matching_earmarks_plus = EarmarkedStock.objects.filter(
+            doses_per_vial=doses_per_vial,
             vaccine_stock=vaccine_stock,
-            campaign=_round.campaign,
-            round=_round,
+            campaign=rnd.campaign,
+            round=rnd,
             earmarked_stock_type=EarmarkedStock.EarmarkedStockChoices.CREATED,
         )
 
         matching_earmarks_minus = EarmarkedStock.objects.filter(
+            doses_per_vial=doses_per_vial,
             vaccine_stock=vaccine_stock,
-            campaign=_round.campaign,
-            round=_round,
+            campaign=rnd.campaign,
+            round=rnd,
             earmarked_stock_type__in=[
                 EarmarkedStock.EarmarkedStockChoices.USED,
                 EarmarkedStock.EarmarkedStockChoices.RETURNED,
@@ -2628,6 +2630,7 @@ class VaccineStockCalculator:
                     "doses_out": movement.doses_earmarked,
                     "vials_in": None,
                     "doses_in": None,
+                    "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
                 if not expanded:
@@ -2651,6 +2654,7 @@ class VaccineStockCalculator:
                     "doses_in": movement.doses_earmarked,
                     "vials_out": None,
                     "doses_out": None,
+                    "doses_per_vial": movement.doses_per_vial,
                     "type": f"earmarked_stock__{movement_type}",
                 }
                 if not expanded:

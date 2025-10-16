@@ -80,10 +80,7 @@ def _launch_pipeline(task: Task, pipeline_id: str, version: str, config: dict, p
     )
 
     logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
-    # Preserve external flag during progress updates
     task.refresh_from_db()
-    if not task.external:
-        task.external = True
     task.report_progress_and_stop_if_killed(
         progress_message=f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}"
     )
@@ -189,11 +186,8 @@ def _handle_in_progress_status(task: Task, pipeline_id: str, run_status: str, de
 
     if task.status != RUNNING:
         logger.info(f"Pipeline {pipeline_id} status changed to {run_status}, updating task {task.pk} to RUNNING")
-        task.status = RUNNING
-        # Ensure external flag is preserved
-        if not task.external:
-            task.external = True
-        task.save(update_fields=["status", "external"])
+        task.status = RuntimeWarning
+        task.save(update_fields=["status"])
 
     time.sleep(delay)
     return True
@@ -240,11 +234,6 @@ def launch_openhexa_pipeline(
         try:
             # Check if task was killed
             task.refresh_from_db()
-            # Ensure external flag is preserved after refresh
-            if not task.external:
-                logger.warning(f"Task {task.pk} external flag was False, resetting to True")
-                task.external = True
-                task.save(update_fields=["external"])
             if task.should_be_killed:
                 logger.info(f"Task {task.pk} was killed, stopping polling")
                 return

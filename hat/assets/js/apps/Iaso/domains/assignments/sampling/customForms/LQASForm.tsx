@@ -10,6 +10,7 @@ import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
 import {
     addToArray,
@@ -94,7 +95,11 @@ export const LQASForm: FunctionComponent<Props> = ({
         useGetOrgUnitTypesDropdownOptions({
             projectId: planning.project,
         });
-
+    const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
+        planning.org_unit_details.org_unit_type || 0,
+    );
+    console.log('orgUnitTypes', orgUnitTypes);
+    console.log('orgUnitTypeHierarchy', orgUnitTypeHierarchy);
     const update = useCallback(
         (arrayName: string, index: number, value: any) => {
             const currentArray = parameterValues?.[arrayName] || [];

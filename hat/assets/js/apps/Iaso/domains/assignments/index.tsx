@@ -47,6 +47,7 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.assignments;
 
 export const Assignments: FunctionComponent = () => {
+    const [groupId, setGroupId] = useState<number | undefined>(undefined);
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
@@ -104,6 +105,7 @@ export const Assignments: FunctionComponent = () => {
         order: params.order || 'name',
         search: params.search,
         selectedItem,
+        groupId,
     });
     const isLoading = isLoadingPlanning || isSaving;
 
@@ -276,6 +278,7 @@ export const Assignments: FunctionComponent = () => {
                                 disabledMessage={formatMessage(
                                     MESSAGES.deleteAssignmentsInfos,
                                 )}
+                                setGroupId={setGroupId}
                             />
                         )}
                 </Box>
@@ -288,23 +291,6 @@ export const Assignments: FunctionComponent = () => {
                 />
                 <Box mt={2}>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={5}>
-                            <Sidebar
-                                data={sidebarData || []}
-                                assignments={assignments}
-                                selectedItem={selectedItem}
-                                orgUnits={orgUnitsList || []}
-                                setSelectedItem={setSelectedItem}
-                                currentTeam={currentTeam}
-                                setItemColor={setItemColor}
-                                teams={teams || []}
-                                profiles={profiles}
-                                isLoadingAssignments={
-                                    isLoadingAssignments ||
-                                    isFetchingOrgUnitsList
-                                }
-                            />
-                        </Grid>
                         <Grid item xs={12} lg={7}>
                             <Paper>
                                 <Box ml={-4}>
@@ -392,6 +378,23 @@ export const Assignments: FunctionComponent = () => {
                                     )}
                                 </Box>
                             </Paper>
+                        </Grid>
+                        <Grid item xs={12} lg={5}>
+                            <Sidebar
+                                data={sidebarData || []}
+                                assignments={assignments}
+                                selectedItem={selectedItem}
+                                orgUnits={orgUnitsList || []}
+                                setSelectedItem={setSelectedItem}
+                                currentTeam={currentTeam}
+                                setItemColor={setItemColor}
+                                teams={teams || []}
+                                profiles={profiles}
+                                isLoadingAssignments={
+                                    isLoadingAssignments ||
+                                    isFetchingOrgUnitsList
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </Box>

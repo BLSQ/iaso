@@ -14,7 +14,7 @@ def add_doses_per_vial(apps, schema_editor):
     VaccinePreAlert = apps.get_model("polio", "VaccinePreAlert")
     VaccineArrivalReport = apps.get_model("polio", "VaccineArrivalReport")
 
-    pre_alerts_no_doses = VaccinePreAlert.objects.filter(doses_per_vial__isnull=True).prefetch_related("request_form")
+    pre_alerts_no_doses = VaccinePreAlert.objects.filter(doses_per_vial__isnull=True).select_related("request_form")
     arrival_reports_no_doses = VaccineArrivalReport.objects.filter(doses_per_vial__isnull=True).prefetch_related(
         "request_form"
     )

@@ -1,6 +1,7 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 
 export type OrgUnitTypeHierarchy = {
     id: number;
@@ -9,6 +10,42 @@ export type OrgUnitTypeHierarchy = {
     depth: number;
     category: string;
     sub_unit_types: OrgUnitTypeHierarchy[];
+};
+export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
+    number,
+    OrgUnitTypeHierarchy
+>[];
+
+export const flattenHierarchy = (
+    items: any[],
+    level = 0,
+    orgUnitTypeId?: number,
+    selectedOrgUnitTypeIds?: number[],
+): any[] => {
+    return items.flatMap(item => {
+        if (
+            selectedOrgUnitTypeIds?.includes(item.id) &&
+            orgUnitTypeId &&
+            item.id !== orgUnitTypeId
+        ) {
+            return [];
+        }
+        const currentItem = {
+            value: item.id,
+            label: item.name,
+            original: item,
+        };
+        const children =
+            item.sub_unit_types && item.sub_unit_types.length > 0
+                ? flattenHierarchy(
+                      item.sub_unit_types,
+                      level + 1,
+                      orgUnitTypeId,
+                  )
+                : [];
+
+        return [currentItem, ...children];
+    });
 };
 
 export const useGetOrgUnitTypesHierarchy = (

@@ -9,8 +9,7 @@ import PlusIcon from '@mui/icons-material/Add';
 import { Box, Button, Paper } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { useSafeIntl } from 'bluesquare-components';
-import { useGetOrgUnitTypesDropdownOptions } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
 import {
     addToArray,
@@ -58,6 +57,8 @@ type Props = {
     setAllowConfirm: React.Dispatch<React.SetStateAction<boolean>>;
     parameterValues: ParameterValues;
     handleParameterChange: (parameterName: string, value: any) => void;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
 };
 
 export const LQASForm: FunctionComponent<Props> = ({
@@ -65,41 +66,12 @@ export const LQASForm: FunctionComponent<Props> = ({
     setAllowConfirm,
     parameterValues,
     handleParameterChange,
+    orgunitTypes,
+    isFetchingOrgunitTypes,
 }) => {
-    useEffect(() => {
-        if (
-            parameterValues?.org_unit_type_sequence_identifiers?.length &&
-            parameterValues?.org_unit_type_sequence_identifiers?.length > 0
-        ) {
-            const allLevelsFilled =
-                parameterValues.org_unit_type_sequence_identifiers?.every(
-                    (level, index) => {
-                        return (
-                            level !== undefined &&
-                            parameterValues.org_unit_type_criteria?.[index] !==
-                                undefined &&
-                            parameterValues.org_unit_type_quantities?.[
-                                index
-                            ] !== undefined
-                        );
-                    },
-                );
-            setAllowConfirm(Boolean(allLevelsFilled));
-        } else {
-            setAllowConfirm(false);
-        }
-    }, [setAllowConfirm, parameterValues]);
     const { formatMessage } = useSafeIntl();
     const [expandedLevels, setExpandedLevels] = useState<boolean[]>([false]);
-    const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
-        useGetOrgUnitTypesDropdownOptions({
-            projectId: planning.project,
-        });
-    const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
-        planning.org_unit_details.org_unit_type || 0,
-    );
-    console.log('orgUnitTypes', orgUnitTypes);
-    console.log('orgUnitTypeHierarchy', orgUnitTypeHierarchy);
+
     const update = useCallback(
         (arrayName: string, index: number, value: any) => {
             const currentArray = parameterValues?.[arrayName] || [];
@@ -201,15 +173,36 @@ export const LQASForm: FunctionComponent<Props> = ({
     const latestOptions = useMemo(() => {
         const lastLevel = levels[levels.length - 1];
         return lastLevel
-            ? orgUnitTypes?.find(
-                  orgUnitType => orgUnitType.value === `${lastLevel}`,
-              )
+            ? orgunitTypes?.find(orgUnitType => orgUnitType.value === lastLevel)
             : undefined;
-    }, [orgUnitTypes, levels]);
-
+    }, [orgunitTypes, levels]);
     const canAddLevel = latestOptions?.original?.sub_unit_types.length !== 0;
     const isLastLevelUndefined = levels[levels.length - 1] === undefined;
 
+    useEffect(() => {
+        if (
+            parameterValues?.org_unit_type_sequence_identifiers?.length &&
+            parameterValues?.org_unit_type_sequence_identifiers?.length > 0 &&
+            !canAddLevel
+        ) {
+            const allLevelsFilled =
+                parameterValues.org_unit_type_sequence_identifiers?.every(
+                    (level, index) => {
+                        return (
+                            level !== undefined &&
+                            parameterValues.org_unit_type_criteria?.[index] !==
+                                undefined &&
+                            parameterValues.org_unit_type_quantities?.[
+                                index
+                            ] !== undefined
+                        );
+                    },
+                );
+            setAllowConfirm(Boolean(allLevelsFilled));
+        } else {
+            setAllowConfirm(false);
+        }
+    }, [setAllowConfirm, parameterValues, canAddLevel]);
     return (
         <Paper sx={styles.paper}>
             {levels.map((orgUnitTypeId, index) => {
@@ -219,8 +212,8 @@ export const LQASForm: FunctionComponent<Props> = ({
                         sx={styles.subPaper}
                     >
                         <Level
-                            orgUnitTypes={orgUnitTypes || []}
-                            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                            orgunitTypes={orgunitTypes || []}
+                            isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             index={index}
                             levels={levels}
                             handleOrgUnitTypeChange={handleOrgUnitTypeChange}

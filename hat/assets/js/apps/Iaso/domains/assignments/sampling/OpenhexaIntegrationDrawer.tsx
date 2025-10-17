@@ -29,6 +29,7 @@ import { useGetPipelinesDropdown } from 'Iaso/domains/openHexa/hooks/useGetPipel
 import { useLaunchTask } from 'Iaso/domains/openHexa/hooks/useLaunchTask';
 import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
 
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
@@ -42,6 +43,8 @@ type Props = {
     planning: Planning;
     disabled?: boolean;
     disabledMessage?: string;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
 };
 
 const styles: SxStyles = {
@@ -85,6 +88,8 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     planning,
     disabled = false,
     disabledMessage,
+    orgunitTypes,
+    isFetchingOrgunitTypes,
 }) => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const queryClient = useQueryClient();
@@ -325,6 +330,10 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                             parameterValues={parameterValues}
                                             handleParameterChange={
                                                 handleParameterChange
+                                            }
+                                            orgunitTypes={orgunitTypes}
+                                            isFetchingOrgunitTypes={
+                                                isFetchingOrgunitTypes
                                             }
                                         />
                                     )}

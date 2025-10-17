@@ -1,40 +1,105 @@
-import React, { FunctionComponent } from 'react';
-import { Grid } from '@mui/material';
+import React, { FunctionComponent, useRef, useEffect } from 'react';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableRow,
+    Typography,
+    Paper,
+    Box,
+    CircularProgress,
+} from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { TaskLog } from 'Iaso/domains/tasks/types';
+import MESSAGES from '../messages';
 
 export type Props = {
-    messages: TaskLog[];
+    messages?: TaskLog[];
+    isRunning?: boolean;
+    isFetching?: boolean;
 };
 
-export const TaskLogMessages: FunctionComponent<Props> = ({ messages }) => {
+export const TaskLogMessages: FunctionComponent<Props> = ({
+    messages,
+    isRunning = false,
+    isFetching = false,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const messagesEndRef = useRef<null | HTMLDivElement>(null);
+
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages, messagesEndRef]);
     return (
-        <>
-            {messages.map(log => {
-                return (
-                    <Grid key={log.created_at} container spacing={0}>
-                        <Grid
-                            xs={2.5}
-                            item
-                            paddingTop={1.8}
-                            style={{
-                                color: 'grey',
-                            }}
-                        >
-                            {moment.unix(log.created_at).format('LTS')}
-                        </Grid>
-                        <Grid item xs={9}>
-                            <pre
-                                style={{
-                                    textWrap: 'wrap',
-                                }}
-                            >
-                                {log.message}
-                            </pre>
-                        </Grid>
-                    </Grid>
-                );
-            })}
-        </>
+        <Paper elevation={1}>
+            <Typography
+                variant="h6"
+                color="primary"
+                sx={{ p: 2, borderBottom: '1px solid #e0e0e0' }}
+            >
+                {formatMessage(MESSAGES.logs)}
+            </Typography>
+            <Box
+                sx={{
+                    overflowY: 'auto',
+                    maxHeight: 500,
+                    scrollSnapAlign: 'end',
+                }}
+            >
+                {messages && (
+                    <TableContainer component={Paper} sx={{ mt: 2 }}>
+                        <Table size="small">
+                            <TableBody>
+                                {messages.length === 0 && !isRunning && (
+                                    <TableRow>
+                                        <TableCell colSpan={2}>
+                                            {formatMessage(
+                                                MESSAGES.noLogsToShow,
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {isFetching && (
+                                    <TableRow>
+                                        <TableCell colSpan={2}>
+                                            <CircularProgress size={20} />
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                                {messages.map(log => (
+                                    <TableRow key={log.created_at}>
+                                        <TableCell
+                                            sx={{
+                                                color: 'grey',
+                                                whiteSpace: 'nowrap',
+                                                width: '15%',
+                                            }}
+                                        >
+                                            {moment
+                                                .unix(log.created_at)
+                                                .format('LTS')}
+                                        </TableCell>
+                                        <TableCell>
+                                            <pre
+                                                style={{
+                                                    margin: 0,
+                                                    whiteSpace: 'pre-wrap',
+                                                    wordBreak: 'break-word',
+                                                }}
+                                            >
+                                                {log.message}
+                                            </pre>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+                <Box ref={messagesEndRef} />
+            </Box>
+        </Paper>
     );
 };

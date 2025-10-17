@@ -37,44 +37,4 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'No parameters',
         id: 'iaso.label.noParameters',
     },
-    level: {
-        defaultMessage: 'Level',
-        id: 'iaso.forms.level',
-    },
-    addLevel: {
-        defaultMessage: 'Add level',
-        id: 'iaso.openHexalabel.addLevel',
-    },
-    quantity: {
-        defaultMessage: 'Qty',
-        id: 'iaso.label.quantityShort',
-    },
-    removeLevel: {
-        defaultMessage: 'Remove level',
-        id: 'iaso.openHexalabel.removeLevel',
-    },
-    excludedOrgUnits: {
-        defaultMessage: 'Excluded org units',
-        id: 'iaso.openHexalabel.excludedOrgUnits',
-    },
-    collapse: {
-        defaultMessage: 'Collapse',
-        id: 'iaso.openHexalabel.collapse',
-    },
-    expand: {
-        defaultMessage: 'Expand',
-        id: 'iaso.openHexalabel.expand',
-    },
-    ruralUrban: {
-        defaultMessage: 'Rural/Urban',
-        id: 'iaso.openHexalabel.ruralUrban',
-    },
-    urban: {
-        defaultMessage: 'Urban',
-        id: 'iaso.openHexalabel.urban',
-    },
-    rural: {
-        defaultMessage: 'Rural',
-        id: 'iaso.openHexalabel.rural',
-    },
 });

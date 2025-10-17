@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import ReplayIcon from '@mui/icons-material/Replay';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { NotificationImportDetailModal } from 'Iaso/domains/tasks/components/NotificationImportDetailModal';
-import { TaskLogsModal } from 'Iaso/domains/tasks/components/TaskLogsModal';
+import { TaskModal } from 'Iaso/domains/tasks/components/TaskModal';
 import { useKillTask, useRelaunchTask } from 'Iaso/domains/tasks/hooks/api';
 import MESSAGES from 'Iaso/domains/tasks/messages';
 import { Task } from 'Iaso/domains/tasks/types';
@@ -56,7 +56,7 @@ export const TaskActionCell: FunctionComponent<Props> = ({ task }) => {
                 task.name === 'create_polio_notifications_async' && (
                     <NotificationImportDetailModal task={task} iconProps={{}} />
                 )}
-            <TaskLogsModal task={task} iconProps={{}} />
+            <TaskModal task={task} iconProps={{}} />
         </section>
     );
 };

@@ -134,6 +134,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No logs to show.',
         id: 'iaso.tasks.no_logs_to_show',
     },
+    logs: {
+        defaultMessage: 'Logs',
+        id: 'iaso.storages.logs',
+    },
+    exportMobileAppDownloadBtn: {
+        defaultMessage: 'Download file',
+        id: 'iaso.users.exportMobileAppDownloadBtn',
+    },
 });
 
 export default MESSAGES;

@@ -222,6 +222,14 @@ const MESSAGES = defineMessages({
             'No fields to analyse. You can set them up in the entities types page',
         id: 'iaso.duplicate.messageErrorMissingFields',
     },
+    ignoreSelectionTitle: {
+        defaultMessage: 'Ignore selection?',
+        id: 'iaso.duplicate.ignoreSelectionTitle',
+    },
+    ignoreSelectionMessage: {
+        defaultMessage: 'Are you sure you wish to ignore selected duplicates?',
+        id: 'iaso.duplicate.ignoreSelectionMessage',
+    },
 });
 
 export default MESSAGES;

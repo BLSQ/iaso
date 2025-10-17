@@ -2,8 +2,8 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { useGetOrgUnitsByOrgUnitTypeId } from 'Iaso/domains/assignments/hooks/requests/useGetOrgUnits';
 import { Planning } from 'Iaso/domains/assignments/types/planning';
-import { ParameterValues } from '../hooks/usePipelineParameters';
-import { MESSAGES } from '../messages';
+import MESSAGES from '../../messages';
+import { ParameterValues } from './LQASForm';
 
 type Props = {
     index: number;

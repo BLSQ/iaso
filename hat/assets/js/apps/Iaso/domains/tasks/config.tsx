@@ -125,12 +125,6 @@ export const useTasksTableColumns = (): TaskColumn[] => {
                     <TaskActionCell task={settings.row.original} />
                 ),
             },
-            {
-                expander: true,
-                accessor: 'expander',
-                width: 65,
-                Expander,
-            },
         ],
         [formatMessage],
     );

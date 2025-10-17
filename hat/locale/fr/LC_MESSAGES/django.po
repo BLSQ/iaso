@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-05 09:52+0000\n"
+"POT-Creation-Date: 2025-10-10 08:12+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -18,145 +18,532 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
 
-#: hat/menupermissions/models.py
-msgid "Areas"
-msgstr "Zones"
+#: plugins/trypelim/dashboard/views.py
+msgid "Your password was successfully updated"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Edit areas"
-msgstr "Éditer les zones"
+#: plugins/trypelim/import_export/errors.py
+msgid "Unknown file type. Only .mdb, .accdb and .enc accepted"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Edit areas shapes"
-msgstr "Éditer les formes des zones"
+#: plugins/trypelim/import_export/errors.py
+msgid "Could not extract data from file for import"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Cases"
-msgstr "Cas"
+#: plugins/trypelim/import_export/errors.py
+msgid "File is missing values, can not be automatically imported"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Cases analysis"
-msgstr "Analyse des cas"
+#: plugins/trypelim/import_export/errors.py
+msgid "Could not load data into database"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Coordinations"
-msgstr "Coordinations"
+#: plugins/trypelim/import_export/errors.py
+msgid "Could not store file for re-import"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Devices"
-msgstr "Appareils"
+#: plugins/trypelim/import_export/errors.py
+msgid "File has already been uploaded"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Téléchargement de données"
-msgstr "Téléchargement de données"
+#: plugins/trypelim/import_export/errors.py
+msgid "An unforseen error occurred"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Doublons"
-msgstr "Doublons"
+#: plugins/trypelim/import_export/extract.py
+msgid "Cannot import unknown mdb schema"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Edition d'un patient"
-msgstr "Edition d'un patient"
+#: plugins/trypelim/import_export/extract.py
+msgid "Cannot import unkown filetype: {}"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Health facilities"
-msgstr "Établissements de santé"
+#: plugins/trypelim/import_export/forms.py
+msgid "Upload file"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Labo"
-msgstr "Labo"
+#: plugins/trypelim/import_export/import_cases.py
+#: plugins/trypelim/import_export/import_reconciled.py
+msgid "This file has already been uploaded: {}"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Labo import"
-msgstr "Import labo"
+#: plugins/trypelim/import_export/import_reconciled.py
+#: plugins/trypelim/import_export/urls.py
+msgid "reconciled data"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Locator"
-msgstr "Localisateur"
+#: plugins/trypelim/import_export/import_synced.py
+msgid "synced data"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Macroplanning"
-msgstr "Macroplanification"
+#: plugins/trypelim/import_export/urls.py
+msgid "Uploading data"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Microplanning"
-msgstr "Microplanification"
+#: plugins/trypelim/import_export/urls.py
+msgid "The file upload is in progress..."
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Modifications"
-msgstr "Modifications"
+#: plugins/trypelim/import_export/urls.py
+msgid "The upload job you're looking for has expired."
+msgstr ""
 
-#: hat/menupermissions/models.py
+#: plugins/trypelim/import_export/urls.py
+msgid "The upload job has failed."
+msgstr ""
+
+#: plugins/trypelim/import_export/urls.py
+msgid "cases"
+msgstr ""
+
+#: plugins/trypelim/maintenance/views.py
+msgid "Maintenance"
+msgstr ""
+
+#: plugins/trypelim/maintenance/views.py
+#, python-format
+msgid "Error: %(error)s"
+msgstr ""
+
+#: plugins/trypelim/maintenance/views.py
+msgid "Upload done."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task deferred."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "This task is expired."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task failed.  Please try again."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task done."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task in queue."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task started."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task complete."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task in progress..."
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Task status"
+msgstr ""
+
+#: plugins/trypelim/tasks/views.py
+msgid "Could not get the file."
+msgstr ""
+
+#: plugins/trypelim/templates/app.html
+msgid "Sense HAT"
+msgstr ""
+
+#: plugins/trypelim/templates/app.html
+msgid "Print this page"
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid "Trypelim Dashboard"
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid "Welcome to the SENSE HAT Dashboard"
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid ""
+"The Trypelim project aims at digitalization of the sleeping sickness "
+"elimination program."
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid ""
+"\n"
+"      Ceci est la base de données de surveillance de la maladie du sommeil "
+"en RDC. Les données sont la propriété du\n"
+"      Ministère de la Santé de la RDC. Aucune exploitation, dissémination ni "
+"publication ne peut être faite sur base de\n"
+"      ces données sans autorisation écrite préalable du Ministère de la "
+"Santé.\n"
+"      "
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid ""
+"Les données historiques contenues dans la base sont en cours de\n"
+"      digitalisation, et ne sont pas validées pour l’instant. Pour toute "
+"information, veuillez vous adresser au\n"
+"      Directeur du PNLTHA.\n"
+"      "
+msgstr ""
+
+#: plugins/trypelim/templates/base.html
+msgid ""
+"\n"
+"      This is the staging site, which is for testing purposes only. Data may "
+"be periodically deleted.\n"
+"      Access main site at: <a href=\"https://"
+"www.trypelim.org\">www.trypelim.org</a>\n"
+"      "
+msgstr ""
+
+#: plugins/trypelim/templates/cases/analysis/list.html
+msgid "Analysis of cases"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/analysis/list.html
+msgid "Entries"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/analysis/list.html
+msgid "Participants"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/analysis/list.html
+msgid "Suspect cases"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/analysis/list.html
+msgid "Confirmed cases"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/download.html
+msgid "Download cases"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/download.html
+msgid "Prepare download"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/download.html
+msgid ""
+"\n"
+"      Download data as a CSV file.\n"
+"      Download all data from the database or a subset of the data based on "
+"your current filters.\n"
+"      "
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid "Duplicate cases reconciliation"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+msgid "Back to list"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+msgid "Comparison of matching cases"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+msgid ""
+"\n"
+"          This page shows a detailed field by field comparison of the "
+"matching cases.\n"
+"          In the most right column is a preview of the result fields of the "
+"merge.\n"
+"          The merge can be performed by clicking the <b>“Merge”</b> button "
+"on the bottom right.\n"
+"          To mark them as <b><i>false positive</i></b> click the "
+"<b>“Ignore”</b> button.\n"
+"          "
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+msgid "Merge"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/detail.html
+msgid "Ignore"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid "Duplicate matches found"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid ""
+"\n"
+"          This list shows potential duplicate cases. Click on “Compare” for "
+"a detailed comparison.\n"
+"          "
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid "Case 1"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid "Case 2"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/duplicates/list.html
+msgid "Compare"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Change current filters"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "ZS"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "AS"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "village"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Timeframe"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "From"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Till"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Hide filters"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Search"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Village"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "To"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Order"
+msgstr ""
+
+#: plugins/trypelim/templates/cases/filters.html
+msgid "Group by"
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/change_password.html
+#: plugins/trypelim/templates/login.html
+msgid "Tableau de Bord Trypelim"
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/change_password.html
+msgid "Changer votre mot de passe"
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/change_password.html
+msgid "Changer"
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/datas.html
+msgid ""
+"\n"
+"    Données\n"
+"    "
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/management.html
+msgid "Gestion"
+msgstr ""
+
+#: plugins/trypelim/templates/dashboard/plannings.html
 msgid "Plannings"
 msgstr "Planifications"
 
-#: hat/menupermissions/models.py
-msgid "Plannings template"
-msgstr "Modèle de planifications"
+#: plugins/trypelim/templates/dashboard/stats.html
+msgid "Stats"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Quality control"
-msgstr "Contrôle qualité"
+#: plugins/trypelim/templates/data_sources.html
+msgid "Data sources"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Reconciliation"
-msgstr "Réconciliation"
+#: plugins/trypelim/templates/data_sources.html
+msgid "HAT mobile application data"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Routes"
-msgstr "Routes"
+#: plugins/trypelim/templates/data_sources.html
+msgid "HAT historical forms"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Graphs"
-msgstr "Graphiques"
+#: plugins/trypelim/templates/data_sources.html
+msgid "Pharmacovigilance"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Reports"
-msgstr "Rapports"
+#: plugins/trypelim/templates/devices/device_event_form.html
+msgid "Change Status"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Upload of cases files"
-msgstr "Téléversement des fichiers de cas"
+#: plugins/trypelim/templates/devices/device_event_form.html
+#: hat/templates/iaso/forgot_password.html
+#: hat/templates/iaso/reset_password_confirmation.html
+msgid "Submit"
+msgstr "Envoyer"
 
-#: hat/menupermissions/models.py
-msgid "Upload of villages files"
-msgstr "Téléversement des fichiers de villages"
+#: plugins/trypelim/templates/devices/device_event_form.html
+msgid "Register Action"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Teams"
-msgstr "Équipes"
+#: plugins/trypelim/templates/devices/device_event_form.html
+msgid "Add a comment"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Users"
-msgstr "Utilisateurs"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Devices"
+msgstr "Appareils"
 
-#: hat/menupermissions/models.py
-msgid "Vector control"
-msgstr "Contrôle vectoriel"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Device"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Vector control import Gpx"
-msgstr "Import GPX contrôle vectoriel"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Surveillance activity summary"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Villages"
-msgstr "Villages"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Last synchronisation summary"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Work zones"
-msgstr "Zones de travail"
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "ID"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Zones"
-msgstr "Zones"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Synced?"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Edit zones"
-msgstr "Éditer les zones"
+#: plugins/trypelim/templates/devices/list.html
+msgid "Period"
+msgstr ""
 
-#: hat/menupermissions/models.py
-msgid "Edit zones shapes"
-msgstr "Éditer les formes des zones"
+#: plugins/trypelim/templates/devices/list.html
+msgid "# Locations"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+msgid "# Participants"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "Date"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "Total"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "Created"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "Updated"
+msgstr ""
+
+#: plugins/trypelim/templates/devices/list.html
+#: plugins/trypelim/templates/events/list.html
+msgid "Deleted"
+msgstr ""
+
+#: plugins/trypelim/templates/events/list.html
+msgid "Events"
+msgstr ""
+
+#: plugins/trypelim/templates/events/list.html
+msgid "Type"
+msgstr ""
+
+#: plugins/trypelim/templates/events/list.html
+msgid "Name"
+msgstr ""
+
+#: plugins/trypelim/templates/login.html
+msgid "Connectez vous pour continuer"
+msgstr ""
+
+#: plugins/trypelim/templates/login.html
+msgid ""
+"\n"
+"            Your account doesn't have access to this page. To proceed,\n"
+"            please login with an account that has access.\n"
+"            "
+msgstr ""
+
+#: plugins/trypelim/templates/login.html hat/templates/iaso/login.html
+msgid "Please login to see this page."
+msgstr "Veuillez vous connecter pour voir cette page."
+
+#: plugins/trypelim/templates/login.html
+msgid ""
+"\n"
+"            Your username and password didn't match. Please try again.\n"
+"            "
+msgstr ""
+
+#: plugins/trypelim/templates/login.html hat/templates/iaso/login.html
+msgid "Login"
+msgstr "Connexion"
+
+#: plugins/trypelim/templates/pagination.html
+msgid "First"
+msgstr ""
+
+#: plugins/trypelim/templates/pagination.html
+msgid "Previous"
+msgstr ""
+
+#: plugins/trypelim/templates/pagination.html
+msgid "Next"
+msgstr ""
+
+#: plugins/trypelim/templates/pagination.html
+msgid "Last"
+msgstr ""
+
+#: plugins/trypelim/templates/tasks/status.html
+msgid "Back"
+msgstr ""
+
+#: plugins/trypelim/templates/tasks/status.html
+msgid "Status:"
+msgstr ""
+
+#: plugins/trypelim/templates/tasks/status.html
+msgid "Download file"
+msgstr ""
 
 #: hat/settings.py
 msgid "French"
@@ -165,11 +552,6 @@ msgstr "Français"
 #: hat/settings.py
 msgid "English"
 msgstr "Anglais"
-
-#: hat/templates/iaso/forgot_password.html
-#: hat/templates/iaso/reset_password_confirmation.html
-msgid "Submit"
-msgstr "Envoyer"
 
 #: hat/templates/iaso/forgot_password.html
 #: hat/templates/iaso/forgot_password_confirmation.html
@@ -203,16 +585,8 @@ msgstr ""
 "          "
 
 #: hat/templates/iaso/login.html
-msgid "Please login to see this page."
-msgstr "Veuillez vous connecter pour voir cette page."
-
-#: hat/templates/iaso/login.html
 msgid "Your username and password didn't match. Please try again."
 msgstr "Nom d'utilisateur ou mot de passe incorrect."
-
-#: hat/templates/iaso/login.html
-msgid "Login"
-msgstr "Connexion"
 
 #: hat/templates/iaso/login.html
 msgid "Learn more"
@@ -294,6 +668,105 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Areas"
+#~ msgstr "Zones"
+
+#~ msgid "Edit areas"
+#~ msgstr "Éditer les zones"
+
+#~ msgid "Edit areas shapes"
+#~ msgstr "Éditer les formes des zones"
+
+#~ msgid "Cases"
+#~ msgstr "Cas"
+
+#~ msgid "Cases analysis"
+#~ msgstr "Analyse des cas"
+
+#~ msgid "Coordinations"
+#~ msgstr "Coordinations"
+
+#~ msgid "Téléchargement de données"
+#~ msgstr "Téléchargement de données"
+
+#~ msgid "Doublons"
+#~ msgstr "Doublons"
+
+#~ msgid "Edition d'un patient"
+#~ msgstr "Edition d'un patient"
+
+#~ msgid "Health facilities"
+#~ msgstr "Établissements de santé"
+
+#~ msgid "Labo"
+#~ msgstr "Labo"
+
+#~ msgid "Labo import"
+#~ msgstr "Import labo"
+
+#~ msgid "Locator"
+#~ msgstr "Localisateur"
+
+#~ msgid "Macroplanning"
+#~ msgstr "Macroplanification"
+
+#~ msgid "Microplanning"
+#~ msgstr "Microplanification"
+
+#~ msgid "Modifications"
+#~ msgstr "Modifications"
+
+#~ msgid "Plannings template"
+#~ msgstr "Modèle de planifications"
+
+#~ msgid "Quality control"
+#~ msgstr "Contrôle qualité"
+
+#~ msgid "Reconciliation"
+#~ msgstr "Réconciliation"
+
+#~ msgid "Routes"
+#~ msgstr "Routes"
+
+#~ msgid "Graphs"
+#~ msgstr "Graphiques"
+
+#~ msgid "Reports"
+#~ msgstr "Rapports"
+
+#~ msgid "Upload of cases files"
+#~ msgstr "Téléversement des fichiers de cas"
+
+#~ msgid "Upload of villages files"
+#~ msgstr "Téléversement des fichiers de villages"
+
+#~ msgid "Teams"
+#~ msgstr "Équipes"
+
+#~ msgid "Users"
+#~ msgstr "Utilisateurs"
+
+#~ msgid "Vector control"
+#~ msgstr "Contrôle vectoriel"
+
+#~ msgid "Vector control import Gpx"
+#~ msgstr "Import GPX contrôle vectoriel"
+
+#~ msgid "Villages"
+#~ msgstr "Villages"
+
+#~ msgid "Work zones"
+#~ msgstr "Zones de travail"
+
+#~ msgid "Zones"
+#~ msgstr "Zones"
+
+#~ msgid "Edit zones"
+#~ msgstr "Éditer les zones"
+
+#~ msgid "Edit zones shapes"
+#~ msgstr "Éditer les formes des zones"
 
 #~ msgid "Formulaires"
 #~ msgstr "Formulaires"

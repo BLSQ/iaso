@@ -871,6 +871,33 @@
     Pipeline Execution Flow
   </a>
   
+    <nav class="md-nav" aria-label="Pipeline Execution Flow">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iaso-side-backend" class="md-nav__link">
+    Iaso Side (Backend)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openhexa-side-pipeline" class="md-nav__link">
+    OpenHEXA Side (Pipeline)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#status-management" class="md-nav__link">
+    Status Management
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -911,6 +938,60 @@
   <a href="#task-status-updates" class="md-nav__link">
     Task Status Updates
   </a>
+  
+    <nav class="md-nav" aria-label="Task Status Updates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pipeline-progress-updates-optional" class="md-nav__link">
+    1. Pipeline Progress Updates (Optional)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-automatic-status-polling-system" class="md-nav__link">
+    2. Automatic Status Polling System
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#background-task-system" class="md-nav__link">
+    Background Task System
+  </a>
+  
+    <nav class="md-nav" aria-label="Background Task System">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-creation-and-management" class="md-nav__link">
+    Task Creation and Management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-benefits" class="md-nav__link">
+    Key Benefits
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#polling-behavior" class="md-nav__link">
+    Polling Behavior
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -997,8 +1078,110 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#update-task-status" class="md-nav__link">
-    Update Task Status
+  <a href="#update-task-status-pipeline-iaso" class="md-nav__link">
+    Update Task Status (Pipeline → Iaso)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#automatic-status-updates-iaso-openhexa" class="md-nav__link">
+    Automatic Status Updates (Iaso → OpenHEXA)
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture-improvements" class="md-nav__link">
+    Architecture Improvements
+  </a>
+  
+    <nav class="md-nav" aria-label="Architecture Improvements">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#key-benefits-of-the-new-architecture" class="md-nav__link">
+    Key Benefits of the New Architecture
+  </a>
+  
+    <nav class="md-nav" aria-label="Key Benefits of the New Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-reliable-status-management" class="md-nav__link">
+    1. Reliable Status Management
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-robust-pipeline-execution" class="md-nav__link">
+    2. Robust Pipeline Execution
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-simplified-pipeline-development" class="md-nav__link">
+    3. Simplified Pipeline Development
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-better-user-experience" class="md-nav__link">
+    4. Better User Experience
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-improved-maintainability" class="md-nav__link">
+    5. Improved Maintainability
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-from-previous-architecture" class="md-nav__link">
+    Migration from Previous Architecture
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#best-practices" class="md-nav__link">
+    Best Practices
+  </a>
+  
+    <nav class="md-nav" aria-label="Best Practices">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#for-pipeline-developers" class="md-nav__link">
+    For Pipeline Developers
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#for-frontend-developers" class="md-nav__link">
+    For Frontend Developers
   </a>
   
 </li>
@@ -1355,14 +1538,30 @@ def lqas_assignment_pipeline(
 <li><strong>Note</strong>: This parameter is automatically added to the config by the backend during pipeline launch - it should not be provided by the frontend.</li>
 </ul>
 <h3 id="pipeline-execution-flow">Pipeline Execution Flow<a class="headerlink" href="#pipeline-execution-flow" title="Permanent link">#</a></h3>
+<h4 id="iaso-side-backend">Iaso Side (Backend)<a class="headerlink" href="#iaso-side-backend" title="Permanent link">#</a></h4>
+<ol>
+<li><strong>Task Creation</strong>: Create background task using <code>beanstalk_worker</code> decorator</li>
+<li><strong>Pipeline Launch</strong>: Launch OpenHEXA pipeline via GraphQL API</li>
+<li><strong>Continuous Polling</strong>: Start background polling loop to monitor pipeline status</li>
+<li><strong>Status Synchronization</strong>: Update Iaso task status to match OpenHEXA pipeline status</li>
+<li><strong>Result Handling</strong>: Process pipeline results when completed</li>
+</ol>
+<h4 id="openhexa-side-pipeline">OpenHEXA Side (Pipeline)<a class="headerlink" href="#openhexa-side-pipeline" title="Permanent link">#</a></h4>
 <ol>
 <li><strong>Connection Test</strong>: Validate connection to Iaso API using provided host and token</li>
 <li><strong>Validation</strong>: Verify org unit type hierarchy matches team hierarchy</li>
 <li><strong>Sampling</strong>: Apply LQAS algorithm to select org units</li>
 <li><strong>Assignment</strong>: Assign selected org units to teams/users</li>
-<li><strong>Status Updates</strong>: Update task progress throughout execution</li>
+<li><strong>Progress Updates</strong>: Optionally update task progress throughout execution</li>
 <li><strong>Result Storage</strong>: Store final assignments in Iaso database</li>
 </ol>
+<h4 id="status-management">Status Management<a class="headerlink" href="#status-management" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Automatic</strong>: Iaso polling system handles all status transitions</li>
+<li><strong>Real-time</strong>: Status updates happen automatically as OpenHEXA pipeline progresses</li>
+<li><strong>Reliable</strong>: Configurable timeout protection - prevents ghost tasks while allowing sufficient execution time</li>
+<li><strong>Aligned</strong>: Iaso task status always matches OpenHEXA pipeline status</li>
+</ul>
 <h3 id="api-authentication">API Authentication<a class="headerlink" href="#api-authentication" title="Permanent link">#</a></h3>
 <p>The pipeline uses JWT Bearer token authentication instead of OpenHexa's connection system. This approach provides better multitenant support, security, and direct control over API calls.</p>
 <h4 id="generic-api-caller">Generic API Caller<a class="headerlink" href="#generic-api-caller" title="Permanent link">#</a></h4>
@@ -1427,21 +1626,65 @@ config[&quot;connection_host&quot;] = f&quot;{scheme}://{host}&quot;
 - <strong>Compatibility</strong>: Works seamlessly with existing Django JWT setup
 - <strong>Simplified Frontend</strong>: Frontend doesn't need to handle token acquisition</p>
 <h3 id="task-status-updates">Task Status Updates<a class="headerlink" href="#task-status-updates" title="Permanent link">#</a></h3>
-<p>The pipeline updates task status at key milestones using the generic API caller:</p>
-<pre><code class="language-python">def update_task_status(
-    task_id: int,
-    status: str,
+<p>The pipeline integration uses a dual approach for task status management:</p>
+<h4 id="1-pipeline-progress-updates-optional">1. Pipeline Progress Updates (Optional)<a class="headerlink" href="#1-pipeline-progress-updates-optional" title="Permanent link">#</a></h4>
+<p>The pipeline can optionally update progress and messages using the generic API caller:</p>
+<pre><code class="language-python">def safe_update_task_status(
+    task_id: Optional[int],
     message: str,
+    connection_host: str,
+    connection_token: str,
+    pipeline_id: str,
     progress_value: Optional[int] = None,
     end_value: Optional[int] = None,
-    pipeline_id: Optional[str] = None,
     result_data: Optional[Dict] = None,
-    connection_host: str = &quot;&quot;,
-    connection_token: str = &quot;&quot;,
+    status: Optional[str] = None,  # Optional - not used by default
 ):
-    &quot;&quot;&quot;Update task status in Iaso using direct connection parameters.&quot;&quot;&quot;
+    &quot;&quot;&quot;Safely update task progress and messages in Iaso.&quot;&quot;&quot;
     # Uses call_api() function to send PATCH request to /api/openhexa/pipelines/{pipeline_id}/
-    # with task_id, status, progress_message, progress_value, end_value, result_data
+    # with task_id, progress_message, progress_value, end_value, result_data
+    # Status updates are handled by the polling system, not the pipeline
+</code></pre>
+<h4 id="2-automatic-status-polling-system">2. Automatic Status Polling System<a class="headerlink" href="#2-automatic-status-polling-system" title="Permanent link">#</a></h4>
+<p>The main status management is handled by Iaso's background task system that continuously polls OpenHEXA for pipeline status:</p>
+<pre><code class="language-python">@task_decorator(task_name=&quot;launch_openhexa_pipeline&quot;)
+def launch_openhexa_pipeline(
+    pipeline_id: str,
+    openhexa_url: str,
+    openhexa_token: str,
+    version: str,
+    config: dict,
+    delay: int = 2,
+    max_polling_duration_minutes: int = 10,
+    task: Task = None,
+):
+    &quot;&quot;&quot;
+    Background task that:
+    1. Launches the OpenHEXA pipeline
+    2. Continuously polls OpenHEXA for status updates
+    3. Updates Iaso task status to match OpenHEXA pipeline status
+    4. Handles all status transitions automatically
+    5. Times out after max_polling_duration_minutes to prevent ghost tasks
+    &quot;&quot;&quot;
+</code></pre>
+<p><strong>Key Features</strong>:
+- <strong>Continuous Polling</strong>: Polls OpenHEXA until pipeline reaches final state or timeout
+- <strong>Configurable Timeout</strong>: Default 10-minute timeout prevents ghost tasks (configurable via <code>max_polling_duration_minutes</code>)
+- <strong>Status Alignment</strong>: Iaso task status always matches OpenHEXA pipeline status
+- <strong>Automatic Transitions</strong>: Handles all status changes automatically
+- <strong>Error Handling</strong>: Proper error handling and logging
+- <strong>Timeout Protection</strong>: Prevents indefinite polling that could create ghost tasks</p>
+<p><strong>Timeout Implementation</strong>:</p>
+<pre><code class="language-python"># Check if polling timeout has been reached
+current_time = datetime.now()
+elapsed_time = current_time - polling_start_time
+if elapsed_time &gt; max_polling_duration:
+    timeout_message = (
+        f&quot;Polling timeout reached after {max_polling_duration_minutes} minutes for pipeline {pipeline_id}&quot;
+    )
+    logger.warning(timeout_message)
+    task.report_failure(Exception(timeout_message))
+    return
 </code></pre>
 <p><strong>Status Values</strong>:
 - <code>QUEUED</code>: Pipeline is queued for execution
@@ -1451,6 +1694,50 @@ config[&quot;connection_host&quot;] = f&quot;{scheme}://{host}&quot;
 - <code>EXPORTED</code>: Pipeline results have been exported
 - <code>SKIPPED</code>: Pipeline execution was skipped
 - <code>KILLED</code>: Pipeline was terminated</p>
+<p><strong>OpenHEXA Status Mapping</strong>:
+- <code>success</code>, <code>completed</code>, <code>done</code> → <code>SUCCESS</code>
+- <code>failed</code>, <code>errored</code>, <code>cancelled</code>, <code>error</code> → <code>ERRORED</code>
+- <code>running</code>, <code>queued</code>, <code>pending</code>, <code>started</code> → <code>RUNNING</code></p>
+<h3 id="background-task-system">Background Task System<a class="headerlink" href="#background-task-system" title="Permanent link">#</a></h3>
+<p>The integration uses Iaso's <code>beanstalk_worker</code> system for reliable background task execution:</p>
+<h4 id="task-creation-and-management">Task Creation and Management<a class="headerlink" href="#task-creation-and-management" title="Permanent link">#</a></h4>
+<pre><code class="language-python"># Task is automatically created by the decorator
+@task_decorator(task_name=&quot;launch_openhexa_pipeline&quot;)
+def launch_openhexa_pipeline(user, pipeline_id, openhexa_url, openhexa_token, version, config, delay=2, task=None):
+    &quot;&quot;&quot;
+    Single task handles both pipeline launch and continuous monitoring
+    &quot;&quot;&quot;
+    # 1. Set task properties
+    task.external = True
+    task.status = QUEUED
+
+    # 2. Launch OpenHEXA pipeline
+    ExternalTaskModelViewSet.launch_task(...)
+
+    # 3. Start continuous polling loop
+    while True:
+        # Poll OpenHEXA for status
+        # Update Iaso task status accordingly
+        # Handle final states (SUCCESS/ERRORED)
+</code></pre>
+<h4 id="key-benefits">Key Benefits<a class="headerlink" href="#key-benefits" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Single Task</strong>: One task handles both launch and monitoring (no separate polling tasks)</li>
+<li><strong>User Association</strong>: Task is automatically associated with the launching user</li>
+<li><strong>Reliable Execution</strong>: Uses Iaso's proven background task system</li>
+<li><strong>Status Consistency</strong>: Task status always reflects OpenHEXA pipeline status</li>
+<li><strong>Error Handling</strong>: Proper error handling and logging throughout</li>
+<li><strong>Kill Support</strong>: Respects task kill signals for graceful termination</li>
+</ul>
+<h4 id="polling-behavior">Polling Behavior<a class="headerlink" href="#polling-behavior" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Continuous</strong>: Polls until pipeline reaches final state or timeout</li>
+<li><strong>Efficient</strong>: Only logs status changes, not every poll attempt</li>
+<li><strong>Configurable</strong>: Polling delay can be adjusted (default: 2 seconds)</li>
+<li><strong>Timeout Protection</strong>: Default 10-minute timeout prevents ghost tasks</li>
+<li><strong>Robust</strong>: Handles network errors and continues polling</li>
+<li><strong>Aligned</strong>: Iaso task status always matches OpenHEXA pipeline status</li>
+</ul>
 <h2 id="openhexa-configuration">OpenHexa Configuration<a class="headerlink" href="#openhexa-configuration" title="Permanent link">#</a></h2>
 <h3 id="configuration-parameters">Configuration Parameters<a class="headerlink" href="#configuration-parameters" title="Permanent link">#</a></h3>
 <p>The OpenHexa integration requires configuration stored in the <code>Config</code> model with slug <code>"openhexa-config"</code>. The configuration includes:</p>
@@ -1504,13 +1791,12 @@ Content-Type: application/json
 }
 </code></pre>
 <p><strong>Note</strong>: The <code>connection_host</code> and <code>connection_token</code> parameters are automatically added to the config by the backend during pipeline launch. The frontend should not include these parameters in the request.</p>
-<h4 id="update-task-status">Update Task Status<a class="headerlink" href="#update-task-status" title="Permanent link">#</a></h4>
+<h4 id="update-task-status-pipeline-iaso">Update Task Status (Pipeline → Iaso)<a class="headerlink" href="#update-task-status-pipeline-iaso" title="Permanent link">#</a></h4>
 <pre><code class="language-http">PATCH /api/openhexa/pipelines/{pipeline_id}/
 Content-Type: application/json
 
 {
     &quot;task_id&quot;: 456,
-    &quot;status&quot;: &quot;SUCCESS&quot;,
     &quot;progress_message&quot;: &quot;Pipeline completed successfully&quot;,
     &quot;progress_value&quot;: 100,
     &quot;end_value&quot;: 100,
@@ -1521,6 +1807,78 @@ Content-Type: application/json
     }
 }
 </code></pre>
+<p><strong>Note</strong>: The <code>status</code> parameter is optional and not used by default. Status updates are handled automatically by Iaso's polling system. The pipeline should only send progress updates and messages.</p>
+<h4 id="automatic-status-updates-iaso-openhexa">Automatic Status Updates (Iaso → OpenHEXA)<a class="headerlink" href="#automatic-status-updates-iaso-openhexa" title="Permanent link">#</a></h4>
+<p>Status updates are handled automatically by the background polling system:</p>
+<ul>
+<li><strong>QUEUED</strong>: When pipeline is launched</li>
+<li><strong>RUNNING</strong>: When OpenHEXA pipeline starts executing</li>
+<li><strong>SUCCESS</strong>: When OpenHEXA pipeline completes successfully</li>
+<li><strong>ERRORED</strong>: When OpenHEXA pipeline fails</li>
+<li><strong>KILLED</strong>: When task is manually terminated</li>
+</ul>
+<p>The polling system continuously monitors OpenHEXA and updates Iaso task status accordingly.</p>
+<h2 id="architecture-improvements">Architecture Improvements<a class="headerlink" href="#architecture-improvements" title="Permanent link">#</a></h2>
+<h3 id="key-benefits-of-the-new-architecture">Key Benefits of the New Architecture<a class="headerlink" href="#key-benefits-of-the-new-architecture" title="Permanent link">#</a></h3>
+<h4 id="1-reliable-status-management">1. <strong>Reliable Status Management</strong><a class="headerlink" href="#1-reliable-status-management" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Automatic Synchronization</strong>: Iaso task status always matches OpenHEXA pipeline status</li>
+<li><strong>No Manual Updates</strong>: Status changes are handled automatically by the polling system</li>
+<li><strong>Real-time Updates</strong>: Status changes are reflected immediately in the UI</li>
+<li><strong>Consistent State</strong>: Eliminates status mismatches between systems</li>
+</ul>
+<h4 id="2-robust-pipeline-execution">2. <strong>Robust Pipeline Execution</strong><a class="headerlink" href="#2-robust-pipeline-execution" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Configurable Timeouts</strong>: Default 10-minute timeout prevents ghost tasks (configurable)</li>
+<li><strong>Continuous Monitoring</strong>: Polls until pipeline reaches final state or timeout</li>
+<li><strong>Error Recovery</strong>: Handles network errors and continues polling</li>
+<li><strong>Kill Support</strong>: Respects task termination signals</li>
+<li><strong>Timeout Protection</strong>: Prevents indefinite polling that could create ghost tasks</li>
+</ul>
+<h4 id="3-simplified-pipeline-development">3. <strong>Simplified Pipeline Development</strong><a class="headerlink" href="#3-simplified-pipeline-development" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Optional Status Updates</strong>: Pipelines can focus on business logic, not status management</li>
+<li><strong>Progress Reporting</strong>: Pipelines can still send progress updates and messages</li>
+<li><strong>Clean Separation</strong>: Status management is handled by Iaso, not the pipeline</li>
+<li><strong>Reduced Complexity</strong>: Pipelines don't need to handle status transitions</li>
+</ul>
+<h4 id="4-better-user-experience">4. <strong>Better User Experience</strong><a class="headerlink" href="#4-better-user-experience" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Accurate Status</strong>: Users always see the correct pipeline status</li>
+<li><strong>Real-time Feedback</strong>: Status updates happen automatically</li>
+<li><strong>Reliable Monitoring</strong>: No more stuck or orphaned tasks</li>
+<li><strong>Consistent Interface</strong>: Same task management interface for all pipeline types</li>
+</ul>
+<h4 id="5-improved-maintainability">5. <strong>Improved Maintainability</strong><a class="headerlink" href="#5-improved-maintainability" title="Permanent link">#</a></h4>
+<ul>
+<li><strong>Single Source of Truth</strong>: OpenHEXA is the authoritative source for pipeline status</li>
+<li><strong>Centralized Logic</strong>: All status management logic is in one place</li>
+<li><strong>Easier Debugging</strong>: Clear separation between pipeline logic and status management</li>
+<li><strong>Better Testing</strong>: Status management can be tested independently</li>
+</ul>
+<h3 id="migration-from-previous-architecture">Migration from Previous Architecture<a class="headerlink" href="#migration-from-previous-architecture" title="Permanent link">#</a></h3>
+<p>The new architecture is backward compatible with existing pipelines:</p>
+<ul>
+<li><strong>Existing Pipelines</strong>: Continue to work without modification</li>
+<li><strong>Status Updates</strong>: Optional - pipelines can still send status updates if needed</li>
+<li><strong>Progress Updates</strong>: Still supported and recommended for user feedback</li>
+<li><strong>Error Handling</strong>: Improved error handling and recovery</li>
+</ul>
+<h3 id="best-practices">Best Practices<a class="headerlink" href="#best-practices" title="Permanent link">#</a></h3>
+<h4 id="for-pipeline-developers">For Pipeline Developers<a class="headerlink" href="#for-pipeline-developers" title="Permanent link">#</a></h4>
+<ol>
+<li><strong>Focus on Business Logic</strong>: Don't worry about status management</li>
+<li><strong>Send Progress Updates</strong>: Use <code>safe_update_task_status()</code> for user feedback</li>
+<li><strong>Handle Errors Gracefully</strong>: Let the polling system handle status updates</li>
+<li><strong>Use Result Data</strong>: Include meaningful data in progress updates</li>
+</ol>
+<h4 id="for-frontend-developers">For Frontend Developers<a class="headerlink" href="#for-frontend-developers" title="Permanent link">#</a></h4>
+<ol>
+<li><strong>Monitor Task Status</strong>: Use the task status for UI updates</li>
+<li><strong>Show Progress</strong>: Display progress messages from the pipeline</li>
+<li><strong>Handle States</strong>: Implement proper UI states for each task status</li>
+<li><strong>Real-time Updates</strong>: Use task polling for real-time status updates</li>
+</ol>
 <h3 id="assignment-management">Assignment Management<a class="headerlink" href="#assignment-management" title="Permanent link">#</a></h3>
 <h4 id="delete-all-assignments-for-planning">Delete All Assignments for Planning<a class="headerlink" href="#delete-all-assignments-for-planning" title="Permanent link">#</a></h4>
 <pre><code class="language-http">DELETE /api/assignments/?planning={planning_id}

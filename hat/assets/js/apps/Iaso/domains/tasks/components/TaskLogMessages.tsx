@@ -19,12 +19,14 @@ export type Props = {
     messages?: TaskLog[];
     isRunning?: boolean;
     isFetching?: boolean;
+    displayLoader?: boolean;
 };
 
 export const TaskLogMessages: FunctionComponent<Props> = ({
     messages,
     isRunning = false,
     isFetching = false,
+    displayLoader = true,
 }) => {
     const { formatMessage } = useSafeIntl();
     const messagesEndRef = useRef<null | HTMLDivElement>(null);
@@ -61,7 +63,7 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                                         </TableCell>
                                     </TableRow>
                                 )}
-                                {isFetching && (
+                                {displayLoader && isFetching && (
                                     <TableRow>
                                         <TableCell colSpan={2}>
                                             <CircularProgress size={20} />
@@ -75,6 +77,7 @@ export const TaskLogMessages: FunctionComponent<Props> = ({
                                                 color: 'grey',
                                                 whiteSpace: 'nowrap',
                                                 width: '15%',
+                                                verticalAlign: 'top',
                                             }}
                                         >
                                             {moment

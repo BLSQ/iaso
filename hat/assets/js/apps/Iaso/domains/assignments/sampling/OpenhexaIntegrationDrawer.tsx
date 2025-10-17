@@ -32,8 +32,8 @@ import { ParameterValues } from 'Iaso/domains/openHexa/types/pipeline';
 import { TaskLogMessages } from 'Iaso/domains/tasks/components/TaskLogMessages';
 import { useGetLogs } from 'Iaso/domains/tasks/hooks/api';
 
+import { TaskStatus } from 'Iaso/domains/tasks/types';
 import { SxStyles } from 'Iaso/types/general';
-import { usePollTask } from '../hooks/requests/usePollTask';
 import MESSAGES from '../messages';
 import { Planning } from '../types/planning';
 import { StatusInfos } from './StatusInfos';
@@ -89,11 +89,11 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const queryClient = useQueryClient();
     const [isOpen, setIsOpen] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
-    const [allowConfirm, setAllowConfirm] = useState(false);
     const [parameterValues, setParameterValues] = useState<
         ParameterValues | undefined
     >(undefined);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [allowConfirm, setAllowConfirm] = useState(false);
     const [selectedPipelineId, setSelectedPipelineId] = useState<
         string | undefined
     >(
@@ -121,15 +121,31 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
         isLoading: isLaunchingTask,
     } = useLaunchTask(selectedPipelineId, pipeline?.currentVersion?.id, false);
     const taskId = launchResult?.task?.id;
+    const [taskStatus, setTaskStatus] = useState<TaskStatus | undefined>(
+        undefined,
+    );
+
+    const isPipelineActive =
+        (!taskStatus || taskStatus === 'RUNNING' || taskStatus === 'QUEUED') &&
+        currentStep === 2;
     const handleEndTask = useCallback(() => {
         queryClient.invalidateQueries(['assignmentsList']);
     }, [queryClient]);
-    const { data: task } = usePollTask(taskId, handleEndTask);
+
     const { data: taskLogs, isFetching: isFetchingTaskLogs } = useGetLogs(
         taskId,
-        task?.status === 'RUNNING',
+        isPipelineActive,
     );
 
+    useEffect(() => {
+        if (taskLogs && taskLogs.status !== taskStatus) {
+            setTaskStatus(taskLogs.status);
+            if (taskLogs.status === 'SUCCESS') {
+                handleEndTask();
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [taskLogs]);
     const pipelineUuidsOptions = useMemo(
         () =>
             data?.filter(pipeline =>
@@ -166,8 +182,6 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
             setIsSubmitting(false);
         }
     }, [isSubmitting, isLaunchingTask]);
-
-    const isPipelineRunning = task?.status === 'RUNNING';
     return (
         <>
             <Tooltip title={disabled ? disabledMessage : undefined}>
@@ -237,7 +251,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         onClick={handleSubmit}
                                         disabled={
                                             !allowConfirm ||
-                                            isPipelineRunning ||
+                                            isPipelineActive ||
                                             isFetchingPipeline
                                         }
                                         fullWidth
@@ -251,7 +265,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         variant="contained"
                                         onClick={() => setCurrentStep(1)}
                                         disabled={
-                                            isPipelineRunning || isLaunchingTask
+                                            isPipelineActive || isLaunchingTask
                                         }
                                         fullWidth
                                     >
@@ -263,7 +277,7 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                         </Grid>
                     </Paper>
                     <Box position="relative" sx={styles.container}>
-                        {(isFetchingPipeline || isPipelineRunning) && (
+                        {(isFetchingPipeline || isPipelineActive) && (
                             <LoadingSpinner absolute fixed={false} />
                         )}
                         {/* Step 1: Pipeline selection and parameters */}
@@ -339,7 +353,9 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                         message={error.details.error}
                                     />
                                 )}
-                                {task && <StatusInfos status={task.status} />}
+                                {taskLogs && (
+                                    <StatusInfos status={taskLogs.status} />
+                                )}
                                 {taskId &&
                                     taskLogs &&
                                     taskLogs?.logs?.length > 0 && (
@@ -347,7 +363,8 @@ export const OpenhexaIntegrationDrawer: FunctionComponent<Props> = ({
                                             <TaskLogMessages
                                                 messages={taskLogs.logs}
                                                 isFetching={isFetchingTaskLogs}
-                                                isRunning={isPipelineRunning}
+                                                isRunning={isPipelineActive}
+                                                displayLoader={false}
                                             />
                                         </Box>
                                     )}

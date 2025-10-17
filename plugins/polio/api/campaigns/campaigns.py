@@ -636,7 +636,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names", "target_population"]
 
         def to_representation(self, instance):
-            # Skip test rounds
+            # Skip rounds on hold
             if instance.on_hold:
                 return None
             return super().to_representation(instance)
@@ -1211,7 +1211,7 @@ class CampaignViewSet(ModelViewSet):
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
 
-        # Filter out test rounds if requested
+        # Filter out rounds on hold if requested
         if exclude_test_rounds:
             rounds = rounds.filter(on_hold=False)
 

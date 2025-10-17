@@ -230,7 +230,11 @@ export const useSaveOrgUnit = (
 
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
-    return data => queryClient.setQueryData(['forms', data.id], data);
+    return data => {
+        queryClient.invalidateQueries('currentOrgUnit');
+        queryClient.invalidateQueries('logs');
+        return queryClient.setQueryData(['forms', data.id], data);
+    };
 };
 
 export const useOrgUnitTabParams = (params, paramsPrefix) => {

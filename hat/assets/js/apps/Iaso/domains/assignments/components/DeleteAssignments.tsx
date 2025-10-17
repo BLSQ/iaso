@@ -48,7 +48,7 @@ export const DeleteAssignments: FunctionComponent<Props> = ({
         return {
             ...MESSAGES.deleteAssignmentsWarning,
             values: {
-                name: formatThousand(count),
+                count: formatThousand(count),
             },
         };
     }, [count]);

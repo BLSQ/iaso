@@ -165,7 +165,9 @@ Timeline tracker Automated message.
 
 @task_decorator(task_name="send_weekly_email")
 def send_email(task=None):
-    campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
+    campaigns = (
+        Campaign.objects.exclude(enable_send_weekly_email=False).exclude(is_planned=True).prefetch_related("rounds")
+    )
     total = campaigns.count()
     email_sent = 0
 
@@ -176,9 +178,9 @@ def send_email(task=None):
             progress_message=f"Campaign {campaign.pk} started",
         )
 
-        latest_round_start = campaign.rounds.order_by("started_at").last()
+        latest_round_start = campaign.rounds.exclude(is_planned=True).order_by("started_at").last()
         if latest_round_start and latest_round_start.started_at and latest_round_start.started_at < now().date():
-            print(f"Campaign {campaign} is finished, skipping")
+            logger.info(f"Campaign {campaign} is finished, skipping")
             continue
         logger.info(f"Email for {campaign.obr_name}")
         status = send_notification_email(campaign)

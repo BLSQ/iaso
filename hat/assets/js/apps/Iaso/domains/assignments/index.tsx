@@ -47,7 +47,6 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.assignments;
 
 export const Assignments: FunctionComponent = () => {
-    const [groupId, setGroupId] = useState<number | undefined>(undefined);
     const params: AssignmentParams = useParamsObject(
         baseUrls.assignments,
     ) as unknown as AssignmentParams;
@@ -90,9 +89,9 @@ export const Assignments: FunctionComponent = () => {
         sidebarData,
         isFetchingOrgUnits,
         isFetchingOrgUnitsList,
+        isFetchingOrgunitTypes,
         isLoadingPlanning,
         isSaving,
-        isFetchingOrgunitTypes,
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
@@ -105,7 +104,6 @@ export const Assignments: FunctionComponent = () => {
         order: params.order || 'name',
         search: params.search,
         selectedItem,
-        groupId,
     });
     const isLoading = isLoadingPlanning || isSaving;
 
@@ -278,7 +276,8 @@ export const Assignments: FunctionComponent = () => {
                                 disabledMessage={formatMessage(
                                     MESSAGES.deleteAssignmentsInfos,
                                 )}
-                                setGroupId={setGroupId}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             />
                         )}
                 </Box>
@@ -287,7 +286,7 @@ export const Assignments: FunctionComponent = () => {
                     teams={teams || []}
                     isFetchingTeams={!isTeamsFetched}
                     orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
                     <Grid container spacing={2}>
@@ -330,7 +329,7 @@ export const Assignments: FunctionComponent = () => {
                                                 orgunitTypes={
                                                     orgunitTypes || []
                                                 }
-                                                isFetchingOrgUnitTypes={
+                                                isFetchingOrgunitTypes={
                                                     isFetchingOrgunitTypes
                                                 }
                                                 planning={planning}

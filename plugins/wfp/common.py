@@ -37,13 +37,11 @@ class ETL:
         account = entity_type.account
         return account
 
-    def get_updated_entity_ids(self, updated_at):
-        entities = (
-            Instance.objects.filter(entity__entity_type__code__in=self.types)
-            .filter(updated_at__gte=updated_at)
-            .values("entity_id")
-            .distinct()
-        )
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        entities = entities.values("entity_id").distinct()
         beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
         return list(set(beneficiary_ids))
 

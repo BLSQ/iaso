@@ -18,10 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task()
-def etl_ng():
+def etl_ng(all_data):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ng", status="SUCCESS").first()
     last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+
+    # Allow to re-run on the whole data
+    if all_data is not None:
+        last_success_task_date = None
 
     logger.info("Starting ETL for Nigeria")
     entity_type_U5_code = "nigeria_under5"
@@ -48,11 +52,13 @@ def etl_ng():
 
 
 @shared_task()
-def etl_ssd():
+def etl_ssd(all_data):
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ssd", status="SUCCESS").first()
-    print("last success ", last_success_task)
     last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
 
+    # Allow to re-run on the whole data
+    if all_data is not None:
+        last_success_task_date = None
     logger.info("Starting ETL for South Sudan")
     entity_type_U5_code = "ssd_under5"
     child_account = ETL([entity_type_U5_code]).account_related_to_entity_type()
@@ -80,9 +86,13 @@ def etl_ssd():
 
 
 @shared_task()
-def etl_ethiopia():
+def etl_ethiopia(all_data):
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ethiopia", status="SUCCESS").first()
     last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+
+    # Allow to re-run on the whole data
+    if all_data is not None:
+        last_success_task_date = None
 
     logger.info("Starting ETL for Ethiopia")
     entity_type_U5_code = "ethiopia_under5"

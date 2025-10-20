@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-05 09:52+0000\n"
+"POT-Creation-Date: 2025-10-20 08:00+0000\n"
 "PO-Revision-Date: 2025-02-05 14:41+0100\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: \n"
@@ -17,146 +17,6 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: Poedit 3.5\n"
-
-#: hat/menupermissions/models.py
-msgid "Areas"
-msgstr "Zones"
-
-#: hat/menupermissions/models.py
-msgid "Edit areas"
-msgstr "Éditer les zones"
-
-#: hat/menupermissions/models.py
-msgid "Edit areas shapes"
-msgstr "Éditer les formes des zones"
-
-#: hat/menupermissions/models.py
-msgid "Cases"
-msgstr "Cas"
-
-#: hat/menupermissions/models.py
-msgid "Cases analysis"
-msgstr "Analyse des cas"
-
-#: hat/menupermissions/models.py
-msgid "Coordinations"
-msgstr "Coordinations"
-
-#: hat/menupermissions/models.py
-msgid "Devices"
-msgstr "Appareils"
-
-#: hat/menupermissions/models.py
-msgid "Téléchargement de données"
-msgstr "Téléchargement de données"
-
-#: hat/menupermissions/models.py
-msgid "Doublons"
-msgstr "Doublons"
-
-#: hat/menupermissions/models.py
-msgid "Edition d'un patient"
-msgstr "Edition d'un patient"
-
-#: hat/menupermissions/models.py
-msgid "Health facilities"
-msgstr "Établissements de santé"
-
-#: hat/menupermissions/models.py
-msgid "Labo"
-msgstr "Labo"
-
-#: hat/menupermissions/models.py
-msgid "Labo import"
-msgstr "Import labo"
-
-#: hat/menupermissions/models.py
-msgid "Locator"
-msgstr "Localisateur"
-
-#: hat/menupermissions/models.py
-msgid "Macroplanning"
-msgstr "Macroplanification"
-
-#: hat/menupermissions/models.py
-msgid "Microplanning"
-msgstr "Microplanification"
-
-#: hat/menupermissions/models.py
-msgid "Modifications"
-msgstr "Modifications"
-
-#: hat/menupermissions/models.py
-msgid "Plannings"
-msgstr "Planifications"
-
-#: hat/menupermissions/models.py
-msgid "Plannings template"
-msgstr "Modèle de planifications"
-
-#: hat/menupermissions/models.py
-msgid "Quality control"
-msgstr "Contrôle qualité"
-
-#: hat/menupermissions/models.py
-msgid "Reconciliation"
-msgstr "Réconciliation"
-
-#: hat/menupermissions/models.py
-msgid "Routes"
-msgstr "Routes"
-
-#: hat/menupermissions/models.py
-msgid "Graphs"
-msgstr "Graphiques"
-
-#: hat/menupermissions/models.py
-msgid "Reports"
-msgstr "Rapports"
-
-#: hat/menupermissions/models.py
-msgid "Upload of cases files"
-msgstr "Téléversement des fichiers de cas"
-
-#: hat/menupermissions/models.py
-msgid "Upload of villages files"
-msgstr "Téléversement des fichiers de villages"
-
-#: hat/menupermissions/models.py
-msgid "Teams"
-msgstr "Équipes"
-
-#: hat/menupermissions/models.py
-msgid "Users"
-msgstr "Utilisateurs"
-
-#: hat/menupermissions/models.py
-msgid "Vector control"
-msgstr "Contrôle vectoriel"
-
-#: hat/menupermissions/models.py
-msgid "Vector control import Gpx"
-msgstr "Import GPX contrôle vectoriel"
-
-#: hat/menupermissions/models.py
-msgid "Villages"
-msgstr "Villages"
-
-#: hat/menupermissions/models.py
-msgid "Work zones"
-msgstr "Zones de travail"
-
-#: hat/menupermissions/models.py
-msgid "Zones"
-msgstr "Zones"
-
-#: hat/menupermissions/models.py
-msgid "Edit zones"
-msgstr "Éditer les zones"
-
-#: hat/menupermissions/models.py
-msgid "Edit zones shapes"
-msgstr "Éditer les formes des zones"
 
 #: hat/settings.py
 msgid "French"
@@ -294,6 +154,111 @@ msgstr "L'équipe %(site_name)s."
 #, python-format
 msgid "Password reset on %(site_name)s"
 msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Areas"
+#~ msgstr "Zones"
+
+#~ msgid "Edit areas"
+#~ msgstr "Éditer les zones"
+
+#~ msgid "Edit areas shapes"
+#~ msgstr "Éditer les formes des zones"
+
+#~ msgid "Cases"
+#~ msgstr "Cas"
+
+#~ msgid "Cases analysis"
+#~ msgstr "Analyse des cas"
+
+#~ msgid "Coordinations"
+#~ msgstr "Coordinations"
+
+#~ msgid "Devices"
+#~ msgstr "Appareils"
+
+#~ msgid "Téléchargement de données"
+#~ msgstr "Téléchargement de données"
+
+#~ msgid "Doublons"
+#~ msgstr "Doublons"
+
+#~ msgid "Edition d'un patient"
+#~ msgstr "Edition d'un patient"
+
+#~ msgid "Health facilities"
+#~ msgstr "Établissements de santé"
+
+#~ msgid "Labo"
+#~ msgstr "Labo"
+
+#~ msgid "Labo import"
+#~ msgstr "Import labo"
+
+#~ msgid "Locator"
+#~ msgstr "Localisateur"
+
+#~ msgid "Macroplanning"
+#~ msgstr "Macroplanification"
+
+#~ msgid "Microplanning"
+#~ msgstr "Microplanification"
+
+#~ msgid "Modifications"
+#~ msgstr "Modifications"
+
+#~ msgid "Plannings"
+#~ msgstr "Planifications"
+
+#~ msgid "Plannings template"
+#~ msgstr "Modèle de planifications"
+
+#~ msgid "Quality control"
+#~ msgstr "Contrôle qualité"
+
+#~ msgid "Reconciliation"
+#~ msgstr "Réconciliation"
+
+#~ msgid "Routes"
+#~ msgstr "Routes"
+
+#~ msgid "Graphs"
+#~ msgstr "Graphiques"
+
+#~ msgid "Reports"
+#~ msgstr "Rapports"
+
+#~ msgid "Upload of cases files"
+#~ msgstr "Téléversement des fichiers de cas"
+
+#~ msgid "Upload of villages files"
+#~ msgstr "Téléversement des fichiers de villages"
+
+#~ msgid "Teams"
+#~ msgstr "Équipes"
+
+#~ msgid "Users"
+#~ msgstr "Utilisateurs"
+
+#~ msgid "Vector control"
+#~ msgstr "Contrôle vectoriel"
+
+#~ msgid "Vector control import Gpx"
+#~ msgstr "Import GPX contrôle vectoriel"
+
+#~ msgid "Villages"
+#~ msgstr "Villages"
+
+#~ msgid "Work zones"
+#~ msgstr "Zones de travail"
+
+#~ msgid "Zones"
+#~ msgstr "Zones"
+
+#~ msgid "Edit zones"
+#~ msgstr "Éditer les zones"
+
+#~ msgid "Edit zones shapes"
+#~ msgstr "Éditer les formes des zones"
 
 #~ msgid "Formulaires"
 #~ msgstr "Formulaires"

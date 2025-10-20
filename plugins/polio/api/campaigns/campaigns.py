@@ -633,7 +633,16 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names", "target_population"]
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+                "scopes",
+                "vaccine_names",
+                "target_population",
+                "is_planned",
+            ]
 
         def to_representation(self, instance):
             # Skip rounds on hold
@@ -692,6 +701,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "description",
             "is_test",
             "on_hold",
+            "is_planned",
         ]
         read_only_fields = fields
 

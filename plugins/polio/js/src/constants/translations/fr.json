@@ -656,7 +656,7 @@
     "iaso.polio.label.school": "À l'école",
     "iaso.polio.label.scope_per_round": "Périmètre séparé par round",
     "iaso.polio.label.scopes": "Périmètres",
-    "iaso.polio.label.scopeUnlockConditions": "Veuillez sélectionner l'unité d'org initiale et encoder les dates d'au moins un round pour activer l'onglet \"Périmètre\"",
+    "iaso.polio.label.scopeUnlockConditions": "Veuillez sélectionner l'unité d'org initiale, encoder les dates d'au moins un round et marquer la campagne comme active pour activer l'onglet \"Périmètre\"",
     "iaso.polio.label.search": "Recherche",
     "iaso.polio.label.searchInScopeOrAllDistricts": "Recherche des districts dans le périmètre",
     "iaso.polio.label.SECURITY_CONTEXT": "Contexte sécuritaire",

@@ -3,33 +3,37 @@ from django.contrib import admin
 from iaso.models import OpenHEXAInstance, OpenHEXAWorkspace
 
 
-class SupersetDashboardInline(admin.TabularInline):
+class OpenHEXAWorkspaceInline(admin.TabularInline):
     model = OpenHEXAWorkspace
     extra = 1
     fields = (
-        "name",
-        "external_id",
+        "account",
+        "slug",
+        "description",
     )
 
 
 @admin.register(OpenHEXAInstance)
-class SupersetInstanceAdmin(admin.ModelAdmin):
+class OpenHEXAInstanceAdmin(admin.ModelAdmin):
     list_display = ("name", "url", "created_at", "updated_at")
     search_fields = ("name", "url")
     list_filter = ("created_at", "updated_at")
-    inlines = [SupersetDashboardInline]
+    inlines = [OpenHEXAWorkspaceInline]
 
 
 @admin.register(OpenHEXAWorkspace)
-class SupersetDashboardAdmin(admin.ModelAdmin):
+class OpenHEXAWorkspaceAdmin(admin.ModelAdmin):
     list_display = (
-        "openhexa_instance",
         "account",
+        "openhexa_instance",
         "slug",
         "created_at",
         "updated_at",
     )
-    search_fields = ("name", "external_id")
+    search_fields = (
+        "slug",
+        "description",
+    )
     list_filter = (
         "openhexa_instance",
         "account",

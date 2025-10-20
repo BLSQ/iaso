@@ -17,10 +17,11 @@ from iaso.api.openhexa.serializers import (
     TaskResponseSerializer,
     TaskUpdateSerializer,
 )
-from iaso.api.tasks.views import ExternalTaskModelViewSet
 from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
+from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
+from iaso.utils.tokens import get_user_token
 
 
 logger = logging.getLogger(__name__)
@@ -211,55 +212,35 @@ class OpenHexaPipelinesViewSet(ViewSet):
         version = validated_data["version"]
         config = validated_data["config"]
 
+        # Add connection token and host to config
+        try:
+            config["connection_token"] = get_user_token(request.user)
+            # Build complete URL with scheme
+            scheme = "https" if request.is_secure() else "http"
+            host = request.get_host()
+            config["connection_host"] = f"{scheme}://{host}"
+        except Exception as e:
+            logger.exception(f"Failed to generate connection token for user {request.user.id}: {str(e)}")
+            return Response(
+                {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         config_result = get_openhexa_config()
         if isinstance(config_result, Response):
             return config_result
         openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
-            # Construct pipeline_config object for launch_task
-            pipeline_config = MockConfig(
-                {
-                    "pipeline_version": str(version),  # Convert UUID to string
-                    "pipeline": str(pipeline_id),
-                    "oh_pipeline_target": None,
-                    "openhexa_url": openhexa_url,
-                    "openhexa_token": openhexa_token,
-                }
-            )
-
-            # Create external task following the same pattern as powerbi.py
             user = request.user
-            task_name = f"pipeline-{pipeline_id}-v{version}"
 
-            task = Task.objects.create(
-                created_by=user,
-                launcher=user,
-                account=user.iaso_profile.account,
-                name=task_name,
-                status=RUNNING,
-                external=True,
-                started_at=timezone.now(),
-                should_be_killed=False,
-                params={
-                    "args": [],
-                    "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
-                },
-            )
-
-            # Launch the task using the existing launch_task function
-            task_status = ExternalTaskModelViewSet.launch_task(
-                slug=None,  # Not needed since we're passing pipeline_config
+            task = launch_openhexa_pipeline(
+                user=user,
+                pipeline_id=pipeline_id,
+                openhexa_url=openhexa_url,
+                openhexa_token=openhexa_token,
+                version=str(version),
                 config=config,
-                task_id=task.pk,
-                pipeline_config=pipeline_config,
             )
-
-            # Update task status
-            task.status = task_status
-            task.save()
-
-            logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
             # Use serializer for response
             serializer = TaskResponseSerializer(task)
@@ -307,6 +288,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
                         task.progress_value = progress_value
                     if end_value is not None:
                         task.end_value = end_value
+
+                    result_data = validated_data.get("result")
+                    message = validated_data.get("progress_message", "Pipeline completed successfully")
+                    task.report_success_with_result(message, result_data)
+
+                    # Only call save() if we manually set progress_value or end_value
                     if progress_value is not None or end_value is not None:
                         result_data = validated_data.get("result")
                         message = validated_data.get("progress_message", "Pipeline completed successfully")
@@ -377,8 +364,6 @@ class OpenHexaPipelinesViewSet(ViewSet):
             # Get optional lqas_pipeline_code parameter if configuration is valid
             if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
                 response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
-            if configured and config_serializer.validated_data.get("connection_name"):
-                response_data["connection_name"] = config_serializer.validated_data["connection_name"]
 
             return Response(response_data)
 

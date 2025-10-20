@@ -12,7 +12,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import Count, IntegerField, Q, Value
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
@@ -28,6 +28,7 @@ from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSeri
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.microplanning import Assignment
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,
     CORE_ORG_UNITS_PERMISSION,
@@ -229,7 +230,28 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.order_by(*order)
+        # Handle assignment-related ordering to avoid duplicates from soft-deleted assignments
+        processed_order = []
+        for order_field in order:
+            if order_field.startswith("assignment__") and not order_field.startswith("assignment__deleted_at"):
+                if "user__username" in order_field:
+                    # Use subquery to only consider non-deleted assignments
+                    is_desc = order_field.startswith("-")
+                    annotation_name = f"assignment_username_{'desc' if is_desc else 'asc'}"
+
+                    subquery = Subquery(
+                        Assignment.objects.filter(org_unit=OuterRef("pk"), deleted_at__isnull=True)
+                        .order_by(order_field.replace("assignment__", ""))
+                        .values("user__username")[:1]
+                    )
+                    queryset = queryset.annotate(**{annotation_name: subquery})
+                    processed_order.append(f"{'-' if is_desc else ''}{annotation_name}")
+                else:
+                    processed_order.append(order_field)
+            else:
+                processed_order.append(order_field)
+
+        queryset = queryset.order_by(*processed_order)
 
         if parquet_format:
             return self.anwser_with_parquet_file(request, queryset, profile)

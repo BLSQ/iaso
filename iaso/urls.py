@@ -63,7 +63,8 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views import AssignmentViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -285,7 +286,7 @@ if not settings.DISABLE_PASSWORD_LOGINS:
     ]
 
 urlpatterns = urlpatterns + [
-    path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
+    path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
     path("", include(router.urls)),

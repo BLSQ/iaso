@@ -6,9 +6,10 @@ from django.utils import timezone
 from rest_framework import status
 
 from iaso import models as m
-from iaso.models.base import RUNNING, SUCCESS
+from iaso.models.base import QUEUED, RUNNING, SUCCESS
 from iaso.models.json_config import Config
 from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
+from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.test import APITestCase
 
 
@@ -212,8 +213,22 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         version_uuid = str(uuid.uuid4())
         config = {"country_name": "Burkina Faso", "use_demo_data": True}
 
-        with patch("iaso.api.openhexa.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task:
-            mock_launch_task.return_value = RUNNING
+        with (
+            patch("iaso.api.openhexa.views.launch_openhexa_pipeline") as mock_launch_task,
+            patch("iaso.api.openhexa.views.get_user_token") as mock_get_user_token,
+        ):
+            # Create a mock task object
+            mock_task = m.Task.objects.create(
+                created_by=self.user,
+                launcher=self.user,
+                account=self.account,
+                name="launch_openhexa_pipeline",
+                status=RUNNING,
+                external=True,
+                started_at=timezone.now(),
+            )
+            mock_launch_task.return_value = mock_task
+            mock_get_user_token.return_value = "test-jwt-token"
 
             response = self.client.post(
                 f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
@@ -228,13 +243,50 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             data = response.json()
             self.assertIn("task", data)
             self.assertEqual(data["task"]["status"], RUNNING)
-            # pipeline_id and version are no longer in the response, they're in task.params
 
-            # Verify task was created
-            task = m.Task.objects.get(pk=data["task"]["id"])
-            self.assertEqual(task.external, True)
-            self.assertEqual(task.status, RUNNING)
-            self.assertIn("pipeline_id", task.params["kwargs"])
+            # Verify that launch_openhexa_pipeline was called with correct parameters
+            mock_launch_task.assert_called_once()
+            call_args = mock_launch_task.call_args
+            self.assertEqual(call_args[1]["user"], self.user)
+            self.assertEqual(call_args[1]["pipeline_id"], self.pipeline_id)
+            self.assertEqual(call_args[1]["version"], version_uuid)
+            self.assertEqual(call_args[1]["config"]["country_name"], "Burkina Faso")
+            self.assertEqual(call_args[1]["config"]["use_demo_data"], True)
+
+            # Verify that connection_token and connection_host were added to config
+            updated_config = call_args[1]["config"]
+            self.assertIn("connection_token", updated_config)
+            self.assertEqual(updated_config["connection_token"], "test-jwt-token")
+            self.assertIn("connection_host", updated_config)
+            self.assertEqual(updated_config["connection_host"], "http://testserver")
+
+            # Verify get_user_token was called with the correct user
+            mock_get_user_token.assert_called_once_with(self.user)
+
+    def test_post_launch_pipeline_token_generation_error(self):
+        """Test pipeline launch when token generation fails."""
+        version_uuid = str(uuid.uuid4())
+        config = {"country_name": "Burkina Faso"}
+
+        with (
+            patch("iaso.api.tasks.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task,
+            patch("iaso.api.openhexa.views.get_user_token") as mock_get_user_token,
+        ):
+            mock_launch_task.return_value = RUNNING
+            mock_get_user_token.side_effect = Exception("Token generation failed")
+
+            response = self.client.post(
+                f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+                data={
+                    "version": version_uuid,
+                    "config": config,
+                },
+                format="json",
+            )
+
+            self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+            self.assertIn("error", response.json())
+            self.assertIn("Failed to generate authentication token", response.json()["error"])
 
     def test_post_launch_pipeline_invalid_data(self):
         """Test pipeline launch with invalid data."""
@@ -267,11 +319,11 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         self.assertIn("OpenHexa configuration not found", response.json()["error"])
 
     def test_post_launch_pipeline_launch_error(self):
-        """Test pipeline launch when launch_task fails."""
+        """Test pipeline launch when launch_openhexa_pipeline fails."""
         version_uuid = str(uuid.uuid4())
         config = {"country_name": "Burkina Faso"}
 
-        with patch("iaso.api.openhexa.views.ExternalTaskModelViewSet.launch_task") as mock_launch_task:
+        with patch("iaso.api.openhexa.views.launch_openhexa_pipeline") as mock_launch_task:
             mock_launch_task.side_effect = Exception("Launch failed")
 
             response = self.client.post(
@@ -326,6 +378,43 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         self.assertEqual(task.progress_message, "Task completed")
         self.assertEqual(task.progress_value, 100)
         self.assertIsNotNone(task.ended_at)
+
+    def test_patch_update_task_progress_only(self):
+        """Test task update with progress only (no status change)."""
+        # Create a task first
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="test-task",
+            status=RUNNING,
+            external=True,
+            started_at=timezone.now(),
+        )
+
+        response = self.client.patch(
+            f"/api/openhexa/pipelines/{self.pipeline_id}/",
+            data={
+                "task_id": task.pk,
+                "progress_message": "Processing data...",
+                "progress_value": 50,
+                "end_value": 100,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("task", data)
+        self.assertEqual(data["task"]["status"], RUNNING)  # Status should remain RUNNING
+        self.assertEqual(data["task"]["progress_message"], "Processing data...")
+        self.assertEqual(data["task"]["progress_value"], 50)
+
+        # Verify task was updated
+        task.refresh_from_db()
+        self.assertEqual(task.status, RUNNING)  # Status unchanged
+        self.assertEqual(task.progress_message, "Processing data...")
+        self.assertEqual(task.progress_value, 50)
 
     def test_patch_update_task_missing_task_id(self):
         """Test task update without task_id."""
@@ -393,7 +482,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             started_at=timezone.now(),
         )
 
-        with patch.object(m.Task, "save", side_effect=Exception("Save failed")):
+        with patch.object(m.Task, "report_success_with_result", side_effect=Exception("Save failed")):
             response = self.client.patch(
                 f"/api/openhexa/pipelines/{self.pipeline_id}/",
                 data={
@@ -444,6 +533,605 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+
+class BackgroundTaskTestCase(OpenHexaAPITestCase):
+    """Test the background task system for OpenHEXA pipeline monitoring."""
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_launch_openhexa_pipeline_task_creation(self, mock_launch):
+        """Test that the background task is properly created and configured."""
+        from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
+
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        mock_launch.return_value = RUNNING
+
+        # Create a task manually to test the function execution
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=RUNNING,
+            external=False,  # Will be set to True by the function
+            started_at=timezone.now(),
+        )
+
+        # Call the function with _immediate=True to execute it directly
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            _immediate=True,
+            task=task,
+        )
+
+        task.refresh_from_db()
+
+        self.assertTrue(task.external)
+        self.assertEqual(task.status, QUEUED)
+
+        # Verify ExternalTaskModelViewSet.launch_task was called
+        mock_launch.assert_called_once()
+
+    def test_launch_openhexa_pipeline_with_beanstalk_worker(self):
+        """Test that the function works with beanstalk_worker decorator."""
+
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Call the decorated function (this will create a task automatically)
+        result_task = launch_openhexa_pipeline(
+            user=self.user,
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+        )
+
+        # Verify a task was created
+        self.assertIsNotNone(result_task)
+        # The decorator creates a task but doesn't set external=True automatically
+        # The external flag is only set when the function code runs
+        self.assertFalse(result_task.external)
+        self.assertEqual(result_task.launcher, self.user)
+        self.assertEqual(result_task.account, self.account)
+        self.assertEqual(result_task.name, "launch_openhexa_pipeline")
+        self.assertIn("pipeline_id", result_task.params["kwargs"])
+        self.assertEqual(result_task.params["kwargs"]["pipeline_id"], pipeline_id)
+
+
+class PipelinePollingTestCase(OpenHexaAPITestCase):
+    """Test the polling behavior of the background task."""
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_success_status(self, mock_launch, mock_client_class):
+        """Test that task status is updated to SUCCESS when OpenHexa returns success status."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to return success status
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.return_value = {
+            "pipeline": {
+                "runs": {
+                    "items": [
+                        {
+                            "run_id": "test-run-id",
+                            "status": "success",
+                            "config": config,
+                            "logs": "Pipeline completed successfully",
+                        }
+                    ]
+                }
+            }
+        }
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,  # No delay for testing
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task status was updated to SUCCESS
+        task.refresh_from_db()
+        self.assertEqual(task.status, SUCCESS)
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_failure_status(self, mock_launch, mock_client_class):
+        """Test that task status is updated to ERRORED when OpenHexa returns failure status."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to return failure status
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.return_value = {
+            "pipeline": {
+                "runs": {
+                    "items": [
+                        {
+                            "run_id": "test-run-id",
+                            "status": "failed",
+                            "config": config,
+                            "logs": "Pipeline failed with error",
+                        }
+                    ]
+                }
+            }
+        }
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task status was updated to ERRORED
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_running_status(self, mock_launch, mock_client_class):
+        """Test that task status is updated to RUNNING when OpenHexa returns running status."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to return running status first, then success
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.side_effect = [
+            {
+                "pipeline": {
+                    "runs": {
+                        "items": [
+                            {
+                                "run_id": "test-run-id",
+                                "status": "running",
+                                "config": config,
+                                "logs": "Pipeline is running",
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "pipeline": {
+                    "runs": {
+                        "items": [
+                            {
+                                "run_id": "test-run-id",
+                                "status": "success",
+                                "config": config,
+                                "logs": "Pipeline completed",
+                            }
+                        ]
+                    }
+                }
+            },
+        ]
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task went through RUNNING and ended at SUCCESS
+        task.refresh_from_db()
+        self.assertEqual(task.status, SUCCESS)
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.time.sleep")
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_timeout(self, mock_launch, mock_client_class, mock_sleep):
+        """Test that task fails when polling timeout is reached."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to return running status (will timeout before completion)
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.return_value = {
+            "pipeline": {
+                "runs": {
+                    "items": [
+                        {
+                            "run_id": "test-run-id",
+                            "status": "running",
+                            "config": config,
+                            "logs": "Pipeline is running",
+                        }
+                    ]
+                }
+            }
+        }
+
+        mock_launch.return_value = None
+        # Mock sleep to avoid any actual delays
+        mock_sleep.return_value = None
+
+        # Execute the task with a very short timeout (0.0001 minutes = 0.006 seconds)
+        # This ensures timeout triggers immediately on first check
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            max_polling_duration_minutes=0.0001,  # Very short timeout
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task was marked as failed due to timeout
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
+        self.assertIn("timeout", task.progress_message.lower())
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_server_unreachable(self, mock_launch, mock_client_class):
+        """Test that task handles server unreachable errors during polling."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to raise a connection error
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.side_effect = Exception("Connection refused")
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task progress message indicates connection error
+        task.refresh_from_db()
+        self.assertIn("Connection refused", task.progress_message)
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_all_failure_statuses(self, mock_launch, mock_client_class):
+        """Test that all failure statuses are handled correctly."""
+        from iaso.tasks.launch_openhexa_pipeline import OpenHexaStatus
+
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        for failure_status in OpenHexaStatus.FAILURE_STATUSES:
+            with self.subTest(failure_status=failure_status):
+                # Create a task
+                task = m.Task.objects.create(
+                    created_by=self.user,
+                    launcher=self.user,
+                    account=self.account,
+                    name="launch_openhexa_pipeline",
+                    status=QUEUED,
+                    external=False,
+                    started_at=timezone.now(),
+                )
+
+                # Mock the GraphQL client to return failure status
+                mock_client = Mock()
+                mock_client_class.return_value = mock_client
+                mock_client.execute.return_value = {
+                    "pipeline": {
+                        "runs": {
+                            "items": [
+                                {
+                                    "run_id": "test-run-id",
+                                    "status": failure_status,
+                                    "config": config,
+                                    "logs": f"Pipeline {failure_status}",
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                mock_launch.return_value = None
+
+                # Execute the task
+                launch_openhexa_pipeline(
+                    pipeline_id=pipeline_id,
+                    openhexa_url=openhexa_url,
+                    openhexa_token=openhexa_token,
+                    version=version,
+                    config=config,
+                    delay=0,
+                    _immediate=True,
+                    task=task,
+                )
+
+                # Verify task status was updated to ERRORED
+                task.refresh_from_db()
+                self.assertEqual(task.status, "ERRORED")
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_all_success_statuses(self, mock_launch, mock_client_class):
+        """Test that all success statuses are handled correctly."""
+        from iaso.tasks.launch_openhexa_pipeline import OpenHexaStatus
+
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        for success_status in OpenHexaStatus.SUCCESS_STATUSES:
+            with self.subTest(success_status=success_status):
+                # Create a task
+                task = m.Task.objects.create(
+                    created_by=self.user,
+                    launcher=self.user,
+                    account=self.account,
+                    name="launch_openhexa_pipeline",
+                    status=QUEUED,
+                    external=False,
+                    started_at=timezone.now(),
+                )
+
+                # Mock the GraphQL client to return success status
+                mock_client = Mock()
+                mock_client_class.return_value = mock_client
+                mock_client.execute.return_value = {
+                    "pipeline": {
+                        "runs": {
+                            "items": [
+                                {
+                                    "run_id": "test-run-id",
+                                    "status": success_status,
+                                    "config": config,
+                                    "logs": f"Pipeline {success_status}",
+                                }
+                            ]
+                        }
+                    }
+                }
+
+                mock_launch.return_value = None
+
+                # Execute the task
+                launch_openhexa_pipeline(
+                    pipeline_id=pipeline_id,
+                    openhexa_url=openhexa_url,
+                    openhexa_token=openhexa_token,
+                    version=version,
+                    config=config,
+                    delay=0,
+                    _immediate=True,
+                    task=task,
+                )
+
+                # Verify task status was updated to SUCCESS
+                task.refresh_from_db()
+                self.assertEqual(task.status, SUCCESS)
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_no_runs_found(self, mock_launch, mock_client_class):
+        """Test behavior when no runs are found for the pipeline."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+        )
+
+        # Mock the GraphQL client to return no runs initially, then success
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+        mock_client.execute.side_effect = [
+            {"pipeline": {"runs": {"items": []}}},  # No runs first
+            {
+                "pipeline": {
+                    "runs": {
+                        "items": [
+                            {
+                                "run_id": "test-run-id",
+                                "status": "success",
+                                "config": config,
+                                "logs": "Pipeline completed",
+                            }
+                        ]
+                    }
+                }
+            },
+        ]
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify task eventually succeeds
+        task.refresh_from_db()
+        self.assertEqual(task.status, SUCCESS)
+
+    @patch("iaso.tasks.launch_openhexa_pipeline.Client")
+    @patch("iaso.tasks.launch_openhexa_pipeline.ExternalTaskModelViewSet.launch_task")
+    def test_polling_task_killed(self, mock_launch, mock_client_class):
+        """Test that polling stops when task is marked as killed."""
+        pipeline_id = "test-pipeline-id"
+        openhexa_url = "https://test.openhexa.org/graphql/"
+        openhexa_token = "test-token"
+        version = str(uuid.uuid4())
+        config = {"test_param": "test_value"}
+
+        # Create a task
+        task = m.Task.objects.create(
+            created_by=self.user,
+            launcher=self.user,
+            account=self.account,
+            name="launch_openhexa_pipeline",
+            status=QUEUED,
+            external=False,
+            started_at=timezone.now(),
+            should_be_killed=True,  # Mark task as killed
+        )
+
+        mock_client = Mock()
+        mock_client_class.return_value = mock_client
+
+        mock_launch.return_value = None
+
+        # Execute the task
+        launch_openhexa_pipeline(
+            pipeline_id=pipeline_id,
+            openhexa_url=openhexa_url,
+            openhexa_token=openhexa_token,
+            version=version,
+            config=config,
+            delay=0,
+            _immediate=True,
+            task=task,
+        )
+
+        # Verify that the GraphQL client was never called (polling stopped immediately)
+        mock_client.execute.assert_not_called()
 
 
 class ConfigCheckViewTestCase(OpenHexaAPITestCase):
@@ -615,95 +1303,3 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
         self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if null
-
-    def test_get_config_with_connection_name(self):
-        """Test config check when OpenHexa config includes connection_name."""
-        # Update config with connection_name
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
-            "connection_name": "custom-connection",
-        }
-        self.openhexa_config.save()
-
-        response = self.client.get("/api/openhexa/pipelines/config/")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertTrue(data["configured"])
-        self.assertIn("connection_name", data)
-        self.assertEqual(data["connection_name"], "custom-connection")
-
-    def test_get_config_without_connection_name(self):
-        """Test config check when OpenHexa config doesn't include connection_name."""
-        # Config without connection_name (default setup)
-        response = self.client.get("/api/openhexa/pipelines/config/")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertTrue(data["configured"])
-        self.assertNotIn("connection_name", data)
-
-    def test_get_config_with_empty_connection_name(self):
-        """Test config check when OpenHexa config has empty connection_name."""
-        # Update config with empty connection_name
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
-            "connection_name": "",  # Empty value
-        }
-        self.openhexa_config.save()
-
-        response = self.client.get("/api/openhexa/pipelines/config/")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertTrue(data["configured"])
-        self.assertNotIn("connection_name", data)  # Should not be included if empty
-
-    def test_get_config_with_null_connection_name(self):
-        """Test config check when OpenHexa config has null connection_name."""
-        # Update config with null connection_name
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
-            "connection_name": None,  # Null value
-        }
-        self.openhexa_config.save()
-
-        response = self.client.get("/api/openhexa/pipelines/config/")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertTrue(data["configured"])
-        self.assertNotIn("connection_name", data)  # Should not be included if null
-
-    def test_get_config_with_both_lqas_and_connection_name(self):
-        """Test config check when OpenHexa config includes both lqas_pipeline_code and connection_name."""
-        # Update config with both parameters
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
-            "lqas_pipeline_code": "lqas-pipeline-123",
-            "connection_name": "custom-connection",
-        }
-        self.openhexa_config.save()
-
-        response = self.client.get("/api/openhexa/pipelines/config/")
-
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertIn("configured", data)
-        self.assertTrue(data["configured"])
-        self.assertIn("lqas_pipeline_code", data)
-        self.assertEqual(data["lqas_pipeline_code"], "lqas-pipeline-123")
-        self.assertIn("connection_name", data)
-        self.assertEqual(data["connection_name"], "custom-connection")

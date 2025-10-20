@@ -657,7 +657,7 @@
     "iaso.polio.label.school": "At school",
     "iaso.polio.label.scope_per_round": "Separate scope per round",
     "iaso.polio.label.scopes": "Scopes",
-    "iaso.polio.label.scopeUnlockConditions": "Select initial org. unit and encode dates for at least one round to unlock Scope tab",
+    "iaso.polio.label.scopeUnlockConditions": "Select initial org. unit and encode dates for at least one round, and mark campaign as active to unlock Scope tab",
     "iaso.polio.label.search": "Search",
     "iaso.polio.label.searchInScopeOrAllDistricts": "Search districts in scope",
     "iaso.polio.label.SECURITY_CONTEXT": "Security context",

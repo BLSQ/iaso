@@ -1771,7 +1771,7 @@ const MESSAGES = defineMessages({
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
-            'Select initial region and encode dates for at least one round to unlock Scope tab',
+            'Select initial org. unit and encode dates for at least one round, and mark campaign as active to unlock Scope tab',
     },
     campaignHistory: {
         id: 'iaso.polio.campaign.campaignHistory',

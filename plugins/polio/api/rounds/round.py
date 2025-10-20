@@ -39,6 +39,31 @@ class RoundSerializer(serializers.ModelSerializer):
     def get_vaccine_names_extended(self, obj):
         return obj.vaccine_names_extended
 
+    def validate(self, data):
+        # Check if campaign or round is planned
+        is_campaign_planned = None
+        if self.context.get("request"):
+            is_campaign_planned = self.context["request"].data.get("is_planned", None)
+
+        is_round_planned = data.get("is_planned", None)
+
+        # If either is planned, require population fields
+        if is_campaign_planned or is_round_planned:
+            errors = {}
+
+            if not data.get("target_population", None):
+                errors["target_population"] = "Target population must be defined for planned round/campaign"
+
+            if not data.get("percentage_covered_target_population", None):
+                errors["percentage_covered_target_population"] = (
+                    "Percentage covered must be defined for planned round/campaign"
+                )
+
+            if errors:
+                raise serializers.ValidationError(errors)
+
+        return data
+
     @atomic
     def create(self, validated_data):
         request = self.context.get("request")
@@ -93,7 +118,7 @@ class RoundSerializer(serializers.ModelSerializer):
                     reason_for_delay = ReasonForDelay.objects.filter(account=account).get(key_name="INITIAL_DATA")
                 except ReasonForDelay.DoesNotExist:
                     # Fallback on first reason available for account
-                    reason_for_delay = ReasonForDelay.filter(account=account).first()
+                    reason_for_delay = ReasonForDelay.objects.filter(account=account).first()
                 datelog = RoundDateHistoryEntry.objects.create(
                     round=instance, reason_for_delay=reason_for_delay, modified_by=user
                 )

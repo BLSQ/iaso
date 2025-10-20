@@ -1,4 +1,6 @@
 import os
+import shutil
+import tempfile
 import zipfile
 
 from unittest import mock
@@ -60,6 +62,19 @@ def _get_files_in_zipfile(zip_path, zip_name):
         return zip_ref.namelist()
 
 
+def mock_upload_file(dest):
+    """Custom mock for boto3.client.upload_file.
+
+    Copies the file content to a safe location before the original
+    temporary file is automatically deleted.
+    """
+
+    def wrapped(Filename, Bucket, Key, ExtraArgs=None):
+        shutil.copyfile(Filename, dest)
+
+    return wrapped
+
+
 class ExportMobileAppSetupForUserTest(TestCase):
     fixtures = ["user.yaml"]
 
@@ -79,8 +94,12 @@ class ExportMobileAppSetupForUserTest(TestCase):
         iaso_client_mock.get.side_effect = mocked_iaso_client_get
         MockIasoClient.return_value = iaso_client_mock
 
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+
         s3_client_mock = mock.MagicMock()
-        s3_client_mock.upload_file.return_value = None
+        side_effect = mock_upload_file(os.path.join(tmpdir.name, "_result.zip"))
+        s3_client_mock.upload_file.side_effect = side_effect
         mock_s3_client.return_value = s3_client_mock
 
         export_mobile_app_setup_for_user(
@@ -97,13 +116,13 @@ class ExportMobileAppSetupForUserTest(TestCase):
         self.assertIn("file:export-files/mobile-app-export-", self.task.result["data"])
 
         s3_client_mock.upload_file.assert_called_once()
+        call_args, _ = s3_client_mock.upload_file.call_args
+
+        zip_name = self.task.result["data"].replace("file:export-files/", "")
+        self.assertTrue(call_args[0].endswith(zip_name))
 
         # check zip file contents
-        zip_name = self.task.result["data"].replace("file:export-files/", "")
-        folder_name = zip_name.replace(".zip", "")
-        zip_path = os.path.join("/tmp", folder_name)
-        # breakpoint()
-        created_files = _get_files_in_zipfile(zip_path, zip_name)
+        created_files = _get_files_in_zipfile(tmpdir.name, "_result.zip")
         self.assertIn("app.json", created_files)
         self.assertIn("entities-1.json", created_files)
         self.assertIn("entitytypes-1.json", created_files)
@@ -127,10 +146,7 @@ class CursorPaginationShimTest(TestCase):
             "required_feature_flag": "ENTITY",
             "filename": "entities",
             "paginated": True,
-            "cursor_pagination": {
-                "shim": True,
-                "legacy_url": "/api/mobile/entities/"
-            },
+            "cursor_pagination": {"shim": True, "legacy_url": "/api/mobile/entities/"},
         }
         self.app_id = "org.test.app"
 
@@ -138,7 +154,7 @@ class CursorPaginationShimTest(TestCase):
     def test_cursor_pagination_single_page(self, mock_call_endpoint):
         """Verify that the cursor shim returns offset-style metadata for a single-page cursor response."""
 
-        #  Mock the legacy count endpoint 
+        #  Mock the legacy count endpoint
         mock_call_endpoint.side_effect = [
             {"count": 3},  # called by _get_cursor_pagination_metadata
             {
@@ -206,4 +222,3 @@ class CursorPaginationShimTest(TestCase):
         self.assertTrue(result2["has_previous"])
 
         self.assertEqual(mock_call_endpoint.call_count, 3)
-

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wfp", "0021_beneficiary_guidelines"),
     ]
@@ -13,11 +12,34 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="journey",
             name="nutrition_programme",
-            field=models.CharField(blank=True, choices=[("TSFP", "TSFP"), ("OTP", "OTP"), ("OTP - Under 6", "OTP - Under 6"), ("breastfeeding", "Breastfeeding"), ("pregnant", "Pregnant")], db_index=True, max_length=255, null=True),
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("TSFP", "TSFP"),
+                    ("OTP", "OTP"),
+                    ("OTP - Under 6", "OTP - Under 6"),
+                    ("breastfeeding", "Breastfeeding"),
+                    ("pregnant", "Pregnant"),
+                ],
+                db_index=True,
+                max_length=255,
+                null=True,
+            ),
         ),
         migrations.AlterField(
             model_name="monthlystatistics",
             name="nutrition_programme",
-            field=models.CharField(blank=True, choices=[("TSFP", "TSFP"), ("OTP", "OTP"), ("OTP - Under 6", "OTP - Under 6"), ("breastfeeding", "Breastfeeding"), ("pregnant", "Pregnant")], max_length=255, null=True),
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("TSFP", "TSFP"),
+                    ("OTP", "OTP"),
+                    ("OTP - Under 6", "OTP - Under 6"),
+                    ("breastfeeding", "Breastfeeding"),
+                    ("pregnant", "Pregnant"),
+                ],
+                max_length=255,
+                null=True,
+            ),
         ),
     ]

@@ -19,7 +19,7 @@ ANTHROPOMETRIC_FOLLOWUP_FORMS = [
     "child_antropometric_followUp_otp",
     "child_antropometric_followUp_tsfp_2",
     "child_antropometric_followUp_otp_2",
-    "antropometric_followUp_otp_u6"
+    "antropometric_followUp_otp_u6",
 ]
 
 

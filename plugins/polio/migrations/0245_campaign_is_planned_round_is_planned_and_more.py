@@ -4,24 +4,35 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0244_alter_destructionreport_doses_per_vial_and_more'),
+        ("polio", "0244_alter_destructionreport_doses_per_vial_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='campaign',
-            name='is_planned',
+            model_name="campaign",
+            name="is_planned",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='round',
-            name='is_planned',
+            model_name="round",
+            name="is_planned",
             field=models.BooleanField(default=False),
         ),
         migrations.AddConstraint(
-            model_name='round',
-            constraint=models.CheckConstraint(check=models.Q(models.Q(('is_planned', False), models.Q(('target_population__isnull', False), ('percentage_covered_target_population__isnull', False)), _connector='OR')), name='round_planned_requires_population_data'),
+            model_name="round",
+            constraint=models.CheckConstraint(
+                check=models.Q(
+                    models.Q(
+                        ("is_planned", False),
+                        models.Q(
+                            ("target_population__isnull", False),
+                            ("percentage_covered_target_population__isnull", False),
+                        ),
+                        _connector="OR",
+                    )
+                ),
+                name="round_planned_requires_population_data",
+            ),
         ),
     ]

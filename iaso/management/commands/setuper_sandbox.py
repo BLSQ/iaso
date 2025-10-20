@@ -89,7 +89,8 @@ class Command(BaseCommand):
         new_name = f"{name}{current_datetime}"
         logger.info(f"Renaming current account {name} to {new_name}")
         account = Account.objects.filter(name=name).first()
-        Account.objects.filter(name=name).update(name=new_name)
+        account.name = new_name
+        account.save()
 
         profiles = Profile.objects.filter(account=account)
         logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {name}")
@@ -103,8 +104,8 @@ class Command(BaseCommand):
         updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])
         logger.info(f"Renamed app id for all {updated_projects} projects")
 
-        data_sources = DataSource.objects.filter(projects__account=account)
-        logger.info(f"Renaming all {len(projects)} data_sources belong to account {name}")
+        data_sources = DataSource.objects.filter(projects__account=account).distinct()
+        logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {name}")
         rename_data_sources = self.map_data_source(data_sources, new_name)
         new_data_sources = DataSource.objects.bulk_update(rename_data_sources, ["name"])
         logger.info(f"Renamed all {new_data_sources} data_sources")

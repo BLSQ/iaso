@@ -23,6 +23,7 @@ EXIT_TYPES = [
 NUTRITION_PROGRAMMES = [
     ("TSFP", _("TSFP")),
     ("OTP", _("OTP")),
+    ("OTP - Under 6", _("OTP - Under 6")),
     ("breastfeeding", _("Breastfeeding")),
     ("pregnant", _("Pregnant")),
 ]

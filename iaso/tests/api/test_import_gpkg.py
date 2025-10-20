@@ -1,3 +1,4 @@
+from django.db.models import Q
 from rest_framework import status
 
 from iaso.models import ImportGPKG
@@ -59,3 +60,5 @@ class ImportGpkgAPITestCase(TaskAPITestCase):
 
         for ou in orgUnits:
             self.assertEqual(ou.validation_status, OrgUnit.VALIDATION_VALID)
+
+        self.assertEqual(orgUnits.filter(Q(path__isnull=True) | Q(path=[])).count(), 0)

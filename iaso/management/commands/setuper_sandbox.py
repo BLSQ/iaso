@@ -51,17 +51,17 @@ class Command(BaseCommand):
             current_project.app_id = f"{new_account_name}.{app_id[1]}"
         return current_project
 
-    def map_data_source(self, data_sources, new_name):
+    def map_data_source(self, data_sources, current_timestamp):
         return list(
             map(
-                lambda data_source: self.change_data_source_name(data_source, new_name),
+                lambda data_source:  self.change_data_source_name(data_source, current_timestamp),
                 data_sources,
             )
         )
 
-    def change_data_source_name(self, data_source, new_account_name):
-        name = data_source.name.replace("admin", new_account_name)
-        data_source.name = name
+    def change_data_source_name(self, data_source, current_timestamp):
+        data_source.name = f"{data_source.name}{current_timestamp}"
+        save = data_source.save()
         return data_source
 
     def recreate_account(self, account_name):
@@ -101,7 +101,7 @@ class Command(BaseCommand):
 
         data_sources = DataSource.objects.filter(projects__account=account).distinct()
         logger.info(f"Renaming all {len(data_sources)} data_sources belong to account {name}")
-        rename_data_sources = self.map_data_source(data_sources, new_name)
+        rename_data_sources = self.map_data_source(data_sources, current_datetime)
         new_data_sources = DataSource.objects.bulk_update(rename_data_sources, ["name"])
         logger.info(f"Renamed all {new_data_sources} data_sources")
 

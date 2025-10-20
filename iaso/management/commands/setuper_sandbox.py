@@ -3,7 +3,6 @@ import subprocess
 from datetime import datetime
 from logging import getLogger
 
-from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 
 from iaso.models import Account, DataSource, Profile, Project
@@ -18,19 +17,20 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("account", type=str, help="Account name")
 
-    def change_user_name(self, profile, new_account_name):
+    def change_user_name_and_disable_user(self, profile, new_account_name):
         user_name = profile.user.username.split(".")
         new_user_name = new_account_name
         if len(user_name) > 1:
             new_user_name = f"{new_account_name}.{user_name[1]}"
         profile.user.username = new_user_name
         profile.user.is_active = False
+        profile.user.save()
         return profile.user
 
-    def disable_users(self, profiles, new_account_name):
+    def update_users_profiles(self, profiles, new_account_name):
         return list(
             map(
-                lambda profile: self.change_user_name(profile, new_account_name),
+                lambda profile: self.change_user_name_and_disable_user(profile, new_account_name),
                 profiles,
             )
         )
@@ -71,13 +71,9 @@ class Command(BaseCommand):
             self.stdout.write(f"Stdout:\n{process.stdout}")
             if process.stderr:
                 self.stderr.write(f"Stderr:\n{process.stderr}")
-
         except subprocess.CalledProcessError as e:
             self.stderr.write(self.style.ERROR(f"Error executing script '{e}':"))
-            self.stderr.write(self.style.ERROR(f"Command: {e.cmd}"))
             self.stderr.write(self.style.ERROR(f"Return Code: {e.returncode}"))
-            self.stderr.write(self.style.ERROR(f"Stdout:\n{e.stdout}"))
-            self.stderr.write(self.style.ERROR(f"Stderr:\n{e.stderr}"))
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"An unexpected error occurred: {e}"))
 
@@ -89,16 +85,15 @@ class Command(BaseCommand):
         new_name = f"{name}{current_datetime}"
         logger.info(f"Renaming current account {name} to {new_name}")
         account = Account.objects.filter(name=name).first()
-        account.name = new_name
-        account.save()
-
+        if account is not None:
+            account.name = new_name
+            account.save()
         profiles = Profile.objects.filter(account=account)
         logger.info(f"Renaming and deactivating all {len(profiles)} users belong to account {name}")
-        new_profiles = self.disable_users(profiles, new_name)
-        updated_profiles = User.objects.bulk_update(new_profiles, ["username", "is_active"])
-        logger.info(f"Disabled {updated_profiles} users")
+        updated_users = self.update_users_profiles(profiles, new_name)
+        logger.info(f"Disabled {len(updated_users)} users")
 
-        projects = Project.objects.filter(account=account).all()
+        projects = Project.objects.filter(account=account)
         logger.info(f"Renaming app id for all {len(projects)} projects belong to account {name}")
         projects_to_updated = self.map_project(projects, new_name)
         updated_projects = Project.objects.bulk_update(projects_to_updated, ["app_id"])

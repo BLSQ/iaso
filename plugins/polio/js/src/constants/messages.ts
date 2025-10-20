@@ -2489,6 +2489,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.removeOnHoldLaterRounds',
         defaultMessage: 'Remove "on hold" for later rounds?',
     },
+    plannedCampaign: {
+        id: 'iaso.polio.label.plannedCampaign',
+        defaultMessage: 'Planned campaign',
+    },
+    plannedRound: {
+        id: 'iaso.polio.label.plannedRound',
+        defaultMessage: 'Planned round',
+    },
+    removeLaterPlannedRounds: {
+        id: 'iaso.polio.label.removeLaterPlannedRounds',
+        defaultMessage: 'Remove "planned" status for later rounds?',
+    },
+    fieldMandatoryForPlanned: {
+        id: 'iaso.polio.label.fieldMandatoryForPlanned',
+        defaultMessage: 'Field mandatory for planned round/campaign',
+    },
 });
 
 export default MESSAGES;

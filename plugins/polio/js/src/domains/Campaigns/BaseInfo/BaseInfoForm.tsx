@@ -1,4 +1,11 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
@@ -40,7 +47,6 @@ export const baseInfoFormFields: string[] = [
 
 export const BaseInfoForm: FunctionComponent = () => {
     const classes = useStyles();
-
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
@@ -54,8 +60,10 @@ export const BaseInfoForm: FunctionComponent = () => {
 
         [groupedCampaigns],
     );
+    const controlRef = useRef(false);
 
-    const { values, setFieldValue } = useFormikContext<CampaignFormValues>();
+    const { values, touched, setFieldValue, setTouched } =
+        useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
     const isPolio = useIsPolioCampaign(values);
@@ -85,6 +93,23 @@ export const BaseInfoForm: FunctionComponent = () => {
         },
         [setFieldValue],
     );
+
+    // Using useEffect because changing `touched` in the update callback will result in desynchronized state
+    // and wrong validation status for rounds
+    useEffect(() => {
+        if (values.is_planned && !controlRef.current) {
+            controlRef.current = true;
+            const touchedRounds = touched.rounds ?? [];
+            values.rounds.forEach((_rnd, index) => {
+                touchedRounds[index] = {
+                    ...(touchedRounds[index] ?? []),
+                    target_population: true,
+                    percentage_covered_target_population: true,
+                };
+            });
+            setTouched({ ...touched, rounds: touchedRounds });
+        }
+    }, [touched, values.rounds, setTouched, values.is_planned]);
 
     return (
         <Box maxWidth={isPolio ? '100%' : '400px'}>
@@ -146,7 +171,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 label={formatMessage(MESSAGES.testCampaign)}
                                 name="is_test"
                                 component={BooleanInput}
-                                disabled={values.on_hold}
+                                disabled={values.on_hold || values.is_planned}
                             />
                         )}
                         {isUserAdmin && (
@@ -155,7 +180,17 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 label={formatMessage(MESSAGES.campaignOnHold)}
                                 name="on_hold"
                                 component={BooleanInput}
-                                disabled={values.is_test}
+                                disabled={values.is_test || values.is_planned}
+                            />
+                        )}
+                        {isUserAdmin && (
+                            <Field
+                                className={classes.input}
+                                label={formatMessage(MESSAGES.plannedCampaign)}
+                                name="is_planned"
+                                component={BooleanInput}
+                                disabled={values.is_test || values.on_hold}
+                                // onChange={handleChangePlannedStatus}
                             />
                         )}
                         {isUserAdmin && (

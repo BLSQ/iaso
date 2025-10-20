@@ -271,6 +271,8 @@ class ETL:
             "assistance_admission_2nd_visit_otp",
             "child_assistance_admission",
             "child_assistance_admission_2",
+            "child_assistance_admission_2_u6",
+            "assistance_u6",
             "ethiopia_child_assistance_follow_up",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",

@@ -12,12 +12,14 @@ logger = logging.getLogger(__name__)
 ADMISSION_ANTHROPOMETRIC_FORMS = [
     "Anthropometric visit child",
     "Anthropometric visit child_2",
+    "Anthropometric visit child_U6",
 ]
 ANTHROPOMETRIC_FOLLOWUP_FORMS = [
     "child_antropometric_followUp_tsfp",
     "child_antropometric_followUp_otp",
     "child_antropometric_followUp_tsfp_2",
     "child_antropometric_followUp_otp_2",
+    "antropometric_followUp_otp_u6"
 ]
 
 

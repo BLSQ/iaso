@@ -13,15 +13,17 @@ This .zip file can then be parsed by the mobile app, thus simulating a user's
 first login on the mobile app.
 """
 
+import io
 import json
 import logging
 import os
 import re
+import tempfile
 import uuid
 import zipfile
 
 from dataclasses import dataclass
-from typing import Optional
+from typing import BinaryIO, Optional, TextIO
 from urllib.parse import urlencode, urlparse, urlunparse
 
 import requests
@@ -62,29 +64,33 @@ def export_mobile_app_setup_for_user(
 
     # setup
     export_name = f"mobile-app-export-{uuid.uuid4()}"
-    tmp_dir = os.path.join("/tmp", export_name)
     iaso_client = IasoClient(server_url=SERVER)
 
-    app_info = _get_project_app_details(iaso_client, tmp_dir, project.app_id)
-    feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        zip_path = os.path.join(tmp_dir, export_name)
+        logger.info(f"Creating zip file {zip_path}")
 
-    the_task.report_progress_and_stop_if_killed(progress_value=1)
+        with ZipFileWriter(zip_path) as zipf:
+            app_info = _get_project_app_details(iaso_client, zipf, project.app_id)
+            feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
 
-    if app_info["needs_authentication"]:
-        logger.info("Authentication required, authenticating iaso_client")
-        refresh = RefreshToken.for_user(user)
-        iaso_client.authenticate_with_token(str(refresh.access_token))
+            the_task.report_progress_and_stop_if_killed(progress_value=1)
 
-    the_task.report_progress_and_stop_if_killed(progress_value=2)
+            if app_info["needs_authentication"]:
+                logger.info("Authentication required, authenticating iaso_client")
+                refresh = RefreshToken.for_user(user)
+                iaso_client.authenticate_with_token(str(refresh.access_token))
 
-    for call in API_CALLS:
-        the_task.report_progress_and_stop_if_killed(
-            progress_value=the_task.progress_value + 1,
-            progress_message=f"Fetching {call['filename']}",
-        )
-        _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
+            the_task.report_progress_and_stop_if_killed(progress_value=2)
 
-    s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name, password)
+            for call in API_CALLS:
+                the_task.report_progress_and_stop_if_killed(
+                    progress_value=the_task.progress_value + 1,
+                    progress_message=f"Fetching {call['filename']}",
+                )
+                _get_resource(iaso_client, call, zipf, project.app_id, feature_flags)
+
+        s3_object_name = _encrypt_and_upload_to_s3(tmp_dir, export_name, password)
 
     the_task.report_success_with_result(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
@@ -93,7 +99,57 @@ def export_mobile_app_setup_for_user(
     return the_task
 
 
-def _get_project_app_details(iaso_client, tmp_dir, app_id):
+class ZipFileWriter:
+    """
+    A helper class for writing string content to files within a ZIP archive.
+
+    The user is responsible for calling the close() method on the class instance
+    when finished to finalize the ZIP file.
+    """
+
+    def __init__(self, filename: str):
+        self._zip_file = zipfile.ZipFile(filename, "w", zipfile.ZIP_DEFLATED)
+        self.filename = filename
+
+    def open(self, zip_path: str) -> TextIO:
+        """Opens a write-only file-like object inside the ZIP archive.
+
+        Similar to Python's open(path, mode="w").
+        """
+
+        binary_stream = self._zip_file.open(zip_path, mode="w")
+
+        # This converts string writes (.write(str)) into binary writes (.write(bytes))
+        text_io = io.TextIOWrapper(binary_stream, encoding="utf-8")
+
+        return text_io
+
+    def openb(self, zip_path: str) -> BinaryIO:
+        """Opens a binary write-only file-like object inside the ZIP archive.
+
+        Similar to Python's open(path, mode="wb").
+        """
+        return self._zip_file.open(zip_path, mode="w")
+
+    def close(self):
+        """Closes the  handle and finalizes the archive.
+
+        This method must be called after all files have been written.
+        """
+        self._zip_file.close()
+
+    def __enter__(self) -> "ZipFileWriter":
+        """Provides a context manager."""
+        return self
+
+    def __exit__(self, *exc_info):
+        """Ensures the close() method is called for cleanup."""
+        self.close()
+        # Return False to propagate any exceptions raised within the 'with' block
+        return False
+
+
+def _get_project_app_details(iaso_client, zipf, app_id):
     logger.info("Getting app info (feature flags etc)")
     # Public endpoint, no auth needed
     app_info = iaso_client.get(f"/api/apps/current/?app_id={app_id}")
@@ -107,12 +163,9 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
     for flag in app_info["feature_flags"]:
         logger.info(f"\t\t{flag['code']}: {flag['name']}")
     logger.info("")
+    logger.info(f"Writing results to {zipf.filename}")
 
-    logger.info(f"Writing results to {tmp_dir}")
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
-
-    with open(os.path.join(tmp_dir, "app.json"), "w") as json_file:
+    with zipf.open("app.json") as json_file:
         json.dump(app_info, json_file)
 
     return app_info
@@ -177,7 +230,7 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
     return result, filename
 
 
-def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
+def _get_resource(iaso_client, call, zipf, app_id, feature_flags):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
         logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
@@ -226,20 +279,20 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
         # 2. Rewrite the file URLs to make them appear on a local disk, to facilitate
         #    fetching them in the mobile app.
         if call["filename"] == "formversions":
-            _download_form_versions(iaso_client, tmp_dir, result["form_versions"])
+            _download_form_versions(iaso_client, zipf, result["form_versions"])
             for record in result["form_versions"]:
                 record["file"] = "forms/" + _extract_filename_from_url(record["file"])
         if call["filename"] == "reports":
-            _download_reports(iaso_client, tmp_dir, result)
+            _download_reports(iaso_client, zipf, result)
             for record in result:
                 record["url"] = "reports/" + _extract_filename_from_url(record["url"])
         if call["filename"] == "formattachments":
-            _download_form_attachments(iaso_client, tmp_dir, result["results"], app_id)
+            _download_form_attachments(iaso_client, zipf, result["results"], app_id)
             for record in result["results"]:
                 # don't use _extract_filename_from_url to preserve subpath
                 record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
 
-        with open(os.path.join(tmp_dir, filename), "w") as json_file:
+        with zipf.open(filename) as json_file:
             json.dump(result, json_file)
 
         page += 1
@@ -268,15 +321,12 @@ def _call_endpoint(iaso_client, url, filename):
     return result
 
 
-def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
+def _download_form_attachments(iaso_client, zipf, resources, app_id):
     if len(resources) == 0:
         return
 
-    # create subfolder for downloaded files
-    os.makedirs(os.path.join(tmp_dir, "formattachments"))
     for resource in resources:
         form_id = resource["form_id"]
-        os.makedirs(os.path.join(tmp_dir, "formattachments", str(form_id)))
         url = resource["file"]
         filename = _extract_filename_from_url(url)
 
@@ -294,10 +344,10 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
             headers=iaso_client.headers,
         )
 
-        with open(os.path.join(tmp_dir, "formattachments", str(form_id), filename), mode="wb") as f:
+        with zipf.openb(os.path.join("formattachments", str(form_id), filename)) as f:
             f.write(attachment_file.content)
         # For the manifest.xml, rewrite the `downloadUrl` to the local file path
-        with open(os.path.join(tmp_dir, "formattachments", str(form_id), "manifest.xml"), mode="w") as f:
+        with zipf.open(os.path.join("formattachments", str(form_id), "manifest.xml")) as f:
             content = manifest_file.content.decode("utf-8")
             url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
             download_url = re.search(url_regex, content).group()
@@ -306,37 +356,35 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
             f.write(re.sub(url_regex, new_download_url, content))
 
 
-def _download_form_versions(iaso_client, tmp_dir, form_versions):
+def _download_form_versions(iaso_client, zipf, form_versions):
     if len(form_versions) == 0:
         return
 
-    os.makedirs(os.path.join(tmp_dir, "forms"))
     for form_version in form_versions:
         _download_and_save_file(
             iaso_client,
-            tmp_dir,
+            zipf,
             url=form_version["file"],
             non_s3_url=form_version["file"],
             folder_name="forms",
         )
 
 
-def _download_reports(iaso_client, tmp_dir, reports):
+def _download_reports(iaso_client, zipf, reports):
     if len(reports) == 0:
         return
 
-    os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
         _download_and_save_file(
             iaso_client,
-            tmp_dir,
+            zipf,
             url=report["url"],
             non_s3_url=SERVER + report["url"],
             folder_name="reports",
         )
 
 
-def _download_and_save_file(iaso_client, tmp_dir, folder_name, url, non_s3_url):
+def _download_and_save_file(iaso_client, zipf, folder_name, url, non_s3_url):
     filename = _extract_filename_from_url(url)
     response = None
     # S3 urls contain a signature and don't work with additional auth headers
@@ -347,32 +395,23 @@ def _download_and_save_file(iaso_client, tmp_dir, folder_name, url, non_s3_url):
         logger.info(f"\tDOWNLOAD {non_s3_url}")
         response = requests.get(non_s3_url, headers=iaso_client.headers)
 
-    with open(os.path.join(tmp_dir, folder_name, filename), mode="wb") as f:
+    with zipf.openb(os.path.join(folder_name, filename)) as f:
         f.write(response.content)
 
 
-def _compress_and_upload_to_s3(tmp_dir, export_name, password):
-    zipfile_name = f"{export_name}.zip"
-    logger.info(f"Creating zipfile {zipfile_name}")
-
-    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w", zipfile.ZIP_DEFLATED) as zipf:
-        # add all files in /tmp directory to the .zip file
-        for root, _dirs, files in os.walk(tmp_dir):
-            for file in files:
-                if file != zipfile_name:
-                    file_path = os.path.join(root, file)
-                    archive_name = os.path.relpath(file_path, tmp_dir)
-                    zipf.write(file_path, archive_name)
+def _encrypt_and_upload_to_s3(tmp_dir, source_name, password):
+    dest_name = f"{source_name}.zip"
 
     logger.info("Encrypting zipfile")
+
     encrypted_file_path = encrypt_file(
         file_path=tmp_dir,
-        file_name_in=zipfile_name,
-        file_name_out=zipfile_name,
+        file_name_in=source_name,
+        file_name_out=dest_name,
         password=password,
     )
 
     logger.info("Uploading zipfile to S3")
-    s3_object_name = "export-files/" + zipfile_name
+    s3_object_name = "export-files/" + dest_name
     upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
     return s3_object_name

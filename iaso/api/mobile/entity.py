@@ -213,7 +213,7 @@ class InternalMobileEntityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
     results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [DjangoFilterBackend, DeletionFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission(core_permissions.ENTITIES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(CORE_ENTITIES_PERMISSION)]
     pagination_class = MobileEntityCursorPagination
 
     lookup_field = "uuid"

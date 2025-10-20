@@ -18,7 +18,6 @@ export type OrgUnitTypeHierarchyDropdownValues = DropdownOptionsWithOriginal<
 
 export const flattenHierarchy = (
     items: any[],
-    level = 0,
     orgUnitTypeId?: number,
     selectedOrgUnitTypeIds?: number[],
 ): any[] => {
@@ -35,15 +34,11 @@ export const flattenHierarchy = (
             label: item.name,
             original: item,
         };
-        const children =
-            item.sub_unit_types && item.sub_unit_types.length > 0
-                ? flattenHierarchy(
-                      item.sub_unit_types,
-                      level + 1,
-                      orgUnitTypeId,
-                  )
-                : [];
-
+        const children = flattenHierarchy(
+            item.sub_unit_types ?? [],
+            orgUnitTypeId,
+            selectedOrgUnitTypeIds,
+        );
         return [currentItem, ...children];
     });
 };

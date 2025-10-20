@@ -105,7 +105,6 @@ export const Level: FunctionComponent<Props> = ({
 
         options = flattenHierarchy(
             orgUnitTypeHierarchy.sub_unit_types,
-            0,
             orgUnitTypeId,
             parameterValues?.org_unit_type_sequence_identifiers,
         );

@@ -107,7 +107,7 @@ export const useGetAssignmentData = ({
             planning?.org_unit_details.org_unit_type || 0,
         );
     const orgunitTypes = useMemo(
-        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || [], 0),
+        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
         [orgUnitTypeHierarchy],
     );
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =

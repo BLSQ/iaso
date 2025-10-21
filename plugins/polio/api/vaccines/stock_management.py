@@ -33,7 +33,7 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import Round, VaccineStockCalculator
+from plugins.polio.models.base import Round, VaccineArrivalReport, VaccineStockCalculator
 from plugins.polio.permissions import (
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
     POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
@@ -368,10 +368,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
     filter_backends = [
         filters.OrderingFilter,
     ]
-    ordering_fields = [
-        "report_date",
-        "form_a_reception_date",
-    ]
+    ordering_fields = ["report_date", "form_a_reception_date", "doses_per_vial"]
 
     def get_serializer_class(self):
         if self.action == "partial_update":
@@ -457,6 +454,7 @@ class IncidentReportViewSet(VaccineStockSubitemBase):
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
 
 class DestructionReportSerializer(ModelWithFileSerializer):
@@ -495,6 +493,7 @@ class DestructionReportViewSet(VaccineStockSubitemBase):
             read_only_perm=POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     @action(detail=False, methods=["GET"])
     def check_duplicate(self, request):
@@ -632,6 +631,7 @@ class EarmarkedStockViewSet(VaccineStockSubitemEdit):
             read_only_perm=POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
         )
     ]
+    ordering_fields = ["doses_per_vial"]
 
     def get_queryset(self):
         return (
@@ -919,6 +919,38 @@ class VaccineStockManagementViewSet(ModelViewSet):
             )
             .distinct()
             .order_by("id")
+        )
+
+    @action(detail=False, methods=["get"])
+    def doses_options(self, request):
+        """_summary_
+        Uses the VaccineArrivalReports as source of truth for available dose_per_vial values and returns a list of dropdown options with available values
+        """
+        stock_id = request.GET.get("stockId", None)
+        if not stock_id:
+            return Response("stock id not provided", status=status.HTTP_400_BAD_REQUEST)
+        try:
+            stock_id = int(stock_id)
+        except:
+            return Response("stock id must be a number", status=status.HTTP_400_BAD_REQUEST)
+
+        vaccine_stock = VaccineStock.objects.filter(id=stock_id).first()
+        if not vaccine_stock:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        country = vaccine_stock.country
+        vaccine = vaccine_stock.vaccine
+        values = (
+            VaccineArrivalReport.objects.filter(
+                request_form__campaign__account=request.user.iaso_profile.account,  # filter by account
+                request_form__campaign__country=country,
+                request_form__vaccine_type=vaccine,
+            )
+            .values_list("doses_per_vial", flat=True)
+            .distinct()
+        )
+        return Response(
+            {"results": [{"label": f"{value}", "value": value} for value in values]}, status=status.HTTP_200_OK
         )
 
 

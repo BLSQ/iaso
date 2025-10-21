@@ -12,6 +12,7 @@ import { useDebounce } from 'use-debounce';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     DateInput,
     NumberInput,
@@ -20,10 +21,12 @@ import {
 import { Vaccine } from '../../../../../constants/types';
 import {
     useCheckDestructionDuplicate,
+    useGetDosesOptions,
     useSaveDestruction,
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
+import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
 
 type Props = {
     destruction?: any;
@@ -46,6 +49,8 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
     const validationSchema = useDestructionValidation();
+    const { data: dosesOptions, isLoading: isLoadingDoses } =
+        useGetDosesOptions(parseInt(vaccineStockId, 10));
     const formik = useFormik<any>({
         initialValues: {
             id: destruction?.id,
@@ -54,7 +59,8 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            // lot_numbers: destruction?.lot_numbers,
+            doses_per_vial:
+                destruction?.doses_per_vial || dosesPerVial[vaccine],
             vaccine_stock: vaccineStockId,
             file: destruction?.file,
             comment: destruction?.comment ?? null,
@@ -133,6 +139,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         name="unusable_vials_destroyed"
                         component={NumberInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={dosesOptions}
+                        isLoading={isLoadingDoses}
                     />
                 </Box>
                 <Box mb={2}>

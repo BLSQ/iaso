@@ -57,6 +57,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -72,6 +74,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -101,6 +105,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -121,6 +127,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -150,6 +158,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',
@@ -231,6 +241,8 @@ export const iasoFields: Field[] = [
             operators: [
                 'equal',
                 'not_equal',
+                'greater',
+                'less',
                 'greater_or_equal',
                 'less_or_equal',
                 'is_null',

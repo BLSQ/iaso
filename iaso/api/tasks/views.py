@@ -20,7 +20,7 @@ from iaso.api.tasks.filters import (
 from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED
 from iaso.models.json_config import Config
 from iaso.models.task import Task
-from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
+from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 from ...models import TaskLog
@@ -44,7 +44,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(CORE_DATA_TASKS_PERMISSION),
+        HasPermission(CORE_DATA_TASKS_PERMISSION, CORE_PLANNING_WRITE_PERMISSION),
     ]
     filter_backends = [
         filters.OrderingFilter,

@@ -59,7 +59,7 @@ describe('Tasks', () => {
                 .find('tr')
                 .eq(0)
                 .find('td')
-                .should('have.length', 9);
+                .should('have.length', 8);
         });
         it('should be able to kill a task', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/list.json' });
@@ -90,7 +90,6 @@ describe('Tasks', () => {
                 .eq(1)
                 .find('td')
                 .last()
-                .prev()
                 .find('button')
                 .first()
                 .click();

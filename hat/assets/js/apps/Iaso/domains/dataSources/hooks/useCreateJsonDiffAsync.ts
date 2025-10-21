@@ -101,7 +101,7 @@ export const useCreateJsonDiffAsync = () => {
                 toCompareWithFields,
                 fieldsToExport,
             }),
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
         ignoreErrorCodes,
     });
 };

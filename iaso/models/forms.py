@@ -87,12 +87,17 @@ class FormQuerySet(models.QuerySet):
         if app_id is not None:  # mobile app
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.filter(projects__in=[project])
-                queryset = queryset.exclude(derived=True)  # do not include derived instances for the mobile app
+                queryset = self.filter_for_project(project=project, queryset=queryset)
             except Project.DoesNotExist:
                 return self.none()
 
         return queryset
+
+    def filter_for_project(self, project: Project, queryset=None):
+        if queryset is None:
+            queryset = self
+        queryset = queryset.filter(projects__in=[project])
+        return queryset.exclude(derived=True)  # do not include derived instances for the mobile app
 
     def with_latest_version(self):
         queryset = self

@@ -12,12 +12,14 @@ logger = logging.getLogger(__name__)
 ADMISSION_ANTHROPOMETRIC_FORMS = [
     "Anthropometric visit child",
     "Anthropometric visit child_2",
+    "Anthropometric visit child_U6",
 ]
 ANTHROPOMETRIC_FOLLOWUP_FORMS = [
     "child_antropometric_followUp_tsfp",
     "child_antropometric_followUp_otp",
     "child_antropometric_followUp_tsfp_2",
     "child_antropometric_followUp_otp_2",
+    "antropometric_followUp_otp_u6",
 ]
 
 
@@ -155,10 +157,10 @@ class Under5:
 
         return ETL().save_entity_journey(journey, beneficiary, record, "U5")
 
-    def run(self, type):
+    def run(self, type, updated_beneficiaries):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
-        beneficiaries = entity_type.retrieve_entities()
+        beneficiaries = entity_type.retrieve_entities(updated_beneficiaries)
         pages = beneficiaries.page_range
 
         logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count} for {account}")

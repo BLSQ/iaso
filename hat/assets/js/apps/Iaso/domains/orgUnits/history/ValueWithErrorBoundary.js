@@ -1,11 +1,11 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { injectIntl } from 'bluesquare-components';
 import { Typography, Box } from '@mui/material';
 import { withStyles } from '@mui/styles';
+import { injectIntl } from 'bluesquare-components';
+import PropTypes from 'prop-types';
 
 import { LogValue } from './LogValue.tsx';
-import MESSAGES from './messages';
+import { MESSAGES } from './messages';
 
 const styles = theme => ({
     errorContainer: {

@@ -83,7 +83,7 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
     return useSnackMutation({
         mutationFn: saveSupplyChainForm,
         invalidateQueryKey: ['getVrfList'],
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
         ignoreErrorCodes: [400],
         options: {
             // Setting the cache value with the response onSuccess, so we can reset the form state (touched, etc) without losing data

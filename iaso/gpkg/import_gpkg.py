@@ -406,7 +406,7 @@ def import_gpkg_file2(
         ou.source_ref = ou.source_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
         ou.save()
 
-    recalculate_missing_paths(version, task)
+    recalculate_missing_paths_if_necessary(version, task)
 
     if task:
         task.report_progress_and_stop_if_killed(
@@ -418,9 +418,17 @@ def import_gpkg_file2(
     return total_org_unit
 
 
-def recalculate_missing_paths(version, task):
-    top_parents = OrgUnit.objects.filter(version=version).filter(parent_id__isnull=True)
+def recalculate_missing_paths_if_necessary(version, task):
     empty_paths_before = OrgUnit.objects.filter(version=version).filter(Q(path__isnull=True) | Q(path=[])).count()
+
+    if empty_paths_before == 0:
+        return
+
+    # this case might happen if the layers per type didn't specify the correct level-x
+    # and so processing children before parents, leading to path "null"
+
+    top_parents = OrgUnit.objects.filter(version=version).filter(parent_id__isnull=True)
+
     if task:
         task.report_progress_and_stop_if_killed(progress_message=f"updating path from {top_parents.count()} parents")
 

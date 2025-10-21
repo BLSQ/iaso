@@ -76,7 +76,7 @@ msgstr "OTP"
 
 #: plugins/wfp/models.py
 msgid "OTP - Under 6"
-msgstr ""
+msgstr "OTP - Under 6"
 
 #: plugins/wfp/models.py
 msgid "Breastfeeding"

@@ -130,7 +130,7 @@ describe('Duplicate entities list', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 6,
+            columns: 7,
             apiKey: 'entityduplicates',
         });
         testPagination({
@@ -151,7 +151,7 @@ describe('Duplicate entities list', () => {
                     .find('tr')
                     .eq(rowIndex)
                     .as('row');
-                cy.get('@row').find('td').last().as('actionCol');
+                cy.get('@row').find('td').last().prev().as('actionCol');
                 cy.get('@actionCol')
                     .find('button')
                     .as('button')
@@ -173,7 +173,7 @@ describe('Duplicate entities list', () => {
                     .find('tr')
                     .eq(rowIndex)
                     .as('row');
-                cy.get('@row').find('td').last().as('actionCol');
+                cy.get('@row').find('td').last().prev().as('actionCol');
                 cy.get('@actionCol').find('button').should('have.length', 1);
                 cy.get('@actionCol')
                     .find('[data-testid="MergeIcon"]')

@@ -837,7 +837,10 @@ class CampaignViewSet(ModelViewSet):
         on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
+        is_embedded = self.request.query_params.get("is_embedded", None)
         campaigns = queryset
+        if is_embedded:
+            campaigns = campaigns.filter(is_planned=False)
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
         if on_hold == "false":
@@ -846,6 +849,8 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_category == "on_hold":
             campaigns = campaigns.filter(on_hold=True)
+        if campaign_category == "is_planned" and not is_embedded:
+            campaigns = campaigns.filter(is_planned=True)
         if campaign_category == "regular" and on_hold == "true":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_category == "regular" and on_hold == "false":

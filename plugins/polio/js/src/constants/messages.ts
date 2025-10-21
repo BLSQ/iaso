@@ -2493,6 +2493,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.plannedCampaign',
         defaultMessage: 'Planned campaign',
     },
+    planned: {
+        id: 'iaso.polio.label.planned',
+        defaultMessage: 'Planned',
+    },
     plannedRound: {
         id: 'iaso.polio.label.plannedRound',
         defaultMessage: 'Planned round',

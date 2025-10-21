@@ -717,9 +717,6 @@ msgstr "Réinitialisation du mot de passe sur %(site_name)s"
 #~ msgid "Modifications"
 #~ msgstr "Modifications"
 
-#~ msgid "Plannings"
-#~ msgstr "Planifications"
-
 #~ msgid "Plannings template"
 #~ msgstr "Modèle de planifications"
 

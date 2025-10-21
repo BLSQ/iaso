@@ -21,7 +21,14 @@ logger = logging.getLogger(__name__)
 def etl_ng(all_data):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ng", status="SUCCESS").first()
-    last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+
+    if last_success_task:
+        # A task was found, use its creation date
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        # No successful task was found (first run case)
+        # Define a safe default date
+        last_success_task_date = None  # Example default: Unix Epoch start date
 
     # Allow to re-run on the whole data
     if all_data is not None:
@@ -53,8 +60,16 @@ def etl_ng(all_data):
 
 @shared_task()
 def etl_ssd(all_data):
+    """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ssd", status="SUCCESS").first()
-    last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+
+    if last_success_task:
+        # A task was found, use its creation date
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        # No successful task was found (first run case)
+        # Define a safe default date
+        last_success_task_date = None  # Example default: Unix Epoch start date
 
     # Allow to re-run on the whole data
     if all_data is not None:
@@ -87,8 +102,16 @@ def etl_ssd(all_data):
 
 @shared_task()
 def etl_ethiopia(all_data):
+    """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ethiopia", status="SUCCESS").first()
-    last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+
+    if last_success_task:
+        # A task was found, use its creation date
+        last_success_task_date = last_success_task.date_created.strftime("%Y-%m-%d")
+    else:
+        # No successful task was found (first run case)
+        # Define a safe default date
+        last_success_task_date = None  # Example default: Unix Epoch start date
 
     # Allow to re-run on the whole data
     if all_data is not None:

@@ -130,6 +130,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             po_number="123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=20,  # previous default value for mOPV2
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
             # and calculated vials_received and vials_shipped
         )
@@ -279,6 +280,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             po_number="666",
             lot_numbers=["LOT789", "LOT45689"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=50,  # previous default for nOPV2
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
             # and calculated vials_received and vials_shipped
         )

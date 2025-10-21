@@ -1432,23 +1432,18 @@ class VaccinePreAlert(ModelWithFile):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField()
     vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        self.doses_per_vial = self.get_doses_per_vial()
-
         if self.doses_shipped is None:
             self.vials_shipped = None
         else:
             self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
 
         super().save(*args, **kwargs)
-
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
     class Meta:
         indexes = [
@@ -1466,20 +1461,14 @@ class VaccineArrivalReport(models.Model):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField()
     vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     vials_received = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def get_doses_per_vial(self):
-        return DOSES_PER_VIAL[self.request_form.vaccine_type]
-
     def save(self, *args, **kwargs):
-        # We overwrite these values because they are not editable by the user
-        self.doses_per_vial = self.get_doses_per_vial()
-
         if self.doses_shipped is None:
             self.vials_shipped = None
         else:

@@ -98,6 +98,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             po_number="PO123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=20,
         )
 
     def test_earmarked_stock_used_appears_in_unusable_vials(self):

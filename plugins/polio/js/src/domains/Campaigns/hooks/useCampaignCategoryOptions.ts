@@ -15,6 +15,6 @@ export const useCampaignCategoryOptions = (
     if (isEmbedded) return baseOptions;
     return [
         ...baseOptions,
-        { label: formatMessage(MESSAGES.plannedCampaign), value: 'is_planned' },
+        { label: formatMessage(MESSAGES.planned), value: 'is_planned' },
     ];
 };

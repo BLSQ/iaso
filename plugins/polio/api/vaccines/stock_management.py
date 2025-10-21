@@ -26,7 +26,6 @@ from plugins.polio.api.vaccines.permissions import (
     can_edit_helper,
 )
 from plugins.polio.models import (
-    DOSES_PER_VIAL,
     Campaign,
     DestructionReport,
     EarmarkedStock,
@@ -289,6 +288,7 @@ class OutgoingStockMovementSerializer(ModelWithFileSerializer):
             "can_edit",
             "alternative_campaign",
             "campaign_category",
+            "doses_per_vial",
         ]
 
     def validate(self, data):
@@ -398,10 +398,12 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
         if response.status_code == 201:
             movement = OutgoingStockMovement.objects.filter(id=response.data["id"]).first()
             if movement and movement.round and movement.vaccine_stock:
-                total_vials_usable = EarmarkedStock.get_available_vials_count(movement.vaccine_stock, movement.round)
+                total_vials_usable = EarmarkedStock.get_available_vials_count(
+                    movement.vaccine_stock, movement.round, movement.doses_per_vial
+                )
 
                 vials_earmarked_used = min(total_vials_usable, movement.usable_vials_used)
-                doses_earmarked_used = vials_earmarked_used * DOSES_PER_VIAL[movement.vaccine_stock.vaccine]
+                doses_earmarked_used = vials_earmarked_used * movement.doses_per_vial
 
                 if vials_earmarked_used > 0:
                     EarmarkedStock.objects.create(
@@ -413,6 +415,7 @@ class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
                         doses_earmarked=doses_earmarked_used,
                         comment="Created from Form A submission",
                         form_a=movement,
+                        doses_per_vial=movement.doses_per_vial,
                     )
 
         return response
@@ -548,6 +551,7 @@ class EarmarkedStockSerializer(serializers.ModelSerializer):
             "updated_at",
             "can_edit",
             "campaign_category",
+            "doses_per_vial",
         ]
 
     def get_can_edit(self, obj):
@@ -868,61 +872,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 vaccine_stock,
                 "Unusable",
             )
-            with NamedTemporaryFile() as tmp:
-                workbook.save(tmp.name)
-                tmp.seek(0)
-                stream = tmp.read()
-
-            response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
-            response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
-            return response
-
-        paginator = Paginator()
-        page = paginator.paginate_queryset(results, request)
-        if page is not None:
-            return paginator.get_paginated_response(page)
-        return Response({"results": results})
-
-    @action(detail=True, methods=["get"])
-    def get_earmarked_stock(self, request, pk=None):
-        """
-        Retrieve a detailed list of movements for earmarked stock associated with a given VaccineStock ID.
-
-        """
-        if pk is None:
-            raise ValidationError("No VaccineStock ID provided")
-
-        try:
-            vaccine_stock = self.get_queryset().get(id=pk)
-        except VaccineStock.DoesNotExist:
-            raise ValidationError(f"VaccineStock not found for id={pk}")
-
-        end_date = request.query_params.get("end_date", None)
-        if end_date:
-            parsed_end_date = parse_date(end_date)
-            if not parsed_end_date:
-                raise ValidationError("The 'end_date' query parameter is not a valid date.")
-
-        calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_earmarked(end_date)
-        results = sort_results(request, results)
-
-        export_xlsx = request.query_params.get("export_xlsx", False)
-
-        if export_xlsx:
-            filename = vaccine_stock.country.name + "-" + vaccine_stock.vaccine + "-stock_details"
-            workbook = download_xlsx_stock_variants(
-                request,
-                filename,
-                results,
-                {
-                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
-                    "Unusable": lambda: calc.get_list_of_unusable_vials(end_date),
-                },
-                vaccine_stock,
-                "Earmarked",
-            )
-
             with NamedTemporaryFile() as tmp:
                 workbook.save(tmp.name)
                 tmp.seek(0)

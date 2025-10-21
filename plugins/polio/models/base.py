@@ -19,7 +19,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Exists, OuterRef, Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
@@ -653,7 +653,10 @@ class Campaign(SoftDeletableModel):
     is_planned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    # integrated campaign: this field on ly for non-polio campaigns
+    integrated_to = models.ForeignKey(
+        "CampaignIntegration", on_delete=models.PROTECT, related_name="integrated_campaigns", null=True, blank=True
+    )
     campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
@@ -957,6 +960,10 @@ class Campaign(SoftDeletableModel):
         return self.find_rounds_with_date(date_type, round_number).first()
 
     def save(self, *args, **kwargs):
+        # Prevent polio campaign to be saved as integrated campaign. See CampaignIntegration model.
+        if self.has_polio_type and self.integrated_to is not None:
+            raise IntegrityError("Value of integrated_to must be NULL for Campaigns of type POLIO")
+
         if self.initial_org_unit is not None:
             try:
                 country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()
@@ -2679,3 +2686,25 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
         return results
+
+
+class CampaignIntegration(SoftDeletableModel):
+    """
+    Regroups a polio campaign and integrated non polio campaigns
+    The non-polio campaigns are found in the Campaign model as the integrated_to field
+
+    The check on the campaign type is done by overriding the save method because CampaignType is itself a model
+    and model level constraints don't like to traverse relationships.
+    The check on the non polio campaign is done in the save method of the Campaign model
+
+    """
+
+    polio_campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="campaign_integration")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.polio_campaign and not self.polio_campaign.has_polio_type:
+            raise IntegrityError("polio_campaign must be a Campaign of type POLIO")
+
+        super().save(*args, **kwargs)

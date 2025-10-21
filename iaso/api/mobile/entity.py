@@ -258,6 +258,9 @@ class InternalMobileEntityViewSet(mixins.ListModelMixin, viewsets.GenericViewSet
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
             instance_orgunit_exists = Instance.objects.filter(entity=OuterRef("pk")).filter(org_unit__in=orgunits)
             queryset = queryset.filter(Exists(instance_orgunit_exists))
+        else:
+            # if no org units are defined for the user, we return no entities
+            return Entity.objects.none()
 
         queryset = queryset.filter(attributes_id__isnull=False)
 

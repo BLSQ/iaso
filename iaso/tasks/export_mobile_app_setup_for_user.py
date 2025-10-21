@@ -210,7 +210,8 @@ def _call_cursor_pagination_page(iaso_client, call, app_id, page, cursor_state):
         query_params["limit"] = cursor_state.page_size
         url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
     else:
-        url = cursor_state.next_url
+        parsed_url = urlparse(cursor_state.next_url)
+        url = urlunparse(("", "", parsed_url.path, parsed_url.params, parsed_url.query, parsed_url.fragment))
 
     filename = f"{call['filename']}-{page}.json"
     result = _call_endpoint(iaso_client, url, filename)

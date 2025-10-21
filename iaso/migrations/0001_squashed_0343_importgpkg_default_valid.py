@@ -9,7 +9,7 @@ import django_ltree.fields
 import phonenumber_field.modelfields
 
 from django.conf import settings
-from django.contrib.postgres.operations import CreateExtension
+from django.contrib.postgres.operations import CITextExtension, CreateExtension, TrigramExtension
 from django.db import migrations, models
 
 import iaso.models.base
@@ -730,7 +730,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        CreateExtension("citext"),
+        TrigramExtension(),
+        CITextExtension(),
         CreateExtension("ltree"),
         # Now create the collation
         migrations.RunSQL(

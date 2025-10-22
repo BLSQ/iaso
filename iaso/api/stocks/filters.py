@@ -60,10 +60,17 @@ class StockItemListFilter(django_filters.rest_framework.FilterSet):
 
 class StockLegderItemListFilter(django_filters.rest_framework.FilterSet):
     skus = django_filters.CharFilter(method="filter_skus", label=_("SKUs - SKU IDs (comma-separated)"))
+    question = django_filters.CharFilter(lookup_expr="icontains")
+    created_at_after = django_filters.DateFilter(field_name="created_at", lookup_expr="gte", input_formats=["%d-%m-%Y"])
+    created_at_before = django_filters.DateFilter(
+        field_name="created_at", lookup_expr="lte", input_formats=["%d-%m-%Y"]
+    )
+    value_from = django_filters.NumberFilter(field_name="value", lookup_expr="gte")
+    value_to = django_filters.NumberFilter(field_name="value", lookup_expr="lte")
 
     class Meta:
         model = StockLedgerItem
-        fields = ["impact", "submission_id", "org_unit_id", "sku_id"]
+        fields = ["impact", "submission_id", "org_unit_id", "sku_id", "question", "value", "created_at", "created_by"]
 
     @staticmethod
     def filter_skus(queryset, name, value):

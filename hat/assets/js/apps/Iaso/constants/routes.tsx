@@ -2,6 +2,7 @@ import React, { ReactElement } from 'react';
 import { PipelineList } from 'Iaso/domains/openHexa';
 import { PipelineDetails } from 'Iaso/domains/openHexa/details';
 import { StockKeepingUnits } from 'Iaso/domains/stock';
+import { StockItems } from 'Iaso/domains/stock/items';
 import { StockRulesVersions } from 'Iaso/domains/stock/versions';
 import PageError from '../components/errors/PageError';
 import { Runs } from '../domains/algorithmRuns/Runs';
@@ -429,7 +430,12 @@ export const stockRulesVersionsPath = {
     permissions: [Permission.STOCK_MANAGEMENT],
     element: <StockRulesVersions />,
 };
-
+export const stockItemsPath = {
+    baseUrl: baseUrls.stockItems,
+    routerUrl: `${baseUrls.stockItems}/*`,
+    permissions: [Permission.STOCK_MANAGEMENT],
+    element: <StockItems />,
+};
 export const pipelineListPath = {
     baseUrl: baseUrls.pipelineList,
     routerUrl: `${baseUrls.pipelineList}/*`,
@@ -531,6 +537,7 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     lotsPaymentsPath,
     stockKeepingUnitsPath,
     stockRulesVersionsPath,
+    stockItemsPath,
     bonusPath,
     pipelineDetailsPath,
     pipelineListPath,

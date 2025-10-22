@@ -1536,13 +1536,13 @@ class VaccineStock(models.Model):
         return f"{self.country} - {self.vaccine}"
 
     def usable_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_usable_vials(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_usable_vials(expanded=True)
 
     def unusable_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_unusable_vials(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_unusable_vials(expanded=True)
 
     def earmarked_vials(self, end_date=None):
-        return VaccineStockCalculator(self).get_list_of_earmarked(end_date, expanded=True)
+        return VaccineStockCalculator(self, end_date).get_list_of_earmarked(expanded=True)
 
 
 class VaccineStockHistoryQuerySet(models.QuerySet):

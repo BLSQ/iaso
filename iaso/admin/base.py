@@ -761,9 +761,12 @@ class StorageLogEntryInline(admin.TabularInline):
 @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
     fields = ("org_unit", "sku", "value", "created_at", "updated_at")
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("org_unit", "sku", "value", "created_at", "updated_at")
     list_display = ("org_unit", "sku", "value")
     list_filter = ["sku"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(StockItemRule)

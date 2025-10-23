@@ -249,6 +249,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
+        # Test new dose-related fields
+        self.assertEqual(stock["doses_received"], 400)  # 20 vials * 20 doses per vial
+        self.assertEqual(stock["doses_used"], 200)  # 10 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_usable_doses"], 460)  # 23 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_unusable_doses"], 540)  # 27 vials * 20 doses per vial
+        self.assertEqual(stock["doses_destroyed"], 60)  # 3 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_earmarked_doses"], 0)  # No earmarked stock in test data
+
     def test_vaccine_stock_management_permissions_outgoing_stock_movement(self):
         # Use a non-admin user
         self.client.force_authenticate(self.user_ro_perms)
@@ -666,6 +674,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "total_unusable_vials": {"type": "integer"},
                 "total_usable_doses": {"type": "integer"},
                 "total_unusable_doses": {"type": "integer"},
+                "total_earmarked_vials": {"type": "integer"},
+                "total_earmarked_doses": {"type": "integer"},
             },
             "required": [
                 "country_name",
@@ -674,6 +684,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 "total_unusable_vials",
                 "total_usable_doses",
                 "total_unusable_doses",
+                "total_earmarked_vials",
+                "total_earmarked_doses",
             ],
         }
 
@@ -690,6 +702,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["total_unusable_vials"], 27)
         self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
+        self.assertEqual(data["total_earmarked_vials"], 0)  # No earmarked stock in test data
+        self.assertEqual(data["total_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)
@@ -1214,6 +1228,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsInstance(stock["stock_of_unusable_vials"], int)
         self.assertIsInstance(stock["vials_destroyed"], int)
 
+        # Test new dose-related fields are present and have correct types
+        self.assertIsInstance(stock["doses_received"], int)
+        self.assertIsInstance(stock["doses_used"], int)
+        self.assertIsInstance(stock["stock_of_usable_doses"], int)
+        self.assertIsInstance(stock["stock_of_unusable_doses"], int)
+        self.assertIsInstance(stock["doses_destroyed"], int)
+        self.assertIsInstance(stock["stock_of_earmarked_doses"], int)
+
     def test_user_with_read_only_cannot_create_outgoing_stock_movement(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
         osm_data = {
@@ -1323,6 +1345,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsInstance(data["total_unusable_vials"], int)
         self.assertIsInstance(data["total_usable_doses"], int)
         self.assertIsInstance(data["total_unusable_doses"], int)
+        self.assertIsInstance(data["total_earmarked_vials"], int)
+        self.assertIsInstance(data["total_earmarked_doses"], int)
 
     def test_user_with_read_only_can_see_usable_vials(self):
         self.client.force_authenticate(user=self.user_read_only_perms)

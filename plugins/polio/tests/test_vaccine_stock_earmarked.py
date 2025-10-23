@@ -216,6 +216,10 @@ class VaccineStockEarmarkedTests(APITestCase):
         initial_data = response.json()
         initial_unusable = initial_data["total_unusable_vials"]
         initial_usable = initial_data["total_usable_vials"]
+        initial_unusable_doses = initial_data["total_unusable_doses"]
+        initial_usable_doses = initial_data["total_usable_doses"]
+        initial_earmarked_vials = initial_data["total_earmarked_vials"]
+        initial_earmarked_doses = initial_data["total_earmarked_doses"]
 
         # Create earmarked stock of type USED (moves from usable to unusable)
         used_stock = pm.EarmarkedStock.objects.create(
@@ -248,9 +252,17 @@ class VaccineStockEarmarkedTests(APITestCase):
 
         # Verify USED stock affects unusable total
         self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
+        self.assertEqual(updated_data["total_unusable_doses"], initial_unusable_doses + 2000)
 
         # Verify CREATED stock affects usable total
         self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 1000)
+
+        # Verify earmarked totals
+        self.assertEqual(
+            updated_data["total_earmarked_vials"], initial_earmarked_vials + 50
+        )  # Only CREATED affects earmarked
+        self.assertEqual(updated_data["total_earmarked_doses"], initial_earmarked_doses + 1000)
 
         # if we now create a RETURNED stock, it should affect the usable total
 
@@ -270,6 +282,11 @@ class VaccineStockEarmarkedTests(APITestCase):
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
         self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50 + 50)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 1000 + 1000)
+
+        # Verify earmarked totals after RETURNED stock
+        self.assertEqual(updated_data["total_earmarked_vials"], initial_earmarked_vials + 50 - 50)  # CREATED - RETURNED
+        self.assertEqual(updated_data["total_earmarked_doses"], initial_earmarked_doses + 1000 - 1000)
 
         # Test EarmarkedStockViewSet endpoints
         # Test list endpoint

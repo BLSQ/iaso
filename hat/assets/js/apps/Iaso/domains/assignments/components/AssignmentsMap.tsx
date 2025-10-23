@@ -1,4 +1,6 @@
 import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
+import { Box } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
 import {
     GeoJSON,
     MapContainer,
@@ -7,23 +9,14 @@ import {
     Tooltip,
 } from 'react-leaflet';
 
-import { Box } from '@mui/material';
-import { LoadingSpinner } from 'bluesquare-components';
-
-import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
-
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
-import { MapLegend } from './MapLegend';
-import { OrgUnitPopup } from './OrgUnitPopup';
-
+import { GeoJson } from '../../../components/maps/types';
 import tiles from '../../../constants/mapTiles';
-import {
-    disabledColor,
-    parentColor,
-    unSelectedColor,
-} from '../constants/colors';
-
 import {
     Bounds,
     circleColorMarkerOptions,
@@ -31,13 +24,17 @@ import {
     getShapesBounds,
 } from '../../../utils/map/mapUtils';
 import { Profile } from '../../../utils/usersUtils';
-
-import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import { DropdownOptions } from '../../../types/utils';
+import {
+    disabledColor,
+    parentColor,
+    unSelectedColor,
+} from '../constants/colors';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
+import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
+import { MapLegend } from './MapLegend';
+import { OrgUnitPopup } from './OrgUnitPopup';
 
 const defaultViewport = {
     center: [1, 20],
@@ -56,8 +53,8 @@ type Props = {
     isFetchingParentLocations: boolean;
     assignments: AssignmentsApi;
     profiles: Profile[];
-    orgunitTypes: Array<DropdownOptions<string>>;
-    isFetchingOrgUnitTypes: boolean;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
     params: AssignmentParams;
 };
 
@@ -104,7 +101,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     assignments,
     profiles,
     orgunitTypes,
-    isFetchingOrgUnitTypes,
+    isFetchingOrgunitTypes,
     params,
 }) => {
     const mapContainer: any = useRef();
@@ -184,7 +181,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 <AssignmentsMapSelectors
                     params={params}
                     orgunitTypes={orgunitTypes}
-                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 <MapLegend />
                 {/* TODO uncomment when feature is reinstated */}
@@ -252,7 +249,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                     )
                                                 }
                                                 key={shape.id}
-                                                data={shape.geoJson}
+                                                data={
+                                                    shape.geoJson as unknown as GeoJson
+                                                }
                                                 style={() => ({
                                                     color: disabledColor,
                                                     fillOpacity: 0.5,
@@ -276,7 +275,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                 click: () => onClick(shape),
                                             }}
                                             key={shape.id}
-                                            data={shape.geoJson}
+                                            data={
+                                                shape.geoJson as unknown as GeoJson
+                                            }
                                             style={() => ({
                                                 color: unSelectedColor,
                                             })}
@@ -293,7 +294,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                         eventHandlers={{
                                             click: () => onClick(shape),
                                         }}
-                                        data={shape.geoJson}
+                                        data={
+                                            shape.geoJson as unknown as GeoJson
+                                        }
                                         style={() => ({
                                             color: shape.color,
                                             fillOpacity: 0.4,
@@ -368,7 +371,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                 click: () =>
                                                     onParentClick(shape),
                                             }}
-                                            data={shape.geoJson}
+                                            data={
+                                                shape.geoJson as unknown as GeoJson
+                                            }
                                             style={{
                                                 color: parentColor,
                                                 fillOpacity: '0',

@@ -1,8 +1,11 @@
 import { useMemo } from 'react';
 
+import {
+    OrgUnitTypeHierarchyDropdownValues,
+    useGetOrgUnitTypesHierarchy,
+} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { useBoundState } from '../../../hooks/useBoundState';
-import { DropdownOptions } from '../../../types/utils';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 import { Locations } from '../types/locations';
@@ -43,7 +46,7 @@ type Result = {
     saveMultiAssignments: (params: SaveAssignmentQuery) => void;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: ProfileWithColor[];
-    orgunitTypes: DropdownOptions<string>[] | undefined;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
     childrenOrgunits: ChildrenOrgUnits | undefined;
     orgUnits: Locations | undefined;
     orgUnitsList: OrgUnit[] | undefined;
@@ -99,8 +102,14 @@ export const useGetAssignmentData = ({
         () => (data ? data.allAssignments : []),
         [data],
     );
-    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+    const { data: orgUnitTypeHierarchy, isFetching: isFetchingOrgunitTypes } =
+        useGetOrgUnitTypesHierarchy(
+            planning?.org_unit_details.org_unit_type || 0,
+        );
+    const orgunitTypes = useMemo(
+        () => flattenHierarchy(orgUnitTypeHierarchy?.sub_unit_types || []),
+        [orgUnitTypeHierarchy],
+    );
     const { data: childrenOrgunits, isFetching: isFetchingChildrenOrgunits } =
         useGetOrgUnitsByParent({
             orgUnitParentId: parentSelected?.id,
@@ -200,7 +209,8 @@ export const useGetAssignmentData = ({
             isFetchingOrgUnitsList,
             isLoadingPlanning,
             isSaving: isBulkSaving || isSaving,
-            isFetchingOrgunitTypes,
+            isFetchingOrgunitTypes:
+                !orgUnitTypeHierarchy || isFetchingOrgunitTypes,
             isFetchingChildrenOrgunits,
             isLoadingAssignments,
             isTeamsFetched,
@@ -232,5 +242,6 @@ export const useGetAssignmentData = ({
         setTeams,
         sidebarData,
         teams,
+        orgUnitTypeHierarchy,
     ]);
 };

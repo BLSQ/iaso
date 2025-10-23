@@ -39,7 +39,7 @@
     "iaso.assignment.count": "Nombre d'assignations",
     "iaso.assignment.deleteAssignments": "Supprimer les assignations pour le planning : {name}",
     "iaso.assignment.deleteAssignmentsInfos": "Veuillez supprimer toutes les assignations d'abord",
-    "iaso.assignment.deleteAssignmentsWarning": "Êtes-vous sûr de vouloir supprimer les assignations pour le planning {name}?",
+    "iaso.assignment.deleteAssignmentsWarning": "Êtes-vous sûr de vouloir supprimer {count} assignations?",
     "iaso.assignment.inAnotherTeam": "dans une autre équipe",
     "iaso.assignment.label": "Affectation",
     "iaso.assignment.map.disabled": "Déjà assigné",

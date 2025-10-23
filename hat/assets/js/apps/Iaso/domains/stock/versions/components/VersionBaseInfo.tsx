@@ -7,10 +7,12 @@ import {
     Divider,
     Box,
 } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/system';
 import { useSafeIntl } from 'bluesquare-components';
 
+import { textPlaceholder } from 'Iaso/constants/uiConstants';
 import { DetailsForm } from 'Iaso/domains/stock/versions/components/DetailsForm';
+import { SxStyles } from 'Iaso/types/general';
 import MESSAGES from '../../messages';
 
 import { StockRulesVersion } from '../../types/stocks';
@@ -18,13 +20,14 @@ import { StockRulesVersion } from '../../types/stocks';
 import { PublishVersionModal } from './PublishVersionModal';
 import { StatusCell } from './StatusCell';
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     leftCell: {
         // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRight: (theme: Theme) =>
+            `1px solid ${theme.palette.ligthGray.border}`,
         fontWeight: 'bold',
     },
-}));
+};
 
 type RowProps = {
     label: string;
@@ -32,10 +35,9 @@ type RowProps = {
 };
 
 const Row: FunctionComponent<RowProps> = ({ label, value }) => {
-    const classes = useStyles();
     return (
         <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell sx={styles.leftCell}>{label}</TableCell>
             <TableCell>{value}</TableCell>
         </TableRow>
     );
@@ -58,7 +60,7 @@ export const VersionBaseInfo: FunctionComponent<Props> = ({ version }) => {
                             version ? (
                                 <StatusCell status={version.status} />
                             ) : (
-                                ''
+                                textPlaceholder
                             )
                         }
                     />

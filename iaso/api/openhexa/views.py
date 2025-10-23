@@ -12,13 +12,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.openhexa.serializers import (
-    OpenHexaConfigSerializer,
     PipelineLaunchSerializer,
     TaskResponseSerializer,
     TaskUpdateSerializer,
 )
 from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
-from iaso.models.json_config import Config
+from iaso.models.openhexa import OpenHEXAWorkspace
 from iaso.models.task import Task
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.utils.tokens import get_user_token
@@ -26,42 +25,79 @@ from iaso.utils.tokens import get_user_token
 
 logger = logging.getLogger(__name__)
 
-OPENHEXA_CONFIG_SLUG = "openhexa-config"
 
-
-class MockConfig:
-    """Mock Config object for pipeline configuration."""
-
-    def __init__(self, content_dict):
-        self.content = content_dict
-
-
-def get_openhexa_config():
+def get_openhexa_config(user):
     """
-    Retrieve OpenHexa configuration and validate URL.
+    Retrieve OpenHexa configuration from OpenHEXAWorkspace and OpenHEXAInstance models.
+
+    Args:
+        user: The authenticated user making the request
 
     Returns:
-        tuple: (openhexa_url, openhexa_token, workspace_slug)
+        tuple: (openhexa_url, openhexa_token, workspace_slug, workspace)
 
     Raises:
         Response: HTTP 422 if configuration not found or invalid
     """
     try:
-        openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
-        openhexa_url = openhexa_config.content["openhexa_url"]
-        openhexa_token = openhexa_config.content["openhexa_token"]
-        workspace_slug = openhexa_config.content["workspace_slug"]
+        # Get the user's account
+        account = user.iaso_profile.account
+
+        # Fetch OpenHEXAWorkspace for this account
+        try:
+            workspace = OpenHEXAWorkspace.objects.select_related("openhexa_instance").get(account=account)
+        except OpenHEXAWorkspace.DoesNotExist:
+            logger.error(f"No OpenHEXA workspace configured for account '{account.name}' (ID: {account.id})")
+            return Response(
+                {"error": _("No OpenHEXA workspace configured for your account")},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+        except OpenHEXAWorkspace.MultipleObjectsReturned:
+            logger.error(f"Multiple OpenHEXA workspaces found for account '{account.name}' (ID: {account.id})")
+            return Response(
+                {"error": _("Multiple OpenHEXA workspaces configured for your account")},
+                status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            )
+
+        # Get workspace slug
+        workspace_slug = workspace.slug
+        if not workspace_slug:
+            logger.error(f"OpenHEXA workspace for account '{account.name}' has no slug configured")
+            return Response(
+                {"error": _("OpenHEXA workspace has no slug configured")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        # Get OpenHEXA instance configuration
+        openhexa_instance = workspace.openhexa_instance
+        openhexa_url = openhexa_instance.url
+        openhexa_token = openhexa_instance.token
+
+        if not openhexa_url:
+            logger.error(f"OpenHEXA instance '{openhexa_instance.name}' has no URL configured")
+            return Response(
+                {"error": _("OpenHEXA instance has no URL configured")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
+
+        if not openhexa_token:
+            logger.error(f"OpenHEXA instance '{openhexa_instance.name}' has no token configured")
+            return Response(
+                {"error": _("OpenHEXA instance has no token configured")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
         # Validate that the URL contains 'graphql'
         if "graphql" not in openhexa_url.lower():
             logger.error(f"OpenHexa URL does not contain 'graphql': {openhexa_url}")
-            raise ValueError("OpenHexa URL must contain 'graphql'")
+            return Response(
+                {"error": _("OpenHEXA URL must contain 'graphql'")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY
+            )
 
-        return openhexa_url, openhexa_token, workspace_slug
+        return openhexa_url, openhexa_token, workspace_slug, workspace
 
+    except AttributeError as e:
+        logger.exception(f"User {user.id} has no iaso_profile or account")
+        return Response({"error": _("User profile or account not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
     except Exception as e:
-        logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
-        # Return a simple error response instead of raising an exception
+        logger.exception(f"Could not fetch OpenHEXA config for user {user.id}")
         return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
@@ -85,10 +121,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
-        config_result = get_openhexa_config()
+        config_result = get_openhexa_config(request.user)
         if isinstance(config_result, Response):
             return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = config_result
 
         try:
             transport = RequestsHTTPTransport(
@@ -137,10 +173,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
-        config_result = get_openhexa_config()
+        config_result = get_openhexa_config(request.user)
         if isinstance(config_result, Response):
             return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = config_result
 
         try:
             transport = RequestsHTTPTransport(
@@ -225,10 +261,10 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        config_result = get_openhexa_config()
+        config_result = get_openhexa_config(request.user)
         if isinstance(config_result, Response):
             return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = config_result
 
         try:
             user = request.user
@@ -346,30 +382,41 @@ class OpenHexaPipelinesViewSet(ViewSet):
     @action(detail=False, methods=["get"])
     def config(self, request):
         """
-        Check if OpenHexa configuration exists.
+        Check if OpenHexa configuration exists for the user's account.
 
         Returns:
             Response: {"configured": true/false, "lqas_pipeline_code": "value" or null}
         """
         try:
-            # Try to get the config
-            openhexa_config = Config.objects.get(slug=OPENHEXA_CONFIG_SLUG)
+            # Get the user's account
+            account = request.user.iaso_profile.account
 
-            # Use serializer to validate configuration
-            config_serializer = OpenHexaConfigSerializer(data=openhexa_config.content)
-            configured = config_serializer.is_valid()
+            # Try to get the workspace
+            workspace = OpenHEXAWorkspace.objects.select_related("openhexa_instance").get(account=account)
+
+            # Check if all required fields are configured
+            configured = bool(
+                workspace.slug
+                and workspace.openhexa_instance
+                and workspace.openhexa_instance.url
+                and workspace.openhexa_instance.token
+            )
 
             response_data = {"configured": configured}
 
-            # Get optional lqas_pipeline_code parameter if configuration is valid
-            if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
-                response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
+            # Get optional lqas_pipeline_code parameter from workspace config if configured
+            if configured and workspace.config and workspace.config.get("lqas_pipeline_code"):
+                response_data["lqas_pipeline_code"] = workspace.config["lqas_pipeline_code"]
 
             return Response(response_data)
 
-        except Config.DoesNotExist:
-            # Config doesn't exist
+        except (AttributeError, OpenHEXAWorkspace.DoesNotExist):
+            # User has no profile/account or workspace doesn't exist
             return Response({"configured": False})
+        except OpenHEXAWorkspace.MultipleObjectsReturned:
+            # Multiple workspaces found - this is a configuration error but still "configured"
+            logger.warning(f"Multiple OpenHEXA workspaces found for account {account.id}")
+            return Response({"configured": True})
         except Exception as e:
             logger.exception(f"Error checking OpenHexa config: {str(e)}")
             return Response({"configured": False})

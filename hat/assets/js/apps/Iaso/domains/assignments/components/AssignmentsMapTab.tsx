@@ -1,17 +1,18 @@
 import React, { FunctionComponent } from 'react';
 
-import { AssignmentsMap } from './AssignmentsMap';
+import { OrgUnitTypeHierarchyDropdownValues } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 
 import { Profile } from '../../../utils/usersUtils';
+
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
+import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 import { Planning } from '../types/planning';
 import { DropdownTeamsOptions, Team } from '../types/team';
 
-import { DropdownOptions } from '../../../types/utils';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
-import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
-import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
+import { AssignmentsMap } from './AssignmentsMap';
 
 type Props = {
     allAssignments: AssignmentsApi;
@@ -27,8 +28,8 @@ type Props = {
     handleSaveAssignment: (
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
     ) => void;
-    orgunitTypes: Array<DropdownOptions<string>>;
-    isFetchingOrgUnitTypes: boolean;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -44,7 +45,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     isFetchingLocations,
     isLoadingAssignments,
     orgunitTypes,
-    isFetchingOrgUnitTypes,
+    isFetchingOrgunitTypes,
 }) => {
     const { parentOrgunitType } = params;
 
@@ -70,7 +71,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             profiles={profiles}
             assignments={allAssignments}
             orgunitTypes={orgunitTypes}
-            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+            isFetchingOrgunitTypes={isFetchingOrgunitTypes}
             params={params}
         />
     );

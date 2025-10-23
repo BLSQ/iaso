@@ -5,8 +5,12 @@ import { Grid, Collapse, Box } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { OriginalOrgUnitType } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetOrgUnitTypesHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import {
+    OrgUnitTypeHierarchy,
+    OrgUnitTypeHierarchyDropdownValues,
+    useGetOrgUnitTypesHierarchy,
+} from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
+import { flattenHierarchy } from 'Iaso/domains/orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesHierarchy';
 import { SxStyles } from 'Iaso/types/general';
 import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 import MESSAGES from '../../messages';
@@ -31,8 +35,8 @@ const styles: SxStyles = {
 
 type Props = {
     parameterValues?: ParameterValues;
-    orgUnitTypes: DropdownOptionsWithOriginal<string, OriginalOrgUnitType>[];
-    isFetchingOrgUnitTypes: boolean;
+    orgunitTypes: OrgUnitTypeHierarchyDropdownValues;
+    isFetchingOrgunitTypes: boolean;
     index: number;
     levels: number[] | undefined[];
     handleOrgUnitTypeChange: (value: any, index: number) => void;
@@ -46,43 +50,10 @@ type Props = {
     setExpandedLevels: (expandedLevels: boolean[]) => void;
 };
 
-const flattenHierarchy = (
-    items: any[],
-    level = 0,
-    parameterValues: ParameterValues,
-    orgUnitTypeId: number,
-): any[] => {
-    return items.flatMap(item => {
-        if (
-            parameterValues?.org_unit_type_sequence_identifiers?.includes(
-                item.id,
-            ) &&
-            item.id !== orgUnitTypeId
-        ) {
-            return [];
-        }
-        const currentItem = {
-            value: item.id,
-            label: item.name,
-            original: item,
-        };
-        const children =
-            item.sub_unit_types && item.sub_unit_types.length > 0
-                ? flattenHierarchy(
-                      item.sub_unit_types,
-                      level + 1,
-                      parameterValues,
-                      orgUnitTypeId,
-                  )
-                : [];
-
-        return [currentItem, ...children];
-    });
-};
 export const Level: FunctionComponent<Props> = ({
     parameterValues,
-    orgUnitTypes,
-    isFetchingOrgUnitTypes,
+    orgunitTypes,
+    isFetchingOrgunitTypes,
     index,
     levels,
     handleOrgUnitTypeChange,
@@ -99,16 +70,16 @@ export const Level: FunctionComponent<Props> = ({
     const criteriaOptions = useGetCriteriaOptions();
 
     const previousLevel:
-        | DropdownOptionsWithOriginal<string, OriginalOrgUnitType>
+        | DropdownOptionsWithOriginal<number, OrgUnitTypeHierarchy>
         | undefined = useMemo(
         () =>
-            orgUnitTypes?.find(
-                orgUnitType => orgUnitType.value === `${levels[index - 1]}`,
+            orgunitTypes?.find(
+                orgUnitType => orgUnitType.value === levels[index - 1],
             ),
-        [orgUnitTypes, levels, index],
+        [orgunitTypes, levels, index],
     );
     const { data: orgUnitTypeHierarchy } = useGetOrgUnitTypesHierarchy(
-        previousLevel?.value ? parseInt(previousLevel.value, 10) : 0,
+        previousLevel?.value ? previousLevel.value : 0,
     );
     const isExpanded = expandedLevels[index];
     const handleSetIsExpanded = useCallback(
@@ -123,20 +94,19 @@ export const Level: FunctionComponent<Props> = ({
     );
     const orgUnitTypesOptions = useMemo(() => {
         let options: DropdownOptionsWithOriginal<
-            string,
-            OriginalOrgUnitType
+            number,
+            OrgUnitTypeHierarchy
         >[] = [];
         if (!previousLevel) {
-            options = orgUnitTypes;
+            options = orgunitTypes;
         }
 
         if (!orgUnitTypeHierarchy?.sub_unit_types) return options;
 
         options = flattenHierarchy(
             orgUnitTypeHierarchy.sub_unit_types,
-            0,
-            parameterValues,
             orgUnitTypeId,
+            parameterValues?.org_unit_type_sequence_identifiers,
         );
         return options;
     }, [
@@ -144,7 +114,7 @@ export const Level: FunctionComponent<Props> = ({
         orgUnitTypeHierarchy?.sub_unit_types,
         parameterValues,
         orgUnitTypeId,
-        orgUnitTypes,
+        orgunitTypes,
     ]);
     const selectedOrgUnitTypeId = useMemo(
         () =>
@@ -169,7 +139,7 @@ export const Level: FunctionComponent<Props> = ({
                         labelString={`${formatMessage(MESSAGES.level)} ${index + 1}`}
                         value={orgUnitTypeId}
                         options={orgUnitTypesOptions}
-                        loading={isFetchingOrgUnitTypes}
+                        loading={isFetchingOrgunitTypes}
                     />
                 </Grid>
                 {index !== 0 && (

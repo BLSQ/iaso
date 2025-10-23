@@ -108,7 +108,7 @@ export const Duplicates: FunctionComponent = () => {
         pages: 1,
         count: 0,
     };
-    const { mutate: bulkIgnore } = useBulkIgnoreDuplicate(() =>
+    const { mutate: bulkIgnore } = useBulkIgnoreDuplicate(params, () =>
         setSelection(selectionInitialState),
     );
 

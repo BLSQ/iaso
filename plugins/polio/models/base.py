@@ -367,6 +367,15 @@ class SubActivity(models.Model):
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
+        constraints = [
+            models.CheckConstraint(
+                name="round_planned_requires_population_data",
+                check=Q(
+                    Q(is_planned=False)
+                    | (Q(target_population__isnull=False) & Q(percentage_covered_target_population__isnull=False))
+                ),
+            )
+        ]
 
     # With the current situation/UI, all rounds must have a start date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
@@ -388,15 +397,20 @@ class Round(models.Model):
     age_max = models.IntegerField(null=True, blank=True)
     age_type = models.TextField(null=True, blank=True, choices=AgeChoices.choices)
 
+    target_population = models.IntegerField(null=True, blank=True)
+    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
+    doses_requested = models.IntegerField(null=True, blank=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
+    on_hold = models.BooleanField(default=False)
+    is_planned = models.BooleanField(default=False)
+
+    # Evaluation (LQAS/IM)
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
     im_started_at = models.DateField(null=True, blank=True)
     im_ended_at = models.DateField(null=True, blank=True)
     lqas_started_at = models.DateField(null=True, blank=True)
     lqas_ended_at = models.DateField(null=True, blank=True)
-    target_population = models.IntegerField(null=True, blank=True)
-    doses_requested = models.IntegerField(null=True, blank=True)
-    cost = models.DecimalField(max_digits=10, decimal_places=2, default=0.0, null=True, blank=True)
     im_percentage_children_missed_in_household = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )
@@ -410,7 +424,6 @@ class Round(models.Model):
     main_awareness_problem = models.CharField(max_length=255, null=True, blank=True)
     lqas_district_passing = models.IntegerField(null=True, blank=True)
     lqas_district_failing = models.IntegerField(null=True, blank=True)
-    on_hold = models.BooleanField(default=False)
 
     # Preparedness
     preparedness_spreadsheet_url = models.URLField(null=True, blank=True)
@@ -428,7 +441,7 @@ class Round(models.Model):
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
     forma_date = models.DateField(null=True, blank=True)
     forma_comment = models.TextField(blank=True, null=True)
-    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
+
     # End of vaccine management
 
     objects = models.Manager.from_queryset(RoundQuerySet)()
@@ -634,7 +647,10 @@ class Campaign(SoftDeletableModel):
     is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
     # campaign used for training and testing purpose
     is_test = models.BooleanField(default=False)
+    # campaign approved but implementation is on hold
     on_hold = models.BooleanField(default=False)
+    # campaign planned, but not approved yet
+    is_planned = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

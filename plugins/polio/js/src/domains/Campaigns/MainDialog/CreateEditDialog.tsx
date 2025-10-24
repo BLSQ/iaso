@@ -83,6 +83,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             is_preventive: false,
             is_test: false,
             on_hold: false,
+            is_planned: false,
             enable_send_weekly_email: true,
             // Those are Polio default values to be set if the types changes to Polio
             has_data_in_budget_tool: false,

@@ -26,11 +26,12 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import { useSaveIncident } from '../../hooks/api';
+import { useGetDosesOptions, useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './dropdownOptions';
 import { useIncidentValidation } from './validation';
+import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
 
 type Props = {
     incident?: any;
@@ -135,6 +136,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const { mutateAsync: save } = useSaveIncident();
     const validationSchema = useIncidentValidation();
     const getMovementDescription = useGetMovementDescription();
+    const { data: dosesOptions, isLoading: isLoadingDoses } =
+        useGetDosesOptions(parseInt(vaccineStockId, 10));
 
     const [inventoryType, setInventoryType] = React.useState(() => {
         if (incident && incident.stock_correction === 'physical_inventory') {
@@ -218,6 +221,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials || 0,
             unusable_vials: incident?.unusable_vials || 0,
+            doses_per_vial: incident?.doses_per_vial || dosesPerVial[vaccine],
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
             file: incident?.file,
@@ -390,6 +394,15 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                                 }
                                 component={NumberInput}
                                 required
+                            />
+                        </Box>
+                        <Box mb={2}>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name="doses_per_vial"
+                                component={SingleSelect}
+                                options={dosesOptions}
+                                isLoading={isLoadingDoses}
                             />
                         </Box>
                     </>

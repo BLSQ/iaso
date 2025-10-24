@@ -70,6 +70,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
             stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
             title="Test incident",
             comment="Test incident",
+            doses_per_vial=20,
         )
 
         cls.destruction_report = pm.DestructionReport.objects.create(
@@ -79,6 +80,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
             unusable_vials_destroyed=50,
             action="EXPIRED",
             comment="Test destruction",
+            doses_per_vial=20,
         )
 
         # Create users
@@ -152,6 +154,7 @@ class VaccineRepositoryReportsAPITestCase(APITestCase, PolioTestCaseMixin):
             incident_report_received_by_rrt=self.now,
             usable_vials=100,
             unusable_vials=0,
+            doses_per_vial=50,
             stock_correction=pm.IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT,
             title="Zambia incident",
             comment="Zambia incident",

@@ -46,6 +46,6 @@ export const useSaveBudgetStep = () => {
         mutationFn: postBudgetStep,
         invalidateQueryKey: 'budget',
         snackSuccessMessage: MESSAGES.budgetUpdated,
-        showSucessSnackBar: true,
+        showSuccessSnackBar: true,
     });
 };

@@ -6,13 +6,11 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { SxStyles } from 'Iaso/types/general';
 import TopBar from '../../components/nav/TopBarComponent';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { Parameters } from './components/Parameters';
 import { useGetPipelineDetails } from './hooks/useGetPipelineDetails';
 import { useLaunchTask } from './hooks/useLaunchTask';
-import {
-    ParameterValues,
-    usePipelineParameters,
-} from './hooks/usePipelineParameters';
 import { MESSAGES } from './messages';
+import { ParameterValues } from './types/pipeline';
 
 type PipelineDetailsParams = {
     pipelineId: string;
@@ -61,18 +59,13 @@ export const PipelineDetails: FunctionComponent = () => {
     const [parameterValues, setParameterValues] = useState<
         ParameterValues | undefined
     >(undefined);
+    const [allowConfirm, setAllowConfirm] = useState(false);
     const { formatMessage } = useSafeIntl();
     const {
         data: pipeline,
         isFetching,
         error,
     } = useGetPipelineDetails(pipelineId);
-    // Use custom hook for parameter handling
-    const { renderParameterInput } = usePipelineParameters(
-        pipeline,
-        parameterValues,
-        setParameterValues,
-    );
     const { mutate: launchTask } = useLaunchTask(
         pipelineId,
         pipeline?.currentVersion?.id,
@@ -107,17 +100,18 @@ export const PipelineDetails: FunctionComponent = () => {
                                 {formatMessage(MESSAGES.noParameters)}
                             </Typography>
                         )}
-                        {pipeline.currentVersion?.parameters?.map(parameter => (
-                            <Box key={parameter.name} sx={{ marginBottom: 2 }}>
-                                {renderParameterInput(parameter)}
-                            </Box>
-                        ))}
+                        <Parameters
+                            parameters={pipeline.currentVersion?.parameters}
+                            parameterValues={parameterValues}
+                            setParameterValues={setParameterValues}
+                            setAllowConfirm={setAllowConfirm}
+                        />
                         <Box sx={styles.buttonContainer}>
                             <Button
                                 variant="contained"
                                 color="primary"
                                 onClick={handleSubmit}
-                                disabled={isFetching}
+                                disabled={isFetching || !allowConfirm}
                             >
                                 {formatMessage(MESSAGES.confirm)}
                             </Button>

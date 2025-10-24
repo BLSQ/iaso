@@ -16,7 +16,7 @@ import { DependentSingleSelect } from '../../../components/Inputs/DependentSingl
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
-import { ToggleRoundOnHoldModal } from './ToggleRoundOnHoldModal.tsx/ToggleRoundOnHoldModal';
+import { ToggleRoundModal } from './ToggleRoundModal/ToggleRoundModal';
 
 export const MONTHS = 'MONTHS';
 export const YEARS = 'YEARS';
@@ -42,13 +42,91 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         values: { rounds = [] },
         setFieldValue,
         setFieldTouched,
+        setValues,
+        setTouched,
+        touched,
     } = useFormikContext<CampaignFormValues>();
-    const isCampaignOnHold = values.on_hold;
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
+    const isCampaignOnHold = values.on_hold;
     const isEarlierRoundOnHold = Boolean(
         rounds.find(r => r.number < roundNumber && r.on_hold),
     );
+    const isCampaignPlanned = values.is_planned;
+    const isEarlierRoundPlanned = Boolean(
+        rounds.find(r => r.number < roundNumber && r.is_planned),
+    );
+    const isRequiredForPlannedRnd =
+        isCampaignPlanned ||
+        isEarlierRoundPlanned ||
+        rounds[roundIndex].is_planned;
+
+    // Logic is duplicated for is_planned and on_hold because abstracting it away in a hook
+    // caused weird state bugs (probably due to formik's use of the context API)
+    const [openPlannedModal, setOpenPlannedModal] = useState<boolean>(false);
+
+    const handlePlannedUpdate = useCallback(
+        (_, value: boolean) => {
+            if (value) {
+                const roundsCopy = structuredClone(rounds); // deep copy
+                const touchedCopy = { ...touched };
+                if (!touchedCopy.rounds) {
+                    touchedCopy.rounds = [];
+                }
+                // Set relevant field as touched to trigger validation and prevent saving if error
+                rounds.forEach((rnd, i) => {
+                    if (rnd.number >= roundNumber) {
+                        roundsCopy[i] = { ...roundsCopy[i], is_planned: true };
+                        //@ts-ignore
+                        touchedCopy.rounds[i] = {
+                            //@ts-ignore
+                            ...touchedCopy?.rounds[i],
+                            is_planned: true,
+                            target_population: true,
+                            percentage_covered_target_population: true,
+                        };
+                    }
+                });
+                // Use setValues to safely update multiple values at once
+                setTouched({ ...touchedCopy });
+                setValues({ ...values, rounds: roundsCopy });
+                // If value is false and we're updating the last round, we don't open the modal and just update the round
+            } else if (roundIndex === rounds.length - 1) {
+                setFieldTouched(`rounds[${roundIndex}].is_planned`, true);
+                setFieldValue(`rounds[${roundIndex}].is_planned`, false);
+                // if value is false, user needs to decide whether to update the current round or all subsequent rounds so we open the modal
+            } else {
+                setOpenPlannedModal(true);
+            }
+        },
+        [
+            roundNumber,
+            setFieldValue,
+            setFieldTouched,
+            rounds,
+            roundIndex,
+            setValues,
+            setTouched,
+            touched,
+            values,
+        ],
+    );
+    // Set on_hold to false to the current round and all rounds after it
+    const onChangeAllPlannedRounds = useCallback(() => {
+        rounds.forEach((rnd, i) => {
+            if (rnd.number >= roundNumber) {
+                setFieldValue(`rounds[${i}].is_planned`, false);
+                setFieldTouched(`rounds[${i}].is_planned`, true);
+            }
+        });
+    }, [roundNumber, setFieldValue, setFieldTouched, rounds]);
+
+    // Set on_hold to false for the current round but not the following rounds
+    const onChangeCurrentPlannedRoundOnly = useCallback(() => {
+        setFieldValue(`rounds[${roundIndex}].is_planned`, false);
+    }, [roundIndex, setFieldValue]);
+
     const [openOnHoldModal, setOpenOnHoldModal] = useState<boolean>(false);
+
     const handleOnHoldUpdate = useCallback(
         (_, value: boolean) => {
             if (value) {
@@ -71,7 +149,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         [roundNumber, setFieldValue, setFieldTouched, rounds, roundIndex],
     );
     // Set on_hold to false to the current round and all rounds after it
-    const onChangeAllRounds = useCallback(() => {
+    const onChangeAllOnHoldRounds = useCallback(() => {
         rounds.forEach((rnd, i) => {
             if (rnd.number >= roundNumber) {
                 setFieldValue(`rounds[${i}].on_hold`, false);
@@ -81,18 +159,28 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     }, [roundNumber, setFieldValue, setFieldTouched, rounds]);
 
     // Set on_hold to false for the current round but not the following rounds
-    const onChangeCurrentRoundOnly = useCallback(() => {
+    const onChangeCurrentOnHoldRoundOnly = useCallback(() => {
         setFieldValue(`rounds[${roundIndex}].on_hold`, false);
     }, [roundIndex, setFieldValue]);
 
     return (
         <>
-            <ToggleRoundOnHoldModal
+            <ToggleRoundModal
                 open={openOnHoldModal}
                 onClose={() => null}
-                onChangeAllRounds={onChangeAllRounds}
-                onChangeCurrentRoundOnly={onChangeCurrentRoundOnly}
+                onChangeAllRounds={onChangeAllOnHoldRounds}
+                onChangeCurrentRoundOnly={onChangeCurrentOnHoldRoundOnly}
                 closeDialog={() => setOpenOnHoldModal(false)}
+            />
+            <ToggleRoundModal
+                open={openPlannedModal}
+                onClose={() => null}
+                onChangeAllRounds={onChangeAllPlannedRounds}
+                onChangeCurrentRoundOnly={onChangeCurrentPlannedRoundOnly}
+                closeDialog={() => setOpenPlannedModal(false)}
+                id="PlannedRoundModal"
+                dataTestId="PlannedRoundModal"
+                titleMessage={MESSAGES.removeLaterPlannedRounds}
             />
             <Grid container spacing={2}>
                 <Grid xs={12} md={6} item>
@@ -109,6 +197,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             )}
                             name={`rounds[${roundIndex}].percentage_covered_target_population`}
                             component={NumberInput}
+                            required={isRequiredForPlannedRnd}
                         />
                     </Box>
                     <Box mt={2}>
@@ -116,6 +205,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             label={formatMessage(MESSAGES.targetPopulation)}
                             name={`rounds[${roundIndex}].target_population`}
                             component={NumberInput}
+                            required={isRequiredForPlannedRnd}
                         />
                     </Box>
                     <Box mt={2}>
@@ -125,6 +215,15 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             component={BooleanInput}
                             disabled={isCampaignOnHold || isEarlierRoundOnHold}
                             onChange={handleOnHoldUpdate}
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.plannedRound)}
+                            name={`rounds[${roundIndex}].is_planned`}
+                            component={BooleanInput}
+                            disabled={
+                                isCampaignPlanned || isEarlierRoundPlanned
+                            }
+                            onChange={handlePlannedUpdate}
                         />
                     </Box>
                 </Grid>

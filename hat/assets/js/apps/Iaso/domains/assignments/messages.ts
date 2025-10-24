@@ -134,6 +134,102 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.launch',
         defaultMessage: 'Launch',
     },
+    QUEUED: {
+        id: 'iaso.tasks.queued',
+        defaultMessage: 'Queued',
+    },
+    RUNNING: {
+        id: 'iaso.tasks.running',
+        defaultMessage: 'Running',
+    },
+    ERRORED: {
+        id: 'iaso.tasks.errored',
+        defaultMessage: 'Errored',
+    },
+    EXPORTED: {
+        id: 'iaso.tasks.exported',
+        defaultMessage: 'Exported',
+    },
+    SUCCESS: {
+        id: 'iaso.tasks.success',
+        defaultMessage: 'Success',
+    },
+    SKIPPED: {
+        id: 'iaso.tasks.skipped',
+        defaultMessage: 'Skipped',
+    },
+    KILLED: {
+        id: 'iaso.tasks.killed',
+        defaultMessage: 'Killed',
+    },
+    addLevel: {
+        defaultMessage: 'Add level',
+        id: 'iaso.openHexalabel.addLevel',
+    },
+    removeLevel: {
+        defaultMessage: 'Remove level',
+        id: 'iaso.openHexalabel.removeLevel',
+    },
+    collapse: {
+        defaultMessage: 'Collapse',
+        id: 'iaso.openHexalabel.collapse',
+    },
+    expand: {
+        defaultMessage: 'Expand',
+        id: 'iaso.openHexalabel.expand',
+    },
+    quantity: {
+        defaultMessage: 'Qty',
+        id: 'iaso.label.quantityShort',
+    },
+    level: {
+        defaultMessage: 'Level',
+        id: 'iaso.forms.level',
+    },
+    excludedOrgUnits: {
+        defaultMessage: 'Excluded org units',
+        id: 'iaso.openHexalabel.excludedOrgUnits',
+    },
+    ruralUrban: {
+        defaultMessage: 'Rural/Urban',
+        id: 'iaso.openHexalabel.ruralUrban',
+    },
+    urban: {
+        defaultMessage: 'Urban',
+        id: 'iaso.openHexalabel.urban',
+    },
+    rural: {
+        defaultMessage: 'Rural',
+        id: 'iaso.openHexalabel.rural',
+    },
+    back: {
+        defaultMessage: 'Back',
+        id: 'iaso.label.back',
+    },
+    deleteAssignments: {
+        id: 'iaso.assignment.deleteAssignments',
+        defaultMessage: 'Delete assignments for planning : {name}',
+    },
+    deleteAssignmentsWarning: {
+        id: 'iaso.assignment.deleteAssignmentsWarning',
+        defaultMessage: 'Are you sure you want to delete {count} assignments?',
+    },
+    deleteAssignmentsInfos: {
+        id: 'iaso.assignment.deleteAssignmentsInfos',
+        defaultMessage: 'Please delete all assignments first',
+    },
+    delete: {
+        id: 'iaso.label.delete',
+        defaultMessage: 'Delete',
+    },
+    bulkDeleteAssignmentsSuccess: {
+        id: 'iaso.assignment.bulkDeleteAssignmentsSuccess',
+        defaultMessage: 'Assignments deleted successfully',
+    },
+    emptyAssignments: {
+        id: 'iaso.assignment.emptyAssignments',
+        defaultMessage: 'Delete assignments',
+    },
 });
 
 export default MESSAGES;

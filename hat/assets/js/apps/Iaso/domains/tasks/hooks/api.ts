@@ -64,16 +64,17 @@ export const useRelaunchTask = (): UseMutationResult =>
     );
 
 export const useGetLogs = (
-    taskId: number,
-    autoRefresh: boolean,
+    taskId?: number,
+    autoRefresh = false,
 ): UseQueryResult<TaskLogApiResponse, Error> => {
     return useSnackQuery({
-        queryKey: ['tasks'],
+        queryKey: ['tasksLogs', taskId],
         queryFn: () => getRequest(`/api/tasks/${taskId}/logs/`),
         options: {
             retry: false,
             keepPreviousData: true,
-            refetchInterval: autoRefresh ? 1000 : false,
+            refetchInterval: autoRefresh ? 5000 : false,
+            enabled: Boolean(taskId),
         },
     });
 };

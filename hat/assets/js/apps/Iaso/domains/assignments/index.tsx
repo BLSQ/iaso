@@ -23,10 +23,11 @@ import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { Sidebar } from './components/AssignmentsSidebar';
-import { OpenhexaIntegrationDrawer } from './components/OpenhexaIntegrationDrawer';
+import { DeleteAssignments } from './components/DeleteAssignments';
 import { ParentDialog } from './components/ParentDialog';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import MESSAGES from './messages';
+import { OpenhexaIntegrationDrawer } from './sampling/OpenhexaIntegrationDrawer';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { AssignmentUnit } from './types/locations';
 import { Team, SubTeam, User } from './types/team';
@@ -88,9 +89,9 @@ export const Assignments: FunctionComponent = () => {
         sidebarData,
         isFetchingOrgUnits,
         isFetchingOrgUnitsList,
+        isFetchingOrgunitTypes,
         isLoadingPlanning,
         isSaving,
-        isFetchingOrgunitTypes,
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
@@ -258,39 +259,37 @@ export const Assignments: FunctionComponent = () => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
-                {planning &&
-                    hasPipelineConfig &&
-                    planning.pipeline_uuids.length > 0 && (
-                        <Box display="flex" justifyContent="flex-end">
-                            <OpenhexaIntegrationDrawer planning={planning} />
-                        </Box>
-                    )}
+                <Box display="flex" justifyContent="flex-end">
+                    <DeleteAssignments
+                        planning={planning}
+                        disabled={isLoading || allAssignments.length === 0}
+                        count={allAssignments.length}
+                    />
+                    {planning &&
+                        hasPipelineConfig &&
+                        planning.pipeline_uuids.length > 0 && (
+                            <OpenhexaIntegrationDrawer
+                                planning={planning}
+                                disabled={
+                                    isLoading || allAssignments.length > 0
+                                }
+                                disabledMessage={formatMessage(
+                                    MESSAGES.deleteAssignmentsInfos,
+                                )}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                            />
+                        )}
+                </Box>
                 <AssignmentsFilters
                     params={params}
                     teams={teams || []}
                     isFetchingTeams={!isTeamsFetched}
                     orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={5}>
-                            <Sidebar
-                                data={sidebarData || []}
-                                assignments={assignments}
-                                selectedItem={selectedItem}
-                                orgUnits={orgUnitsList || []}
-                                setSelectedItem={setSelectedItem}
-                                currentTeam={currentTeam}
-                                setItemColor={setItemColor}
-                                teams={teams || []}
-                                profiles={profiles}
-                                isLoadingAssignments={
-                                    isLoadingAssignments ||
-                                    isFetchingOrgUnitsList
-                                }
-                            />
-                        </Grid>
                         <Grid item xs={12} lg={7}>
                             <Paper>
                                 <Box ml={-4}>
@@ -330,7 +329,7 @@ export const Assignments: FunctionComponent = () => {
                                                 orgunitTypes={
                                                     orgunitTypes || []
                                                 }
-                                                isFetchingOrgUnitTypes={
+                                                isFetchingOrgunitTypes={
                                                     isFetchingOrgunitTypes
                                                 }
                                                 planning={planning}
@@ -378,6 +377,23 @@ export const Assignments: FunctionComponent = () => {
                                     )}
                                 </Box>
                             </Paper>
+                        </Grid>
+                        <Grid item xs={12} lg={5}>
+                            <Sidebar
+                                data={sidebarData || []}
+                                assignments={assignments}
+                                selectedItem={selectedItem}
+                                orgUnits={orgUnitsList || []}
+                                setSelectedItem={setSelectedItem}
+                                currentTeam={currentTeam}
+                                setItemColor={setItemColor}
+                                teams={teams || []}
+                                profiles={profiles}
+                                isLoadingAssignments={
+                                    isLoadingAssignments ||
+                                    isFetchingOrgUnitsList
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </Box>

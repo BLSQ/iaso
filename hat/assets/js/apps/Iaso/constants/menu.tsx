@@ -1,4 +1,5 @@
 import React, { useContext, useMemo } from 'react';
+import { InventoryOutlined } from '@mui/icons-material';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import AssignmentIcon from '@mui/icons-material/Assignment';
@@ -366,6 +367,12 @@ const menuItems = (
             key: 'storages',
             permissions: paths.storagesPath.permissions,
             icon: props => <StorageIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.stockManagement),
+            key: 'stock/stockkeepingunits',
+            permissions: paths.stockKeepingUnitsPath.permissions,
+            icon: props => <InventoryOutlined {...props} />,
         },
     ];
 };

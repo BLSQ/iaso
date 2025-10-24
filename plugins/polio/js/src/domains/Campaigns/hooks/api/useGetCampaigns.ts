@@ -53,6 +53,16 @@ export type GetCampaignsParams = {
     format?: string;
 };
 
+export type CampaignAPIResponse = {
+    hasPrevious?: boolean;
+    hasNext?: boolean;
+    count?: number;
+    page?: number;
+    pages?: number;
+    limit?: number;
+    campaigns?: Campaign[];
+};
+
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     const filteredParams: [string, any][] = Object.entries(urlParams).filter(
         ([_key, value]) => value !== undefined,
@@ -116,7 +126,7 @@ export const useGetCampaigns = (
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
-): UseQueryResult<PaginatedResponse<Campaign> | Campaign[], Error> => {
+): UseQueryResult<CampaignAPIResponse | Campaign[], Error> => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {

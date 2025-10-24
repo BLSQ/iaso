@@ -17,10 +17,11 @@ from iaso.api.openhexa.serializers import (
     TaskResponseSerializer,
     TaskUpdateSerializer,
 )
-from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING
+from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
 from iaso.models.json_config import Config
 from iaso.models.task import Task
+from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
+from iaso.utils.tokens import get_user_token
 
 
 logger = logging.getLogger(__name__)
@@ -211,55 +212,35 @@ class OpenHexaPipelinesViewSet(ViewSet):
         version = validated_data["version"]
         config = validated_data["config"]
 
+        # Add connection token and host to config
+        try:
+            config["connection_token"] = get_user_token(request.user)
+            # Build complete URL with scheme
+            scheme = "https" if request.is_secure() else "http"
+            host = request.get_host()
+            config["connection_host"] = f"{scheme}://{host}"
+        except Exception as e:
+            logger.exception(f"Failed to generate connection token for user {request.user.id}: {str(e)}")
+            return Response(
+                {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
         config_result = get_openhexa_config()
         if isinstance(config_result, Response):
             return config_result
         openhexa_url, openhexa_token, workspace_slug = config_result
 
         try:
-            # Construct pipeline_config object for launch_task
-            pipeline_config = MockConfig(
-                {
-                    "pipeline_version": str(version),  # Convert UUID to string
-                    "pipeline": str(pipeline_id),
-                    "oh_pipeline_target": None,
-                    "openhexa_url": openhexa_url,
-                    "openhexa_token": openhexa_token,
-                }
-            )
-
-            # Create external task following the same pattern as powerbi.py
             user = request.user
-            task_name = f"pipeline-{pipeline_id}-v{version}"
 
-            task = Task.objects.create(
-                created_by=user,
-                launcher=user,
-                account=user.iaso_profile.account,
-                name=task_name,
-                status=RUNNING,
-                external=True,
-                started_at=timezone.now(),
-                should_be_killed=False,
-                params={
-                    "args": [],
-                    "kwargs": {"pipeline_id": str(pipeline_id), "version": str(version), "config": config},
-                },
-            )
-
-            # Launch the task using the existing launch_task function
-            task_status = ExternalTaskModelViewSet.launch_task(
-                slug=None,  # Not needed since we're passing pipeline_config
+            task = launch_openhexa_pipeline(
+                user=user,
+                pipeline_id=pipeline_id,
+                openhexa_url=openhexa_url,
+                openhexa_token=openhexa_token,
+                version=str(version),
                 config=config,
-                task_id=task.pk,
-                pipeline_config=pipeline_config,
             )
-
-            # Update task status
-            task.status = task_status
-            task.save()
-
-            logger.info(f"Successfully launched pipeline {pipeline_id} v{version} as task {task.pk}")
 
             # Use serializer for response
             serializer = TaskResponseSerializer(task)
@@ -295,27 +276,61 @@ class OpenHexaPipelinesViewSet(ViewSet):
             if not task.external:
                 return Response({"error": _("Task is not external")}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Update task fields
+            # Update task using proper Task model methods
             if "status" in validated_data:
-                task.status = validated_data["status"]
-                # Set ended_at if task is completed
-                if task.status in ["SUCCESS", "ERRORED", "KILLED"]:
-                    task.ended_at = timezone.now()
+                new_status = validated_data["status"]
 
-            if "progress_message" in validated_data:
-                task.progress_message = validated_data["progress_message"]
+                if new_status == SUCCESS:
+                    # Use Task model's success reporting method
+                    progress_value = validated_data.get("progress_value")
+                    end_value = validated_data.get("end_value")
+                    if progress_value is not None:
+                        task.progress_value = progress_value
+                    if end_value is not None:
+                        task.end_value = end_value
 
-            if "progress_value" in validated_data:
-                task.progress_value = validated_data["progress_value"]
+                    result_data = validated_data.get("result")
+                    message = validated_data.get("progress_message", "Pipeline completed successfully")
+                    task.report_success_with_result(message, result_data)
 
-            if "end_value" in validated_data:
-                task.end_value = validated_data["end_value"]
-
-            if "result" in validated_data:
-                # Store the pipeline result in the task's result field
-                task.result = {"result": task.status, "data": validated_data["result"]}
-
-            task.save()
+                    # Only call save() if we manually set progress_value or end_value
+                    if progress_value is not None or end_value is not None:
+                        result_data = validated_data.get("result")
+                        message = validated_data.get("progress_message", "Pipeline completed successfully")
+                        task.report_success_with_result(message, result_data)
+                    else:
+                        # If no progress/end values, just update status and save
+                        task.status = SUCCESS
+                        task.ended_at = timezone.now()
+                        task.save()
+                elif new_status == ERRORED:
+                    # Use Task model's error reporting method
+                    message = validated_data.get("progress_message", "Pipeline failed")
+                    error = Exception(message)
+                    task.report_failure(error)
+                elif new_status == RUNNING:
+                    # Use Task model's progress reporting method
+                    progress_value = validated_data.get("progress_value")
+                    progress_message = validated_data.get("progress_message")
+                    end_value = validated_data.get("end_value")
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
+                else:
+                    # For other statuses, update manually
+                    task.status = new_status
+                    if new_status in [SKIPPED, EXPORTED, KILLED]:
+                        task.ended_at = timezone.now()
+                    task.save()
+            else:
+                # If no status update, just update progress
+                progress_value = validated_data.get("progress_value")
+                progress_message = validated_data.get("progress_message")
+                end_value = validated_data.get("end_value")
+                if progress_value is not None or progress_message is not None or end_value is not None:
+                    task.report_progress_and_stop_if_killed(
+                        progress_value=progress_value, progress_message=progress_message, end_value=end_value
+                    )
 
             logger.info(f"Successfully updated task {task_id} status to {task.status}")
 

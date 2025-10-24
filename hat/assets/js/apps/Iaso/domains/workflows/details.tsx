@@ -30,24 +30,24 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
+import { AddChangeModal } from './components/changes/Modal';
+import { AddFollowUpsModal } from './components/followUps/Modal';
+import { FollowUpsTable } from './components/followUps/Table';
+import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
+import { useGetChangesColumns } from './config/changes';
+import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
+import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
 import MESSAGES from './messages';
-import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 import {
     WorkflowVersionDetail,
     WorkflowParams,
     FollowUps,
     Change,
 } from './types';
-import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { FollowUpsTable } from './components/followUps/Table';
-import { AddFollowUpsModal } from './components/followUps/Modal';
-import { AddChangeModal } from './components/changes/Modal';
-import { useGetChangesColumns } from './config/changes';
-import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
-import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
-import { PossibleField } from '../forms/types/forms';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

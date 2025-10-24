@@ -61,7 +61,6 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
 USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
-
 # Storage provider configuration
 STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
 if USE_S3:

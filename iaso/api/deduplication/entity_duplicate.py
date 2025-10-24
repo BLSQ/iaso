@@ -24,10 +24,14 @@ import iaso.models.base as base
 
 from hat.audit.models import ENTITY_DUPLICATE_MERGE, log_modification
 from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.deduplication.serializers import BulkIgnoreRequestSerializer
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
-from iaso.permissions.core_permissions import CORE_ENTITIES_DUPLICATES_READ_PERMISSION
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.utils.emoji import fix_emoji
 
 
@@ -429,7 +433,7 @@ class EntityDuplicateViewSet(ModelViewSet):
 
     def get_queryset(self):
         user_account = self.request.user.iaso_profile.account
-        return EntityDuplicate.objects.filter(entity1__account=user_account, entity2__account=user_account)
+        return EntityDuplicate.objects.filter_for_account(user_account)
 
     @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
     @action(detail=False, methods=["get"], url_path="detail", pagination_class=None, filter_backends=[])
@@ -570,7 +574,7 @@ class EntityDuplicateViewSet(ModelViewSet):
                 "key2": "entity1_id",
                 "key3": "entity2_id",
                 ...
-            }
+            },
             "ignore": true | false,
             "reason": "optional reason"
         }
@@ -586,3 +590,17 @@ class EntityDuplicateViewSet(ModelViewSet):
         return_data = EntityDuplicatePostAnswerSerializer(res).data
 
         return Response(return_data)
+
+    @action(
+        methods=["POST"], detail=False, permission_classes=[HasPermission(CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION)]
+    )
+    def bulk_ignore(self, request, pk=None, *args, **kwargs):
+        serializer = BulkIgnoreRequestSerializer(data=request.data, context=self.get_serializer_context())
+        serializer.is_valid(raise_exception=True)
+        queryset = self.filter_queryset(self.get_queryset()).filter(validation_status=ValidationStatus.PENDING)
+        if serializer.validated_data["select_all"]:
+            queryset = queryset.exclude(id__in=request.data.get("unselected_ids"))
+        else:
+            queryset = queryset.filter(id__in=request.data.get("selected_ids"))
+        queryset.update(validation_status=ValidationStatus.IGNORED)
+        return Response(status=status.HTTP_204_NO_CONTENT)

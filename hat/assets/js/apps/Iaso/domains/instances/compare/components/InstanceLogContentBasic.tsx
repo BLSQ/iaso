@@ -7,7 +7,7 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, IntlFormatMessage, ErrorBoundary } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
 import classNames from 'classnames';
 import { FileContent } from '../../types/instance';
@@ -43,8 +43,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const InstanceLogContentBasic: FunctionComponent<Props> = ({
-    fileContent,
-    fileDescriptor,
+    fileContent,    
 }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -97,7 +96,6 @@ export const InstanceLogContentBasic: FunctionComponent<Props> = ({
             </TableHead>
                 <InstanceLogContentBodyTable
                     fileContent={fileContent}
-                    fileDescriptor={fileDescriptor}
                 />
         </Table>
     );

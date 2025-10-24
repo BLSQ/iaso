@@ -597,7 +597,7 @@ class EntityDuplicateViewSet(ModelViewSet):
     def bulk_ignore(self, request, pk=None, *args, **kwargs):
         serializer = BulkIgnoreRequestSerializer(data=request.data, context=self.get_serializer_context())
         serializer.is_valid(raise_exception=True)
-        queryset = self.get_queryset().filter(validation_status=ValidationStatus.PENDING)
+        queryset = self.filter_queryset(self.get_queryset()).filter(validation_status=ValidationStatus.PENDING)
         if serializer.validated_data["select_all"]:
             queryset = queryset.exclude(id__in=request.data.get("unselected_ids"))
         else:

@@ -1180,6 +1180,36 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 3)
         self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
 
+    def test_bulk_ignore_all_with_rights_and_filters(self):
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 4)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 0)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            f"/api/entityduplicates/bulk_ignore/?org_unit={self.another_orgunit.pk}",
+            {
+                "select_all": True,
+                "unselected_ids": [],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.NO_CONTENT)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 3)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+
     def test_bulk_ignore_all_and_unselect_ids_with_rights(self):
         ignored = m.EntityDuplicate.objects.create(
             entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING

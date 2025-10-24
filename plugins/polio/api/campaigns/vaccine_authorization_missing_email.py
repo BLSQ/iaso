@@ -11,7 +11,6 @@ def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit, a
         users = [user for user in Team.objects.get(name=NOPV2_VACCINE_TEAM_NAME).users.all()]
         recipient_list = [user.email for user in users]
         subject = f"Vaccine Authorization missing for campaign OBR Name {obr_name}"
-        from_email = (settings.DEFAULT_FROM_EMAIL,)
         message = f"""
         Dear team,
 
@@ -26,6 +25,6 @@ def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit, a
         This is an automated message from the poliooutbreaks platform.
             """
 
-        send_mail(subject, message, from_email, recipient_list)
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
     except ObjectDoesNotExist:
         pass

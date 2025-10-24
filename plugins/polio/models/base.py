@@ -19,7 +19,7 @@ from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.core.validators import RegexValidator
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Exists, OuterRef, Q, QuerySet, Subquery, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
@@ -640,6 +640,9 @@ class Campaign(SoftDeletableModel):
 
     campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
+    integrated_to = models.ForeignKey(
+        "Campaign", on_delete=models.PROTECT, related_name="integrated_campaigns", blank=True, null=True
+    )
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
@@ -941,6 +944,10 @@ class Campaign(SoftDeletableModel):
         return self.find_rounds_with_date(date_type, round_number).first()
 
     def save(self, *args, **kwargs):
+        # Prevent polio campaign to be saved as integrated campaign.
+        if self.has_polio_type and self.integrated_to is not None:
+            raise IntegrityError("Value of integrated_to must be NULL for Campaigns of type POLIO")
+
         if self.initial_org_unit is not None:
             try:
                 country = self.initial_org_unit.ancestors().filter(org_unit_type__category="COUNTRY").first()

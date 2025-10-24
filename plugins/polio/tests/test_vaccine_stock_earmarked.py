@@ -216,14 +216,18 @@ class VaccineStockEarmarkedTests(APITestCase):
         initial_data = response.json()
         initial_unusable = initial_data["total_unusable_vials"]
         initial_usable = initial_data["total_usable_vials"]
+        initial_unusable_doses = initial_data["total_unusable_doses"]
+        initial_usable_doses = initial_data["total_usable_doses"]
+        initial_earmarked_vials = initial_data["total_earmarked_vials"]
+        initial_earmarked_doses = initial_data["total_earmarked_doses"]
 
-        # Create earmarked stock of type USED (moves from usable to unusable)
+        # Create earmarked stock of type USED (moves from earmarked to unusable)
         used_stock = pm.EarmarkedStock.objects.create(
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
-            vials_earmarked=100,
-            doses_earmarked=2000,
+            vials_earmarked=50,
+            doses_earmarked=1000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.USED,
             created_at=self.now - datetime.timedelta(days=1),
             doses_per_vial=20,
@@ -234,8 +238,8 @@ class VaccineStockEarmarkedTests(APITestCase):
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
-            vials_earmarked=50,
-            doses_earmarked=1000,
+            vials_earmarked=100,
+            doses_earmarked=2000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             created_at=self.now - datetime.timedelta(days=1),
             doses_per_vial=20,
@@ -247,10 +251,16 @@ class VaccineStockEarmarkedTests(APITestCase):
         updated_data = response.json()
 
         # Verify USED stock affects unusable total
-        self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
+        self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 50)
+        self.assertEqual(updated_data["total_unusable_doses"], initial_unusable_doses + 1000)
 
         # Verify CREATED stock affects usable total
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 100)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 2000)
+
+        # Verify earmarked totals
+        self.assertEqual(updated_data["total_earmarked_vials"], initial_earmarked_vials + 50)  # 100 created -50 used
+        self.assertEqual(updated_data["total_earmarked_doses"], initial_earmarked_doses + 1000)
 
         # if we now create a RETURNED stock, it should affect the usable total
 
@@ -269,7 +279,16 @@ class VaccineStockEarmarkedTests(APITestCase):
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50 + 50)
+        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 1000)
+
+        # Verify earmarked totals after RETURNED stock
+        self.assertEqual(
+            updated_data["total_earmarked_vials"], initial_earmarked_vials
+        )  # +100 created -50 used - 50 returned
+        self.assertEqual(
+            updated_data["total_earmarked_doses"], initial_earmarked_doses
+        )  # +2000 created - 1000 used - 1000 returned
 
         # Test EarmarkedStockViewSet endpoints
         # Test list endpoint
@@ -457,7 +476,36 @@ class VaccineStockEarmarkedTests(APITestCase):
         )
 
         # This time it should NOT create a new USED stock because there are no more earmarked stocks left
-        self.assertEqual(used_stocks.count(), 3)
+        self.assertEqual(used_stocks.count(), 4)
+
+        fourth_form_a_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "form_a_reception_date": "2023-10-04",
+            "report_date": "2023-10-05",
+            "usable_vials_used": 1000,
+            "lot_numbers": ["LOT123"],
+            "missing_vials": 0,
+            "round": self.round.id,
+            "doses_per_vial": 20,
+        }
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            fourth_form_a_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+
+        used_stocks = pm.EarmarkedStock.objects.filter(
+            vaccine_stock=self.vaccine_stock,
+            campaign=self.campaign,
+            round=self.round,
+            earmarked_stock_type="used",
+        )
+
+        # This time it should NOT create a new USED stock because there are no more earmarked stocks left
+        self.assertEqual(used_stocks.count(), 4)
 
     # Test permissions for earmarked stock management
     def test_earmarked_stock_permissions(self):

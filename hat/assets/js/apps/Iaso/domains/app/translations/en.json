@@ -38,7 +38,7 @@
     "iaso.assignment.count": "Assignments count",
     "iaso.assignment.deleteAssignments": "Delete assignments for planning : {name}",
     "iaso.assignment.deleteAssignmentsInfos": "Please delete all assignments first",
-    "iaso.assignment.deleteAssignmentsWarning": "Are you sure you want to delete {name} assignments?",
+    "iaso.assignment.deleteAssignmentsWarning": "Are you sure you want to delete {count} assignments?",
     "iaso.assignment.inAnotherTeam": "in another team",
     "iaso.assignment.label": "Assignment",
     "iaso.assignment.map.disabled": "Already assigned",

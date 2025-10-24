@@ -55,6 +55,10 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const isEarlierRoundPlanned = Boolean(
         rounds.find(r => r.number < roundNumber && r.is_planned),
     );
+    const isRequiredForPlannedRnd =
+        isCampaignPlanned ||
+        isEarlierRoundPlanned ||
+        rounds[roundIndex].is_planned;
 
     // Logic is duplicated for is_planned and on_hold because abstracting it away in a hook
     // caused weird state bugs (probably due to formik's use of the context API)
@@ -63,7 +67,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const handlePlannedUpdate = useCallback(
         (_, value: boolean) => {
             if (value) {
-                const roundsCopy = [...rounds]; // TODO deep copy
+                const roundsCopy = structuredClone(rounds); // deep copy
                 const touchedCopy = { ...touched };
                 if (!touchedCopy.rounds) {
                     touchedCopy.rounds = [];
@@ -83,12 +87,12 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     }
                 });
                 // Use setValues to safely update multiple values at once
-                setValues({ ...values, rounds: roundsCopy });
                 setTouched({ ...touchedCopy });
+                setValues({ ...values, rounds: roundsCopy });
                 // If value is false and we're updating the last round, we don't open the modal and just update the round
             } else if (roundIndex === rounds.length - 1) {
-                setFieldValue(`rounds[${roundIndex}].is_planned`, false);
                 setFieldTouched(`rounds[${roundIndex}].is_planned`, true);
+                setFieldValue(`rounds[${roundIndex}].is_planned`, false);
                 // if value is false, user needs to decide whether to update the current round or all subsequent rounds so we open the modal
             } else {
                 setOpenPlannedModal(true);
@@ -193,6 +197,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             )}
                             name={`rounds[${roundIndex}].percentage_covered_target_population`}
                             component={NumberInput}
+                            required={isRequiredForPlannedRnd}
                         />
                     </Box>
                     <Box mt={2}>
@@ -200,6 +205,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             label={formatMessage(MESSAGES.targetPopulation)}
                             name={`rounds[${roundIndex}].target_population`}
                             component={NumberInput}
+                            required={isRequiredForPlannedRnd}
                         />
                     </Box>
                     <Box mt={2}>

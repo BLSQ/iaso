@@ -33,18 +33,6 @@ class RoundSerializerValidationsTestCase(APITestCase, PolioTestCaseMixin):
         self.assertIn("target_population", serializer.errors)
         self.assertIn("percentage_covered_target_population", serializer.errors)
 
-    def test_planned_round_requires_population_fields_via_round_flag(self):
-        serializer = self._make_serializer(
-            payload={
-                "is_planned": True,
-                "target_population": None,
-                "percentage_covered_target_population": None,
-            }
-        )
-        self.assertFalse(serializer.is_valid())
-        self.assertIn("target_population", serializer.errors)
-        self.assertIn("percentage_covered_target_population", serializer.errors)
-
     def test_unplanned_allows_missing_population_fields(self):
         serializer = self._make_serializer(
             payload={
@@ -102,6 +90,23 @@ class RoundSerializerValidationsTestCase(APITestCase, PolioTestCaseMixin):
         # Only the missing field should have an error
         self.assertNotIn("target_population", serializer.errors)
         self.assertIn("percentage_covered_target_population", serializer.errors)
+
+        # Check that only one field has an error
+        self.assertEqual(len(serializer.errors), 1)
+
+        # Test the other field are included in errors
+        serializer = self._make_serializer(
+            payload={
+                "is_planned": True,
+                "target_population": None,  # Missing
+                "percentage_covered_target_population": 90,  # Provided
+            }
+        )
+        self.assertFalse(serializer.is_valid())
+
+        # Only the missing field should have an error
+        self.assertIn("target_population", serializer.errors)
+        self.assertNotIn("percentage_covered_target_population", serializer.errors)
 
         # Check that only one field has an error
         self.assertEqual(len(serializer.errors), 1)

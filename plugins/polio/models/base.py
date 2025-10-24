@@ -2133,16 +2133,14 @@ class VaccineStockCalculator:
         self.total_doses_received = None
         self.total_earmarked_vials = None
         self.total_earmarked_doses = None
-        self.list_of_vaccines_received = None
-        self.list_of_vaccines_received_expanded = None
+        self._list_of_vaccines_received = None
+        self._list_of_vaccines_received_expanded = None
         self.list_of_usable_vials = None
         self.list_of_usable_vials_expanded = None
-        self.list_of_used_vials = None
-        self.list_of_used_vials_expanded = None
+        self._list_of_used_vials = None
+        self._list_of_used_vials_expanded = None
         self.list_of_unusable_vials = None
         self.list_of_unusable_vials_expanded = None
-        self.list_of_vaccines_received = None
-        self.list_of_vaccines_received_expanded = None
         self.list_of_earmarked = None
         self.list_of_earmarked_expanded = None
 
@@ -2151,7 +2149,7 @@ class VaccineStockCalculator:
         if self.total_vials_used is not None and self.total_doses_used is not None:
             return self.total_vials_used, self.total_doses_used
 
-        results = self.get_list_of_used_vials()
+        results = self._get_list_of_used_vials()
         total_vials = 0
         total_doses = 0
         for result in results:
@@ -2164,31 +2162,20 @@ class VaccineStockCalculator:
         return total_vials, total_doses
 
     def get_vials_destroyed(self):
-        if self.total_vials_destroyed is not None:
-            return self.total_vials_destroyed
-        if not self.destruction_reports.exists():
-            self.total_vials_destroyed = 0
-            return 0
+        if self.total_vials_destroyed is not None and self.total_doses_destroyed is not None:
+            return self.total_vials_destroyed, self.total_doses_destroyed
         destruction_reports = self.destruction_reports
         if self.end_date:
             destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
-        total_vials_destroyed = sum(report.unusable_vials_destroyed or 0 for report in destruction_reports)
+        destroyed_vials_and_doses = [
+            ((report.unusable_vials_destroyed or 0), ((report.unusable_vials_destroyed or 0) * report.doses_per_vial))
+            for report in destruction_reports
+        ]
+        total_vials_destroyed = sum(value[0] for value in destroyed_vials_and_doses)
+        total_doses_destroyed = sum(value[1] for value in destroyed_vials_and_doses)
         self.total_vials_destroyed = total_vials_destroyed
-        return total_vials_destroyed
-
-    def get_doses_destroyed(self):
-        if self.total_doses_destroyed is not None:
-            return self.total_doses_destroyed
-        if not self.destruction_reports.exists():
-            return 0
-        destruction_reports = self.destruction_reports
-        if self.end_date:
-            destruction_reports = destruction_reports.filter(destruction_report_date__lte=self.end_date)
-        total_doses_destroyed = sum(
-            (report.unusable_vials_destroyed or 0) * report.doses_per_vial for report in destruction_reports
-        )
         self.total_doses_destroyed = total_doses_destroyed
-        return total_doses_destroyed
+        return total_vials_destroyed, total_doses_destroyed
 
     def get_total_of_usable_vials(self):
         if self.total_usable_vials is not None and self.total_usable_doses is not None:
@@ -2214,7 +2201,7 @@ class VaccineStockCalculator:
     def get_vials_received(self):
         if self.total_vials_received is not None and self.total_doses_received is not None:
             return self.total_vials_received, self.total_doses_received
-        results = self.get_list_of_vaccines_received()
+        results = self._get_list_of_vaccines_received()
 
         total_vials_in = 0
         total_doses_in = 0
@@ -2274,14 +2261,14 @@ class VaccineStockCalculator:
 
         return total_vials, total_doses
 
-    def get_list_of_vaccines_received(self, expanded=False):
+    def _get_list_of_vaccines_received(self, expanded=False):
         """
         Vaccines received are only those linked to an arrival report. We exclude those found e.g. during physical inventory
         """
-        if self.list_of_vaccines_received is not None and not expanded:
-            return self.list_of_vaccines_received
-        if self.list_of_vaccines_received_expanded is not None and expanded:
-            return self.list_of_vaccines_received_expanded
+        if self._list_of_vaccines_received is not None and not expanded:
+            return self._list_of_vaccines_received
+        if self._list_of_vaccines_received_expanded is not None and expanded:
+            return self._list_of_vaccines_received_expanded
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
             campaign__country=self.vaccine_stock.country,
@@ -2338,9 +2325,9 @@ class VaccineStockCalculator:
                 results.append({**base_result, **additional_fields})
 
         if expanded:
-            self.list_of_vaccines_received_expanded = results
+            self._list_of_vaccines_received_expanded = results
         else:
-            self.list_of_vaccines_received = results
+            self._list_of_vaccines_received = results
 
         return results
 
@@ -2351,7 +2338,7 @@ class VaccineStockCalculator:
             return self.list_of_usable_vials_expanded
 
         # First get vaccines received from arrival reports
-        results = self.get_list_of_vaccines_received(expanded=expanded)
+        results = self._get_list_of_vaccines_received(expanded=expanded)
 
         # Add stock movements (used and missing vials)
         stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock).order_by("report_date")
@@ -2540,11 +2527,11 @@ class VaccineStockCalculator:
 
         return results
 
-    def get_list_of_used_vials(self, expanded=False):
-        if self.list_of_used_vials is not None and not expanded:
-            return self.list_of_used_vials
-        if self.list_of_used_vials_expanded is not None and expanded:
-            return self.list_of_used_vials_expanded
+    def _get_list_of_used_vials(self, expanded=False):
+        if self._list_of_used_vials is not None and not expanded:
+            return self._list_of_used_vials
+        if self._list_of_used_vials_expanded is not None and expanded:
+            return self._list_of_used_vials_expanded
         # Used vials are those related to formA outgoing movements. Vials with e.g expired date become unusable, but have not been used
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=self.vaccine_stock)
         additional_fields = {
@@ -2583,9 +2570,9 @@ class VaccineStockCalculator:
                     results.append({**base_result, **additional_fields})
 
         if expanded:
-            self.list_of_used_vials_expanded = results
+            self._list_of_used_vials_expanded = results
         else:
-            self.list_of_used_vials = results
+            self._list_of_used_vials = results
         return results
 
     def get_list_of_unusable_vials(self, expanded=False):
@@ -2594,7 +2581,7 @@ class VaccineStockCalculator:
         if self.list_of_unusable_vials_expanded is not None and expanded:
             return self.list_of_unusable_vials_expanded
         # First get the used vials
-        results = self.get_list_of_used_vials(expanded=expanded)
+        results = self._get_list_of_used_vials(expanded=expanded)
         additional_fields = {
             "id": self.vaccine_stock.id,
             "country_name": self.vaccine_stock.country.name,

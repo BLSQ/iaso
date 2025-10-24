@@ -128,7 +128,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_total_of_unusable_vials()[0]
 
     def get_vials_destroyed(self, obj):
-        return obj.calculator.get_vials_destroyed()
+        return obj.calculator.get_vials_destroyed()[0]
 
     def get_stock_of_earmarked_vials(self, obj):
         return obj.calculator.get_total_of_earmarked()[0]
@@ -146,7 +146,7 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_total_of_unusable_vials()[1]
 
     def get_doses_destroyed(self, obj):
-        return obj.calculator.get_doses_destroyed()
+        return obj.calculator.get_vials_destroyed()[1]
 
     def get_stock_of_earmarked_doses(self, obj):
         return obj.calculator.get_total_of_earmarked()[1]

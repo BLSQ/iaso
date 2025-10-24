@@ -2146,31 +2146,6 @@ class VaccineStockCalculator:
         self.list_of_earmarked = None
         self.list_of_earmarked_expanded = None
 
-        self.total_vials_used = None
-        self.total_doses_used = None
-        self.total_vials_destroyed = None
-        self.total_doses_destroyed = None
-        self.total_usable_vials = None
-        self.total_usable_doses = None
-        self.total_unusable_vials = None
-        self.total_unusable_doses = None
-        self.total_vials_received = None
-        self.total_doses_received = None
-        self.total_earmarked_vials = None
-        self.total_earmarked_doses = None
-        self.list_of_vaccines_received = None
-        self.list_of_vaccines_received_expanded = None
-        self.list_of_usable_vials = None
-        self.list_of_usable_vials_expanded = None
-        self.list_of_used_vials = None
-        self.list_of_used_vials_expanded = None
-        self.list_of_unusable_vials = None
-        self.list_of_unusable_vials_expanded = None
-        self.list_of_vaccines_received = None
-        self.list_of_vaccines_received_expanded = None
-        self.list_of_earmarked = None
-        self.list_of_earmarked_expanded = None
-
     def get_vials_used(self):
         # if totals return totals
         if self.total_vials_used is not None and self.total_doses_used is not None:

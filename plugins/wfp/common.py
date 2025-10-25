@@ -6,7 +6,7 @@ from operator import itemgetter
 
 from dateutil.relativedelta import *
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, F, FloatField, Sum, Value, When
+from django.db.models import Case, CharField, F, FloatField, Q, Sum, Value, When
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -782,8 +782,7 @@ class ETL:
             ).filter(
                 visit__journey__programme_type=programme,
                 visit__journey__beneficiary__account=account,
-            )
-            .values(
+            ).values(
                 "visit__journey__admission_type",
                 "assistance_type",
                 "instance_id",
@@ -834,11 +833,7 @@ class ETL:
             )
             .annotate(
                 muac_above_12_5=Sum(
-                    Case(
-                        When(visit__muac_size__gte=12.5, then=Value(1)),
-                        default=Value(0),
-                        output_field=FloatField(),
-                    )
+                    Case(When(visit__muac_size__gte=12.5, then=Value(1)),default=Value(0),output_field=FloatField())
                 )
             )
             .annotate(
@@ -862,10 +857,38 @@ class ETL:
                     output_field=FloatField(),
                 )
             ).annotate(oedema=Case(
-                    When(visit__journey__admission_criteria="OEDEMA", then=Value(1)),
+                    When(visit__journey__admission_criteria="oedema", then=Value(1)),
                     default=Value(0),
                     output_field=FloatField(),
-                ))
+                )).annotate(admission_sc_itp_otp=Case(
+                    When(
+                        Q(visit__journey__admission_type="referred_from_sc") |
+                        Q(visit__journey__admission_type="referred_from_otp_sam"),
+                        then=Value(1)
+                    ),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            ).annotate(transfer_sc_itp_otp=Case(
+                    When(
+                        Q(visit__journey__exit_type="transfer_to_sc_itp") |
+                        Q(visit__journey__exit_type="transferred_to_otp"),
+                        then=Value(1)
+                    ),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            )
+            .annotate(transfer_from_other_tsfp=Case(
+                    When(
+                        Q(visit__journey__exit_type="transfer_from_other_tsfp") |
+                        Q(visit__journey__exit_type="transfer_to_tsfp"),
+                        then=Value(1)
+                    ),
+                    default=Value(0),
+                    output_field=FloatField(),
+                )
+            )
             .order_by("visit__id")
         )
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
@@ -900,13 +923,8 @@ class ETL:
         return int(total)
 
     def aggregating_data_to_push_to_dhis2(self, account, programme):
-        monthlyStatistics = (
-            MonthlyStatistics.objects.prefetch_related("account", "org_unit")
-            .values()
-            .filter(programme_type=programme, account=account).filter(org_unit_id__in=[622]) #.filter(org_unit_id__in=[622,733])
-        )
+        monthlyStatistics = MonthlyStatistics.objects.prefetch_related("account", "org_unit").values().filter(programme_type=programme, account=account)
         monthlyData = list(monthlyStatistics)
-
         journey_by_org_units = groupby(monthlyData, key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         row = {}
@@ -923,15 +941,28 @@ class ETL:
                 journey_by_gender = groupby(list(journey_period), key=itemgetter("gender"))
                 for gender, journey_gender in journey_by_gender:
                     journey_by_gender = list(journey_gender)
-                    admission_program =  journey_by_gender[0]["admission_type"] if len(journey_by_gender) > 0 else ""
+                    admission_type =  journey_by_gender[0]["admission_type"] if len(journey_by_gender) > 0 else ""
                     admission_criteria = journey_by_gender[0]["admission_criteria"] if len(journey_by_gender) > 0 else ""
+                    exit_type = journey_by_gender[0]["exit_type"] if len(journey_by_gender) > 0 else ""
                     journey_by_gender_and_nutrition_program = groupby(
                         journey_by_gender, key=itemgetter("nutrition_programme")
                     )
                     row["gender"] = gender
+                    row["total_beneficiary"] = self.aggregate_by_field_name(journey_by_gender, "beneficiary_with_admission_type")
+                    row["total_with_exit_type"] = self.aggregate_by_field_name(journey_by_gender, "beneficiary_with_exit_type")
                     row["muac_under_11_5"] = self.aggregate_by_field_name(journey_by_gender, "muac_under_11_5")
                     row["muac_11_5_12_4"] = self.aggregate_by_field_name(journey_by_gender, "muac_11_5_12_4")
                     row["muac_above_12_5"] = self.aggregate_by_field_name(journey_by_gender, "muac_above_12_5")
+
+                    row["whz_score_3_2"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_3_2")
+                    row["whz_score_2"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_2")
+                    row["whz_score_3"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_3")
+
+                    row["oedema"] = self.aggregate_by_field_name(journey_by_gender, "oedema")
+                    row["admission_sc_itp_otp"] = self.aggregate_by_field_name(journey_by_gender, "admission_sc_itp_otp")
+                    row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(journey_by_gender, "transfer_from_other_tsfp")
+                    row["transfer_sc_itp_otp"] = self.aggregate_by_field_name(journey_by_gender, "transfer_sc_itp_otp")
+
                     dataElement = {"dataElement": "wWGcSv10BOM"}
                     if gender == "Male":
                         dataValues.extend([
@@ -946,57 +977,131 @@ class ETL:
                             {**dataElement, "categoryOptionCombo": "Qnd1bDi04CU", "value": row["muac_above_12_5"]},
                             ])
                     for program, journey_program in journey_by_gender_and_nutrition_program:
-                        row["total_beneficiary"] = self.aggregate_by_field_name(journey_program, "beneficiary_with_admission_type")
-                        row["muac_under_11_5"] = self.aggregate_by_field_name(journey_program, "muac_under_11_5")
-                        row["muac_11_5_12_4"] = self.aggregate_by_field_name(journey_program, "muac_11_5_12_4")
-                        row["muac_above_12_5"] = self.aggregate_by_field_name(journey_program, "muac_above_12_5")
-                        row["whz_score_3_2"] = self.aggregate_by_field_name(journey_program, "whz_score_3_2")
-
                         if program == "TSFP":
                             dataElement = {"dataElement": "i7EmmZqqBnl"} #NU_TSFP clients at the beginning of reporting period by gender
                             categoryOptionCombo = None
 
                             if gender == "Male":
                                 dataValues.extend([{**dataElement, "categoryOptionCombo": "OUXxVEWIxuM", "value": row["total_beneficiary"]}])
-                                if admission_program == "new_case":
+                                if admission_type == "new_case":
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "JhBDuSBnSyP", "value": row["muac_11_5_12_4"]}])
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "bHQaGZVwFLo", "value": row["whz_score_3_2"]}])
-                                elif admission_program == "relapse":
+                                    dataValues.extend([{"dataElement": "Jf2bBjhWhPL", "categoryOptionCombo": "OUXxVEWIxuM", "value": row["whz_score_3"]}])
+                                    dataValues.extend([{"dataElement": "KpXsZHmcWsc", "categoryOptionCombo": "OUXxVEWIxuM", "value": row["muac_under_11_5"]}])
+
+                                elif admission_type == "relapse":
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "zHhcDrdjuop", "value": row["total_beneficiary"]}])
-                                elif  admission_program == "returned_defaulter":
+                                elif  admission_type == "returned_defaulter":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "kZLTLs2lQBS", "value": row["total_beneficiary"]}])
-                                elif admission_program == "returned_referral":
+                                elif admission_type == "returned_referral":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "oHQmabQiw58", "value": row["total_beneficiary"]}])
-                                elif admission_program == "transfer_from_other_tsfp":
+                                elif admission_type == "transfer_from_other_tsfp":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "JdekLvpgdQ3", "value": row["total_beneficiary"]}])
+
+                                if exit_type == "cured":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "GY0Wv5bCjNG", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "death":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "UtyDhZcM5KV", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "defaulter":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "wRhj2sDa1sE", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "non_respondent":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "bno5z1hT6nR", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "transfer_to_tsfp":
+                                    dataValues.extend([{"dataElement": "tE9PYXpUnNb", "categoryOptionCombo": "IqspuuCZom2", "value": row["transfer_from_other_tsfp"]}])
+                                elif exit_type == "transfer_to_otp":
+                                    dataValues.extend([{"dataElement": "XhGPDZSGG7k", "categoryOptionCombo": "hVytXy7CmTa", "value": row["transfer_sc_itp_otp"]}])
 
                             elif gender == "Female" :
                                 dataValues.extend([{**dataElement, "categoryOptionCombo": "qvjvq1hK7Lc", "value": row["total_beneficiary"]}])
-                                if admission_program == "new_case":
+                                if admission_type == "new_case":
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "B1nT0iMwzkr", "value": row["muac_11_5_12_4"]}])
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "hDzFiVmyzIz", "value": row["whz_score_3_2"]}])
-                                elif admission_program == "relapse":
+                                    dataValues.extend([{"dataElement": "Jf2bBjhWhPL", "categoryOptionCombo": "qvjvq1hK7Lc", "value": row["whz_score_3"]}])
+                                    dataValues.extend([{"dataElement": "KpXsZHmcWsc", "categoryOptionCombo": "qvjvq1hK7Lc", "value": row["muac_under_11_5"]}])
+                                elif admission_type == "relapse":
                                     dataValues.extend([{"dataElement": "y9OJYgXui1O", "categoryOptionCombo": "xu8WQ0mbhvs", "value": row["total_beneficiary"]}])
-                                elif  admission_program == "returned_defaulter":
+                                elif  admission_type == "returned_defaulter":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "WSx5Tr62OQW", "value": row["total_beneficiary"]}])
-                                elif admission_program == "returned_referral":
+                                elif admission_type == "returned_referral":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "z5cphqP75nr", "value": row["total_beneficiary"]}])
-                                elif admission_program == "transfer_from_other_tsfp":
+                                elif admission_type == "transfer_from_other_tsfp":
                                     dataValues.extend([{"dataElement": "jh4uMjpyFeC", "categoryOptionCombo": "kyIFy9GuWJ6", "value": row["total_beneficiary"]}]) 
+
+                                if exit_type == "cured":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "S31DHHucDWV", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "death":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "Or1dTOACYV0", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "defaulter":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "XRvLNSlj0PU", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "non_respondent":
+                                    dataValues.extend([{"dataElement": "ghX9uosXLtl", "categoryOptionCombo": "XJaSPkakLJn", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "transfer_to_tsfp":
+                                    dataValues.extend([{"dataElement": "tE9PYXpUnNb", "categoryOptionCombo": "olMEzOhOcgB", "value": row["transfer_from_other_tsfp"]}])
+                                elif exit_type == "transfer_to_otp":
+                                    dataValues.extend([{"dataElement": "XhGPDZSGG7k", "categoryOptionCombo": "tKgHQgSr2Nn", "value": row["transfer_sc_itp_otp"]}])
+
                         elif program == "OTP":
                             dataElement = {"dataElement": "t4WxTl6Gp14"} #NU_OTP clients at the beginning of reporting period by gender
                             categoryOptionCombo = None
+                            #NU_OTP new admissions by gender BMNn4quX4qt
                             if gender == "Male":
                                 dataValues.extend([{**dataElement, "categoryOptionCombo": "OUXxVEWIxuM", "value": row["total_beneficiary"]}])
-                                if admission_program == "new_case":
-                                    dataValues.extend([{**dataElement, "categoryOptionCombo": "","value": ""}])
-                                elif admission_program == "relapse":
-                                    dataValues.extend([{**dataElement}])
+                                if admission_type == "new_case":
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "fEgN084L7Al","value": row["muac_under_11_5"]}])
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "cKGVsutl961","value": row["whz_score_3"]}])
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "PguqOVCzetd","value": row["oedema"]}])
+                                    dataValues.extend([{"dataElement": "WVHgJotA6ss", "categoryOptionCombo": "OUXxVEWIxuM","value": row["oedema"]}])
+
+                                elif admission_type == "relapse":
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "Mxkp0GrKG5h","value": row["total_beneficiary"]}])
+                                elif  admission_type == "returned_defaulter":
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "bgh3f3DwLLa","value": row["total_beneficiary"]}])
+                                elif admission_type == "returned_referral":
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "akho7qSqR50","value": row["total_beneficiary"]}])
+                                elif admission_type in ["referred_from_otp_sam", "referred_from_sc"]:
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "caEaXrcOE6g","value": row["admission_sc_itp_otp"]}])
+                                if exit_type == "cured":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "GY0Wv5bCjNG", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "death":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "UtyDhZcM5KV", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "defaulter":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "wRhj2sDa1sE", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "non_respondent":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "bno5z1hT6nR", "value": row["total_with_exit_type"]}])
+
+                                elif exit_type == "transfer_to_otp":
+                                    dataValues.extend([{"dataElement": "XhGPDZSGG7k", "categoryOptionCombo": "hVytXy7CmTa", "value": row["transfer_sc_itp_otp"]}])
+
                             elif gender == "Female" :
                                 dataValues.extend([{**dataElement, "categoryOptionCombo": "qvjvq1hK7Lc", "value": row["total_beneficiary"]}])
+                                if admission_type == "new_case":
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "abwmtb6Nn1D","value": row["muac_under_11_5"]}])
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "toSTgmC0STJ","value": row["whz_score_3"]}])
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "Vs5dotyWps5","value": row["oedema"]}])
+                                    dataValues.extend([{"dataElement": "WVHgJotA6ss", "categoryOptionCombo": "qvjvq1hK7Lc","value": row["oedema"]}])
+                                elif admission_type == "relapse":
+                                    dataValues.extend([{"dataElement": "BMNn4quX4qt", "categoryOptionCombo": "SOS5nRDyw81","value": row["total_beneficiary"]}])
+                                elif  admission_type == "returned_defaulter":
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "Ms6oRxjgYx6","value": row["total_beneficiary"]}])
+                                elif admission_type == "returned_referral":
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "d6wvVB6wgJk","value": row["total_beneficiary"]}])
+                                elif admission_type in ["referred_from_otp_sam", "referred_from_sc"]:
+                                    dataValues.extend([{"dataElement": "z2cqC057w7V", "categoryOptionCombo": "wKmEtZG1gYi","value": row["admission_sc_itp_otp"]}])
 
+                                if exit_type == "cured":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "S31DHHucDWV", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "death":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "Or1dTOACYV0", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "defaulter":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "XRvLNSlj0PU", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "non_respondent":
+                                    dataValues.extend([{"dataElement": "X0n5lYJInut", "categoryOptionCombo": "XJaSPkakLJn", "value": row["total_with_exit_type"]}])
+                                elif exit_type == "transfer_to_otp":
+                                    dataValues.extend([{"dataElement": "XhGPDZSGG7k", "categoryOptionCombo": "tKgHQgSr2Nn", "value": row["transfer_sc_itp_otp"]}])
+
+                        # Adding IPT/SC Services
+                        dataValues.extend([])
                         row["dataValues"] = dataValues
-                            #print("ROW ...:", row)
                 dataSet = {"dataSet": row["dataSet"], "period": row["period"], "orgUnit": row["orgUnit"], "dataValues": dataValues}
                 dhis2_aggregated_data.append(dataSet)
 

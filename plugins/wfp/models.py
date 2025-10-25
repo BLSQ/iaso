@@ -13,7 +13,9 @@ EXIT_TYPES = [
     ("dismissed_due_to_cheating", _("Dismissal")),
     ("voluntary_withdrawal", _("Voluntary Withdrawal")),
     ("transfer_to_otp", _("Transfer To OTP")),
+    ("transfer_from_other_otp", _("Transfer in from other OTP")),
     ("transfer_to_tsfp", _("Transfer To TSFP")),
+    ("transfer_from_other_tsfp", _("Transfer in from other TSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),
@@ -105,6 +107,7 @@ class Visit(models.Model):
     muac_size = models.CharField(max_length=10, null=True)
     whz_color = models.CharField(max_length=10, null=True)
     oedema = models.FloatField(null=True)
+    entry_point = models.TextField(null=True)
     instance_id = models.IntegerField(null=True, blank=True, db_index=True)
 
 

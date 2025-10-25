@@ -25,6 +25,7 @@ export const roundFormFields = (rounds: Round[]): string[] => {
                     `rounds[${i}].percentage_covered_target_population`,
                     `rounds[${i}].target_population`,
                     `rounds[${i}].on_hold`,
+                    `rounds[${i}].is_planned`,
                 ];
             })
             .flat(),

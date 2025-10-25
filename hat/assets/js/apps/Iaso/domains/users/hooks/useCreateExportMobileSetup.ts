@@ -20,6 +20,6 @@ export const useCreateExportMobileSetup = (): UseMutationResult => {
                 password,
             });
         },
-        showSucessSnackBar: false,
+        showSuccessSnackBar: false,
     });
 };

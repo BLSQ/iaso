@@ -1,3 +1,4 @@
+from http import HTTPStatus
 from unittest import mock
 from uuid import uuid4
 
@@ -10,6 +11,10 @@ from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate_analyzis import AnalyzePostBodySerializer
 from iaso.models.deduplication import ValidationStatus
+from iaso.permissions.core_permissions import (
+    CORE_ENTITIES_DUPLICATES_READ_PERMISSION,
+    CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION,
+)
 from iaso.test import APITestCase
 
 
@@ -94,34 +99,34 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=default_account, permissions=["iaso_entity_duplicates_read"]
+            username="user_without_ou", account=default_account, permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION]
         )
 
         cls.user_with_default_ou_ro = cls.create_user_with_profile(
             username="user_with_default_ou_ro",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION],
             org_units=[cls.default_orgunit],
         )
 
         cls.user_with_default_ou_rw = cls.create_user_with_profile(
             username="user_with_default_ou_rw",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
             org_units=[cls.default_orgunit],
         )
 
         cls.user_with_other_ou_ro = cls.create_user_with_profile(
             username="user_with_other_ou_ro",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION],
             org_units=[cls.another_orgunit],
         )
 
         cls.user_with_other_ou_rw = cls.create_user_with_profile(
             username="user_with_other_ou_rw",
             account=default_account,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
             org_units=[cls.another_orgunit],
         )
 
@@ -720,7 +725,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         user2 = self.create_user_with_profile(
             username="user__2",
             account=account_2,
-            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            permissions=[CORE_ENTITIES_DUPLICATES_READ_PERMISSION, CORE_ENTITIES_DUPLICATES_WRITE_PERMISSION],
         )
 
         # Authenticate as user2 and check if we see the duplicate
@@ -1085,3 +1090,194 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         serializer = AnalyzePostBodySerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertIn("Field `unsupported_field` has an unsupported type `select one`.", str(serializer.errors))
+
+    def test_bulk_ignore_anonymous(self):
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.IGNORED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.VALIDATED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+        response = self.client.post(
+            "/api/entityduplicates/bulk_ignore/",
+            {
+                "select_all": True,
+                "unselected_ids": [],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.UNAUTHORIZED)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+
+    def test_bulk_ignore_without_rights(self):
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.IGNORED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.VALIDATED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+        self.client.force_authenticate(self.user_without_ou)
+        response = self.client.post(
+            "/api/entityduplicates/bulk_ignore/",
+            {
+                "select_all": True,
+                "unselected_ids": [],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.FORBIDDEN)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+
+    def test_bulk_ignore_all_with_rights(self):
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.IGNORED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.VALIDATED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            "/api/entityduplicates/bulk_ignore/",
+            {
+                "select_all": True,
+                "unselected_ids": [],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.NO_CONTENT)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 0)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 3)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+
+    def test_bulk_ignore_all_with_rights_and_filters(self):
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 4)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 0)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            f"/api/entityduplicates/bulk_ignore/?org_unit={self.another_orgunit.pk}",
+            {
+                "select_all": True,
+                "unselected_ids": [],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.NO_CONTENT)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 3)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+
+    def test_bulk_ignore_all_and_unselect_ids_with_rights(self):
+        ignored = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.IGNORED
+        )
+        m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.VALIDATED
+        )
+        selected = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            "/api/entityduplicates/bulk_ignore/",
+            {
+                "select_all": True,
+                "unselected_ids": [ignored.id],
+                "selected_ids": [],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.NO_CONTENT)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 1)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 1)
+        ignored.refresh_from_db()
+        self.assertEqual(ignored.validation_status, ValidationStatus.PENDING)
+        selected.refresh_from_db()
+        self.assertEqual(selected.validation_status, ValidationStatus.IGNORED)
+
+    def test_bulk_ignore_all_and_select_ids_with_rights(self):
+        dup_1 = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_2, validation_status=ValidationStatus.PENDING
+        )
+        dup_2 = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.close_entity, validation_status=ValidationStatus.PENDING
+        )
+        dup_3 = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.far_entity, validation_status=ValidationStatus.PENDING
+        )
+        dup_4 = m.EntityDuplicate.objects.create(
+            entity1=self.same_entity_1, entity2=self.same_entity_in_other_ou, validation_status=ValidationStatus.PENDING
+        )
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 4)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 0)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+        response = self.client.post(
+            "/api/entityduplicates/bulk_ignore/",
+            {
+                "select_all": False,
+                "unselected_ids": [],
+                "selected_ids": [dup_1.id, dup_4.id],
+            },
+        )
+        self.assertJSONResponse(response, HTTPStatus.NO_CONTENT)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.PENDING).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.IGNORED).count(), 2)
+        self.assertEqual(m.EntityDuplicate.objects.filter(validation_status=ValidationStatus.VALIDATED).count(), 0)
+        dup_1.refresh_from_db()
+        dup_2.refresh_from_db()
+        dup_3.refresh_from_db()
+        dup_4.refresh_from_db()
+        self.assertEqual(dup_1.validation_status, ValidationStatus.IGNORED)
+        self.assertEqual(dup_2.validation_status, ValidationStatus.PENDING)
+        self.assertEqual(dup_3.validation_status, ValidationStatus.PENDING)
+        self.assertEqual(dup_4.validation_status, ValidationStatus.IGNORED)

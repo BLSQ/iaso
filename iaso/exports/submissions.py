@@ -6,6 +6,7 @@ from django.db.models.fields.json import KeyTextTransform
 
 import iaso.models as m
 
+from .mapping import generate_safe_mapping
 from .utils import normalize_field_name
 
 
@@ -19,18 +20,16 @@ def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QueryS
 
     qs = qs.filter(form_id=form_id)
 
+    prefixed_fields = build_submission_annotations()
+
     possible_fields = form.possible_fields
 
-    def fix_field_name(name):
-        if name == "id":
-            return "answer_id"
-        return name
+    answer_mappings = generate_safe_mapping(list(prefixed_fields.keys()) + [f["name"] for f in possible_fields])
 
     json_annotations = {}
     for field in possible_fields:
         field_name = field["name"]
-        json_annotations[fix_field_name(field_name)] = KeyTextTransform(field_name, "json")
-    prefixed_fields = build_submission_annotations()
+        json_annotations[answer_mappings[field_name]] = KeyTextTransform(field_name, "json")
 
     qs = (
         qs.values("id")
@@ -39,7 +38,7 @@ def build_submissions_queryset(qs: QuerySet[m.Instance], form_id: str) -> QueryS
         .values(*prefixed_fields.keys(), *json_annotations.keys())
     )
 
-    return qs
+    return qs, answer_mappings
 
 
 class ST_X(Func):

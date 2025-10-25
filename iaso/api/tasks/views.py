@@ -5,12 +5,10 @@ import django_filters
 from django.shortcuts import get_object_or_404
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
-from lazy_services import LazyService  # type: ignore
+from lazy_services import LazyService
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-import iaso.permissions as core_permissions
 
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.tasks.filters import (
@@ -19,11 +17,14 @@ from iaso.api.tasks.filters import (
     TaskTypeFilterBackend,
     UsersFilterBackend,
 )
-from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED, Task
+from iaso.models.base import ERRORED, QUEUED, RUNNING, SKIPPED
 from iaso.models.json_config import Config
+from iaso.models.task import Task
+from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION, CORE_PLANNING_WRITE_PERMISSION
 from iaso.utils.s3_client import generate_presigned_url_from_s3
 
-from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
+from ...models import TaskLog
+from .serializers import ExternalTaskPostSerializer, ExternalTaskSerializer, TaskLogSerializer, TaskSerializer
 
 
 task_service = LazyService("BACKGROUND_TASK_SERVICE")
@@ -43,8 +44,8 @@ class TaskSourceViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(core_permissions.DATA_TASKS),
-    ]  # type: ignore
+        HasPermission(CORE_DATA_TASKS_PERMISSION, CORE_PLANNING_WRITE_PERMISSION),
+    ]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
@@ -82,7 +83,7 @@ class TaskSourceViewSet(ModelViewSet):
         task = self.get_object()
         current_user = request.user
 
-        if current_user.has_perm(core_permissions.DATA_TASKS) or task.created_by == request.user:
+        if current_user.has_perm(CORE_DATA_TASKS_PERMISSION.full_name()) or task.created_by == request.user:
             serializer = self.get_serializer(task)
             return Response(serializer.data)
         return Response(status=status.HTTP_403_FORBIDDEN)
@@ -104,12 +105,24 @@ class TaskSourceViewSet(ModelViewSet):
             {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
         )
 
+    @action(detail=True, methods=["get"], url_path="logs")
+    def get_logs(self, request, pk=None):
+        task = get_object_or_404(Task, pk=pk)
+
+        logs = TaskLog.objects.filter(task=task)
+        serializer = TaskLogSerializer(logs, many=True, context=self.get_serializer_context())
+        response = {
+            "status": task.status,
+            "logs": serializer.data,
+        }
+        return Response(response)
+
     @action(detail=True, methods=["patch"], url_path="relaunch")
     def relaunch(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
         current_user = request.user
 
-        if current_user.has_perm(core_permissions.DATA_TASKS) or task.created_by == request.user:
+        if current_user.has_perm(CORE_DATA_TASKS_PERMISSION.full_name()) or task.created_by == request.user:
             if task.status != ERRORED:
                 raise serializers.ValidationError({"status": f"You cannot relaunch a task with status {task.status}."})
 

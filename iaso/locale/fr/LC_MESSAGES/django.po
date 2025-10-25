@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-09-18 09:37+0000\n"
+"POT-Creation-Date: 2025-10-10 08:44+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -71,7 +71,7 @@ msgstr "ID de la version"
 msgid "Data Source ID"
 msgstr "ID de la source de données"
 
-#: iaso/api/groups/filters.py
+#: iaso/api/groups/filters.py iaso/api/stocks/filters.py
 msgid "Project IDs (comma-separated)"
 msgstr "ID des projets (séparés par des virgules)"
 
@@ -107,6 +107,15 @@ msgstr ""
 "Les paramètres objectId et contentType sont requis. contentType peut être "
 "l'un des suivants : iaso.orgunit, iaso.form, iaso.instance"
 
+#: iaso/api/microplanning/views.py
+msgid "No assignments to delete"
+msgstr "Aucune assignation à effacer"
+
+#: iaso/api/microplanning/views.py
+#, python-format
+msgid "Successfully deleted %(count)s assignments"
+msgstr "%(count)s assignations ont été supprimées avec succès"
+
 #: iaso/api/openhexa/views.py
 msgid "OpenHexa configuration not found"
 msgstr "Configuration OpenHexa introuvable"
@@ -122,6 +131,10 @@ msgstr "Échec de la récupération des détails du pipeline"
 #: iaso/api/openhexa/views.py
 msgid "Pipeline ID is required"
 msgstr "L'ID de la pipeline est requis"
+
+#: iaso/api/openhexa/views.py
+msgid "Failed to generate authentication token"
+msgstr "Échec de la génération du jeton d'authentification"
 
 #: iaso/api/openhexa/views.py
 msgid "Failed to launch pipeline"
@@ -150,12 +163,17 @@ msgid "Org unit type ID"
 msgstr "ID du type d'unité organisationnelle"
 
 #: iaso/api/org_unit_change_request_configurations/filters.py
+#: iaso/api/stocks/filters.py
 msgid "Created by - Users IDs (comma-separated)"
 msgstr "Créé par - IDs utilisateurs (séparés par des virgules)"
 
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "IDs (comma-separated)"
 msgstr "IDs (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Org unit"
+msgstr "Unité d'organisation"
 
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Org unit ID"
@@ -217,6 +235,14 @@ msgstr "IDs des paiements potentiels (séparés par des virgules)"
 #: iaso/api/org_unit_change_requests/filters.py
 msgid "Source version ID"
 msgstr "ID de version source"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Requested fields (comma-separated)"
+msgstr "Champs demandés (séparés par des virgules)"
+
+#: iaso/api/org_unit_change_requests/filters.py
+msgid "Kind (comma-separated)"
+msgstr "Types (séparés par des virgules)"
 
 #: iaso/api/org_unit_tree/filters.py
 msgid "Ignore empty names"
@@ -378,6 +404,14 @@ msgstr "L'email est requis lorsque l'invitation par email est activée"
 msgid "Password is required when email_invitation is False"
 msgstr ""
 "Le mot de passe est requis lorsque l'invitation par email est désactivée"
+
+#: iaso/api/stocks/filters.py
+msgid "Org unit type IDs (comma-separated)"
+msgstr "IDs des types d'unité organisationnelle (séparé par des virgules)"
+
+#: iaso/api/stocks/filters.py
+msgid "SKUs - SKU IDs (comma-separated)"
+msgstr "SKUs - IDs des SKUs (séparé par des virgules)"
 
 #: iaso/models/base.py
 msgid "Aggregate"
@@ -545,7 +579,7 @@ msgstr "Options géographiques"
 msgid "Data Validation"
 msgstr "Validation de données"
 
-#: iaso/models/feature_flags.py iaso/permissions.py
+#: iaso/models/feature_flags.py iaso/permissions/core_permissions.py
 msgid "Entities"
 msgstr "Entités"
 
@@ -747,169 +781,177 @@ msgstr "Payé"
 msgid "Partially Paid"
 msgstr "Partiellement payé"
 
-#: iaso/permissions.py
-msgid "Formulaires"
-msgstr "Formulaires"
-
-#: iaso/permissions.py
-msgid "Statistiques pour les formulaires"
-msgstr "Statistiques pour les formulaires"
-
-#: iaso/permissions.py
-msgid "Correspondances avec DHIS2"
-msgstr "Correspondances avec DHIS2"
-
-#: iaso/permissions.py
-msgid "modules"
-msgstr "modules"
-
-#: iaso/permissions.py
-msgid "Complétude des données"
-msgstr "Complétude des données"
-
-#: iaso/permissions.py
-msgid "Unités d'organisations"
-msgstr "Unités d'organisations"
-
-#: iaso/permissions.py
-msgid "Historique des unités d'organisation"
-msgstr "Historique des unités d'organisation"
-
-#: iaso/permissions.py
-msgid "Lire les unités d'organisations"
-msgstr "Lire les unités d'organisations"
-
-#: iaso/permissions.py
-msgid "Editer le Registre"
-msgstr "Editer le Registre"
-
-#: iaso/permissions.py
-msgid "Lire le Registre"
-msgstr "Lire le Registre"
-
-#: iaso/permissions.py
-msgid "Correspondances sources"
-msgstr "Correspondances sources"
-
-#: iaso/permissions.py
-msgid "Users"
-msgstr "Utilisateurs"
-
-#: iaso/permissions.py
-msgid "Users managed"
-msgstr "Utilisateurs gérés"
-
-#: iaso/permissions.py
-msgid "Pages"
-msgstr "Pages"
-
-#: iaso/permissions.py
-msgid "Projets"
-msgstr "Projets"
-
-#: iaso/permissions.py
-msgid "Sources"
-msgstr "Sources"
-
-#: iaso/permissions.py
-msgid "Can change the default version of a data source"
-msgstr "Peut modifier la version par défaut d'une source de données"
-
-#: iaso/permissions.py
-msgid "Tâches"
-msgstr "Tâches"
-
-#: iaso/permissions.py
-msgid "Soumissions"
-msgstr "Soumissions"
-
-#: iaso/permissions.py
-msgid "Editer soumissions"
-msgstr "Editer soumissions"
-
-#: iaso/permissions.py
-msgid "Editer le planning"
-msgstr "Editer le planning"
-
-#: iaso/permissions.py
-msgid "Lire le planning"
-msgstr "Lire le planning"
-
-#: iaso/permissions.py
-msgid "Reports"
-msgstr "Rapports"
-
-#: iaso/permissions.py
-msgid "Equipes"
-msgstr "Equipes"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Attributions"
 msgstr "Attributions"
 
-#: iaso/permissions.py
-msgid "Write entity type"
-msgstr "Écrire type d'entité"
+#: iaso/permissions/core_permissions.py
+msgid "Complétude des données"
+msgstr "Complétude des données"
 
-#: iaso/permissions.py
-msgid "Storages"
-msgstr "Stockages"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Completeness stats"
 msgstr "Statistiques de complétude"
 
-#: iaso/permissions.py
-msgid "Workflows"
-msgstr "Flux de travail"
-
-#: iaso/permissions.py
-msgid "Read Entity duplicates"
-msgstr "Lire les doublons d'entités"
-
-#: iaso/permissions.py
-msgid "Write Entity duplicates"
-msgstr "Écrire les doublons d'entités"
-
-#: iaso/permissions.py
-msgid "Manage user roles"
-msgstr "Gérer les rôles utilisateurs"
-
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Read data store"
 msgstr "Lire le stockage de données"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Write data store"
 msgstr "Écrire dans le stockage de données"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
+msgid "Tâches"
+msgstr "Tâches"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write entity type"
+msgstr "Écrire type d'entité"
+
+#: iaso/permissions/core_permissions.py
+msgid "Read Entity duplicates"
+msgstr "Lire les doublons d'entités"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write Entity duplicates"
+msgstr "Écrire les doublons d'entités"
+
+#: iaso/permissions/core_permissions.py
+msgid "Formulaires"
+msgstr "Formulaires"
+
+#: iaso/permissions/core_permissions.py
+msgid "Statistiques pour les formulaires"
+msgstr "Statistiques pour les formulaires"
+
+#: iaso/permissions/core_permissions.py
+msgid "Correspondances sources"
+msgstr "Correspondances sources"
+
+#: iaso/permissions/core_permissions.py
+msgid "Correspondances avec DHIS2"
+msgstr "Correspondances avec DHIS2"
+
+#: iaso/permissions/core_permissions.py
+msgid "Mobile app offline setup"
+msgstr "Export hors ligne de l'application mobile"
+
+#: iaso/permissions/core_permissions.py
+msgid "modules"
+msgstr "modules"
+
+#: iaso/permissions/core_permissions.py
+msgid "Unités d'organisations"
+msgstr "Unités d'organisations"
+
+#: iaso/permissions/core_permissions.py
+msgid "Historique des unités d'organisation"
+msgstr "Historique des unités d'organisation"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire les unités d'organisations"
+msgstr "Lire les unités d'organisations"
+
+#: iaso/permissions/core_permissions.py
 msgid "Org unit types"
 msgstr "Types d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit groups"
 msgstr "Groupes d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit change request review"
 msgstr "Révision des demandes de modification d'unités d'organisation"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Org unit change request configurations"
 msgstr "Configurations des demandes de modification d'unités d'organisation"
 
-#: iaso/permissions.py
-msgid "Write data source"
-msgstr "Écrire source de données"
+#: iaso/permissions/core_permissions.py
+msgid "Pages"
+msgstr "Pages"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Write page"
 msgstr "Écrire page"
 
-#: iaso/permissions.py
+#: iaso/permissions/core_permissions.py
 msgid "Payments page"
 msgstr "Page des paiements"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer le planning"
+msgstr "Editer le planning"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire le planning"
+msgstr "Lire le planning"
+
+#: iaso/permissions/core_permissions.py
+msgid "Projets"
+msgstr "Projets"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer le Registre"
+msgstr "Editer le Registre"
+
+#: iaso/permissions/core_permissions.py
+msgid "Lire le Registre"
+msgstr "Lire le Registre"
+
+#: iaso/permissions/core_permissions.py
+msgid "Reports"
+msgstr "Rapports"
+
+#: iaso/permissions/core_permissions.py
+msgid "Write data source"
+msgstr "Écrire source de données"
+
+#: iaso/permissions/core_permissions.py
+msgid "Sources"
+msgstr "Sources"
+
+#: iaso/permissions/core_permissions.py
+msgid "Can change the default version of a data source"
+msgstr "Peut modifier la version par défaut d'une source de données"
+
+#: iaso/permissions/core_permissions.py
+msgid "Stock management"
+msgstr "Management de stock"
+
+#: iaso/permissions/core_permissions.py
+msgid "Storages"
+msgstr "Stockages"
+
+#: iaso/permissions/core_permissions.py
+msgid "Soumissions"
+msgstr "Soumissions"
+
+#: iaso/permissions/core_permissions.py
+msgid "Editer soumissions"
+msgstr "Editer soumissions"
+
+#: iaso/permissions/core_permissions.py
+msgid "Equipes"
+msgstr "Equipes"
+
+#: iaso/permissions/core_permissions.py
+msgid "Users"
+msgstr "Utilisateurs"
+
+#: iaso/permissions/core_permissions.py
+msgid "Users managed"
+msgstr "Utilisateurs gérés"
+
+#: iaso/permissions/core_permissions.py
+msgid "Manage user roles"
+msgstr "Gérer les rôles utilisateurs"
+
+#: iaso/permissions/core_permissions.py
+msgid "Workflows"
+msgstr "Flux de travail"
 
 #: iaso/tasks/copy_version.py iaso/tasks/export_mobile_app_setup_for_user.py
 #: iaso/tasks/process_mobile_bulk_upload.py

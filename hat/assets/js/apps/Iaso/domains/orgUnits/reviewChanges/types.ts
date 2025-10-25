@@ -1,5 +1,5 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
-import { User } from '../../../utils/usersUtils';
+import { User } from 'Iaso/utils/usersUtils';
 import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 
@@ -8,6 +8,7 @@ export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
     parent_id?: string;
     groups?: string;
+    org_unit?: string;
     org_unit_type_id?: string;
     status?: ChangeRequestValidationStatus;
     created_at_after?: string;
@@ -24,6 +25,8 @@ export type ApproveOrgUnitParams = UrlParams & {
     data_source_synchronization_id?: string;
     ids?: string; // comma separated ids
     is_soft_deleted?: string;
+    requested_fields?: string; // comma separated field names
+    kind?: string; // comma separated kind values
 };
 
 export type OrgUnitChangeRequestDetailParams = UrlParams & {

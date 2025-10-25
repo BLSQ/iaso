@@ -24,8 +24,15 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
-import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
+import {
+    dosesPerVial,
+    useSkipEffectUntilValue,
+} from '../../../SupplyChain/hooks/utils';
+import {
+    useCampaignOptions,
+    useGetDosesOptions,
+    useSaveFormA,
+} from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -48,6 +55,7 @@ export type FormAFormValues = {
     report_date?: string;
     form_a_reception_date?: string;
     usable_vials_used?: number;
+    doses_per_vial: number;
 
     vaccine_stock: string;
     file?: File[] | string;
@@ -65,6 +73,8 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
+    const { data: dosesOptions, isLoading: isLoadingDoses } =
+        useGetDosesOptions(parseInt(vaccineStockId, 10));
     const validationSchema = useFormAValidation();
     const formik = useFormik<FormAFormValues>({
         initialValues: {
@@ -74,6 +84,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
+            doses_per_vial: formA?.doses_per_vial || dosesPerVial[vaccine],
             vaccine_stock: vaccineStockId,
             file: formA?.file,
             comment: formA?.comment ?? null,
@@ -221,6 +232,15 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="usable_vials_used"
                         component={NumberInput}
                         required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={dosesOptions}
+                        isLoading={isLoadingDoses}
                     />
                 </Box>
                 <Box mb={2}>

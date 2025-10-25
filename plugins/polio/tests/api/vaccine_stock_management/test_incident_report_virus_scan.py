@@ -54,6 +54,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     safe_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -102,6 +103,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -138,6 +140,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -182,6 +185,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     infected_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -218,6 +222,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             incident_report_infected = pm.IncidentReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -233,6 +238,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             incident_report_pending = pm.IncidentReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -248,6 +254,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             incident_report_error = pm.IncidentReport.objects.create(
                 vaccine_stock=self.vaccine_stock,
@@ -263,6 +270,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         # Use a non-admin user
@@ -325,6 +333,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=infected_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.SAFE_FILE_PATH, "rb") as safe_file:
@@ -386,6 +395,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -435,6 +445,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -496,6 +507,7 @@ class IncidentReportVirusScanAPITestCase(VaccineStockManagementAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:

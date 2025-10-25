@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 
 import { Box, Button, Grid } from '@mui/material';
 
@@ -107,6 +107,26 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const { data: parentOrgunit } = useGetOrgUnit(
         parentId ? `${parentId}` : undefined,
     );
+
+    useEffect(() => {
+        if (
+            !orgUnitState.org_unit_type_id?.value &&
+            isNewOrgunit &&
+            !orgUnitModified &&
+            parentOrgunit?.org_unit_type.sub_unit_types?.[0]?.id
+        ) {
+            onChangeInfo(
+                'org_unit_type_id',
+                parentOrgunit.org_unit_type.sub_unit_types?.[0]?.id,
+            );
+        }
+    }, [
+        parentOrgunit,
+        isNewOrgunit,
+        orgUnitState,
+        orgUnitModified,
+        onChangeInfo,
+    ]);
 
     const hasManagementPermission = useCheckUserHasWritePermissionOnOrgunit(
         orgUnit?.org_unit_type_id,

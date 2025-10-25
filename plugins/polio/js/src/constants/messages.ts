@@ -1771,7 +1771,7 @@ const MESSAGES = defineMessages({
     scopeUnlockConditions: {
         id: 'iaso.polio.label.scopeUnlockConditions',
         defaultMessage:
-            'Select initial region and encode dates for at least one round to unlock Scope tab',
+            'Select initial org. unit and encode dates for at least one round, and mark campaign as active to unlock Scope tab',
     },
     campaignHistory: {
         id: 'iaso.polio.campaign.campaignHistory',
@@ -2488,6 +2488,22 @@ const MESSAGES = defineMessages({
     removeOnHoldLaterRounds: {
         id: 'iaso.polio.label.removeOnHoldLaterRounds',
         defaultMessage: 'Remove "on hold" for later rounds?',
+    },
+    plannedCampaign: {
+        id: 'iaso.polio.label.plannedCampaign',
+        defaultMessage: 'Planned campaign',
+    },
+    plannedRound: {
+        id: 'iaso.polio.label.plannedRound',
+        defaultMessage: 'Planned round',
+    },
+    removeLaterPlannedRounds: {
+        id: 'iaso.polio.label.removeLaterPlannedRounds',
+        defaultMessage: 'Remove "planned" status for later rounds?',
+    },
+    fieldMandatoryForPlanned: {
+        id: 'iaso.polio.label.fieldMandatoryForPlanned',
+        defaultMessage: 'Field mandatory for planned round/campaign',
     },
 });
 

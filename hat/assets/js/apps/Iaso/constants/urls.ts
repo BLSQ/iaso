@@ -192,12 +192,15 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'groups',
             'ids',
             'is_soft_deleted',
+            'org_unit',
             'org_unit_type_id',
             'parent_id',
             'paymentIds',
             'paymentStatus',
             'potentialPaymentIds',
             'projectIds',
+            'requested_fields',
+            'kind',
             'source_version_id',
             'status',
             'userIds',
@@ -553,6 +556,29 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'parent_id',
         ],
     },
+    stockKeepingUnits: {
+        url: 'stock/stockkeepingunits',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'created_by',
+            'search',
+            'projectsIds',
+            'orgUnitTypeIds',
+        ],
+    },
+    stockRulesVersions: {
+        url: 'stock/rulesversions',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'versionId',
+            'search',
+            'status',
+            'skuId',
+            'formId',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -650,6 +676,8 @@ type IasoBaseUrls = {
     workflowDetail: string;
     potentialPayments: string;
     lotsPayments: string;
+    stockKeepingUnits: string;
+    stockRulesVersions: string;
     hidden: string;
     error401: string;
     error403: string;

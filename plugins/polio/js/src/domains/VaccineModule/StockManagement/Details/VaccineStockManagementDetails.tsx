@@ -15,7 +15,6 @@ import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso
 import { baseUrls } from '../../../../constants/urls';
 import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import {
-    // useGetEarmarked,
     useGetStockManagementSummary,
     useGetUnusableVials,
     useGetUsableVials,
@@ -31,12 +30,8 @@ import {
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
-        marginTop: {
-            marginTop: theme.spacing(2),
-        },
-        bigMarginTop: {
-            marginTop: theme.spacing(4),
-        },
+        marginTop: { marginTop: theme.spacing(2) },
+        bigMarginTop: { marginTop: theme.spacing(4) },
     };
 });
 const baseUrl = baseUrls.stockManagementDetails;
@@ -61,9 +56,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
 
     const { data: unusableVials, isFetching: isFetchingUnusable } =
         useGetUnusableVials(params, tab === UNUSABLE_VIALS);
-
-    // const { data: earmarked, isFetching: isFetchingEarmarked } =
-    //     useGetEarmarked(params, tab === EARMARKED);
 
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(params.id);
@@ -91,9 +83,6 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
             case UNUSABLE_VIALS:
                 xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
                 break;
-            // case EARMARKED:
-            //     xlsxUrl = `${xlsxUrl}/get_unusable_vials/?export_xlsx=true`;
-            //     break;
             default:
                 break;
         }
@@ -147,9 +136,7 @@ export const VaccineStockManagementDetails: FunctionComponent = () => {
                 </Grid>
                 <Tabs
                     value={tab}
-                    classes={{
-                        root: classes.bigMarginTop,
-                    }}
+                    classes={{ root: classes.bigMarginTop }}
                     onChange={handleChangeTab}
                 >
                     <Tab

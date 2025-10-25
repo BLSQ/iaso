@@ -18,13 +18,6 @@ const searchOptions = {
 };
 export const useSearchDataSourceVersionsSynchronization = () => {
     const queryClient = useQueryClient();
-    const query = useSnackQuery({
-        queryKey: ['searchDataSourceVersionsSynchronization', ''],
-        queryFn: () => [],
-        snackErrorMsg: MESSAGES.error,
-        options: searchOptions,
-    });
-
     const searchWithInput = useCallback(
         async (input: string) => {
             const newQueryKey = [
@@ -42,7 +35,7 @@ export const useSearchDataSourceVersionsSynchronization = () => {
         [queryClient],
     );
 
-    return { ...query, searchWithInput };
+    return { searchWithInput };
 };
 
 export const useGetDataSourceVersionsSynchronizationDropdown = (
@@ -56,6 +49,7 @@ export const useGetDataSourceVersionsSynchronizationDropdown = (
         },
         snackErrorMsg: MESSAGES.error,
         options: {
+            enabled: Boolean(id),
             select: data => {
                 if (data === undefined || (Array.isArray(data) && !data.length))
                     return [];

@@ -10,6 +10,7 @@ import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
+from django.db.models import Q
 
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, SourceVersion
@@ -404,6 +405,9 @@ def import_gpkg_file2(
         ou.parent = parent_ou
         ou.source_ref = ou.source_ref.replace(OLD_INTERNAL_REF, NEW_INTERNAL_REF)
         ou.save()
+
+    recalculate_missing_paths_if_necessary(version, task)
+
     if task:
         task.report_progress_and_stop_if_killed(
             progress_message=f"storing log_modifications total_org_unit : {total_org_unit}"
@@ -412,3 +416,28 @@ def import_gpkg_file2(
         # Possible optimisation, crate a bulk update
         audit_models.log_modification(old_ou, new_ou, source=audit_models.GPKG_IMPORT, user=user)
     return total_org_unit
+
+
+def recalculate_missing_paths_if_necessary(version, task):
+    empty_paths_before = OrgUnit.objects.filter(version=version).filter(Q(path__isnull=True) | Q(path=[])).count()
+
+    if empty_paths_before == 0:
+        return
+
+    # this case might happen if the layers per type didn't specify the correct level-x
+    # and so processing children before parents, leading to path "null"
+
+    top_parents = OrgUnit.objects.filter(version=version).filter(parent_id__isnull=True)
+
+    if task:
+        task.report_progress_and_stop_if_killed(progress_message=f"updating path from {top_parents.count()} parents")
+
+    for top_parent in top_parents:
+        # normally this will trigger the children too, so probably a bit excessive at least the whole pyramid will be consistent
+        top_parent.save(force_recalculate=True)
+
+    empty_paths_after = OrgUnit.objects.filter(version=version).filter(Q(path__isnull=True) | Q(path=[])).count()
+    if task:
+        task.report_progress_and_stop_if_killed(
+            progress_message=f"update path complete : empty_paths_before {empty_paths_before} empty_paths_after {empty_paths_after}"
+        )

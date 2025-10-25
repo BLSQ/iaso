@@ -40,6 +40,7 @@ from .org_unit import OrgUnit, OrgUnitReferenceInstance
 
 
 logger = getLogger(__name__)
+from iaso.utils.dates import get_beginning_of_day, get_end_of_day
 
 
 def instance_upload_to(instance: "Instance", filename: str):
@@ -223,9 +224,11 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if created_from or created_to:
             queryset = queryset.annotate(creation_timestamp=Coalesce("source_created_at", "created_at"))
             if created_from:
-                queryset = queryset.filter(creation_timestamp__gte=created_from)
+                created_from_ts = get_beginning_of_day(created_from, "created_from")
+                queryset = queryset.filter(creation_timestamp__gte=created_from_ts)
             if created_to:
-                queryset = queryset.filter(creation_timestamp__lte=created_to)
+                created_from_ts = get_end_of_day(created_to, "created_to")
+                queryset = queryset.filter(creation_timestamp__lte=created_from_ts)
 
         if period_ids:
             if isinstance(period_ids, str):
@@ -321,14 +324,14 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         queryset = queryset.with_status()
 
         if modification_from:
-            queryset = queryset.filter(updated_at__gte=modification_from)
+            queryset = queryset.filter(updated_at__gte=get_beginning_of_day(modification_from, "modification_from"))
         if modification_to:
-            queryset = queryset.filter(updated_at__lte=modification_to)
+            queryset = queryset.filter(updated_at__lte=get_end_of_day(modification_to, "modification_to"))
 
         if sent_from:
-            queryset = queryset.filter(created_at__gte=sent_from)
+            queryset = queryset.filter(created_at__gte=get_beginning_of_day(sent_from, "sent_from"))
         if sent_to:
-            queryset = queryset.filter(created_at__lte=sent_to)
+            queryset = queryset.filter(created_at__lte=get_end_of_day(sent_to, "sent_to"))
 
         if status:
             statuses = status.split(",")
@@ -388,6 +391,37 @@ class NonDeletedInstanceManager(models.Manager):
         Exclude soft deleted instances from all results.
         """
         return super().get_queryset().filter(deleted=False)
+
+
+# to keep the export code "simple"
+# this mock task will be passed when the export is happening outside async task framework
+# see iaso/tests/api/test_enketo.py
+class InMemoryTask:
+    def __init__(self):
+        self.progress_message = ""
+        self.error = None
+        self.has_error = False
+        self.exception = None
+
+    def stop_if_killed(self):
+        pass
+
+    def report_progress_and_stop_if_killed(
+        self, progress_value=None, progress_message=None, end_value=None, prepend_progress=False
+    ):
+        pass
+
+    def report_success_with_result(self, message=None, result_data=None):
+        pass
+
+    def terminate_with_error(self, message=None, exception=None):
+        logger.warn(f"InMemoryTask {self} ended in error", message, exception)
+        self.error = message
+        self.has_error = True
+        self.exception = exception
+
+    def refresh_from_db(self):
+        pass
 
 
 class Instance(models.Model):
@@ -615,7 +649,7 @@ class Instance(models.Model):
             return None
 
     def export(self, launcher=None, force_export=False):
-        from iaso.dhis2.datavalue_exporter import DataValueExporter
+        from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError
         from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
@@ -624,9 +658,11 @@ class Instance(models.Model):
                 launcher=launcher,
                 force_export=force_export,
             )
-
-            DataValueExporter().export_instances(export_request)
+            task = InMemoryTask()
+            DataValueExporter().export_instances(export_request, task)
             self.refresh_from_db()
+            if task.has_error:
+                raise InstanceExportError(str(task.error), {}, [task.error])
         except NothingToExportError:
             print("Export failed for instance", self)
 

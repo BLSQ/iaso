@@ -17,7 +17,18 @@ from .pages import IFRAME, POWERBI, RAW, SUPERSET, TEXT, Page
 from .payments import Payment, PaymentLot, PotentialPayment
 from .project import Project
 from .reports import Report, ReportVersion
+from .stocks import (
+    StockImpacts,
+    StockItem,
+    StockItemRule,
+    StockKeepingUnit,
+    StockKeepingUnitChildren,
+    StockLedgerItem,
+    StockRulesVersion,
+    StockRulesVersionsStatus,
+)
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
+from .task import Task, TaskLog
 from .tenant_users import TenantUser
 from .workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
@@ -51,6 +62,7 @@ __all__ = [
     "InstanceLock",
     "InstanceFile",
     "InstanceQuerySet",
+    "KilledException",
     "MetricType",
     "MetricValue",
     "OrgUnit",
@@ -68,9 +80,27 @@ __all__ = [
     "Report",
     "ReportVersion",
     "SourceVersion",
+    "StockKeepingUnit",
+    "StockKeepingUnitChildren",
+    "StockImpacts",
+    "StockItem",
+    "StockItemRule",
+    "StockLedgerItem",
+    "StockRulesVersion",
+    "StockRulesVersionsStatus",
+    "STATUS_TYPE_CHOICES",
+    "QUEUED",
+    "RUNNING",
+    "ERRORED",
+    "EXPORTED",
+    "SUCCESS",
+    "SKIPPED",
+    "KILLED",
     "StorageDevice",
     "StorageLogEntry",
     "StoragePassword",
+    "Task",
+    "TaskLog",
     "Team",
     "TenantUser",
     "Workflow",

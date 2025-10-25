@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Change proposals for {name}',
         id: 'iaso.label.reviewChangeProposal',
     },
+    orgUnit: {
+        id: 'iaso.instance.org_unit',
+        defaultMessage: 'Org Unit',
+    },
     orgUnitType: {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
@@ -306,6 +310,11 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Search by ID or multiple IDs at once, separated by a comma or a space. E.g. “132,654”',
     },
+    searchOrgUnitInfos: {
+        id: 'iaso.orgUnits.searchParams',
+        defaultMessage:
+            'Use prefix “refs:” for external org unit ID search, “ids:” for internal org unit ID search or “codes:” for org unit code search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321”, “refs: O6uvpzGd5pu, ImspTQPwCqd” or “codes: OU420, OU69”',
+    },
     bulkDeleteAction: {
         id: 'iaso.changeRequest.bulkDeleteAction',
         defaultMessage: 'Delete selected change requests?',
@@ -333,6 +342,22 @@ const MESSAGES = defineMessages({
     showValuesAtCreation: {
         id: 'iaso.changeRequest.showValuesAtCreation',
         defaultMessage: 'Show values at creation',
+    },
+    requestedFields: {
+        id: 'iaso.changeRequest.requestedFields',
+        defaultMessage: 'Fields with requested changes',
+    },
+    kind: {
+        id: 'iaso.changeRequest.kind',
+        defaultMessage: 'Kind',
+    },
+    orgUnitCreation: {
+        id: 'iaso.changeRequest.orgUnitCreation',
+        defaultMessage: 'Org Unit Creation',
+    },
+    orgUnitChange: {
+        id: 'iaso.changeRequest.orgUnitChange',
+        defaultMessage: 'Org Unit Change',
     },
 });
 

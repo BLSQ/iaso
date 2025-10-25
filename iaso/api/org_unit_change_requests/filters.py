@@ -8,6 +8,7 @@ from django_filters.widgets import CSVWidget
 from rest_framework.exceptions import ValidationError
 
 from iaso.api.common import parse_comma_separated_numeric_values
+from iaso.api.org_unit_search import apply_org_unit_search
 from iaso.models import OrgUnit, OrgUnitChangeRequest
 from iaso.models.payments import PaymentStatuses
 
@@ -30,6 +31,7 @@ class NumberInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
 
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     ids = NumberInFilter(field_name="id", widget=CSVWidget, label=_("IDs (comma-separated)"))
+    org_unit_search = django_filters.CharFilter(method="filter_org_unit_search", label=_("Org unit"))
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
     org_unit_type_id = django_filters.CharFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
@@ -56,6 +58,13 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         field_name="potential_payment", widget=CSVWidget, label=_("Potential Payment IDs (comma-separated)")
     )
     source_version_id = django_filters.NumberFilter(field_name="org_unit__version", label=_("Source version ID"))
+    # Note: CSVWidget cannot be used here because it doesn't properly handle PostgreSQL ArrayField overlap operations,
+    # causing "malformed array literal" errors when the widget passes string representations like "['name']"
+    # instead of actual Python lists that PostgreSQL expects for array operations.
+    requested_fields = django_filters.CharFilter(
+        method="filter_requested_fields", label=_("Requested fields (comma-separated)")
+    )
+    kind = CharInFilter(field_name="kind", widget=CSVWidget, label=_("Kind (comma-separated)"))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -140,3 +149,21 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             ) | Q(payment__status=PaymentStatuses.PENDING)
             return queryset.filter(pending_filter)
         return queryset.filter(payment__status=value)
+
+    def filter_requested_fields(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        if not value:
+            return queryset
+
+        requested_fields = [field.strip() for field in value.split(",") if field.strip()]
+
+        filters = Q()
+        for field in requested_fields:
+            filters |= Q(requested_fields__contains=["new_" + field])
+
+        return queryset.filter(filters)
+
+    def filter_org_unit_search(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        if not value:
+            return queryset
+
+        return apply_org_unit_search(queryset, value, "org_unit__")

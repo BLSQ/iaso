@@ -4,7 +4,8 @@ from rest_framework.response import Response
 
 from iaso.api.tasks.serializers import TaskSerializer
 from iaso.api.tasks.views import ExternalTaskModelViewSet
-from iaso.models.base import RUNNING, Task
+from iaso.models.base import RUNNING
+from iaso.models.task import Task
 
 
 PREPAREDNESS_TASK_NAME = "Refresh Preparedness dashboard data"

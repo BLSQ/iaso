@@ -37,14 +37,21 @@ class ETL:
         account = entity_type.account
         return account
 
-    def retrieve_entities(self):
+    def get_updated_entity_ids(self, updated_at=None):
+        entities = Instance.objects.filter(entity__entity_type__code__in=self.types)
+        if updated_at is not None:
+            entities = entities.filter(updated_at__gte=updated_at)
+        entities = entities.values("entity_id").distinct()
+        beneficiary_ids = list(map(lambda entity: entity["entity_id"], entities))
+        return list(set(beneficiary_ids))
+
+    def retrieve_entities(self, entity_ids):
         steps_id = ETL().steps_to_exclude()
-        updated_at = date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__code__in=self.types)
+            .filter(entity__id__in=entity_ids)
             .filter(json__isnull=False)
             .filter(form__isnull=False)
-            .filter(updated_at__gte=updated_at)
             .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
@@ -68,7 +75,7 @@ class ETL:
                 "source_created_at",
             )
         )
-        return Paginator(beneficiaries, 200)
+        return Paginator(beneficiaries, 5000)
 
     def existing_beneficiaries(self):
         existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
@@ -271,6 +278,8 @@ class ETL:
             "assistance_admission_2nd_visit_otp",
             "child_assistance_admission",
             "child_assistance_admission_2",
+            "child_assistance_admission_2_u6",
+            "assistance_u6",
             "ethiopia_child_assistance_follow_up",
             "wfp_coda_pbwg_assistance",
             "wfp_coda_pbwg_assistance_followup",
@@ -578,12 +587,10 @@ class ETL:
                             sub_step["instance_id"],
                         )
                         all_steps.append(current_step)
-        save_steps = Step.objects.bulk_create(all_steps)
-        return save_steps
+        return all_steps
 
     def save_visit(self, visits, journey):
         saved_visits = []
-        created_visits = None
         visit_number = 0
         for current_visit in visits:
             visit = Visit()
@@ -599,13 +606,11 @@ class ETL:
                 whz_color = "Green"
             visit.whz_color = whz_color
             visit.journey = journey
-            orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
-            visit.org_unit = orgUnit
+            visit.org_unit_id = current_visit["org_unit_id"]
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
             visit_number += 1
-        created_visits = Visit.objects.bulk_create(saved_visits)
-        return created_visits
+        return saved_visits
 
     def followup_visits_at_next_visit_date(self, visits, formIds, next_visit__date__, secondNextVisitDate):
         followup_visits_in_period = []
@@ -731,15 +736,12 @@ class ETL:
         journey.end_date = record.get("end_date", None)
         journey.duration = record.get("duration", None)
 
-        journey.save()
-
         return journey
 
     def save_monthly_journey(self, monthly_journey, account):
         monthly_Statistic = MonthlyStatistics()
-        orgUnit = OrgUnit.objects.get(id=monthly_journey.get("org_unit"))
-
-        monthly_Statistic.org_unit = orgUnit
+        org_unit_id = monthly_journey.get("org_unit")
+        monthly_Statistic.org_unit_id = org_unit_id
         monthly_Statistic.gender = monthly_journey.get("gender")
         monthly_Statistic.month = monthly_journey.get("month")
         monthly_Statistic.year = monthly_journey.get("year")

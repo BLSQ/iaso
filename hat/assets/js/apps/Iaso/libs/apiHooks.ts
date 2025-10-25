@@ -70,7 +70,8 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
           >
         | undefined;
     ignoreErrorCodes?: number[];
-    showSucessSnackBar?: boolean;
+    useApiErrorMessage?: boolean;
+    showSuccessSnackBar?: boolean;
     successSnackBar?: (
         msg: IntlMessage,
         data: any,
@@ -84,6 +85,37 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
     };
 };
 
+const getErrorFromDetails = (details: any) => {
+    if (typeof details === 'string') {
+        return details;
+    }
+    if (Array.isArray(details)) {
+        return details.join('\n');
+    }
+};
+
+const getApiErrorMessage = (error: any) => {
+    let errorMsg = '';
+
+    if (typeof error === 'string') {
+        return error;
+    }
+
+    if (!error.details) {
+        return error.message;
+    }
+
+    const keys = Object.keys(error.details);
+    if (keys.length === 1) {
+        return getErrorFromDetails(error.details[keys[0]]);
+    } else {
+        errorMsg = Object.keys(error.details)
+            .map(key => `${key}: ${getErrorFromDetails(error.details[key])}`)
+            .join('\n');
+    }
+    return errorMsg;
+};
+
 const useBaseSnackMutation = <
     Data = unknown,
     Error = unknown,
@@ -92,7 +124,7 @@ const useBaseSnackMutation = <
 >(
     mutationFn: MutationFunction<Data, any>,
     snackSuccessMessage: IntlMessage = MESSAGES.defaultMutationApiSuccess,
-    snackErrorMsg: IntlMessage = MESSAGES.defaultMutationApiError,
+    snackErrorMsg: IntlMessage | string = MESSAGES.defaultMutationApiError,
     invalidateQueryKey: QueryKey | undefined = undefined,
     options:
         | Omit<
@@ -100,7 +132,7 @@ const useBaseSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
         msg: IntlMessage,
@@ -113,6 +145,7 @@ const useBaseSnackMutation = <
             persist: boolean;
         };
     } = msg => succesfullSnackBar(undefined, msg),
+    useApiErrorMessage = false,
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
@@ -124,13 +157,17 @@ const useBaseSnackMutation = <
         onError: (error, variables, context) => {
             if (!ignoreErrorCodes.includes(error.status)) {
                 let errorMsg = snackErrorMsg;
+
                 if (error.status === 403) {
                     if (error.details.detail) {
                         errorMsg = error.details.detail;
                     } else if (!errorMsg) {
                         errorMsg = formatMessage(MESSAGES.permissionError);
                     }
+                } else if (useApiErrorMessage && error.details) {
+                    errorMsg = getApiErrorMessage(error) as any;
                 }
+
                 openSnackBar(errorSnackBar(undefined, errorMsg, error));
             }
             if (options.onError) {
@@ -139,7 +176,7 @@ const useBaseSnackMutation = <
             return undefined;
         },
         onSuccess: (data, variables, context) => {
-            if (snackSuccessMessage && showSucessSnackBar) {
+            if (snackSuccessMessage && showSuccessSnackBar) {
                 openSnackBar(successSnackBar(snackSuccessMessage, data));
             }
             if (invalidateQueryKey) {
@@ -179,7 +216,7 @@ export const useSnackMutation = <
               'mutationFn'
           >
         | undefined = {},
-    showSucessSnackBar = true,
+    showSuccessSnackBar = true,
     ignoreErrorCodes: number[] = [],
     successSnackBar: (
         msg: IntlMessage,
@@ -192,6 +229,7 @@ export const useSnackMutation = <
             persist: boolean;
         };
     } = msg => succesfullSnackBar(undefined, msg),
+    useApiErrorMessage = false,
 ): UseMutationResult<Data, Error, Variables, Context> => {
     let arg1;
     let arg2;
@@ -201,6 +239,7 @@ export const useSnackMutation = <
     let arg6;
     let arg7;
     let arg8;
+    let arg9;
     // Checking if the first argument passed is a dictionary
     const keys = Object.keys(mutationArg) ?? [];
     if (keys.length > 0 && keys.includes('mutationFn')) {
@@ -221,22 +260,26 @@ export const useSnackMutation = <
         ).options;
         arg6 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
-        ).showSucessSnackBar;
+        ).showSuccessSnackBar;
         arg7 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
         ).ignoreErrorCodes;
         arg8 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
         ).successSnackBar;
+        arg9 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).useApiErrorMessage;
     } else {
         arg1 = mutationArg;
         arg2 = snackSuccessMessage;
         arg3 = snackErrorMsg;
         arg4 = invalidateQueryKey;
         arg5 = options;
-        arg6 = showSucessSnackBar;
+        arg6 = showSuccessSnackBar;
         arg7 = ignoreErrorCodes;
         arg8 = successSnackBar;
+        arg9 = useApiErrorMessage;
     }
     return useBaseSnackMutation<Data, Error, Variables, Context>(
         arg1,
@@ -247,6 +290,7 @@ export const useSnackMutation = <
         arg6,
         arg7,
         arg8,
+        arg9,
     );
 };
 

@@ -5,7 +5,6 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
@@ -13,7 +12,7 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { grayText, usePaperStyles } from '../shared';
+import { usePaperStyles } from '../shared';
 
 type Props = {
     index: number;
@@ -27,7 +26,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
-    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
     const doses_per_vial =
         pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
@@ -35,6 +33,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     // Use refs to track focused state to reduce renders and avoid sluggish UI
     const dosesRef = useRef<boolean>(false);
     const vialsRef = useRef<boolean>(false);
+    const dosesPerVialsRef = useRef<boolean>(false);
 
     const documentErrors = useMemo(() => {
         return processErrorDocsBase(errors[index]?.file);
@@ -82,6 +81,26 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
         },
         [doses_per_vial, index, setFieldValue],
     );
+
+    const handleDosesPerVialUpdate = useCallback(
+        (value: number) => {
+            if (dosesPerVialsRef.current) {
+                const vialsShipped = Math.ceil(
+                    parseInt(
+                        (pre_alerts?.[index].doses_shipped ?? '0') as string,
+                        10,
+                    ) / value,
+                );
+
+                setFieldValue(`pre_alerts[${index}].doses_per_vial`, value);
+                setFieldValue(
+                    `pre_alerts[${index}].vials_shipped`,
+                    vialsShipped,
+                );
+            }
+        },
+        [index, setFieldValue, pre_alerts],
+    );
     const onDosesFocus = () => {
         dosesRef.current = true;
     };
@@ -93,6 +112,12 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     };
     const onVialsBlur = () => {
         vialsRef.current = false;
+    };
+    const onDosesPerVialFocus = () => {
+        dosesPerVialsRef.current = true;
+    };
+    const onDosesPerVialBlur = () => {
+        dosesPerVialsRef.current = false;
     };
 
     return (
@@ -204,17 +229,19 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 }
                                 required
                             />
-                            <Box>
-                                <Typography
-                                    variant="button"
-                                    sx={uneditableTextStyling}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}:`}{' '}
-                                    <NumberCell value={doses_per_vial} />
-                                </Typography>
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`pre_alerts[${index}].doses_per_vial`}
+                                component={NumberInput}
+                                disabled={
+                                    markedForDeletion ||
+                                    !pre_alerts?.[index].can_edit
+                                }
+                                onChange={handleDosesPerVialUpdate}
+                                onFocus={onDosesPerVialFocus}
+                                onBlur={onDosesPerVialBlur}
+                                required
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

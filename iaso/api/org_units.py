@@ -12,15 +12,13 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import IntegrityError
-from django.db.models import Count, IntegerField, Q, Value
+from django.db.models import Count, IntegerField, OuterRef, Q, Subquery, Value
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
-import iaso.permissions as core_permissions
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
@@ -30,6 +28,15 @@ from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSeri
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.models.microplanning import Assignment
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_REGISTRY_READ_PERMISSION,
+    CORE_REGISTRY_WRITE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 from iaso.utils import geojson_queryset
 from iaso.utils.gis import simplify_geom
 
@@ -47,7 +54,7 @@ class HasCreateOrgUnitPermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        if not request.user.has_perm(core_permissions.ORG_UNITS):
+        if not request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()):
             return False
 
         return True
@@ -59,23 +66,23 @@ class HasOrgUnitPermission(permissions.BasePermission):
             return True
 
         required_perms = [
-            request.user.has_perm(core_permissions.FORMS),
-            request.user.has_perm(core_permissions.ORG_UNITS),
-            request.user.has_perm(core_permissions.ORG_UNITS_READ),
-            request.user.has_perm(core_permissions.SUBMISSIONS),
-            request.user.has_perm(core_permissions.REGISTRY_WRITE),
-            request.user.has_perm(core_permissions.REGISTRY_READ),
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()),
+            request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name()),
+            request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name()),
+            request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name()),
         ]
         if is_polio_plugin_active():
-            from plugins.polio import permissions as polio_permissions
+            from plugins.polio.permissions import POLIO_PERMISSION
 
-            required_perms.append(request.user.has_perm(polio_permissions.POLIO))
+            required_perms.append(request.user.has_perm(POLIO_PERMISSION.full_name()))
 
         if not (request.user.is_authenticated and any(required_perms)):
             return False
 
-        read_only = request.user.has_perm(core_permissions.ORG_UNITS_READ) and not request.user.has_perm(
-            core_permissions.ORG_UNITS
+        read_only = request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name()) and not request.user.has_perm(
+            CORE_ORG_UNITS_PERMISSION.full_name()
         )
         if (read_only or obj.version.data_source.read_only) and request.method != "GET":
             return False
@@ -94,7 +101,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "{core_permissions.FORMS}", "{core_permissions.ORG_UNITS}" or "{core_permissions.SUBMISSIONS}" core_permissions.
+    "{CORE_FORMS_PERMISSION}", "{CORE_ORG_UNITS_PERMISSION}" or "{CORE_SUBMISSIONS_PERMISSION}" permissions.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
@@ -135,6 +142,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         - onlyDirectChildren: Filter direct children only ("true", "false")
         - orgUnitParentId: Filter by parent ID in hierarchy
         - orgUnitParentIds: Filter by multiple parent IDs (comma-separated)
+        - excludedOrgUnitParentIds: Filter by excluded parent IDs (comma-separated)
         - linkedTo: Filter by linked org unit
         - linkValidated: Filter by link validation status
         - linkSource: Filter by link source
@@ -222,7 +230,28 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.order_by(*order)
+        # Handle assignment-related ordering to avoid duplicates from soft-deleted assignments
+        processed_order = []
+        for order_field in order:
+            if order_field.startswith("assignment__") and not order_field.startswith("assignment__deleted_at"):
+                if "user__username" in order_field:
+                    # Use subquery to only consider non-deleted assignments
+                    is_desc = order_field.startswith("-")
+                    annotation_name = f"assignment_username_{'desc' if is_desc else 'asc'}"
+
+                    subquery = Subquery(
+                        Assignment.objects.filter(org_unit=OuterRef("pk"), deleted_at__isnull=True)
+                        .order_by(order_field.replace("assignment__", ""))
+                        .values("user__username")[:1]
+                    )
+                    queryset = queryset.annotate(**{annotation_name: subquery})
+                    processed_order.append(f"{'-' if is_desc else ''}{annotation_name}")
+                else:
+                    processed_order.append(order_field)
+            else:
+                processed_order.append(order_field)
+
+        queryset = queryset.order_by(*processed_order)
 
         if parquet_format:
             return self.anwser_with_parquet_file(request, queryset, profile)

@@ -434,6 +434,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.tooltip.label.roundsOnHold',
         defaultMessage: 'The attached round(s) have been put on hold',
     },
+    doses_per_vial: {
+        id: 'iaso.polio.form.doses_per_vial',
+        defaultMessage: 'Doses per vial',
+    },
 });
 
 export default MESSAGES;

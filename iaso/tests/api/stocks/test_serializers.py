@@ -658,6 +658,7 @@ class StockRulesVersionSerializerTestCase(TestCase):
         self.assertEqual(
             serializer.data,
             {
+                "id": self.version_1.pk,
                 "name": "Version 1",
                 "status": m.StockRulesVersionsStatus.DRAFT.value,
                 "rules": [

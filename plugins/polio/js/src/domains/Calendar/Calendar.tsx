@@ -92,8 +92,8 @@ export const Calendar: FunctionComponent = () => {
             show_test: false,
             on_hold: true,
         };
-        if (!isEmbedded) return options;
-        return { ...options, is_embedded: true };
+
+        return isEmbedded ? { ...options, is_embedded: true } : options;
     }, [
         orders,
         params.countries,

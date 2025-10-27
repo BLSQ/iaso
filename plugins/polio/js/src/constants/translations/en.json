@@ -582,6 +582,7 @@
     "iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING": "Pending liquidation of previous SIA funding",
     "iaso.polio.label.physical_inventory_add": "Add to Physical inventory",
     "iaso.polio.label.physical_inventory_remove": "Remove from Physical inventory",
+    "iaso.polio.label.planned": "Planned",
     "iaso.polio.label.plannedCampaign": "Planned campaign",
     "iaso.polio.label.plannedRound": "Planned round",
     "iaso.polio.label.playground": "At playground",

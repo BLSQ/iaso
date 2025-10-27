@@ -1,3 +1,5 @@
+import { ShortOrgUnit } from 'Iaso/domains/orgUnits/types/orgUnit';
+
 type Project = {
     id: number;
     name: string;
@@ -17,7 +19,7 @@ type StockKeepingUnitChild = {
 };
 type User = {
     id: number;
-    name: string;
+    username: string;
 };
 
 export type StockKeepingUnit = {
@@ -89,4 +91,23 @@ export type StockRulesVersion = {
     updated_at: number;
     updated_by?: User;
     deleted_at?: number;
+};
+
+export type StockItem = {
+    id: number;
+    org_unit: ShortOrgUnit;
+    sku: ShortSKU;
+    value: number;
+};
+
+export type StockLedgerItem = {
+    id: number;
+    org_unit: ShortOrgUnit;
+    sku: ShortSKU;
+    submission_id?: number;
+    question?: string;
+    value: number;
+    impact: Impact;
+    created_at: number;
+    created_by: User;
 };

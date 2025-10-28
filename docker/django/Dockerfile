@@ -10,8 +10,6 @@ RUN apt-get update && apt-get --yes install \
 		nginx \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY plugins/trypelim/build_scripts/nginx.conf /etc/nginx/sites-available/default
-
 WORKDIR /opt/app
 
 # install python dependencies

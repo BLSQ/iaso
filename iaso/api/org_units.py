@@ -42,6 +42,7 @@ from iaso.utils.gis import simplify_geom
 
 from ..plugins import is_polio_plugin_active
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
+from .serializers import OrgUnitImportSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -1020,52 +1021,36 @@ def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True)
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     if project.account.default_version.data_source.read_only:
-        raise Exception("Creation of org unit not authorized on default data source")
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
+        raise ValidationError("Creation of org unit not authorized on default data source")
 
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+    for org_unit in org_units:
+        serializer = OrgUnitImportSerializer(data=org_unit)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        uuid = data.get("id")
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
 
         if created:
             org_unit_db.custom = True
             org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
             org_unit_db.validated = False  # legacy field, to be removed
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                # there exist versions of the mobile app in the wild with both parentId and parent_id
-                parent_id = org_unit.get("parent_id", None)
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
+            org_unit_db.name = data.get("name")
+            org_unit_db.accuracy = data.get("accuracy")
+            org_unit_db.location = data.get("location")
+            org_unit_db.parent_id = data.get("parent_id")
+            org_unit_db.org_unit_type_id = data.get("org_unit_type_id")
+            org_unit_db.source = "API"
+            org_unit_db.version = project.account.default_version
 
-            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
-
-            t = org_unit.get("created_at", None)
+            t = data.get("created_at")
             if t and set_source_created_at:
                 org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
 
             if user and not user.is_anonymous:
                 org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
 
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
             org_unit_db.save()
+            new_org_units.append(org_unit_db)
+
     return new_org_units

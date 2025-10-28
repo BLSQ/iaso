@@ -89,7 +89,7 @@ openhexa.toolbox==2.7.0
 
 # Monitoring.
 # ------------------------------------------------------------------------------
-sentry-sdk[django]==1.38.0  # https://github.com/getsentry/sentry-python/tags
+sentry-sdk[django]==2.42.1  # https://github.com/getsentry/sentry-python/tags
 
 # Only used for WFP plugin.
 # ------------------------------------------------------------------------------

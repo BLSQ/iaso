@@ -156,6 +156,8 @@ class Dhis2SyncResults(models.Model):
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
     status = models.TextField(null=True)
     period = models.CharField(max_length=8, null=True, blank=True)
+    month = models.CharField(max_length=8, null=True, blank=True)
+    year = models.CharField(max_length=6, null=True, blank=True)
     response = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

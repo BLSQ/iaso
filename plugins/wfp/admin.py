@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit
+from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit, Dhis2SyncResults
 
 
 @admin.register(Beneficiary)
@@ -56,7 +56,7 @@ class JourneyAdmin(admin.ModelAdmin):
 
 @admin.register(Visit)
 class VisitAdmin(admin.ModelAdmin):
-    list_display = ("id", "date", "number", "muac_size","whz_color","org_unit", "journey")
+    list_display = ("id", "date", "number", "muac_size", "whz_color", "org_unit", "journey")
     raw_id_fields = ("org_unit", "journey")
     list_filter = (
         "date",
@@ -131,3 +131,18 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "month__icontains",
         "year__icontains",
     )
+
+
+@admin.register(Dhis2SyncResults)
+class Dhis2SyncResults(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "org_unit_dhis2_id",
+        "period",
+        "nutrition_programme",
+        "programme_type",
+        "response",
+        "account",
+        "status",
+    )
+    list_filter = ("period", "account", "status")

@@ -124,6 +124,7 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "account__name",
         "org_unit__id",
         "org_unit__name",
+        "dhis2_id",
         "admission_type",
         "nutrition_programme",
         "programme_type",
@@ -138,12 +139,24 @@ class Dhis2SyncResults(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit_dhis2_id",
+        "data_set_id",
         "period",
+        "month",
+        "year",
         "programme_type",
         "response",
         "account",
         "status",
         "created_at",
-        "updated_at"
+        "updated_at",
     )
-    list_filter = ("period", "account", "status")
+    list_filter = ("account", "programme_type", "status", "month", "year")
+    search_fields = (
+        "account__name",
+        "org_unit_dhis2_id",
+        "data_set_id",
+        "period",
+        "year__icontains",
+        "month__icontains",
+        "year__icontains",
+    )

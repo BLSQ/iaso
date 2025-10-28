@@ -90,7 +90,7 @@ def etl_ssd(all_data=None):
 
     ETL().aggregating_data_to_push_to_dhis2(child_account, "U5")
 
-    Dhis2().run(entity_type_U5_code)
+    Dhis2().save_dhis2_sync_results(entity_type_U5_code)
 
     entity_type_pbwg_code = "ssd_pbwg"
     pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()

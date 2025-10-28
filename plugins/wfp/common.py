@@ -940,8 +940,8 @@ class ETL:
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
             .values()
             .filter(programme_type=programme, account=account)
-            .filter(org_unit_id__in=[758, 622, 43])
-            .exclude(period="202510")
+            #.filter(org_unit_id__in=[758, 622, 43])
+            #.exclude(period="202510")
         )
         monthlyData = list(monthlyStatistics)
         journey_by_org_units = groupby(monthlyData, key=itemgetter("org_unit_id"))
@@ -1029,7 +1029,6 @@ class ETL:
                                 dataElement_by_gender = dataElement_by_sub_category[gender]
                                 for sub_category in sub_categories:
                                     dataValue = dataElement_by_gender.get(sub_category)
-                                    print("GETTING EACH VALUE ...:", dataValue)
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": row[sub_category]})
 

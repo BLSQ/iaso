@@ -954,7 +954,6 @@ class ETL:
 
         for org_unit, journeys in journey_by_org_units:
             journeys = list(journeys)
-            print("ORG UNIT ", org_unit)
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
             row["dataSet"] = "m2GaBFDJDeV"
             row["orgUnit"] = journeys[0]["dhis2_id"]

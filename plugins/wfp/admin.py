@@ -139,10 +139,11 @@ class Dhis2SyncResults(admin.ModelAdmin):
         "id",
         "org_unit_dhis2_id",
         "period",
-        "nutrition_programme",
         "programme_type",
         "response",
         "account",
         "status",
+        "created_at",
+        "updated_at"
     )
     list_filter = ("period", "account", "status")

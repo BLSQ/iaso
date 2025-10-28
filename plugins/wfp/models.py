@@ -153,7 +153,6 @@ class Dhis2SyncResults(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
     org_unit_dhis2_id = models.TextField(null=True)
-    nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
     status = models.TextField(null=True)
     period = models.CharField(max_length=8, null=True, blank=True)

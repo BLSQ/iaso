@@ -745,7 +745,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"])
-    def summary(self, request, pk=None):
+    def summary(self, _, pk=None):
         """
         Retrieve a summary of vaccine stock for a given VaccineStock ID.
 
@@ -768,13 +768,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calculator = VaccineStockCalculator(vaccine_stock)
 
-        total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
+        _, total_usable_doses = calculator.get_total_of_usable_vials()
         (
-            total_unusable_vials,
+            _,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
         (
-            total_earmarked_vials,
+            _,
             total_earmarked_doses,
         ) = calculator.get_total_of_earmarked()
 
@@ -782,10 +782,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
-            "total_usable_vials": total_usable_vials,
-            "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            "total_earmarked_vials": total_earmarked_vials,
             "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }

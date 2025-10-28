@@ -670,21 +670,15 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "properties": {
                 "country_name": {"type": "string"},
                 "vaccine_type": {"type": "string"},
-                "total_usable_vials": {"type": "integer"},
-                "total_unusable_vials": {"type": "integer"},
                 "total_usable_doses": {"type": "integer"},
                 "total_unusable_doses": {"type": "integer"},
-                "total_earmarked_vials": {"type": "integer"},
                 "total_earmarked_doses": {"type": "integer"},
             },
             "required": [
                 "country_name",
                 "vaccine_type",
-                "total_usable_vials",
-                "total_unusable_vials",
                 "total_usable_doses",
                 "total_unusable_doses",
-                "total_earmarked_vials",
                 "total_earmarked_doses",
             ],
         }
@@ -698,11 +692,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 23)
-        self.assertEqual(data["total_unusable_vials"], 27)
         self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
-        self.assertEqual(data["total_earmarked_vials"], 0)  # No earmarked stock in test data
         self.assertEqual(data["total_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_delete(self):
@@ -1341,11 +1332,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertIsInstance(data["total_usable_vials"], int)
-        self.assertIsInstance(data["total_unusable_vials"], int)
         self.assertIsInstance(data["total_usable_doses"], int)
         self.assertIsInstance(data["total_unusable_doses"], int)
-        self.assertIsInstance(data["total_earmarked_vials"], int)
         self.assertIsInstance(data["total_earmarked_doses"], int)
 
     def test_user_with_read_only_can_see_usable_vials(self):
@@ -1814,7 +1802,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             quantities_ordered_in_doses=500,
         )
 
-        other_vaccine_arrival_report = pm.VaccineArrivalReport.objects.create(
+        _ = pm.VaccineArrivalReport.objects.create(
             request_form=other_vaccine_request_form,
             arrival_report_date=self.now - datetime.timedelta(days=5),
             doses_received=400,
@@ -1929,7 +1917,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user_ro_perms)
 
         # Create multiple arrival reports with the same doses_per_vial
-        vaccine_arrival_report_2 = pm.VaccineArrivalReport.objects.create(
+        _ = pm.VaccineArrivalReport.objects.create(
             request_form=self.vaccine_request_form,
             arrival_report_date=self.now - datetime.timedelta(days=3),
             doses_received=300,
@@ -1940,7 +1928,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             expiration_date=self.now + datetime.timedelta(days=180),
         )
 
-        vaccine_arrival_report_3 = pm.VaccineArrivalReport.objects.create(
+        _ = pm.VaccineArrivalReport.objects.create(
             request_form=self.vaccine_request_form,
             arrival_report_date=self.now - datetime.timedelta(days=2),
             doses_received=200,

@@ -1011,7 +1011,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units: List[Dict], user, app_id):
+def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True):
+    """Import a list of org units.
+
+    The `set_source_created_at` parameter was added to preserve legacy behavior on
+    some endpoints, but should be True in most cases.
+    """
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     if project.account.default_version.data_source.read_only:
@@ -1030,6 +1035,7 @@ def import_data(org_units: List[Dict], user, app_id):
         if created:
             org_unit_db.custom = True
             org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
+            org_unit_db.validated = False  # legacy field, to be removed
             org_unit_db.name = org_unit.get("name", None)
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
@@ -1050,10 +1056,10 @@ def import_data(org_units: List[Dict], user, app_id):
             org_unit_db.org_unit_type_id = org_unit_type_id
 
             t = org_unit.get("created_at", None)
-            if t:
+            if t and set_source_created_at:
                 org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
 
-            if not user.is_anonymous:
+            if user and not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"
             if org_unit_location:

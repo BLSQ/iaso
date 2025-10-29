@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Beneficiary, Journey, MonthlyStatistics, Step, Visit, Dhis2SyncResults
+from .models import Beneficiary, Dhis2SyncResults, Journey, MonthlyStatistics, Step, Visit
 
 
 @admin.register(Beneficiary)
@@ -112,6 +112,8 @@ class MonthlyStatisticsAdmin(admin.ModelAdmin):
         "whz_score_2",
         "whz_score_3",
         "oedema",
+        "muac_under_23",
+        "muac_above_23",
         "exit_type",
         "beneficiary_with_exit_type",
         "number_visits",
@@ -139,6 +141,7 @@ class Dhis2SyncResults(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit_dhis2_id",
+        "org_unit",
         "data_set_id",
         "period",
         "month",
@@ -154,6 +157,7 @@ class Dhis2SyncResults(admin.ModelAdmin):
     search_fields = (
         "account__name",
         "org_unit_dhis2_id",
+        "org_unit__id",
         "data_set_id",
         "period",
         "year__icontains",

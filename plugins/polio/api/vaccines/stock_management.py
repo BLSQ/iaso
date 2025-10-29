@@ -984,20 +984,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 }
             )
         return Response({"results": results}, status=status.HTTP_200_OK)
-        # country = vaccine_stock.country
-        # vaccine = vaccine_stock.vaccine
-        # values = (
-        #     VaccineArrivalReport.objects.filter(
-        #         request_form__campaign__account=request.user.iaso_profile.account,  # filter by account
-        #         request_form__campaign__country=country,
-        #         request_form__vaccine_type=vaccine,
-        #     )
-        #     .values_list("doses_per_vial", flat=True)
-        #     .distinct()
-        # )
-        # return Response(
-        #     {"results": [{"label": f"{value}", "value": value} for value in values]}, status=status.HTTP_200_OK
-        # )
 
 
 class EmbeddedVaccineStockManagementViewset(VaccineStockManagementViewSet):

@@ -20,7 +20,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
@@ -1026,33 +1026,24 @@ def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True)
     if project.account.default_version.data_source.read_only:
         raise ValidationError("Creation of org unit not authorized on default data source")
 
-    for org_unit in org_units:
-        serializer = OrgUnitImportSerializer(data=org_unit)
+    # common values to all new org units
+    extra_save_kwargs = {
+        "custom": True,
+        "validation_status": OrgUnit.VALIDATION_NEW,
+        "source": "API",
+        "version": project.account.default_version,
+        "creator": user if (user and not user.is_anonymous) else None,
+    }
+
+    serializer_context = {"set_source_created_at": set_source_created_at}
+
+    for org_unit_data in org_units:
+        serializer = OrgUnitImportSerializer(data=org_unit_data, context=serializer_context)
         serializer.is_valid(raise_exception=True)
-        data = serializer.validated_data
 
-        uuid = data.get("id")
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+        org_unit_db = serializer.save(**extra_save_kwargs)
 
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
-            org_unit_db.name = data.get("name")
-            org_unit_db.accuracy = data.get("accuracy")
-            org_unit_db.location = data.get("location")
-            org_unit_db.parent_id = data.get("parent_id")
-            org_unit_db.org_unit_type_id = data.get("org_unit_type_id")
-            org_unit_db.source = "API"
-            org_unit_db.version = project.account.default_version
-
-            t = data.get("created_at")
-            if t and set_source_created_at:
-                org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
-
-            if user and not user.is_anonymous:
-                org_unit_db.creator = user
-
-            org_unit_db.save()
+        if org_unit_db:
             new_org_units.append(org_unit_db)
 
     return new_org_units

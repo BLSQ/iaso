@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import Q
 from rest_framework import serializers
 
+from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
 from iaso.models import Group, OrgUnit, OrgUnitType
@@ -250,18 +251,41 @@ class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSer
         fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id", "org_unit_type_short_name"]
 
 
-class OrgUnitImportSerializer(serializers.Serializer):
+class OrgUnitImportSerializer(serializers.ModelSerializer):
     """Helper class for the validation and creation of OrgUnit instances from API data."""
 
-    id = serializers.CharField()
+    # Map the api's incoming 'id' field to the model's 'uuid' field.
+    id = serializers.CharField(source="uuid")
+
     name = serializers.CharField(required=False, allow_null=True)
     accuracy = serializers.FloatField(required=False, allow_null=True)
-    created_at = serializers.FloatField(required=False, allow_null=True)
     location = ThreeDimPointField(required=False, allow_null=True, write_only=True)
 
-    # internal fields
+    # internal non-model fields
+    created_at = serializers.FloatField(required=False, allow_null=True, write_only=True)
     parent_lookup = serializers.CharField(required=False, allow_null=True, write_only=True)
     org_unit_type_id_lookup = serializers.CharField(required=False, allow_null=True, write_only=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = [
+            "id",
+            "name",
+            "accuracy",
+            "location",
+            "created_at",
+            "parent_lookup",
+            "org_unit_type_id_lookup",
+            "parent_id",
+            "org_unit_type_id",
+        ]
+        extra_kwargs = {
+            "created_at": {"write_only": True},
+            "parent_lookup": {"write_only": True},
+            "org_unit_type_id_lookup": {"write_only": True},
+            "parent_id": {"required": False},
+            "org_unit_type_id": {"required": False},
+        }
 
     def to_internal_value(self, data):
         """Pre-process the incoming dictionary and handle legacy data formats."""
@@ -316,3 +340,23 @@ class OrgUnitImportSerializer(serializers.Serializer):
             data["org_unit_type_id"] = org_unit_type_id
 
         return data
+
+    def create(self, validated_data):
+        """Implement get_or_create logic and set model fields not provided by the client."""
+        uuid = validated_data.pop("uuid")
+        org_unit, created = OrgUnit.objects.get_or_create(uuid=uuid)
+
+        if not created:
+            return None  # only handle new org units
+
+        t = validated_data.pop("created_at", None)
+
+        for attr, value in validated_data.items():
+            setattr(org_unit, attr, value)
+
+        set_source_created_at = self.context.get("set_source_created_at", True)
+        if t and set_source_created_at:
+            org_unit.source_created_at = timestamp_to_utc_datetime(int(t))
+
+        org_unit.save()
+        return org_unit

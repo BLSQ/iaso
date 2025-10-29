@@ -34,6 +34,7 @@ from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account
 from iaso.models.entity import UserNotAuthError
+from iaso.models.json_config import Config
 from iaso.models.microplanning import Team
 from iaso.models.project import Project
 from iaso.models.task import Task
@@ -46,6 +47,8 @@ from iaso.utils.virus_scan.model import ModelWithFile
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
+
+DOSES_PER_VIAL_CONFIG_SLUG = "vaccine_doses_per_vial"
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -2792,3 +2795,32 @@ class VaccineStockCalculator:
             self.list_of_earmarked = results
 
         return results
+
+    def get_stock_by_vaccine_presentation(self):
+        presentation_config = Config.objects.filter(slug=DOSES_PER_VIAL_CONFIG_SLUG).first()
+        if not presentation_config:
+            return None
+
+        options = presentation_config.content[self.vaccine_stock.vaccine]
+        if not options:
+            return None
+        results = {}
+        for option in options:
+            results[str(option)] = self._get_stock_for_presentation(option)[1]
+        return results
+
+    def _get_stock_for_presentation(self, option: str):
+        usable_vials = self.get_list_of_usable_vials()
+        total_usable_vials = 0
+        total_usable_doses = 0
+        for vial in usable_vials:
+            if vial["doses_per_vial"] == option:
+                if vial["vials_in"]:
+                    total_usable_vials += vial["vials_in"]
+                if vial["doses_in"]:
+                    total_usable_doses += vial["doses_in"]
+                if vial["vials_out"]:
+                    total_usable_vials -= vial["vials_out"]
+                if vial["doses_out"]:
+                    total_usable_doses -= vial["doses_out"]
+        return total_usable_vials, total_usable_doses

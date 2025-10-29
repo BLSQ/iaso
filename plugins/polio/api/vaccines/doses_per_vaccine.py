@@ -5,6 +5,7 @@ from rest_framework.viewsets import GenericViewSet
 from iaso.api.common import HasPermission
 from iaso.api.config import ConfigSerializer
 from iaso.models.json_config import Config
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG
 from plugins.polio.permissions import (
     POLIO_CONFIG_PERMISSION,
     POLIO_PERMISSION,
@@ -47,7 +48,7 @@ class DosesPerVaccineViewset(ListModelMixin, GenericViewSet):
         ),
     ]
     serializer_class = ConfigSerializer
-    CONFIG_SLUG = "vaccine_doses_per_vial"
+    CONFIG_SLUG = DOSES_PER_VIAL_CONFIG_SLUG
 
     def get_queryset(self):
         return Config.objects.filter(slug=self.CONFIG_SLUG)

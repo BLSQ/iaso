@@ -1,5 +1,6 @@
 from iaso.models.json_config import Config
 from iaso.test import APITestCase
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG
 from plugins.polio.permissions import POLIO_PERMISSION
 
 
@@ -18,7 +19,7 @@ class DosesPerVaccineEndpointTestCase(APITestCase):
 
         # Relevant config for the endpoint
         cls.content = {"mOPV2": [50], "nOPV2": [20, 50], "bOPV": [10, 20]}
-        Config.objects.create(slug="vaccine_doses_per_vial", content=cls.content)
+        Config.objects.create(slug=DOSES_PER_VIAL_CONFIG_SLUG, content=cls.content)
 
         # Irrelevant config should be ignored by the queryset filter
         Config.objects.create(slug="unrelated_config", content={"foo": "bar"})
@@ -44,5 +45,5 @@ class DosesPerVaccineEndpointTestCase(APITestCase):
         # ConfigSerializer fields: created_at, updated_at, key (slug), data (content)
         self.assertIn("created_at", item)
         self.assertIn("updated_at", item)
-        self.assertEqual(item["key"], "vaccine_doses_per_vial")
+        self.assertEqual(item["key"], DOSES_PER_VIAL_CONFIG_SLUG)
         self.assertEqual(item["data"], self.content)

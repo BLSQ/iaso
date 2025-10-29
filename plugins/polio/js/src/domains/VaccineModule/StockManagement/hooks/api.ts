@@ -253,9 +253,18 @@ export const useGetEarmarkedList = (
     });
 };
 
-export const useGetDosesOptions = (stockId: number) => {
+export const useGetDosesOptions = (
+    stockId: number,
+): UseQueryResult<
+    {
+        label: string;
+        value: number;
+        doses_available: number;
+        unusable_doses: number;
+    }[]
+> => {
     return useSnackQuery({
-        queryKey: ['earmarked-list', 'options'],
+        queryKey: ['doses_options', stockId],
         queryFn: () => getRequest(`${apiUrl}doses_options/?stockId=${stockId}`),
         options: {
             ...options,

@@ -29,14 +29,18 @@ type IncidentType =
     | 'missing'
     | 'stealing'
     | 'physical_inventory'
+    | 'physical_inventory_add'
+    | 'physical_inventory_remove'
     | 'broken'
     | 'unreadable_label'
     | 'return';
 
-export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
+export const useIncidentOptions = (
+    hasUsableStock: boolean,
+): DropdownOptions<IncidentType>[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        return [
+        const optionsForUsable: DropdownOptions<IncidentType>[] = [
             {
                 label: formatMessage(MESSAGES[VM_REACHED_DISCARD_POINT]),
                 value: VM_REACHED_DISCARD_POINT,
@@ -58,14 +62,6 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 value: STEALING,
             },
             {
-                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_ADD]),
-                value: PHYSICAL_INVENTORY_ADD,
-            },
-            {
-                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_REMOVE]),
-                value: PHYSICAL_INVENTORY_REMOVE,
-            },
-            {
                 label: formatMessage(MESSAGES[BROKEN]),
                 value: BROKEN,
             },
@@ -73,7 +69,22 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
                 value: UNREADABLE_LABEL,
             },
-        ].sort(
+        ];
+        const inventoryOptions: DropdownOptions<IncidentType>[] = [
+            {
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_ADD]),
+                value: PHYSICAL_INVENTORY_ADD,
+            },
+            {
+                label: formatMessage(MESSAGES[PHYSICAL_INVENTORY_REMOVE]),
+                value: PHYSICAL_INVENTORY_REMOVE,
+            },
+        ];
+
+        if (hasUsableStock) {
+            inventoryOptions.concat(optionsForUsable);
+        }
+        return inventoryOptions.sort(
             (
                 option1: DropdownOptions<IncidentType>,
                 option2: DropdownOptions<IncidentType>,

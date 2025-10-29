@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -13,15 +18,11 @@ import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { VaccineForStock } from '../../../../../constants/types';
 import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
-import {
-    useCampaignOptions,
-    useGetDosesOptions,
-    useSaveEarmarked,
-} from '../../hooks/api';
+import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useEarmarkOptions } from './dropdownOptions';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
 import { useEarmarkValidation } from './validation';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 type Props = {
     earmark?: any;
@@ -31,6 +32,12 @@ type Props = {
     countryName: string;
     vaccine: VaccineForStock;
     vaccineStockId: string;
+    dosesOptions?: {
+        label: string;
+        value: number;
+        doses_available: number;
+        unusable_doses: number;
+    }[];
 };
 
 export const CreateEditEarmarked: FunctionComponent<Props> = ({
@@ -40,11 +47,13 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveEarmarked();
-    const { data: dosesOptions, isLoading: isLoadingDoses } =
-        useGetDosesOptions(parseInt(vaccineStockId, 10));
+    const defaultDosesPerVial =
+        //@ts-ignore
+        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const validationSchema = useEarmarkValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -56,7 +65,7 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
             temporary_campaign_name: earmark?.temporary_campaign_name,
             vials_earmarked: earmark?.vials_earmarked || 0,
             doses_earmarked: earmark?.doses_earmarked || 0,
-            doses_per_vial: earmark?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: earmark?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
@@ -76,7 +85,24 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
         round => round.value === formik.values.round_number,
     );
     const earmarkTypeOptions = useEarmarkOptions();
-
+    const availableDosesPresentations: DropdownOptions<number>[] =
+        useMemo(() => {
+            const availableOptions: DropdownOptions<number>[] = dosesOptions
+                ? dosesOptions.filter(option => option.doses_available > 0)
+                : [];
+            const availableValues = availableOptions.map(o => o.value);
+            // If the form A has already been encoded, we add the value to avoid putting the form in error
+            if (
+                earmark?.doses_per_vial &&
+                !availableValues.includes(earmark.doses_per_vial)
+            ) {
+                availableOptions.push({
+                    label: `${earmark.doses_per_vial}`,
+                    value: earmark.doses_per_vial,
+                });
+            }
+            return availableOptions;
+        }, [dosesOptions, earmark?.doses_per_vial]);
     const handleVialsChange = useCallback(
         value => {
             setFieldValue('vials_earmarked', value);
@@ -166,8 +192,7 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
                         component={SingleSelect}
-                        options={dosesOptions}
-                        isLoading={isLoadingDoses}
+                        options={availableDosesPresentations}
                     />
                 </Box>
                 <Box mb={2}>

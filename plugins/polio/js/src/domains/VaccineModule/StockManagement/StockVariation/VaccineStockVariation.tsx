@@ -22,6 +22,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { DESTRUCTION, EARMARKED, FORM_A, INCIDENT } from '../constants';
 import {
     useGetDestructionList,
+    useGetDosesOptions,
     useGetEarmarkedList,
     useGetFormAList,
     useGetIncidentList,
@@ -72,6 +73,11 @@ export const VaccineStockVariation: FunctionComponent = () => {
         baseUrl,
     });
 
+    const { data: dosesOptions } = useGetDosesOptions(parseInt(params.id, 10));
+    const hasUsableStock =
+        dosesOptions?.some(option => option.doses_available > 0) ?? false;
+    const hasUnusableStock =
+        dosesOptions?.some(option => option.unusable_doses > 0) ?? false;
     const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
         params,
         tab === FORM_A,
@@ -154,10 +160,13 @@ export const VaccineStockVariation: FunctionComponent = () => {
                             >
                                 {tab === FORM_A && (
                                     <CreateFormA
-                                        iconProps={{}}
+                                        iconProps={{
+                                            disabled: !hasUsableStock,
+                                        }}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
+                                        dosesOptions={dosesOptions}
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -169,10 +178,13 @@ export const VaccineStockVariation: FunctionComponent = () => {
                             >
                                 {tab === DESTRUCTION && (
                                     <CreateDestruction
-                                        iconProps={{}}
+                                        iconProps={{
+                                            disabled: !hasUnusableStock,
+                                        }}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
+                                        dosesOptions={dosesOptions}
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -188,6 +200,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
+                                        dosesOptions={dosesOptions}
+                                        hasUsableStock={hasUsableStock}
+                                        hasUnusableStock={hasUnusableStock}
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -199,10 +214,13 @@ export const VaccineStockVariation: FunctionComponent = () => {
                             >
                                 {tab === EARMARKED && (
                                     <CreateEarmarked
-                                        iconProps={{}}
+                                        iconProps={{
+                                            disabled: !hasUsableStock,
+                                        }}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
+                                        dosesOptions={dosesOptions}
                                     />
                                 )}
                             </DisplayIfUserHasPerm>

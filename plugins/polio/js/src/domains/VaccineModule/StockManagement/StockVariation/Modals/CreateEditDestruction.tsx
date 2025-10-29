@@ -21,12 +21,11 @@ import {
 import { Vaccine } from '../../../../../constants/types';
 import {
     useCheckDestructionDuplicate,
-    useGetDosesOptions,
     useSaveDestruction,
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 type Props = {
     destruction?: any;
@@ -36,6 +35,12 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: {
+        label: string;
+        value: number;
+        doses_available: number;
+        unusable_doses: number;
+    }[];
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -45,12 +50,15 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
     const validationSchema = useDestructionValidation();
-    const { data: dosesOptions, isLoading: isLoadingDoses } =
-        useGetDosesOptions(parseInt(vaccineStockId, 10));
+
+    const defaultDosesPerVial =
+        //@ts-ignore
+        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const formik = useFormik<any>({
         initialValues: {
             id: destruction?.id,
@@ -59,8 +67,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            doses_per_vial:
-                destruction?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: destruction?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
             file: destruction?.file,
             comment: destruction?.comment ?? null,
@@ -68,6 +75,24 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         onSubmit: values => save(values),
         validationSchema,
     });
+    const availableDosesPresentations: DropdownOptions<number>[] =
+        useMemo(() => {
+            const availableOptions: DropdownOptions<number>[] = dosesOptions
+                ? dosesOptions.filter(option => option.unusable_doses > 0)
+                : [];
+            const availableValues = availableOptions.map(o => o.value);
+            // If the form A has already been encoded, we add the value to avoid putting the form in error
+            if (
+                destruction?.doses_per_vial &&
+                !availableValues.includes(destruction.doses_per_vial)
+            ) {
+                availableOptions.push({
+                    label: `${destruction.doses_per_vial}`,
+                    value: destruction.doses_per_vial,
+                });
+            }
+            return availableOptions;
+        }, [dosesOptions, destruction?.doses_per_vial]);
 
     const [debouncedDate] = useDebounce(
         formik.values.destruction_report_date,
@@ -146,8 +171,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
                         component={SingleSelect}
-                        options={dosesOptions}
-                        isLoading={isLoadingDoses}
+                        options={availableDosesPresentations}
                     />
                 </Box>
                 <Box mb={2}>

@@ -24,18 +24,12 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import {
-    dosesPerVial,
-    useSkipEffectUntilValue,
-} from '../../../SupplyChain/hooks/utils';
-import {
-    useCampaignOptions,
-    useGetDosesOptions,
-    useSaveFormA,
-} from '../../hooks/api';
+import { useSkipEffectUntilValue } from '../../../SupplyChain/hooks/utils';
+import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
 import InputComponent from 'Iaso/components/forms/InputComponent';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 type Props = {
     formA?: any;
@@ -45,6 +39,12 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: {
+        label: string;
+        value: number;
+        doses_available: number;
+        unusable_doses: number;
+    }[];
 };
 
 export type FormAFormValues = {
@@ -70,11 +70,14 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
-    const { data: dosesOptions, isLoading: isLoadingDoses } =
-        useGetDosesOptions(parseInt(vaccineStockId, 10));
+
+    const defaultDosesPerVial =
+        //@ts-ignore
+        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const validationSchema = useFormAValidation();
     const formik = useFormik<FormAFormValues>({
         initialValues: {
@@ -84,7 +87,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
-            doses_per_vial: formA?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: formA?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
             file: formA?.file,
             comment: formA?.comment ?? null,
@@ -98,6 +101,24 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         Boolean(formA?.alternative_campaign),
     );
 
+    const availableDosesPresentations: DropdownOptions<number>[] =
+        useMemo(() => {
+            const availableOptions: DropdownOptions<number>[] = dosesOptions
+                ? dosesOptions.filter(option => option.doses_available > 0)
+                : [];
+            const availableValues = availableOptions.map(o => o.value);
+            // If the form A has already been encoded, we add the value to avoid putting the form in error
+            if (
+                formA?.doses_per_vial &&
+                !availableValues.includes(formA.doses_per_vial)
+            ) {
+                availableOptions.push({
+                    label: `${formA.doses_per_vial}`,
+                    value: formA.doses_per_vial,
+                });
+            }
+            return availableOptions;
+        }, [dosesOptions, formA?.doses_per_vial]);
     const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
         countryName,
         formik.values.campaign,
@@ -239,8 +260,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
                         component={SingleSelect}
-                        options={dosesOptions}
-                        isLoading={isLoadingDoses}
+                        options={availableDosesPresentations}
                     />
                 </Box>
                 <Box mb={2}>

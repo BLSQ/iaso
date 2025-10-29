@@ -38,7 +38,7 @@ class OpenHEXAWorkspace(SoftDeletableModel):
         OpenHEXAInstance, on_delete=models.CASCADE, related_name="openhexa_workspaces"
     )
     account = models.ForeignKey("iaso.Account", on_delete=models.CASCADE)
-    slug = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255)
     description = models.TextField(null=True, blank=True)
     config = models.JSONField(blank=True, default=dict)
     created_at = models.DateTimeField(auto_now_add=True)

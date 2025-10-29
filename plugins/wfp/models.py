@@ -142,6 +142,8 @@ class MonthlyStatistics(models.Model):
     muac_under_11_5 = models.FloatField(null=True)  # MUAC < 11.5cm
     muac_11_5_12_4 = models.FloatField(null=True)  # MUAC between 11.5 and 12.4 cm
     muac_above_12_5 = models.FloatField(null=True)  # MUAC > 12.5 cm
+    muac_under_23 = models.FloatField(null=True)  # MUAC < 23 cm for PBWG
+    muac_above_23 = models.FloatField(null=True)  # MUAC > 23 cm for PBWG
     whz_score_2 = models.CharField(max_length=10, null=True)  # WHZ greater than -2 (green)
     whz_score_3 = models.CharField(max_length=10, null=True)  # WHZ less than -3 (red)
     whz_score_3_2 = models.CharField(max_length=10, null=True)  # WHZ between -2 and -3 (yellow)

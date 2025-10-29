@@ -973,7 +973,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
         options = config.content[vaccine]
         calculator = VaccineStockCalculator(vaccine_stock)
-        doses_available = calculator.get_stock_by_vaccine_presentation()
+        doses_available = calculator.get_usable_stock_by_vaccine_presentation()
+        unusable_doses = calculator.get_unusable_stock_by_vaccine_presentation()
         results = []
         for option in options:
             results.append(
@@ -981,6 +982,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "label": str(option),
                     "value": option,
                     "doses_available": doses_available[str(option)],
+                    "unusable_doses": unusable_doses[str(option)],
                 }
             )
         return Response({"results": results}, status=status.HTTP_200_OK)

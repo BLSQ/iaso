@@ -12,7 +12,7 @@ from iaso.models.json_config import Config
 from iaso.test import APITestCase
 from plugins.polio import models as pm
 from plugins.polio.models import OutgoingStockMovement
-from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, VaccineStockCalculator
 from plugins.polio.permissions import (
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
     POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
@@ -1716,9 +1716,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.assertIn("label", item)
             self.assertIn("value", item)
             self.assertIn("doses_available", item)
+            self.assertIn("unusable_doses", item)
 
-        self.assertIn({"label": "20", "value": 20, "doses_available": 460}, results)
-        self.assertIn({"label": "50", "value": 50, "doses_available": 0}, results)
+        # Check that we have the expected structure with both doses_available and unusable_doses
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertEqual(item_20["label"], "20")
+        self.assertEqual(item_20["doses_available"], 460)
+        self.assertIsInstance(item_20["unusable_doses"], int)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["label"], "50")
+        self.assertEqual(item_50["doses_available"], 0)
+        self.assertEqual(item_50["unusable_doses"], 0)
 
     def test_doses_options_endpoint_missing_stock_id(self):
         """Test the doses_options endpoint returns 400 when stockId is missing"""
@@ -1772,3 +1783,111 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         # Should return 404 as the filter will fail
         self.assertEqual(response.status_code, 400)
+
+    def test_vaccine_stock_calculator_get_usable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_usable_stock_by_vaccine_presentation method"""
+        from plugins.polio.models.base import VaccineStockCalculator
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_usable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_usable_stock_by_vaccine_presentation()
+
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_vaccine_stock_calculator_get_unusable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_unusable_stock_by_vaccine_presentation method"""
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_unusable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_unusable_stock_by_vaccine_presentation()
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_vaccine_stock_calculator_get_usable_stock_for_presentation(self):
+        """Test VaccineStockCalculator._get_usable_stock_for_presentation method"""
+        from plugins.polio.models.base import VaccineStockCalculator
+
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+
+        # Test with 20 doses per vial (which exists in our test data)
+        vials, doses = calculator._get_usable_stock_for_presentation(20)
+
+        # Should return tuple of (vials, doses)
+        self.assertIsInstance(vials, int)
+        self.assertIsInstance(doses, int)
+
+        # Test with 50 doses per vial (which doesn't exist in our test data)
+        vials_50, doses_50 = calculator._get_usable_stock_for_presentation(50)
+
+        # Should return 0 for both since we don't have 50-dose vials in test data
+        self.assertEqual(vials_50, 0)
+        self.assertEqual(doses_50, 0)
+
+    def test_vaccine_stock_calculator_get_unusable_stock_for_presentation(self):
+        """Test VaccineStockCalculator._get_unusable_stock_for_presentation method"""
+        from plugins.polio.models.base import VaccineStockCalculator
+
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+
+        # Test with 20 doses per vial (which exists in our test data)
+        vials, doses = calculator._get_unusable_stock_for_presentation(20)
+
+        # Should return tuple of (vials, doses)
+        self.assertIsInstance(vials, int)
+        self.assertIsInstance(doses, int)
+
+        # Test with 50 doses per vial (which doesn't exist in our test data)
+        vials_50, doses_50 = calculator._get_unusable_stock_for_presentation(50)
+
+        # Should return 0 for both since we don't have 50-dose vials in test data
+        self.assertEqual(vials_50, 0)
+        self.assertEqual(doses_50, 0)
+
+    def test_doses_options_endpoint_includes_unusable_doses(self):
+        """Test that the doses_options endpoint includes unusable_doses field"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        data = self.assertJSONResponse(response, 200)
+        results = data["results"]
+
+        # Check that each result includes unusable_doses field
+        for item in results:
+            self.assertIn("unusable_doses", item)
+            self.assertIsInstance(item["unusable_doses"], int)
+
+        # Verify specific values based on test data
+        # We expect some unusable doses for 20-dose vials based on our test data
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertGreaterEqual(item_20["unusable_doses"], 0)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["unusable_doses"], 0)  # No 50-dose vials in test data

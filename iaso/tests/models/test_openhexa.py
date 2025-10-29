@@ -27,12 +27,13 @@ class OpenHEXAInstanceTestCase(TestCase):
             token="token1",
         )
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(IntegrityError) as err:
             OpenHEXAInstance.objects.create(
                 name="Duplicate Name",
                 url="https://second.openhexa.org",
                 token="token2",
             )
+        self.assertIn("duplicate key value violates unique constraint", str(err.exception))
 
     def test_openhexa_instance_encrypted_token_field(self):
         instance = OpenHEXAInstance.objects.create(
@@ -77,12 +78,13 @@ class OpenHEXAWorkspaceTestCase(TestCase):
             slug="duplicate-slug",
         )
 
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(IntegrityError) as err:
             OpenHEXAWorkspace.objects.create(
                 openhexa_instance=self.openhexa_instance,
                 account=self.account,
                 slug="duplicate-slug",
             )
+        self.assertIn("duplicate key value violates unique constraint", str(err.exception))
 
     def test_openhexa_workspace_default_config_empty_dict(self):
         workspace = OpenHEXAWorkspace.objects.create(

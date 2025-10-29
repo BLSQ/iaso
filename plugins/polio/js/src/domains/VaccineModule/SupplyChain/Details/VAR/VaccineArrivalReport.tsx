@@ -5,21 +5,26 @@ import classNames from 'classnames';
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    DropdownOptions,
+    Optional,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, Select } from '../../../../../components/Inputs';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { VAR } from '../../constants';
-import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { grayText, usePaperStyles } from '../shared';
+import { usePaperStyles } from '../shared';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 
-type Props = { index: number; vaccine?: string };
+type Props = {
+    index: number;
+    dosesForVaccineOptions: DropdownOptions<number>[];
+};
 
 export const VaccineArrivalReport: FunctionComponent<Props> = ({
     index,
-    vaccine,
+    dosesForVaccineOptions,
 }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
@@ -27,17 +32,19 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
         useFormikContext<SupplyChainFormData>();
     const { arrival_reports } = values as SupplyChainFormData;
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
-    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
+
     // Use refs to track focused state to reduce renders and avoid sluggish UI
     const dosesReceivedRef = useRef<boolean>(false);
     const vialsReceivedRef = useRef<boolean>(false);
     const dosesShippedRef = useRef<boolean>(false);
     const vialsShippedRef = useRef<boolean>(false);
-    const dosesPerVialsRef = useRef<boolean>(false);
 
-    const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
+    const defaultDosesPerVial =
+        dosesForVaccineOptions.length === 1
+            ? dosesForVaccineOptions[0].value
+            : undefined;
     const doses_per_vial =
-        arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
+        arrival_reports?.[index].doses_per_vial ?? defaultDosesPerVial;
     const poNumberOptions = useMemo(() => {
         return (
             (
@@ -71,6 +78,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
             );
             if (preAlert) {
                 setFieldValue(
+                    `${VAR}[${index}].doses_per_vial`,
+                    preAlert.doses_per_vial,
+                );
+                setFieldValue(
                     `${VAR}[${index}].doses_shipped`,
                     preAlert.doses_shipped,
                 );
@@ -81,10 +92,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         : parseInt(dosesShipped ?? '0', 10);
                 setFieldValue(
                     `${VAR}[${index}].vials_shipped`,
-                    Math.ceil(
-                        dosesShippedAsNumber /
-                            parseInt(doses_per_vial ?? 1, 10),
-                    ),
+                    Math.ceil(dosesShippedAsNumber / (doses_per_vial ?? 1)),
                 );
             }
             // Call setFieldTouched before setFieldValue to avoid validation bug
@@ -178,28 +186,24 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
 
     const handleDosesPerVialUpdate = useCallback(
         (value: number) => {
-            if (dosesPerVialsRef.current) {
-                const vialsShipped = Math.ceil(
-                    parseInt(
-                        (arrival_reports?.[index].doses_shipped ??
-                            '0') as string,
-                        10,
-                    ) / value,
-                );
-                const vialsReceived = Math.ceil(
-                    parseInt(
-                        (arrival_reports?.[index].doses_received ??
-                            '0') as string,
-                        10,
-                    ) / value,
-                );
+            const vialsShipped = Math.ceil(
+                parseInt(
+                    (arrival_reports?.[index].doses_shipped ?? '0') as string,
+                    10,
+                ) / value,
+            );
+            const vialsReceived = Math.ceil(
+                parseInt(
+                    (arrival_reports?.[index].doses_received ?? '0') as string,
+                    10,
+                ) / value,
+            );
 
-                handleSetValues({
-                    vials_shipped: vialsShipped,
-                    doses_per_vial: value,
-                    vials_received: vialsReceived,
-                });
-            }
+            handleSetValues({
+                vials_shipped: vialsShipped,
+                doses_per_vial: value,
+                vials_received: vialsReceived,
+            });
         },
         [index, setFieldValue, arrival_reports],
     );
@@ -227,12 +231,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     };
     const onVialsReceivedBlur = () => {
         vialsReceivedRef.current = false;
-    };
-    const onDosesPerVialFocus = () => {
-        dosesPerVialsRef.current = true;
-    };
-    const onDosesPerVialBlur = () => {
-        dosesPerVialsRef.current = false;
     };
 
     return (
@@ -324,14 +322,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                                         MESSAGES.doses_per_vial,
                                     )}
                                     name={`arrival_reports[${index}].doses_per_vial`}
-                                    component={NumberInput}
+                                    component={SingleSelect}
                                     disabled={
                                         markedForDeletion ||
-                                        !arrival_reports?.[index].can_edit
+                                        !arrival_reports?.[index].can_edit ||
+                                        dosesForVaccineOptions.length === 1
                                     }
                                     onChange={handleDosesPerVialUpdate}
-                                    onFocus={onDosesPerVialFocus}
-                                    onBlur={onDosesPerVialBlur}
+                                    options={dosesForVaccineOptions}
+                                    clearable={false}
                                     required
                                 />
                             </Box>

@@ -44,7 +44,7 @@ export const createEmptyPreAlert = (vaccineType?: string) => {
         estimated_arrival_time: undefined,
         expiration_date: undefined,
         doses_shipped: undefined,
-        doses_per_vial,
+        doses_per_vial: undefined,
         lot_numbers: undefined,
         to_delete: false,
         id: undefined,

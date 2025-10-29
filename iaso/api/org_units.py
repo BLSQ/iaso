@@ -587,7 +587,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         original_copy = deepcopy(org_unit)
 
         if "name" in request.data:
-            org_unit.name = request.data["name"]
+            org_unit.name = request.data["name"].strip() if request.data["name"] else request.data["name"]
         if "source_ref" in request.data:
             org_unit.source_ref = request.data["source_ref"]
 
@@ -806,7 +806,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         if request.user:
             org_unit.creator = request.user
-        name = request.data.get("name", None)
+
+        name = request.data.get("name")
+        if name:
+            name = name.strip()
+        else:
+            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
+
+        org_unit.name = name
+
         version_id = request.data.get("version_id", None)
         if version_id:
             authorized_ids = list(
@@ -830,15 +838,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.version = profile.account.default_version
 
-        if not name:
-            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
-
         if org_unit.version.data_source.read_only:
             errors.append(
                 {"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"}
             )
-
-        org_unit.name = name
 
         source_ref = request.data.get("source_ref", None)
         org_unit.source_ref = source_ref

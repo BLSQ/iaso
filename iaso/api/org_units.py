@@ -1037,7 +1037,6 @@ def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True)
         if created:
             org_unit_db.custom = True
             org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
-            org_unit_db.validated = False  # legacy field, to be removed
             org_unit_db.name = data.get("name")
             org_unit_db.accuracy = data.get("accuracy")
             org_unit_db.location = data.get("location")

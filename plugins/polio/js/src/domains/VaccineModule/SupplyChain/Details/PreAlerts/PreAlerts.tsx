@@ -8,7 +8,6 @@ import {
     useEmptyPreAlert,
 } from '../shared';
 import { PREALERT } from '../../constants';
-import { createEmptyPreAlert } from '../../hooks/utils';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';

@@ -349,14 +349,14 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
         if not created:
             return None  # only handle new org units
 
-        t = validated_data.pop("created_at", None)
+        created_at = validated_data.pop("created_at", None)
 
         for attr, value in validated_data.items():
             setattr(org_unit, attr, value)
 
         set_source_created_at = self.context.get("set_source_created_at", True)
-        if t and set_source_created_at:
-            org_unit.source_created_at = timestamp_to_utc_datetime(int(t))
+        if created_at and set_source_created_at:
+            org_unit.source_created_at = timestamp_to_utc_datetime(int(created_at))
 
         org_unit.save()
         return org_unit

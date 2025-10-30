@@ -21,7 +21,7 @@ from plugins.polio.permissions import (
 )
 
 
-class DosesPerVaccineViewset(ListModelMixin, GenericViewSet):
+class DosesPerVialViewset(ListModelMixin, GenericViewSet):
     """
     Super custom endpoint to send the possible vaccine presentation (doses per vial) to the front end
 

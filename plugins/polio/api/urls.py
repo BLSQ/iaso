@@ -41,7 +41,7 @@ from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
-from plugins.polio.api.vaccines.doses_per_vaccine import DosesPerVaccineViewset
+from plugins.polio.api.vaccines.doses_per_vaccine import DosesPerVialViewset
 from plugins.polio.api.vaccines.public_vaccine_stock import PublicVaccineStockViewset
 from plugins.polio.api.vaccines.repository_forms import VaccineRepositoryFormsViewSet
 from plugins.polio.api.vaccines.repository_reports import VaccineRepositoryReportsViewSet
@@ -111,7 +111,7 @@ router.register(r"polio/tasks/refreshim/ohh", RefreshIMOutOfHouseholdDataViewset
 router.register(r"polio/tasks/refreshim/hh_ohh", RefreshIMAllDataViewset, basename="refreshimhhohh")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
 router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
-router.register(r"polio/vaccine/doses_per_vial", DosesPerVaccineViewset, basename="doses_per_vial")
+router.register(r"polio/vaccine/doses_per_vial", DosesPerVialViewset, basename="doses_per_vial")
 router.register(r"polio/vaccine/repository", VaccineRepositoryFormsViewSet, basename="vaccine_repository")
 router.register(
     r"polio/vaccine/repository_reports", VaccineRepositoryReportsViewSet, basename="vaccine_repository_reports"

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent, ReactNode, useMemo } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { grey } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
@@ -8,6 +8,8 @@ import {
     MENU_HEIGHT_WITH_TABS,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useGetDosesPerVial } from '../hooks/api/useGetDosesPerVial';
+import { DropdownOptions } from 'Iaso/types/utils';
 
 export const useSharedStyles = makeStyles({
     scrollableForm: {
@@ -74,3 +76,61 @@ export const usePaperStyles = makeStyles((theme: Theme) => ({
     container: { display: 'inline-flex', width: '100%' },
 }));
 export const grayText = { color: grey[500] };
+
+export const useDosesPerVialDropDownForVaccine = (
+    vaccine?: 'bOPV' | 'nOPV2' | 'mOPV2',
+): DropdownOptions<number>[] => {
+    const { data: dosesPerVialReference } = useGetDosesPerVial();
+    return useMemo(() => {
+        const options =
+            vaccine && dosesPerVialReference
+                ? dosesPerVialReference[vaccine]
+                : [];
+        return options.map((option: number) => ({
+            label: `${option}`,
+            value: option,
+        }));
+    }, [dosesPerVialReference, vaccine]);
+};
+
+export const useEmptyPreAlert = (
+    dosesPerVaccineOptions: DropdownOptions<number>[],
+) => {
+    return useMemo(() => {
+        return {
+            date_pre_alert_reception: undefined,
+            po_number: undefined,
+            estimated_arrival_time: undefined,
+            expiration_date: undefined,
+            doses_shipped: undefined,
+            doses_per_vial:
+                dosesPerVaccineOptions.length === 1
+                    ? dosesPerVaccineOptions[0].value
+                    : undefined,
+            lot_numbers: undefined,
+            to_delete: false,
+            id: undefined,
+            can_edit: true,
+        };
+    }, [dosesPerVaccineOptions]);
+};
+export const useEmptyArrivalReport = (
+    dosesPerVaccineOptions: DropdownOptions<number>[],
+) => {
+    return useMemo(() => {
+        return {
+            report_date: undefined,
+            po_number: undefined,
+            lot_numbers: undefined,
+            expiration_date: undefined,
+            doses_shipped: undefined,
+            doses_received: undefined,
+            to_delete: false,
+            can_edit: true,
+            doses_per_vial:
+                dosesPerVaccineOptions.length === 1
+                    ? dosesPerVaccineOptions[0].value
+                    : undefined,
+        };
+    }, [dosesPerVaccineOptions]);
+};

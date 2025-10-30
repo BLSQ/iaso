@@ -21,12 +21,12 @@ import {
 import { Vaccine } from '../../../../../constants/types';
 import {
     useCheckDestructionDuplicate,
-    useGetDosesOptions,
     useSaveDestruction,
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
+import { DosesPerVialDropdown } from '../../types';
+import { useAvailablePresentations } from './dropdownOptions';
 
 type Props = {
     destruction?: any;
@@ -36,6 +36,8 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -45,12 +47,13 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useDestructionValidation();
-    const { data: dosesOptions, isLoading: isLoadingDoses } =
-        useGetDosesOptions(parseInt(vaccineStockId, 10));
     const formik = useFormik<any>({
         initialValues: {
             id: destruction?.id,
@@ -59,8 +62,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            doses_per_vial:
-                destruction?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: destruction?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
             file: destruction?.file,
             comment: destruction?.comment ?? null,
@@ -68,6 +70,11 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         onSubmit: values => save(values),
         validationSchema,
     });
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        destruction,
+        false,
+    );
 
     const [debouncedDate] = useDebounce(
         formik.values.destruction_report_date,
@@ -146,8 +153,9 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
                         component={SingleSelect}
-                        options={dosesOptions}
-                        isLoading={isLoadingDoses}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
                     />
                 </Box>
                 <Box mb={2}>

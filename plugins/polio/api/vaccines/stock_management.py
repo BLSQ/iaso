@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from iaso.models.json_config import Config
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
@@ -33,7 +34,7 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import Round, VaccineArrivalReport, VaccineStockCalculator
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, Round, VaccineStockCalculator
 from plugins.polio.permissions import (
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
     POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
@@ -965,20 +966,26 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if not vaccine_stock:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        country = vaccine_stock.country
         vaccine = vaccine_stock.vaccine
-        values = (
-            VaccineArrivalReport.objects.filter(
-                request_form__campaign__account=request.user.iaso_profile.account,  # filter by account
-                request_form__campaign__country=country,
-                request_form__vaccine_type=vaccine,
+        try:
+            config = Config.objects.get(slug=DOSES_PER_VIAL_CONFIG_SLUG)
+        except Config.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        options = config.content[vaccine]
+        calculator = VaccineStockCalculator(vaccine_stock)
+        doses_available = calculator.get_usable_stock_by_vaccine_presentation()
+        unusable_doses = calculator.get_unusable_stock_by_vaccine_presentation()
+        results = []
+        for option in options:
+            results.append(
+                {
+                    "label": str(option),
+                    "value": option,
+                    "doses_available": doses_available[str(option)],
+                    "unusable_doses": unusable_doses[str(option)],
+                }
             )
-            .values_list("doses_per_vial", flat=True)
-            .distinct()
-        )
-        return Response(
-            {"results": [{"label": f"{value}", "value": value} for value in values]}, status=status.HTTP_200_OK
-        )
+        return Response({"results": results}, status=status.HTTP_200_OK)
 
 
 class EmbeddedVaccineStockManagementViewset(VaccineStockManagementViewSet):

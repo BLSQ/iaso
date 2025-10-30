@@ -26,6 +26,7 @@ import {
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
 import {
+    DosesPerVialDropdown,
     StockManagementDetailsParams,
     StockManagementListParams,
     StockVariationParams,
@@ -255,14 +256,7 @@ export const useGetEarmarkedList = (
 
 export const useGetDosesOptions = (
     stockId: number,
-): UseQueryResult<
-    {
-        label: string;
-        value: number;
-        doses_available: number;
-        unusable_doses: number;
-    }[]
-> => {
+): UseQueryResult<DosesPerVialDropdown> => {
     return useSnackQuery({
         queryKey: ['doses_options', stockId],
         queryFn: () => getRequest(`${apiUrl}doses_options/?stockId=${stockId}`),

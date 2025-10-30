@@ -26,6 +26,7 @@ import {
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     destruction?: any;
@@ -35,12 +36,7 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
-    dosesOptions?: {
-        label: string;
-        value: number;
-        doses_available: number;
-        unusable_doses: number;
-    }[];
+    dosesOptions?: DosesPerVialDropdown;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({

@@ -31,7 +31,7 @@ import { useGetMovementDescription } from '../../hooks/useGetMovementDescription
 import MESSAGES from '../../messages';
 import { useIncidentOptions } from './dropdownOptions';
 import { useIncidentValidation } from './validation';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     incident?: any;
@@ -41,12 +41,7 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
-    dosesOptions?: {
-        label: string;
-        value: number;
-        doses_available: number;
-        unusable_doses: number;
-    }[];
+    dosesOptions?: DosesPerVialDropdown;
     hasUsableStock: boolean;
     hasUnusableStock: boolean;
 };
@@ -219,6 +214,10 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         },
         [incidentConfig, inventoryType, save],
     );
+
+    const defaultDosesPerVial =
+        //@ts-ignore
+        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
@@ -230,7 +229,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials || 0,
             unusable_vials: incident?.unusable_vials || 0,
-            doses_per_vial: incident?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: incident?.doses_per_vial || defaultDosesPerVial,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
             file: incident?.file,

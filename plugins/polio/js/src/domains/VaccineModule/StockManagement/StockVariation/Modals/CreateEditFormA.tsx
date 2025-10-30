@@ -30,6 +30,7 @@ import MESSAGES from '../../messages';
 import { useFormAValidation } from './validation';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     formA?: any;
@@ -39,12 +40,7 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
-    dosesOptions?: {
-        label: string;
-        value: number;
-        doses_available: number;
-        unusable_doses: number;
-    }[];
+    dosesOptions?: DosesPerVialDropdown;
 };
 
 export type FormAFormValues = {

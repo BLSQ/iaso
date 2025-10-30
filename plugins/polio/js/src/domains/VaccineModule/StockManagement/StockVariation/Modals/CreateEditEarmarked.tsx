@@ -23,6 +23,7 @@ import MESSAGES from '../../messages';
 import { useEarmarkOptions } from './dropdownOptions';
 import { useEarmarkValidation } from './validation';
 import { DropdownOptions } from 'Iaso/types/utils';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     earmark?: any;
@@ -32,12 +33,7 @@ type Props = {
     countryName: string;
     vaccine: VaccineForStock;
     vaccineStockId: string;
-    dosesOptions?: {
-        label: string;
-        value: number;
-        doses_available: number;
-        unusable_doses: number;
-    }[];
+    dosesOptions?: DosesPerVialDropdown;
 };
 
 export const CreateEditEarmarked: FunctionComponent<Props> = ({

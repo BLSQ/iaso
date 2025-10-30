@@ -151,6 +151,7 @@ class MonthlyStatistics(models.Model):
     beneficiary_with_nutrition_programme = models.FloatField(null=True)
     beneficiary_with_exit_type = models.FloatField(null=True)
 
+
 class Dhis2SyncResults(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)

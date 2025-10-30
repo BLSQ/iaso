@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wfp", "0035_dhis2syncresults_month_dhis2syncresults_year"),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wfp", "0022_alter_journey_nutrition_programme_and_more"),
         ("wfp", "0031_visit_entry_point_alter_journey_exit_type_and_more"),

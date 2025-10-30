@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wfp", "0027_monthlystatistics_dhis2_id"),
     ]

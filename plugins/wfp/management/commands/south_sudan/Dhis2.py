@@ -44,9 +44,12 @@ class Dhis2:
             synced_data.month = month
             synced_data.data_set_id = dataValueSet["dataSet"]
             synced_data.org_unit_dhis2_id = dataValueSet["orgUnit"]
+            synced_data.org_unit_id = dataValueSet["orgUnitId"]
             synced_data.response = response
             synced_data.status = response["response"]["status"]
             synced_data.account = account
+            synced_data.account = account
+
             synced_data.programme_type = "U5"
             results.append(synced_data)
 

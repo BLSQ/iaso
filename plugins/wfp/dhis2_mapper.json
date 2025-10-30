@@ -489,13 +489,13 @@
             },
             "transfer_from_other_tsfp": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "transfer_from_other_tsfp": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "fmq7xvyhfJN"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "transfer_from_other_tsfp": {
                         "dataElement": "vg9xavgIUzI",
                         "categoryOptionCombo": "n88xrup4uT0"
                     }
@@ -503,13 +503,13 @@
             },
             "cured": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "mrK0RmaXqt2"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "dpq8Cb9TEke"
                     }
@@ -517,13 +517,13 @@
             },
             "death": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "OOfTlfKJuBd"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "VzaOKz5E2HW"
                     }
@@ -531,13 +531,13 @@
             },
             "defaulter": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "Gntpx1F0hwv"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "YRfzDcccVY3"
                     }
@@ -545,13 +545,13 @@
             },
             "non_respondent": {
                 "pregnant": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "FZmnV1ugQp3"
                     }
                 },
                 "breastfeeding": {
-                    "total_beneficiary": {
+                    "total_with_exit_type": {
                         "dataElement": "sjMFd1r9vC2",
                         "categoryOptionCombo": "oMdzWvTR9Bz"
                     }

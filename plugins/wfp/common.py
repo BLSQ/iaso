@@ -947,8 +947,6 @@ class ETL:
             .values()
             .filter(account=account)
             .filter(org_unit_id__in=[758, 622, 43])
-            # .filter(programme_type=programme, account=account)
-            # .filter(org_unit_id__in=[758, 622, 43])
             # .exclude(period="202510")
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
@@ -964,7 +962,7 @@ class ETL:
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
             row["dataSet"] = "m2GaBFDJDeV"
             row["orgUnit"] = journeys[0]["dhis2_id"]
-            row["org_unit"] = org_unit
+            row["org_unit_id"] = org_unit
 
             for period, journey_period in journey_by_org_units_period:
                 row["period"] = period
@@ -975,7 +973,7 @@ class ETL:
                     "dataSet": row["dataSet"],
                     "period": row["period"],
                     "orgUnit": row["orgUnit"],
-                    "orgUnitId": row["org_unit"],
+                    "orgUnitId": row["org_unit_id"],
                     "dataValues": dataValues,
                 }
             dhis2_aggregated_data.append(dataSet)
@@ -1031,6 +1029,11 @@ class ETL:
                                 dataElement_by_main_category = dataElement_by_category[main_category]
                                 for sub_category in sub_categories:
                                     dataValue = dataElement_by_main_category.get(sub_category)
+                                    if sub_category == exit_type:
+                                        rows[sub_category] = rows["total_with_exit_type"]
+                                    if sub_category == admission_type:
+                                        rows[sub_category] = rows["total_beneficiary"]
+
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
         return dataValues

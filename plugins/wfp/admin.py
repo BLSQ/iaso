@@ -141,7 +141,7 @@ class Dhis2SyncResults(admin.ModelAdmin):
     list_display = (
         "id",
         "org_unit_dhis2_id",
-        "org_unit",
+        "org_unit_id",
         "data_set_id",
         "period",
         "month",

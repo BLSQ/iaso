@@ -154,7 +154,7 @@ class MonthlyStatistics(models.Model):
 
 class Dhis2SyncResults(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
-    org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    org_unit_id = models.IntegerField(null=True, blank=True, db_index=True)
     org_unit_dhis2_id = models.TextField(null=True)
     data_set_id = models.TextField(null=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)

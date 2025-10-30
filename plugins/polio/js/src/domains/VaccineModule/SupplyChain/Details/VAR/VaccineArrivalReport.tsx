@@ -185,7 +185,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
     );
 
     const handleDosesPerVialUpdate = useCallback(
-        (value: number) => {
+        (_, value: number) => {
             const vialsShipped = Math.ceil(
                 parseInt(
                     (arrival_reports?.[index].doses_shipped ?? '0') as string,

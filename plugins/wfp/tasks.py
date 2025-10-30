@@ -88,10 +88,6 @@ def etl_ssd(all_data=None):
     MonthlyStatistics.objects.filter(account=child_account, programme_type="U5").delete()
     ETL().journey_with_visit_and_steps_per_visit(child_account, "U5")
 
-    ETL().aggregating_data_to_push_to_dhis2(child_account, "U5")
-
-    Dhis2().save_dhis2_sync_results(entity_type_U5_code)
-
     entity_type_pbwg_code = "ssd_pbwg"
     pbwg_account = ETL([entity_type_pbwg_code]).account_related_to_entity_type()
     updated_pbwg_beneficiaries = ETL([entity_type_pbwg_code]).get_updated_entity_ids(last_success_task_date)
@@ -102,6 +98,14 @@ def etl_ssd(all_data=None):
     )
     MonthlyStatistics.objects.filter(account=pbwg_account, programme_type="PLW").delete()
     ETL().journey_with_visit_and_steps_per_visit(pbwg_account, "PLW")
+
+    ETL().aggregating_data_to_push_to_dhis2(pbwg_account)
+
+    pushed_data = Dhis2().save_dhis2_sync_results(entity_type_pbwg_code)
+    logger.info(
+        f"----------------------------- Pushed to DHIS2 on U5 and PBW for {len(pushed_data)} rows aggregated per year and month -----------------------------"
+    )
+
     # print("len(connection.queries)", len(connection.queries))  # Uncomment this line to see the number of SQL queries executed
     # print(connection.queries) # Uncomment this line to see the SQL queries executed
 

@@ -367,7 +367,7 @@ class ETL:
             current_journey["instance_id"] = visit.get("instance_id", None)
             current_journey["start_date"] = visit.get("start_date", None)
             current_journey["initial_weight"] = visit.get("initial_weight", None)
-            current_journey["muac_size"] = visit.get("muac_size", None)
+            current_journey["muac_size"] = visit.get("muac", visit.get("muac_size"))
             current_journey["whz_score"] = visit.get("whz_score", None)
             current_journey["oedema"] = visit.get("oedema", None)
             if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
@@ -597,7 +597,7 @@ class ETL:
             visit = Visit()
             visit.date = current_visit.get("date", None)
             visit.number = visit_number
-            visit.muac_size = current_visit.get("muac_size", None)
+            visit.muac_size = current_visit.get("muac", current_visit.get("muac_size"))
             whz_color = ""
             if current_visit.get("whz_color", None) == "Y":
                 whz_color = "Yellow"
@@ -756,10 +756,11 @@ class ETL:
         monthly_Statistic.given_sachet_rutf = monthly_journey.get("given_sachet_rutf")
         monthly_Statistic.given_quantity_csb = monthly_journey.get("given_quantity_csb")
         monthly_Statistic.given_ration_cbt = monthly_journey.get("given_ration_cbt")
-
         monthly_Statistic.muac_under_11_5 = monthly_journey.get("muac_under_11_5")
         monthly_Statistic.muac_11_5_12_4 = monthly_journey.get("muac_11_5_12_4")
         monthly_Statistic.muac_above_12_5 = monthly_journey.get("muac_above_12_5")
+        monthly_Statistic.muac_under_23 = monthly_journey.get("muac_under_23")
+        monthly_Statistic.muac_above_23 = monthly_journey.get("muac_above_23")
 
         monthly_Statistic.whz_score_2 = monthly_journey.get("whz_score_2")
         monthly_Statistic.whz_score_3 = monthly_journey.get("whz_score_3")
@@ -902,6 +903,16 @@ class ETL:
                     output_field=FloatField(),
                 )
             )
+            .annotate(
+                muac_under_23=Sum(
+                    Case(When(visit__muac_size__lt=23, then=Value(1)), default=Value(0), output_field=FloatField())
+                )
+            )
+            .annotate(
+                muac_above_23=Sum(
+                    Case(When(visit__muac_size__gte=23, then=Value(1)), default=Value(0), output_field=FloatField())
+                )
+            )
             .order_by("visit__id")
         )
         data_by_journey = groupby(list(journeys), key=itemgetter("org_unit"))
@@ -930,27 +941,23 @@ class ETL:
             return f"{year}0{month}"
         return f"{year}{month}"
 
-    def aggregate_by_field_name(self, rows, field_name):
-        total = 0
-        total = total + sum(float(row.get(field_name, 0)) for row in rows)
-        return int(total)
-
-    def aggregating_data_to_push_to_dhis2(self, account, programme):
+    def aggregating_data_to_push_to_dhis2(self, account):
         monthlyStatistics = (
             MonthlyStatistics.objects.prefetch_related("account", "org_unit")
             .values()
-            .filter(programme_type=programme, account=account)
-            #.filter(org_unit_id__in=[758, 622, 43])
-            #.exclude(period="202510")
+            .filter(account=account)
+            .filter(org_unit_id__in=[758, 622, 43])
+            # .filter(programme_type=programme, account=account)
+            # .filter(org_unit_id__in=[758, 622, 43])
+            # .exclude(period="202510")
         )
-        monthlyData = list(monthlyStatistics)
-        journey_by_org_units = groupby(monthlyData, key=itemgetter("org_unit_id"))
+        journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
         row = {}
         dataElements = None
+        # Reading the dhis2 datalement mapper json file
         with open("plugins/wfp/dhis2_mapper.json") as mapper:
             data = json.load(mapper)
-        dataElements = data
 
         for org_unit, journeys in journey_by_org_units:
             journeys = list(journeys)
@@ -961,76 +968,8 @@ class ETL:
 
             for period, journey_period in journey_by_org_units_period:
                 row["period"] = period
-                dataValues = []
-                journey_by_gender = groupby(list(journey_period), key=itemgetter("gender"))
-                for gender, journey_gender in journey_by_gender:
-                    journey_by_gender = list(journey_gender)
-                    admission_type = journey_by_gender[0]["admission_type"] if len(journey_by_gender) > 0 else ""
-                    admission_criteria = (
-                        journey_by_gender[0]["admission_criteria"] if len(journey_by_gender) > 0 else ""
-                    )
-                    exit_type = journey_by_gender[0]["exit_type"] if len(journey_by_gender) > 0 else ""
-                    journey_by_gender_and_nutrition_program = groupby(
-                        journey_by_gender, key=itemgetter("nutrition_programme")
-                    )
-                    row["gender"] = gender
-                    row["total_beneficiary"] = self.aggregate_by_field_name(
-                        journey_by_gender, "beneficiary_with_admission_type"
-                    )
-                    row["total_with_exit_type"] = self.aggregate_by_field_name(
-                        journey_by_gender, "beneficiary_with_exit_type"
-                    )
-                    row["muac_under_11_5"] = self.aggregate_by_field_name(journey_by_gender, "muac_under_11_5")
-                    row["muac_11_5_12_4"] = self.aggregate_by_field_name(journey_by_gender, "muac_11_5_12_4")
-                    row["muac_above_12_5"] = self.aggregate_by_field_name(journey_by_gender, "muac_above_12_5")
-
-                    row["whz_score_3_2"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_3_2")
-                    row["whz_score_2"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_2")
-                    row["whz_score_3"] = self.aggregate_by_field_name(journey_by_gender, "whz_score_3")
-
-                    row["oedema"] = self.aggregate_by_field_name(journey_by_gender, "oedema")
-                    row["admission_sc_itp_otp"] = self.aggregate_by_field_name(
-                        journey_by_gender, "admission_sc_itp_otp"
-                    )
-                    row["transfer_from_other_tsfp"] = self.aggregate_by_field_name(
-                        journey_by_gender, "transfer_from_other_tsfp"
-                    )
-                    row["transfer_sc_itp_otp"] = self.aggregate_by_field_name(journey_by_gender, "transfer_sc_itp_otp")
-
-                    categories = ["screening_reporting", "tsfp_reporting", "otp_reporting"]
-                    sub_categories = ["muac_under_11_5", "muac_11_5_12_4", "muac_above_12_5"]
-                    new_categories = []
-                    for category in categories:
-                        dataElement = dataElements[category]
-
-                        if category == "screening_reporting":
-                            dataElement_by_gender = dataElement[gender]
-
-                            for sub_category in sub_categories:
-                                dataValue = dataElement_by_gender[sub_category]
-                                dataValues.append({**dataValue, "value": row[sub_category]})
-                        elif category in ["tsfp_reporting", "otp_reporting"]:
-                            sub_categories.extend(
-                                ["total_beneficiary", "whz_score_3", "total_with_exit_type", "transfer_sc_itp_otp"]
-                            )
-                        for program, journey_program in journey_by_gender_and_nutrition_program:
-                            if admission_type:
-                                new_categories.append(admission_type)
-                            if exit_type:
-                                new_categories.append(exit_type)
-                            dataElement_by_sub_category = None
-
-                            if program == "TSFP":
-                                dataElement_by_sub_category = dataElement.get("tsfp_reporting")
-                            elif program == "OTP":
-                                dataElement_by_sub_category = dataElement.get("otp_reporting")
-
-                            if dataElement_by_sub_category is not None:
-                                dataElement_by_gender = dataElement_by_sub_category[gender]
-                                for sub_category in sub_categories:
-                                    dataValue = dataElement_by_gender.get(sub_category)
-                                    if dataValue is not None:
-                                        dataValues.append({**dataValue, "value": row[sub_category]})
+                journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
+                dataValues = self.map_dhis2_data(journeys_by_program_type, data)
 
                 dataSet = {
                     "dataSet": row["dataSet"],
@@ -1040,5 +979,58 @@ class ETL:
                     "dataValues": dataValues,
                 }
             dhis2_aggregated_data.append(dataSet)
-
         return dhis2_aggregated_data
+
+    def map_dhis2_data(self, journeys, dataElements):
+        dataValues = []
+        for program_type, journey_by_program in journeys:
+            dataElement = dataElements.get(program_type)
+            journey = None
+            categories = []
+            sub_categories = []
+            if program_type == "U5":
+                categories = ["screening_reporting", "tsfp_reporting", "otp_reporting"]
+                sub_categories = [
+                    "muac_under_11_5",
+                    "muac_11_5_12_4",
+                    "muac_above_12_5",
+                    "total_beneficiary",
+                    "whz_score_3",
+                    "total_with_exit_type",
+                    "transfer_sc_itp_otp",
+                ]
+                journey = groupby(list(journey_by_program), key=itemgetter("gender"))
+            elif program_type == "PLW":
+                categories = ["screening_reporting", "tsfp_reporting"]
+                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23"]
+                journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
+
+            for main_category, journey_by_category in journey:
+                journey_by_categories = list(journey_by_category)
+                admission_type = journey_by_categories[0]["admission_type"] if len(journey_by_categories) > 0 else ""
+                admission_criteria = (
+                    journey_by_categories[0]["admission_criteria"] if len(journey_by_categories) > 0 else ""
+                )
+                exit_type = journey_by_categories[0]["exit_type"] if len(journey_by_categories) > 0 else ""
+                journey_by_gender_and_nutrition_program = groupby(
+                    journey_by_categories, key=itemgetter("nutrition_programme")
+                )
+                rows = AggregatedJourney().aggregated_rows(journey_by_categories)
+
+                for category in categories:
+                    dataElement_by_category = dataElement.get(category)
+
+                    for program, journey_program in journey_by_gender_and_nutrition_program:
+                        dataElement_by_sub_category = dataElement_by_category
+                        if program == "TSFP":
+                            dataElement_by_sub_category = dataElement.get("tsfp_reporting")
+                        elif program == "OTP":
+                            dataElement_by_sub_category = dataElement.get("otp_reporting")
+                        if dataElement_by_sub_category is not None:
+                            if dataElement_by_category is not None:
+                                dataElement_by_main_category = dataElement_by_category[main_category]
+                                for sub_category in sub_categories:
+                                    dataValue = dataElement_by_main_category.get(sub_category)
+                                    if dataValue is not None:
+                                        dataValues.append({**dataValue, "value": rows[sub_category]})
+        return dataValues

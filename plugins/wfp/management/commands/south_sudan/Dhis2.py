@@ -11,27 +11,27 @@ class Dhis2:
     def sync_data(self, type):
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
-        monthly_data = entity_type.aggregating_data_to_push_to_dhis2(account, "U5")
+        monthly_data = entity_type.aggregating_data_to_push_to_dhis2(account)
 
         DHIS2_URL = os.environ.get("DHIS2_URL")
         DHIS2_USER = os.environ.get("DHIS2_USER")
         DHIS2_PASSWORD = os.environ.get("DHIS2_PASSWORD")
         api = Api(DHIS2_URL, DHIS2_USER, DHIS2_PASSWORD)
 
-        dataValueSets = map(
-            lambda row: {
-                "dataSet": row["dataSet"],
-                "period": row["period"],
-                "orgUnit": row["orgUnit"],
-                "dataValues": row["dataValues"],
-            },
-            monthly_data,
-        )
         results = []
-        for dataValueSet in dataValueSets:
+        for dataValueSet in monthly_data:
             synced_data = Dhis2SyncResults()
             try:
-                response = api.post("dataValueSets", data=dataValueSet).json()
+                response = api.post(
+                    "dataValueSets",
+                    data={
+                        "dataSet": dataValueSet["dataSet"],
+                        "period": dataValueSet["period"],
+                        "orgUnit": dataValueSet["orgUnit"],
+                        "dataValues": dataValueSet["dataValues"],
+                    },
+                ).json()
+
             except RequestException as dhis2_exception:
                 response = json.loads(dhis2_exception.description)
 

@@ -155,6 +155,9 @@ class PBWG:
 
                     current_record["end_date"] = visit_date.strftime("%Y-%m-%d")
                     current_record["duration"] = duration
+                    # print("VISIT ...:", visit)
+                    current_record["muac_size"] = visit.get("muac", visit.get("previous_muac"))
+                    # current_record["muac_size"] = visit.get("muac")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id

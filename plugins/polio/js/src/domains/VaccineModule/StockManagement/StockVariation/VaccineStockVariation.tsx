@@ -78,6 +78,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
         dosesOptions?.some(option => option.doses_available > 0) ?? false;
     const hasUnusableStock =
         dosesOptions?.some(option => option.unusable_doses > 0) ?? false;
+    const defaultDosesPerVial =
+        //@ts-ignore
+        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
         params,
         tab === FORM_A,
@@ -167,6 +170,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
                                         dosesOptions={dosesOptions}
+                                        defaultDosesPerVial={
+                                            defaultDosesPerVial
+                                        }
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -185,6 +191,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
                                         dosesOptions={dosesOptions}
+                                        defaultDosesPerVial={
+                                            defaultDosesPerVial
+                                        }
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -203,6 +212,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                         dosesOptions={dosesOptions}
                                         hasUsableStock={hasUsableStock}
                                         hasUnusableStock={hasUnusableStock}
+                                        defaultDosesPerVial={
+                                            defaultDosesPerVial
+                                        }
                                     />
                                 )}
                             </DisplayIfUserHasPerm>
@@ -221,6 +233,9 @@ export const VaccineStockVariation: FunctionComponent = () => {
                                         vaccine={summary?.vaccine_type}
                                         vaccineStockId={params.id as string}
                                         dosesOptions={dosesOptions}
+                                        defaultDosesPerVial={
+                                            defaultDosesPerVial
+                                        }
                                     />
                                 )}
                             </DisplayIfUserHasPerm>

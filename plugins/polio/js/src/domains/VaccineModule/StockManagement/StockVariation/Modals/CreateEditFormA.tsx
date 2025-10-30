@@ -41,6 +41,7 @@ type Props = {
     vaccine: Vaccine;
     vaccineStockId: string;
     dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export type FormAFormValues = {
@@ -67,13 +68,11 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     vaccine,
     vaccineStockId,
     dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
-
-    const defaultDosesPerVial =
-        //@ts-ignore
-        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useFormAValidation();
     const formik = useFormik<FormAFormValues>({
         initialValues: {
@@ -257,6 +256,8 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="doses_per_vial"
                         component={SingleSelect}
                         options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
                     />
                 </Box>
                 <Box mb={2}>

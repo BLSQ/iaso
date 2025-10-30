@@ -37,6 +37,7 @@ type Props = {
     vaccine: Vaccine;
     vaccineStockId: string;
     dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -47,14 +48,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     vaccine,
     vaccineStockId,
     dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useDestructionValidation();
-
-    const defaultDosesPerVial =
-        //@ts-ignore
-        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
     const formik = useFormik<any>({
         initialValues: {
             id: destruction?.id,
@@ -168,6 +167,8 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         name="doses_per_vial"
                         component={SingleSelect}
                         options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
                     />
                 </Box>
                 <Box mb={2}>

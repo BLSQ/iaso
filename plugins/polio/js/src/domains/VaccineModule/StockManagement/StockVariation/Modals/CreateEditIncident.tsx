@@ -44,6 +44,7 @@ type Props = {
     dosesOptions?: DosesPerVialDropdown;
     hasUsableStock: boolean;
     hasUnusableStock: boolean;
+    defaultDosesPerVial: number | undefined;
 };
 
 /**
@@ -137,6 +138,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     dosesOptions,
     hasUsableStock,
     hasUnusableStock,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
@@ -215,9 +217,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         [incidentConfig, inventoryType, save],
     );
 
-    const defaultDosesPerVial =
-        //@ts-ignore
-        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
@@ -417,6 +417,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                                 name="doses_per_vial"
                                 component={SingleSelect}
                                 options={dosesOptions}
+                                disabled={hasFixedDosesPerVial}
+                                required
                             />
                         </Box>
                     </>

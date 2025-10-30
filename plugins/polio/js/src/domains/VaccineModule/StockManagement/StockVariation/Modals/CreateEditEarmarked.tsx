@@ -34,6 +34,7 @@ type Props = {
     vaccine: VaccineForStock;
     vaccineStockId: string;
     dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditEarmarked: FunctionComponent<Props> = ({
@@ -44,12 +45,12 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     vaccine,
     vaccineStockId,
     dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveEarmarked();
-    const defaultDosesPerVial =
-        //@ts-ignore
-        (dosesOptions ?? []).length === 1 ? dosesOptions[0].value : undefined;
+
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useEarmarkValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -189,6 +190,8 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         name="doses_per_vial"
                         component={SingleSelect}
                         options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
                     />
                 </Box>
                 <Box mb={2}>

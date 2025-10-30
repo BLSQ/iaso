@@ -285,7 +285,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         dataTestId={dataTestId}
                         placeholder={placeholder}
                         onBlur={onBlur}
-                        // onFocus={onFocus}
                     />
                 );
             case 'arrayInput':

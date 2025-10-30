@@ -77,10 +77,13 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                 pre => pre.po_number === value,
             );
             if (preAlert) {
-                setFieldValue(
-                    `${VAR}[${index}].doses_per_vial`,
-                    preAlert.doses_per_vial,
-                );
+                // Only set doses per vial if the arrival report doesn't already have a value for it
+                if (!doses_per_vial) {
+                    setFieldValue(
+                        `${VAR}[${index}].doses_per_vial`,
+                        preAlert.doses_per_vial,
+                    );
+                }
                 setFieldValue(
                     `${VAR}[${index}].doses_shipped`,
                     preAlert.doses_shipped,
@@ -92,7 +95,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                         : parseInt(dosesShipped ?? '0', 10);
                 setFieldValue(
                     `${VAR}[${index}].vials_shipped`,
-                    Math.ceil(dosesShippedAsNumber / (doses_per_vial ?? 1)),
+                    Math.ceil(
+                        dosesShippedAsNumber / (preAlert.doses_per_vial ?? 1),
+                    ),
                 );
             }
             // Call setFieldTouched before setFieldValue to avoid validation bug
@@ -198,7 +203,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
                     10,
                 ) / value,
             );
-
             handleSetValues({
                 vials_shipped: vialsShipped,
                 doses_per_vial: value,

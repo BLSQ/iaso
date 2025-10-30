@@ -1723,7 +1723,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsNotNone(item_20)
         self.assertEqual(item_20["label"], "20")
         self.assertEqual(item_20["doses_available"], 460)
-        self.assertIsInstance(item_20["unusable_doses"], int)
+        self.assertEqual(item_20["unusable_doses"], 540)
 
         item_50 = next((item for item in results if item["value"] == 50), None)
         self.assertIsNotNone(item_50)
@@ -1828,46 +1828,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         result_empty = calculator_empty.get_unusable_stock_by_vaccine_presentation()
         self.assertEqual({"10": 0, "20": 0}, result_empty)
 
-    def test_vaccine_stock_calculator_get_usable_stock_for_presentation(self):
-        """Test VaccineStockCalculator._get_usable_stock_for_presentation method"""
-        from plugins.polio.models.base import VaccineStockCalculator
-
-        calculator = VaccineStockCalculator(self.vaccine_stock)
-
-        # Test with 20 doses per vial (which exists in our test data)
-        vials, doses = calculator._get_usable_stock_for_presentation(20)
-
-        # Should return tuple of (vials, doses)
-        self.assertIsInstance(vials, int)
-        self.assertIsInstance(doses, int)
-
-        # Test with 50 doses per vial (which doesn't exist in our test data)
-        vials_50, doses_50 = calculator._get_usable_stock_for_presentation(50)
-
-        # Should return 0 for both since we don't have 50-dose vials in test data
-        self.assertEqual(vials_50, 0)
-        self.assertEqual(doses_50, 0)
-
-    def test_vaccine_stock_calculator_get_unusable_stock_for_presentation(self):
-        """Test VaccineStockCalculator._get_unusable_stock_for_presentation method"""
-        from plugins.polio.models.base import VaccineStockCalculator
-
-        calculator = VaccineStockCalculator(self.vaccine_stock)
-
-        # Test with 20 doses per vial (which exists in our test data)
-        vials, doses = calculator._get_unusable_stock_for_presentation(20)
-
-        # Should return tuple of (vials, doses)
-        self.assertIsInstance(vials, int)
-        self.assertIsInstance(doses, int)
-
-        # Test with 50 doses per vial (which doesn't exist in our test data)
-        vials_50, doses_50 = calculator._get_unusable_stock_for_presentation(50)
-
-        # Should return 0 for both since we don't have 50-dose vials in test data
-        self.assertEqual(vials_50, 0)
-        self.assertEqual(doses_50, 0)
-
     def test_doses_options_endpoint_includes_unusable_doses(self):
         """Test that the doses_options endpoint includes unusable_doses field"""
         self.client.force_authenticate(user=self.user_ro_perms)
@@ -1886,7 +1846,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # We expect some unusable doses for 20-dose vials based on our test data
         item_20 = next((item for item in results if item["value"] == 20), None)
         self.assertIsNotNone(item_20)
-        self.assertGreaterEqual(item_20["unusable_doses"], 0)
+        self.assertEqual(item_20["unusable_doses"], 540)
 
         item_50 = next((item for item in results if item["value"] == 50), None)
         self.assertIsNotNone(item_50)

@@ -2797,19 +2797,12 @@ class VaccineStockCalculator:
         return results
 
     def get_usable_stock_by_vaccine_presentation(self):
-        presentation_config = Config.objects.filter(slug=DOSES_PER_VIAL_CONFIG_SLUG).first()
-        if not presentation_config:
-            return None
-
-        options = presentation_config.content[self.vaccine_stock.vaccine]
-        if not options:
-            return None
-        results = {}
-        for option in options:
-            results[str(option)] = self._get_usable_stock_for_presentation(option)[1]
-        return results
+        return self._get_config_and_compute_stock_for_presentation(usable=True)
 
     def get_unusable_stock_by_vaccine_presentation(self):
+        return self._get_config_and_compute_stock_for_presentation(usable=False)
+
+    def _get_config_and_compute_stock_for_presentation(self, usable: bool):
         presentation_config = Config.objects.filter(slug=DOSES_PER_VIAL_CONFIG_SLUG).first()
         if not presentation_config:
             return None
@@ -2819,37 +2812,21 @@ class VaccineStockCalculator:
             return None
         results = {}
         for option in options:
-            results[str(option)] = self._get_unusable_stock_for_presentation(option)[1]
+            results[str(option)] = self._get_stock_by_vaccine_presentation(option, usable=usable)[1]
         return results
 
-    def _get_usable_stock_for_presentation(self, option: str):
-        usable_vials = self.get_list_of_usable_vials()
-        total_usable_vials = 0
-        total_usable_doses = 0
-        for vial in usable_vials:
+    def _get_stock_by_vaccine_presentation(self, option: str, usable: bool):
+        vials = self.get_list_of_usable_vials() if usable else self.get_list_of_unusable_vials()
+        total_vials = 0
+        total_doses = 0
+        for vial in vials:
             if vial["doses_per_vial"] == option:
                 if vial["vials_in"]:
-                    total_usable_vials += vial["vials_in"]
+                    total_vials += vial["vials_in"]
                 if vial["doses_in"]:
-                    total_usable_doses += vial["doses_in"]
+                    total_doses += vial["doses_in"]
                 if vial["vials_out"]:
-                    total_usable_vials -= vial["vials_out"]
+                    total_vials -= vial["vials_out"]
                 if vial["doses_out"]:
-                    total_usable_doses -= vial["doses_out"]
-        return total_usable_vials, total_usable_doses
-
-    def _get_unusable_stock_for_presentation(self, option: str):
-        unusable_vials = self.get_list_of_unusable_vials()
-        total_unusable_vials = 0
-        total_unusable_doses = 0
-        for vial in unusable_vials:
-            if vial["doses_per_vial"] == option:
-                if vial["vials_in"]:
-                    total_unusable_vials += vial["vials_in"]
-                if vial["doses_in"]:
-                    total_unusable_doses += vial["doses_in"]
-                if vial["vials_out"]:
-                    total_unusable_vials -= vial["vials_out"]
-                if vial["doses_out"]:
-                    total_unusable_doses -= vial["doses_out"]
-        return total_unusable_vials, total_unusable_doses
+                    total_doses -= vial["doses_out"]
+        return total_vials, total_doses

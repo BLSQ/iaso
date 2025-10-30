@@ -25,7 +25,7 @@ class DosesPerVialViewset(ListModelMixin, GenericViewSet):
     """
     Super custom endpoint to send the possible vaccine presentation (doses per vial) to the front end
 
-    A config with a slug == self.CONFIG_SLUG  is required (create it via the django admin)
+    A config with a slug == DOSES_PER_VIAL_CONFIG_SLUG  is required (create it via the django admin)
 
     The config data should have 1 key per available vaccine, and the value should be a list of positive integers, eg: 'bOPV':[10,20]
 
@@ -48,7 +48,6 @@ class DosesPerVialViewset(ListModelMixin, GenericViewSet):
         ),
     ]
     serializer_class = ConfigSerializer
-    CONFIG_SLUG = DOSES_PER_VIAL_CONFIG_SLUG
 
     def get_queryset(self):
-        return Config.objects.filter(slug=self.CONFIG_SLUG)
+        return Config.objects.filter(slug=DOSES_PER_VIAL_CONFIG_SLUG)

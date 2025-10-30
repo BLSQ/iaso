@@ -31,6 +31,7 @@ import { useFormAValidation } from './validation';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { DosesPerVialDropdown } from '../../types';
+import { useAvailablePresentations } from './dropdownOptions';
 
 type Props = {
     formA?: any;
@@ -96,24 +97,10 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         Boolean(formA?.alternative_campaign),
     );
 
-    const availableDosesPresentations: DropdownOptions<number>[] =
-        useMemo(() => {
-            const availableOptions: DropdownOptions<number>[] = dosesOptions
-                ? dosesOptions.filter(option => option.doses_available > 0)
-                : [];
-            const availableValues = availableOptions.map(o => o.value);
-            // If the form A has already been encoded, we add the value to avoid putting the form in error
-            if (
-                formA?.doses_per_vial &&
-                !availableValues.includes(formA.doses_per_vial)
-            ) {
-                availableOptions.push({
-                    label: `${formA.doses_per_vial}`,
-                    value: formA.doses_per_vial,
-                });
-            }
-            return availableOptions;
-        }, [dosesOptions, formA?.doses_per_vial]);
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        formA,
+    );
     const { campaignOptions, isFetching, roundOptions } = useCampaignOptions(
         countryName,
         formik.values.campaign,

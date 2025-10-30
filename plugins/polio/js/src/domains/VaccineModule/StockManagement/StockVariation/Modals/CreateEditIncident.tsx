@@ -29,7 +29,10 @@ import { Vaccine } from '../../../../../constants/types';
 import { useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
-import { useIncidentOptions } from './dropdownOptions';
+import {
+    useAvailablePresentations,
+    useIncidentOptions,
+} from './dropdownOptions';
 import { useIncidentValidation } from './validation';
 import { DosesPerVialDropdown } from '../../types';
 
@@ -136,8 +139,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     vaccine,
     vaccineStockId,
     dosesOptions,
-    hasUsableStock,
-    hasUnusableStock,
+    hasUsableStock = true, // set default to true for editing mode
+    hasUnusableStock = true, // set default to true for editing mode
     defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -162,6 +165,10 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             return movementType === 'inventoryAdd' ? 0 : i.usable_vials;
         },
         [incidentConfig],
+    );
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        incident,
     );
 
     const handleInventoryTypeChange = (
@@ -411,18 +418,18 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                                 required
                             />
                         </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.doses_per_vial)}
-                                name="doses_per_vial"
-                                component={SingleSelect}
-                                options={dosesOptions}
-                                disabled={hasFixedDosesPerVial}
-                                required
-                            />
-                        </Box>
                     </>
                 )}
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
+                        required
+                    />
+                </Box>
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.comment)}

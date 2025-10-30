@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-} from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box } from '@mui/material';
 import {
     AddButton,
@@ -20,9 +15,11 @@ import { VaccineForStock } from '../../../../../constants/types';
 import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
 import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
-import { useEarmarkOptions } from './dropdownOptions';
+import {
+    useAvailablePresentations,
+    useEarmarkOptions,
+} from './dropdownOptions';
 import { useEarmarkValidation } from './validation';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
@@ -82,24 +79,11 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
         round => round.value === formik.values.round_number,
     );
     const earmarkTypeOptions = useEarmarkOptions();
-    const availableDosesPresentations: DropdownOptions<number>[] =
-        useMemo(() => {
-            const availableOptions: DropdownOptions<number>[] = dosesOptions
-                ? dosesOptions.filter(option => option.doses_available > 0)
-                : [];
-            const availableValues = availableOptions.map(o => o.value);
-            // If the form A has already been encoded, we add the value to avoid putting the form in error
-            if (
-                earmark?.doses_per_vial &&
-                !availableValues.includes(earmark.doses_per_vial)
-            ) {
-                availableOptions.push({
-                    label: `${earmark.doses_per_vial}`,
-                    value: earmark.doses_per_vial,
-                });
-            }
-            return availableOptions;
-        }, [dosesOptions, earmark?.doses_per_vial]);
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        earmark,
+    );
+
     const handleVialsChange = useCallback(
         value => {
             setFieldValue('vials_earmarked', value);

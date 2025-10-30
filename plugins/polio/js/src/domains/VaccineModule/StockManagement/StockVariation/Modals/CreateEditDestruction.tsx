@@ -25,8 +25,8 @@ import {
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
-import { DropdownOptions } from 'Iaso/types/utils';
 import { DosesPerVialDropdown } from '../../types';
+import { useAvailablePresentations } from './dropdownOptions';
 
 type Props = {
     destruction?: any;
@@ -70,24 +70,11 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         onSubmit: values => save(values),
         validationSchema,
     });
-    const availableDosesPresentations: DropdownOptions<number>[] =
-        useMemo(() => {
-            const availableOptions: DropdownOptions<number>[] = dosesOptions
-                ? dosesOptions.filter(option => option.unusable_doses > 0)
-                : [];
-            const availableValues = availableOptions.map(o => o.value);
-            // If the form A has already been encoded, we add the value to avoid putting the form in error
-            if (
-                destruction?.doses_per_vial &&
-                !availableValues.includes(destruction.doses_per_vial)
-            ) {
-                availableOptions.push({
-                    label: `${destruction.doses_per_vial}`,
-                    value: destruction.doses_per_vial,
-                });
-            }
-            return availableOptions;
-        }, [dosesOptions, destruction?.doses_per_vial]);
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        destruction,
+        false,
+    );
 
     const [debouncedDate] = useDebounce(
         formik.values.destruction_report_date,

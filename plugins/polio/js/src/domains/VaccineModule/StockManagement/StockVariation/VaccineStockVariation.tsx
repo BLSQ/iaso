@@ -112,7 +112,7 @@ export const VaccineStockVariation: FunctionComponent = () => {
         summary?.country_name,
         summary?.vaccine_type,
     );
-
+    console.log('HAS USABLE', hasUsableStock, dosesOptions, tab);
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack}>

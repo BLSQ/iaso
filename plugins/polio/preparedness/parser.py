@@ -424,7 +424,7 @@ def parse_prepardness_v2(spread: CachedSpread, exclusions=None):
 
 
 def get_preparedness(spread: CachedSpread, exclusions=None):
-    exclusions = Config.objects.filter(slug=WORKSHEET_EXCLUSION_SLUG).first()
+    exclusions = Config.objects.filter(slug=WORKSHEET_EXCLUSION_SLUG).first().content
     #  use New system with named range
     if "national_status_score" in spread.range_dict:
         return parse_prepardness_v2(spread, exclusions)

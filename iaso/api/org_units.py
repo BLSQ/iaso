@@ -7,6 +7,8 @@ from datetime import datetime
 from time import gmtime, strftime
 from typing import Dict, List, Union
 
+import pandas as pd
+
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
@@ -24,7 +26,12 @@ from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_u
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
-from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
+from iaso.api.serializers import (
+    OrgUnitImportSerializer,
+    OrgUnitSearchSerializer,
+    OrgUnitSmallSearchSerializer,
+    OrgUnitTreeSearchSerializer,
+)
 from iaso.exports import CleaningFileResponse, parquet
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, InstanceFile, OrgUnit, OrgUnitType, Project, SourceVersion
@@ -955,6 +962,125 @@ class OrgUnitViewSet(viewsets.ViewSet):
         """This endpoint is used by mobile app"""
         new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
+
+    @action(
+        detail=False,
+        methods=["POST"],
+        permission_classes=[permissions.IsAuthenticated, HasCreateOrgUnitPermission],
+    )
+    def import_org_units(self, request):
+        """
+        Import org units from a CSV or Excel file.
+
+        The file should have columns matching the OrgUnit model fields.
+        Required columns: 'name', 'org_unit_type'.
+        Optional columns: 'parent', 'parent2', 'parent3', ... to specify the hierarchy for disambiguation.
+        'parent' is the direct parent, 'parent2' is the grandparent, and so on.
+
+        Example CSV:
+        name,parent,parent2,org_unit_type
+        Region A,,,Region
+        District A1,Region A,,District
+        Hôpital St-Pierre,District A1,Region A,Facility
+        """
+        serializer = OrgUnitImportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        file = serializer.validated_data["file"]
+        file_extension = file.name.split(".")[-1].lower()
+
+        try:
+            if file_extension == "csv":
+                df = pd.read_csv(file)
+            elif file_extension in ["xls", "xlsx"]:
+                df = pd.read_excel(file)
+            else:
+                return Response({"error": "Unsupported file format"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({"error": f"Error reading file: {e}"}, status=status.HTTP_400_BAD_REQUEST)
+
+        created_count = 0
+        updated_count = 0
+        errors = []
+
+        default_version = request.user.iaso_profile.account.default_version
+        if not default_version:
+            return Response({"error": "No default version found for your account"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Find parent columns dynamically and sort them to respect hierarchy
+        parent_cols = sorted([col for col in df.columns if col.startswith("parent")], key=lambda x: (len(x), x))
+
+        for index, row in df.iterrows():
+            name = row.get("name")
+            org_unit_type_name = row.get("org_unit_type")
+
+            if not name or not org_unit_type_name:
+                errors.append(f"Row {index + 2}: 'name' and 'org_unit_type' are required.")
+                continue
+
+            try:
+                parent = None
+                parent_names = []
+                for col in parent_cols:
+                    parent_name = row.get(col)
+                    if pd.isna(parent_name) or parent_name == "":
+                        break
+                    parent_names.append(parent_name)
+
+                if parent_names:
+                    parent_filters = {"name__iexact": parent_names[0], "version": default_version}
+
+                    current_parent_level = "parent"
+                    for ancestor_name in parent_names[1:]:
+                        parent_filters[f"{current_parent_level}__name__iexact"] = ancestor_name
+                        current_parent_level += "__parent"
+
+                    try:
+                        parent = OrgUnit.objects.get(**parent_filters)
+                    except OrgUnit.DoesNotExist:
+                        errors.append(f"Row {index + 2}: Parent hierarchy {parent_names} not found.")
+                        continue
+                    except OrgUnit.MultipleObjectsReturned:
+                        errors.append(
+                            f"Row {index + 2}: Ambiguous parent hierarchy {parent_names}. Multiple matches found."
+                        )
+                        continue
+
+                org_unit_type = OrgUnitType.objects.get(name=org_unit_type_name)
+
+                org_unit, created = OrgUnit.objects.get_or_create(
+                    name=name,
+                    parent=parent,
+                    org_unit_type=org_unit_type,
+                    version=default_version,
+                )
+
+                org_unit.validation_status = OrgUnit.VALIDATION_NEW
+                org_unit.creator = request.user
+                org_unit.save()
+
+                if created:
+                    created_count += 1
+                else:
+                    updated_count += 1
+
+            except OrgUnitType.DoesNotExist:
+                errors.append(f"Row {index + 2}: Org unit type '{org_unit_type_name}' not found.")
+            except OrgUnit.MultipleObjectsReturned:
+                errors.append(
+                    f"Row {index + 2}: Ambiguous org unit '{name}' with parent '{parent.name if parent else None}'. Multiple matches found."
+                )
+            except Exception as e:
+                errors.append(f"Row {index + 2}: An unexpected error occurred: {e}")
+
+        if errors:
+            return Response(
+                {"status": "error", "created": created_count, "updated": updated_count, "errors": errors},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return Response(
+            {"status": "success", "created": created_count, "updated": updated_count}, status=status.HTTP_201_CREATED
+        )
 
     def retrieve(self, request, pk=None):
         prefetch_args = ["reference_instances", "org_unit_type__sub_unit_types", "groups"]

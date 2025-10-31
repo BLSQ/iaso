@@ -18,6 +18,18 @@ WORKSHEET_EXCLUSION_LIST = ["synth_scores"]
 WORKSHEET_EXCLUSION_SLUG = "preparedness_sheetnames_blacklist"
 
 
+def is_worksheet_exluded(worksheet, exclusions_list):
+    exclusions = []
+    if exclusions_list:
+        exclusions = [excl.lower for excl in exclusions_list]
+    return (
+        worksheet.is_hidden
+        or worksheet.title.lower() in WORKSHEET_EXCLUSION_LIST
+        or worksheet.title.lower().startswith("sheet")
+        or (worksheet.title in exclusions)
+    )
+
+
 def parse_value(value: str):
     try:
         return int(value.replace("%", ""))
@@ -138,12 +150,7 @@ class RoundNumber(str, Enum):
 
 def get_national_level_preparedness(spread: CachedSpread, exclusions):
     for worksheet in spread.worksheets():
-        if (
-            worksheet.is_hidden
-            or worksheet.title.lower() in WORKSHEET_EXCLUSION_LIST
-            or worksheet.title.lower().startswith("sheet")
-            or (exclusions and worksheet.title in exclusions)
-        ):
+        if is_worksheet_exluded(worksheet, exclusions):
             continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
@@ -189,12 +196,7 @@ def get_regional_level_preparedness(spread: CachedSpread, exclusions):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
-        if (
-            sheet.is_hidden
-            or sheet.title.lower() in WORKSHEET_EXCLUSION_LIST
-            or sheet.title.lower().startswith("sheet")
-            or (exclusions and sheet.title in exclusions)
-        ):
+        if is_worksheet_exluded(sheet, exclusions):
             continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
@@ -282,12 +284,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread, exclusions):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
-        if (
-            sheet.is_hidden
-            or sheet.title.lower() in WORKSHEET_EXCLUSION_LIST
-            or sheet.title.lower().startswith("sheet")
-            or (exclusions and sheet.title in exclusions)
-        ):
+        if is_worksheet_exluded(sheet, exclusions):
             continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
@@ -371,12 +368,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread, exclusions):
 
 def get_national_level_preparedness_v2(spread: CachedSpread, exclusions):
     for worksheet in spread.worksheets():
-        if (
-            worksheet.is_hidden
-            or worksheet.title.lower() in WORKSHEET_EXCLUSION_LIST
-            or worksheet.title.lower().startswith("sheet")
-            or (exclusions and worksheet.title in exclusions)
-        ):
+        if is_worksheet_exluded(worksheet, exclusions):
             continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
@@ -424,7 +416,10 @@ def parse_prepardness_v2(spread: CachedSpread, exclusions=None):
 
 
 def get_preparedness(spread: CachedSpread, exclusions=None):
-    exclusions = Config.objects.filter(slug=WORKSHEET_EXCLUSION_SLUG).first().content
+    exclusions_obj = Config.objects.filter(slug=WORKSHEET_EXCLUSION_SLUG).first()
+    exclusions = None
+    if exclusions_obj:
+        exclusions = exclusions_obj.content
     #  use New system with named range
     if "national_status_score" in spread.range_dict:
         return parse_prepardness_v2(spread, exclusions)

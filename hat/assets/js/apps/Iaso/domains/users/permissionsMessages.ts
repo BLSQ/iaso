@@ -790,6 +790,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Allows to change the default version of a geo data source',
     },
+    iaso_saas_account_creation: {
+        id: 'iaso.permissions.iaso_saas_account_creation',
+        defaultMessage: 'SaaS account creation',
+    },
+    iaso_saas_account_creation_tooltip: {
+        id: 'iaso.permissions.iaso_saas_account_creation_tooltip',
+        defaultMessage: 'Allows to create new SaaS accounts and to check for account/user name availability',
+    }
 });
 
 export default PERMISSIONS_MESSAGES;

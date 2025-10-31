@@ -24,7 +24,7 @@ from iaso.enketo import (
     to_xforms_xml,
 )
 from iaso.enketo.enketo_url import generate_signed_url
-from iaso.enketo.enketo_xml import inject_xml_find_uuid
+from iaso.enketo.enketo_xml import collect_values, inject_xml_find_uuid, parse_to_structured_dict
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Profile, Project, User
 from iaso.permissions.core_permissions import CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.utils.encryption import calculate_md5
@@ -67,6 +67,7 @@ def _enketo_url_for_creation(form, instance, request, return_url):
         instance_xml=new_xml,
         instance_id=instance_uuid,
         return_url=return_url,
+        instance=instance,
     )
     return edit_url
 
@@ -252,12 +253,29 @@ def _build_url_for_edition(request, instance, user_id=None):
         instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id, instance=instance
     )
 
+    def generate_url_for_enketo(url_with_secret):
+        # in S3 based environnement we will return
+        #    m.InstanceFile.objects.last().file.url
+        #    'https://iaso-prod.s3.amazonaws.com/ihp_1/instance_files/2025_10/sample.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAS4KZU3S6EZUNRWR7%2F20251008%2Feu-central-1%2Fs3%2Faws4_request&X-Amz-Date=20251008T133515Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=9a6cba802e94c7b3db1b8276fadb408d1055857fa16335c2a15f85b578e0b990'
+        #
+        # but in development
+        #   the file.url is just a path
+        #    we use the current request to resolve the host and swap to iaso internal name
+
+        if enketo_settings().get("ENKETO_DEV"):
+            url_with_secret = request.build_absolute_uri(url_with_secret)
+            url_with_secret = url_with_secret.replace("localhost:8081", "iaso:8081")
+
+        return url_with_secret
+
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),
         form_id_string=instance.uuid,
         instance_xml=new_xml,
         instance_id=instance_uuid,
         return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
+        instance=instance,
+        generate_url_for_enketo=generate_url_for_enketo,
     )
     return edit_url
 
@@ -403,6 +421,9 @@ class EnketoSubmissionAPIView(APIView):
             except:
                 pass
 
+            used_files = collect_values(parse_to_structured_dict(xml))
+            deprecated_files = instance.instancefile_set.exclude(name__in=used_files)
+
             for file_name in request.FILES:
                 if file_name != "xml_submission_file":
                     fi = InstanceFile()
@@ -410,6 +431,10 @@ class EnketoSubmissionAPIView(APIView):
                     fi.instance_id = instance.id
                     fi.name = file_name
                     fi.save()
+
+            for deprecated_file in deprecated_files:
+                deprecated_file.deleted = True
+                deprecated_file.save()
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:

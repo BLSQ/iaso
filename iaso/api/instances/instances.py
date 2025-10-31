@@ -914,15 +914,7 @@ class InstancesViewSet(viewsets.ViewSet):
         """
         GET /api/instances/<pk>/instance_logs/<logId>/
         """
-        instance = get_object_or_404(
-            Instance.objects.filter(pk=pk).prefetch_related(
-                Prefetch(
-                    "instancefile_set",
-                    queryset=InstanceFile.objects.filter(deleted=False).only("file"),
-                    to_attr="filtered_files",
-                )
-            )
-        )
+        instance = get_object_or_404(Instance.objects.filter_for_user(request.user).filter(pk=pk))
         log = get_object_or_404(Modification, pk=logId)
         log_dict = log.as_dict()
         possible_fields = (
@@ -930,8 +922,13 @@ class InstancesViewSet(viewsets.ViewSet):
             if instance.form_version and instance.form_version.possible_fields
             else []
         )
-        log_dict["files"] = [f.file.url if f.file else None for f in instance.filtered_files]
+        dict_files = {}
+        # return also deleted once because here we are looking the history of the submission
+        for f in instance.instancefile_set.all():
+            dict_files[f.name] = f.file.url
+        log_dict["files"] = dict_files
         log_dict["possible_fields"] = possible_fields
+        log_dict["form_descriptor"] = instance.form_version.form_descriptor if instance.form_version else None
         return Response(log_dict)
 
 

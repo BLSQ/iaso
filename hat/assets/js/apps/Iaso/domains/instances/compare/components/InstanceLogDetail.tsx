@@ -4,11 +4,10 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IntlFormatMessage,
+    ErrorBoundary,
 } from 'bluesquare-components';
 
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
-
-import { useGetFormDescriptor } from '../hooks/useGetInstanceLogs';
 
 import MESSAGES from '../messages';
 import { InstanceLogContentBasic } from './InstanceLogContentBasic';
@@ -24,15 +23,10 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
     isLogDetailLoading,
     isLogDetailError,
 }) => {
-    const {
-        data: instanceLogDescriptor,
-        isLoading: isLogDescriptorLoading,
-        isError: isLogDescriptorError,
-    } = useGetFormDescriptor(instanceLogContent?.logA?.form);
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const hasError = isLogDetailError || isLogDescriptorError;
-    const isLoading = isLogDetailLoading || isLogDescriptorLoading;
+    const hasError = isLogDetailError;
+    const isLoading = isLogDetailLoading;
     return (
         <>
             {hasError && (
@@ -52,10 +46,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 {!hasError && !isLoading && instanceLogContent && (
-                    <InstanceLogContentBasic
-                        fileContent={instanceLogContent}
-                        fileDescriptor={instanceLogDescriptor}
-                    />
+                    <InstanceLogContentBasic fileContent={instanceLogContent} />
                 )}
             </Paper>
         </>

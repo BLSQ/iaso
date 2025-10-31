@@ -20,7 +20,7 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit import models as audit_models
 from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
@@ -42,6 +42,7 @@ from iaso.utils.gis import simplify_geom
 
 from ..plugins import is_polio_plugin_active
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
+from .serializers import OrgUnitImportSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -586,7 +587,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         original_copy = deepcopy(org_unit)
 
         if "name" in request.data:
-            org_unit.name = request.data["name"]
+            org_unit.name = request.data["name"].strip() if request.data["name"] else request.data["name"]
         if "source_ref" in request.data:
             org_unit.source_ref = request.data["source_ref"]
 
@@ -805,7 +806,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         if request.user:
             org_unit.creator = request.user
-        name = request.data.get("name", None)
+
+        name = request.data.get("name")
+        if name:
+            name = name.strip()
+        else:
+            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
+
+        org_unit.name = name
+
         version_id = request.data.get("version_id", None)
         if version_id:
             authorized_ids = list(
@@ -829,15 +838,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.version = profile.account.default_version
 
-        if not name:
-            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
-
         if org_unit.version.data_source.read_only:
             errors.append(
                 {"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"}
             )
-
-        org_unit.name = name
 
         source_ref = request.data.get("source_ref", None)
         org_unit.source_ref = source_ref
@@ -1011,55 +1015,35 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units: List[Dict], user, app_id):
+def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True):
+    """Import a list of org units.
+
+    The `set_source_created_at` parameter was added to preserve legacy behavior on
+    some endpoints, but should be True in most cases.
+    """
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     if project.account.default_version.data_source.read_only:
-        raise Exception("Creation of org unit not authorized on default data source")
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
+        raise ValidationError("Creation of org unit not authorized on default data source")
 
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+    # common values to all new org units
+    extra_save_kwargs = {
+        "custom": True,
+        "validation_status": OrgUnit.VALIDATION_NEW,
+        "source": "API",
+        "version": project.account.default_version,
+        "creator": user if (user and not user.is_anonymous) else None,
+    }
 
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                # there exist versions of the mobile app in the wild with both parentId and parent_id
-                parent_id = org_unit.get("parent_id", None)
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
+    serializer_context = {"set_source_created_at": set_source_created_at}
 
-            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
+    for org_unit_data in org_units:
+        serializer = OrgUnitImportSerializer(data=org_unit_data, context=serializer_context)
+        serializer.is_valid(raise_exception=True)
 
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.source_created_at = timestamp_to_utc_datetime(int(t))
+        org_unit_db = serializer.save(**extra_save_kwargs)
 
-            if not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
+        if org_unit_db:
             new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
-            org_unit_db.save()
+
     return new_org_units

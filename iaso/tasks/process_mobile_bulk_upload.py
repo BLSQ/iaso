@@ -29,8 +29,8 @@ from hat.api_import.models import APIImport
 from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modification
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.instances import import_data as import_instances
-from iaso.api.mobile.org_units import import_data as import_org_units
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
+from iaso.api.org_units import import_data as import_org_units
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, Project, StockLedgerItem
@@ -66,7 +66,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
             with zipfile.ZipFile(api_import.file, "r") as zip_ref:
                 if ORG_UNITS_JSON in zip_ref.namelist():
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
-                    new_org_units = import_org_units(org_units_data, user, project.app_id)
+                    new_org_units = import_org_units(org_units_data, user, project.app_id, set_source_created_at=False)
                     stats["new_org_units"] = len(new_org_units)
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")

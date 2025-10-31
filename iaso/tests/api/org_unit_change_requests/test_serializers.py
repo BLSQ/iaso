@@ -640,7 +640,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
             "new_parent_id": parent_org_unit.id,
-            "new_name": "Foo",
+            "new_name": "Foo ",  # extra white space to check name trimming
             "new_org_unit_type_id": self.org_unit_type.id,
             "new_groups": [group1.id, group2.id],
             "new_location": {

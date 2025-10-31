@@ -390,11 +390,6 @@ class FileFormatEnum(enum.Enum):
     XLSX: str = "xlsx"
 
 
-# To sort timestamp by date, check mobile_orgunits for usage
-def get_timestamp(d):
-    return float(d["created_at"])
-
-
 class CSVExportMixin:
     @action(
         detail=False,

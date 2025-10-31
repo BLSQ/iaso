@@ -166,6 +166,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         },
         [incidentConfig],
     );
+
+    // TODO fix this when physical Inventory
     const availableDosesPresentations = useAvailablePresentations(
         dosesOptions,
         incident,
@@ -257,6 +259,9 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     const currentMovementType = incidentConfig[formik.values.stock_correction];
+    const isInventoryMovement =
+        currentMovementType === 'inventoryAdd' ||
+        currentMovementType === 'inventoryRemove';
 
     return (
         <FormikProvider value={formik}>
@@ -425,7 +430,11 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.doses_per_vial)}
                         name="doses_per_vial"
                         component={SingleSelect}
-                        options={availableDosesPresentations}
+                        options={
+                            isInventoryMovement
+                                ? dosesOptions // We want to allow all possible presentation for physical inventory operations
+                                : availableDosesPresentations
+                        }
                         disabled={hasFixedDosesPerVial}
                         required
                     />

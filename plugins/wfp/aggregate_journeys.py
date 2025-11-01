@@ -41,16 +41,11 @@ class AggregatedJourney:
                 row["programme_type"] = all_visits_by_criteria[0]["visit__journey__programme_type"]
                 all_visits_by_ration_size = groupby(all_visits_by_criteria, key=itemgetter("ration_size"))
 
-                row["whz_score_2"] = row["whz_score_2"] + sum(
-                    visit.get("whz_score_2", 0) for visit in all_visits_by_criteria
-                )
-                row["whz_score_3"] = row["whz_score_3"] + sum(
-                    visit.get("whz_score_3", 0) for visit in all_visits_by_criteria
-                )
-                row["whz_score_3_2"] = row["whz_score_3_2"] + sum(
-                    visit.get("whz_score_3_2", 0) for visit in all_visits_by_criteria
-                )
-                row["oedema"] = row["oedema"] + sum(visit.get("oedema", 0) for visit in all_visits_by_criteria)
+                for visit in all_visits_by_criteria:
+                    row["whz_score_2"] = row["whz_score_2"] + visit.get("whz_score_2", 0)
+                    row["whz_score_3"] = row["whz_score_3"] + visit.get("whz_score_3", 0)
+                    row["whz_score_3_2"] = row["whz_score_3_2"] + visit.get("whz_score_3_2", 0)
+                    row["oedema"] = row["oedema"] + visit.get("oedema", 0)
 
                 journey_by_exit_types = groupby(
                     list(all_visits_by_criteria), key=itemgetter("visit__journey__exit_type")
@@ -64,39 +59,20 @@ class AggregatedJourney:
                         for journey_by_exit_type in aggregated_journey_by_exit_type
                     )
                     row["beneficiary_with_exit_type"] = len(distinct_beneficiary)
+                    for visit in aggregated_journey_by_exit_type:
+                        row["muac_under_11_5"] = row["muac_under_11_5"] + visit.get("muac_under_11_5", 0)
+                        row["muac_above_12_5"] = row["muac_above_12_5"] + visit.get("muac_above_12_5", 0)
+                        row["muac_11_5_12_4"] = row["muac_11_5_12_4"] + visit.get("muac_11_5_12_4", 0)
+                        row["muac_under_23"] = row["muac_under_23"] + visit.get("muac_under_23", 0)
+                        row["muac_above_23"] = row["muac_above_23"] + visit.get("muac_above_23", 0)
 
-                    row["muac_under_11_5"] = row["muac_under_11_5"] + sum(
-                        visit.get("muac_under_11_5", 0) for visit in aggregated_journey_by_exit_type
-                    )
-                    row["muac_above_12_5"] = row["muac_above_12_5"] + sum(
-                        visit.get("muac_above_12_5", 0) for visit in aggregated_journey_by_exit_type
-                    )
-                    row["muac_11_5_12_4"] = row["muac_11_5_12_4"] + sum(
-                        visit.get("muac_11_5_12_4", 0) for visit in aggregated_journey_by_exit_type
-                    )
+                        if visit.get("assistance_type") == "rutf":
+                            row["given_sachet_rutf"] = row["given_sachet_rutf"] + visit.get("quantity_given", 0)
+                        elif visit.get("assistance_type") == "rusf":
+                            row["given_sachet_rusf"] = row["given_sachet_rusf"] + visit.get("quantity_given", 0)
+                        elif visit.get("assistance_type") in ["csb", "csb1", "csb2"]:
+                            row["given_quantity_csb"] = row["given_quantity_csb"] + visit.get("csb_quantity", 0)
 
-                    row["muac_under_23"] = row["muac_under_23"] + sum(
-                        visit.get("muac_under_23", 0) for visit in aggregated_journey_by_exit_type
-                    )
-                    row["muac_above_23"] = row["muac_above_23"] + sum(
-                        visit.get("muac_above_23", 0) for visit in aggregated_journey_by_exit_type
-                    )
-
-                    row["given_sachet_rutf"] = row["given_sachet_rutf"] + sum(
-                        visit.get("quantity_given", 0)
-                        for visit in aggregated_journey_by_exit_type
-                        if visit.get("assistance_type") == "rutf"
-                    )
-                    row["given_sachet_rusf"] = row["given_sachet_rusf"] + sum(
-                        visit.get("quantity_given", 0)
-                        for visit in aggregated_journey_by_exit_type
-                        if visit.get("assistance_type") == "rusf"
-                    )
-                    row["given_quantity_csb"] = row["given_quantity_csb"] + sum(
-                        visit.get("csb_quantity", 0)
-                        for visit in aggregated_journey_by_exit_type
-                        if visit.get("assistance_type") in ["csb", "csb1", "csb2"]
-                    )
                     row["org_unit"] = org_unit
                     row["number_visits"] = len(aggregated_journey_by_exit_type)
                     visit_admission_types.append({**row})

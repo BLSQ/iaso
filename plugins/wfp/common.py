@@ -7,7 +7,7 @@ from operator import itemgetter
 
 from dateutil.relativedelta import *
 from django.core.paginator import Paginator
-from django.db.models import Case, CharField, F, FloatField, Q, Sum, Value, When
+from django.db.models import Case, CharField, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Concat, Extract
 
 from iaso.models import *
@@ -824,7 +824,7 @@ class ETL:
                     Case(
                         When(visit__muac_size__lt=11.5, then=Value(1)),
                         default=Value(0),
-                        output_field=FloatField(),
+                        output_field=IntegerField(),
                     )
                 )
             )
@@ -833,41 +833,41 @@ class ETL:
                     Case(
                         When(visit__muac_size__range=(11.5, 12.4), then=Value(1)),
                         default=Value(0),
-                        output_field=FloatField(),
+                        output_field=IntegerField(),
                     )
                 )
             )
             .annotate(
                 muac_above_12_5=Sum(
-                    Case(When(visit__muac_size__gte=12.5, then=Value(1)), default=Value(0), output_field=FloatField())
+                    Case(When(visit__muac_size__gte=12.5, then=Value(1)), default=Value(0), output_field=IntegerField())
                 )
             )
             .annotate(
                 whz_score_2=Case(
                     When(visit__whz_color="Green", then=Value(1)),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
                 whz_score_3=Case(
                     When(visit__whz_color="Red", then=Value(1)),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
                 whz_score_3_2=Case(
                     When(visit__whz_color="Yellow", then=Value(1)),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
                 oedema=Case(
                     When(visit__journey__admission_criteria="oedema", then=Value(1)),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
@@ -878,7 +878,7 @@ class ETL:
                         then=Value(1),
                     ),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
@@ -889,7 +889,7 @@ class ETL:
                         then=Value(1),
                     ),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
@@ -900,17 +900,17 @@ class ETL:
                         then=Value(1),
                     ),
                     default=Value(0),
-                    output_field=FloatField(),
+                    output_field=IntegerField(),
                 )
             )
             .annotate(
                 muac_under_23=Sum(
-                    Case(When(visit__muac_size__lt=23, then=Value(1)), default=Value(0), output_field=FloatField())
+                    Case(When(visit__muac_size__lt=23, then=Value(1)), default=Value(0), output_field=IntegerField())
                 )
             )
             .annotate(
                 muac_above_23=Sum(
-                    Case(When(visit__muac_size__gte=23, then=Value(1)), default=Value(0), output_field=FloatField())
+                    Case(When(visit__muac_size__gte=23, then=Value(1)), default=Value(0), output_field=IntegerField())
                 )
             )
             .order_by("visit__id")

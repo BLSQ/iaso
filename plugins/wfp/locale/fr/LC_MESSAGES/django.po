@@ -48,7 +48,7 @@ msgstr "Transfert vers OTP"
 
 #: plugins/wfp/models.py
 msgid "Transfer in from other OTP"
-msgstr "Transfer in from other OTP"
+msgstr "Transfert depuis autre OTP"
 
 #: plugins/wfp/models.py
 msgid "Transfer To TSFP"
@@ -56,7 +56,7 @@ msgstr "Transfert vers TSFP"
 
 #: plugins/wfp/models.py
 msgid "Transfer in from other TSFP"
-msgstr "Transfer in from other TSFP"
+msgstr "Transfert depuis autre TSFP"
 
 #: plugins/wfp/models.py
 msgid "Non respondent"

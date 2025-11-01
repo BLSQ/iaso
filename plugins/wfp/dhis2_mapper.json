@@ -1,0 +1,576 @@
+{
+    "U5": {
+        "screening_reporting": {
+            "Male": {
+                "muac_under_11_5": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "aDNZFkOJrzS"
+                },
+                "muac_11_5_12_4": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "E02TuYa4Y0E"
+                },
+                "muac_above_12_5": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "Kx5HXXDyFTh"
+                }
+            },
+            "Female": {
+                "muac_under_11_5": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "dK0jB5DJeoa"
+                },
+                "muac_11_5_12_4": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "Ad1FdN2tKlA"
+                },
+                "muac_above_12_5": {
+                    "dataElement": "wWGcSv10BOM",
+                    "categoryOptionCombo": "Qnd1bDi04CU"
+                }
+            }
+        },
+        "tsfp_reporting": {
+            "new_case": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "i7EmmZqqBnl",
+                        "categoryOptionCombo": "OUXxVEWIxuM"
+                    },
+                    "muac_11_5_12_4": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "JhBDuSBnSyP"
+                    },
+                    "whz_score_3_2": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "bHQaGZVwFLo"
+                    },
+                    "whz_score_3": {
+                        "dataElement": "Jf2bBjhWhPL",
+                        "categoryOptionCombo": "OUXxVEWIxuM"
+                    },
+                    "muac_under_11_5": {
+                        "dataElement": "KpXsZHmcWsc",
+                        "categoryOptionCombo": "OUXxVEWIxuM"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "i7EmmZqqBnl",
+                        "categoryOptionCombo": "qvjvq1hK7Lc"
+                    },
+                    "muac_11_5_12_4": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "B1nT0iMwzkr"
+                    },
+                    "whz_score_3_2": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "hDzFiVmyzIz"
+                    },
+                    "whz_score_3": {
+                        "dataElement": "Jf2bBjhWhPL",
+                        "categoryOptionCombo": "qvjvq1hK7Lc"
+                    },
+                    "muac_under_11_5": {
+                        "dataElement": "KpXsZHmcWsc",
+                        "categoryOptionCombo": "qvjvq1hK7Lc"
+                    }
+                }
+            },
+            "relapse": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "zHhcDrdjuop"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "y9OJYgXui1O",
+                        "categoryOptionCombo": "xu8WQ0mbhvs"
+                    }
+                }
+            },
+            "returned_defaulter": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "kZLTLs2lQBS"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "WSx5Tr62OQW"
+                    }
+                }
+            },
+            "returned_referral": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "oHQmabQiw58"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "z5cphqP75nr"
+                    }
+                }
+            },
+            "transfer_from_other_tsfp": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "JdekLvpgdQ3"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "jh4uMjpyFeC",
+                        "categoryOptionCombo": "kyIFy9GuWJ6"
+                    }
+                }
+            },
+            "cured": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "GY0Wv5bCjNG"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "S31DHHucDWV"
+                    }
+                }
+            },
+            "death": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "UtyDhZcM5KV"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "Or1dTOACYV0"
+                    }
+                }
+            },
+            "defaulter": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "wRhj2sDa1sE"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "XRvLNSlj0PU"
+                    }
+                }
+            },
+            "non_respondent": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "bno5z1hT6nR"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "ghX9uosXLtl",
+                        "categoryOptionCombo": "XJaSPkakLJn"
+                    }
+                }
+            },
+            "transfer_to_tsfp": {
+                "Male": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "tE9PYXpUnNb",
+                        "categoryOptionCombo": "IqspuuCZom2"
+                    }
+                },
+                "Female": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "tE9PYXpUnNb",
+                        "categoryOptionCombo": "olMEzOhOcgB"
+                    }
+                }
+            },
+            "transfer_to_otp": {
+                "Male": {
+                    "transfer_sc_itp_otp": {
+                        "dataElement": "XhGPDZSGG7k",
+                        "categoryOptionCombo": "hVytXy7CmTa"
+                    }
+                },
+                "Female": {
+                    "transfer_sc_itp_otp": {
+                        "dataElement": "XhGPDZSGG7k",
+                        "categoryOptionCombo": "tKgHQgSr2Nn"
+                    }
+                }
+            }
+        },
+        "otp_reporting": {
+            "new_case": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "t4WxTl6Gp14",
+                        "categoryOptionCombo": "OUXxVEWIxuM"
+                    },
+                    "muac_under_11_5": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "fEgN084L7Al"
+                    },
+                    "whz_score_3": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "cKGVsutl961"
+                    },
+                    "oedema": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "PguqOVCzetd"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "t4WxTl6Gp14",
+                        "categoryOptionCombo": "qvjvq1hK7Lc"
+                    },
+                    "muac_under_11_5": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "abwmtb6Nn1D"
+                    },
+                    "whz_score_3": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "toSTgmC0STJ"
+                    },
+                    "oedema": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "Vs5dotyWps5"
+                    }
+                }
+            },
+            "relapse": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "Mxkp0GrKG5h"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "BMNn4quX4qt",
+                        "categoryOptionCombo": "abwmtb6Nn1D"
+                    }
+                }
+            },
+            "returned_defaulter": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "bgh3f3DwLLa"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "Ms6oRxjgYx6"
+                    }
+                }
+            },
+            "returned_referral": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "akho7qSqR50"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "d6wvVB6wgJk"
+                    }
+                }
+            },
+            "referred_from_otp_sam": {
+                "Male": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "caEaXrcOE6g"
+                    }
+                },
+                "Female": {
+                    "total_beneficiary": {
+                        "dataElement": "z2cqC057w7V",
+                        "categoryOptionCombo": "wKmEtZG1gYi"
+                    }
+                }
+            },
+            "cured": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "GY0Wv5bCjNG"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "S31DHHucDWV"
+                    }
+                }
+            },
+            "death": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "UtyDhZcM5KV"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "Or1dTOACYV0"
+                    }
+                }
+            },
+            "defaulter": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "wRhj2sDa1sE"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "XRvLNSlj0PU"
+                    }
+                }
+            },
+            "non_respondent": {
+                "Male": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "bno5z1hT6nR"
+                    }
+                },
+                "Female": {
+                    "total_with_exit_type": {
+                        "dataElement": "X0n5lYJInut",
+                        "categoryOptionCombo": "XJaSPkakLJn"
+                    }
+                }
+            },
+            "transfer_to_tsfp": {
+                "Male": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "tE9PYXpUnNb",
+                        "categoryOptionCombo": "IqspuuCZom2"
+                    }
+                },
+                "Female": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "tE9PYXpUnNb",
+                        "categoryOptionCombo": "olMEzOhOcgB"
+                    }
+                }
+            },
+            "transfer_to_otp": {
+                "Male": {
+                    "transfer_sc_itp_otp": {
+                        "dataElement": "XhGPDZSGG7k",
+                        "categoryOptionCombo": "hVytXy7CmTa"
+                    }
+                },
+                "Female": {
+                    "transfer_sc_itp_otp": {
+                        "dataElement": "XhGPDZSGG7k",
+                        "categoryOptionCombo": "tKgHQgSr2Nn"
+                    }
+                }
+            }
+        }
+    },
+    "PLW": {
+        "screening_reporting": {
+            "pregnant": {
+                "muac_under_23": {
+                    "dataElement": "w4nwIlw6Okb",
+                    "categoryOptionCombo": "MTrn7hYw91L"
+                },
+                "muac_above_23": {
+                    "dataElement": "w4nwIlw6Okb",
+                    "categoryOptionCombo": "QsEZ1cISs62"
+                }
+            },
+            "breastfeeding": {
+                "muac_under_23": {
+                    "dataElement": "w4nwIlw6Okb",
+                    "categoryOptionCombo": "jo847NoZ40e"
+                },
+                "muac_above_23": {
+                    "dataElement": "w4nwIlw6Okb",
+                    "categoryOptionCombo": "XsjPXECqmLy"
+                }
+            }
+        },
+        "tsfp_reporting": {
+            "new_case": {
+                "pregnant": {
+                    "total_beneficiary": {
+                        "dataElement": "U08IHbRAVXk",
+                        "categoryOptionCombo": "xdEOX113CTu"
+                    },
+                    "muac_under_23": {
+                        "dataElement": "lZCG2xRpJCj",
+                        "categoryOptionCombo": "lJjezaNfFWU"
+                    }
+                },
+                "breastfeeding": {
+                    "total_beneficiary": {
+                        "dataElement": "U08IHbRAVXk",
+                        "categoryOptionCombo": "wegLiifhZWx"
+                    },
+                    "muac_under_23": {
+                        "dataElement": "lZCG2xRpJCj",
+                        "categoryOptionCombo": "GObgdh5q77A"
+                    }
+                }
+            },
+            "relapse": {
+                "pregnant": {
+                    "total_beneficiary": {
+                        "dataElement": "lZCG2xRpJCj",
+                        "categoryOptionCombo": "ahvlVBapPJY"
+                    }
+                },
+                "breastfeeding": {
+                    "total_beneficiary": {
+                        "dataElement": "lZCG2xRpJCj",
+                        "categoryOptionCombo": "IxnPEkgrEBP"
+                    }
+                }
+            },
+            "returned_defaulter": {
+                "pregnant": {
+                    "total_beneficiary": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "P8JJNxdgtBC"
+                    }
+                },
+                "breastfeeding": {
+                    "total_beneficiary": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "VWkJaEnT40n"
+                    }
+                }
+            },
+            "returned_referral": {
+                "pregnant": {
+                    "total_beneficiary": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "cCW0naFXFMa"
+                    }
+                },
+                "breastfeeding": {
+                    "total_beneficiary": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "cbExzILioDH"
+                    }
+                }
+            },
+            "transfer_from_other_tsfp": {
+                "pregnant": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "fmq7xvyhfJN"
+                    }
+                },
+                "breastfeeding": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "vg9xavgIUzI",
+                        "categoryOptionCombo": "n88xrup4uT0"
+                    }
+                }
+            },
+            "cured": {
+                "pregnant": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "mrK0RmaXqt2"
+                    }
+                },
+                "breastfeeding": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "dpq8Cb9TEke"
+                    }
+                }
+            },
+            "death": {
+                "pregnant": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "OOfTlfKJuBd"
+                    }
+                },
+                "breastfeeding": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "VzaOKz5E2HW"
+                    }
+                }
+            },
+            "defaulter": {
+                "pregnant": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "Gntpx1F0hwv"
+                    }
+                },
+                "breastfeeding": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "YRfzDcccVY3"
+                    }
+                }
+            },
+            "non_respondent": {
+                "pregnant": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "FZmnV1ugQp3"
+                    }
+                },
+                "breastfeeding": {
+                    "total_with_exit_type": {
+                        "dataElement": "sjMFd1r9vC2",
+                        "categoryOptionCombo": "oMdzWvTR9Bz"
+                    }
+                }
+            },
+            "transfer_to_tsfp": {
+                "pregnant": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "NlLLl5EqZvr",
+                        "categoryOptionCombo": "krgda9lO2Cf"
+                    }
+                },
+                "breastfeeding": {
+                    "transfer_from_other_tsfp": {
+                        "dataElement": "NlLLl5EqZvr",
+                        "categoryOptionCombo": "z04tUG0eT6e"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -951,7 +951,6 @@ class ETL:
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
-        row = {}
         dataElements = None
         # Reading the dhis2 datalement mapper json file
         with open("plugins/wfp/dhis2_mapper.json") as mapper:
@@ -960,22 +959,11 @@ class ETL:
         for org_unit, journeys in journey_by_org_units:
             journeys = list(journeys)
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
-            row["dataSet"] = "m2GaBFDJDeV"
-            row["orgUnit"] = journeys[0]["dhis2_id"]
-            row["org_unit_id"] = org_unit
-
+            dataSet = {"dataSet": "m2GaBFDJDeV", "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
             for period, journey_period in journey_by_org_units_period:
-                row["period"] = period
+                dataSet["period"] = period
                 journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
-                dataValues = self.map_dhis2_data(journeys_by_program_type, data)
-
-                dataSet = {
-                    "dataSet": row["dataSet"],
-                    "period": row["period"],
-                    "orgUnit": row["orgUnit"],
-                    "orgUnitId": row["org_unit_id"],
-                    "dataValues": dataValues,
-                }
+                dataSet["dataValues"] = self.map_dhis2_data(journeys_by_program_type, data)
             dhis2_aggregated_data.append(dataSet)
         return dhis2_aggregated_data
 

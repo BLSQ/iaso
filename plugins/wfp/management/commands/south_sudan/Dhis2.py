@@ -1,8 +1,8 @@
 import json
-import os
 
 from dhis2 import Api, RequestException
 
+from iaso.models.base import ExternalCredentials
 from plugins.wfp.common import ETL
 from plugins.wfp.models import *
 
@@ -12,11 +12,8 @@ class Dhis2:
         entity_type = ETL([type])
         account = entity_type.account_related_to_entity_type()
         monthly_data = entity_type.aggregating_data_to_push_to_dhis2(account)
-
-        DHIS2_URL = os.environ.get("DHIS2_URL")
-        DHIS2_USER = os.environ.get("DHIS2_USER")
-        DHIS2_PASSWORD = os.environ.get("DHIS2_PASSWORD")
-        api = Api(DHIS2_URL, DHIS2_USER, DHIS2_PASSWORD)
+        external_credentials = ExternalCredentials.objects.filter(account=account).first()
+        api = Api(external_credentials.url, external_credentials.login, external_credentials.password)
 
         results = []
         for dataValueSet in monthly_data:

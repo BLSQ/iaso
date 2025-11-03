@@ -146,14 +146,13 @@ class Dhis2SyncResults(admin.ModelAdmin):
         "period",
         "month",
         "year",
-        "programme_type",
         "response",
         "account",
         "status",
         "created_at",
         "updated_at",
     )
-    list_filter = ("account", "programme_type", "status", "month", "year")
+    list_filter = ("account", "status", "month", "year")
     search_fields = (
         "account__name",
         "org_unit_dhis2_id",

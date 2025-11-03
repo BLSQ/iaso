@@ -45,9 +45,6 @@ class Dhis2:
             synced_data.response = response
             synced_data.status = response["response"]["status"]
             synced_data.account = account
-            synced_data.account = account
-
-            synced_data.programme_type = "U5"
             results.append(synced_data)
 
         return results

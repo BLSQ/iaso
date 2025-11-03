@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
@@ -18,6 +19,8 @@ from .models import *
 
 
 logger = logging.getLogger(__name__)
+
+DATASET_ID = os.environ.get("DATASET_ID")
 
 
 class ETL:
@@ -947,7 +950,6 @@ class ETL:
             .values()
             .filter(account=account)
             .filter(org_unit_id__in=[758, 622, 43])
-            # .exclude(period="202510")
         )
         journey_by_org_units = groupby(list(monthlyStatistics), key=itemgetter("org_unit_id"))
         dhis2_aggregated_data = []
@@ -959,11 +961,13 @@ class ETL:
         for org_unit, journeys in journey_by_org_units:
             journeys = list(journeys)
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
-            dataSet = {"dataSet": "m2GaBFDJDeV", "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
+            dataSet = {"dataSet": DATASET_ID, "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
+            dataValues = []
             for period, journey_period in journey_by_org_units_period:
                 dataSet["period"] = period
                 journeys_by_program_type = groupby(list(journey_period), key=itemgetter("programme_type"))
-                dataSet["dataValues"] = self.map_dhis2_data(journeys_by_program_type, data)
+                dataValues.extend(self.map_dhis2_data(journeys_by_program_type, data))
+            dataSet["dataValues"] = dataValues
             dhis2_aggregated_data.append(dataSet)
         return dhis2_aggregated_data
 
@@ -988,7 +992,7 @@ class ETL:
                 journey = groupby(list(journey_by_program), key=itemgetter("gender"))
             elif program_type == "PLW":
                 categories = ["screening_reporting", "tsfp_reporting"]
-                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23"]
+                sub_categories = ["total_beneficiary", "muac_under_23", "muac_above_23", "total_with_exit_type"]
                 journey = groupby(list(journey_by_program), key=itemgetter("nutrition_programme"))
 
             for main_category, journey_by_category in journey:
@@ -1003,25 +1007,24 @@ class ETL:
                 )
                 rows = AggregatedJourney().aggregated_rows(journey_by_categories)
 
-                for category in categories:
-                    dataElement_by_category = dataElement.get(category)
-
-                    for program, journey_program in journey_by_gender_and_nutrition_program:
+                for nutrition_programme, journey_program in journey_by_gender_and_nutrition_program:
+                    for category in categories:
+                        dataElement_by_category = dataElement.get(category)
                         dataElement_by_sub_category = dataElement_by_category
-                        if program == "TSFP":
+                        if nutrition_programme == "TSFP":
                             dataElement_by_sub_category = dataElement.get("tsfp_reporting")
-                        elif program == "OTP":
+                        elif nutrition_programme == "OTP":
                             dataElement_by_sub_category = dataElement.get("otp_reporting")
                         if dataElement_by_sub_category is not None:
                             if dataElement_by_category is not None:
-                                dataElement_by_main_category = dataElement_by_category[main_category]
+                                dataElement_by_main_category = dataElement_by_category.get(main_category)
                                 for sub_category in sub_categories:
-                                    dataValue = dataElement_by_main_category.get(sub_category)
-                                    if sub_category == exit_type:
-                                        rows[sub_category] = rows["total_with_exit_type"]
-                                    if sub_category == admission_type:
-                                        rows[sub_category] = rows["total_beneficiary"]
-
+                                    if dataElement_by_main_category is not None:
+                                        dataValue = dataElement_by_main_category.get(sub_category)
+                                        if sub_category == exit_type:
+                                            rows[sub_category] = rows["total_with_exit_type"]
+                                        elif sub_category == admission_type:
+                                            rows[sub_category] = rows["total_beneficiary"]
                                     if dataValue is not None:
                                         dataValues.append({**dataValue, "value": rows[sub_category]})
         return dataValues

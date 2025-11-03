@@ -586,11 +586,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         original_copy = deepcopy(org_unit)
 
-        if "name" in request.data:
-            org_unit.name = request.data["name"].strip() if request.data["name"] else request.data["name"]
+        if org_unit_name := request.data.get("name"):
+            org_unit.name = org_unit_name.strip()
         if "source_ref" in request.data:
             org_unit.source_ref = request.data["source_ref"]
-
         if "short_name" in request.data:
             org_unit.short_name = request.data["short_name"]
         if "source" in request.data:
@@ -1041,9 +1040,9 @@ def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True)
         serializer = OrgUnitImportSerializer(data=org_unit_data, context=serializer_context)
         serializer.is_valid(raise_exception=True)
 
-        org_unit_db = serializer.save(**extra_save_kwargs)
+        new_org_unit = serializer.save(**extra_save_kwargs)
 
-        if org_unit_db:
-            new_org_units.append(org_unit_db)
+        if new_org_unit:
+            new_org_units.append(new_org_unit)
 
     return new_org_units

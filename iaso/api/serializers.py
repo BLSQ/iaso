@@ -280,9 +280,6 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
             "org_unit_type_id",
         ]
         extra_kwargs = {
-            "created_at": {"write_only": True},
-            "parent_lookup": {"write_only": True},
-            "org_unit_type_id_lookup": {"write_only": True},
             "parent_id": {"required": False},
             "org_unit_type_id": {"required": False},
         }
@@ -293,7 +290,7 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
 
         latitude = data.get("latitude")
         longitude = data.get("longitude")
-        if latitude is None or longitude is None or (not latitude and not longitude):
+        if not latitude or not longitude:
             # treat 0, 0 as no location
             processed_data["location"] = None
         else:

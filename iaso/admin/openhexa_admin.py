@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib import admin
 
+from iaso.admin import IasoJSONEditorWidget
 from iaso.models import OpenHEXAInstance, OpenHEXAWorkspace
 
 
@@ -10,6 +11,15 @@ class OpenHEXAInstanceAdminForm(forms.ModelForm):
         fields = "__all__"
         widgets = {
             "token": forms.PasswordInput(render_value=True),
+        }
+
+
+class OpenHEXAWorkspaceAdminForm(forms.ModelForm):
+    class Meta:
+        model = OpenHEXAWorkspace
+        fields = "__all__"
+        widgets = {
+            "config": IasoJSONEditorWidget,
         }
 
 
@@ -34,6 +44,7 @@ class OpenHEXAInstanceAdmin(admin.ModelAdmin):
 
 @admin.register(OpenHEXAWorkspace)
 class OpenHEXAWorkspaceAdmin(admin.ModelAdmin):
+    form = OpenHEXAWorkspaceAdminForm
     list_display = (
         "account",
         "openhexa_instance",

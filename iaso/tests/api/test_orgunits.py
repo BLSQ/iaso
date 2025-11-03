@@ -2324,12 +2324,15 @@ class OrgUnitAPITestCase(APITestCase):
             data=data,
             format="json",
         )
-        orgunits = OrgUnit.objects.all().count()
+        new_count = OrgUnit.objects.all().count()
 
         result = self.assertJSONResponse(response, 200)
         # ensure results are ordered by creation date ascending and that extra white spaces are trimmed
         self.assertIn(result[0]["name"], "Bluesquare")
-        self.assertEqual(orgunits, count_of_orgunits + 9)
+        self.assertEqual(new_count, count_of_orgunits + 9)
+        saved_org_unit = OrgUnit.objects.get(uuid="5738b6b9-88f7-49ee-a211-632030f68f46")
+        self.assertEqual(saved_org_unit.name, "Bluesquare")
+        self.assertEqual(saved_org_unit.source_created_at.timestamp(), 1674833640)
 
     def test_org_unit_search_only_direct_children_false(self):
         self.client.force_authenticate(self.yoda)

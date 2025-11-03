@@ -293,9 +293,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
-        new_org_units = import_org_units(
-            data, request.user, request.query_params.get(APP_ID), set_source_created_at=False
-        )
+        new_org_units = import_org_units(data, request.user, request.query_params.get(APP_ID))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])

@@ -360,8 +360,7 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(org_unit, attr, value)
 
-        set_source_created_at = self.context.get("set_source_created_at", True)
-        if created_at and set_source_created_at:
+        if created_at:
             org_unit.source_created_at = timestamp_to_utc_datetime(int(created_at))
 
         org_unit.save()

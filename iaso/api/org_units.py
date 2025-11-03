@@ -1014,12 +1014,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True):
-    """Import a list of org units.
-
-    The `set_source_created_at` parameter was added to preserve legacy behavior on
-    some endpoints, but should be True in most cases.
-    """
+def import_data(org_units: List[Dict], user, app_id):
+    """Import a list of org units."""
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
     if project.account.default_version.data_source.read_only:
@@ -1034,10 +1030,8 @@ def import_data(org_units: List[Dict], user, app_id, set_source_created_at=True)
         "creator": user if (user and not user.is_anonymous) else None,
     }
 
-    serializer_context = {"set_source_created_at": set_source_created_at}
-
     for org_unit_data in org_units:
-        serializer = OrgUnitImportSerializer(data=org_unit_data, context=serializer_context)
+        serializer = OrgUnitImportSerializer(data=org_unit_data)
         serializer.is_valid(raise_exception=True)
 
         new_org_unit = serializer.save(**extra_save_kwargs)

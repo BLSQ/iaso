@@ -66,7 +66,7 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
             with zipfile.ZipFile(api_import.file, "r") as zip_ref:
                 if ORG_UNITS_JSON in zip_ref.namelist():
                     org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
-                    new_org_units = import_org_units(org_units_data, user, project.app_id, set_source_created_at=False)
+                    new_org_units = import_org_units(org_units_data, user, project.app_id)
                     stats["new_org_units"] = len(new_org_units)
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")

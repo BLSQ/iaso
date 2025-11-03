@@ -120,6 +120,20 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_get_pipelines_user_without_profile(self):
+        """Test pipeline list with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get("/api/openhexa/pipelines/")
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
+
     def test_get_pipelines_invalid_url_format(self):
         """Test pipeline list when OpenHexa URL format is invalid."""
         # Update the instance with an invalid URL (missing 'graphql')
@@ -527,6 +541,41 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_pipeline_detail_user_without_profile(self):
+        """Test pipeline detail retrieval with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_detail", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
+
+    def test_post_launch_pipeline_user_without_profile(self):
+        """Test pipeline launch with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_launch", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.post(
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+            data={
+                "version": str(uuid.uuid4()),
+                "config": {"country_name": "Burkina Faso"},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
 
 
 class BackgroundTaskTestCase(OpenHexaAPITestCase):
@@ -1274,3 +1323,19 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
         self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if null
+
+    def test_get_config_user_without_profile(self):
+        """Test config check with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_config", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        # Config endpoint should gracefully return configured: false for users without profile
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])

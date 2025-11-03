@@ -308,7 +308,12 @@ class OpenHexaPipelinesViewSet(ViewSet):
             Response: {"configured": true/false, "lqas_pipeline_code": "value" or null}
         """
         try:
-            *_, workspace = get_openhexa_config(request.user)
+            # Extract account from user (iaso_profile is optional, but account is required on profile)
+            if not hasattr(request.user, "iaso_profile") or request.user.iaso_profile is None:
+                return Response({"configured": False})
+
+            account = request.user.iaso_profile.account
+            *_, workspace = get_openhexa_config(account)
 
             # If we reach here, config is valid
             response_data = {"configured": True}

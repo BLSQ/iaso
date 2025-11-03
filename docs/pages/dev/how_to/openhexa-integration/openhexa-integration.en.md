@@ -10,7 +10,7 @@ This guide covers the complete integration between Iaso and OpenHexa, including 
 4. [Creating OpenHexa Pipelines](#creating-openhexa-pipelines)
 5. [Pipeline Development](#pipeline-development)
 6. [Task Management](#task-management)
-7. [Local Development Setup](#local-development-setup)
+7. [Development Utilities](#development-utilities)
 8. [API Integration](#api-integration)
 9. [Frontend Integration](#frontend-integration)
 10. [Troubleshooting](#troubleshooting)
@@ -28,18 +28,49 @@ OpenHexa is a data pipeline platform that integrates with Iaso to execute data p
 
 ### 1. OpenHexa Configuration in Iaso
 
-Create a configuration object in Iaso with the following structure:
+OpenHexa configuration is stored in Iaso using two models:
 
-**Configuration Slug**: `openhexa-config`
+#### OpenHEXAInstance Model
 
-**Configuration Content**:
-```json
-{
-    "openhexa_url": "https://your-openhexa-instance.com/graphql/",
-    "openhexa_token": "your-openhexa-api-token",
-    "workspace_slug": "your-workspace-slug"
-}
+Stores the OpenHexa server connection details:
+
+```python
+from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.create(
+    name="Production OpenHEXA",
+    url="https://your-openhexa-instance.com/graphql/",
+    token="your-openhexa-api-token"
+)
 ```
+
+**Fields**:
+- `name`: Descriptive name for the OpenHexa instance
+- `url`: GraphQL API endpoint (must contain 'graphql')
+- `token`: API authentication token
+
+#### OpenHEXAWorkspace Model
+
+Links an Iaso account to an OpenHexa workspace:
+
+```python
+from iaso.models.openhexa import OpenHEXAWorkspace
+
+workspace = OpenHEXAWorkspace.objects.create(
+    openhexa_instance=instance,
+    account=your_account,
+    slug="your-workspace-slug",
+    config={
+        "lqas_pipeline_code": "optional-pipeline-code"  # Optional configuration
+    }
+)
+```
+
+**Fields**:
+- `openhexa_instance`: Foreign key to OpenHEXAInstance
+- `account`: Foreign key to the Iaso Account
+- `slug`: Workspace slug in OpenHexa
+- `config`: Optional JSON field for workspace-specific configuration
 
 
 ### 2. OpenHexa Workspace Setup
@@ -315,9 +346,130 @@ Pipelines can update task status through the API:
 | `ERROR` | Task failed with an error |
 | `CANCELLED` | Task was cancelled |
 
+## Development Utilities
+
+### OpenHexa Configuration Utilities
+
+Iaso provides utility functions and decorators in `iaso/utils/openhexa.py` to simplify OpenHexa integration:
+
+#### get_openhexa_config(account)
+
+Retrieves OpenHexa configuration for a given account.
+
+```python
+from iaso.utils.openhexa import get_openhexa_config
+from django.core.exceptions import ValidationError
+
+try:
+    openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+    # Use the configuration
+except ValidationError as e:
+    # Handle missing or invalid configuration
+    print(f"Configuration error: {e}")
+```
+
+**Returns**: Tuple of `(openhexa_url, openhexa_token, workspace_slug, workspace)`
+
+**Raises**: `ValidationError` if configuration is missing or invalid
+
+#### @require_openhexa_config Decorator
+
+Decorator for API view methods that automatically handles configuration retrieval and error responses:
+
+```python
+from iaso.utils.openhexa import require_openhexa_config
+from rest_framework.viewsets import ViewSet
+
+class MyViewSet(ViewSet):
+    @require_openhexa_config
+    def my_endpoint(self, request, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+        return Response({"status": "success"})
+```
+
+**Features**:
+- Automatically extracts account from `request.user.iaso_profile.account`
+- Returns 422 error if user has no profile or configuration is invalid
+- Injects configuration as `openhexa_config` kwarg
+
+#### @with_openhexa_config Decorator
+
+Decorator for standalone functions, management commands, or Celery tasks:
+
+```python
+from iaso.utils.openhexa import with_openhexa_config
+from django.core.management.base import BaseCommand
+
+class Command(BaseCommand):
+    @with_openhexa_config
+    def process_data(self, account, data, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+```
+
+**Features**:
+- Accepts `account` as first parameter
+- Raises `ValidationError` if configuration is invalid (caller must handle)
+- Injects configuration as `openhexa_config` kwarg
+
+### Usage Examples
+
+#### In Management Commands
+
+```python
+from django.core.management.base import BaseCommand, CommandError
+from django.core.exceptions import ValidationError
+from iaso.models import Account
+from iaso.utils.openhexa import get_openhexa_config
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        account = Account.objects.get(id=42)
+        
+        try:
+            openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+            # Process data with OpenHexa
+        except ValidationError as e:
+            raise CommandError(f"OpenHexa configuration error: {e}")
+```
+
+#### In Celery Tasks
+
+```python
+from celery import shared_task
+from django.core.exceptions import ValidationError
+from iaso.utils.openhexa import with_openhexa_config
+
+@shared_task
+@with_openhexa_config
+def process_openhexa_export(account, export_id, openhexa_config=None):
+    openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+    # Process export
+```
+
 ## API Integration
 
-### 1. Pipeline List API
+### 1. Configuration Check API
+
+**Endpoint**: `GET /api/openhexa/pipelines/config/`
+
+**Description**: Check if OpenHexa is configured for the current user's account.
+
+**Response**:
+```json
+{
+    "configured": true,
+    "lqas_pipeline_code": "optional-code"
+}
+```
+
+**Behavior**:
+- Returns `configured: false` if user has no profile or configuration is missing
+- Returns `configured: true` with optional fields if properly configured
+- Does not return error for missing configuration (graceful degradation)
+
+### 2. Pipeline List API
 
 **Endpoint**: `GET /api/openhexa/pipelines/`
 
@@ -435,27 +587,67 @@ Iaso includes a simple frontend integration for OpenHexa pipelines that provides
 
 ### Common Issues
 
-#### 1. "OpenHexa configuration not found"
+#### 1. "No OpenHEXA workspace configured for your account"
 
-**Cause**: The `openhexa-config` configuration object doesn't exist or has incorrect content.
+**Cause**: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.
 
-**Solution**: Create or update the configuration:
+**Solution**: Create or update the OpenHEXA configuration:
+
 ```python
-from iaso.models.json_config import Config
+from iaso.models import Account
+from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 
-config, created = Config.objects.get_or_create(
-    slug="openhexa-config",
+# Get or create OpenHEXA instance
+instance, created = OpenHEXAInstance.objects.get_or_create(
+    name="Production OpenHEXA",
     defaults={
-        "content": {
-            "openhexa_url": "https://your-openhexa-instance.com/graphql/",
-            "openhexa_token": "your-token",
-            "workspace_slug": "your-workspace"
-        }
+        "url": "https://your-openhexa-instance.com/graphql/",
+        "token": "your-api-token"
+    }
+)
+
+# Get the account
+account = Account.objects.get(id=42)
+
+# Create workspace for the account
+workspace, created = OpenHEXAWorkspace.objects.get_or_create(
+    account=account,
+    defaults={
+        "openhexa_instance": instance,
+        "slug": "your-workspace-slug",
+        "config": {}
     }
 )
 ```
 
-#### 2. "The provided config contains invalid key(s)"
+**Validation checklist**:
+- ✅ OpenHEXAInstance exists with valid URL and token
+- ✅ URL contains 'graphql' (e.g., `https://example.com/graphql/`)
+- ✅ OpenHEXAWorkspace exists for the account
+- ✅ Workspace has a non-empty slug
+- ✅ Workspace is linked to an OpenHEXAInstance
+
+#### 2. "User profile not found"
+
+**Cause**: The user doesn't have an associated `iaso_profile`.
+
+**Solution**: Ensure all users who need to access OpenHexa have an Iaso profile:
+
+```python
+from django.contrib.auth.models import User
+from iaso.models import Profile, Account
+
+user = User.objects.get(username="myuser")
+account = Account.objects.get(id=42)
+
+# Create profile if it doesn't exist
+profile, created = Profile.objects.get_or_create(
+    user=user,
+    defaults={"account": account}
+)
+```
+
+#### 3. "The provided config contains invalid key(s)"
 
 **Cause**: The pipeline parameters don't match the expected parameter names.
 
@@ -463,6 +655,19 @@ config, created = Config.objects.get_or_create(
 ```python
 @parameter("task_id", type=str, name="Task ID", required=True)
 @parameter("pipeline_id", type=str, name="Pipeline ID", required=True)
+```
+
+#### 4. "OpenHEXA URL must contain 'graphql'"
+
+**Cause**: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.
+
+**Solution**: Update the instance URL to include the GraphQL endpoint:
+```python
+from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.get(name="Production OpenHEXA")
+instance.url = "https://your-openhexa-instance.com/graphql/"  # Must contain 'graphql'
+instance.save()
 ```
 
 #### 5. Local Development Issues

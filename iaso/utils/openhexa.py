@@ -19,12 +19,12 @@ from iaso.models.openhexa import OpenHEXAWorkspace
 logger = logging.getLogger(__name__)
 
 
-def get_openhexa_config(user):
+def get_openhexa_config(account):
     """
     Retrieve OpenHexa configuration from OpenHEXAWorkspace and OpenHEXAInstance models.
 
     Args:
-        user: The authenticated user making the request
+        account: The account to retrieve OpenHEXA configuration for
 
     Returns:
         tuple: (openhexa_url, openhexa_token, workspace_slug, workspace)
@@ -33,9 +33,6 @@ def get_openhexa_config(user):
         ValidationError: If configuration not found or invalid
     """
     try:
-        # Get the user's account
-        account = user.iaso_profile.account
-
         # Fetch OpenHEXAWorkspace for this account
         try:
             workspace = OpenHEXAWorkspace.objects.select_related("openhexa_instance").get(account=account)
@@ -72,14 +69,11 @@ def get_openhexa_config(user):
 
         return openhexa_url, openhexa_token, workspace_slug, workspace
 
-    except AttributeError:
-        logger.exception(f"User {user.id} has no iaso_profile or account")
-        raise ValidationError(_("User profile or account not found"))
     except ValidationError:
         # Re-raise ValidationErrors from inner try block
         raise
     except Exception:
-        logger.exception(f"Could not fetch OpenHEXA config for user {user.id}")
+        logger.exception(f"Could not fetch OpenHEXA config for account {account.id}")
         raise ValidationError(_("OpenHexa configuration not found"))
 
 
@@ -92,16 +86,16 @@ def with_openhexa_config(func):
 
     Usage in management commands, tasks, or standalone functions:
         @with_openhexa_config
-        def process_data(user, data, openhexa_config=None):
+        def process_data(account, data, openhexa_config=None):
             openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
             # ... rest of logic
     """
 
     @wraps(func)
-    def wrapper(user, *args, **kwargs):
-        config = get_openhexa_config(user)  # Raises ValidationError if invalid
+    def wrapper(account, *args, **kwargs):
+        config = get_openhexa_config(account)  # Raises ValidationError if invalid
         kwargs["openhexa_config"] = config
-        return func(user, *args, **kwargs)
+        return func(account, *args, **kwargs)
 
     return wrapper
 
@@ -110,7 +104,8 @@ def require_openhexa_config(func):
     """
     Decorator that ensures OpenHEXA config is available before executing the view method.
 
-    The decorator calls get_openhexa_config() and injects the result as 'openhexa_config' kwarg.
+    The decorator extracts account from request.user, calls get_openhexa_config(),
+    and injects the result as 'openhexa_config' kwarg.
     If configuration is invalid, returns a 422 error response.
 
     Usage in ViewSet methods:
@@ -123,7 +118,13 @@ def require_openhexa_config(func):
     @wraps(func)
     def wrapper(self, request, *args, **kwargs):
         try:
-            config = get_openhexa_config(request.user)
+            # Extract account from user (iaso_profile is optional, but account is required on profile)
+            if not hasattr(request.user, "iaso_profile") or request.user.iaso_profile is None:
+                logger.warning(f"User {request.user.id} has no iaso_profile")
+                return Response({"error": _("User profile not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+            account = request.user.iaso_profile.account
+            config = get_openhexa_config(account)
             kwargs["openhexa_config"] = config
             return func(self, request, *args, **kwargs)
         except ValidationError as e:

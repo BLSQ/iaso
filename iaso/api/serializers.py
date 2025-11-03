@@ -258,7 +258,7 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid")
 
     name = serializers.CharField(required=False, allow_null=True)
-    accuracy = serializers.FloatField(required=False, allow_null=True)
+    accuracy = serializers.DecimalField(decimal_places=2, max_digits=7, required=False, allow_null=True)
     location = ThreeDimPointField(required=False, allow_null=True, write_only=True)
 
     # internal non-model fields

@@ -1,3 +1,5 @@
+import decimal
+
 from django.db import models
 from django.db.models import Q
 from rest_framework import serializers
@@ -6,6 +8,7 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import TimestampField
 from iaso.api.query_params import APP_ID
 from iaso.models import Group, OrgUnit, OrgUnitType
+from iaso.utils.serializer.rounded_decimal_field import RoundedDecimalField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 
 
@@ -258,7 +261,13 @@ class OrgUnitImportSerializer(serializers.ModelSerializer):
     id = serializers.CharField(source="uuid")
 
     name = serializers.CharField(required=False, allow_null=True)
-    accuracy = serializers.DecimalField(decimal_places=2, max_digits=7, required=False, allow_null=True)
+    accuracy = RoundedDecimalField(
+        max_digits=7,
+        decimal_places=2,
+        rounding=decimal.ROUND_HALF_UP,
+        required=False,
+        allow_null=True,
+    )
     location = ThreeDimPointField(required=False, allow_null=True, write_only=True)
 
     # internal non-model fields

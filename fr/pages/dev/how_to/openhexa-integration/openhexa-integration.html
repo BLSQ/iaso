@@ -762,6 +762,26 @@
     1. OpenHexa Configuration in Iaso
   </a>
   
+    <nav class="md-nav" aria-label="1. OpenHexa Configuration in Iaso">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openhexainstance-model" class="md-nav__link">
+    OpenHEXAInstance Model
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#openhexaworkspace-model" class="md-nav__link">
+    OpenHEXAWorkspace Model
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -940,6 +960,80 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#development-utilities" class="md-nav__link">
+    Development Utilities
+  </a>
+  
+    <nav class="md-nav" aria-label="Development Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#openhexa-configuration-utilities" class="md-nav__link">
+    OpenHexa Configuration Utilities
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenHexa Configuration Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#get_openhexa_configaccount" class="md-nav__link">
+    get_openhexa_config(account)
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#require_openhexa_config-decorator" class="md-nav__link">
+    @require_openhexa_config Decorator
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with_openhexa_config-decorator" class="md-nav__link">
+    @with_openhexa_config Decorator
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#usage-examples" class="md-nav__link">
+    Usage Examples
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#in-management-commands" class="md-nav__link">
+    In Management Commands
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#in-celery-tasks" class="md-nav__link">
+    In Celery Tasks
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#api-integration" class="md-nav__link">
     API Integration
   </a>
@@ -948,8 +1042,15 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-pipeline-list-api" class="md-nav__link">
-    1. Pipeline List API
+  <a href="#1-configuration-check-api" class="md-nav__link">
+    1. Configuration Check API
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pipeline-list-api" class="md-nav__link">
+    2. Pipeline List API
   </a>
   
 </li>
@@ -1024,15 +1125,29 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-openhexa-configuration-not-found" class="md-nav__link">
-    1. "OpenHexa configuration not found"
+  <a href="#1-no-openhexa-workspace-configured-for-your-account" class="md-nav__link">
+    1. "No OpenHEXA workspace configured for your account"
   </a>
   
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-the-provided-config-contains-invalid-keys" class="md-nav__link">
-    2. "The provided config contains invalid key(s)"
+  <a href="#2-user-profile-not-found" class="md-nav__link">
+    2. "User profile not found"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-the-provided-config-contains-invalid-keys" class="md-nav__link">
+    3. "The provided config contains invalid key(s)"
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-openhexa-url-must-contain-graphql" class="md-nav__link">
+    4. "OpenHEXA URL must contain 'graphql'"
   </a>
   
 </li>
@@ -1102,7 +1217,7 @@
 <li><a href="#creating-openhexa-pipelines">Creating OpenHexa Pipelines</a></li>
 <li><a href="#pipeline-development">Pipeline Development</a></li>
 <li><a href="#task-management">Task Management</a></li>
-<li><a href="#local-development-setup">Local Development Setup</a></li>
+<li><a href="#development-utilities">Development Utilities</a></li>
 <li><a href="#api-integration">API Integration</a></li>
 <li><a href="#frontend-integration">Frontend Integration</a></li>
 <li><a href="#troubleshooting">Troubleshooting</a></li>
@@ -1117,15 +1232,39 @@
 </ul>
 <h2 id="configuration-setup">Configuration Setup<a class="headerlink" href="#configuration-setup" title="Permanent link">#</a></h2>
 <h3 id="1-openhexa-configuration-in-iaso">1. OpenHexa Configuration in Iaso<a class="headerlink" href="#1-openhexa-configuration-in-iaso" title="Permanent link">#</a></h3>
-<p>Create a configuration object in Iaso with the following structure:</p>
-<p><strong>Configuration Slug</strong>: <code>openhexa-config</code></p>
-<p><strong>Configuration Content</strong>:</p>
-<pre><code class="language-json">{
-    &quot;openhexa_url&quot;: &quot;https://your-openhexa-instance.com/graphql/&quot;,
-    &quot;openhexa_token&quot;: &quot;your-openhexa-api-token&quot;,
-    &quot;workspace_slug&quot;: &quot;your-workspace-slug&quot;
-}
+<p>OpenHexa configuration is stored in Iaso using two models:</p>
+<h4 id="openhexainstance-model">OpenHEXAInstance Model<a class="headerlink" href="#openhexainstance-model" title="Permanent link">#</a></h4>
+<p>Stores the OpenHexa server connection details:</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.create(
+    name=&quot;Production OpenHEXA&quot;,
+    url=&quot;https://your-openhexa-instance.com/graphql/&quot;,
+    token=&quot;your-openhexa-api-token&quot;
+)
 </code></pre>
+<p><strong>Fields</strong>:
+- <code>name</code>: Descriptive name for the OpenHexa instance
+- <code>url</code>: GraphQL API endpoint (must contain 'graphql')
+- <code>token</code>: API authentication token</p>
+<h4 id="openhexaworkspace-model">OpenHEXAWorkspace Model<a class="headerlink" href="#openhexaworkspace-model" title="Permanent link">#</a></h4>
+<p>Links an Iaso account to an OpenHexa workspace:</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAWorkspace
+
+workspace = OpenHEXAWorkspace.objects.create(
+    openhexa_instance=instance,
+    account=your_account,
+    slug=&quot;your-workspace-slug&quot;,
+    config={
+        &quot;lqas_pipeline_code&quot;: &quot;optional-pipeline-code&quot;  # Optional configuration
+    }
+)
+</code></pre>
+<p><strong>Fields</strong>:
+- <code>openhexa_instance</code>: Foreign key to OpenHEXAInstance
+- <code>account</code>: Foreign key to the Iaso Account
+- <code>slug</code>: Workspace slug in OpenHexa
+- <code>config</code>: Optional JSON field for workspace-specific configuration</p>
 <h3 id="2-openhexa-workspace-setup">2. OpenHexa Workspace Setup<a class="headerlink" href="#2-openhexa-workspace-setup" title="Permanent link">#</a></h3>
 <ol>
 <li>
@@ -1410,8 +1549,97 @@ task = Task.objects.create(
 </tr>
 </tbody>
 </table>
+<h2 id="development-utilities">Development Utilities<a class="headerlink" href="#development-utilities" title="Permanent link">#</a></h2>
+<h3 id="openhexa-configuration-utilities">OpenHexa Configuration Utilities<a class="headerlink" href="#openhexa-configuration-utilities" title="Permanent link">#</a></h3>
+<p>Iaso provides utility functions and decorators in <code>iaso/utils/openhexa.py</code> to simplify OpenHexa integration:</p>
+<h4 id="get_openhexa_configaccount">get_openhexa_config(account)<a class="headerlink" href="#get_openhexa_configaccount" title="Permanent link">#</a></h4>
+<p>Retrieves OpenHexa configuration for a given account.</p>
+<pre><code class="language-python">from iaso.utils.openhexa import get_openhexa_config
+from django.core.exceptions import ValidationError
+
+try:
+    openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+    # Use the configuration
+except ValidationError as e:
+    # Handle missing or invalid configuration
+    print(f&quot;Configuration error: {e}&quot;)
+</code></pre>
+<p><strong>Returns</strong>: Tuple of <code>(openhexa_url, openhexa_token, workspace_slug, workspace)</code></p>
+<p><strong>Raises</strong>: <code>ValidationError</code> if configuration is missing or invalid</p>
+<h4 id="require_openhexa_config-decorator">@require_openhexa_config Decorator<a class="headerlink" href="#require_openhexa_config-decorator" title="Permanent link">#</a></h4>
+<p>Decorator for API view methods that automatically handles configuration retrieval and error responses:</p>
+<pre><code class="language-python">from iaso.utils.openhexa import require_openhexa_config
+from rest_framework.viewsets import ViewSet
+
+class MyViewSet(ViewSet):
+    @require_openhexa_config
+    def my_endpoint(self, request, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+        return Response({&quot;status&quot;: &quot;success&quot;})
+</code></pre>
+<p><strong>Features</strong>:
+- Automatically extracts account from <code>request.user.iaso_profile.account</code>
+- Returns 422 error if user has no profile or configuration is invalid
+- Injects configuration as <code>openhexa_config</code> kwarg</p>
+<h4 id="with_openhexa_config-decorator">@with_openhexa_config Decorator<a class="headerlink" href="#with_openhexa_config-decorator" title="Permanent link">#</a></h4>
+<p>Decorator for standalone functions, management commands, or Celery tasks:</p>
+<pre><code class="language-python">from iaso.utils.openhexa import with_openhexa_config
+from django.core.management.base import BaseCommand
+
+class Command(BaseCommand):
+    @with_openhexa_config
+    def process_data(self, account, data, openhexa_config=None):
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+        # Your logic here
+</code></pre>
+<p><strong>Features</strong>:
+- Accepts <code>account</code> as first parameter
+- Raises <code>ValidationError</code> if configuration is invalid (caller must handle)
+- Injects configuration as <code>openhexa_config</code> kwarg</p>
+<h3 id="usage-examples">Usage Examples<a class="headerlink" href="#usage-examples" title="Permanent link">#</a></h3>
+<h4 id="in-management-commands">In Management Commands<a class="headerlink" href="#in-management-commands" title="Permanent link">#</a></h4>
+<pre><code class="language-python">from django.core.management.base import BaseCommand, CommandError
+from django.core.exceptions import ValidationError
+from iaso.models import Account
+from iaso.utils.openhexa import get_openhexa_config
+
+class Command(BaseCommand):
+    def handle(self, *args, **options):
+        account = Account.objects.get(id=42)
+
+        try:
+            openhexa_url, openhexa_token, workspace_slug, workspace = get_openhexa_config(account)
+            # Process data with OpenHexa
+        except ValidationError as e:
+            raise CommandError(f&quot;OpenHexa configuration error: {e}&quot;)
+</code></pre>
+<h4 id="in-celery-tasks">In Celery Tasks<a class="headerlink" href="#in-celery-tasks" title="Permanent link">#</a></h4>
+<pre><code class="language-python">from celery import shared_task
+from django.core.exceptions import ValidationError
+from iaso.utils.openhexa import with_openhexa_config
+
+@shared_task
+@with_openhexa_config
+def process_openhexa_export(account, export_id, openhexa_config=None):
+    openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
+    # Process export
+</code></pre>
 <h2 id="api-integration">API Integration<a class="headerlink" href="#api-integration" title="Permanent link">#</a></h2>
-<h3 id="1-pipeline-list-api">1. Pipeline List API<a class="headerlink" href="#1-pipeline-list-api" title="Permanent link">#</a></h3>
+<h3 id="1-configuration-check-api">1. Configuration Check API<a class="headerlink" href="#1-configuration-check-api" title="Permanent link">#</a></h3>
+<p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/config/</code></p>
+<p><strong>Description</strong>: Check if OpenHexa is configured for the current user's account.</p>
+<p><strong>Response</strong>:</p>
+<pre><code class="language-json">{
+    &quot;configured&quot;: true,
+    &quot;lqas_pipeline_code&quot;: &quot;optional-code&quot;
+}
+</code></pre>
+<p><strong>Behavior</strong>:
+- Returns <code>configured: false</code> if user has no profile or configuration is missing
+- Returns <code>configured: true</code> with optional fields if properly configured
+- Does not return error for missing configuration (graceful degradation)</p>
+<h3 id="2-pipeline-list-api">2. Pipeline List API<a class="headerlink" href="#2-pipeline-list-api" title="Permanent link">#</a></h3>
 <p><strong>Endpoint</strong>: <code>GET /api/openhexa/pipelines/</code></p>
 <p><strong>Response</strong>:</p>
 <pre><code class="language-json">{
@@ -1506,27 +1734,69 @@ task = Task.objects.create(
 </ul>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">#</a></h2>
 <h3 id="common-issues">Common Issues<a class="headerlink" href="#common-issues" title="Permanent link">#</a></h3>
-<h4 id="1-openhexa-configuration-not-found">1. "OpenHexa configuration not found"<a class="headerlink" href="#1-openhexa-configuration-not-found" title="Permanent link">#</a></h4>
-<p><strong>Cause</strong>: The <code>openhexa-config</code> configuration object doesn't exist or has incorrect content.</p>
-<p><strong>Solution</strong>: Create or update the configuration:</p>
-<pre><code class="language-python">from iaso.models.json_config import Config
+<h4 id="1-no-openhexa-workspace-configured-for-your-account">1. "No OpenHEXA workspace configured for your account"<a class="headerlink" href="#1-no-openhexa-workspace-configured-for-your-account" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The account has no associated OpenHEXA workspace or the workspace configuration is incomplete.</p>
+<p><strong>Solution</strong>: Create or update the OpenHEXA configuration:</p>
+<pre><code class="language-python">from iaso.models import Account
+from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 
-config, created = Config.objects.get_or_create(
-    slug=&quot;openhexa-config&quot;,
+# Get or create OpenHEXA instance
+instance, created = OpenHEXAInstance.objects.get_or_create(
+    name=&quot;Production OpenHEXA&quot;,
     defaults={
-        &quot;content&quot;: {
-            &quot;openhexa_url&quot;: &quot;https://your-openhexa-instance.com/graphql/&quot;,
-            &quot;openhexa_token&quot;: &quot;your-token&quot;,
-            &quot;workspace_slug&quot;: &quot;your-workspace&quot;
-        }
+        &quot;url&quot;: &quot;https://your-openhexa-instance.com/graphql/&quot;,
+        &quot;token&quot;: &quot;your-api-token&quot;
+    }
+)
+
+# Get the account
+account = Account.objects.get(id=42)
+
+# Create workspace for the account
+workspace, created = OpenHEXAWorkspace.objects.get_or_create(
+    account=account,
+    defaults={
+        &quot;openhexa_instance&quot;: instance,
+        &quot;slug&quot;: &quot;your-workspace-slug&quot;,
+        &quot;config&quot;: {}
     }
 )
 </code></pre>
-<h4 id="2-the-provided-config-contains-invalid-keys">2. "The provided config contains invalid key(s)"<a class="headerlink" href="#2-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
+<p><strong>Validation checklist</strong>:
+- ✅ OpenHEXAInstance exists with valid URL and token
+- ✅ URL contains 'graphql' (e.g., <code>https://example.com/graphql/</code>)
+- ✅ OpenHEXAWorkspace exists for the account
+- ✅ Workspace has a non-empty slug
+- ✅ Workspace is linked to an OpenHEXAInstance</p>
+<h4 id="2-user-profile-not-found">2. "User profile not found"<a class="headerlink" href="#2-user-profile-not-found" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The user doesn't have an associated <code>iaso_profile</code>.</p>
+<p><strong>Solution</strong>: Ensure all users who need to access OpenHexa have an Iaso profile:</p>
+<pre><code class="language-python">from django.contrib.auth.models import User
+from iaso.models import Profile, Account
+
+user = User.objects.get(username=&quot;myuser&quot;)
+account = Account.objects.get(id=42)
+
+# Create profile if it doesn't exist
+profile, created = Profile.objects.get_or_create(
+    user=user,
+    defaults={&quot;account&quot;: account}
+)
+</code></pre>
+<h4 id="3-the-provided-config-contains-invalid-keys">3. "The provided config contains invalid key(s)"<a class="headerlink" href="#3-the-provided-config-contains-invalid-keys" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: The pipeline parameters don't match the expected parameter names.</p>
 <p><strong>Solution</strong>: Ensure all parameters in your pipeline are properly defined with <code>@parameter</code> decorators:</p>
 <pre><code class="language-python">@parameter(&quot;task_id&quot;, type=str, name=&quot;Task ID&quot;, required=True)
 @parameter(&quot;pipeline_id&quot;, type=str, name=&quot;Pipeline ID&quot;, required=True)
+</code></pre>
+<h4 id="4-openhexa-url-must-contain-graphql">4. "OpenHEXA URL must contain 'graphql'"<a class="headerlink" href="#4-openhexa-url-must-contain-graphql" title="Permanent link">#</a></h4>
+<p><strong>Cause</strong>: The OpenHEXA instance URL doesn't contain the required 'graphql' keyword.</p>
+<p><strong>Solution</strong>: Update the instance URL to include the GraphQL endpoint:</p>
+<pre><code class="language-python">from iaso.models.openhexa import OpenHEXAInstance
+
+instance = OpenHEXAInstance.objects.get(name=&quot;Production OpenHEXA&quot;)
+instance.url = &quot;https://your-openhexa-instance.com/graphql/&quot;  # Must contain 'graphql'
+instance.save()
 </code></pre>
 <h4 id="5-local-development-issues">5. Local Development Issues<a class="headerlink" href="#5-local-development-issues" title="Permanent link">#</a></h4>
 <p><strong>Cause</strong>: OpenHexa can't reach your local Iaso instance.</p>

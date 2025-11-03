@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-23 11:16+0000\n"
+"POT-Creation-Date: 2025-11-03 13:39+0000\n"
 "PO-Revision-Date: 2025-02-06 10:24+0100\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -115,38 +115,6 @@ msgstr "Aucune assignation à effacer"
 #, python-format
 msgid "Successfully deleted %(count)s assignments"
 msgstr "%(count)s assignations ont été supprimées avec succès"
-
-#: iaso/api/openhexa/views.py
-msgid "No OpenHEXA workspace configured for your account"
-msgstr "Aucun espace de travail OpenHEXA configuré pour votre compte"
-
-#: iaso/api/openhexa/views.py
-msgid "Multiple OpenHEXA workspaces configured for your account"
-msgstr "Plusieurs espaces de travail OpenHEXA configurés pour votre compte"
-
-#: iaso/api/openhexa/views.py
-msgid "OpenHEXA workspace has no slug configured"
-msgstr "L'espace de travail OpenHEXA n'a pas de slug configuré"
-
-#: iaso/api/openhexa/views.py
-msgid "OpenHEXA instance has no URL configured"
-msgstr "L'instance OpenHEXA n'a pas d'URL configurée"
-
-#: iaso/api/openhexa/views.py
-msgid "OpenHEXA instance has no token configured"
-msgstr "L'instance OpenHEXA n'a pas de jeton configuré"
-
-#: iaso/api/openhexa/views.py
-msgid "OpenHEXA URL must contain 'graphql'"
-msgstr "L'URL OpenHEXA doit contenir 'graphql'"
-
-#: iaso/api/openhexa/views.py
-msgid "User profile or account not found"
-msgstr "Profil utilisateur ou compte introuvable"
-
-#: iaso/api/openhexa/views.py
-msgid "OpenHexa configuration not found"
-msgstr "Configuration OpenHexa introuvable"
 
 #: iaso/api/openhexa/views.py
 msgid "Failed to retrieve pipelines"
@@ -998,6 +966,38 @@ msgstr "Copie des unités organisationnelles"
 msgid "Fixing parents"
 msgstr "Correction des parents"
 
+#: iaso/utils/openhexa.py
+msgid "No OpenHEXA workspace configured for your account"
+msgstr "Aucun espace de travail OpenHEXA configuré pour votre compte"
+
+#: iaso/utils/openhexa.py
+msgid "Multiple OpenHEXA workspaces configured for your account"
+msgstr "Plusieurs espaces de travail OpenHEXA configurés pour votre compte"
+
+#: iaso/utils/openhexa.py
+msgid "OpenHEXA workspace has no slug configured"
+msgstr "L'espace de travail OpenHEXA n'a pas de slug configuré"
+
+#: iaso/utils/openhexa.py
+msgid "OpenHEXA instance has no URL configured"
+msgstr "L'instance OpenHEXA n'a pas d'URL configurée"
+
+#: iaso/utils/openhexa.py
+msgid "OpenHEXA instance has no token configured"
+msgstr "L'instance OpenHEXA n'a pas de jeton configuré"
+
+#: iaso/utils/openhexa.py
+msgid "OpenHEXA URL must contain 'graphql'"
+msgstr "L'URL OpenHEXA doit contenir 'graphql'"
+
+#: iaso/utils/openhexa.py
+msgid "OpenHexa configuration not found"
+msgstr "Configuration OpenHexa introuvable"
+
+#: iaso/utils/openhexa.py
+msgid "User profile not found"
+msgstr "Profil de l'utilisateur non trouvé"
+
 #: iaso/utils/serializer/id_or_uuid_field.py
 msgid "This field is required."
 msgstr "Ce champ est requis."
@@ -1028,6 +1028,9 @@ msgstr "Virus détecté"
 #: iaso/utils/virus_scan/model.py
 msgid "Error"
 msgstr "Erreur lors de l'analyse"
+
+#~ msgid "User profile or account not found"
+#~ msgstr "Profil utilisateur ou compte introuvable"
 
 #~ msgid "task_id is required"
 #~ msgstr "L'ID de tâche est requis"

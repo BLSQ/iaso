@@ -1,12 +1,16 @@
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import * as yup from 'yup';
-import MESSAGES from '../constants/messages.ts';
-import { dateFormat } from '../domains/Calendar/campaignCalendar/constants.ts';
-import { AGE_TYPES } from '../domains/Campaigns/Rounds/RoundForm.tsx';
+import MESSAGES from '../constants/messages';
+import { dateFormat } from '../domains/Calendar/campaignCalendar/constants';
+import { AGE_TYPES } from '../domains/Campaigns/Rounds/RoundForm';
 
 const getRounds = context => {
     return context?.from[context.from.length - 1]?.value?.rounds || [];
+};
+
+const getCampaign = context => {
+    return context?.from[context.from.length - 1]?.value;
 };
 
 yup.addMethod(
@@ -86,6 +90,60 @@ yup.addMethod(
             }
             return true;
         });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'isValidTargetPopulation',
+    function isValidTargetPopulation(formatMessage) {
+        return this.test('isValidTargetPopulation', '', (value, context) => {
+            const campaign = getCampaign(context);
+            const { path, createError, parent } = context;
+            const isPlanned = parent.is_planned || campaign?.is_planned;
+
+            let errorMessage;
+
+            if (isPlanned && !value) {
+                errorMessage = formatMessage(MESSAGES.fieldMandatoryForPlanned);
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'isValidTargetPopulationPercentage',
+    function isValidTargetPopulationPercentage(formatMessage) {
+        return this.test(
+            'isValidTargetPopulationPercentage',
+            '',
+            (value, context) => {
+                const campaign = getCampaign(context);
+                const { path, createError, parent } = context;
+                const isPlanned = parent.is_planned || campaign?.is_planned;
+
+                let errorMessage;
+
+                if (isPlanned && !value) {
+                    errorMessage = formatMessage(
+                        MESSAGES.fieldMandatoryForPlanned,
+                    );
+                }
+                if (errorMessage) {
+                    return createError({
+                        path,
+                        message: errorMessage,
+                    });
+                }
+                return true;
+            },
+        );
     },
 );
 
@@ -219,7 +277,7 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (ageMax && ageMax <= value) {
+            if (ageMax && ageMax <= (value as number)) {
                 errorMessage = formatMessage(
                     MESSAGES.ageMinGreaterOrEqualToAgeMin,
                 );
@@ -244,7 +302,7 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (ageMin && ageMin >= value) {
+            if (ageMin && ageMin >= (value as number)) {
                 errorMessage = formatMessage(
                     MESSAGES.ageMaxSmallerOrEqualToAgeMin,
                 );
@@ -294,16 +352,19 @@ const useRoundShape = () => {
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
+            //@ts-ignore
             .isValidRoundStartDate(formatMessage),
         ended_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
+            //@ts-ignore
             .isValidRoundEndDate(formatMessage),
         age_type: yup
             .string()
             .oneOf([...AGE_TYPES, null])
+            //@ts-ignore
             .isAgeTypeSelected(formatMessage)
             .nullable(),
         age_min: yup
@@ -311,6 +372,7 @@ const useRoundShape = () => {
             .integer(formatMessage(MESSAGES.positiveInteger))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger))
+            //@ts-ignore
             .isValidAgeMin(formatMessage)
             .nullable(),
         age_max: yup
@@ -318,6 +380,7 @@ const useRoundShape = () => {
             .integer(formatMessage(MESSAGES.positiveInteger))
             .min(1, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger))
+            //@ts-ignore
             .isValidAgeMax(formatMessage)
             .nullable(),
         mop_up_started_at: yup
@@ -356,12 +419,7 @@ const useRoundShape = () => {
                 yup.ref('lqas_started_at'),
                 formatMessage(MESSAGES.endDateBeforeStartDate),
             ),
-        target_population: yup
-            .number()
-            .nullable()
-            .min(0, formatMessage(MESSAGES.positiveInteger))
-            .integer()
-            .typeError(formatMessage(MESSAGES.positiveInteger)),
+
         cost: yup.number().nullable().min(0).integer(),
         lqas_district_passing: yup
             .number()
@@ -395,20 +453,31 @@ const useRoundShape = () => {
             .nullable()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
+        target_population: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger))
+            //@ts-ignore
+            .isValidTargetPopulation(formatMessage),
         percentage_covered_target_population: yup
             .number()
             .nullable()
             .integer()
             .min(0, formatMessage(MESSAGES.positiveRangeInteger))
             .max(100, formatMessage(MESSAGES.positiveRangeInteger))
-            .typeError(formatMessage(MESSAGES.positiveInteger)),
+            .typeError(formatMessage(MESSAGES.positiveInteger))
+            //@ts-ignore
+            .isValidTargetPopulationPercentage(formatMessage),
         on_hold: yup.boolean().nullable(),
+        is_planned: yup.boolean().nullable(),
     });
 };
 
 export const useFormValidator = () => {
     const { formatMessage } = useSafeIntl();
-    // eslint-disable-next-line camelcase
+
     const round_shape = useRoundShape();
 
     const polioSchema = {
@@ -423,15 +492,18 @@ export const useFormValidator = () => {
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
+            //@ts-ignore
             .isValidOnset(formatMessage),
         cvdpv2_notified_at: yup
             .date()
             .nullable()
+            //@ts-ignore
             .isValidVirusNotification(formatMessage),
         outbreak_declaration_date: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
+            //@ts-ignore
             .isValidOutbreakDeclaration(formatMessage),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
@@ -517,9 +589,10 @@ export const useFormValidator = () => {
             .required(formatMessage(MESSAGES.requiredField)),
         description: yup.string().nullable(),
         gpei_coordinator: yup.string().nullable(),
-        is_preventive: yup.bool(),
-        is_test: yup.bool(),
-        on_hold: yup.bool(),
+        is_preventive: yup.boolean().nullable(),
+        is_test: yup.boolean().nullable(),
+        on_hold: yup.boolean().nullable(),
+        is_planned: yup.boolean().nullable(),
         rounds: yup.array(round_shape).nullable(),
     };
     return {

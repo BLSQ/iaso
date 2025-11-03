@@ -1,6 +1,16 @@
+from django import forms
 from django.contrib import admin
 
 from iaso.models import OpenHEXAInstance, OpenHEXAWorkspace
+
+
+class OpenHEXAInstanceAdminForm(forms.ModelForm):
+    class Meta:
+        model = OpenHEXAInstance
+        fields = "__all__"
+        widgets = {
+            "token": forms.PasswordInput(render_value=True),
+        }
 
 
 class OpenHEXAWorkspaceInline(admin.TabularInline):
@@ -15,6 +25,7 @@ class OpenHEXAWorkspaceInline(admin.TabularInline):
 
 @admin.register(OpenHEXAInstance)
 class OpenHEXAInstanceAdmin(admin.ModelAdmin):
+    form = OpenHEXAInstanceAdminForm
     list_display = ("name", "url", "created_at", "updated_at")
     search_fields = ("name", "url")
     list_filter = ("created_at", "updated_at")

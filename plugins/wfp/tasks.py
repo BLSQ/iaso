@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 @shared_task()
-def etl_ng(all_data):
+def etl_ng(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ng", status="SUCCESS").first()
 
@@ -59,7 +59,7 @@ def etl_ng(all_data):
 
 
 @shared_task()
-def etl_ssd(all_data):
+def etl_ssd(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ssd", status="SUCCESS").first()
 
@@ -101,7 +101,7 @@ def etl_ssd(all_data):
 
 
 @shared_task()
-def etl_ethiopia(all_data):
+def etl_ethiopia(all_data=None):
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     last_success_task = TaskResult.objects.filter(task_name="plugins.wfp.tasks.etl_ethiopia", status="SUCCESS").first()
 

@@ -1,12 +1,12 @@
 import json
 import logging
-import os
 
 from datetime import date, datetime, timedelta
 from itertools import groupby
 from operator import itemgetter
 
 from dateutil.relativedelta import *
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Case, CharField, F, IntegerField, Q, Sum, Value, When
 from django.db.models.functions import Concat, Extract
@@ -19,8 +19,6 @@ from .models import *
 
 
 logger = logging.getLogger(__name__)
-
-DATASET_ID = os.environ.get("DATASET_ID")
 
 
 class ETL:
@@ -961,7 +959,7 @@ class ETL:
         for org_unit, journeys in journey_by_org_units:
             journeys = list(journeys)
             journey_by_org_units_period = groupby(journeys, key=itemgetter("period"))
-            dataSet = {"dataSet": DATASET_ID, "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
+            dataSet = {"dataSet": settings.DATASET_ID, "orgUnit": journeys[0]["dhis2_id"], "orgUnitId": org_unit}
             dataValues = []
             for period, journey_period in journey_by_org_units_period:
                 dataSet["period"] = period

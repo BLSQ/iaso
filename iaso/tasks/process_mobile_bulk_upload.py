@@ -30,7 +30,7 @@ from hat.audit.models import BULK_UPLOAD, BULK_UPLOAD_MERGED_ENTITY, log_modific
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances.instances import import_data as import_instances
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestWriteSerializer
-from iaso.api.org_units import import_data as import_org_units
+from iaso.api.org_units import import_org_units
 from iaso.api.stocks.utils import import_stock_ledger_items
 from iaso.api.storage import import_storage_logs
 from iaso.models import Instance, Project, StockLedgerItem

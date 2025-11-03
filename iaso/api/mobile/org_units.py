@@ -17,7 +17,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
 from iaso.api.instances.instances import InstanceFileSerializer
-from iaso.api.org_units import import_data as import_org_units
+from iaso.api.org_units import import_org_units
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer

@@ -956,7 +956,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     @safe_api_import("orgUnit")
     def create(self, _, request):
         """This endpoint is used by mobile app"""
-        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
+        new_org_units = import_org_units(request.data, request.user, request.query_params.get("app_id"))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
@@ -1014,7 +1014,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
 
-def import_data(org_units: List[Dict], user, app_id):
+def import_org_units(org_units: List[Dict], user, app_id):
     """Import a list of org units."""
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)

@@ -174,6 +174,7 @@ class ProcessMobileBulkUploadTest(TestCase):
         ou = m.OrgUnit.objects.get(name="New Org Unit")
         self.assertIsNotNone(ou)
         self.assertEqual(ou.validation_status, m.OrgUnit.VALIDATION_NEW)
+        self.assertEqual(int(ou.source_created_at.timestamp()), 1712326429)
 
         # Instances (Submissions) + Entity were created
         self.assertEqual(m.Entity.objects.count(), 2)

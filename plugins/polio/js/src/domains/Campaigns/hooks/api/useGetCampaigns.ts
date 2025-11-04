@@ -27,6 +27,7 @@ export type Options = {
     orgUnitGroups?: number[];
     show_test?: boolean;
     on_hold?: boolean;
+    is_embedded?: boolean;
     enabled?: boolean;
     fieldset?: string;
     filterLaunched?: boolean;
@@ -47,10 +48,21 @@ export type GetCampaignsParams = {
     org_unit_groups?: number[];
     show_test?: boolean;
     on_hold?: boolean;
+    is_embedded?: boolean;
     // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
     enabled?: boolean;
     fieldset?: string;
     format?: string;
+};
+
+export type CampaignAPIResponse = {
+    hasPrevious?: boolean;
+    hasNext?: boolean;
+    count?: number;
+    page?: number;
+    pages?: number;
+    limit?: number;
+    campaigns?: Campaign[];
 };
 
 const getURL = (urlParams: GetCampaignsParams, url: string): string => {
@@ -83,6 +95,7 @@ export const useGetCampaignsOptions = (
             org_unit_groups: options.orgUnitGroups,
             show_test: options.show_test ?? false,
             on_hold: options.on_hold ?? false,
+            is_embedded: options.is_embedded ?? false,
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
             fieldset: asCsv ? undefined : (options.fieldset ?? undefined),
@@ -105,6 +118,7 @@ export const useGetCampaignsOptions = (
             options.enabled,
             options.fieldset,
             options.on_hold,
+            options.is_embedded,
         ],
     );
 };
@@ -116,7 +130,7 @@ export const useGetCampaigns = (
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
-): UseQueryResult<PaginatedResponse<Campaign> | Campaign[], Error> => {
+): UseQueryResult<CampaignAPIResponse | Campaign[], Error> => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {

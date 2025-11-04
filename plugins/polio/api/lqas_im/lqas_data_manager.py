@@ -336,7 +336,6 @@ class LqasDataManager:
                 cg_caregivers_informed=caregivers_informed,
                 cg_caregivers_informed_ratio=caregivers_informed_ratio,
             )
-            print("ENTRY", lqas_entry)
             return lqas_entry
 
         except (IntegrityError, ValidationError) as e:

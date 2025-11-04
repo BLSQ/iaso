@@ -1,7 +1,6 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
 
 import Add from '@mui/icons-material/Add';
-import SearchIcon from '@mui/icons-material/Search';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -10,6 +9,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { SearchButton } from 'Iaso/components/SearchButton';
 import { baseUrls } from 'Iaso/constants/urls';
 import * as Permission from 'Iaso/utils/permissions';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
@@ -166,21 +166,14 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                                 {formatMessage(MESSAGES.addForm)}
                             </Button>
                         </DisplayIfUserHasPerm>
-                        <Button
-                            data-test="search-button"
+                        <SearchButton
                             disabled={
                                 (!filtersUpdated &&
                                     params?.isSearchActive === 'true') ||
                                 textSearchError
                             }
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={handleSearch}
-                        >
-                            <SearchIcon className={classes.buttonIcon} />
-                            {formatMessage(MESSAGES.search)}
-                        </Button>
+                            onSearch={handleSearch}
+                        />
                     </Box>
                 </Grid>
             </Grid>

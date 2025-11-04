@@ -633,10 +633,19 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names", "target_population"]
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+                "scopes",
+                "vaccine_names",
+                "target_population",
+                "is_planned",
+            ]
 
         def to_representation(self, instance):
-            # Skip test rounds
+            # Skip rounds on hold
             if instance.on_hold:
                 return None
             return super().to_representation(instance)
@@ -692,6 +701,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "description",
             "is_test",
             "on_hold",
+            "is_planned",
         ]
         read_only_fields = fields
 
@@ -827,19 +837,29 @@ class CampaignViewSet(ModelViewSet):
         on_hold = self.request.query_params.get("on_hold", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
         campaign_types = self.request.query_params.get("campaign_types")
+        is_embedded = self.request.query_params.get("is_embedded", "false")
         campaigns = queryset
+        if is_embedded == "true":
+            campaigns = campaigns.filter(is_planned=False)
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
         if on_hold == "false":
             campaigns = campaigns.filter(on_hold=False)
         if campaign_category == "preventive":
-            campaigns = campaigns.filter(is_preventive=True)
+            campaigns = campaigns.filter(is_preventive=True).filter(is_planned=False)
         if campaign_category == "on_hold":
-            campaigns = campaigns.filter(on_hold=True)
+            campaigns = campaigns.filter(on_hold=True).filter(is_planned=False)
+        if campaign_category == "is_planned" and is_embedded == "false":
+            campaigns = campaigns.filter(is_planned=True)
         if campaign_category == "regular" and on_hold == "true":
-            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
+            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(is_planned=False)
         if campaign_category == "regular" and on_hold == "false":
-            campaigns = campaigns.filter(is_preventive=False).filter(is_test=False).filter(on_hold=False)
+            campaigns = (
+                campaigns.filter(is_preventive=False)
+                .filter(is_test=False)
+                .filter(on_hold=False)
+                .filter(is_planned=False)
+            )
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
@@ -1211,7 +1231,7 @@ class CampaignViewSet(ModelViewSet):
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
 
-        # Filter out test rounds if requested
+        # Filter out rounds on hold if requested
         if exclude_test_rounds:
             rounds = rounds.filter(on_hold=False)
 

@@ -71,6 +71,13 @@ export const useFormAValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         file: yup.mixed().nullable(),
     });
 };
@@ -96,6 +103,13 @@ export const useDestructionValidation = () => {
             .number()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField))
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -140,6 +154,13 @@ export const useIncidentValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))
@@ -162,6 +183,13 @@ export const useEarmarkValidation = () => {
         temporary_campaign_name: yup.string().nullable(),
         round_number: yup.number().integer().positive().nullable(),
         vials_earmarked: yup
+            .number()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_per_vial: yup
             .number()
             .required(formatMessage(MESSAGES.requiredField))
             .nullable()

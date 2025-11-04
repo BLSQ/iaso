@@ -55,7 +55,9 @@ export const usePolioDialogTabs = (
                 form: ScopeForm,
                 disabled:
                     !formik.values.initial_org_unit ||
-                    formik.values.rounds?.length === 0,
+                    formik.values.rounds?.length === 0 ||
+                    formik.values.is_planned ||
+                    formik.values.rounds?.some(rnd => rnd.is_planned),
                 disabledMessage: formatMessage(MESSAGES.scopeUnlockConditions),
                 hasTabError: compareArraysValues(
                     scopeFormFields,
@@ -105,6 +107,9 @@ export const usePolioDialogTabs = (
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
+                disabled:
+                    formik.values.is_planned ||
+                    formik.values.rounds?.some(rnd => rnd.is_planned),
                 key: 'preparedness',
                 hasTabError: false,
             },

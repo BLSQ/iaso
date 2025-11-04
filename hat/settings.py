@@ -57,6 +57,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
+# SECURITY WARNING: keep the encryption key used in production secret!
+ENCRYPTED_TEXT_FIELD_KEY = os.environ.get("ENCRYPTED_TEXT_FIELD_KEY")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
@@ -819,3 +822,5 @@ if IN_TESTS:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
         },
     }
+    if not ENCRYPTED_TEXT_FIELD_KEY:
+        ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="

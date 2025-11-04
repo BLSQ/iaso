@@ -353,7 +353,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
             jedi_council.refresh_from_db()
-            self.assertTrue(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(3, am.Modification.objects.count())
 

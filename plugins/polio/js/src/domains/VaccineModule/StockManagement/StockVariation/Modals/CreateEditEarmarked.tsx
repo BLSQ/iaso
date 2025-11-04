@@ -13,11 +13,14 @@ import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { VaccineForStock } from '../../../../../constants/types';
 import { useGetVrfListByRound } from '../../../SupplyChain/hooks/api/vrf';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
 import { useCampaignOptions, useSaveEarmarked } from '../../hooks/api';
 import MESSAGES from '../../messages';
-import { useEarmarkOptions } from './dropdownOptions';
+import {
+    useAvailablePresentations,
+    useEarmarkOptions,
+} from './dropdownOptions';
 import { useEarmarkValidation } from './validation';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     earmark?: any;
@@ -27,6 +30,8 @@ type Props = {
     countryName: string;
     vaccine: VaccineForStock;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditEarmarked: FunctionComponent<Props> = ({
@@ -36,9 +41,13 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveEarmarked();
+
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useEarmarkValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -50,11 +59,13 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
             temporary_campaign_name: earmark?.temporary_campaign_name,
             vials_earmarked: earmark?.vials_earmarked || 0,
             doses_earmarked: earmark?.doses_earmarked || 0,
+            doses_per_vial: earmark?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
+
     const { setFieldValue, setFieldTouched } = formik;
 
     const { campaignOptions, isFetching, roundNumberOptions } =
@@ -68,12 +79,14 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
         round => round.value === formik.values.round_number,
     );
     const earmarkTypeOptions = useEarmarkOptions();
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        earmark,
+    );
 
     const handleVialsChange = useCallback(
         value => {
-            const conversionRate = dosesPerVial[vaccine];
             setFieldValue('vials_earmarked', value);
-            setFieldValue('doses_earmarked', value * conversionRate);
             setFieldTouched('vials_earmarked', true);
         },
         [setFieldTouched, setFieldValue, vaccine],
@@ -152,6 +165,16 @@ export const CreateEditEarmarked: FunctionComponent<Props> = ({
                         name="vials_earmarked"
                         component={NumberInput}
                         onChange={handleVialsChange}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
                         required
                     />
                 </Box>

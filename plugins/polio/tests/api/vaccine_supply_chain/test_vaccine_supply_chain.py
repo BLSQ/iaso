@@ -209,6 +209,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                     "doses_shipped": 500000,
                     "po_number": "1234698",
                     "lot_numbers": ["LOT-1234", "LOT-5678"],
+                    "doses_per_vial": 20,
                 }
             ],
         }
@@ -278,6 +279,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                         "doses_shipped": 500000,
                         "po_number": "PO-1234",
                         "lot_numbers": ["LOT-1234", "LOT-5678"],
+                        "doses_per_vial": 20,
                     }
                 ],
             },
@@ -299,6 +301,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                     "arrival_report_date": "2021-01-01",
                     "doses_received": 1000,
                     "po_number": "1234698",
+                    "doses_per_vial": 20,
                 }
             ],
         }
@@ -319,14 +322,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         arrival_report_id = arrival_report["id"]
 
         # Non-admin can edit within 7 days
-        update_data = {
-            "arrival_reports": [
-                {
-                    "id": arrival_report_id,
-                    "doses_received": 2000,
-                }
-            ]
-        }
+        update_data = {"arrival_reports": [{"id": arrival_report_id, "doses_received": 2000}]}
 
         response = self.client.patch(
             self.BASE_URL + f"{request_form.id}/update_arrival_reports/", update_data, format="json"
@@ -377,6 +373,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             doses_shipped=1000,
             po_number="PO-1234",
             lot_numbers=["LOT-1234", "LOT-5678"],
+            doses_per_vial=20,
         )
 
         response = self.client.get(
@@ -403,9 +400,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
 
         # Create a arrival report for the request_form
         arrival_report = pm.VaccineArrivalReport.objects.create(
-            request_form=request_form,
-            arrival_report_date="2022-01-01",
-            doses_received=2000,
+            request_form=request_form, arrival_report_date="2022-01-01", doses_received=2000, doses_per_vial=20
         )
 
         response = self.client.get(
@@ -427,9 +422,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         request_form = pm.VaccineRequestForm.objects.first()
 
         pm.VaccineArrivalReport.objects.create(
-            request_form=request_form,
-            arrival_report_date="2022-01-01",
-            doses_received=2000,
+            request_form=request_form, arrival_report_date="2022-01-01", doses_received=2000, doses_per_vial=20
         )
 
         pm.VaccinePreAlert.objects.create(
@@ -439,6 +432,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             doses_shipped=1000,
             po_number="PO-1234",
             lot_numbers=["LOT-1234", "LOT-5678"],
+            doses_per_vial=20,
         )
 
         # Get the related objects from AR_SET and PA_SET
@@ -478,6 +472,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             doses_shipped=1000,
             po_number="PO-1234",
             lot_numbers=["LOT-1234", "LOT-5678"],
+            doses_per_vial=20,
         )
 
         # Get one of the pre-alerts attached to the request form
@@ -501,9 +496,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
         request_form = pm.VaccineRequestForm.objects.first()
 
         arrival_report = pm.VaccineArrivalReport.objects.create(
-            request_form=request_form,
-            arrival_report_date="2022-01-01",
-            doses_received=2000,
+            request_form=request_form, arrival_report_date="2022-01-01", doses_received=2000, doses_per_vial=20
         )
 
         # Get one of the arrival reports attached to the request form
@@ -557,6 +550,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                 po_number=po_numbers[i],
                 arrival_report_date=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
                 doses_received=1000,
+                doses_per_vial=20,
             )
             pm.VaccinePreAlert.objects.create(
                 date_pre_alert_reception=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
@@ -564,6 +558,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
                 po_number=po_numbers[i],
                 estimated_arrival_time=datetime.datetime.strptime(date, "%Y-%m-%d").date(),
                 doses_shipped=100,
+                doses_per_vial=20,
             )
 
         # Make a GET request to the list endpoint with ordering by start_date
@@ -598,6 +593,7 @@ class VaccineSupplyChainAPITestCase(BaseVaccineSupplyChainAPITestCase, PolioTest
             po_number="DOC-TEST-123",
             lot_numbers=["LOT-1234", "LOT-5678"],
             file=test_document,
+            doses_per_vial=20,
         )
 
         # Get the pre-alert ID

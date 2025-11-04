@@ -89,9 +89,9 @@ export const Assignments: FunctionComponent = () => {
         sidebarData,
         isFetchingOrgUnits,
         isFetchingOrgUnitsList,
+        isFetchingOrgunitTypes,
         isLoadingPlanning,
         isSaving,
-        isFetchingOrgunitTypes,
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
@@ -276,6 +276,8 @@ export const Assignments: FunctionComponent = () => {
                                 disabledMessage={formatMessage(
                                     MESSAGES.deleteAssignmentsInfos,
                                 )}
+                                orgunitTypes={orgunitTypes}
+                                isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             />
                         )}
                 </Box>
@@ -284,27 +286,10 @@ export const Assignments: FunctionComponent = () => {
                     teams={teams || []}
                     isFetchingTeams={!isTeamsFetched}
                     orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgUnitTypes={isFetchingOrgunitTypes}
+                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                 />
                 <Box mt={2}>
                     <Grid container spacing={2}>
-                        <Grid item xs={12} lg={5}>
-                            <Sidebar
-                                data={sidebarData || []}
-                                assignments={assignments}
-                                selectedItem={selectedItem}
-                                orgUnits={orgUnitsList || []}
-                                setSelectedItem={setSelectedItem}
-                                currentTeam={currentTeam}
-                                setItemColor={setItemColor}
-                                teams={teams || []}
-                                profiles={profiles}
-                                isLoadingAssignments={
-                                    isLoadingAssignments ||
-                                    isFetchingOrgUnitsList
-                                }
-                            />
-                        </Grid>
                         <Grid item xs={12} lg={7}>
                             <Paper>
                                 <Box ml={-4}>
@@ -344,7 +329,7 @@ export const Assignments: FunctionComponent = () => {
                                                 orgunitTypes={
                                                     orgunitTypes || []
                                                 }
-                                                isFetchingOrgUnitTypes={
+                                                isFetchingOrgunitTypes={
                                                     isFetchingOrgunitTypes
                                                 }
                                                 planning={planning}
@@ -392,6 +377,23 @@ export const Assignments: FunctionComponent = () => {
                                     )}
                                 </Box>
                             </Paper>
+                        </Grid>
+                        <Grid item xs={12} lg={5}>
+                            <Sidebar
+                                data={sidebarData || []}
+                                assignments={assignments}
+                                selectedItem={selectedItem}
+                                orgUnits={orgUnitsList || []}
+                                setSelectedItem={setSelectedItem}
+                                currentTeam={currentTeam}
+                                setItemColor={setItemColor}
+                                teams={teams || []}
+                                profiles={profiles}
+                                isLoadingAssignments={
+                                    isLoadingAssignments ||
+                                    isFetchingOrgUnitsList
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </Box>

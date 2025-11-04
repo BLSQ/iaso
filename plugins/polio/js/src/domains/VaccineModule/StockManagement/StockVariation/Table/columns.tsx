@@ -97,6 +97,15 @@ export const useFormATableColumns = (
                 ),
             },
             {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
+                ),
+            },
+            {
                 Header: formatMessage(MESSAGES.actions),
                 id: 'account',
                 accessor: 'account',
@@ -197,6 +206,15 @@ export const useDestructionTableColumns = (
                     <NumberCell
                         value={settings.row.original.unusable_vials_destroyed}
                     />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
             {
@@ -319,6 +337,15 @@ export const useIncidentTableColumns = (
                 sortable: true,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.unusable_vials} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
             {
@@ -465,6 +492,15 @@ export const useEarmarkedTableColumns = (
                 sortable: true,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.doses_earmarked} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.doses_per_vial),
+                accessor: 'doses_per_vial',
+                id: 'doses_per_vial',
+                sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_per_vial} />
                 ),
             },
             {

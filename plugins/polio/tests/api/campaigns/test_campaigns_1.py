@@ -562,7 +562,6 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/polio/campaigns/{test_campaign.id}/")
         data = self.assertJSONResponse(response, 200)
-        print("SCOPES", data["scopes"])
         response_group = data["scopes"][0]["group"]
 
         # Reduce scope

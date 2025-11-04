@@ -70,15 +70,17 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             vaccine_type=cls.vaccine_type,
         )
         cls.other_vrf.rounds.set([])
-        cls.pre_alert = VaccinePreAlert.objects.create(request_form=cls.vrf, date_pre_alert_reception=date.today())
+        cls.pre_alert = VaccinePreAlert.objects.create(
+            request_form=cls.vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
+        )
         cls.other_pre_alert = VaccinePreAlert.objects.create(
-            request_form=cls.other_vrf, date_pre_alert_reception=date.today()
+            request_form=cls.other_vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
         )
         cls.arrival_report = VaccineArrivalReport.objects.create(
-            request_form=cls.vrf, arrival_report_date=date.today(), doses_received=1000
+            request_form=cls.vrf, arrival_report_date=date.today(), doses_received=1000, doses_per_vial=20
         )
         cls.other_arrival_report = VaccineArrivalReport.objects.create(
-            request_form=cls.other_vrf, arrival_report_date=date.today(), doses_received=1000
+            request_form=cls.other_vrf, arrival_report_date=date.today(), doses_received=1000, doses_per_vial=20
         )
 
         cls.vaccine_stock = VaccineStock.objects.create(
@@ -91,6 +93,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2022, 2, 2),
             usable_vials_used=100,
+            doses_per_vial=20,
         )
 
         cls.destruction_report = DestructionReport.objects.create(
@@ -99,6 +102,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date.today(),
             unusable_vials_destroyed=10,
             action="destroyed",
+            doses_per_vial=20,
         )
 
     def test_user_has_permission_vrf(self):
@@ -218,9 +222,11 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             campaign=new_campaign, number=2, started_at=date(2024, 1, 1), ended_at=date(2024, 1, 10)
         )
         new_vrf.rounds.set([new_vrf_round_1, new_vrf_round_2])
-        new_pre_alert = VaccinePreAlert.objects.create(request_form=new_vrf, date_pre_alert_reception=date.today())
+        new_pre_alert = VaccinePreAlert.objects.create(
+            request_form=new_vrf, date_pre_alert_reception=date.today(), doses_per_vial=20
+        )
         new_arrival_report = VaccineArrivalReport.objects.create(
-            request_form=new_vrf, arrival_report_date=date.today(), doses_received=2000
+            request_form=new_vrf, arrival_report_date=date.today(), doses_received=2000, doses_per_vial=20
         )
 
         # Should appear only in 2nd VRF
@@ -230,6 +236,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date(2024, 2, 1),
             usable_vials_used=60,
+            doses_per_vial=20,
         )
 
         DestructionReport.objects.create(
@@ -238,6 +245,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date(2023, 3, 3),
             unusable_vials_destroyed=6,
             action="destroyed",
+            doses_per_vial=20,
         )
 
         last_dr = DestructionReport.objects.create(
@@ -246,6 +254,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             destruction_report_date=date(2024, 2, 15),
             unusable_vials_destroyed=6,
             action="destroyed",
+            doses_per_vial=20,
         )
 
         response = self.client.get(self.vrf_url)

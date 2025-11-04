@@ -56,8 +56,6 @@ from ..models import (
     Mapping,
     MappingVersion,
     MatchingAlgorithm,
-    MetricType,
-    MetricValue,
     OrgUnit,
     OrgUnitChangeRequest,
     OrgUnitChangeRequestConfiguration,
@@ -197,7 +195,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
+    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -761,9 +759,12 @@ class StorageLogEntryInline(admin.TabularInline):
 @admin.register(StockItem)
 class StockItemAdmin(admin.ModelAdmin):
     fields = ("org_unit", "sku", "value", "created_at", "updated_at")
-    readonly_fields = ("created_at", "updated_at")
+    readonly_fields = ("org_unit", "sku", "value", "created_at", "updated_at")
     list_display = ("org_unit", "sku", "value")
     list_filter = ["sku"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(StockItemRule)
@@ -807,9 +808,22 @@ class StockKeepingUnitChildrenAdmin(admin.ModelAdmin):
 @admin.register(StockLedgerItem)
 class StockLedgerItemAdmin(admin.ModelAdmin):
     fields = ("rule", "sku", "org_unit", "submission", "question", "impact", "value", "created_at", "created_by")
-    readonly_fields = ("created_at", "created_by")
+    readonly_fields = (
+        "rule",
+        "sku",
+        "org_unit",
+        "submission",
+        "question",
+        "impact",
+        "value",
+        "created_at",
+        "created_by",
+    )
     list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
     list_filter = ("sku", "impact", "rule")
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(StockRulesVersion)
@@ -1238,31 +1252,6 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
                 "created_by",
             )
         )
-
-
-@admin.register(MetricType)
-class MetricTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "account",
-        "name",
-        "category",
-        "source",
-        "units",
-        "created_at",
-        "updated_at",
-    )
-    search_fields = ("name", "description", "source", "units", "comments")
-    list_filter = ("account", "source")
-    ordering = ("name",)
-
-
-@admin.register(MetricValue)
-class MetricValueAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit",)
-    list_display = ("metric_type", "org_unit", "year", "value")
-    search_fields = ("metric_type__name", "org_unit__name")
-    list_filter = ("metric_type", "year")
 
 
 admin.site.register(AccountFeatureFlag)

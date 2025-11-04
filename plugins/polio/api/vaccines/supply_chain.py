@@ -150,8 +150,10 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     po_number = serializers.CharField(required=False)
     estimated_arrival_time = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
-    vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    doses_per_vial = serializers.IntegerField(required=False)
+    vials_shipped = serializers.IntegerField(
+        required=False, read_only=True
+    )  # vials are computed from doses in model's save()
     can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
@@ -246,9 +248,13 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
     po_number = serializers.CharField(required=False)
     doses_received = serializers.IntegerField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
-    vials_received = serializers.IntegerField(required=False, read_only=True)
-    vials_shipped = serializers.IntegerField(required=False, read_only=True)
+    doses_per_vial = serializers.IntegerField(required=False)
+    vials_received = serializers.IntegerField(
+        required=False, read_only=True
+    )  # vials are computed from doses in model's save()
+    vials_shipped = serializers.IntegerField(
+        required=False, read_only=True
+    )  # vials are computed from doses in model's save()
     can_edit = serializers.SerializerMethodField()
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):

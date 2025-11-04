@@ -251,6 +251,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             pre_alert_infected = pm.VaccinePreAlert.objects.create(
                 request_form=request_form,
@@ -263,6 +264,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             pre_alert_pending = pm.VaccinePreAlert.objects.create(
                 request_form=request_form,
@@ -275,6 +277,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
             pre_alert_error = pm.VaccinePreAlert.objects.create(
                 request_form=request_form,
@@ -287,6 +290,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         # Use a non-admin user
@@ -343,6 +347,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=infected_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.SAFE_FILE_PATH, "rb") as safe_file:
@@ -406,6 +411,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -457,6 +463,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:
@@ -519,6 +526,7 @@ class PreAlertVirusScanAPITestCase(BaseVaccineSupplyChainAPITestCase):
                     content=safe_file_content,
                     content_type="application/pdf",
                 ),
+                doses_per_vial=20,
             )
 
         with open(self.INFECTED_FILE_PATH, "rb") as infected_file:

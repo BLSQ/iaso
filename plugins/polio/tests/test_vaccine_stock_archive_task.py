@@ -130,6 +130,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             po_number="123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=20,  # previous default value for mOPV2
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
             # and calculated vials_received and vials_shipped
         )
@@ -147,6 +148,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             usable_vials_used=10,  # 200 doses
             lot_numbers=["LOT123"],
             comment="Hello world",
+            doses_per_vial=20,  # previous default value for mOPV2
         )
 
         cls.incident_report_rdc_mopv_1 = pm.IncidentReport.objects.create(
@@ -156,6 +158,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=4),
             unusable_vials=1,  # 1 vial/20 doses will be moved from usable to unusable
             usable_vials=0,
+            doses_per_vial=20,  # previous default value for mOPV2
         )
         cls.incident_report_rdc_mopv_2 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
@@ -164,6 +167,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=1,  # 20 doses
+            doses_per_vial=20,  # previous default value for mOPV2
         )
         cls.incident_report_rdc_mopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
@@ -172,6 +176,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=16,  # 320 doses
+            doses_per_vial=20,  # previous default value for mOPV2
         )
         cls.incident_report_rdc_mopv_4 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
@@ -180,6 +185,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=10,  # 200 doses
+            doses_per_vial=20,  # previous default value for mOPV2
         )
         cls.incident_report_rdc_mopv_5 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_rdc_mopv,
@@ -188,6 +194,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_rdc_1_round_3.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=10,  # 200 doses
+            doses_per_vial=20,  # previous default value for mOPV2
         )
         # END campaign RDC 1
 
@@ -279,6 +286,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             po_number="666",
             lot_numbers=["LOT789", "LOT45689"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=50,  # previous default for nOPV2
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
             # and calculated vials_received and vials_shipped
         )
@@ -299,6 +307,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             report_date=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=3),
             form_a_reception_date=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=3),
             usable_vials_used=10,  # 500 doses
+            doses_per_vial=50,  # previous default for nOPV2
             lot_numbers=["LOT123"],
             comment="Hello world",
         )
@@ -310,6 +319,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=4),
             unusable_vials=1,  # 1 vial/50 doses will be moved from usable to unusable
             usable_vials=0,
+            doses_per_vial=50,  # previous default for nOPV2
         )
         cls.incident_report_chad_nopv_2 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
@@ -318,6 +328,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=1,  # 50 doses
+            doses_per_vial=50,  # previous default for nOPV2
         )
         cls.incident_report_chad_nopv_3 = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_nopv,
@@ -326,6 +337,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_1.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=16,  # 800 doses
+            doses_per_vial=50,  # previous default for nOPV2
         )
         # should be ignored when computing round 1 values based on date
         cls.incident_report_rdc_chad_nopv_4 = pm.IncidentReport.objects.create(
@@ -335,6 +347,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=10,  # 500 doses
+            doses_per_vial=50,  # previous default for nOPV2
         )
         cls.incident_report_rdc_chad_mopv = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock_chad_mopv,
@@ -343,6 +356,7 @@ class TestVaccineStockArchive(TaskAPITestCase):
             incident_report_received_by_rrt=cls.campaign_chad_1_round_2.started_at + datetime.timedelta(days=6),
             unusable_vials=0,
             usable_vials=10,  # 100 doses
+            doses_per_vial=20,  # previous default value for mOPV2
         )
 
     def test_anonymous_user_cannot_launch_task(self):

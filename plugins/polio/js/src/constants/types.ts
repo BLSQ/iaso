@@ -220,6 +220,7 @@ export type Round = {
     percentage_covered_target_population: Nullable<number>;
     datelogs: RoundDateHistoryEntry[];
     on_hold: boolean;
+    is_planned: boolean;
 };
 
 type CalendarRound = {
@@ -263,6 +264,7 @@ export type CalendarCampaign = {
     description: string;
     is_test: boolean;
     on_hold: boolean;
+    is_planned: boolean;
 };
 
 export type Campaign = {
@@ -466,6 +468,7 @@ export type DefaultCampaignValues = {
     is_preventive: boolean;
     is_test: boolean;
     on_hold: boolean;
+    is_planned: boolean;
     rounds: Round[];
     scopes: Scope[];
     org_unit?: Shape;

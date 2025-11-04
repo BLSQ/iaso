@@ -245,10 +245,17 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     );
 
     const onConfirm = useCallback(
-        async (closeDialog: () => void) => {
+        (closeDialog: () => void) => {
             try {
-                await saveType(mapValues(formState, v => v.value));
-                closeDialog();
+                saveType(
+                    mapValues(formState, v => v.value),
+                    {
+                        onSuccess: () => {
+                            closeDialog();
+                            resetForm();
+                        },
+                    },
+                );
             } catch (error) {
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(entry => {

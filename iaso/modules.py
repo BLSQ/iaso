@@ -39,5 +39,8 @@ MODULE_TRYPELIM_PROJECT = IasoModule(name="Trypelim project", codename="TRYPELIM
 MODULE_DATA_VALIDATION = IasoModule(
     name="Data validation", codename="DATA_VALIDATION", fr_name="Validation des données"
 )
+MODULE_SAAS = IasoModule(name="SaaS", codename="SAAS", fr_name="SaaS")
 
-MODULES = [module for name, module in globals().items() if name.startswith("MODULE_")]
+MODULES = [
+    module for name, module in globals().items() if name.startswith("MODULE_") and isinstance(module, IasoModule)
+]

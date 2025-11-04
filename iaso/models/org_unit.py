@@ -278,7 +278,6 @@ class OrgUnit(TreeModel):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
     validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     # The migration 0086_add_version_constraints add a constraint to ensure that the source version
     # is the same between the orgunit and the group

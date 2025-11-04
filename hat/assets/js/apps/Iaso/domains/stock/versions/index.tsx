@@ -9,6 +9,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import WidgetPaper from 'Iaso/components/papers/WidgetPaperComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import MESSAGES from 'Iaso/domains/stock/messages';
 import { AddVersionModal } from 'Iaso/domains/stock/versions/components/AddVersionModal';
@@ -17,6 +18,7 @@ import {
     VersionFilters,
 } from 'Iaso/domains/stock/versions/components/Filters';
 import { AddRuleDialog } from 'Iaso/domains/stock/versions/components/RuleDialog';
+import { VersionBaseInfo } from 'Iaso/domains/stock/versions/components/VersionBaseInfo';
 import { Params } from 'Iaso/domains/stock/versions/types/filters';
 import { useParamsObject } from 'Iaso/routing/hooks/useParamsObject';
 import { useVersionsColumns, baseUrl, useRulesColumns } from './config';
@@ -30,6 +32,8 @@ import {
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    infoPaper: { width: '100%', position: 'relative' },
+    infoPaperBox: { minHeight: '100px' },
 }));
 
 export const StockRulesVersions: FunctionComponent = () => {
@@ -80,7 +84,7 @@ const StockRulesVersionsList: FunctionComponent<Props> = ({ params }) => {
                     getObjectId={obj => obj.id}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'name', desc: false }]}
+                    defaultSorted={[{ id: 'id', desc: true }]}
                     columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
@@ -122,7 +126,24 @@ const StockRulesList: FunctionComponent<RulesProps> = ({
                 goBack={() => redirectTo(baseUrl)}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <RulesFilters params={params} />
+                <Grid container spacing={2}>
+                    <Grid container item xs={3}>
+                        <WidgetPaper
+                            className={classes.infoPaper}
+                            title={formatMessage(MESSAGES.infos)}
+                        >
+                            <Box className={classes.infoPaperBox}>
+                                {!version && <LoadingSpinner absolute />}
+                                {version && (
+                                    <VersionBaseInfo version={version} />
+                                )}
+                            </Box>
+                        </WidgetPaper>
+                    </Grid>
+                </Grid>
+                <Box mt={2}>
+                    <RulesFilters params={params} />
+                </Box>
                 <Grid
                     container
                     spacing={0}

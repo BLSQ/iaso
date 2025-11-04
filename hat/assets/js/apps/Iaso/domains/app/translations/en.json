@@ -971,6 +971,7 @@
     "iaso.modules.planning": "Planning",
     "iaso.modules.polio_project": "Polio project",
     "iaso.modules.registry": "Registry",
+    "iaso.modules.saas": "SaaS",
     "iaso.modules.status": "Status",
     "iaso.modules.title": "Modules",
     "iaso.modules.trypelim_project": "Trypelim project",

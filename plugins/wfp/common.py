@@ -663,6 +663,7 @@ class ETL:
 
     def entity_journey_mapper(self, visits, anthropometric_visit_forms, admission_form, current_journey):
         journey = []
+        new_journey_after_transfer = {}
         for index, visit in enumerate(visits):
             if visit:
                 current_journey["weight_gain"] = visit.get("weight_gain", None)
@@ -679,7 +680,22 @@ class ETL:
                     index,
                 )
             current_journey["steps"].append(visit)
+            if current_journey.get("exit_type") == "transfer_to_tsfp":
+                new_journey_after_transfer["programme_type"] = "TSFP"
+                new_journey_after_transfer["nutrition_programme"] = "TSFP"
+                new_journey_after_transfer["admission_type"] = "referred_from_otp_sam"
+            elif current_journey.get("exit_type") == "transfer_to_otp":
+                new_journey_after_transfer["programme_type"] = "OTP"
+                new_journey_after_transfer["nutrition_programme"] = "OTP"
+                new_journey_after_transfer["admission_type"] = "referred_from_tsfp_mam"
+            new_journey_after_transfer["admission_criteria"] = current_journey.get("admission_criteria")
+            new_journey_after_transfer["steps"] = [visit]
+            new_journey_after_transfer["visits"] = [visit]
+            new_journey_after_transfer["start_date"] = current_journey.get("end_date")
+            new_journey_after_transfer["initial_weight"] = current_journey.get("discharge_weight")
         journey.append(current_journey)
+        if new_journey_after_transfer.get("programme_type") is not None:
+            journey.append(new_journey_after_transfer)
         return journey
 
     def compute_gained_weight(self, initial_weight, current_weight, duration):

@@ -684,13 +684,11 @@ class ETL:
                 new_journey_after_transfer["programme_type"] = "TSFP"
                 new_journey_after_transfer["nutrition_programme"] = "TSFP"
                 new_journey_after_transfer["admission_type"] = "referred_from_otp_sam"
-                new_journey_after_transfer["admission_criteria"] = current_journey.get("admission_criteria")
             elif current_journey.get("exit_type") == "transfer_to_otp":
                 new_journey_after_transfer["programme_type"] = "OTP"
                 new_journey_after_transfer["nutrition_programme"] = "OTP"
                 new_journey_after_transfer["admission_type"] = "referred_from_tsfp_mam"
-                new_journey_after_transfer["admission_criteria"] = current_journey.get("admission_criteria")
-
+            new_journey_after_transfer["admission_criteria"] = current_journey.get("admission_criteria")
             new_journey_after_transfer["steps"] = [visit]
             new_journey_after_transfer["visits"] = [visit]
             new_journey_after_transfer["start_date"] = current_journey.get("end_date")

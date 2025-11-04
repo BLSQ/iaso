@@ -35,7 +35,7 @@ export const useGetStockRulesVersionsApiParams = (
     params: Params,
 ): GetAPiParams => {
     const apiParams: ApiParams = {
-        order: params.order || 'id',
+        order: params.order || '-id',
         name: params.search,
         status: params.status,
         limit: params.pageSize || '20',

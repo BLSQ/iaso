@@ -8,9 +8,11 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.models.json_config import Config
 from iaso.test import APITestCase
 from plugins.polio import models as pm
 from plugins.polio.models import OutgoingStockMovement
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, VaccineStockCalculator
 from plugins.polio.permissions import (
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
     POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
@@ -220,6 +222,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
             doses_per_vial=20,
         )
 
+        cls.config = Config.objects.create(
+            slug=DOSES_PER_VIAL_CONFIG_SLUG, content={"bOPV": [10, 20], "mOPV2": [20, 50], "nOPV2": [50]}
+        )
+
     def test_anonymous_user_cannot_see_list(self):
         self.client.force_authenticate(user=self.anon)
         response = self.client.get(BASE_URL)
@@ -248,6 +254,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["stock_of_unusable_vials"], 27)
         # self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
+
+        # Test new dose-related fields
+        self.assertEqual(stock["doses_received"], 400)  # 20 vials * 20 doses per vial
+        self.assertEqual(stock["doses_used"], 200)  # 10 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_usable_doses"], 460)  # 23 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_unusable_doses"], 540)  # 27 vials * 20 doses per vial
+        self.assertEqual(stock["doses_destroyed"], 60)  # 3 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_vaccine_stock_management_permissions_outgoing_stock_movement(self):
         # Use a non-admin user
@@ -662,18 +676,16 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "properties": {
                 "country_name": {"type": "string"},
                 "vaccine_type": {"type": "string"},
-                "total_usable_vials": {"type": "integer"},
-                "total_unusable_vials": {"type": "integer"},
                 "total_usable_doses": {"type": "integer"},
                 "total_unusable_doses": {"type": "integer"},
+                "total_earmarked_doses": {"type": "integer"},
             },
             "required": [
                 "country_name",
                 "vaccine_type",
-                "total_usable_vials",
-                "total_unusable_vials",
                 "total_usable_doses",
                 "total_unusable_doses",
+                "total_earmarked_doses",
             ],
         }
 
@@ -686,10 +698,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 23)
-        self.assertEqual(data["total_unusable_vials"], 27)
         self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
+        self.assertEqual(data["total_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)
@@ -1214,6 +1225,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsInstance(stock["stock_of_unusable_vials"], int)
         self.assertIsInstance(stock["vials_destroyed"], int)
 
+        # Test new dose-related fields are present and have correct types
+        self.assertIsInstance(stock["doses_received"], int)
+        self.assertIsInstance(stock["doses_used"], int)
+        self.assertIsInstance(stock["stock_of_usable_doses"], int)
+        self.assertIsInstance(stock["stock_of_unusable_doses"], int)
+        self.assertIsInstance(stock["doses_destroyed"], int)
+        self.assertIsInstance(stock["stock_of_earmarked_doses"], int)
+
     def test_user_with_read_only_cannot_create_outgoing_stock_movement(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
         osm_data = {
@@ -1319,10 +1338,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertIsInstance(data["total_usable_vials"], int)
-        self.assertIsInstance(data["total_unusable_vials"], int)
         self.assertIsInstance(data["total_usable_doses"], int)
         self.assertIsInstance(data["total_unusable_doses"], int)
+        self.assertIsInstance(data["total_earmarked_doses"], int)
 
     def test_user_with_read_only_can_see_usable_vials(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
@@ -1689,23 +1707,29 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Test with valid stock ID
         response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
 
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
+        data = self.assertJSONResponse(response, 200)
 
-        # Check response structure
-        self.assertIn("results", data)
-        self.assertIsInstance(data["results"], list)
+        results = data["results"]
+        self.assertEqual(len(results), 2)
 
-        # Check that we have the expected doses_per_vial value from our test data
-        expected_doses = [20]  # From vaccine_arrival_report.doses_per_vial = 20
-        result_values = [item["value"] for item in data["results"]]
-        self.assertEqual(set(result_values), set(expected_doses))
-
-        # Check that each result has the correct structure
-        for item in data["results"]:
+        for item in results:
             self.assertIn("label", item)
             self.assertIn("value", item)
-            self.assertEqual(item["label"], str(item["value"]))
+            self.assertIn("doses_available", item)
+            self.assertIn("unusable_doses", item)
+
+        # Check that we have the expected structure with both doses_available and unusable_doses
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertEqual(item_20["label"], "20")
+        self.assertEqual(item_20["doses_available"], 460)
+        self.assertEqual(item_20["unusable_doses"], 540)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["label"], "50")
+        self.assertEqual(item_50["doses_available"], 0)
+        self.assertEqual(item_50["unusable_doses"], 0)
 
     def test_doses_options_endpoint_missing_stock_id(self):
         """Test the doses_options endpoint returns 400 when stockId is missing"""
@@ -1723,144 +1747,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(f"{BASE_URL}doses_options/?stockId=99999")
 
         self.assertEqual(response.status_code, 404)
-
-    def test_doses_options_endpoint_multiple_doses_per_vial(self):
-        """Test the doses_options endpoint with multiple different doses_per_vial values"""
-        self.client.force_authenticate(user=self.user_ro_perms)
-
-        # Create additional vaccine arrival reports with different doses_per_vial
-        vaccine_arrival_report_2 = pm.VaccineArrivalReport.objects.create(
-            request_form=self.vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=3),
-            doses_received=300,
-            doses_shipped=300,
-            po_number="PO456",
-            doses_per_vial=50,  # Different from the existing 20
-            lot_numbers=["LOT789"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        vaccine_arrival_report_3 = pm.VaccineArrivalReport.objects.create(
-            request_form=self.vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=2),
-            doses_received=200,
-            doses_shipped=200,
-            po_number="PO789",
-            doses_per_vial=10,  # Another different value
-            lot_numbers=["LOT101"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # Should have 3 unique doses_per_vial values: 20, 50, 10
-        expected_doses = [20, 50, 10]
-        result_values = [item["value"] for item in data["results"]]
-        self.assertEqual(set(result_values), set(expected_doses))
-        self.assertEqual(len(data["results"]), 3)
-
-    def test_doses_options_endpoint_filters_by_account(self):
-        """Test that doses_options only returns data for the user's account"""
-        # Create a different account and vaccine stock
-        other_account = m.Account.objects.create(name="other_account")
-        other_project = m.Project.objects.create(name="Other Project", app_id="other.projects", account=other_account)
-        other_country = m.OrgUnit.objects.create(
-            org_unit_type=self.org_unit_type_country,
-            version=self.source_version_1,
-            name="Other Country",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="OtherCountryRef",
-        )
-
-        other_campaign = pm.Campaign.objects.create(
-            obr_name="Other Campaign",
-            country=other_country,
-            account=other_account,
-        )
-
-        other_vaccine_request_form = pm.VaccineRequestForm.objects.create(
-            campaign=other_campaign,
-            vaccine_type=pm.VACCINES[0][0],
-            date_vrf_reception=self.now - datetime.timedelta(days=30),
-            date_vrf_signature=self.now - datetime.timedelta(days=20),
-            date_dg_approval=self.now - datetime.timedelta(days=10),
-            quantities_ordered_in_doses=500,
-        )
-
-        other_vaccine_arrival_report = pm.VaccineArrivalReport.objects.create(
-            request_form=other_vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=5),
-            doses_received=400,
-            doses_shipped=400,
-            po_number="OTHER_PO123",
-            doses_per_vial=30,  # Different value that shouldn't appear in our results
-            lot_numbers=["OTHER_LOT123"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        self.client.force_authenticate(user=self.user_ro_perms)
-
-        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # Should only contain doses_per_vial from our account's data (20), not the other account's (30)
-        result_values = [item["value"] for item in data["results"]]
-        self.assertIn(20, result_values)
-        self.assertNotIn(30, result_values)
-
-    def test_doses_options_endpoint_filters_by_country_and_vaccine(self):
-        """Test that doses_options filters by country and vaccine type"""
-        # Create vaccine arrival report for different country
-        other_country = m.OrgUnit.objects.create(
-            org_unit_type=self.org_unit_type_country,
-            version=self.source_version_1,
-            name="Other Country",
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="OtherCountryRef",
-        )
-
-        other_campaign = pm.Campaign.objects.create(
-            obr_name="Other Campaign",
-            country=other_country,
-            account=self.account,  # Same account
-        )
-
-        other_vaccine_request_form = pm.VaccineRequestForm.objects.create(
-            campaign=other_campaign,
-            vaccine_type=pm.VACCINES[0][0],  # Same vaccine type
-            date_vrf_reception=self.now - datetime.timedelta(days=30),
-            date_vrf_signature=self.now - datetime.timedelta(days=20),
-            date_dg_approval=self.now - datetime.timedelta(days=10),
-            quantities_ordered_in_doses=500,
-        )
-
-        other_vaccine_arrival_report = pm.VaccineArrivalReport.objects.create(
-            request_form=other_vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=5),
-            doses_received=400,
-            doses_shipped=400,
-            po_number="OTHER_PO123",
-            doses_per_vial=30,  # Different value that shouldn't appear in our results
-            lot_numbers=["OTHER_LOT123"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        self.client.force_authenticate(user=self.user_ro_perms)
-
-        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # Should only contain doses_per_vial from our country's data (20), not the other country's (30)
-        result_values = [item["value"] for item in data["results"]]
-        self.assertIn(20, result_values)
-        self.assertNotIn(30, result_values)
 
     def test_doses_options_endpoint_anonymous_user(self):
         """Test that anonymous users cannot access doses_options endpoint"""
@@ -1888,55 +1774,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         data = response.json()
         self.assertIn("results", data)
 
-    def test_doses_options_endpoint_empty_results(self):
-        """Test doses_options endpoint when no vaccine arrival reports exist"""
-        # Create a vaccine stock without any arrival reports
-
-        self.client.force_authenticate(user=self.user_ro_perms)
-
-        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.empty_vaccine_stock.id}")
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["results"], [])
-
-    def test_doses_options_endpoint_duplicate_doses_per_vial(self):
-        """Test that doses_options endpoint returns unique doses_per_vial values"""
-        self.client.force_authenticate(user=self.user_ro_perms)
-
-        # Create multiple arrival reports with the same doses_per_vial
-        vaccine_arrival_report_2 = pm.VaccineArrivalReport.objects.create(
-            request_form=self.vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=3),
-            doses_received=300,
-            doses_shipped=300,
-            po_number="PO456",
-            doses_per_vial=20,  # Same as existing
-            lot_numbers=["LOT789"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        vaccine_arrival_report_3 = pm.VaccineArrivalReport.objects.create(
-            request_form=self.vaccine_request_form,
-            arrival_report_date=self.now - datetime.timedelta(days=2),
-            doses_received=200,
-            doses_shipped=200,
-            po_number="PO789",
-            doses_per_vial=20,  # Same as existing
-            lot_numbers=["LOT101"],
-            expiration_date=self.now + datetime.timedelta(days=180),
-        )
-
-        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-
-        # Should only have one unique value (20) despite multiple reports
-        self.assertEqual(len(data["results"]), 1)
-        self.assertEqual(data["results"][0]["value"], 20)
-        self.assertEqual(data["results"][0]["label"], "20")
-
     def test_doses_options_endpoint_invalid_stock_id_format(self):
         """Test the doses_options endpoint with invalid stockId format"""
         self.client.force_authenticate(user=self.user_ro_perms)
@@ -1946,3 +1783,71 @@ class VaccineStockManagementAPITestCase(APITestCase):
 
         # Should return 404 as the filter will fail
         self.assertEqual(response.status_code, 400)
+
+    def test_vaccine_stock_calculator_get_usable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_usable_stock_by_vaccine_presentation method"""
+        from plugins.polio.models.base import VaccineStockCalculator
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_usable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_usable_stock_by_vaccine_presentation()
+
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_vaccine_stock_calculator_get_unusable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_unusable_stock_by_vaccine_presentation method"""
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_unusable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_unusable_stock_by_vaccine_presentation()
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_doses_options_endpoint_includes_unusable_doses(self):
+        """Test that the doses_options endpoint includes unusable_doses field"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        data = self.assertJSONResponse(response, 200)
+        results = data["results"]
+
+        # Check that each result includes unusable_doses field
+        for item in results:
+            self.assertIn("unusable_doses", item)
+            self.assertIsInstance(item["unusable_doses"], int)
+
+        # Verify specific values based on test data
+        # We expect some unusable doses for 20-dose vials based on our test data
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertEqual(item_20["unusable_doses"], 540)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["unusable_doses"], 0)  # No 50-dose vials in test data

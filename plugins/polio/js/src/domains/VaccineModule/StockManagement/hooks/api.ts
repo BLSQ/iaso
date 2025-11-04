@@ -26,6 +26,7 @@ import {
 import { patchRequest2, postRequest2 } from '../../SupplyChain/hooks/api/vrf';
 import MESSAGES from '../messages';
 import {
+    DosesPerVialDropdown,
     StockManagementDetailsParams,
     StockManagementListParams,
     StockVariationParams,
@@ -253,9 +254,11 @@ export const useGetEarmarkedList = (
     });
 };
 
-export const useGetDosesOptions = (stockId: number) => {
+export const useGetDosesOptions = (
+    stockId: number,
+): UseQueryResult<DosesPerVialDropdown> => {
     return useSnackQuery({
-        queryKey: ['earmarked-list', 'options'],
+        queryKey: ['doses_options', stockId],
         queryFn: () => getRequest(`${apiUrl}doses_options/?stockId=${stockId}`),
         options: {
             ...options,
@@ -414,6 +417,7 @@ export const useSaveFormA = (): UseMutationResult<
             'file',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -464,6 +468,7 @@ export const useSaveDestruction = () => {
             'stock-management-summary',
             'unusable-vials',
             'file',
+            'doses_options',
         ],
     });
 };
@@ -515,6 +520,7 @@ export const useSaveIncident = () => {
             'file',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -554,6 +560,7 @@ export const useSaveEarmarked = () => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -584,6 +591,7 @@ export const useDeleteIncident = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -601,6 +609,7 @@ export const useDeleteDestruction = (): UseMutationResult => {
             'usable-vials',
             'stock-management-summary',
             'unusable-vials',
+            'doses_options',
         ],
     });
 };
@@ -620,6 +629,7 @@ export const useDeleteFormA = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };
@@ -637,6 +647,7 @@ export const useDeleteEarmarked = (): UseMutationResult => {
             'unusable-vials',
             'earmarked',
             'earmarked-list',
+            'doses_options',
         ],
     });
 };

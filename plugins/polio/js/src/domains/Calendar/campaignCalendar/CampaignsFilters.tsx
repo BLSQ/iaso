@@ -157,7 +157,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const [textSearchError, setTextSearchError] = useState(false);
-    const campaignCategoryOptions = useCampaignCategoryOptions();
+    const campaignCategoryOptions = useCampaignCategoryOptions(isEmbedded);
 
     useEffect(() => {
         setFiltersUpdated(true);

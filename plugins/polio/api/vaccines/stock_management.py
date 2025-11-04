@@ -17,6 +17,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_XLSX, ModelViewSet, Paginator
 from iaso.models import OrgUnit
+from iaso.models.json_config import Config
 from iaso.utils.virus_scan.serializers import ModelWithFileSerializer
 from plugins.polio.api.vaccines.common import sort_results
 from plugins.polio.api.vaccines.export_utils import download_xlsx_stock_variants
@@ -33,7 +34,7 @@ from plugins.polio.models import (
     OutgoingStockMovement,
     VaccineStock,
 )
-from plugins.polio.models.base import Round, VaccineArrivalReport, VaccineStockCalculator
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, Round, VaccineStockCalculator
 from plugins.polio.permissions import (
     POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
     POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
@@ -86,6 +87,12 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
     stock_of_earmarked_vials = serializers.SerializerMethodField()
+    doses_received = serializers.SerializerMethodField()
+    doses_used = serializers.SerializerMethodField()
+    stock_of_usable_doses = serializers.SerializerMethodField()
+    stock_of_unusable_doses = serializers.SerializerMethodField()
+    doses_destroyed = serializers.SerializerMethodField()
+    stock_of_earmarked_doses = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineStock
@@ -100,14 +107,20 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "stock_of_unusable_vials",
             "stock_of_earmarked_vials",
             "vials_destroyed",
+            "doses_received",
+            "doses_used",
+            "stock_of_usable_doses",
+            "stock_of_unusable_doses",
+            "stock_of_earmarked_doses",
+            "doses_destroyed",
         ]
         list_serializer_class = VaccineStockListSerializer
 
     def get_vials_received(self, obj):
-        return obj.calculator.get_vials_received()
+        return obj.calculator.get_vials_received()[0]
 
     def get_vials_used(self, obj):
-        return obj.calculator.get_vials_used()
+        return obj.calculator.get_vials_used()[0]
 
     def get_stock_of_usable_vials(self, obj):
         return obj.calculator.get_total_of_usable_vials()[0]
@@ -116,10 +129,28 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_total_of_unusable_vials()[0]
 
     def get_vials_destroyed(self, obj):
-        return obj.calculator.get_vials_destroyed()
+        return obj.calculator.get_vials_destroyed()[0]
 
     def get_stock_of_earmarked_vials(self, obj):
         return obj.calculator.get_total_of_earmarked()[0]
+
+    def get_doses_received(self, obj):
+        return obj.calculator.get_vials_received()[1]
+
+    def get_doses_used(self, obj):
+        return obj.calculator.get_vials_used()[1]
+
+    def get_stock_of_usable_doses(self, obj):
+        return obj.calculator.get_total_of_usable_vials()[1]
+
+    def get_stock_of_unusable_doses(self, obj):
+        return obj.calculator.get_total_of_unusable_vials()[1]
+
+    def get_doses_destroyed(self, obj):
+        return obj.calculator.get_vials_destroyed()[1]
+
+    def get_stock_of_earmarked_doses(self, obj):
+        return obj.calculator.get_total_of_earmarked()[1]
 
 
 class VaccineStockCreateSerializer(serializers.ModelSerializer):
@@ -715,7 +746,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"])
-    def summary(self, request, pk=None):
+    def summary(self, _, pk=None):
         """
         Retrieve a summary of vaccine stock for a given VaccineStock ID.
 
@@ -738,13 +769,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         calculator = VaccineStockCalculator(vaccine_stock)
 
-        total_usable_vials, total_usable_doses = calculator.get_total_of_usable_vials()
+        _, total_usable_doses = calculator.get_total_of_usable_vials()
         (
-            total_unusable_vials,
+            _,
             total_unusable_doses,
         ) = calculator.get_total_of_unusable_vials()
         (
-            total_earmarked_vials,
+            _,
             total_earmarked_doses,
         ) = calculator.get_total_of_earmarked()
 
@@ -752,10 +783,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
-            "total_usable_vials": total_usable_vials,
-            "total_unusable_vials": total_unusable_vials,
             "total_usable_doses": total_usable_doses,
-            "total_earmarked_vials": total_earmarked_vials,
             "total_earmarked_doses": total_earmarked_doses,
             "total_unusable_doses": total_unusable_doses,
         }
@@ -852,8 +880,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             if not parsed_end_date:
                 raise ValidationError("The 'end_date' query parameter is not a valid date.")
 
-        calc = VaccineStockCalculator(vaccine_stock)
-        results = calc.get_list_of_unusable_vials(end_date)
+        calc = VaccineStockCalculator(vaccine_stock, end_date)
+        results = calc.get_list_of_unusable_vials()
         results = sort_results(request, results)
 
         export_xlsx = request.query_params.get("export_xlsx", False)
@@ -866,8 +894,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 filename,
                 results,
                 {
-                    "Usable": lambda: calc.get_list_of_usable_vials(end_date),
-                    "Earmarked": lambda: calc.get_list_of_earmarked(end_date),
+                    "Usable": lambda: calc.get_list_of_usable_vials(),
+                    "Earmarked": lambda: calc.get_list_of_earmarked(),
                 },
                 vaccine_stock,
                 "Unusable",
@@ -938,20 +966,26 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if not vaccine_stock:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        country = vaccine_stock.country
         vaccine = vaccine_stock.vaccine
-        values = (
-            VaccineArrivalReport.objects.filter(
-                request_form__campaign__account=request.user.iaso_profile.account,  # filter by account
-                request_form__campaign__country=country,
-                request_form__vaccine_type=vaccine,
+        try:
+            config = Config.objects.get(slug=DOSES_PER_VIAL_CONFIG_SLUG)
+        except Config.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        options = config.content[vaccine]
+        calculator = VaccineStockCalculator(vaccine_stock)
+        doses_available = calculator.get_usable_stock_by_vaccine_presentation()
+        unusable_doses = calculator.get_unusable_stock_by_vaccine_presentation()
+        results = []
+        for option in options:
+            results.append(
+                {
+                    "label": str(option),
+                    "value": option,
+                    "doses_available": doses_available[str(option)],
+                    "unusable_doses": unusable_doses[str(option)],
+                }
             )
-            .values_list("doses_per_vial", flat=True)
-            .distinct()
-        )
-        return Response(
-            {"results": [{"label": f"{value}", "value": value} for value in values]}, status=status.HTTP_200_OK
-        )
+        return Response({"results": results}, status=status.HTTP_200_OK)
 
 
 class EmbeddedVaccineStockManagementViewset(VaccineStockManagementViewSet):

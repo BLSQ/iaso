@@ -201,6 +201,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Direct Stock Manipulation Forms Explanation',
         id: 'iaso.stock.direct_stock_manipulation_forms_explanation',
     },
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
+    },
 });
 
 export default MESSAGES;

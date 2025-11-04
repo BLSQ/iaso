@@ -993,7 +993,7 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data={
                 "id": None,
-                "name": "Test ou",
+                "name": "Test ou ",  # extra white space to test name trimming
                 "org_unit_type_id": self.jedi_council.pk,
                 "groups": [],
                 "sub_source": "",
@@ -1040,6 +1040,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         json = response.json()
         self.assertValidOrgUnitData(json)
+        self.assertEqual(json.get("name"), "Test ou")
         self.assertCreated(
             {
                 m.OrgUnit: 1,
@@ -1638,7 +1639,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         # Prepare update data
         update_data = {
-            "name": "Updated Name",
+            "name": "Updated Name ",  # extra white space to test name trimming
             "source_ref": "NEW_REF_123",
             "validation_status": "VALID",
             "latitude": test_location["latitude"],
@@ -2214,7 +2215,7 @@ class OrgUnitAPITestCase(APITestCase):
             },
             {
                 "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
-                "name": "Bluesquare",
+                "name": "Bluesquare ",
                 "time": 1674833629688,
                 "accuracy": 15.67,
                 "altitude": 127.80000305175781,
@@ -2323,10 +2324,15 @@ class OrgUnitAPITestCase(APITestCase):
             data=data,
             format="json",
         )
-        orgunits = OrgUnit.objects.all().count()
+        new_count = OrgUnit.objects.all().count()
 
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(orgunits, count_of_orgunits + 9)
+        result = self.assertJSONResponse(response, 200)
+        # ensure results are ordered by creation date ascending and that extra white spaces are trimmed
+        self.assertIn(result[0]["name"], "Bluesquare")
+        self.assertEqual(new_count, count_of_orgunits + 9)
+        saved_org_unit = OrgUnit.objects.get(uuid="5738b6b9-88f7-49ee-a211-632030f68f46")
+        self.assertEqual(saved_org_unit.name, "Bluesquare")
+        self.assertEqual(saved_org_unit.source_created_at.timestamp(), 1674833640)
 
     def test_org_unit_search_only_direct_children_false(self):
         self.client.force_authenticate(self.yoda)

@@ -391,6 +391,7 @@ class StockRulesVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockRulesVersion
         fields = [
+            "id",
             "name",
             "status",
             "rules",

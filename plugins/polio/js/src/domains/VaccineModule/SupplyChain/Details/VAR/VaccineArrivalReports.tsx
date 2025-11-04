@@ -2,9 +2,12 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { useFormikContext } from 'formik';
 import { VaccineArrivalReport } from './VaccineArrivalReport';
 import MESSAGES from '../../messages';
-import { MultiFormTab } from '../shared';
+import {
+    MultiFormTab,
+    useDosesPerVialDropDownForVaccine,
+    useEmptyArrivalReport,
+} from '../shared';
 import { VAR } from '../../constants';
-import { createEmptyArrivalReport } from '../../hooks/utils';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     POLIO_SUPPLY_CHAIN_READ,
@@ -20,9 +23,10 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
 }) => {
     const { values, setFieldValue } = useFormikContext<any>();
     const vaccine = values.vrf?.vaccine_type;
-
+    const dosesPerVaccineOptions = useDosesPerVialDropDownForVaccine(vaccine);
+    const emptyArrivalReport = useEmptyArrivalReport(dosesPerVaccineOptions);
     const onClick = useCallback(() => {
-        setFieldValue(VAR, [...values[VAR], createEmptyArrivalReport(vaccine)]);
+        setFieldValue(VAR, [...values[VAR], emptyArrivalReport]);
     }, [setFieldValue, values, vaccine]);
 
     const currentUser = useCurrentUser();
@@ -44,8 +48,8 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                 return (
                     <VaccineArrivalReport
                         index={index}
-                        vaccine={vaccine}
                         key={index}
+                        dosesForVaccineOptions={dosesPerVaccineOptions}
                     />
                 );
             })}

@@ -56,6 +56,10 @@ const PERMISSIONS_GROUPS_MESSAGES = defineMessages({
         id: 'iaso.permissions.group.registry',
         defaultMessage: 'Registry:',
     },
+    saas: {
+        id: 'iaso.permissions.group.saas',
+        defaultMessage: 'SaaS:',
+    }
 });
 
 export default PERMISSIONS_GROUPS_MESSAGES;

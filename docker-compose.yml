@@ -49,6 +49,7 @@ services:
             EMAIL_BACKEND: 'django.core.mail.backends.console.EmailBackend'
             ENABLE_ANALYTICS:
             ENABLE_GZIP: ${ENABLE_GZIP:-false}
+            ENCRYPTED_TEXT_FIELD_KEY: bNqPWD4KdouaH-yxfl7PPdJLbbNt31mnJDwg9IHoGDM=
             ENKETO_API_TOKEN: AZE78974654azeAZE
             ENKETO_DEV: 'true'
             ENKETO_SIGNING_SECRET: supersecret

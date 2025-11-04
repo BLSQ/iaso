@@ -822,3 +822,5 @@ if IN_TESTS:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
         },
     }
+    if not ENCRYPTED_TEXT_FIELD_KEY:
+        ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="

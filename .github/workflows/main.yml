@@ -161,7 +161,6 @@ jobs:
                   DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
                   DEV_SERVER: true
                   DJANGO_SETTINGS_MODULE: hat.settings
-                  ENCRYPTED_TEXT_FIELD_KEY: bNqPWD4KdouaH-yxfl7PPdJLbbNt31mnJDwg9IHoGDM=
                   IASO_ENVIRONMENT: development
                   PLUGINS: polio,wfp,wfp_auth
                   RDS_DB_NAME: github_actions

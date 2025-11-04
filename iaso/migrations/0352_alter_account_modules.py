@@ -7,7 +7,7 @@ import iaso.models.base
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0348_alter_assignment_unique_together_and_more"),
+        ("iaso", "0351_merge_20251103_1415"),
     ]
 
     operations = [

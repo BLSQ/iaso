@@ -6,7 +6,7 @@ import MESSAGES from '../../messages';
 
 export const useDeleteTeam = (): UseMutationResult =>
     useSnackMutation(
-        body => deleteRequest(`/api/microplanning/teams/${body.id}/`),
+        body => deleteRequest(`/api/teams/${body.id}/`),
         MESSAGES.deleteSuccess,
         MESSAGES.deleteError,
         ['teamsList'],

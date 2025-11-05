@@ -32,7 +32,7 @@ export const convertAPIErrorsToState = data => {
     return converted;
 };
 
-const endpoint = '/api/microplanning/teams/';
+const endpoint = '/api/teams/';
 
 const patchTeam = async (body: Partial<SaveTeamQuery>) => {
     const url = `${endpoint}${body.id}/`;

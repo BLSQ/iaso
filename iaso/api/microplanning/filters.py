@@ -1,7 +1,7 @@
 from django.db.models import Q
 from rest_framework import filters, serializers
 
-from iaso.models.microplanning import Team, TeamType
+from iaso.models.team import Team, TeamType
 
 
 class TeamManagersFilterBackend(filters.BaseFilterBackend):

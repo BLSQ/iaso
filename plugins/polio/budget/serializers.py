@@ -6,7 +6,7 @@ from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer
-from iaso.models.microplanning import Team
+from iaso.models.team import Team
 from plugins.polio.api.shared_serializers import UserSerializer
 
 from ..models import Campaign, Round

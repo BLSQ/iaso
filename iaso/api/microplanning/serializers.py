@@ -7,7 +7,8 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import Form, OrgUnit, OrgUnitType, Project
-from iaso.models.microplanning import Assignment, Planning, Team, TeamType
+from iaso.models.microplanning import Assignment, Planning
+from iaso.models.team import Team, TeamType
 from iaso.models.org_unit import OrgUnitQuerySet
 
 

@@ -13,7 +13,8 @@ from iaso.api.common import (
     ModelViewSet,
     ReadOnlyOrHasPermission,
 )
-from iaso.models.microplanning import Assignment, Planning, Team
+from iaso.models.microplanning import Assignment, Planning
+from iaso.models.team import Team
 from iaso.permissions.core_permissions import CORE_PLANNING_WRITE_PERMISSION, CORE_TEAMS_PERMISSION
 
 from .filters import (

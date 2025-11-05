@@ -10,7 +10,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models import Profile
-from iaso.models.microplanning import Team
+from iaso.models.team import Team
 from iaso.modules import MODULES
 from iaso.permissions.core_permissions import (
     CORE_FORMS_PERMISSION,

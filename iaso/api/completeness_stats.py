@@ -60,7 +60,8 @@ from iaso.permissions.core_permissions import (
 )
 from iaso.utils import geojson_queryset
 
-from ..models.microplanning import Planning, Team
+from ..models.microplanning import Planning
+from ..models.team import Team
 from ..models.org_unit import OrgUnitQuerySet
 from ..periods import Period
 from .common import HasPermission

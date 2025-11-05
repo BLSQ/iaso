@@ -8,7 +8,7 @@ from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models import QUEUED, Task
-from iaso.models.microplanning import TeamType
+from iaso.models.team import TeamType
 from iaso.permissions.core_permissions import (
     CORE_DATA_TASKS_PERMISSION,
     CORE_TEAMS_PERMISSION,

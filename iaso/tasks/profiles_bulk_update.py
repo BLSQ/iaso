@@ -14,7 +14,7 @@ from iaso.api.microplanning.serializers import AuditTeamSerializer
 from iaso.api.profiles.audit import ProfileAuditLogger
 from iaso.api.profiles.profiles import get_filtered_profiles
 from iaso.models import OrgUnit, Profile, Project, Task, UserRole
-from iaso.models.microplanning import Team, TeamType
+from iaso.models.team import Team, TeamType
 from iaso.permissions.core_permissions import (
     CORE_TEAMS_PERMISSION,
     CORE_USERS_ADMIN_PERMISSION,

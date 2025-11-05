@@ -582,6 +582,23 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'formId',
         ],
     },
+    stockItems: {
+        url: 'stock/items',
+        params: [
+            'accountId',
+            ...paginationPathParams,
+            'id',
+            'sku',
+            'orgUnit',
+            'value',
+            'question',
+            'impact',
+            'created_at_after',
+            'created_at_before',
+            'value_from',
+            'value_to',
+        ],
+    },
     hidden: { url: 'secret', params: [] },
     error401: { url: '401', params: [] },
     error403: { url: '403', params: [] },
@@ -681,6 +698,7 @@ type IasoBaseUrls = {
     lotsPayments: string;
     stockKeepingUnits: string;
     stockRulesVersions: string;
+    stockItems: string;
     hidden: string;
     error401: string;
     error403: string;

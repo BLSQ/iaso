@@ -267,7 +267,7 @@ export const useGetUsersDropDown = (
 };
 
 const getTeams = async (): Promise<Team[]> => {
-    return getRequest('/api/microplanning/teams/') as Promise<Team[]>;
+    return getRequest('/api/teams/') as Promise<Team[]>;
 };
 
 export const useGetTeamsDropdown = (): UseQueryResult<

@@ -12,7 +12,7 @@ type Team = {
 type Teams = Team[];
 
 const getTeams = (): Promise<Teams> => {
-    return getRequest('/api/microplanning/teams/');
+    return getRequest('/api/teams/');
 };
 
 export const useGetTeams = (

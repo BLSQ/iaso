@@ -3,7 +3,7 @@ import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 const getTeams = (): Promise<any> => {
-    return getRequest('/api/microplanning/teams/');
+    return getRequest('/api/teams/');
 };
 
 export const useGetTeams = (): UseQueryResult<any, Error> => {

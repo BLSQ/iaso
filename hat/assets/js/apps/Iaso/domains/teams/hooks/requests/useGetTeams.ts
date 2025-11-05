@@ -22,7 +22,7 @@ const getTeamsDropdown = async (
         delete params.select;
     }
 
-    const url = makeUrlWithParams('/api/microplanning/teams/', params);
+    const url = makeUrlWithParams('/api/teams/', params);
     return getRequest(url) as Promise<Team[]>;
 };
 const getTeams = async (
@@ -36,7 +36,7 @@ const getTeams = async (
         delete params.select;
     }
 
-    const url = makeUrlWithParams('/api/microplanning/teams', params);
+    const url = makeUrlWithParams('/api/teams', params);
     return getRequest(url) as Promise<TeamList>;
 };
 

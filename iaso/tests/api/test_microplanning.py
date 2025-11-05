@@ -8,7 +8,8 @@ from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
 from hat.audit.models import Modification
-from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningSerializer, TeamSerializer
+from iaso.api.microplanning.serializers import AssignmentSerializer, PlanningSerializer
+from iaso.api.teams.serializers import TeamSerializer
 from iaso.models import Account, DataSource, Form, OrgUnit, OrgUnitType, SourceVersion
 from iaso.models.microplanning import Assignment, Planning
 from iaso.models.team import Team, TeamType
@@ -276,7 +277,7 @@ class TeamAPITestCase(APITestCase):
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(5):
-            response = self.client.get("/api/microplanning/teams/", format="json")
+            response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
@@ -292,24 +293,24 @@ class TeamAPITestCase(APITestCase):
             project=self.project1, name="team b_c_f hello", manager=self.user, parent=team_b_c
         )
 
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 8)
 
-        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_a.id}", format="json")
+        response = self.client.get(f"/api/teams/?ancestor={team_a.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
-        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}", format="json")
+        response = self.client.get(f"/api/teams/?ancestor={team_b.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 5)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b.id, team_b_c.id, team_b_d.id, team_b_c_e.id, team_b_c_f.id])
-        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b.id}&search=hello", format="json")
+        response = self.client.get(f"/api/teams/?ancestor={team_b.id}&search=hello", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
         ids = sorted([row["id"] for row in r])
         self.assertEqual(ids, [team_b_c_f.id])
-        response = self.client.get(f"/api/microplanning/teams/?ancestor={team_b_c.id}", format="json")
+        response = self.client.get(f"/api/teams/?ancestor={team_b_c.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
         ids = sorted([row["id"] for row in r])
@@ -328,7 +329,7 @@ class TeamAPITestCase(APITestCase):
             "users": [],
         }
 
-        response = self.client.post("/api/microplanning/teams/", data=data, format="json")
+        response = self.client.post("/api/teams/", data=data, format="json")
         self.assertJSONResponse(response, 201)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
@@ -338,7 +339,7 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(mod.past_value, [])
         self.assertEqual(mod.user, user_with_perms)
         self.assertEqual(mod.new_value[0]["name"], "hello")
-        self.assertEqual(mod.source, "API POST/api/microplanning/teams/")
+        self.assertEqual(mod.source, "API POST/api/teams/")
 
     def test_create_no_perms(self):
         self.client.force_authenticate(self.user)
@@ -348,7 +349,7 @@ class TeamAPITestCase(APITestCase):
             "manager": self.user.id,
         }
 
-        response = self.client.post("/api/microplanning/teams/", data=data, format="json")
+        response = self.client.post("/api/teams/", data=data, format="json")
         self.assertJSONResponse(response, 403)
         self.assertFalse(Team.objects.filter(name="hello").exists())
 
@@ -365,7 +366,7 @@ class TeamAPITestCase(APITestCase):
             "sub_teams": [],
         }
 
-        response = self.client.post("/api/microplanning/teams/", data=data, format="json")
+        response = self.client.post("/api/teams/", data=data, format="json")
         r = self.assertJSONResponse(response, 201)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team_id = r["id"]
@@ -375,7 +376,7 @@ class TeamAPITestCase(APITestCase):
 
         update_data = {"sub_teams": [sub_team1.pk]}
 
-        response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
+        response = self.client.patch(f"/api/teams/{team_id}/", data=update_data, format="json")
         self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         self.assertQuerySetEqual(Team.objects.get(name="hello").sub_teams.all(), [sub_team1])
@@ -386,7 +387,7 @@ class TeamAPITestCase(APITestCase):
 
         update_data = {"sub_teams": [], "users": [team_member.pk]}
 
-        response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
+        response = self.client.patch(f"/api/teams/{team_id}/", data=update_data, format="json")
 
         self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
@@ -404,11 +405,11 @@ class TeamAPITestCase(APITestCase):
     def test_patch_no_perms(self):
         self.client.force_authenticate(self.user)
         # can read
-        response = self.client.get(f"/api/microplanning/teams/{self.team1.pk}/", format="json")
+        response = self.client.get(f"/api/teams/{self.team1.pk}/", format="json")
         self.assertJSONResponse(response, 200)
         data = {"name": "test2"}
         # cannot edit
-        response = self.client.patch(f"/api/microplanning/teams/{self.team1.pk}/", data=data, format="json")
+        response = self.client.patch(f"/api/teams/{self.team1.pk}/", data=data, format="json")
         self.assertJSONResponse(response, 403)
 
     def test_soft_delete(self):
@@ -417,12 +418,12 @@ class TeamAPITestCase(APITestCase):
         )
         self.client.force_authenticate(user_with_perms)
         team = self.team1
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
         # DELETE IT
-        response = self.client.delete(f"/api/microplanning/teams/{team.id}/", format="json")
+        response = self.client.delete(f"/api/teams/{team.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
         team.refresh_from_db()
@@ -433,30 +434,30 @@ class TeamAPITestCase(APITestCase):
         self.assertNotEqual(m.new_value[0]["deleted_at"], None)
 
         # we don't see it anymore
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
         # we see deleted and not deleted
-        response = self.client.get("/api/microplanning/teams/?deletion_status=all", format="json")
+        response = self.client.get("/api/teams/?deletion_status=all", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
 
         # see with deletion status
-        response = self.client.get("/api/microplanning/teams/?deletion_status=deleted", format="json")
+        response = self.client.get("/api/teams/?deletion_status=deleted", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["id"], team.id)
 
         # Undelete
-        response = self.client.patch(f"/api/microplanning/teams/{team.id}/", format="json", data={"deleted_at": None})
+        response = self.client.patch(f"/api/teams/{team.id}/", format="json", data={"deleted_at": None})
         self.assertJSONResponse(response, 200)
         team.refresh_from_db()
         team = Team.objects.get(id=team.id)
         self.assertIsNone(team.deleted_at)
 
         # we see it again from the API
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
         # one for delete, one for undelete
@@ -480,14 +481,14 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(ash_ketchum)
 
         # Fetch the list of teams with a filter on a single manager
-        response = self.client.get(f"/api/microplanning/teams/?order=id&managers={ash_ketchum.id}", format="json")
+        response = self.client.get(f"/api/teams/?order=id&managers={ash_ketchum.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0]["name"], team_fire_pokemons.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
 
         # Fetch the list of teams with a filter on multiple managers
-        response = self.client.get(f"/api/microplanning/teams/?managers={ash_ketchum.id},{misty.id}", format="json")
+        response = self.client.get(f"/api/teams/?managers={ash_ketchum.id},{misty.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
 
@@ -511,26 +512,26 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(ash_ketchum)
 
         # Fetch the list of teams without any type filter
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 6)  # 2 from happy path (set up) + 4 new ones
 
         # Fetch the list of teams with a single type
-        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_USERS}", format="json")
+        response = self.client.get(f"/api/teams/?order=id&types={TeamType.TEAM_OF_USERS}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)
         self.assertEqual(r[0]["name"], team_fire_pokemons.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
         self.assertEqual(r[2]["name"], team_water_pokemons.name)
 
-        response = self.client.get(f"/api/microplanning/teams/?order=id&types={TeamType.TEAM_OF_TEAMS}", format="json")
+        response = self.client.get(f"/api/teams/?order=id&types={TeamType.TEAM_OF_TEAMS}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["name"], team_pokemons.name)
 
         # Fetch the list of teams with a filter on multiple types
         response = self.client.get(
-            f"/api/microplanning/teams/?types={TeamType.TEAM_OF_TEAMS},{TeamType.TEAM_OF_USERS}", format="json"
+            f"/api/teams/?types={TeamType.TEAM_OF_TEAMS},{TeamType.TEAM_OF_USERS}", format="json"
         )
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 4)
@@ -545,25 +546,25 @@ class TeamAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
         # Fetch the list of teams without any project filter
-        response = self.client.get("/api/microplanning/teams/", format="json")
+        response = self.client.get("/api/teams/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)  # 2 from happy path (set up) + 1 new one
 
         # Fetch the list of teams with a single project
-        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project1.id}", format="json")
+        response = self.client.get(f"/api/teams/?order=id&projects={self.project1.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 2)
         self.assertEqual(r[0]["name"], self.team1.name)
         self.assertEqual(r[1]["name"], team_electric_pokemons.name)
 
-        response = self.client.get(f"/api/microplanning/teams/?order=id&projects={self.project2.id}", format="json")
+        response = self.client.get(f"/api/teams/?order=id&projects={self.project2.id}", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
         self.assertEqual(r[0]["name"], self.team2.name)
 
         # Fetch the list of teams with a filter on multiple projects
         response = self.client.get(
-            f"/api/microplanning/teams/?projects={self.project2.id},{self.project1.id}", format="json"
+            f"/api/teams/?projects={self.project2.id},{self.project1.id}", format="json"
         )
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 3)

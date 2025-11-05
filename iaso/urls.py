@@ -1,5 +1,3 @@
-import pkgutil
-
 from typing import List, Union
 
 from django.conf import settings
@@ -9,7 +7,6 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.token_authentication import token_auth
-from iaso import matching
 from iaso.api.config import ConfigViewSet
 from iaso.api.data_store import DataStoreViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
@@ -20,7 +17,6 @@ from iaso.api.tasks.create.instance_reference_bulk_link import InstanceReference
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
-from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 
 from .api.accounts import AccountViewSet
@@ -67,7 +63,8 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.metrics.views import MetricOrgUnitsViewSet, MetricTypeViewSet, MetricValueViewSet
-from .api.microplanning import AssignmentViewSet, MobilePlanningViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views import AssignmentViewSet, PlanningViewSet, TeamViewSet
+from .api.microplanning.views_mobile import MobilePlanningViewSet
 from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityDeletedViewSet, MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -77,6 +74,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.modules import ModulesViewSet
+from .api.openhexa.views import OpenHexaPipelinesViewSet
 from .api.org_unit_change_request_configurations.views import OrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_request_configurations.views_mobile import MobileOrgUnitChangeRequestConfigurationViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
@@ -96,6 +94,18 @@ from .api.projects import ProjectsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
+from .api.stocks.views import (
+    StockItemRuleViewSet,
+    StockItemViewSet,
+    StockKeepingUnitViewSet,
+    StockLedgerItemViewSet,
+    StockRulesVersionViewSet,
+)
+from .api.stocks.views_mobile import (
+    StockKeepingUnitMobileViewSet,
+    StockLedgerItemMobileViewSet,
+    StockRulesVersionMobileViewSet,
+)
 from .api.storage import StorageBlacklistedViewSet, StorageLogViewSet, StorageViewSet, logs_per_device
 from .api.superset import SupersetTokenViewSet
 from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
@@ -224,6 +234,16 @@ router.register(r"superset/token", SupersetTokenViewSet, basename="supersettoken
 router.register(r"metrictypes", MetricTypeViewSet, basename="metrictypes")
 router.register(r"metricvalues", MetricValueViewSet, basename="metricvalues")
 router.register(r"metricorgunits", MetricOrgUnitsViewSet, basename="metricorgunits")
+router.register(r"openhexa/pipelines", OpenHexaPipelinesViewSet, basename="openhexa-pipelines")
+
+router.register(r"stockkeepingunits", StockKeepingUnitViewSet, basename="stockkeepingunits")
+router.register(r"stockitems", StockItemViewSet, basename="stockitems")
+router.register(r"stockledgeritems", StockLedgerItemViewSet, basename="stockledgeritems")
+router.register(r"stockitemrules", StockItemRuleViewSet, basename="stockitemrules")
+router.register(r"stockrulesversions", StockRulesVersionViewSet, basename="stockrulesversions")
+router.register(r"mobile/stockkeepingunits", StockKeepingUnitMobileViewSet, basename="mobilestockkeepingunits")
+router.register(r"mobile/stockledgeritems", StockLedgerItemMobileViewSet, basename="mobilestocklegeritems")
+router.register(r"mobile/stockrulesversions", StockRulesVersionMobileViewSet, basename="mobilestockrulesversions")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [
@@ -266,7 +286,7 @@ if not settings.DISABLE_PASSWORD_LOGINS:
     ]
 
 urlpatterns = urlpatterns + [
-    path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
+    path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
     path("", include(router.urls)),
@@ -281,16 +301,3 @@ for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
-
-##########   creating algorithms in the database so that they will appear in the API  ##########
-try:
-    import importlib
-
-    for pkg in pkgutil.iter_modules(matching.__path__):
-        full_name = "iaso.matching." + pkg.name
-        algo_module = importlib.import_module(full_name)
-        algo = algo_module.Algorithm()
-        MatchingAlgorithm.objects.get_or_create(name=full_name, defaults={"description": algo.description})
-
-except Exception as e:
-    print("!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate", e)

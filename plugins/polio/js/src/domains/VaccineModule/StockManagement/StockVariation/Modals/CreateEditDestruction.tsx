@@ -12,6 +12,7 @@ import { useDebounce } from 'use-debounce';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import DocumentUploadWithPreview from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/DocumentUploadWithPreview';
 import { processErrorDocsBase } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/files/pdf/utils';
+import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
     DateInput,
     NumberInput,
@@ -24,6 +25,8 @@ import {
 } from '../../hooks/api';
 import MESSAGES from '../../messages';
 import { useDestructionValidation } from './validation';
+import { DosesPerVialDropdown } from '../../types';
+import { useAvailablePresentations } from './dropdownOptions';
 
 type Props = {
     destruction?: any;
@@ -33,6 +36,8 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    defaultDosesPerVial: number | undefined;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -42,9 +47,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const validationSchema = useDestructionValidation();
     const formik = useFormik<any>({
         initialValues: {
@@ -54,7 +62,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            // lot_numbers: destruction?.lot_numbers,
+            doses_per_vial: destruction?.doses_per_vial || defaultDosesPerVial,
             vaccine_stock: vaccineStockId,
             file: destruction?.file,
             comment: destruction?.comment ?? null,
@@ -62,6 +70,11 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         onSubmit: values => save(values),
         validationSchema,
     });
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        destruction,
+        false,
+    );
 
     const [debouncedDate] = useDebounce(
         formik.values.destruction_report_date,
@@ -132,6 +145,16 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.vials_destroyed)}
                         name="unusable_vials_destroyed"
                         component={NumberInput}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={availableDosesPresentations}
+                        disabled={hasFixedDosesPerVial}
                         required
                     />
                 </Box>

@@ -13,10 +13,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useNavigate } from 'react-router-dom';
+import { MainWrapper } from 'Iaso/components/MainWrapper';
+import { SxStyles } from 'Iaso/types/general';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import { getChipColors } from '../../constants/chipColors';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
@@ -34,21 +35,17 @@ import { Search } from './types/search';
 
 import { decodeSearch } from './utils';
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    container: {
-        width: '100%',
-        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
-        padding: 0,
-        margin: 0,
-        overflow: 'auto',
-        backgroundColor: 'white',
-        position: 'relative',
+const styles: SxStyles = {
+    mainWrapper: {
         top: 48,
         '& .MuiSpeedDial-directionUp, &.MuiSpeedDial-directionLeft': {
             position: 'fixed',
         },
     },
+};
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
@@ -170,7 +167,7 @@ export const OrgUnits: FunctionComponent = () => {
             {isLoading && <LoadingSpinner fixed={false} absolute />}
             <TopBar title={formatMessage(MESSAGES.title)} disableShadow />
 
-            <Box className={classes.container}>
+            <MainWrapper sx={styles.mainWrapper}>
                 <OrgUnitFiltersContainer
                     params={params}
                     onSearch={onSearch}
@@ -238,7 +235,7 @@ export const OrgUnits: FunctionComponent = () => {
                         </Box>
                     </Box>
                 </Box>
-            </Box>
+            </MainWrapper>
         </>
     );
 };

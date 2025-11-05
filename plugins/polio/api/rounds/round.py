@@ -6,12 +6,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import HasPermission, ModelViewSet
-from plugins.polio import permissions as polio_permissions
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
 from plugins.polio.models import Campaign, ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope
+from plugins.polio.permissions import POLIO_CONFIG_PERMISSION, POLIO_PERMISSION
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -38,6 +38,31 @@ class RoundSerializer(serializers.ModelSerializer):
 
     def get_vaccine_names_extended(self, obj):
         return obj.vaccine_names_extended
+
+    def validate(self, data):
+        # Check if campaign or round is planned
+        is_campaign_planned = None
+        if self.context.get("request"):
+            is_campaign_planned = self.context["request"].data.get("is_planned", None)
+
+        is_round_planned = data.get("is_planned", None)
+
+        # If either is planned, require population fields
+        if is_campaign_planned or is_round_planned:
+            errors = {}
+
+            if not data.get("target_population", None):
+                errors["target_population"] = "Target population must be defined for planned round/campaign"
+
+            if not data.get("percentage_covered_target_population", None):
+                errors["percentage_covered_target_population"] = (
+                    "Percentage covered must be defined for planned round/campaign"
+                )
+
+            if errors:
+                raise serializers.ValidationError(errors)
+
+        return data
 
     @atomic
     def create(self, validated_data):
@@ -93,7 +118,7 @@ class RoundSerializer(serializers.ModelSerializer):
                     reason_for_delay = ReasonForDelay.objects.filter(account=account).get(key_name="INITIAL_DATA")
                 except ReasonForDelay.DoesNotExist:
                     # Fallback on first reason available for account
-                    reason_for_delay = ReasonForDelay.filter(account=account).first()
+                    reason_for_delay = ReasonForDelay.objects.filter(account=account).first()
                 datelog = RoundDateHistoryEntry.objects.create(
                     round=instance, reason_for_delay=reason_for_delay, modified_by=user
                 )
@@ -110,9 +135,11 @@ class RoundSerializer(serializers.ModelSerializer):
                 datelog_serializer.is_valid(raise_exception=True)
                 datelog_instance = datelog_serializer.save()
                 instance.datelogs.add(datelog_instance)
-        preparedness_should_update = instance.preparedness_spreadsheet_url != validated_data.get(
+        is_prep_sheet_updated = instance.preparedness_spreadsheet_url != validated_data.get(
             "preparedness_spreadsheet_url", None
         )
+        ignore_prep = instance.is_planned or instance.campaign.is_planned
+        preparedness_should_update = is_prep_sheet_updated and not ignore_prep
         round = super().update(instance, validated_data)
         # update the preparedness cache if we touched the spreadsheet url
         if preparedness_should_update:
@@ -143,7 +170,7 @@ class LqasDistrictsUpdateSerializer(serializers.Serializer):
 class RoundViewSet(ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]
-    permission_classes = [HasPermission(polio_permissions.POLIO, polio_permissions.POLIO_CONFIG)]  # type: ignore
+    permission_classes = [HasPermission(POLIO_PERMISSION, POLIO_CONFIG_PERMISSION)]
     serializer_class = RoundSerializer
     model = Round
 

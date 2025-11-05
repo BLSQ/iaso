@@ -5,6 +5,7 @@ from urllib.parse import parse_qs
 
 import responses
 
+from django.core.files import File
 from django.core.files.uploadedfile import SimpleUploadedFile, UploadedFile
 from django.test import override_settings
 
@@ -12,6 +13,8 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.enketo.enketo_xml import build_substitutions
 from iaso.models import Instance
+from iaso.odk import parsing
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -21,6 +24,21 @@ enketo_test_settings = {
     "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
     "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
 }
+
+
+def load_dhis2_fixture(mapping_file):
+    with open("./iaso/tests/fixtures/dhis2/" + mapping_file) as json_file:
+        return json.load(json_file)
+
+
+def build_form_mapping():
+    return {
+        "data_set_id": "DATASET_DHIS2_ID",
+        "question_mappings": {
+            "Ident_nom_responsable": {"id": "DE_DHIS2_ID", "valueType": "TEXT"},
+            "_version": {"id": "DE_DHIS2_ID", "valueType": "TEXT"},
+        },
+    }
 
 
 class EnketoAPITestCase(APITestCase):
@@ -36,16 +54,22 @@ class EnketoAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        sw_source = m.DataSource.objects.create(name="Evil Empire")
+        credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
+            name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=star_wars
+        )
+
+        sw_source = m.DataSource.objects.create(name="Evil Empire", credentials=credentials)
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms", "iaso_update_submission"]
+            username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION, CORE_SUBMISSIONS_UPDATE_PERMISSION]
         )
-        cls.gunther = cls.create_user_with_profile(username="gunther", account=star_wars, permissions=["iaso_forms"])
+        cls.gunther = cls.create_user_with_profile(
+            username="gunther", account=star_wars, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
@@ -319,6 +343,139 @@ class EnketoAPITestCase(APITestCase):
 
             self.assertEqual(response.status_code, 201)
             self.assertEqual(self.yoda, instance.last_modified_by)
+
+    @responses.activate
+    def test_save_last_user_modified_submission_auto_export(self):
+        self.form_version_1.delete()
+        with open("iaso/tests/fixtures/hydro.xlsx", "rb") as form_version_file:
+            survey = parsing.parse_xls_form(form_version_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1,
+                survey=survey,
+                xls_file=File(form_version_file),
+            )
+            form_version.version_id = "1"
+            form_version.save()
+            self.form_version_1 = form_version
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            instance.to_export = True
+            instance.save()
+
+            mapping = m.Mapping(form=self.form_1, data_source=self.sw_source, mapping_type=m.AGGREGATE)
+            mapping.save()
+
+            # align version_id with xml of the submission
+            self.form_version_1.version_id = "201911280919"
+            self.form_version_1.save()
+
+            mapping_version = m.MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version_1, mapping=mapping
+            )
+            mapping_version.save()
+
+            new_xml = (
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode()
+            )
+
+            f = SimpleUploadedFile("xml_submission_file.xml", new_xml)
+
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-ok.json"),
+                status=200,
+            )
+
+            responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
+
+            response = self.client.post(
+                "/api/enketo/submission?to_export=true",
+                {"name": "xml_submission_file", "xml_submission_file": f},
+                format="multipart",
+            )
+
+            call = responses.calls[0]  # first captured call
+            posted_body = call.request.body
+
+            # ommit comment equal
+            self.assertPartial(
+                {
+                    "dataValues": [
+                        {
+                            "dataElement": "DE_DHIS2_ID",
+                            "value": "201911280919",
+                            "orgUnit": "dw234q",
+                            "period": "202001",
+                        }
+                    ]
+                },
+                json.loads(posted_body.decode()),
+            )
+
+            instance.refresh_from_db()
+
+            self.assertEqual(response.status_code, 201)
+            self.assertEqual(self.yoda, instance.last_modified_by)
+
+    @responses.activate
+    def test_save_last_user_modified_submission_auto_export_return_409_when_export_fails(self):
+        self.form_version_1.delete()
+        with open("iaso/tests/fixtures/hydro.xlsx", "rb") as form_version_file:
+            survey = parsing.parse_xls_form(form_version_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1,
+                survey=survey,
+                xls_file=File(form_version_file),
+            )
+            form_version.version_id = "1"
+            form_version.save()
+            self.form_version_1 = form_version
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            instance = self.form_1.instances.first()
+            instance.to_export = True
+            instance.save()
+
+            mapping = m.Mapping(form=self.form_1, data_source=self.sw_source, mapping_type=m.AGGREGATE)
+            mapping.save()
+
+            # align version_id with xml of the submission
+            self.form_version_1.version_id = "201911280919"
+            self.form_version_1.save()
+
+            mapping_version = m.MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version_1, mapping=mapping
+            )
+            mapping_version.save()
+
+            new_xml = (
+                modified_xml.read()
+                .replace("replaceInstanceId", str(instance.id))
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode()
+            )
+
+            f = SimpleUploadedFile("xml_submission_file.xml", new_xml)
+
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-ok.json"),
+                status=409,
+            )
+
+            response = self.client.post(
+                "/api/enketo/submission?to_export=true",
+                {"name": "xml_submission_file", "xml_submission_file": f},
+                format="multipart",
+            )
+
+            self.assertEqual(response.status_code, 409)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate

@@ -14,7 +14,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.db import connection, transaction
 from django.db.models import Count, Prefetch, Q, QuerySet
-from django.http import FileResponse, Http404, HttpResponse, JsonResponse, StreamingHttpResponse
+from django.http import Http404, HttpResponse, JsonResponse, StreamingHttpResponse
 from django.utils.timezone import now
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
@@ -24,7 +24,6 @@ from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
-import iaso.permissions as core_permissions
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, Modification, log_modification
@@ -43,7 +42,7 @@ from iaso.api.instances.instance_filters import get_form_from_instance_filters, 
 from iaso.api.instances.serializers import FileTypeSerializer
 from iaso.api.org_units import HasCreateOrgUnitPermission
 from iaso.api.serializers import OrgUnitSerializer
-from iaso.exports import parquet
+from iaso.exports import CleaningFileResponse, parquet
 from iaso.models import (
     Entity,
     Form,
@@ -56,6 +55,12 @@ from iaso.models import (
     Project,
 )
 from iaso.models.forms import CR_MODE_IF_REFERENCE_FORM
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_REGISTRY_READ_PERMISSION,
+    CORE_REGISTRY_WRITE_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 from iaso.utils.date_and_time import timestamp_to_datetime
 from iaso.utils.file_utils import get_file_type
 from iaso.utils.models.common import check_instance_bulk_gps_push, check_instance_reference_bulk_link, get_creator_name
@@ -103,10 +108,10 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm(core_permissions.FORMS)
-            or request.user.has_perm(core_permissions.SUBMISSIONS)
-            or request.user.has_perm(core_permissions.REGISTRY_WRITE)
-            or request.user.has_perm(core_permissions.REGISTRY_READ)
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -127,10 +132,10 @@ class HasInstanceBulkPermission(permissions.BasePermission):
 
     def has_permission(self, request: Request, view):
         return request.user.is_authenticated and (
-            request.user.has_perm(core_permissions.FORMS)
-            or request.user.has_perm(core_permissions.SUBMISSIONS)
-            or request.user.has_perm(core_permissions.REGISTRY_WRITE)
-            or request.user.has_perm(core_permissions.REGISTRY_READ)
+            request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_WRITE_PERMISSION.full_name())
+            or request.user.has_perm(CORE_REGISTRY_READ_PERMISSION.full_name())
         )
 
 
@@ -183,7 +188,7 @@ class InstancesViewSet(viewsets.ViewSet):
     f"""Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
-    to authenticated users having the "{core_permissions.FORMS}" core_permissions.
+    to authenticated users having the "{CORE_FORMS_PERMISSION}" permission.
 
     GET /api/instances/
     GET /api/instances/<id>
@@ -555,13 +560,13 @@ class InstancesViewSet(viewsets.ViewSet):
         # actually return parquet file
         form_ids = filters["form_ids"]
         form = Form.objects.get(pk=form_ids)
-        export_queryset = parquet.build_submissions_queryset(queryset, form.id)
+        export_queryset, mapping = parquet.build_submissions_queryset(queryset, form.id)
 
         tmp = tempfile.NamedTemporaryFile(suffix=".parquet", delete=False)
 
-        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name)
+        parquet.export_django_query_to_parquet_via_duckdb(export_queryset, tmp.name, mapping)
 
-        response = FileResponse(open(tmp.name, "rb"), as_attachment=True, filename="submissions.parquet")
+        response = CleaningFileResponse(tmp.name, as_attachment=True, filename="submissions.parquet")
 
         return response
 

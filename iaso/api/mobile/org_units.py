@@ -5,7 +5,6 @@ import django_filters
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
 from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
-from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
@@ -16,15 +15,19 @@ from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
-from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import ModelViewSet, Paginator, TimestampField, get_timestamp, safe_api_import
+from iaso.api.common import ModelViewSet, Paginator, TimestampField, safe_api_import
 from iaso.api.instances.instances import InstanceFileSerializer
+from iaso.api.org_units import import_org_units
 from iaso.api.permission_checks import IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
 from iaso.api.query_params import APP_ID, IDS, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import FeatureFlag, Instance, OrgUnit, Project
+from iaso.permissions.core_permissions import (
+    CORE_FORMS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+    CORE_SUBMISSIONS_PERMISSION,
+)
 
 
 SHAPE_RESULTS_MAX = 1000
@@ -142,10 +145,10 @@ class HasOrgUnitPermission(IsAuthenticatedOrReadOnlyWhenNoAuthenticationRequired
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm(core_permissions.FORMS)
-                or request.user.has_perm(core_permissions.ORG_UNITS)
-                or request.user.has_perm(core_permissions.ORG_UNITS_READ)
-                or request.user.has_perm(core_permissions.SUBMISSIONS)
+                request.user.has_perm(CORE_FORMS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name())
+                or request.user.has_perm(CORE_ORG_UNITS_READ_PERMISSION.full_name())
+                or request.user.has_perm(CORE_SUBMISSIONS_PERMISSION.full_name())
             )
         ):
             return False
@@ -289,7 +292,8 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(request.data, request.user, request.query_params.get(APP_ID))
+        data = sorted(request.data, key=lambda ou: float(ou["created_at"]))
+        new_org_units = import_org_units(data, request.user, request.query_params.get(APP_ID))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     @action(detail=False, methods=["GET"])
@@ -357,67 +361,3 @@ def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
         min(a[2], b[2]),
         max(a[3], b[3]),
     )
-
-
-def import_data(org_units, user, app_id):
-    new_org_units = []
-    project = Project.objects.get_for_user_and_app_id(user, app_id)
-    org_units = sorted(org_units, key=get_timestamp)
-
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        org_unit_location = None
-
-        if latitude and longitude:
-            altitude = org_unit.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validated = False
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                parent_id = org_unit.get(
-                    "parent_id", None
-                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
-
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
-
-            org_unit_type_id = org_unit.get(
-                "orgUnitTypeId", None
-            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
-
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.created_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.created_at = org_unit.get("created_at", None)
-
-            t = org_unit.get("updated_at", None)
-            if t:
-                org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.updated_at = org_unit.get("created_at", None)
-            if user and not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = project.account.default_version
-            org_unit_db.save()
-    return new_org_units

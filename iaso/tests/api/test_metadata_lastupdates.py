@@ -5,6 +5,7 @@ from unittest.mock import patch
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -62,7 +63,7 @@ class MetadataLastUpdatesTestCase(APITestCase):
             ou_4 = cls.ou_4 = m.OrgUnit.objects.create(name="OU4", org_unit_type=jedi_academy, version=sw_version)
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms"], org_units=[ou_3]
+            username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION], org_units=[ou_3]
         )
 
         project_1.unit_types.add(jedi_council)

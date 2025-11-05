@@ -6,13 +6,16 @@ from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-import iaso.permissions as core_permissions
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.groups.filters import GroupListFilter
 from iaso.api.groups.serializers import GroupDropdownSerializer, GroupExportSerializer, GroupSerializer
 from iaso.models import Group, Project, SourceVersion
+from iaso.permissions.core_permissions import (
+    CORE_COMPLETENESS_STATS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_ORG_UNITS_READ_PERMISSION,
+)
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -30,7 +33,7 @@ class HasGroupPermission(permissions.BasePermission):
 class GroupsViewSet(ModelViewSet):
     f"""Groups API
 
-    This API is restricted to users having the "{core_permissions.ORG_UNITS}", "{core_permissions.ORG_UNITS_READ}" and "{core_permissions.COMPLETENESS_STATS}" permission
+    This API is restricted to users having the "{CORE_ORG_UNITS_PERMISSION}", "{CORE_ORG_UNITS_READ_PERMISSION}" and "{CORE_COMPLETENESS_STATS_PERMISSION}" permission
 
     GET /api/groups/
     GET /api/groups/<id>
@@ -41,7 +44,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(core_permissions.ORG_UNITS, core_permissions.ORG_UNITS_READ, core_permissions.COMPLETENESS_STATS),  # type: ignore
+        HasPermission(CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION, CORE_COMPLETENESS_STATS_PERMISSION),
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

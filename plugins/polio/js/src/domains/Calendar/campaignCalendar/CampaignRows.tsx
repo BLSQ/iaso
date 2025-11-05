@@ -13,6 +13,7 @@ import {
 } from './types';
 import { getRoundsCells } from './utils/rounds';
 import { getSubActivitiesRow } from './utils/subactivities';
+import classNames from 'classnames';
 
 type Props = {
     campaign: MappedCampaign;
@@ -27,6 +28,7 @@ type SubactivitiesPerRound = {
     subactivities: SubActivity[];
     roundNumber: number;
     roundId: number;
+    is_planned: boolean;
 };
 
 export const CampaignRows: FunctionComponent<Props> = ({
@@ -47,12 +49,19 @@ export const CampaignRows: FunctionComponent<Props> = ({
                     subactivities: round.subActivities,
                     roundNumber: round.number,
                     roundId: round.id,
+                    is_planned: round.is_planned,
                 })),
         [campaign.rounds],
     );
+
     return (
         <Fragment key={`row-${campaign.id}`}>
-            <TableRow className={classes.tableRow}>
+            <TableRow
+                className={classNames(
+                    classes.tableRow,
+                    campaign.isPlanned ? classes.plannedCampaign : '',
+                )}
+            >
                 <StaticFieldsCells
                     campaign={campaign}
                     isPdf={isPdf}
@@ -69,10 +78,15 @@ export const CampaignRows: FunctionComponent<Props> = ({
             </TableRow>
             {subActivitiesExpanded &&
                 subactivitiesPerRound.map(
-                    ({ subactivities, roundNumber, roundId }) =>
+                    ({ subactivities, roundNumber, roundId, is_planned }) =>
                         subactivities.map((subActivity, index) => (
                             <TableRow
-                                className={classes.tableRowSmall}
+                                className={classNames(
+                                    classes.tableRowSmall,
+                                    is_planned || campaign.isPlanned
+                                        ? classes.plannedCampaign
+                                        : '',
+                                )}
                                 key={`round-${roundId}-subactivity-${subActivity.id}`}
                             >
                                 <StaticSubactivitiesFields

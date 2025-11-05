@@ -3,11 +3,10 @@ from django.contrib.auth.models import Permission, User
 from hat.audit.models import SETUP_ACCOUNT_API, Modification
 from hat.menupermissions.constants import (
     DEFAULT_ACCOUNT_FEATURE_FLAGS,
-    MODULES,
 )
 from iaso import models as m
+from iaso.modules import MODULES
 from iaso.test import APITestCase
-from iaso.utils.module_permissions import account_module_permissions
 
 
 class SetupAccountApiTestCase(APITestCase):
@@ -20,7 +19,7 @@ class SetupAccountApiTestCase(APITestCase):
         account.default_version = version
         account.save()
         cls.account = account
-        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.MODULES = [module.codename for module in MODULES]
         user = m.User.objects.create(username="link")
         user.set_password("tiredofplayingthesameagain")
         user.save()
@@ -339,9 +338,10 @@ class SetupAccountApiTestCase(APITestCase):
         has_all_perms = True
 
         account = m.Account.objects.filter(name="unittest_account")
-        modules_permissions = account_module_permissions(account.first().modules)
+        modules_permissions = account.first().permissions_from_active_modules
+        codenames = [perm.codename for perm in modules_permissions]
 
-        for perm in Permission.objects.filter(codename__in=modules_permissions):
+        for perm in Permission.objects.filter(codename__in=codenames):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 

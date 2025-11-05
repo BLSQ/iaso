@@ -4,6 +4,7 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.db import connection
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ORG_UNITS_PERMISSION, CORE_ORG_UNITS_READ_PERMISSION
 from iaso.tests.utils_parquet import BaseAPITransactionTestCase, compare_or_create_snapshot, write_response_to_file
 
 
@@ -143,19 +144,23 @@ class OrgUnitAPITestCase(BaseAPITransactionTestCase):
             opening_date="2025-05-05",
         )
 
-        self.yoda = self.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        self.yoda = self.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
         self.user_read_permission = self.create_user_with_profile(
             username="user_read_permission",
             account=star_wars,
-            permissions=["iaso_org_units_read"],
+            permissions=[CORE_ORG_UNITS_READ_PERMISSION],
         )
         self.luke = self.create_user_with_profile(
             username="luke",
             account=star_wars,
-            permissions=["iaso_org_units"],
+            permissions=[CORE_ORG_UNITS_PERMISSION],
             org_units=[jedi_council_endor],
         )
-        self.raccoon = self.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+        self.raccoon = self.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_ORG_UNITS_PERMISSION]
+        )
 
         self.form_1 = form_1 = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True

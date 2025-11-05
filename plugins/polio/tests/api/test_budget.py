@@ -15,6 +15,7 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.models import Campaign, CampaignType, Round
+from plugins.polio.permissions import POLIO_BUDGET_PERMISSION
 from plugins.polio.tests.utils.budget import get_mocked_workflow
 
 
@@ -55,7 +56,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
             first_name="test",
             last_name="test",
             account=cls.account,
-            permissions=["iaso_polio_budget"],
+            permissions=[POLIO_BUDGET_PERMISSION],
         )
 
         # Campaign type.
@@ -891,7 +892,9 @@ class FilterBudgetProcessViewSetTestCase(APITestCase):
         cls.data_source = m.DataSource.objects.create(name="Data Source")
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[POLIO_BUDGET_PERMISSION]
+        )
 
         # Campaign type.
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
@@ -1001,7 +1004,9 @@ class FilterBudgetStepViewSetTestCase(APITestCase):
         cls.data_source = m.DataSource.objects.create(name="Data Source")
         cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[POLIO_BUDGET_PERMISSION]
+        )
 
         # Campaign.
         cls.country = m.OrgUnit.objects.create(name="ANGOLA")

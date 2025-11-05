@@ -4,10 +4,57 @@ from datetime import datetime
 
 from django.contrib.gis.db.models import MultiPolygonField, PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Case, Count, IntegerField, Q, Sum, When
+from django.db.models import Case, Count, IntegerField, Q, QuerySet, Sum, When
 from django.db.models.functions import Cast
 
 from iaso.models import DataSource, Instance, OrgUnit
+
+
+def apply_org_unit_search(queryset: QuerySet, value: str, prefix: str = "") -> QuerySet:
+    if value.startswith("ids:"):
+        s = value.replace("ids:", "")
+
+        try:
+            ids = re.findall("[A-Za-z0-9_-]+", s)
+            queryset = queryset.filter(**{f"{prefix}id__in": ids})
+        except:
+            queryset = queryset.filter(**{f"{prefix}id__in": []})
+            print("Failed parsing ids in search", value)
+    elif value.startswith("refs:"):
+        s = value.replace("refs:", "")
+        try:
+            # First, checking if there are any "fake"/"internal" external refs (e.g. 'iaso:123')
+            internal_refs = re.findall(r"iaso:\d+", s)
+            internal_refs_filter = Q()
+            if internal_refs:
+                iaso_ids = [int(i.split(":")[1]) for i in internal_refs]  # Split and parse ID
+                kwargs = {
+                    f"{prefix}id__in": iaso_ids,
+                }
+                internal_refs_filter = Q(**kwargs)
+                s = re.sub(r"iaso:\d+", "", s)  # Remove internal refs to prevent them from breaking the other value
+
+            # Then we can check real external refs
+            refs = re.findall("[A-Za-z0-9_-]+", s)
+            external_refs_filter = Q(**{f"{prefix}source_ref__in": refs})
+            queryset = queryset.filter(external_refs_filter | internal_refs_filter)
+        except:
+            queryset = queryset.filter(**{f"{prefix}source_ref__in": []})
+            print("Failed parsing refs in search", value)
+    elif value.startswith("codes:"):
+        s = value.replace("codes:", "")
+        try:
+            codes = re.findall("[A-Za-z0-9_-]+", s)
+            queryset = queryset.filter(**{f"{prefix}code__in": codes})
+        except:
+            queryset = queryset.filter(**{f"{prefix}code__in": []})
+            print("Failed parsing codes in search", value)
+    else:
+        queryset = queryset.filter(
+            Q(**{f"{prefix}name__icontains": value}) | Q(**{f"{prefix}aliases__contains": [value]})
+        )
+
+    return queryset
 
 
 def build_org_units_queryset(queryset, params, profile):
@@ -33,6 +80,7 @@ def build_org_units_queryset(queryset, params, profile):
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
     org_unit_parent_ids = params.get("orgUnitParentIds", None)
+    excluded_org_unit_parent_ids = params.get("excludedOrgUnitParentIds", None)
 
     linked_to = params.get("linkedTo", None)
     link_validated = params.get("linkValidated", True)
@@ -44,6 +92,7 @@ def build_org_units_queryset(queryset, params, profile):
     org_unit_type_category = params.get("orgUnitTypeCategory", None)
     path_depth = params.get("depth", None)
 
+    date_open = params.get("date_open", None)
     opening_date = params.get("opening_date", None)
     closed_date = params.get("closed_date", None)
 
@@ -52,44 +101,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(validation_status__in=validation_statuses_list)
 
     if search:
-        if search.startswith("ids:"):
-            s = search.replace("ids:", "")
-            try:
-                ids = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(id__in=ids)
-            except:
-                queryset = queryset.filter(id__in=[])
-                print("Failed parsing ids in search", search)
-        elif search.startswith("refs:"):
-            s = search.replace("refs:", "")
-            try:
-                # First, checking if there are any "fake"/"internal" external refs (e.g. 'iaso:123')
-                internal_refs = re.findall(r"iaso:\d+", s)
-                internal_refs_filter = Q()
-                if internal_refs:
-                    iaso_ids = [int(i.split(":")[1]) for i in internal_refs]  # Split and parse ID
-                    internal_refs_filter = Q(id__in=iaso_ids)
-                    s = re.sub(
-                        r"iaso:\d+", "", s
-                    )  # Remove internal refs to prevent them from breaking the other search
-
-                # Then we can check real external refs
-                refs = re.findall("[A-Za-z0-9_-]+", s)
-                external_refs_filter = Q(source_ref__in=refs)
-                queryset = queryset.filter(external_refs_filter | internal_refs_filter)
-            except:
-                queryset = queryset.filter(source_ref__in=[])
-                print("Failed parsing refs in search", search)
-        elif search.startswith("codes:"):
-            s = search.replace("codes:", "")
-            try:
-                codes = re.findall("[A-Za-z0-9_-]+", s)
-                queryset = queryset.filter(code__in=codes)
-            except:
-                queryset = queryset.filter(code__in=[])
-                print("Failed parsing codes in search", search)
-        else:
-            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
+        queryset = apply_org_unit_search(queryset, search)
 
     if group:
         if isinstance(group, str):
@@ -211,6 +223,13 @@ def build_org_units_queryset(queryset, params, profile):
         parent = OrgUnit.objects.filter(id__in=parent_ids)
         queryset = queryset.hierarchy(parent)
 
+    if excluded_org_unit_parent_ids:
+        excluded_parent_ids = excluded_org_unit_parent_ids.split(",")
+        excluded_parents = OrgUnit.objects.filter(id__in=excluded_parent_ids)
+        # Get all org units in the hierarchy of the excluded parents
+        excluded_hierarchy = OrgUnit.objects.hierarchy(excluded_parents)
+        queryset = queryset.exclude(id__in=excluded_hierarchy.values_list("id", flat=True))
+
     if linked_to:
         is_destination = Q(destination_set__destination_id=linked_to)
         if link_validated != "all":
@@ -236,6 +255,11 @@ def build_org_units_queryset(queryset, params, profile):
 
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
+    if date_open is not None:
+        date = datetime.strptime(date_open, "%d-%m-%Y").date()
+        queryset = queryset.filter(Q(opening_date__isnull=True) | Q(opening_date__lte=date)).filter(
+            Q(closed_date__isnull=True) | Q(closed_date__gt=date)
+        )
     if opening_date:
         queryset = queryset.filter(opening_date=datetime.strptime(opening_date, "%d-%m-%Y").date())
     if closed_date:

@@ -13,6 +13,7 @@ from iaso.models import (
     Mapping,
     OrgUnit,
 )
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -24,8 +25,10 @@ class FormsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_forms"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=[CORE_FORMS_PERMISSION])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=[CORE_FORMS_PERMISSION]
+        )
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")

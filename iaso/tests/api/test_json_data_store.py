@@ -4,6 +4,7 @@ from django.utils.text import slugify
 
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
+from iaso.permissions.core_permissions import CORE_DATASTORE_READ_PERMISSION, CORE_DATASTORE_WRITE_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -20,13 +21,15 @@ class JsonDataStoreAPITestCase(APITestCase):
         cls.account1 = Account.objects.create(name="Account 1")
         cls.account2 = Account.objects.create(name="Account 2")
         cls.authorized_user_read = cls.create_user_with_profile(
-            username="authorized_read_only", account=cls.account1, permissions=["iaso_datastore_read"]
+            username="authorized_read_only", account=cls.account1, permissions=[CORE_DATASTORE_READ_PERMISSION]
         )
         cls.authorized_user_write = cls.create_user_with_profile(
-            username="authorized_write_only", account=cls.account1, permissions=["iaso_datastore_write"]
+            username="authorized_write_only", account=cls.account1, permissions=[CORE_DATASTORE_WRITE_PERMISSION]
         )
         cls.user_with_perm_but_wrong_account = cls.create_user_with_profile(
-            username="other_account", account=cls.account2, permissions=["iaso_datastore_read", "iaso_datastore_write"]
+            username="other_account",
+            account=cls.account2,
+            permissions=[CORE_DATASTORE_READ_PERMISSION, CORE_DATASTORE_WRITE_PERMISSION],
         )
         cls.unauthorized = cls.create_user_with_profile(username="unauthorized", account=cls.account1)
 

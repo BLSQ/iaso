@@ -1,5 +1,5 @@
-import { Nullable } from '../../types/utils';
 import { UrlParams } from 'bluesquare-components';
+import { Nullable } from '../../types/utils';
 
 export type TaskStatus =
     | 'RUNNING'
@@ -18,6 +18,7 @@ type User = {
 
 export type Task<T> = {
     id: number;
+    name: string;
     created_at: number; // date
     started_at: number; // date
     ended_at: Nullable<number>; // date
@@ -29,6 +30,16 @@ export type Task<T> = {
     should_be_killed: boolean;
     progress_message: Nullable<string>;
     polio_notification_import_id?: number;
+};
+
+export type TaskLog = {
+    message: string;
+    created_at: number; // date
+};
+
+export type TaskLogApiResponse = {
+    status: TaskStatus;
+    logs: TaskLog[];
 };
 
 export type TaskApiResponse<T> = {

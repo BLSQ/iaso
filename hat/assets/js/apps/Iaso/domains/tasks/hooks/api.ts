@@ -1,10 +1,11 @@
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 
-import { DropdownOptionsWithOriginal } from '../../../types/utils';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import MESSAGES from 'Iaso/domains/tasks/messages';
+import { getRequest, patchRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { DropdownOptionsWithOriginal } from 'Iaso/types/utils';
 
-import { PolioNotificationImport } from '../types';
+import { PolioNotificationImport, Task, TaskLogApiResponse } from '../types';
 
 export const useGetPolioNotificationImport = (
     polioNotificationImportId: number | string | undefined,
@@ -41,6 +42,52 @@ export const useGetTaskTypes = (): UseQueryResult<
                     };
                 });
             },
+        },
+    });
+};
+
+export const useKillTask = (): UseMutationResult =>
+    useSnackMutation(
+        (task: Task<any>) => patchRequest(`/api/tasks/${task.id}/`, task),
+        MESSAGES.patchTaskSuccess,
+        MESSAGES.patchTaskError,
+        ['tasks'],
+    );
+
+export const useRelaunchTask = (): UseMutationResult =>
+    useSnackMutation(
+        (task: Task<any>) =>
+            patchRequest(`/api/tasks/${task.id}/relaunch/`, task),
+        MESSAGES.patchTaskSuccess,
+        MESSAGES.patchTaskError,
+        ['tasks'],
+    );
+
+export const useGetLogs = (
+    taskId?: number,
+    autoRefresh = false,
+): UseQueryResult<TaskLogApiResponse, Error> => {
+    return useSnackQuery({
+        queryKey: ['tasksLogs', taskId],
+        queryFn: () => getRequest(`/api/tasks/${taskId}/logs/`),
+        options: {
+            retry: false,
+            keepPreviousData: true,
+            refetchInterval: autoRefresh ? 5000 : false,
+            enabled: Boolean(taskId),
+        },
+    });
+};
+
+export const useGetTask = (
+    taskId: number,
+): UseQueryResult<Task<any>, Error> => {
+    return useSnackQuery({
+        queryKey: ['tasks', taskId],
+        queryFn: () => getRequest(`/api/tasks/${taskId}/`),
+        options: {
+            retry: false,
+            keepPreviousData: true,
         },
     });
 };

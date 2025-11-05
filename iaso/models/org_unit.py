@@ -20,7 +20,6 @@ from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
-from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 from iaso.models.data_source import SourceVersion
 
 from ..utils.expressions import ArraySubquery
@@ -100,11 +99,16 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.filter(projects__in=[project])
+                queryset = self.filter_for_project(project, queryset)
             except Project.DoesNotExist:
                 return self.none()
 
         return queryset
+
+    def filter_for_project(self, project: Project, queryset=None):
+        if queryset is None:
+            queryset = self
+        return queryset.filter(projects__in=[project])
 
 
 OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
@@ -274,7 +278,6 @@ class OrgUnit(TreeModel):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
     validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     # The migration 0086_add_version_constraints add a constraint to ensure that the source version
     # is the same between the orgunit and the group
@@ -864,6 +867,8 @@ class OrgUnitChangeRequest(SoftDeletableModel):
         self.save()
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+        from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
+
         initial_org_unit = deepcopy(self.org_unit)
 
         for field_name in approved_fields:

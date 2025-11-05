@@ -57,11 +57,13 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
+# SECURITY WARNING: keep the encryption key used in production secret!
+ENCRYPTED_TEXT_FIELD_KEY = os.environ.get("ENCRYPTED_TEXT_FIELD_KEY")
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
 USE_AZURE_STORAGE = os.getenv("USE_AZURE_STORAGE") == "true"
-
 # Storage provider configuration
 STORAGE_PROVIDER = os.environ.get("STORAGE_PROVIDER", "local")  # local, s3, azure
 if USE_S3:
@@ -94,6 +96,7 @@ LEARN_MORE_URL = os.environ.get("LEARN_MORE_URL", None)
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
+DATASET_ID = os.environ.get("DATASET_ID", None)
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
 DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
@@ -820,3 +823,5 @@ if IN_TESTS:
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",  # Default option
         },
     }
+    if not ENCRYPTED_TEXT_FIELD_KEY:
+        ENCRYPTED_TEXT_FIELD_KEY = "71Eax4PGazWNj7vaXrucAD1bYUzjI-Fxubv8MZzcSyk="

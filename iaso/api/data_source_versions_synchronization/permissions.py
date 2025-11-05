@@ -1,6 +1,10 @@
 from rest_framework import permissions
 
-import iaso.permissions as core_permissions
+from iaso.permissions.core_permissions import (
+    CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION,
+    CORE_ORG_UNITS_PERMISSION,
+    CORE_SOURCE_WRITE_PERMISSION,
+)
 
 
 class DataSourceVersionsSynchronizationPermission(permissions.BasePermission):
@@ -9,8 +13,8 @@ class DataSourceVersionsSynchronizationPermission(permissions.BasePermission):
             return True
         return request.user.is_authenticated and all(
             [
-                request.user.has_perm(core_permissions.SOURCE_WRITE),
-                request.user.has_perm(core_permissions.ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS),
-                request.user.has_perm(core_permissions.ORG_UNITS),
+                request.user.has_perm(CORE_SOURCE_WRITE_PERMISSION.full_name()),
+                request.user.has_perm(CORE_ORG_UNITS_CHANGE_REQUEST_CONFIGURATIONS_PERMISSION.full_name()),
+                request.user.has_perm(CORE_ORG_UNITS_PERMISSION.full_name()),
             ]
         )

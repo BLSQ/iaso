@@ -257,6 +257,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             const mappedRevision = {
                 ...currentOrgUnit,
                 ...revision,
+                org_unit_type_id: revision.org_unit_type?.id,
                 location,
                 geo_json: null, // this line to prevent overwriting the geo_json with a simplified shape/ Disables restoring a previous version of a single shape
                 aliases,
@@ -314,6 +315,7 @@ const OrgUnitDetail: FunctionComponent = () => {
             redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
+            queryClient,
         ],
     );
 

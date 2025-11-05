@@ -3,6 +3,7 @@ import uuid
 from django.contrib.auth.models import AnonymousUser
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -22,7 +23,9 @@ class EntityAPITestCase(APITestCase):
         cls.project = m.Project.objects.create(name="Project", app_id="project", account=cls.account)
 
         cls.yop_solo = cls.create_user_with_profile(
-            username="yop solo", account=m.Account.objects.create(name="Account 2"), permissions=["iaso_entities"]
+            username="yop solo",
+            account=m.Account.objects.create(name="Account 2"),
+            permissions=[CORE_ENTITIES_PERMISSION],
         )
 
         cls.ou_country = m.OrgUnit.objects.create(
@@ -30,10 +33,12 @@ class EntityAPITestCase(APITestCase):
         )
         cls.ou_country_unvalidated = m.OrgUnit.objects.create(name="Burkina Faso (unvalidated)")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=cls.account, permissions=["iaso_entities"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.account, permissions=[CORE_ENTITIES_PERMISSION]
+        )
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=cls.account, permissions=["iaso_entities"]
+            username="user_without_ou", account=cls.account, permissions=[CORE_ENTITIES_PERMISSION]
         )
 
         cls.form_1 = m.Form.objects.create(

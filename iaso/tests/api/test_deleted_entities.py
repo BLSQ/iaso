@@ -4,6 +4,7 @@ from django.core.files import File
 from iaso import models as m
 from iaso.api.deduplication.entity_duplicate import merge_entities
 from iaso.models import Entity, EntityType, Instance
+from iaso.permissions.core_permissions import CORE_ENTITIES_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -18,7 +19,9 @@ class EntityAPITestCase(APITestCase):
         cls.sw_version = cls.sw_version
 
         cls.anon = AnonymousUser()
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_entities"])
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=[CORE_ENTITIES_PERMISSION]
+        )
 
         cls.project = m.Project.objects.create(
             name="Disease tracking",

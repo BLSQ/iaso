@@ -8,9 +8,17 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 
 from iaso import models as m
+from iaso.models.json_config import Config
 from iaso.test import APITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
 from plugins.polio.models import OutgoingStockMovement
+from plugins.polio.models.base import DOSES_PER_VIAL_CONFIG_SLUG, VaccineStockCalculator
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+)
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -41,20 +49,20 @@ class VaccineStockManagementAPITestCase(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_WRITE,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_MANAGEMENT_WRITE_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
             ],
         )
         cls.user_ro_perms = cls.create_user_with_profile(
             username="user_ro_perms",
             account=cls.account,
-            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ],
+            permissions=[POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION],
         )
         cls.user_read_only_perms = cls.create_user_with_profile(
             username="user_read_only_perms",
             account=cls.account,
-            permissions=[polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY],
+            permissions=[POLIO_VACCINE_STOCK_MANAGEMENT_READ_ONLY_PERMISSION],
         )
         cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=cls.account, permissions=[])
 
@@ -102,6 +110,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             doses_received=400,
             doses_shipped=400,
             po_number="PO123",
+            doses_per_vial=20,
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
             # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
@@ -120,6 +129,12 @@ class VaccineStockManagementAPITestCase(APITestCase):
             vaccine=pm.VACCINES[0][0],
         )
 
+        cls.empty_vaccine_stock = pm.VaccineStock.objects.create(
+            account=cls.account,
+            country=cls.country,
+            vaccine=pm.VACCINES[2][0],
+        )
+
         cls.outgoing_stock_movement = pm.OutgoingStockMovement.objects.create(
             campaign=cls.campaign,
             vaccine_stock=cls.vaccine_stock,
@@ -128,6 +143,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             usable_vials_used=10,
             lot_numbers=["LOT123"],
             comment="Hello world",
+            doses_per_vial=20,
         )
 
         cls.outgoing_stock_movement_2 = pm.OutgoingStockMovement.objects.create(
@@ -136,6 +152,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=cls.now - datetime.timedelta(days=3),
             form_a_reception_date=cls.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         cls.destruction_report = pm.DestructionReport.objects.create(
@@ -146,6 +163,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             unusable_vials_destroyed=3,
             lot_numbers=["LOT456"],
             comment="Goodbye World",
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -154,6 +172,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=3),
             unusable_vials=1,  # 1 vial will be moved from usable to unusable
             usable_vials=0,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -162,6 +181,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=4),
             unusable_vials=0,
             usable_vials=1,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -170,6 +190,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=16,
+            doses_per_vial=20,
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -178,6 +199,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=20,
             usable_vials=0,
+            doses_per_vial=20,
         )
         # Remove from usable
         cls.incident_report = pm.IncidentReport.objects.create(
@@ -187,6 +209,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=0,
             usable_vials=1,
+            doses_per_vial=20,
         )
         # remove from unusable
         cls.incident_report = pm.IncidentReport.objects.create(
@@ -196,6 +219,11 @@ class VaccineStockManagementAPITestCase(APITestCase):
             incident_report_received_by_rrt=cls.now - datetime.timedelta(days=5),
             unusable_vials=1,
             usable_vials=0,
+            doses_per_vial=20,
+        )
+
+        cls.config = Config.objects.create(
+            slug=DOSES_PER_VIAL_CONFIG_SLUG, content={"bOPV": [10, 20], "mOPV2": [20, 50], "nOPV2": [50]}
         )
 
     def test_anonymous_user_cannot_see_list(self):
@@ -214,7 +242,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         results = response.json()["results"]
-        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results), 3)
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
@@ -226,6 +254,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["stock_of_unusable_vials"], 27)
         # self.assertEqual(stock["stock_of_earmarked_vials"], 0)
         self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
+
+        # Test new dose-related fields
+        self.assertEqual(stock["doses_received"], 400)  # 20 vials * 20 doses per vial
+        self.assertEqual(stock["doses_used"], 200)  # 10 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_usable_doses"], 460)  # 23 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_unusable_doses"], 540)  # 27 vials * 20 doses per vial
+        self.assertEqual(stock["doses_destroyed"], 60)  # 3 vials * 20 doses per vial
+        self.assertEqual(stock["stock_of_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_vaccine_stock_management_permissions_outgoing_stock_movement(self):
         # Use a non-admin user
@@ -242,6 +278,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "missing_vials": 2,
             "round": self.campaign_round_1.id,
             "comment": "Test OSM",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
@@ -299,6 +336,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials": 5,
             "usable_vials": 0,
             "comment": "Test incident",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
@@ -355,6 +393,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
             "comment": "Test destruction",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -637,18 +676,16 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "properties": {
                 "country_name": {"type": "string"},
                 "vaccine_type": {"type": "string"},
-                "total_usable_vials": {"type": "integer"},
-                "total_unusable_vials": {"type": "integer"},
                 "total_usable_doses": {"type": "integer"},
                 "total_unusable_doses": {"type": "integer"},
+                "total_earmarked_doses": {"type": "integer"},
             },
             "required": [
                 "country_name",
                 "vaccine_type",
-                "total_usable_vials",
-                "total_unusable_vials",
                 "total_usable_doses",
                 "total_unusable_doses",
+                "total_earmarked_doses",
             ],
         }
 
@@ -661,10 +698,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 23)
-        self.assertEqual(data["total_unusable_vials"], 27)
         self.assertEqual(data["total_usable_doses"], 460)
         self.assertEqual(data["total_unusable_doses"], 540)
+        self.assertEqual(data["total_earmarked_doses"], 0)  # No earmarked stock in test data
 
     def test_delete(self):
         self.client.force_authenticate(self.user_rw_perms)
@@ -877,6 +913,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 form_a_reception_date="2023-10-01",
                 usable_vials_used=999,
                 file=SimpleUploadedFile("document_path_1.pdf", pdf_file_content),
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_1", outgoing_stock_movement.file.name)
@@ -901,6 +938,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                 file=SimpleUploadedFile("document_path_2.pdf", pdf_file_content),
                 unusable_vials=7,  # 1 vial will be moved from usable to unusable
                 usable_vials=3,
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_2", incident_report.file.name)
@@ -930,6 +968,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     content_type="application/pdf",
                 ),
                 unusable_vials_destroyed=3,
+                doses_per_vial=20,
             )
 
             self.assertIn("document_path_3", destruction_report.file.name)
@@ -959,6 +998,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -983,6 +1023,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -1006,6 +1047,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                     pdf_file_content,
                     content_type="application/pdf",
                 ),
+                "doses_per_vial": 20,
             }
 
             response = self.client.post(
@@ -1027,6 +1069,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "rrt_destruction_report_reception_date": "2024-01-02",
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -1172,7 +1215,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         results = response.json()["results"]
-        self.assertEqual(len(results), 2)
+        self.assertEqual(len(results), 3)
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
@@ -1181,6 +1224,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsInstance(stock["stock_of_usable_vials"], int)
         self.assertIsInstance(stock["stock_of_unusable_vials"], int)
         self.assertIsInstance(stock["vials_destroyed"], int)
+
+        # Test new dose-related fields are present and have correct types
+        self.assertIsInstance(stock["doses_received"], int)
+        self.assertIsInstance(stock["doses_used"], int)
+        self.assertIsInstance(stock["stock_of_usable_doses"], int)
+        self.assertIsInstance(stock["stock_of_unusable_doses"], int)
+        self.assertIsInstance(stock["doses_destroyed"], int)
+        self.assertIsInstance(stock["stock_of_earmarked_doses"], int)
 
     def test_user_with_read_only_cannot_create_outgoing_stock_movement(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
@@ -1194,6 +1245,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "missing_vials": 2,
             "round": self.campaign_round_1.id,
             "comment": "Test OSM",
+            "doses_per_vial": 20,
         }
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/", osm_data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1208,6 +1260,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials": 5,
             "usable_vials": 0,
             "comment": "Test incident",
+            "doses_per_vial": 20,
         }
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}incident_report/", incident_data, format="json")
         self.assertEqual(response.status_code, 403)
@@ -1222,6 +1275,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "unusable_vials_destroyed": 5,
             "action": "Destroyed due to expiration",
             "comment": "Test destruction",
+            "doses_per_vial": 20,
         }
         response = self.client.post(
             f"{BASE_URL_SUB_RESOURCES}destruction_report/",
@@ -1284,10 +1338,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         data = response.json()
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertIsInstance(data["total_usable_vials"], int)
-        self.assertIsInstance(data["total_unusable_vials"], int)
         self.assertIsInstance(data["total_usable_doses"], int)
         self.assertIsInstance(data["total_unusable_doses"], int)
+        self.assertIsInstance(data["total_earmarked_doses"], int)
 
     def test_user_with_read_only_can_see_usable_vials(self):
         self.client.force_authenticate(user=self.user_read_only_perms)
@@ -1302,13 +1355,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["results"]), 5)
-
-    def test_user_with_read_only_can_see_earmarked_stock(self):
-        self.client.force_authenticate(user=self.user_read_only_perms)
-        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_earmarked_stock/")
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertIn("results", data)
 
     def test_outgoing_stock_movement_without_campaign(self):
         """Test that an OutgoingStockMovement can be created without a campaign"""
@@ -1325,6 +1371,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "usable_vials_used": VIALS_COUNT,
             "lot_numbers": ["123", "456"],
             "comment": "Test without campaign",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{FORMA_URL}", data=data)
@@ -1338,6 +1385,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "lot_numbers": ["123", "456"],
             "comment": "Test without campaign",
             "alternative_campaign": ALT_CAMPAIGN_NAME,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{FORMA_URL}", data=data)
@@ -1375,6 +1423,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             "comment": "Test without campaign",
             "alternative_campaign": alt_campaign_name,
             "campaign": self.campaign.obr_name,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{forma_url}", data=data)
@@ -1395,6 +1444,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
             non_obr_name="Test Campaign Name",  # Required by constraint
         )
         self.assertEqual(serializer.get_campaign_category(obj_without_campaign), CampaignCategory.REGULAR)
@@ -1419,6 +1469,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_test_campaign), CampaignCategory.TEST_CAMPAIGN)
 
@@ -1442,6 +1493,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_campaign_on_hold), CampaignCategory.CAMPAIGN_ON_HOLD)
 
@@ -1472,6 +1524,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_all_rounds_hold), CampaignCategory.ALL_ROUNDS_ON_HOLD)
 
@@ -1502,6 +1555,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_round_on_hold), CampaignCategory.ROUND_ON_HOLD)
 
@@ -1513,6 +1567,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
         self.assertEqual(serializer.get_campaign_category(obj_regular), CampaignCategory.REGULAR)
 
@@ -1554,6 +1609,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             vaccine_stock=self.vaccine_stock,
             vials_earmarked=5,
             doses_earmarked=100,
+            doses_per_vial=20,
         )
 
         # Test list endpoint
@@ -1618,6 +1674,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         hold_movement = pm.OutgoingStockMovement.objects.create(
@@ -1627,6 +1684,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             report_date=self.now - datetime.timedelta(days=3),
             form_a_reception_date=self.now - datetime.timedelta(days=2),
             usable_vials_used=10,
+            doses_per_vial=20,
         )
 
         # Test API responses
@@ -1641,3 +1699,155 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertIsNotNone(hold_movement_data)
         self.assertEqual(test_movement_data["campaign_category"], "TEST_CAMPAIGN")
         self.assertEqual(hold_movement_data["campaign_category"], "CAMPAIGN_ON_HOLD")
+
+    def test_doses_options_endpoint_success(self):
+        """Test the doses_options endpoint returns correct data"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        # Test with valid stock ID
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        data = self.assertJSONResponse(response, 200)
+
+        results = data["results"]
+        self.assertEqual(len(results), 2)
+
+        for item in results:
+            self.assertIn("label", item)
+            self.assertIn("value", item)
+            self.assertIn("doses_available", item)
+            self.assertIn("unusable_doses", item)
+
+        # Check that we have the expected structure with both doses_available and unusable_doses
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertEqual(item_20["label"], "20")
+        self.assertEqual(item_20["doses_available"], 460)
+        self.assertEqual(item_20["unusable_doses"], 540)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["label"], "50")
+        self.assertEqual(item_50["doses_available"], 0)
+        self.assertEqual(item_50["unusable_doses"], 0)
+
+    def test_doses_options_endpoint_missing_stock_id(self):
+        """Test the doses_options endpoint returns 400 when stockId is missing"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data, "stock id not provided")
+
+    def test_doses_options_endpoint_invalid_stock_id(self):
+        """Test the doses_options endpoint returns 404 when stockId is invalid"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId=99999")
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_doses_options_endpoint_anonymous_user(self):
+        """Test that anonymous users cannot access doses_options endpoint"""
+        self.client.force_authenticate(user=self.anon)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_doses_options_endpoint_user_without_permissions(self):
+        """Test that users without permissions cannot access doses_options endpoint"""
+        self.client.force_authenticate(user=self.user_no_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_doses_options_endpoint_user_with_read_only_permissions(self):
+        """Test that users with read-only permissions can access doses_options endpoint"""
+        self.client.force_authenticate(user=self.user_read_only_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertIn("results", data)
+
+    def test_doses_options_endpoint_invalid_stock_id_format(self):
+        """Test the doses_options endpoint with invalid stockId format"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        # Test with non-numeric stockId
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId=invalid")
+
+        # Should return 404 as the filter will fail
+        self.assertEqual(response.status_code, 400)
+
+    def test_vaccine_stock_calculator_get_usable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_usable_stock_by_vaccine_presentation method"""
+        from plugins.polio.models.base import VaccineStockCalculator
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_usable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_usable_stock_by_vaccine_presentation()
+
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_vaccine_stock_calculator_get_unusable_stock_by_vaccine_presentation(self):
+        """Test VaccineStockCalculator.get_unusable_stock_by_vaccine_presentation method"""
+
+        # Test with existing vaccine stock that has data
+        calculator = VaccineStockCalculator(self.vaccine_stock)
+        result = calculator.get_unusable_stock_by_vaccine_presentation()
+
+        # Should return a dictionary with doses per vial as keys and doses as values
+        self.assertIsInstance(result, dict)
+        self.assertIn("20", result)  # Based on test data, we have 20 doses per vial
+        self.assertIn("50", result)  # Based on config, we have 50 doses per vial option
+
+        # Check that the values are integers (doses)
+        for _key, value in result.items():
+            self.assertIsInstance(value, int)
+
+        # Test with empty vaccine stock
+        calculator_empty = VaccineStockCalculator(self.empty_vaccine_stock)
+        result_empty = calculator_empty.get_unusable_stock_by_vaccine_presentation()
+        self.assertEqual({"10": 0, "20": 0}, result_empty)
+
+    def test_doses_options_endpoint_includes_unusable_doses(self):
+        """Test that the doses_options endpoint includes unusable_doses field"""
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        response = self.client.get(f"{BASE_URL}doses_options/?stockId={self.vaccine_stock.id}")
+
+        data = self.assertJSONResponse(response, 200)
+        results = data["results"]
+
+        # Check that each result includes unusable_doses field
+        for item in results:
+            self.assertIn("unusable_doses", item)
+            self.assertIsInstance(item["unusable_doses"], int)
+
+        # Verify specific values based on test data
+        # We expect some unusable doses for 20-dose vials based on our test data
+        item_20 = next((item for item in results if item["value"] == 20), None)
+        self.assertIsNotNone(item_20)
+        self.assertEqual(item_20["unusable_doses"], 540)
+
+        item_50 = next((item for item in results if item["value"] == 50), None)
+        self.assertIsNotNone(item_50)
+        self.assertEqual(item_50["unusable_doses"], 0)  # No 50-dose vials in test data

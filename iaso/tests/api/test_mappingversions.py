@@ -6,6 +6,7 @@ from django.core.files import File
 from django.test import override_settings
 
 from iaso import models as m
+from iaso.permissions.core_permissions import CORE_MAPPINGS_PERMISSION
 from iaso.test import APITestCase
 
 
@@ -29,8 +30,10 @@ class FormsVersionAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         cls.sw_source = sw_source
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_mappings"])
-        cls.batman = cls.create_user_with_profile(username="batman", account=dc, permissions=["iaso_mappings"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=[CORE_MAPPINGS_PERMISSION]
+        )
+        cls.batman = cls.create_user_with_profile(username="batman", account=dc, permissions=[CORE_MAPPINGS_PERMISSION])
 
         cls.sith_council = m.OrgUnitType.objects.create(name="Sith Council", short_name="Cnc")
 

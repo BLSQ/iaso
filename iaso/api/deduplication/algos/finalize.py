@@ -5,7 +5,7 @@ from django.utils.timezone import now
 
 from iaso.api.deduplication.common import PotentialDuplicate
 from iaso.models import EntityDuplicate
-from iaso.models.base import Task
+from iaso.models.task import Task
 
 
 def create_entity_duplicates(task: Task, potential_duplicates: List[PotentialDuplicate]) -> None:

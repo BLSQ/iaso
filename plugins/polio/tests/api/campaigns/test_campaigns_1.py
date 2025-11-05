@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account
+from iaso.permissions.core_permissions import CORE_FORMS_PERMISSION
 from iaso.test import APITestCase
 from plugins.polio.models import (
     CampaignScope,
@@ -30,7 +31,9 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.now = timezone.now()
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
-        cls.user = cls.create_user_with_profile(username="yoda", account=polio_account, permissions=["iaso_forms"])
+        cls.user = cls.create_user_with_profile(
+            username="yoda", account=polio_account, permissions=[CORE_FORMS_PERMISSION]
+        )
 
         cls.country_type = m.OrgUnitType.objects.create(name="COUNTRY", short_name="country")
         cls.district_type = m.OrgUnitType.objects.create(name="DISTRICT", short_name="district")
@@ -67,7 +70,7 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         cls.user_no_permission = cls.create_user_with_profile(
             username="luke",
             account=polio_account,
-            permissions=["iaso_forms"],
+            permissions=[CORE_FORMS_PERMISSION],
             org_units=[cls.child_org_unit],
         )
 
@@ -559,7 +562,6 @@ class PolioAPITestCase(APITestCase, PolioTestCaseMixin):
         self.client.force_authenticate(self.user)
         response = self.client.get(f"/api/polio/campaigns/{test_campaign.id}/")
         data = self.assertJSONResponse(response, 200)
-        print("SCOPES", data["scopes"])
         response_group = data["scopes"][0]["group"]
 
         # Reduce scope

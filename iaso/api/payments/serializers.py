@@ -6,8 +6,8 @@ from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from iaso.api.payments.filters.potential_payments import filter_by_dates, filter_by_forms, filter_by_parent
 from iaso.api.payments.pagination import PaymentPagination
 from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
-from iaso.models.base import Task
 from iaso.models.payments import PaymentStatuses
+from iaso.models.task import Task
 
 from ..common import TimestampField
 

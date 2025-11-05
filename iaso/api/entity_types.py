@@ -4,10 +4,9 @@ from rest_framework import filters, serializers, status
 from rest_framework.response import Response
 from unidecode import unidecode
 
-import iaso.permissions as core_permissions
-
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.models import Entity, EntityType
+from iaso.permissions.core_permissions import CORE_ENTITY_TYPE_WRITE_PERMISSION
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -65,7 +64,7 @@ class EntityTypeViewSet(ModelViewSet):
         Needs iaso_entity_type_write permission
         """
 
-        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(CORE_ENTITY_TYPE_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         name = request.data.get("name", None)
@@ -90,7 +89,7 @@ class EntityTypeViewSet(ModelViewSet):
         Needs iaso_entity_type_write permission
         """
 
-        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(CORE_ENTITY_TYPE_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
         name = request.data.get("name", None)
         account = request.data.get("account", None)
@@ -108,7 +107,7 @@ class EntityTypeViewSet(ModelViewSet):
         Provides an API to delete the an entity type
         Needs iaso_entity_type_write permission
         """
-        if not request.user.has_perm(core_permissions.ENTITY_TYPE_WRITE):
+        if not request.user.has_perm(CORE_ENTITY_TYPE_WRITE_PERMISSION.full_name()):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         obj = get_object_or_404(EntityType, pk=pk)

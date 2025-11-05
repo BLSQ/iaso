@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import connection
 
-from iaso.models.base import Task
+from iaso.models.task import Task
 
 from ..common import PotentialDuplicate
 from .base import DeduplicationAlgorithm

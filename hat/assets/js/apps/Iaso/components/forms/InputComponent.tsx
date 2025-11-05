@@ -1,5 +1,5 @@
 import React, { FocusEventHandler, ReactNode, useMemo, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, SxProps } from '@mui/material';
 import {
     ArrayFieldInput,
     BaseCountryData,
@@ -110,6 +110,7 @@ export type InputComponentProps = {
     dataTestId?: string;
     placeholder?: string;
     debounceTime?: number;
+    wrapperSx?: SxProps;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -169,6 +170,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     debounceTime = 0,
     dataTestId,
     placeholder,
+    wrapperSx = {},
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -282,6 +284,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         returnFullObject={returnFullObject}
                         dataTestId={dataTestId}
                         placeholder={placeholder}
+                        onBlur={onBlur}
                     />
                 );
             case 'arrayInput':
@@ -357,7 +360,11 @@ const InputComponent: React.FC<InputComponentProps> = ({
                 return null;
         }
     };
-    return <Box mt={withMarginTop ? 2 : 0}>{renderInput()}</Box>;
+    return (
+        <Box mt={withMarginTop ? 2 : 0} sx={wrapperSx}>
+            {renderInput()}
+        </Box>
+    );
 };
 
 export default InputComponent;

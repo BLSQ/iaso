@@ -1,6 +1,9 @@
 from unittest.mock import patch
 
+import jwt
+
 from allauth.socialaccount.models import SocialAccount
+from django.conf import settings
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -131,3 +134,48 @@ class WFPAuthTestCase(APITestCase):
             )
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()["details"], "Username already exists for this account.")
+
+    @patch("requests.get")
+    def test_multi_tenant_token(self, mock_get):
+        """
+        When a multi-tenant user authenticates via WFP, the token should be for the tenant-specific user, not the main user.
+        """
+        main_user = m.User.objects.create(username="main_user", email="main_user@example.com")
+        main_user.save()
+
+        tenant_user = self.create_user_with_profile(
+            username="tenant_user", email="tenant_user@example.com", account=self.account
+        )
+        tenant_user.set_unusable_password()
+        tenant_user.save()
+        m.TenantUser.objects.create(main_user=main_user, account_user=tenant_user)
+
+        # Data returned by WFP.
+        extra_data: ExtraData = {
+            "email": main_user.email,
+            "sub": main_user.email,
+            "given_name": "Foo",
+            "family_name": "Bar",
+        }
+        SocialAccount.objects.create(
+            uid=f"{self.project.app_id}_main_user@example.com",  # This is the uid as we generate it.
+            provider="wfp",
+            extra_data=extra_data,
+            user=tenant_user,  # The social account object should point to the tenant user.
+        )
+
+        mock_response = mock_get.return_value
+        mock_response.json.return_value = extra_data
+        with patch("plugins.wfp_auth.views.WFP2Adapter.settings", new={"IASO_ACCOUNT_NAME": "foo"}):
+            response = self.client.post(
+                f"/wfp_auth/wfp/token/?app_id={self.project.app_id}",
+                format="json",
+                data={"token": "f4k3-t0k3n"},
+            )
+        self.assertEqual(response.status_code, 200)
+
+        # Extract the JWT token and decode it to check which user it belongs to.
+        access_token = response.json()["access"]
+        payload = jwt.decode(access_token, settings.SECRET_KEY, algorithms=["HS256"])
+        token_user_id = payload["user_id"]
+        self.assertEqual(token_user_id, tenant_user.id)  # It should be the tenant user.

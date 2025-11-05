@@ -7,7 +7,13 @@ from django.utils import timezone
 
 from iaso import models as m
 from iaso.test import APITestCase
-from plugins.polio import models as pm, permissions as polio_permissions
+from plugins.polio import models as pm
+from plugins.polio.permissions import (
+    POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
+    POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
+    POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+)
 
 
 BASE_URL = "/api/polio/vaccine/vaccine_stock/"
@@ -37,10 +43,10 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="user_rw_perms",
             account=cls.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY,
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_ADMIN,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                POLIO_VACCINE_STOCK_EARMARKS_READ_ONLY_PERMISSION,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_ADMIN_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
             ],
         )
 
@@ -92,6 +98,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             po_number="PO123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            doses_per_vial=20,
         )
 
     def test_earmarked_stock_used_appears_in_unusable_vials(self):
@@ -107,6 +114,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             doses_earmarked=2000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.USED,
             created_at=self.now - datetime.timedelta(days=1),
+            doses_per_vial=20,
         )
 
         # Get unusable vials through API
@@ -136,6 +144,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             doses_earmarked=2000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             created_at=self.now - datetime.timedelta(days=1),
+            doses_per_vial=20,
         )
 
         # Get unusable vials through API
@@ -167,6 +176,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "doses_earmarked": 2000,
             "earmarked_stock_type": pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             "comment": "Reserved for future campaign",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(EARMARKED_BASE_URL, earmarked_data, format="json")
@@ -204,18 +214,20 @@ class VaccineStockEarmarkedTests(APITestCase):
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
         self.assertEqual(response.status_code, 200)
         initial_data = response.json()
-        initial_unusable = initial_data["total_unusable_vials"]
-        initial_usable = initial_data["total_usable_vials"]
+        initial_unusable_doses = initial_data["total_unusable_doses"]
+        initial_usable_doses = initial_data["total_usable_doses"]
+        initial_earmarked_doses = initial_data["total_earmarked_doses"]
 
-        # Create earmarked stock of type USED (moves from usable to unusable)
-        used_stock = pm.EarmarkedStock.objects.create(
+        # Create earmarked stock of type USED (moves from earmarked to unusable)
+        _used_stock = pm.EarmarkedStock.objects.create(
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
-            vials_earmarked=100,
-            doses_earmarked=2000,
+            vials_earmarked=50,
+            doses_earmarked=1000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.USED,
             created_at=self.now - datetime.timedelta(days=1),
+            doses_per_vial=20,
         )
 
         # Create earmarked stock of type CREATED (adds to usable stock)
@@ -223,10 +235,11 @@ class VaccineStockEarmarkedTests(APITestCase):
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
-            vials_earmarked=50,
-            doses_earmarked=1000,
+            vials_earmarked=100,
+            doses_earmarked=2000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.CREATED,
             created_at=self.now - datetime.timedelta(days=1),
+            doses_per_vial=20,
         )
 
         # Get updated summary
@@ -235,14 +248,17 @@ class VaccineStockEarmarkedTests(APITestCase):
         updated_data = response.json()
 
         # Verify USED stock affects unusable total
-        self.assertEqual(updated_data["total_unusable_vials"], initial_unusable + 100)
+        self.assertEqual(updated_data["total_unusable_doses"], initial_unusable_doses + 1000)
 
         # Verify CREATED stock affects usable total
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 2000)
+
+        # Verify earmarked totals
+        self.assertEqual(updated_data["total_earmarked_doses"], initial_earmarked_doses + 1000)
 
         # if we now create a RETURNED stock, it should affect the usable total
 
-        returned_stock = pm.EarmarkedStock.objects.create(
+        _returned_stock = pm.EarmarkedStock.objects.create(
             vaccine_stock=self.vaccine_stock,
             campaign=self.campaign,
             round=self.round,
@@ -250,13 +266,20 @@ class VaccineStockEarmarkedTests(APITestCase):
             doses_earmarked=1000,
             earmarked_stock_type=pm.EarmarkedStock.EarmarkedStockChoices.RETURNED,
             created_at=self.now - datetime.timedelta(days=1),
+            doses_per_vial=20,
         )
 
         # Get updated summary
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
         self.assertEqual(response.status_code, 200)
         updated_data = response.json()
-        self.assertEqual(updated_data["total_usable_vials"], initial_usable - 50 + 50)
+        self.assertEqual(updated_data["total_usable_doses"], initial_usable_doses - 1000)
+
+        # Verify earmarked totals after RETURNED stock
+
+        self.assertEqual(
+            updated_data["total_earmarked_doses"], initial_earmarked_doses
+        )  # +2000 created - 1000 used - 1000 returned
 
         # Test EarmarkedStockViewSet endpoints
         # Test list endpoint
@@ -295,6 +318,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "doses_earmarked": 1500,
             "earmarked_stock_type": "created",
             "comment": "Test creation",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(EARMARKED_BASE_URL, create_data, format="json")
@@ -340,6 +364,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "doses_earmarked": 4000,
             "earmarked_stock_type": "created",
             "comment": "Initial earmark",
+            "doses_per_vial": 20,
         }
         response = self.client.post(EARMARKED_BASE_URL, earmarked_data, format="json")
         self.assertEqual(response.status_code, 201)
@@ -354,6 +379,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -390,6 +416,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -422,6 +449,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "lot_numbers": ["LOT123"],
             "missing_vials": 0,
             "round": self.round.id,
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(
@@ -439,7 +467,36 @@ class VaccineStockEarmarkedTests(APITestCase):
         )
 
         # This time it should NOT create a new USED stock because there are no more earmarked stocks left
-        self.assertEqual(used_stocks.count(), 3)
+        self.assertEqual(used_stocks.count(), 4)
+
+        fourth_form_a_data = {
+            "campaign": self.campaign.obr_name,
+            "vaccine_stock": self.vaccine_stock.id,
+            "form_a_reception_date": "2023-10-04",
+            "report_date": "2023-10-05",
+            "usable_vials_used": 1000,
+            "lot_numbers": ["LOT123"],
+            "missing_vials": 0,
+            "round": self.round.id,
+            "doses_per_vial": 20,
+        }
+
+        response = self.client.post(
+            f"{BASE_URL_SUB_RESOURCES}outgoing_stock_movement/",
+            fourth_form_a_data,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+
+        used_stocks = pm.EarmarkedStock.objects.filter(
+            vaccine_stock=self.vaccine_stock,
+            campaign=self.campaign,
+            round=self.round,
+            earmarked_stock_type="used",
+        )
+
+        # This time it should NOT create a new USED stock because there are no more earmarked stocks left
+        self.assertEqual(used_stocks.count(), 4)
 
     # Test permissions for earmarked stock management
     def test_earmarked_stock_permissions(self):
@@ -448,8 +505,8 @@ class VaccineStockEarmarkedTests(APITestCase):
             username="non_admin",
             account=self.account,
             permissions=[
-                polio_permissions._POLIO_VACCINE_STOCK_MANAGEMENT_READ,
-                polio_permissions._POLIO_VACCINE_STOCK_EARMARKS_NONADMIN,
+                POLIO_VACCINE_STOCK_MANAGEMENT_READ_PERMISSION,
+                POLIO_VACCINE_STOCK_EARMARKS_NONADMIN_PERMISSION,
             ],
         )
         self.client.force_authenticate(non_admin)
@@ -463,6 +520,7 @@ class VaccineStockEarmarkedTests(APITestCase):
             "vials_earmarked": 100,
             "doses_earmarked": 2000,
             "comment": "Test earmarked stock",
+            "doses_per_vial": 20,
         }
 
         response = self.client.post(f"{BASE_URL_SUB_RESOURCES}earmarked_stock/", earmarked_data, format="json")

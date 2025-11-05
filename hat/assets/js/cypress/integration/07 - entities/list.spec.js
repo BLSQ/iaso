@@ -132,7 +132,7 @@ describe('Entities', () => {
             cy.wait('@getEntities').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1/isSearchActive/true`,
                 );
             });
         });

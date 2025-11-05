@@ -56,8 +56,6 @@ from ..models import (
     Mapping,
     MappingVersion,
     MatchingAlgorithm,
-    MetricType,
-    MetricValue,
     OrgUnit,
     OrgUnitChangeRequest,
     OrgUnitChangeRequestConfiguration,
@@ -73,10 +71,17 @@ from ..models import (
     Report,
     ReportVersion,
     SourceVersion,
+    StockItem,
+    StockItemRule,
+    StockKeepingUnit,
+    StockKeepingUnitChildren,
+    StockLedgerItem,
+    StockRulesVersion,
     StorageDevice,
     StorageLogEntry,
     StoragePassword,
     Task,
+    TaskLog,
     TenantUser,
     UserRole,
     Workflow,
@@ -190,7 +195,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances", "default_image")
     autocomplete_fields = ("creator", "org_unit_type", "version")
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
+    list_filter = ("org_unit_type", "custom", "validation_status", "sub_source")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
     inlines = [
@@ -537,9 +542,9 @@ def relaunch_task(_, request, queryset) -> None:
 @admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
+    list_display = ("name", "account", "status", "created_at", "launcher", "result_message", "result")
     list_filter = ("account", "status", "name")
-    readonly_fields = ("stacktrace", "created_at", "result")
+    readonly_fields = ("stacktrace", "created_at")
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     search_fields = ("name",)
     autocomplete_fields = ("account", "created_by", "launcher")
@@ -557,6 +562,13 @@ class TaskAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).prefetch_related("launcher")
+
+
+@admin.register(TaskLog)
+class TaskLogAdmin(admin.ModelAdmin):
+    list_display = ("task", "created_at", "message")
+    list_filter = ["task"]
+    readonly_fields = ["created_at"]
 
 
 @admin.register(SourceVersion)
@@ -684,6 +696,7 @@ class PlanningAdmin(admin.ModelAdmin):
                     "team",
                     "started_at",
                     "ended_at",
+                    "pipeline_uuids",
                 ),
             },
         ),
@@ -741,6 +754,84 @@ class InstanceLockAdmin(admin.ModelAdmin):
 class StorageLogEntryInline(admin.TabularInline):
     model = StorageLogEntry
     raw_id_fields = ("entity", "instances", "org_unit", "performed_by")
+
+
+@admin.register(StockItem)
+class StockItemAdmin(admin.ModelAdmin):
+    fields = ("org_unit", "sku", "value", "created_at", "updated_at")
+    readonly_fields = ("org_unit", "sku", "value", "created_at", "updated_at")
+    list_display = ("org_unit", "sku", "value")
+    list_filter = ["sku"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(StockItemRule)
+class StockItemRuleAdmin(admin.ModelAdmin):
+    fields = ("sku", "form", "version", "impact", "question", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("sku", "form", "question", "impact", "version", "created_at")
+    list_filter = ("sku", "form", "impact")
+
+
+@admin.register(StockKeepingUnit)
+class StockKeepingUnitAdmin(admin.ModelAdmin):
+    fields = (
+        "account",
+        "name",
+        "short_name",
+        "projects",
+        "org_unit_types",
+        "forms",
+        "display_unit",
+        "display_precision",
+        "created_at",
+        "updated_at",
+        "created_by",
+        "updated_by",
+        "deleted_at",
+    )
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("name", "short_name", "account")
+    list_filter = ("account", "name", "short_name")
+
+
+@admin.register(StockKeepingUnitChildren)
+class StockKeepingUnitChildrenAdmin(admin.ModelAdmin):
+    fields = ("parent", "child", "created_at", "updated_at", "created_by", "updated_by")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("parent", "child", "value")
+    list_filter = ("parent", "child")
+
+
+@admin.register(StockLedgerItem)
+class StockLedgerItemAdmin(admin.ModelAdmin):
+    fields = ("rule", "sku", "org_unit", "submission", "question", "impact", "value", "created_at", "created_by")
+    readonly_fields = (
+        "rule",
+        "sku",
+        "org_unit",
+        "submission",
+        "question",
+        "impact",
+        "value",
+        "created_at",
+        "created_by",
+    )
+    list_display = ("rule", "sku", "org_unit", "question", "impact", "value", "created_at")
+    list_filter = ("sku", "impact", "rule")
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+
+@admin.register(StockRulesVersion)
+class StockRuleVersionAdmin(admin.ModelAdmin):
+    fields = ("account", "name", "status", "created_at", "updated_at", "created_by", "updated_by", "deleted_at")
+    readonly_fields = ("created_at", "updated_at", "created_by", "updated_by")
+    list_display = ("account", "name", "status")
+    list_filter = ("account", "status")
 
 
 @admin.register(StorageDevice)
@@ -1161,31 +1252,6 @@ class DataSourceVersionsSynchronizationAdmin(admin.ModelAdmin):
                 "created_by",
             )
         )
-
-
-@admin.register(MetricType)
-class MetricTypeAdmin(admin.ModelAdmin):
-    list_display = (
-        "id",
-        "account",
-        "name",
-        "category",
-        "source",
-        "units",
-        "created_at",
-        "updated_at",
-    )
-    search_fields = ("name", "description", "source", "units", "comments")
-    list_filter = ("account", "source")
-    ordering = ("name",)
-
-
-@admin.register(MetricValue)
-class MetricValueAdmin(admin.ModelAdmin):
-    raw_id_fields = ("org_unit",)
-    list_display = ("metric_type", "org_unit", "year", "value")
-    search_fields = ("metric_type__name", "org_unit__name")
-    list_filter = ("metric_type", "year")
 
 
 admin.site.register(AccountFeatureFlag)

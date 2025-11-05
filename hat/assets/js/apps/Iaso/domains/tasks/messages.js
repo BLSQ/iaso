@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Date de fin',
         id: 'iaso.tasks.timeEnd',
     },
+    task: {
+        defaultMessage: 'Task',
+        id: 'iaso.label.task',
+    },
     tasks: {
         defaultMessage: 'Tasks',
         id: 'iaso.label.tasks',
@@ -125,6 +129,18 @@ const MESSAGES = defineMessages({
     taskType: {
         defaultMessage: 'Type',
         id: 'iaso.tasks.type',
+    },
+    noLogsToShow: {
+        defaultMessage: 'No logs to show.',
+        id: 'iaso.tasks.no_logs_to_show',
+    },
+    logs: {
+        defaultMessage: 'Logs',
+        id: 'iaso.storages.logs',
+    },
+    exportMobileAppDownloadBtn: {
+        defaultMessage: 'Download file',
+        id: 'iaso.users.exportMobileAppDownloadBtn',
     },
 });
 

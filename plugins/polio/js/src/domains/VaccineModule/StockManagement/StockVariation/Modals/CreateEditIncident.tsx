@@ -26,12 +26,15 @@ import {
 } from '../../../../../components/Inputs';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { Vaccine } from '../../../../../constants/types';
-import { useGetDosesOptions, useSaveIncident } from '../../hooks/api';
+import { useSaveIncident } from '../../hooks/api';
 import { useGetMovementDescription } from '../../hooks/useGetMovementDescription';
 import MESSAGES from '../../messages';
-import { useIncidentOptions } from './dropdownOptions';
+import {
+    useAvailablePresentations,
+    useIncidentOptions,
+} from './dropdownOptions';
 import { useIncidentValidation } from './validation';
-import { dosesPerVial } from '../../../SupplyChain/hooks/utils';
+import { DosesPerVialDropdown } from '../../types';
 
 type Props = {
     incident?: any;
@@ -41,6 +44,10 @@ type Props = {
     countryName: string;
     vaccine: Vaccine;
     vaccineStockId: string;
+    dosesOptions?: DosesPerVialDropdown;
+    hasUsableStock: boolean;
+    hasUnusableStock: boolean;
+    defaultDosesPerVial: number | undefined;
 };
 
 /**
@@ -131,13 +138,15 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     countryName,
     vaccine,
     vaccineStockId,
+    dosesOptions,
+    hasUsableStock = true, // set default to true for editing mode
+    hasUnusableStock = true, // set default to true for editing mode
+    defaultDosesPerVial,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
     const validationSchema = useIncidentValidation();
     const getMovementDescription = useGetMovementDescription();
-    const { data: dosesOptions, isLoading: isLoadingDoses } =
-        useGetDosesOptions(parseInt(vaccineStockId, 10));
 
     const [inventoryType, setInventoryType] = React.useState(() => {
         if (incident && incident.stock_correction === 'physical_inventory') {
@@ -156,6 +165,12 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             return movementType === 'inventoryAdd' ? 0 : i.usable_vials;
         },
         [incidentConfig],
+    );
+
+    // TODO fix this when physical Inventory
+    const availableDosesPresentations = useAvailablePresentations(
+        dosesOptions,
+        incident,
     );
 
     const handleInventoryTypeChange = (
@@ -210,6 +225,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         },
         [incidentConfig, inventoryType, save],
     );
+
+    const hasFixedDosesPerVial = Boolean(defaultDosesPerVial);
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
@@ -221,7 +238,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials || 0,
             unusable_vials: incident?.unusable_vials || 0,
-            doses_per_vial: incident?.doses_per_vial || dosesPerVial[vaccine],
+            doses_per_vial: incident?.doses_per_vial || defaultDosesPerVial,
             movement: getInitialMovement(incident),
             vaccine_stock: vaccineStockId,
             file: incident?.file,
@@ -234,7 +251,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         return processErrorDocsBase(formik.errors.file);
     }, [formik.errors.file]);
 
-    const incidentTypeOptions = useIncidentOptions();
+    const incidentTypeOptions = useIncidentOptions(hasUsableStock);
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
@@ -242,6 +259,9 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     const currentMovementType = incidentConfig[formik.values.stock_correction];
+    const isInventoryMovement =
+        currentMovementType === 'inventoryAdd' ||
+        currentMovementType === 'inventoryRemove';
 
     return (
         <FormikProvider value={formik}>
@@ -299,7 +319,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                 {currentMovementType &&
                     currentMovementType !== 'inventoryAdd' &&
                     currentMovementType !== 'inventoryRemove' &&
-                    currentMovementType !== 'inOutMovement' && (
+                    currentMovementType !== 'inOutMovement' &&
+                    hasUsableStock && (
                         <Box mb={2}>
                             <Field
                                 label={formatMessage(
@@ -319,34 +340,40 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     )}
                 {currentMovementType === 'inOutMovement' && (
                     <>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.usableVials)}
-                                name="usable_vials"
-                                component={NumberInput}
-                                required
-                            />
-                            <Typography variant="body2">
-                                {getMovementDescription(
-                                    currentMovementType,
-                                    formik.values.movement,
-                                )}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.unusableVials)}
-                                name="unusable_vials"
-                                component={NumberInput}
-                                required
-                            />
-                            <Typography variant="body2">
-                                {getMovementDescription(
-                                    currentMovementType,
-                                    formik.values.movement,
-                                )}
-                            </Typography>
-                        </Box>
+                        {hasUsableStock && (
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.usableVials)}
+                                    name="usable_vials"
+                                    component={NumberInput}
+                                    required
+                                />
+                                <Typography variant="body2">
+                                    {getMovementDescription(
+                                        currentMovementType,
+                                        formik.values.movement,
+                                    )}
+                                </Typography>
+                            </Box>
+                        )}
+                        {hasUnusableStock && (
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(
+                                        MESSAGES.unusableVials,
+                                    )}
+                                    name="unusable_vials"
+                                    component={NumberInput}
+                                    required
+                                />
+                                <Typography variant="body2">
+                                    {getMovementDescription(
+                                        currentMovementType,
+                                        formik.values.movement,
+                                    )}
+                                </Typography>
+                            </Box>
+                        )}
                     </>
                 )}
                 {(currentMovementType === 'inventoryAdd' ||
@@ -396,17 +423,22 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                                 required
                             />
                         </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.doses_per_vial)}
-                                name="doses_per_vial"
-                                component={SingleSelect}
-                                options={dosesOptions}
-                                isLoading={isLoadingDoses}
-                            />
-                        </Box>
                     </>
                 )}
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.doses_per_vial)}
+                        name="doses_per_vial"
+                        component={SingleSelect}
+                        options={
+                            isInventoryMovement
+                                ? dosesOptions // We want to allow all possible presentation for physical inventory operations
+                                : availableDosesPresentations
+                        }
+                        disabled={hasFixedDosesPerVial}
+                        required
+                    />
+                </Box>
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.comment)}

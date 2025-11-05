@@ -8,6 +8,9 @@ const deleteOrgUnitType = (id: number) =>
 export const useDeleteOrgUnitType = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deleteOrgUnitType,
-        invalidateQueryKey: ['paginated-orgunit-types'],
+        invalidateQueryKey: [
+            'paginated-orgunit-types',
+            'orgunittypes-dropdown',
+        ],
     });
 };

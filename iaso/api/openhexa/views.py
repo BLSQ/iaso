@@ -1,5 +1,6 @@
 import logging
 
+from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -12,57 +13,18 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.openhexa.serializers import (
-    OpenHexaConfigSerializer,
     PipelineLaunchSerializer,
     TaskResponseSerializer,
     TaskUpdateSerializer,
 )
 from iaso.models.base import ERRORED, EXPORTED, KILLED, RUNNING, SKIPPED, SUCCESS
-from iaso.models.json_config import Config
 from iaso.models.task import Task
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
+from iaso.utils.openhexa import get_openhexa_config, require_openhexa_config
 from iaso.utils.tokens import get_user_token
 
 
 logger = logging.getLogger(__name__)
-
-OPENHEXA_CONFIG_SLUG = "openhexa-config"
-
-
-class MockConfig:
-    """Mock Config object for pipeline configuration."""
-
-    def __init__(self, content_dict):
-        self.content = content_dict
-
-
-def get_openhexa_config():
-    """
-    Retrieve OpenHexa configuration and validate URL.
-
-    Returns:
-        tuple: (openhexa_url, openhexa_token, workspace_slug)
-
-    Raises:
-        Response: HTTP 422 if configuration not found or invalid
-    """
-    try:
-        openhexa_config = get_object_or_404(Config, slug=OPENHEXA_CONFIG_SLUG)
-        openhexa_url = openhexa_config.content["openhexa_url"]
-        openhexa_token = openhexa_config.content["openhexa_token"]
-        workspace_slug = openhexa_config.content["workspace_slug"]
-
-        # Validate that the URL contains 'graphql'
-        if "graphql" not in openhexa_url.lower():
-            logger.error(f"OpenHexa URL does not contain 'graphql': {openhexa_url}")
-            raise ValueError("OpenHexa URL must contain 'graphql'")
-
-        return openhexa_url, openhexa_token, workspace_slug
-
-    except Exception as e:
-        logger.exception(f"Could not fetch openhexa config for slug {OPENHEXA_CONFIG_SLUG}")
-        # Return a simple error response instead of raising an exception
-        return Response({"error": _("OpenHexa configuration not found")}, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
 class OpenHexaPipelinesViewSet(ViewSet):
@@ -78,17 +40,15 @@ class OpenHexaPipelinesViewSet(ViewSet):
     GET /api/openhexa/config/                       - Check if OpenHexa config exists
     """
 
-    def list(self, request):
+    @require_openhexa_config
+    def list(self, request, openhexa_config=None):
         """
         Retrieve list of pipelines from OpenHexa workspace.
 
         Returns:
             Response: List of pipelines with id, name, and currentVersion
         """
-        config_result = get_openhexa_config()
-        if isinstance(config_result, Response):
-            return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
             transport = RequestsHTTPTransport(
@@ -127,7 +87,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
             logger.exception(f"Could not retrieve pipelines for workspace {workspace_slug}")
             return Response({"error": _("Failed to retrieve pipelines")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def retrieve(self, request, pk=None):
+    @require_openhexa_config
+    def retrieve(self, request, pk=None, openhexa_config=None):
         """
         Retrieve detailed information about a specific pipeline.
 
@@ -137,10 +98,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
         Returns:
             Response: Pipeline details including parameters
         """
-        config_result = get_openhexa_config()
-        if isinstance(config_result, Response):
-            return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
             transport = RequestsHTTPTransport(
@@ -188,7 +146,8 @@ class OpenHexaPipelinesViewSet(ViewSet):
             )
 
     @action(detail=True, methods=["post"])
-    def launch(self, request, pk=None):
+    @require_openhexa_config
+    def launch(self, request, pk=None, openhexa_config=None):
         """
         Launch a pipeline task with the provided configuration.
 
@@ -225,10 +184,7 @@ class OpenHexaPipelinesViewSet(ViewSet):
                 {"error": _("Failed to generate authentication token")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        config_result = get_openhexa_config()
-        if isinstance(config_result, Response):
-            return config_result
-        openhexa_url, openhexa_token, workspace_slug = config_result
+        openhexa_url, openhexa_token, workspace_slug, workspace = openhexa_config
 
         try:
             user = request.user
@@ -346,29 +302,30 @@ class OpenHexaPipelinesViewSet(ViewSet):
     @action(detail=False, methods=["get"])
     def config(self, request):
         """
-        Check if OpenHexa configuration exists.
+        Check if OpenHexa configuration exists for the user's account.
 
         Returns:
             Response: {"configured": true/false, "lqas_pipeline_code": "value" or null}
         """
         try:
-            # Try to get the config
-            openhexa_config = Config.objects.get(slug=OPENHEXA_CONFIG_SLUG)
+            # Extract account from user (iaso_profile is optional, but account is required on profile)
+            if not hasattr(request.user, "iaso_profile") or request.user.iaso_profile is None:
+                return Response({"configured": False})
 
-            # Use serializer to validate configuration
-            config_serializer = OpenHexaConfigSerializer(data=openhexa_config.content)
-            configured = config_serializer.is_valid()
+            account = request.user.iaso_profile.account
+            *_, workspace = get_openhexa_config(account)
 
-            response_data = {"configured": configured}
+            # If we reach here, config is valid
+            response_data = {"configured": True}
 
-            # Get optional lqas_pipeline_code parameter if configuration is valid
-            if configured and config_serializer.validated_data.get("lqas_pipeline_code"):
-                response_data["lqas_pipeline_code"] = config_serializer.validated_data["lqas_pipeline_code"]
+            # Get optional lqas_pipeline_code parameter from workspace config if configured
+            if workspace.config and workspace.config.get("lqas_pipeline_code"):
+                response_data["lqas_pipeline_code"] = workspace.config["lqas_pipeline_code"]
 
             return Response(response_data)
 
-        except Config.DoesNotExist:
-            # Config doesn't exist
+        except ValidationError:
+            # Configuration not properly set up
             return Response({"configured": False})
         except Exception as e:
             logger.exception(f"Error checking OpenHexa config: {str(e)}")

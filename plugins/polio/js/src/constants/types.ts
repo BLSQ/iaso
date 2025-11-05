@@ -264,6 +264,7 @@ export type CalendarCampaign = {
     description: string;
     is_test: boolean;
     on_hold: boolean;
+    is_planned: boolean;
 };
 
 export type Campaign = {

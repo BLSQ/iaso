@@ -7,7 +7,7 @@ from rest_framework import status
 
 from iaso import models as m
 from iaso.models.base import QUEUED, RUNNING, SUCCESS
-from iaso.models.json_config import Config
+from iaso.models.openhexa import OpenHEXAInstance, OpenHEXAWorkspace
 from iaso.permissions.core_permissions import CORE_DATA_TASKS_PERMISSION
 from iaso.tasks.launch_openhexa_pipeline import launch_openhexa_pipeline
 from iaso.test import APITestCase
@@ -28,14 +28,17 @@ class OpenHexaAPITestCase(APITestCase):
             username="testuser", account=cls.account, permissions=[CORE_DATA_TASKS_PERMISSION]
         )
 
-        # Create OpenHexa config
-        cls.openhexa_config = Config.objects.create(
-            slug="openhexa-config",
-            content={
-                "openhexa_url": "https://test.openhexa.org/graphql/",
-                "openhexa_token": "test-token",
-                "workspace_slug": "test-workspace",
-            },
+        # Create OpenHEXA instance and workspace
+        cls.openhexa_instance = OpenHEXAInstance.objects.create(
+            name="Test OpenHEXA Instance",
+            url="https://test.openhexa.org/graphql/",
+            token="test-token",
+        )
+
+        cls.openhexa_workspace = OpenHEXAWorkspace.objects.create(
+            openhexa_instance=cls.openhexa_instance,
+            account=cls.account,
+            slug="test-workspace",
         )
 
     def setUp(self):
@@ -78,15 +81,15 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
             self.assertEqual(response.json()["results"][0]["name"], "test_pipeline_1")
 
     def test_get_pipelines_config_not_found(self):
-        """Test pipeline list when OpenHexa config is not found."""
-        # Delete the config
-        self.openhexa_config.delete()
+        """Test pipeline list when OpenHexa workspace is not found."""
+        # Delete the workspace
+        self.openhexa_workspace.delete()
 
         response = self.client.get("/api/openhexa/pipelines/")
 
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("error", response.json())
-        self.assertIn("OpenHexa configuration not found", response.json()["error"])
+        self.assertIn("OpenHEXA workspace", response.json()["error"])
 
     def test_get_pipelines_graphql_error(self):
         """Test pipeline list when GraphQL call fails."""
@@ -117,26 +120,31 @@ class PipelineListViewTestCase(OpenHexaAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
+    def test_get_pipelines_user_without_profile(self):
+        """Test pipeline list with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get("/api/openhexa/pipelines/")
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
+
     def test_get_pipelines_invalid_url_format(self):
         """Test pipeline list when OpenHexa URL format is invalid."""
-        # Update the config with an invalid URL
-        self.openhexa_config.content = {
-            "openhexa_url": "not-a-valid-url",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
-        }
-        self.openhexa_config.save()
+        # Update the instance with an invalid URL (missing 'graphql')
+        self.openhexa_instance.url = "https://test.openhexa.org/api/"
+        self.openhexa_instance.save()
 
-        with patch("iaso.api.openhexa.views.Client") as mock_client_class:
-            mock_client = Mock()
-            mock_client_class.return_value = mock_client
-            mock_client.execute.side_effect = Exception("Invalid URL format")
+        response = self.client.get("/api/openhexa/pipelines/")
 
-            response = self.client.get("/api/openhexa/pipelines/")
-
-            self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
-            self.assertIn("error", response.json())
-            self.assertIn("OpenHexa configuration not found", response.json()["error"])
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("graphql", response.json()["error"])
 
 
 class PipelineDetailViewTestCase(OpenHexaAPITestCase):
@@ -186,14 +194,14 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
             self.assertIn("parameters", data["currentVersion"])
 
     def test_get_pipeline_detail_config_not_found(self):
-        """Test pipeline detail when OpenHexa config is not found."""
-        self.openhexa_config.delete()
+        """Test pipeline detail when OpenHexa workspace is not found."""
+        self.openhexa_workspace.delete()
 
         response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("error", response.json())
-        self.assertIn("OpenHexa configuration not found", response.json()["error"])
+        self.assertIn("OpenHEXA workspace", response.json()["error"])
 
     def test_get_pipeline_detail_graphql_error(self):
         """Test pipeline detail when GraphQL call fails."""
@@ -302,8 +310,8 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_post_launch_pipeline_config_not_found(self):
-        """Test pipeline launch when OpenHexa config is not found."""
-        self.openhexa_config.delete()
+        """Test pipeline launch when OpenHexa workspace is not found."""
+        self.openhexa_workspace.delete()
 
         response = self.client.post(
             f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
@@ -316,7 +324,7 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
         self.assertIn("error", response.json())
-        self.assertIn("OpenHexa configuration not found", response.json()["error"])
+        self.assertIn("OpenHEXA workspace", response.json()["error"])
 
     def test_post_launch_pipeline_launch_error(self):
         """Test pipeline launch when launch_openhexa_pipeline fails."""
@@ -533,6 +541,41 @@ class PipelineDetailViewTestCase(OpenHexaAPITestCase):
         response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
 
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_pipeline_detail_user_without_profile(self):
+        """Test pipeline detail retrieval with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_detail", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get(f"/api/openhexa/pipelines/{self.pipeline_id}/")
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
+
+    def test_post_launch_pipeline_user_without_profile(self):
+        """Test pipeline launch with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_launch", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.post(
+            f"/api/openhexa/pipelines/{self.pipeline_id}/launch/",
+            data={
+                "version": str(uuid.uuid4()),
+                "config": {"country_name": "Burkina Faso"},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_422_UNPROCESSABLE_ENTITY)
+        self.assertIn("error", response.json())
+        self.assertIn("profile", response.json()["error"].lower())
 
 
 class BackgroundTaskTestCase(OpenHexaAPITestCase):
@@ -1146,10 +1189,10 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
 
-    def test_get_config_not_configured_missing_config(self):
-        """Test config check when OpenHexa config doesn't exist."""
-        # Delete the config
-        self.openhexa_config.delete()
+    def test_get_config_not_configured_missing_workspace(self):
+        """Test config check when OpenHexa workspace doesn't exist."""
+        # Delete the workspace
+        self.openhexa_workspace.delete()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1158,14 +1201,11 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertFalse(data["configured"])
 
-    def test_get_config_not_configured_missing_fields(self):
-        """Test config check when OpenHexa config exists but is incomplete."""
-        # Update config to be incomplete
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            # Missing openhexa_token and workspace_slug
-        }
-        self.openhexa_config.save()
+    def test_get_config_not_configured_missing_instance_url(self):
+        """Test config check when OpenHexa instance has no URL."""
+        # Update instance to have no URL
+        self.openhexa_instance.url = ""
+        self.openhexa_instance.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1174,15 +1214,11 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertFalse(data["configured"])
 
-    def test_get_config_not_configured_empty_fields(self):
-        """Test config check when OpenHexa config has empty required fields."""
-        # Update config with empty fields
-        self.openhexa_config.content = {
-            "openhexa_url": "",
-            "openhexa_token": "",
-            "workspace_slug": "",
-        }
-        self.openhexa_config.save()
+    def test_get_config_not_configured_missing_instance_token(self):
+        """Test config check when OpenHexa instance has no token."""
+        # Update instance to have no token
+        self.openhexa_instance.token = ""
+        self.openhexa_instance.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1191,15 +1227,11 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertFalse(data["configured"])
 
-    def test_get_config_not_configured_partial_fields(self):
-        """Test config check when OpenHexa config has some fields missing."""
-        # Update config with only some fields
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            # Missing workspace_slug
-        }
-        self.openhexa_config.save()
+    def test_get_config_not_configured_missing_workspace_slug(self):
+        """Test config check when OpenHexa workspace has no slug."""
+        # Update workspace to have no slug
+        self.openhexa_workspace.slug = ""
+        self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1217,16 +1249,13 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_config_with_extra_fields(self):
-        """Test config check when OpenHexa config has extra fields (should still work)."""
-        # Update config with extra fields
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
+        """Test config check when workspace config has extra fields (should still work)."""
+        # Update workspace config with extra fields
+        self.openhexa_workspace.config = {
             "extra_field": "extra_value",  # Extra field
             "another_field": "another_value",  # Another extra field
         }
-        self.openhexa_config.save()
+        self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1236,15 +1265,12 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertTrue(data["configured"])
 
     def test_get_config_with_lqas_pipeline_code(self):
-        """Test config check when OpenHexa config includes lqas_pipeline_code."""
-        # Update config with lqas_pipeline_code
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
+        """Test config check when workspace config includes lqas_pipeline_code."""
+        # Update workspace config with lqas_pipeline_code
+        self.openhexa_workspace.config = {
             "lqas_pipeline_code": "lqas-pipeline-123",
         }
-        self.openhexa_config.save()
+        self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1256,7 +1282,7 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertEqual(data["lqas_pipeline_code"], "lqas-pipeline-123")
 
     def test_get_config_without_lqas_pipeline_code(self):
-        """Test config check when OpenHexa config doesn't include lqas_pipeline_code."""
+        """Test config check when workspace config doesn't include lqas_pipeline_code."""
         # Config without lqas_pipeline_code (default setup)
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1267,15 +1293,12 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertNotIn("lqas_pipeline_code", data)
 
     def test_get_config_with_empty_lqas_pipeline_code(self):
-        """Test config check when OpenHexa config has empty lqas_pipeline_code."""
-        # Update config with empty lqas_pipeline_code
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
+        """Test config check when workspace config has empty lqas_pipeline_code."""
+        # Update workspace config with empty lqas_pipeline_code
+        self.openhexa_workspace.config = {
             "lqas_pipeline_code": "",  # Empty value
         }
-        self.openhexa_config.save()
+        self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1286,15 +1309,12 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if empty
 
     def test_get_config_with_null_lqas_pipeline_code(self):
-        """Test config check when OpenHexa config has null lqas_pipeline_code."""
-        # Update config with null lqas_pipeline_code
-        self.openhexa_config.content = {
-            "openhexa_url": "https://test.openhexa.org/graphql/",
-            "openhexa_token": "test-token",
-            "workspace_slug": "test-workspace",
+        """Test config check when workspace config has null lqas_pipeline_code."""
+        # Update workspace config with null lqas_pipeline_code
+        self.openhexa_workspace.config = {
             "lqas_pipeline_code": None,  # Null value
         }
-        self.openhexa_config.save()
+        self.openhexa_workspace.save()
 
         response = self.client.get("/api/openhexa/pipelines/config/")
 
@@ -1303,3 +1323,19 @@ class ConfigCheckViewTestCase(OpenHexaAPITestCase):
         self.assertIn("configured", data)
         self.assertTrue(data["configured"])
         self.assertNotIn("lqas_pipeline_code", data)  # Should not be included if null
+
+    def test_get_config_user_without_profile(self):
+        """Test config check with user without iaso_profile."""
+        from django.contrib.auth.models import User
+
+        # Create a user without iaso_profile
+        user_without_profile = User.objects.create_user(username="noprofile_config", password="testpass")
+        self.client.force_authenticate(user_without_profile)
+
+        response = self.client.get("/api/openhexa/pipelines/config/")
+
+        # Config endpoint should gracefully return configured: false for users without profile
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertIn("configured", data)
+        self.assertFalse(data["configured"])

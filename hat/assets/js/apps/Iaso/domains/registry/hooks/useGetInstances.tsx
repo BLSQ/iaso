@@ -22,6 +22,9 @@ type ApiParams = {
     org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
     project_ids?: string;
+    periodType?: string;
+    startPeriod?: string;
+    endPeriod?: string;
 };
 
 type InstanceApi = {
@@ -45,6 +48,9 @@ export const useGetInstanceApi = (
         org_unit_status: orgUnitStatus,
         planning_ids: params.planningIds,
         project_ids: params.projectIds,
+        periodType: params.periodType,
+        startPeriod: params.startPeriod,
+        endPeriod: params.endPeriod,
     };
     const url = makeUrlWithParams(
         '/api/instances/',

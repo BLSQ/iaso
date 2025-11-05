@@ -4,6 +4,7 @@ from typing import Any, Dict, Optional
 
 from gspread.utils import absolute_range_name, rowcol_to_a1
 
+from iaso.models.json_config import Config
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
@@ -13,6 +14,20 @@ from plugins.polio.preparedness.spread_cache import CachedSheet, CachedSpread
 logger = getLogger(__name__)
 
 TEMPLATE_VERSION = "v3.5"
+WORKSHEET_EXCLUSION_LIST = ["synth_scores"]
+WORKSHEET_EXCLUSION_SLUG = "preparedness_sheetnames_blacklist"
+
+
+def is_worksheet_exluded(worksheet, exclusions_list):
+    exclusions = []
+    if exclusions_list:
+        exclusions = [excl.lower for excl in exclusions_list]
+    return (
+        worksheet.is_hidden
+        or worksheet.title.lower() in WORKSHEET_EXCLUSION_LIST
+        or worksheet.title.lower().startswith("sheet")
+        or (worksheet.title in exclusions)
+    )
 
 
 def parse_value(value: str):
@@ -133,9 +148,9 @@ class RoundNumber(str, Enum):
     unknown = "Unknown"
 
 
-def get_national_level_preparedness(spread: CachedSpread):
+def get_national_level_preparedness(spread: CachedSpread, exclusions):
     for worksheet in spread.worksheets():
-        if worksheet.is_hidden:
+        if is_worksheet_exluded(worksheet, exclusions):
             continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
@@ -167,7 +182,7 @@ def get_national_level_preparedness(spread: CachedSpread):
     )
 
 
-def get_regional_level_preparedness(spread: CachedSpread):
+def get_regional_level_preparedness(spread: CachedSpread, exclusions):
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -181,7 +196,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
-        if sheet.is_hidden:
+        if is_worksheet_exluded(sheet, exclusions):
             continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
@@ -214,7 +229,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         districts_indicators: Dict[str, Any] = {}
 
         # noinspection SpellCheckingInspection
-        for rownum, colnum, name in region_districts:
+        for _rownum, colnum, name in region_districts:
             if not name:
                 continue
             districts_indicators[name] = {}
@@ -256,7 +271,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
     return {"regions": regions, "districts": districts, "warnings": warnings}
 
 
-def get_regional_level_preparedness_v2(spread: CachedSpread):
+def get_regional_level_preparedness_v2(spread: CachedSpread, exclusions):
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -269,7 +284,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
-        if sheet.is_hidden:
+        if is_worksheet_exluded(sheet, exclusions):
             continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
@@ -351,9 +366,9 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
     return {"regions": regions, "districts": districts}
 
 
-def get_national_level_preparedness_v2(spread: CachedSpread):
+def get_national_level_preparedness_v2(spread: CachedSpread, exclusions):
     for worksheet in spread.worksheets():
-        if worksheet.is_hidden:
+        if is_worksheet_exluded(worksheet, exclusions):
             continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
@@ -375,31 +390,43 @@ def get_national_level_preparedness_v2(spread: CachedSpread):
             kv[indicator_key] = value
             print(indicator_key, value, rowcol_to_a1(*rc))
 
-        kv["round"] = RoundNumber.unknown
+        round_name = worksheet.get_a1("C8")  # Temp fix using hard coded cell position to avoid round mismatch errors
+        if round_name == "Tour 1 / Rnd 1":
+            round = RoundNumber.round1
+        elif round_name == "Tour 2 / Rnd 2":
+            round = RoundNumber.round2
+        else:
+            round = RoundNumber.unknown
+
+        kv["round"] = round
         return kv
     raise Exception(
         "Summary of National Level Preparedness or Summary of Regional Level Preparedness was not found in this document"
     )
 
 
-def parse_prepardness_v2(spread: CachedSpread):
+def parse_prepardness_v2(spread: CachedSpread, exclusions=None):
     preparedness_data = {
-        "national": get_national_level_preparedness_v2(spread),
-        **get_regional_level_preparedness_v2(spread),
+        "national": get_national_level_preparedness_v2(spread, exclusions),
+        **get_regional_level_preparedness_v2(spread, exclusions),
         "format": TEMPLATE_VERSION,
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data
 
 
-def get_preparedness(spread: CachedSpread):
+def get_preparedness(spread: CachedSpread, exclusions=None):
+    exclusions_obj = Config.objects.filter(slug=WORKSHEET_EXCLUSION_SLUG).first()
+    exclusions = None
+    if exclusions_obj:
+        exclusions = exclusions_obj.content
     #  use New system with named range
     if "national_status_score" in spread.range_dict:
-        return parse_prepardness_v2(spread)
+        return parse_prepardness_v2(spread, exclusions)
     # old system with hard code emplacement
     preparedness_data = {
-        "national": get_national_level_preparedness(spread),
-        **get_regional_level_preparedness(spread),
+        "national": get_national_level_preparedness(spread, exclusions),
+        **get_regional_level_preparedness(spread, exclusions),
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data

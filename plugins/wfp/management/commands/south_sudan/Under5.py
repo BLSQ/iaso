@@ -107,6 +107,7 @@ class Under5:
                     current_record["discharge_weight"] = weight["discharge_weight"]
                     current_record["weight_difference"] = weight["weight_difference"]
                     current_record["duration"] = duration
+                    current_record["muac_size"] = visit.get("muac")
 
                     visit_date = visit.get(
                         "source_created_at",
@@ -114,6 +115,10 @@ class Under5:
                     )
                     if visit_date:
                         current_record["date"] = visit_date.strftime("%Y-%m-%d")
+                        current_record["muac_size"] = current_record.get("muac")
+                        current_record["whz_color"] = current_record.get(
+                            "_Xwhz_color", current_record.get("_Xfinal_color_result")
+                        )
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id

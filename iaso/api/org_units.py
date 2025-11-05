@@ -1025,18 +1025,18 @@ def import_org_units(org_units: List[Dict], user, app_id):
     extra_save_kwargs = {
         "custom": True,
         "validation_status": OrgUnit.VALIDATION_NEW,
-        "source": "API",
         "version": project.account.default_version,
         "creator": user if (user and not user.is_anonymous) else None,
     }
 
     for org_unit_data in org_units:
+        uuid = org_unit_data.get("id")
+        if OrgUnit.objects.filter(uuid=uuid).exists():
+            continue  # skip existing org units
+
         serializer = OrgUnitImportSerializer(data=org_unit_data)
         serializer.is_valid(raise_exception=True)
-
         new_org_unit = serializer.save(**extra_save_kwargs)
-
-        if new_org_unit:
-            new_org_units.append(new_org_unit)
+        new_org_units.append(new_org_unit)
 
     return new_org_units

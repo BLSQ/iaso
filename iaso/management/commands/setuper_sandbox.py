@@ -54,7 +54,7 @@ class Command(BaseCommand):
     def map_data_source(self, data_sources, current_timestamp):
         return list(
             map(
-                lambda data_source:  self.change_data_source_name(data_source, current_timestamp),
+                lambda data_source: self.change_data_source_name(data_source, current_timestamp),
                 data_sources,
             )
         )

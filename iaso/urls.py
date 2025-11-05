@@ -113,6 +113,7 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
+from .api.colors import colors_list
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet
@@ -290,6 +291,7 @@ urlpatterns = urlpatterns + [
     path("storages/<str:storage_type>/<str:storage_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),
+    path("colors/", colors_list, name="colors"),
     path("", include(router.urls)),
 ]
 # External Auth

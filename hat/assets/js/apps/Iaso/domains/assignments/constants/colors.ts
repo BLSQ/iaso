@@ -21,25 +21,54 @@ import {
 } from '@mui/material/colors';
 
 export const colors = [
-    teal[500],
-    orange[700],
-    lightGreen[800],
-    purple[500],
-    amber[500],
-    lightBlue[500],
-    red[900],
-    lime[900],
-    blueGrey[500],
-    grey[900],
-    pink[500],
-    green[800],
-    indigo[500],
-    deepPurple[800],
-    yellow[700],
-    deepOrange[700],
-    blue[500],
-    cyan[500],
-    brown[500],
+    // Reds
+    red[500], // #f44336
+    red[900], // #b71c1c
+    // Pinks
+    pink[300], // #f06292 (flashy)
+    pink[500], // #e91e63
+    pink[700], // #c2185b
+    // Purples
+    purple[500], // #9c27b0
+    purple[800], // #6a1b9a
+    deepPurple[800], // #4527a0
+    // Indigos
+    indigo[500], // #3f51b5
+    // Blues
+    lightBlue[500], // #03a9f4
+    lightBlue[800], // #0277bd
+    blue[800], // #1565c0
+    // Cyans
+    cyan[500], // #00bcd4
+    cyan[800], // #00838f
+    // Teals
+    teal[500], // #009688
+    teal[800], // #00695c
+    // Greens
+    green[500], // #4caf50
+    green[800], // #2e7d32
+    lightGreen[800], // #558b2f
+    // Limes
+    lime[500], // #cddc39
+    lime[900], // #827717
+    // Yellows
+    yellow[500], // #ffeb3b
+    // Ambers
+    amber[500], // #ffc107
+    amber[800], // #ff8f00
+    // Oranges
+    orange[500], // #ff9800
+    orange[700], // #f57c00
+    deepOrange[500], // #ff5722
+    deepOrange[700], // #e64a19
+    // Browns
+    brown[500], // #795548
+    brown[700], // #5d4037
+    // Neutrals
+    blueGrey[500], // #607d8b
+    blueGrey[800], // #37474f
+    grey[800], // #212121
+    '#000000', // black
 ];
 
 export const getColor = (i: number, reverse = false): string => {

@@ -1,10 +1,16 @@
 import React, { FunctionComponent, useState } from 'react';
-import { FormLabel, Box, Popper, ClickAwayListener } from '@mui/material';
+import {
+    FormLabel,
+    Box,
+    Tooltip,
+    ClickAwayListener,
+    TooltipProps,
+} from '@mui/material';
 
-import { makeStyles } from '@mui/styles';
 import { TwitterPicker } from 'react-color';
 import { FormattedMessage, defineMessages } from 'react-intl';
 import { chipColors } from 'Iaso/constants/chipColors';
+import { SxStyles } from '../../types/general';
 
 const MESSAGES = defineMessages({
     color: {
@@ -13,36 +19,41 @@ const MESSAGES = defineMessages({
     },
 });
 
-const useStyles = makeStyles(theme => ({
+const styles: SxStyles = {
     button: {
         // @ts-ignore
-        border: `3px solid ${theme.palette.ligthGray.border}`,
-        borderRadius: theme.spacing(3),
-        width: theme.spacing(3),
-        height: theme.spacing(3),
+        border: theme => `3px solid ${theme.palette.ligthGray.border}`,
+        borderRadius: theme => theme.spacing(3),
+        width: theme => theme.spacing(3),
+        height: theme => theme.spacing(3),
         cursor: 'pointer',
         display: 'inline-block',
         outline: 'none !important',
     },
-    popper: {
-        zIndex: 1300,
-        width: 300,
-        paddingTop: theme.spacing(2),
-        marginLeft: -10,
+    tooltip: {
+        backgroundColor: '#fff',
+        padding: 0,
+        maxWidth: 'none',
+        boxShadow: theme => theme.shadows[8],
         '& .twitter-picker': {
-            width: '350px !important',
+            width: '420px !important',
+            boxShadow: 'none !important',
             '& div div:nth-last-child(2), & div div:nth-last-child(3)': {
                 display: 'none !important',
             },
         },
     },
-}));
+    arrow: {
+        color: '#fff',
+    },
+};
 
 type Props = {
     currentColor: string;
     onChangeColor: (color: string) => void;
     colors?: string[];
     displayLabel?: boolean;
+    placement?: TooltipProps['placement'];
 };
 
 export const ColorPicker: FunctionComponent<Props> = ({
@@ -50,18 +61,25 @@ export const ColorPicker: FunctionComponent<Props> = ({
     onChangeColor,
     colors = chipColors,
     displayLabel = true,
+    placement = 'bottom-start',
 }) => {
-    const [anchorEl, setAnchorEl] = useState(null);
-    const classes = useStyles();
-    const handleClick = event => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+    const [open, setOpen] = useState(false);
+
+    const handleClick = () => {
+        setOpen(prev => !prev);
     };
-    const open = Boolean(anchorEl);
 
     const handleChangeColor = newColor => {
-        handleClick(null);
+        setOpen(false);
         onChangeColor(newColor.hex);
     };
+
+    const handleClickAway = () => {
+        if (open) {
+            setOpen(false);
+        }
+    };
+
     return (
         <Box>
             <Box display="flex" alignItems="center">
@@ -72,34 +90,45 @@ export const ColorPicker: FunctionComponent<Props> = ({
                         </FormLabel>
                     </Box>
                 )}
-                <span
-                    onClick={handleClick}
-                    className={classes.button}
-                    role="button"
-                    tabIndex={0}
-                    style={{ backgroundColor: currentColor }}
-                >
-                    {' '}
-                </span>
-            </Box>
-            {open && (
-                <ClickAwayListener onClickAway={handleClick}>
-                    <Popper
-                        id="color-picker"
-                        open={open}
-                        anchorEl={anchorEl}
-                        placement="bottom-start"
-                        className={classes.popper}
-                    >
-                        <TwitterPicker
-                            width="100%"
-                            colors={colors}
-                            color={currentColor}
-                            onChangeComplete={handleChangeColor}
-                        />
-                    </Popper>
+                <ClickAwayListener onClickAway={handleClickAway}>
+                    <div>
+                        <Tooltip
+                            open={open}
+                            arrow
+                            placement={placement}
+                            disableHoverListener
+                            disableFocusListener
+                            disableTouchListener
+                            slotProps={{
+                                tooltip: { sx: styles.tooltip },
+                                arrow: { sx: styles.arrow },
+                            }}
+                            title={
+                                <TwitterPicker
+                                    width="100%"
+                                    colors={colors}
+                                    color={currentColor}
+                                    onChangeComplete={handleChangeColor}
+                                    triangle="hide"
+                                />
+                            }
+                        >
+                            <Box
+                                component="span"
+                                onClick={handleClick}
+                                sx={{
+                                    ...styles.button,
+                                    backgroundColor: currentColor,
+                                }}
+                                role="button"
+                                tabIndex={0}
+                            >
+                                {' '}
+                            </Box>
+                        </Tooltip>
+                    </div>
                 </ClickAwayListener>
-            )}
+            </Box>
         </Box>
     );
 };

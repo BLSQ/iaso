@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import {
     FormLabel,
     Box,
@@ -9,7 +9,7 @@ import {
 
 import { TwitterPicker } from 'react-color';
 import { FormattedMessage, defineMessages } from 'react-intl';
-import { chipColors } from 'Iaso/constants/chipColors';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
 import { SxStyles } from '../../types/general';
 
 const MESSAGES = defineMessages({
@@ -51,19 +51,20 @@ const styles: SxStyles = {
 type Props = {
     currentColor: string;
     onChangeColor: (color: string) => void;
-    colors?: string[];
     displayLabel?: boolean;
     placement?: TooltipProps['placement'];
+    colors?: string[];
 };
 
 export const ColorPicker: FunctionComponent<Props> = ({
     currentColor,
     onChangeColor,
-    colors = chipColors,
     displayLabel = true,
     placement = 'bottom-start',
+    colors,
 }) => {
     const [open, setOpen] = useState(false);
+    const { data: apiColors } = useGetColors();
 
     const handleClick = () => {
         setOpen(prev => !prev);
@@ -79,7 +80,11 @@ export const ColorPicker: FunctionComponent<Props> = ({
             setOpen(false);
         }
     };
-
+    const usedColors = useMemo(() => {
+        return (colors ? colors : (apiColors ?? [])).filter(
+            color => color !== currentColor,
+        );
+    }, [colors, apiColors, currentColor]);
     return (
         <Box>
             <Box display="flex" alignItems="center">
@@ -106,7 +111,7 @@ export const ColorPicker: FunctionComponent<Props> = ({
                             title={
                                 <TwitterPicker
                                     width="100%"
-                                    colors={colors}
+                                    colors={usedColors}
                                     color={currentColor}
                                     onChangeComplete={handleChangeColor}
                                     triangle="hide"

@@ -6,8 +6,6 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 
 import { Teams, DropdownTeamsOptions, Team } from '../../types/team';
 
-import { getColor } from '../../constants/colors';
-
 const getTeams = async (ancestor: number): Promise<Teams> => {
     const url = makeUrlWithParams('/api/teams/', {
         ancestor: `${ancestor}`,
@@ -24,12 +22,12 @@ export const useGetTeams = (
         enabled: Boolean(ancestor),
         select: data => {
             if (!data) return [];
-            return data.map((team: Team, index: number) => {
+            return data.map((team: Team) => {
                 return {
                     value: team.id.toString(),
                     label: team.name,
                     original: team,
-                    color: getColor(index),
+                    color: team.color,
                 };
             });
         },

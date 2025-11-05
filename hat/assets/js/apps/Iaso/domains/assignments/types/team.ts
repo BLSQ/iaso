@@ -23,6 +23,7 @@ export type Team = {
     created_at: string;
     deleted_at?: string;
     parent?: number;
+    color: string;
 };
 
 export type DropdownTeamsOptions = {

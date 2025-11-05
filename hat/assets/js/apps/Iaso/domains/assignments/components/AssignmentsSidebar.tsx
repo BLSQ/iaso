@@ -44,7 +44,6 @@ export const Sidebar: FunctionComponent<Props> = ({
         setSelectedItem,
         currentTeam,
         orgUnits,
-        isLoadingAssignments,
     });
     return (
         <Paper>

@@ -30,7 +30,7 @@ type GetAPiParams = {
     url: string;
     apiParams: ApiParams;
 };
-export const useGetStockItemsApiParams = (params: Params): GetAPiParams => {
+export const getStockItemsApiParams = (params: Params): GetAPiParams => {
     const apiParams: ApiParams = {
         order: params.order || 'sku_id',
         limit: params.pageSize || '20',
@@ -48,10 +48,15 @@ export const useGetStockItemsApiParams = (params: Params): GetAPiParams => {
 export const useGetStockItemsPaginated = (
     params: Params,
 ): UseQueryResult<PaginatedStockItems, Error> => {
-    const { url, apiParams } = useGetStockItemsApiParams(params);
+    const { url, apiParams } = getStockItemsApiParams(params);
     return useSnackQuery({
         queryKey: ['stock_items', apiParams],
         queryFn: () => getRequest(url),
+        options: {
+            staleTime: 1000 * 60 * 15,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
+        },
     });
 };
 
@@ -61,6 +66,11 @@ export const useGetStockItem = (
     return useSnackQuery({
         queryKey: ['stock_items', id],
         queryFn: () => getRequest(`/api/stockitems/${id}/`),
+        options: {
+            staleTime: 1000 * 60 * 15,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
+        },
     });
 };
 
@@ -96,11 +106,12 @@ export const useGetStockLedgerItemsPaginated = (
     const { url, apiParams } = useGetStockItemLogsApiParams(params, stockItem);
     return useSnackQuery({
         queryKey: ['stock_ledger_items', apiParams],
-        queryFn: () => {
-            if (stockItem == null) {
-                return undefined;
-            }
-            return getRequest(url);
+        queryFn: () => getRequest(url),
+        options: {
+            enabled: Boolean(stockItem),
+            staleTime: 1000 * 60 * 15,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     });
 };

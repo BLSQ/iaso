@@ -21,6 +21,7 @@ import { useGetOrgUnit } from 'Iaso/domains/registry/hooks/useGetOrgUnit';
 import { useGetImpacts } from 'Iaso/domains/stock/hooks/useGetImpacts';
 import { useGetSkusDropdownOptions } from 'Iaso/domains/stock/hooks/useGetSkusDropdownOptions';
 import { Params } from 'Iaso/domains/stock/items/types/filters';
+import { useFilterState } from 'Iaso/hooks/useFilterState';
 import { formatParams } from 'Iaso/utils/requests';
 import MESSAGES from '../../messages';
 import { baseUrl } from '../config';
@@ -34,14 +35,8 @@ type Props = {
 };
 
 const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
-    const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const redirectToReplace = useRedirectToReplace();
-    const [filters, setFilters] = useState({
-        orgUnit: params.orgUnit,
-        sku: params.sku,
-    });
 
     const { data: allSkus, isFetching: isFetchingSkus } =
         useGetSkusDropdownOptions({});
@@ -54,30 +49,10 @@ const ItemsFilters: FunctionComponent<Props> = ({ params }) => {
             )?.value || '',
         [dataSources, sourceVersion?.source?.id],
     );
+
+    const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState({ baseUrl, params });
     const { data: orgUnit } = useGetOrgUnit(filters.orgUnit?.toString());
-
-    const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            setFiltersUpdated(false);
-            const tempParams: Params = {
-                ...params,
-                ...filters,
-            };
-            tempParams.page = '1';
-            redirectToReplace(baseUrl, formatParams(tempParams));
-        }
-    }, [filtersUpdated, params, filters, redirectToReplace]);
-
-    const handleChange = useCallback(
-        (key, value) => {
-            setFiltersUpdated(true);
-            setFilters({
-                ...filters,
-                [key]: value,
-            });
-        },
-        [filters],
-    );
 
     return (
         <Grid container spacing={2}>

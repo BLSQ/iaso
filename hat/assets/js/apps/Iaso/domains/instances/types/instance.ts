@@ -87,6 +87,7 @@ export type InstanceLogData = {
     user: User;
     possible_fields: Record<string, any>[];
     files: string[];
+    form_descriptor: Record<string, any>[];
 };
 
 type FormVersions = {
@@ -99,9 +100,11 @@ export type FormDescriptor = {
 export type FileContent = {
     logA: Record<string, any>;
     logB: Record<string, any>;
-    logAFiles: string[];
-    logBFiles: string[];
+    logAFiles: Record<string, string>;
+    logBFiles: Record<string, string>;
     fields: Record<string, any>[];
+    formDescriptorA: Record<string, any>[];
+    formDescriptorB: Record<string, any>[];
 };
 export interface PaginatedInstances extends Pagination {
     instances: Instance[];

@@ -25,6 +25,7 @@ from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.api_tokens import APITokenViewSet
 from .api.apps import AppsViewSet
 from .api.check_version import CheckVersionViewSet
+from .api.colors import colors_list
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
@@ -113,7 +114,6 @@ from .api.tasks.create.import_gpkg import ImportGPKGViewSet
 from .api.tasks.create.instance_bulk_gps_push import InstanceBulkGpsPushViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.tasks.views import TaskSourceViewSet
-from .api.colors import colors_list
 from .api.teams.views import TeamViewSet
 from .api.user_roles import UserRolesViewSet
 from .api.workflows.changes import WorkflowChangeViewSet

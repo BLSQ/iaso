@@ -42,8 +42,8 @@ from iaso.models.comment import CommentIaso
 from iaso.models.device import Device
 from iaso.models.entity import Entity, EntityType
 from iaso.models.microplanning import Planning
-from iaso.models.team import Team
 from iaso.models.pages import Page
+from iaso.models.team import Team
 
 
 """

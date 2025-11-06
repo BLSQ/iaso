@@ -3,7 +3,7 @@ import random
 
 from django.db import migrations, models
 
-from iaso.constants import COLOR_CHOICES
+from iaso.utils.colors import COLOR_CHOICES
 
 
 def assign_random_colors_to_teams(apps, schema_editor):

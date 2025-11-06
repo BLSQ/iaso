@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo, useEffect } from 'react';
+import { Box } from '@mui/material';
 import {
     AddButton,
     useSafeIntl,
@@ -6,10 +7,11 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-// @ts-ignore
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import { EditIconButton } from 'Iaso/components/Buttons/EditIconButton';
+import { ColorPicker } from 'Iaso/components/forms/ColorPicker';
+import { useGetColors } from 'Iaso/hooks/useGetColors';
 import { DropdownOptions } from 'Iaso/types/utils';
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 
@@ -67,7 +69,9 @@ const CreateEditTeam: FunctionComponent<Props> = ({
     parent,
     isOpen,
     closeDialog,
+    color,
 }) => {
+    const { data: colors } = useGetColors();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const { data: projectsDropdown, isFetching: isFetchingProjects } =
@@ -109,6 +113,7 @@ const CreateEditTeam: FunctionComponent<Props> = ({
             type,
             users: users || [],
             parent,
+            color,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -241,6 +246,16 @@ const CreateEditTeam: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
+                <Box mt={2}>
+                    {colors && (
+                        <ColorPicker
+                            currentColor={values.color ?? colors[0]}
+                            onChangeColor={color =>
+                                setFieldValue('color', color)
+                            }
+                        />
+                    )}
+                </Box>
                 {values.type === TEAM_OF_USERS && (
                     <InputComponent
                         type="select"

@@ -95,7 +95,8 @@ export const Assignments: FunctionComponent = () => {
         isFetchingChildrenOrgunits,
         isLoadingAssignments,
         isTeamsFetched,
-        setItemColor,
+        setProfiles,
+        setTeams,
     } = useGetAssignmentData({
         planningId,
         currentTeam,
@@ -107,6 +108,35 @@ export const Assignments: FunctionComponent = () => {
     });
     const isLoading = isLoadingPlanning || isSaving;
 
+    const setItemColor = (color, itemId) => {
+        // TODO: improve this
+        if (currentTeam?.type === 'TEAM_OF_USERS') {
+            const itemIndex = profiles.findIndex(
+                profile => profile.user_id === itemId,
+            );
+            if (itemIndex !== undefined) {
+                const newProfiles = [...profiles];
+                newProfiles[itemIndex] = {
+                    ...newProfiles[itemIndex],
+                    color,
+                };
+                setProfiles(newProfiles);
+            }
+        }
+        if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+            const itemIndex = teams?.findIndex(
+                team => team.original.id === itemId,
+            );
+            if (itemIndex !== undefined && teams) {
+                const newTeams = [...teams];
+                newTeams[itemIndex] = {
+                    ...newTeams[itemIndex],
+                    color,
+                };
+                setTeams(newTeams);
+            }
+        }
+    };
     const { data: hasPipelineConfig } = useGetPipelineConfig();
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {

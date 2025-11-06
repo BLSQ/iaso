@@ -73,6 +73,7 @@ export const teamColumns = (
                             type={settings.row.original.type}
                             users={settings.row.original.users}
                             parent={settings.row.original.parent}
+                            color={settings.row.original.color}
                             iconProps={{}}
                         />
                         <DeleteDialog

@@ -60,6 +60,8 @@ type Result = {
     isLoadingAssignments: boolean;
     isTeamsFetched: boolean;
     setItemColor: (color: string, itemId: number) => void;
+    setProfiles: (profiles: ProfileWithColor[]) => void;
+    setTeams: (teams: DropdownTeamsOptions[]) => void;
 };
 
 export const useGetAssignmentData = ({
@@ -216,6 +218,8 @@ export const useGetAssignmentData = ({
             isTeamsFetched,
             setItemColor,
             saveMultiAssignments,
+            setProfiles,
+            setTeams,
         };
     }, [
         allAssignments,

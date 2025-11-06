@@ -14,6 +14,7 @@ export type SaveTeamQuery = {
     type?: TeamType;
     users: Array<number>;
     parent?: number;
+    color?: string;
 };
 
 const convertToApi = data => {

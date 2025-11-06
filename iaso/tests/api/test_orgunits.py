@@ -2334,6 +2334,83 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(saved_org_unit.name, "Bluesquare")
         self.assertEqual(saved_org_unit.source_created_at.timestamp(), 1674833640)
 
+    def test_create_org_unit_mobile_already_exists(self):
+        self.client.force_authenticate(self.yoda)
+
+        ou_type = OrgUnitType.objects.create(name="Test_type")
+        org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
+        starting_count = OrgUnit.objects.all().count()
+        url = "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics"
+
+        data = [
+            {
+                "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
+                "name": "A",
+                "time": 1675099612000,
+                "accuracy": 1.5,
+                "altitude": 115.0,
+                "latitude": 50.82521833333333,
+                "longitude": 4.353595,
+                "parent_id": None,
+                "created_at": 1665099611.938,
+                "updated_at": 1665099611.938,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
+                "name": "Bluesquare ",
+                "time": 1674833629688,
+                "accuracy": 15.67,
+                "altitude": 127.80000305175781,
+                "latitude": 50.8369448,
+                "longitude": 4.3999539,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1674833640.146,
+                "updated_at": 1674833640.146,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "76097602-92ed-45dd-a15a-a81c3fa44461",
+                "name": "Saint+Luc",
+                "time": 1675099739000,
+                "accuracy": 2.2,
+                "altitude": 113.6,
+                "latitude": 50.825905,
+                "longitude": 4.351918333333333,
+                "parent_id": None,
+                "created_at": 1685099740.112,
+                "updated_at": 1685099740.112,
+                "org_unit_type_id": ou_type.pk,
+            },
+        ]
+
+        data_single_unit = [data[1]]
+
+        # post a single org unit
+        response = self.client.post(url, data=data_single_unit, format="json")
+        result = self.assertJSONResponse(response, 200)
+        self.assertAPIImport("orgUnit", request_body=data_single_unit, has_problems=False)
+        new_count = OrgUnit.objects.all().count()
+        self.assertEqual(new_count, starting_count + 1)
+        self.assertEqual(len(result), 1)
+
+        # post the same org unit a second time
+        response = self.client.post(url, data=data_single_unit, format="json")
+        result = self.assertJSONResponse(response, 200)
+        self.assertAPIImport("orgUnit", request_body=data_single_unit, has_problems=False)
+        new_count = OrgUnit.objects.all().count()
+        self.assertEqual(new_count, starting_count + 1)
+        self.assertEqual(len(result), 0)
+
+        # now do it again with all the data
+        response = self.client.post(url, data=data, format="json")
+        new_count = OrgUnit.objects.all().count()
+        result = self.assertJSONResponse(response, 200)
+        self.assertAPIImport("orgUnit", request_body=data, has_problems=False)
+        self.assertEqual(new_count, starting_count + 3)
+        # only the newly created org units will be returned in the api response
+        self.assertEqual(len(result), 2)
+
     def test_org_unit_search_only_direct_children_false(self):
         self.client.force_authenticate(self.yoda)
 

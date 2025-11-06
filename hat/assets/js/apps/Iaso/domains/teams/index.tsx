@@ -7,7 +7,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useActiveParams } from '../../routing/hooks/useActiveParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { CreateEditTeam } from './components/CreateEditTeam';
+import { AddTeamModal } from './components/CreateEditTeam';
 import { TeamFilters } from './components/TeamFilters';
 import { teamColumns } from './config';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
@@ -38,7 +38,7 @@ export const Teams: FunctionComponent = () => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <TeamFilters params={apiParams} />
                 <Box display="flex" justifyContent="flex-end">
-                    <CreateEditTeam dialogType="create" />
+                    <AddTeamModal dialogType="create" iconProps={{}} />
                 </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}

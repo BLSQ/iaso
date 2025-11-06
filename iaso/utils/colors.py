@@ -1,10 +1,6 @@
-"""Application-wide constants"""
-
 from iaso.models.project import DEFAULT_PROJECT_COLOR
 
 
-# Color choices for the application
-# Used by teams, projects, and other entities
 COLOR_CHOICES = (
     ("#ef5350", "Red 400"),
     ("#b71c1c", "Red 900"),
@@ -41,3 +37,40 @@ COLOR_CHOICES = (
     ("#424242", "Grey 800"),
     ("#000000", "Black"),
 )
+
+DISPERSED_COLOR_ORDER = [
+    9,  # Light Blue 400
+    19,  # Lime 400
+    28,  # Brown 400
+    5,  # Purple 700
+    12,  # Cyan 400
+    22,  # Amber 400
+    0,  # Red 400
+    31,  # Blue Grey 800
+    2,  # Pink 400
+    15,  # Teal 800
+    20,  # Lime 900
+    26,  # Deep Orange 600
+    6,  # Purple 900
+    10,  # Default color
+    23,  # Amber 800
+    30,  # Blue Grey 400
+    1,  # Red 900
+    14,  # Teal 400
+    24,  # Orange 500
+    29,  # Brown 700
+    7,  # Deep Purple 800
+    11,  # Blue grey 400
+    16,  # Green 400
+    32,  # Grey 800
+    3,  # Pink 600
+    13,  # Cyan 800
+    25,  # Orange 700
+    21,  # Yellow 700
+    8,  # Indigo 400
+    17,  # Green 800
+    4,  # Pink 700
+    18,  # Light Green 800
+    27,  # Deep Orange 800
+    33,  # Black
+]

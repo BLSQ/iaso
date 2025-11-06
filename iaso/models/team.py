@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.db import models, transaction
 from django_ltree.fields import PathField  # type: ignore
 
-from iaso.constants import COLOR_CHOICES
 from iaso.models import Project
+from iaso.utils.colors import COLOR_CHOICES
 from iaso.utils.expressions import ArraySubquery
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
